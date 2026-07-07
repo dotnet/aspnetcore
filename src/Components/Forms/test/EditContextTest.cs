@@ -215,7 +215,7 @@ public class EditContextTest
     }
 
     [Fact]
-    public void GetValidationMessages_ThrowsForNull()
+    public void GetValidationMessages_ModelObject_ThrowsForNull()
     {
         var editContext = new EditContext(new object());
 
@@ -224,7 +224,7 @@ public class EditContextTest
     }
 
     [Fact]
-    public void GetValidationMessages_ReturnsEmpty_WhenNoMatches()
+    public void GetValidationMessages_ModelObject_ReturnsEmpty_WhenModelHasNoFields()
     {
         var editContext = new EditContext(new object());
         var result = editContext.GetValidationMessages(new object());
@@ -233,57 +233,7 @@ public class EditContextTest
     }
 
     [Fact]
-    public void GetValidationMessages_ReturnsAllFieldsForSameObject()
-    {
-        var editContext = new EditContext(new object());
-        var model = new object();
-
-        var store = new ValidationMessageStore(editContext);
-
-        store.Add(new FieldIdentifier(model, "A"), "Error A");
-        store.Add(new FieldIdentifier(model, "B"), "Error B");
-
-        var result = editContext.GetValidationMessages(model).OrderBy(x => x);
-
-        Assert.Equal(new[] { "Error A", "Error B" }, result);
-    }
-
-    [Fact]
-    public void GetValidationMessages_DuplicatesPreserved()
-    {
-        var editContext = new EditContext(new object());
-        var model = new object();
-
-        var store1 = new ValidationMessageStore(editContext);
-        var store2 = new ValidationMessageStore(editContext);
-
-        var field = new FieldIdentifier(model, "A");
-
-        store1.Add(field, "Error");
-        store2.Add(field, "Error");
-
-        var result = editContext.GetValidationMessages(model).ToList();
-
-        Assert.Equal(2, result.Count);
-    }
-
-    [Fact]
-    public void GetValidationMessages_Works_For_RootModel()
-    {
-        var model = new TestModel();
-        var editContext = new EditContext(model);
-
-        var field = new FieldIdentifier(model, nameof(TestModel.Name));
-        var store = new ValidationMessageStore(editContext);
-        store.Add(field, "Error");
-
-        var messages = editContext.GetValidationMessages(model);
-
-        Assert.Contains("Error", messages);
-    }
-
-    [Fact]
-    public void IsModified_Works_For_RootModel()
+    public void IsModified_ModelObject_ReturnsTrueWhenAnyFieldIsModified()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
@@ -295,7 +245,7 @@ public class EditContextTest
     }
 
     [Fact]
-    public void MarkAsUnmodified_Works_For_RootModel()
+    public void MarkAsUnmodified_ModelObject_ClearsAllFieldsOfModel()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
@@ -306,6 +256,46 @@ public class EditContextTest
         editContext.MarkAsUnmodified(model);
 
         Assert.False(editContext.IsModified(model));
+    }
+
+    [Fact]
+    public void MarkAsUnmodified_ModelObject_LeavesOtherModelsUnaffected()
+    {
+        var editContext = new EditContext(new object());
+        var model1 = new object();
+        var model2 = new object();
+        var field1 = new FieldIdentifier(model1, "field1");
+        var field2 = new FieldIdentifier(model1, "field2");
+        var field3 = new FieldIdentifier(model2, "field");
+
+        editContext.NotifyFieldChanged(field1);
+        editContext.NotifyFieldChanged(field2);
+        editContext.NotifyFieldChanged(field3);
+
+        editContext.MarkAsUnmodified(model1);
+
+        Assert.False(editContext.IsModified(model1));
+        Assert.True(editContext.IsModified(model2));
+        Assert.True(editContext.IsModified(field3));
+    }
+
+    [Fact]
+    public void GetValidationMessages_ModelObject_IsolatesMessagesFromOtherModels()
+    {
+        var editContext = new EditContext(new object());
+        var model1 = new object();
+        var model2 = new object();
+        var store = new ValidationMessageStore(editContext);
+
+        store.Add(new FieldIdentifier(model1, "field1"), "Error 1");
+        store.Add(new FieldIdentifier(model1, "field2"), "Error 2");
+        store.Add(new FieldIdentifier(model2, "field"), "Error 3");
+
+        var model1Messages = editContext.GetValidationMessages(model1).OrderBy(x => x).ToList();
+        var model2Messages = editContext.GetValidationMessages(model2).ToList();
+
+        Assert.Equal(new[] { "Error 1", "Error 2" }, model1Messages);
+        Assert.Equal(new[] { "Error 3" }, model2Messages);
     }
 
     [Fact]

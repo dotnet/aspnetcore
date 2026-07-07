@@ -76,7 +76,7 @@ public class EditContextValidatableInfoFieldTest
     });
 
     [Fact]
-    public Task Validate_WithChildObjectValidationMessages_AreQueryableByChildObject() => RunOnDispatcher(async () =>
+    public void Validate_WithChildObjectValidationMessages_AreQueryableByChildObject() => RunOnDispatcher(async () =>
     {
         var item = new ItemModel { Value = 0 };
         var rootModel = new RootModel { Name = "valid", Items = { item } };

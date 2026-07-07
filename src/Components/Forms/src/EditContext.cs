@@ -143,10 +143,6 @@ public sealed class EditContext
     /// <summary>
     /// Clears any modification flag that may be tracked for fields on the specified model object.
     /// </summary>
-    /// <remarks>
-    /// This performs an O(N) scan across all tracked fields. In scenarios with very large forms, this could be optimized by
-    /// maintaining a secondary index keyed by model instance. This is intentionally deferred to keep the implementation simple.
-    /// </remarks>
     /// <param name="model">The model object whose field modification flags should be cleared.</param>
     public void MarkAsUnmodified(object model)
     {
@@ -228,13 +224,10 @@ public sealed class EditContext
         => GetValidationMessages(FieldIdentifier.Create(accessor));
 
     /// <summary>
-    /// Gets the current validation messages for fields on the specified model object.    ///
+    /// Gets the current validation messages for fields on the specified model object.
+    ///
     /// This method does not perform validation itself. It only returns messages determined by previous validation actions.
     /// </summary>
-    /// <remarks>
-    /// This performs an O(N) scan across all tracked fields. In scenarios with very large forms, this could be optimized by
-    /// maintaining a secondary index keyed by model instance. This is intentionally deferred to keep the implementation simple.
-    /// </remarks>
     /// <param name="model">The model object whose associated field validation messages should be returned.</param>
     /// <returns>The current validation messages for fields on the specified model object.</returns>
     public IEnumerable<string> GetValidationMessages(object model)
@@ -273,15 +266,6 @@ public sealed class EditContext
     /// <summary>
     /// Determines whether any fields on the specified model object have been modified.
     /// </summary>
-    /// <remarks>
-    /// This performs an O(N) scan across all tracked fields. In scenarios with very large forms,
-    /// this could be optimized by maintaining a secondary index keyed by model instance.
-    /// This is intentionally deferred to keep the implementation simple.
-    ///
-    /// If an expression (for example, () => model.Property) is passed as an object,
-    /// it will be treated as a model instance rather than an expression. Callers should use
-    /// the expression overload directly to avoid unexpected behavior.
-    /// </remarks>
     /// <param name="model">The model object to query for modified field state.</param>
     /// <returns>
     /// True if any fields on the specified model object have been modified; otherwise false.
