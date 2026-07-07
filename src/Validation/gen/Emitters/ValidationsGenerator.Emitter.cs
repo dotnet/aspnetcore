@@ -95,11 +95,18 @@ namespace Microsoft.Extensions.Validation.Generated
     {{GeneratedCodeAttribute}}
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
+        private readonly global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::Microsoft.Extensions.Validation.IValidatableTypeInfo?> _typeInfoCache = new();
+
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
-            validatableTypeInfo = null;
+            validatableTypeInfo = _typeInfoCache.GetOrAdd(type, TryGetValidatableTypeInfo);
+            return validatableTypeInfo is not null;
+        }
+
+        private static global::Microsoft.Extensions.Validation.IValidatableTypeInfo? TryGetValidatableTypeInfo(global::System.Type type)
+        {
 {{EmitTypeChecks(validatableTypes)}}
-            return false;
+            return null;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
@@ -342,7 +349,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var typeName = validatableType.TypeFQN;
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
-            cw.WriteLine($"validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(");
+            cw.WriteLine($"return new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(");
             cw.Indent++;
             cw.WriteLine($"type: typeof({typeName}),");
             if (validatableType.Members.IsDefaultOrEmpty)
@@ -363,7 +370,6 @@ namespace Microsoft.Extensions.Validation.Generated
             cw.WriteLine($"displayNameInfo: {FormatTypeDisplayNameInfo(validatableType)}");
             cw.Indent--;
             cw.WriteLine(");");
-            cw.WriteLine("return true;");
             cw.EndBlock();
         }
         return sw.ToString();

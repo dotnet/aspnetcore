@@ -16,7 +16,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
 {
     private readonly int _membersCount;
     private readonly Type[] _implementedInterfaces;
-    private readonly Lazy<ValidationAttribute[]> _validationAttributes;
+    private readonly ValidationAttribute[] _validationAttributes;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -38,8 +38,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         _membersCount = members.Count;
         _implementedInterfaces = type.GetInterfaces();
 
-        _validationAttributes = new Lazy<ValidationAttribute[]>(
-            () => Type.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray());
+        _validationAttributes = Type.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
     }
 
     /// <summary>
@@ -47,7 +46,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
     /// </summary>
     /// <returns>An array of validation attributes to apply to this type.</returns>
     protected virtual ValidationAttribute[] GetValidationAttributes()
-        => _validationAttributes.Value;
+        => _validationAttributes;
 
     /// <summary>
     /// The type being validated.

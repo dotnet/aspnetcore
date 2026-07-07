@@ -66,12 +66,19 @@ namespace Microsoft.Extensions.Validation.Generated
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
+        private readonly global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::Microsoft.Extensions.Validation.IValidatableTypeInfo?> _typeInfoCache = new();
+
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
-            validatableTypeInfo = null;
+            validatableTypeInfo = _typeInfoCache.GetOrAdd(type, TryGetValidatableTypeInfo);
+            return validatableTypeInfo is not null;
+        }
+
+        private static global::Microsoft.Extensions.Validation.IValidatableTypeInfo? TryGetValidatableTypeInfo(global::System.Type type)
+        {
             if (type == typeof(global::AccessibilityTestType))
             {
-                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
+                return new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::AccessibilityTestType),
                     members: [
                         new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
@@ -83,10 +90,9 @@ namespace Microsoft.Extensions.Validation.Generated
                     ],
                     displayNameInfo: null
                 );
-                return true;
             }
 
-            return false;
+            return null;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
