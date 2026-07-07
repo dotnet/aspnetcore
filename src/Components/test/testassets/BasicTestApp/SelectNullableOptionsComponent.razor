@@ -1,0 +1,41 @@
+@using BasicTestApp.FormsTest
+
+<select id="select-nullable-single" @bind="NullableSelectedCity">
+    <option value="@NullValue">(none)</option>
+    <option value="sf">San Francisco</option>
+    <option value="la">Los Angeles</option>
+    <option value="pdx">Portland</option>
+</select>
+
+<span id="selected-nullable-single-label">@NullableSelectedCityLabel</span>
+
+<button id="reset-nullable-single" @onclick="ResetNullableSingle">Reset single</button>
+
+<select id="select-no-null-option" @bind="SelectValueNoNull">
+    <option value="A">Option A</option>
+    <option value="B">Option B</option>
+    <option value="C">Option C</option>
+</select>
+
+<span id="select-no-null-option-label">@SelectValueNoNullLabel</span>
+
+@code {
+#nullable enable
+    private string? NullValue = null;
+    public string? NullableSelectedCity { get; set; } = "sf";
+    public string? SelectValueNoNull { get; set; } = "B";
+
+    private string NullableSelectedCityLabel => NullableSelectedCity ?? "(null)";
+
+    private string SelectValueNoNullLabel => SelectValueNoNull switch
+    {
+        null => "(null)",
+        "" => "(empty)",
+        _ => SelectValueNoNull,
+    };
+
+    void ResetNullableSingle()
+    {
+        NullableSelectedCity = null;
+    }
+}

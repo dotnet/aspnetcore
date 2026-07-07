@@ -25,7 +25,7 @@ public sealed class RenderTreeBuilder : IDisposable
     /// in the change event so that nullable bound values receive <c>null</c> instead of
     /// an empty string. The value of the attribute is the same as its name.
     /// </summary>
-    private const string NullValueOptionMarkerAttributeName = "blazor-null-option";
+    private const string NullValueOptionMarkerAttributeName = "data-blazor-null-option";
 
     private static readonly object BoxedTrue = true;
     private static readonly object BoxedFalse = false;

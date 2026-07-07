@@ -179,21 +179,19 @@ function parseChangeEvent(event: Event): ChangeEventArgs {
     return { value: normalizedValue };
   } else if (isMultipleSelectInput(element)) {
     const selectElement = element as HTMLSelectElement;
-    const selectedValues: (string | null)[] = [];
+    const selectedValues: string[] = [];
     for (let i = 0; i < selectElement.options.length; i++) {
       const option = selectElement.options[i];
       if (option.selected) {
-        // An <option value="@null"> is rendered with the blazor-null-option marker
-        // attribute and a value of ''. Translate that to null so nullable bound
-        // values receive null in the change event.
-        selectedValues.push(hasNullOptionMarker(option) ? null : option.value);
+        // <option value="@null"> in a multi-select is not translated to a JS
+        // null; the data-blazor-null-option marker is honored only for single
+        // <select>. The option's rendered value ('') is sent instead.
+        selectedValues.push(option.value);
       }
     }
     return { value: selectedValues };
   } else if (element instanceof HTMLSelectElement) {
-    // Single <select>. If the selected <option> carries the blazor-null-option
-    // marker attribute, the developer wrote value="@null" and we should report
-    // null to .NET so nullable bound values receive null instead of ''.
+    // Single <select>: report null to .NET when the selected <option> carries the data-blazor-null-option marker (i.e., value="@null"), otherwise the element's value.
     const newValue = getSelectedOptionValue(element);
     return { value: newValue };
   } else {
@@ -203,11 +201,8 @@ function parseChangeEvent(event: Event): ChangeEventArgs {
   }
 }
 
-// Marker attribute emitted on <option value="@null"> by RenderTreeBuilder so the
-// client change handler can recognize the developer's null intent. The DOM
-// cannot represent a null <option> value, so the actual value attribute is
-// rendered as an empty string and this marker carries the null meaning.
-const nullOptionMarkerAttributeName = 'blazor-null-option';
+// Marker attribute emitted on <option value="@null"> by RenderTreeBuilder: the DOM cannot represent a null <option> value, so the value attribute is rendered as '' and this marker carries the null meaning.
+const nullOptionMarkerAttributeName = 'data-blazor-null-option';
 
 function hasNullOptionMarker(option: HTMLOptionElement): boolean {
   return option.hasAttribute(nullOptionMarkerAttributeName);
@@ -215,12 +210,16 @@ function hasNullOptionMarker(option: HTMLOptionElement): boolean {
 
 function getSelectedOptionValue(selectElement: HTMLSelectElement): string | null {
   const selectedIndex = selectElement.selectedIndex;
-  if (selectedIndex < 0 || selectedIndex >= selectElement.options.length) {
-    return null;
+  if (selectedIndex >= 0 && selectedIndex < selectElement.options.length) {
+    const selectedOption = selectElement.options[selectedIndex];
+    if (hasNullOptionMarker(selectedOption)) {
+      // The developer wrote value="@null" on this <option>: report null to .NET so nullable bound values receive null instead of ''.
+      return null;
+    }
   }
 
-  const selectedOption = selectElement.options[selectedIndex];
-  return hasNullOptionMarker(selectedOption) ? null : selectElement.value;
+  // Fall through to the element's own .value to preserve pre-existing behavior for <select> elements without a @null option, including the selectedIndex === -1 case where .value is ''.
+  return selectElement.value;
 }
 
 function parseWheelEvent(event: WheelEvent): WheelEventArgs {
@@ -403,7 +402,9 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
 // The following interfaces must be kept in sync with the EventArgs C# classes
 
 interface ChangeEventArgs {
-  value: string | boolean | string[] | null | (string | null)[];
+  // Multi-select values are always string[]: the data-blazor-null-option
+  // marker is honored only for single <select> and reported as a top-level null.
+  value: string | boolean | string[] | null;
 }
 
 interface DragEventArgs {

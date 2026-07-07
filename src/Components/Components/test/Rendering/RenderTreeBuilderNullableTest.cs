@@ -24,7 +24,7 @@ public class RenderTreeBuilderNullableTest
         Assert.Collection(
             frames,
             frame => AssertFrame.Element(frame, "option", 3),
-            frame => AssertFrame.Attribute(frame, "blazor-null-option", "blazor-null-option"),
+            frame => AssertFrame.Attribute(frame, "data-blazor-null-option", "data-blazor-null-option"),
             frame => AssertFrame.Attribute(frame, "value", ""));
     }
 
@@ -40,5 +40,22 @@ public class RenderTreeBuilderNullableTest
 
         var frames = builder.GetFrames().AsEnumerable().ToArray();
         Assert.Collection(frames, frame => AssertFrame.Element(frame, "input", 1));
+    }
+
+    [Fact]
+    public void AddAttribute_NullObjectValueOnOptionElement_EmitsMarkerAndEmptyValueFrame()
+    {
+        var builder = new RenderTreeBuilder();
+        object? nullValue = null;
+
+        builder.OpenElement(0, "option");
+        builder.AddAttribute(1, "value", nullValue);
+        builder.CloseElement();
+
+        var frames = builder.GetFrames().AsEnumerable().ToArray();
+        Assert.Collection(frames,
+            frame => AssertFrame.Element(frame, "option", 3),
+            frame => AssertFrame.Attribute(frame, "data-blazor-null-option", "data-blazor-null-option"),
+            frame => AssertFrame.Attribute(frame, "value", ""));
     }
 }
