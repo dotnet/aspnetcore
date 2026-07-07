@@ -1,4 +1,6 @@
 ---
+if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
+
 on:
   schedule:
     - cron: "0 10 */2 * *"

@@ -1,5 +1,8 @@
 ---
+if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
+
 on:
+  permissions: {}
   schedule: every 1mo
   workflow_dispatch:
 

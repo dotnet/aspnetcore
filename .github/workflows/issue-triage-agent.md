@@ -1,4 +1,6 @@
 ---
+if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
+
 on:
   issues:
     types: [opened]

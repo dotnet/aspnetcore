@@ -1,5 +1,8 @@
 ---
+if: ${{ !github.event.repository.fork }}
+
 on:
+  permissions: {}
   pull_request:
     types: [labeled]
     names: [community-contribution]
