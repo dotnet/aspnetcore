@@ -77,7 +77,6 @@ public class OidcProviderOptionsTests
     [Fact]
     public void TokenStorage_NullValue_Throws()
     {
-        // JsonStringEnumConverter does not accept null for a non-nullable enum value-type.
         Assert.Throws<JsonException>(() =>
             JsonSerializer.Deserialize<OidcProviderOptions>("{\"tokenStorage\":null}"));
     }

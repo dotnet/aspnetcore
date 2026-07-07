@@ -1,4 +1,3 @@
-<!-- filepath: src/Components/test/testassets/Components.WasmRemoteAuthenticationTokenStorage/Components.WasmRemoteAuthenticationTokenStorage.csproj -->
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
