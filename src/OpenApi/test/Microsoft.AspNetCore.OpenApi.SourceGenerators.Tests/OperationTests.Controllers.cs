@@ -310,4 +310,51 @@ public record Person(int Id, string Name);
             Assert.Null(getOperation.RequestBody.Description);
         });
     }
+
+    [Fact]
+    public async Task ShouldApplyFormParameterDocumentationToRequestBody()
+    {
+        var source =
+"""
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services
+    .AddControllers()
+    .AddApplicationPart(typeof(TestController).Assembly);
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapControllers();
+
+app.Run();
+
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase
+{
+    /// <param name="name">The name of the resource to create.</param>
+    [HttpPost]
+    public ActionResult Create([FromForm] string name)
+    {
+        return Created();
+    }
+}
+
+public partial class Program {}
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var postOperation = document.Paths["/Test"].Operations[HttpMethod.Post];
+            // The `name` parameter is bound from the form, which maps to the request
+            // body, so its documentation should be applied to the request body description.
+            Assert.Equal("The name of the resource to create.", postOperation.RequestBody.Description);
+        });
+    }
 }
