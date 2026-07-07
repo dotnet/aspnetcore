@@ -16,6 +16,7 @@ been addressed.
 | 7 (MEDIUM) | `RemovesOnlyTheOmittedUnmatchedAttributesWhenOthersAreKeptOrChanged` | `src/Components/Components/test/RendererTest.cs` | ✅ Added |
 | 8 (MEDIUM) | `RemovesUnmatchedAttributesAcrossMultipleChildComponentsInTheSameRender` | `src/Components/Components/test/RendererTest.cs` | ✅ Added |
 | 9 (MEDIUM) | `RemovesUnmatchedAttribute_AcrossRapidAddRemoveCycles` | `src/Components/Components/test/RendererTest.cs` | ✅ Added |
+| 10 (MEDIUM) | `RemovesUnmatchedAttributeFromParentAndChildIndependentlyInNestedHierarchy` | `src/Components/Components/test/RendererTest.cs` | ✅ Added |
 
 Cascading parameter interaction is already covered in
 `src/Components/Components/test/ParameterViewTest.Assignment.cs` via
@@ -112,10 +113,8 @@ exercise; it is the highest-value test for catching regressions of the fix.
 
 ```text
 dotnet test src/Components/Components/test/Microsoft.AspNetCore.Components.Tests.csproj
-  --filter "FullyQualifiedName~RendererTest"
-  Passed: 153 (148 existing + 5 new)
+  Passed: 1282 (1276 existing + 6 new)
 
 dotnet test src/Components/Web/test/Microsoft.AspNetCore.Components.Web.Tests.csproj
-  --filter "FullyQualifiedName~InputTextTest"
-  Passed: 6 (4 existing + 2 new)
+  Passed: 313 (311 existing + 2 new)
 ```
