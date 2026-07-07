@@ -152,6 +152,9 @@ See "Preregister URL prefixes on the server" on https://go.microsoft.com/fwlink/
   <data name="Exception_WrongIAsyncResult" xml:space="preserve">
     <value>The given IAsyncResult does not match this opperation.</value>
   </data>
+  <data name="Exception_InvalidReasonPhraseCharacter" xml:space="preserve">
+    <value>Invalid non-ASCII or control character in ReasonPhrase: {0}</value>
+  </data>
   <data name="Warning_ExceptionInOnResponseCompletedAction" xml:space="preserve">
     <value>An exception occurred while running an action registered with {0}.</value>
   </data>

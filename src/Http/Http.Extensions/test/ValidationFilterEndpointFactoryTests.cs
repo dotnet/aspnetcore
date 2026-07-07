@@ -53,6 +53,7 @@ public class ValidationEndpointFilterFactoryTests : LoggedTest
 
         ms.Seek(0, SeekOrigin.Begin);
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(ms, JsonSerializerOptions.Web);
+        Assert.Equal(StatusCodes.Status400BadRequest, problemDetails.Status);
 
         Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
 

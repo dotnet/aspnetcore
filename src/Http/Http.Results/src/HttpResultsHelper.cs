@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -32,6 +33,11 @@ internal static partial class HttpResultsHelper
         if (value is null)
         {
             return Task.CompletedTask;
+        }
+
+        if (value is ProblemDetails)
+        {
+            contentType = MediaTypeNames.Application.ProblemJson;
         }
 
         jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;

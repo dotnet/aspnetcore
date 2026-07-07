@@ -55,6 +55,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     private bool _hotReloadInitialized;
     private HotReloadRenderHandler? _hotReloadRenderHandler;
+    private HashSet<int>? _hotReloadRenderedComponentIds;
 
     /// <summary>
     /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -100,9 +101,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, GetComponentPropertyActivatorOrDefault(serviceProvider), this);
-        _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
-        _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
-        _componentsActivitySource?.Init(new ComponentsActivityLinkStore(this));
+        if (ComponentsMetrics.IsSupported)
+        {
+            _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
+        }
+        if (ComponentsActivitySource.IsSupported)
+        {
+            _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
+            _componentsActivitySource?.Init(new ComponentsActivityLinkStore(this));
+        }
 
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
@@ -114,7 +121,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
-    internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
+    internal HotReloadManager? HotReloadManager { get; set; } = HotReloadManager.IsSupported ? HotReloadManager.Default : null;
 
     private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
     {
@@ -143,6 +150,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a (metadata update) hot-reload change.
     /// </summary>
     internal bool IsRenderingOnMetadataUpdate { get; private set; }
+
+    /// <summary>
+    /// Returns <see langword="true"/> the first time the specified component requests a render during the current
+    /// metadata-update (hot-reload) pass, and <see langword="false"/> on every subsequent call within the same
+    /// pass. This allows <see cref="ComponentBase.StateHasChanged"/> to bypass <c>ShouldRender()</c> exactly once
+    /// per component so every component refreshes its UI while still letting <c>ShouldRender() == false</c>
+    /// break any synchronous re-render cycles that would otherwise run unboundedly.
+    /// </summary>
+    internal bool IsFirstHotReloadRender(int componentId)
+    {
+        _hotReloadRenderedComponentIds ??= new HashSet<int>();
+        return _hotReloadRenderedComponentIds.Add(componentId);
+    }
 
     /// <summary>
     /// Gets whether the renderer has been disposed.
@@ -213,6 +233,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             finally
             {
                 IsRenderingOnMetadataUpdate = false;
+                _hotReloadRenderedComponentIds = null;
             }
         });
     }
@@ -237,7 +258,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         if (!_hotReloadInitialized)
         {
             _hotReloadInitialized = true;
-            if (HotReloadManager.MetadataUpdateSupported)
+            if (HotReload.HotReloadManager.IsSupported && HotReloadManager != null)
             {
                 // Capture the current ExecutionContext so AsyncLocal values present during initial root component
                 // registration flow through to hot reload re-renders. Without this, hot reload callbacks execute
@@ -302,7 +323,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _pendingTasks ??= new();
 
         var componentState = GetRequiredRootComponentState(componentId);
-        if (HotReloadManager.MetadataUpdateSupported)
+        if (HotReload.HotReloadManager.IsSupported && HotReloadManager != null)
         {
             // When we're doing hot-reload, stash away the parameters used while rendering root components.
             // We'll use this to trigger re-renders on hot reload updates.
@@ -332,7 +353,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
         // during a batch, but if a scenario emerges we can add support.
         _batchBuilder.ComponentDisposalQueue.Enqueue(componentId);
-        if (HotReloadManager.MetadataUpdateSupported)
+        if (HotReload.HotReloadManager.IsSupported && HotReloadManager != null)
         {
             _rootComponentsLatestParameters?.Remove(componentId);
         }
@@ -470,14 +491,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         ComponentsActivityHandle activityHandle = default;
         string receiverName = null;
         string methodName = null;
-        if (ComponentActivitySource != null)
+        if (ComponentsActivitySource.IsSupported && ComponentActivitySource != null)
         {
             receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
             methodName ??= callback.Delegate.Method?.Name;
             activityHandle = ComponentsActivitySource.StartHandleEventActivity(receiverName, methodName, attributeName);
         }
 
-        var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
+        var eventStartTimestamp = ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
 
         // If this event attribute was rendered by a component that's since been disposed, don't dispatch the event at all.
         // This can occur because event handler disposal is deferred, so event handler IDs can outlive their components.
@@ -521,7 +542,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             task = callback.InvokeAsync(eventArgs);
 
             // collect metrics
-            if (ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
+            if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
             {
                 receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 methodName ??= callback.Delegate.Method?.Name;
@@ -529,21 +550,21 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
 
             // stop activity/trace
-            if (ComponentActivitySource != null && activityHandle.Activity != null)
+            if (ComponentsActivitySource.IsSupported && ComponentActivitySource != null && activityHandle.Activity != null)
             {
                 _ = ComponentActivitySource.CaptureHandleEventStopAsync(task, activityHandle);
             }
         }
         catch (Exception e)
         {
-            if (ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
+            if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
             {
                 receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 methodName ??= callback.Delegate.Method?.Name;
                 ComponentMetrics.FailEventSync(e, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
-            if (ComponentActivitySource != null && activityHandle.Activity != null)
+            if (ComponentsActivitySource.IsSupported && ComponentActivitySource != null && activityHandle.Activity != null)
             {
                 ComponentActivitySource.StopHandleEventActivity(activityHandle, e);
             }
@@ -817,7 +838,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         _isBatchInProgress = true;
         var updateDisplayTask = Task.CompletedTask;
-        var batchStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsBatchEnabled ? Stopwatch.GetTimestamp() : 0;
+        var batchStartTimestamp = ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsBatchEnabled ? Stopwatch.GetTimestamp() : 0;
 
         try
         {
@@ -850,14 +871,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // if there is async work to be done.
             _ = InvokeRenderCompletedCalls(batch.UpdatedComponents, updateDisplayTask);
 
-            if (ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
+            if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
                 _ = ComponentMetrics.CaptureBatchDuration(updateDisplayTask, batchStartTimestamp, batch.UpdatedComponents.Count);
             }
         }
         catch (Exception e)
         {
-            if (ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
+            if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
                 ComponentMetrics.FailBatchSync(e, batchStartTimestamp);
             }
@@ -1247,7 +1268,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _rendererIsDisposed = true;
         }
 
-        if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported && _hotReloadRenderHandler is not null)
+        if (HotReload.HotReloadManager.IsSupported && HotReloadManager != null && _hotReloadInitialized && _hotReloadRenderHandler is not null)
         {
             HotReloadManager.OnDeltaApplied -= _hotReloadRenderHandler.RerenderOnHotReload;
         }

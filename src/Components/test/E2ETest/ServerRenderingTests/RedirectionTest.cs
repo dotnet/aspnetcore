@@ -55,6 +55,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66969")]
     public void RedirectStreamingGetToExternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -84,6 +85,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67342")]
     public void RedirectStreamingPostToExternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -145,6 +147,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67444")]
     public void RedirectEnhancedPostToExternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -155,6 +158,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66709")]
     public void RedirectStreamingEnhancedGetToInternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -173,6 +177,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66969")]
     public void RedirectStreamingEnhancedGetToExternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -203,6 +208,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66869")]
     public void RedirectStreamingEnhancedPostToExternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -214,6 +220,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67342")]
     public void RedirectEnhancedNonBlazorGetToInternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -232,6 +239,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67342")]
     public void RedirectEnhancedNonBlazorGetToExternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -284,7 +292,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/63708/")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66118")]
     public void NavigationException_InAsyncContext_DoesNotBecomeUnobservedTaskException()
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", false);

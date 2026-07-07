@@ -8,9 +8,11 @@
       Client caching isn't part of our performance measurement, so we'll skip it.
     -->
     <BlazorCacheBootResources>false</BlazorCacheBootResources>
+    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
   </ItemGroup>
+
 </Project>

@@ -63,6 +63,13 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         }
 
         _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
+
+        // Pass client validation attributes to child InputRadio components via shared context.
+        // Unlike MVC (which uses FormContext to emit data-val-* on only the first radio button),
+        // Blazor's component model renders children independently. We achieve the same first-only
+        // behavior by mutating the shared context: the first InputRadio reads the attributes,
+        // renders them, and clears the property so subsequent radios in the group get nothing.
+        _context.ClientValidationAttributes = ExtractClientValidationAttributes();
     }
 
     /// <inheritdoc />
@@ -81,4 +88,31 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
+
+    /// <summary>
+    /// Extracts data-val-* client validation attributes from AdditionalAttributes so they
+    /// can be passed to child InputRadio components via InputRadioContext. InputRadioGroup
+    /// itself doesn't render an HTML element, so it can't carry these attributes directly.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? ExtractClientValidationAttributes()
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        Dictionary<string, object>? result = null;
+        foreach (var (key, value) in AdditionalAttributes)
+        {
+            // Match "data-val" exactly and "data-val-*" (with dash), but not "data-value" or other unrelated attributes.
+            if (string.Equals(key, "data-val", StringComparison.OrdinalIgnoreCase)
+                || key.StartsWith("data-val-", StringComparison.OrdinalIgnoreCase))
+            {
+                result ??= new();
+                result[key] = value;
+            }
+        }
+
+        return result;
+    }
 }

@@ -1,0 +1,46 @@
+@page "/forms/client-validation/localized-validation"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2 id="page-title">Localized client-side validation</h2>
+
+<p>
+    Renders an EditForm with model classes decorated with <code>[Required]</code>, <code>[Range]</code>,
+    and <code>[Display]</code>. The server's <code>IValidationLocalizer</code> resolves localized strings
+    based on <code>CurrentUICulture</code>, which is set per-request via the <code>?culture=</code>
+    query string. The Selenium test asserts the rendered <code>data-val-*</code> attributes change with
+    culture, confirming server-client localization parity.
+</p>
+
+<EditForm Model="Form" FormName="localized-form" method="post">
+    <DataAnnotationsValidator />
+
+    <div>
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="Form!.Email" />
+    </div>
+
+    <div>
+        <label for="age">Age</label>
+        <InputNumber id="age" @bind-Value="Form.Age" />
+    </div>
+
+    <button type="submit" id="submit">Submit</button>
+</EditForm>
+
+@code {
+    [SupplyParameterFromForm] private LocalizedFormModel? Form { get; set; }
+
+    protected override void OnInitialized() => Form ??= new LocalizedFormModel();
+
+    public class LocalizedFormModel
+    {
+        [Required(ErrorMessage = "RequiredKey")]
+        [Display(Name = "Email Address")]
+        public string? Email { get; set; }
+
+        [Range(18, 120, ErrorMessage = "RangeKey")]
+        [Display(Name = "Age")]
+        public int Age { get; set; }
+    }
+}

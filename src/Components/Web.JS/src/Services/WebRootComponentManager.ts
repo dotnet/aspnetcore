@@ -13,6 +13,7 @@ import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
+import { JSEventRegistry } from './JSEventRegistry';
 
 type RootComponentOperationBatch = {
   batchId: number;
@@ -66,11 +67,11 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   private _webAssemblyOptions: WebAssemblyServerOptions | undefined;
 
   // Implements RootComponentManager.
-  // An empty array becuase all root components managed
+  // An empty array because all root components managed
   // by WebRootComponentManager are added and removed dynamically.
   public readonly initialComponents: never[] = [];
 
-  public constructor(private readonly _circuitInactivityTimeoutMs: number) {
+  public constructor(private readonly _circuitInactivityTimeoutMs: number, private readonly _jsEventRegistry: JSEventRegistry) {
     // After a renderer attaches, we need to activate any components that were
     // previously skipped for interactivity.
     registerRendererAttachedListener(() => {
@@ -108,7 +109,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     // When encountering a component with a WebAssembly or Auto render mode,
     // start loading the WebAssembly runtime, even though we're not
-    // activating the component yet. This is becuase WebAssembly resources
+    // activating the component yet. This is because WebAssembly resources
     // may take a long time to load, so starting to load them now potentially reduces
     // the time to interactvity.
     if (descriptor.type === 'webassembly') {
@@ -117,7 +118,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       // If the WebAssembly runtime starts downloading because an Auto component was added to
       // the page, we limit the maximum number of parallel WebAssembly resource downloads to 1
       // so that the performance of any Blazor Server circuit is minimally impacted.
-      this.startLoadingWebAssemblyIfNotStarted(/* maxParallelDownloadsOverride */ 1);
+      this.startLoadingWebAssemblyIfNotStarted(/* isAuto */ true);
     }
 
     const ssrComponentId = this._nextSsrComponentId++;
@@ -132,27 +133,26 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.circuitMayHaveNoRootComponents();
   }
 
-  private async startLoadingWebAssemblyIfNotStarted(maxParallelDownloadsOverride?: number) {
+  private async startLoadingWebAssemblyIfNotStarted(isAuto?: boolean) {
     if (hasStartedLoadingWebAssemblyPlatform()) {
       return;
     }
 
     setWaitForRootComponents();
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions);
+    const justDownload = isAuto && !areAnyWebAssemblyResourcesLikelyCached();
+
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions, justDownload);
+    if (justDownload) {
+      // Since WebAssembly resources aren't cached
+      // we fall back to Blazor Server immediately
+      this.onWebAssemblyFailedToLoadQuickly();
+    }
     const bootConfig = await waitForBootConfigLoaded();
 
-    if (maxParallelDownloadsOverride !== undefined) {
-      bootConfig.maxParallelDownloads = maxParallelDownloadsOverride;
-    }
-
-    if (!areWebAssemblyResourcesLikelyCached(bootConfig)) {
-      // Since WebAssembly resources aren't likely cached,
-      // they will probably need to be fetched over the network.
-      // Therefore, we can guess that Blazor WebAssembly won't
-      // load quickly, so we fall back to Blazor Server immediately,
-      // allowing "auto" components to become interactive sooner than if
-      // we were to wait for the timeout.
+    if (!justDownload && !areWebAssemblyResourcesLikelyCached(bootConfig)) {
+      // Since correct version of resources aren't cached
+      // we fall back to Blazor Server immediately
       this.onWebAssemblyFailedToLoadQuickly();
     }
 
@@ -177,7 +177,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private startCircutIfNotStarted() {
     if (!hasStartedServer()) {
-      return startServer(this);
+      return startServer(this, this._jsEventRegistry);
     }
 
     if (!isCircuitAvailable()) {
@@ -489,7 +489,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     for (const operation of batch.operations) {
       switch (operation.type) {
         case 'remove': {
-          // We can stop tracking this component now that .NET has acknowedged its removal.
+          // We can stop tracking this component now that .NET has acknowledged its removal.
           const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
           if (component) {
             this.unregisterComponent(component);
@@ -517,6 +517,12 @@ function isDescriptorInDocument(descriptor: ComponentDescriptor): boolean {
   return document.contains(descriptor.start);
 }
 
+const cacheKey = 'blazor-resource-hash';
+
+function areAnyWebAssemblyResourcesLikelyCached(): boolean {
+  return !!window.localStorage.getItem(cacheKey);
+}
+
 function areWebAssemblyResourcesLikelyCached(config: MonoConfig): boolean {
   const hash = getWebAssemblyResourceHash(config);
   if (!hash) {
@@ -530,6 +536,7 @@ function areWebAssemblyResourcesLikelyCached(config: MonoConfig): boolean {
 function cacheWebAssemblyResourceHash(config: MonoConfig) {
   const hash = getWebAssemblyResourceHash(config);
   if (hash) {
+    window.localStorage.setItem(cacheKey, hash.value);
     window.localStorage.setItem(hash.key, hash.value);
   }
 }

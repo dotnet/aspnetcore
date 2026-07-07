@@ -105,8 +105,6 @@ app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages:
 app.UseHttpsRedirection();
 
 #endif
-app.UseAntiforgery();
-
 app.MapStaticAssets();
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()

@@ -34,7 +34,7 @@ public class SessionStorageTempDataProviderTest
     }
 
     [Fact]
-    public void Save_RemovesSessionKey_WhenNoDataToSave()
+    public void Save_RemovesSessionEntry_WhenNoDataToSave()
     {
         var httpContext = CreateHttpContext();
         var session = (TestSession)httpContext.Session;
@@ -44,6 +44,7 @@ public class SessionStorageTempDataProviderTest
         _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save());
 
         Assert.DoesNotContain(SessionStorageTempDataProvider.TempDataSessionStateKey, session.Keys);
+        Assert.Empty(_sessionStateTempDataProvider.LoadTempData(httpContext));
     }
 
     [Fact]

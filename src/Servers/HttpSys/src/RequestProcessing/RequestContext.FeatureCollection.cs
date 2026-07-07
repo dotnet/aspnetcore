@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -38,7 +39,8 @@ internal partial class RequestContext :
     IHttpResetFeature,
     IHttpSysRequestDelegationFeature,
     IHttpSysRequestPropertyFeature,
-    IConnectionLifetimeNotificationFeature
+    IConnectionLifetimeNotificationFeature,
+    IConnectionEndPointFeature
 {
     private IFeatureCollection? _features;
     private bool _enableResponseCaching;
@@ -761,5 +763,52 @@ internal partial class RequestContext :
     public bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned)
     {
         return TryGetTlsClientHelloMessageBytes(tlsClientHelloBytesDestination, out bytesReturned);
+    }
+
+    public bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned)
+    {
+        return TryGetRequestPropertyCore((HTTP_REQUEST_PROPERTY)propertyId, qualifier, output, out bytesReturned);
+    }
+
+    EndPoint? IConnectionEndPointFeature.LocalEndPoint
+    {
+        get
+        {
+            var localIp = ((IHttpConnectionFeature)this).LocalIpAddress;
+            if (localIp is not null)
+            {
+                return new IPEndPoint(localIp, ((IHttpConnectionFeature)this).LocalPort);
+            }
+            return null;
+        }
+        set
+        {
+            if (value is IPEndPoint localIPEndPoint)
+            {
+                ((IHttpConnectionFeature)this).LocalIpAddress = localIPEndPoint.Address;
+                ((IHttpConnectionFeature)this).LocalPort = localIPEndPoint.Port;
+            }
+        }
+    }
+
+    EndPoint? IConnectionEndPointFeature.RemoteEndPoint
+    {
+        get
+        {
+            var remoteIp = ((IHttpConnectionFeature)this).RemoteIpAddress;
+            if (remoteIp is not null)
+            {
+                return new IPEndPoint(remoteIp, ((IHttpConnectionFeature)this).RemotePort);
+            }
+            return null;
+        }
+        set
+        {
+            if (value is IPEndPoint remoteIPEndPoint)
+            {
+                ((IHttpConnectionFeature)this).RemoteIpAddress = remoteIPEndPoint.Address;
+                ((IHttpConnectionFeature)this).RemotePort = remoteIPEndPoint.Port;
+            }
+        }
     }
 }

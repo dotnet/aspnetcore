@@ -15,7 +15,11 @@ public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnect
     /// <summary>
     /// Initializes a new instance of <see cref="PushedAuthorizationContext"/>.
     /// </summary>
-    /// <inheritdoc />
+    /// <param name="context">The HTTP request context.</param>
+    /// <param name="scheme">The authentication scheme.</param>
+    /// <param name="options">The OpenID Connect authentication options.</param>
+    /// <param name="parRequest">The pushed authorization request message.</param>
+    /// <param name="properties">The authentication properties for the request.</param>
     public PushedAuthorizationContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, OpenIdConnectMessage parRequest, AuthenticationProperties properties)
         : base(context, scheme, options, properties)
     {
@@ -103,4 +107,3 @@ public sealed class PushedAuthorizationContext : PropertiesContext<OpenIdConnect
         HandledClientAuthentication = true;
     }
 }
-

@@ -13,6 +13,7 @@
     "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
     "src/Components/WebAssembly/Authentication.Msal/src/Interop",
     "src/Components/CustomElements/src/js",
+    "src/Components/Server.AutoPause/src/js",
     "src/ProjectTemplates/test/Templates.Tests"
   ],
   "scripts": {
@@ -27,7 +28,14 @@
     "got": "^11.8.2",
     "http-cache-semantics": "^4.1.1",
     "semver-regex": "^3.1.3",
-    "saucelabs": ">=7.2.0"
+    "saucelabs": ">=7.2.0",
+    "tar": ">=7.5.11",
+    "serialize-javascript": ">=7.0.5",
+    "@tootallnate/once": ">=3.0.1",
+    "oidc-client": {
+      "serialize-javascript": ">=7.0.5"
+    },
+    "lodash": ">=4.18.0"
   },
   "engines": {
     "node": ">=20.9.0",

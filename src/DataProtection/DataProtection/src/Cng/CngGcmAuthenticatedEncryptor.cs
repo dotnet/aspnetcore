@@ -152,8 +152,8 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
 
 #if NET
         byte[] rentedBuffer = null!;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
@@ -301,8 +301,8 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         var outputSize = (int)(preBufferSize + size + postBufferSize);
 #if NET
         byte[] rentedBuffer = null!;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);

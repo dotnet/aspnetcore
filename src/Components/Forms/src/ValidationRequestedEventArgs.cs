@@ -19,4 +19,23 @@ public sealed class ValidationRequestedEventArgs : EventArgs
     public ValidationRequestedEventArgs()
     {
     }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="ValidationRequestedEventArgs"/> with the specified
+    /// <see cref="System.Threading.CancellationToken"/>.
+    /// </summary>
+    /// <param name="cancellationToken">A token that signals when the caller has requested
+    /// cancellation of the in-flight async validation pass.</param>
+    public ValidationRequestedEventArgs(CancellationToken cancellationToken)
+    {
+        CancellationToken = cancellationToken;
+    }
+
+    /// <summary>
+    /// Gets a token that signals when the caller has requested cancellation of the in-flight
+    /// async validation pass. Synchronous handlers can ignore this; async handlers that perform
+    /// long-running work (database lookups, remote API calls) should pass it to their downstream
+    /// APIs so the work can be aborted promptly.
+    /// </summary>
+    public CancellationToken CancellationToken { get; }
 }

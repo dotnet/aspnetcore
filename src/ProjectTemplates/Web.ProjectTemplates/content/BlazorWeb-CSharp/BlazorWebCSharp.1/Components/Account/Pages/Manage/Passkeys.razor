@@ -13,7 +13,7 @@
 
 <h3>Manage your passkeys</h3>
 
-<StatusMessage />
+<StatusMessage Message="@message" />
 
 @if (currentPasskeys is { Count: > 0 })
 {
@@ -65,11 +65,15 @@ else
 @code {
     private const int MaxPasskeyCount = 100;
 
+    private string? message;
     private ApplicationUser? user;
     private IList<UserPasskeyInfo>? currentPasskeys;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
 
     [SupplyParameterFromForm]
     private string? Action { get; set; }
@@ -82,12 +86,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
         Input ??= new();
 
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
         currentPasskeys = await UserManager.GetPasskeysAsync(user);
@@ -97,32 +103,36 @@ else
     {
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
         if (!string.IsNullOrEmpty(Input.Error))
         {
-            RedirectManager.RedirectToCurrentPageWithStatus($"Error: {Input.Error}", HttpContext);
+            IdentityStatusMessage = $"Error: {Input.Error}";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
         if (string.IsNullOrEmpty(Input.CredentialJson))
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: The browser did not provide a passkey.", HttpContext);
+            IdentityStatusMessage = "Error: The browser did not provide a passkey.";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
         if (currentPasskeys!.Count >= MaxPasskeyCount)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus($"Error: You have reached the maximum number of allowed passkeys.", HttpContext);
+            IdentityStatusMessage = "Error: You have reached the maximum number of allowed passkeys.";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
         var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson);
         if (!attestationResult.Succeeded)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}", HttpContext);
+            IdentityStatusMessage = $"Error: Could not add the passkey: {attestationResult.Failure.Message}";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
@@ -135,14 +145,16 @@ else
         var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
         if (!addPasskeyResult.Succeeded)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: The passkey could not be added to your account.", HttpContext);
+            IdentityStatusMessage = "Error: The passkey could not be added to your account.";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
         // If a name was inferred, go back to the passkeys list
         if (!string.IsNullOrEmpty(attestationResult.Passkey.Name))
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Your passkey was added successfully.", HttpContext);
+            IdentityStatusMessage = "Your passkey was added successfully.";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
@@ -162,7 +174,8 @@ else
                 await DeletePasskey();
                 break;
             default:
-                RedirectManager.RedirectToCurrentPageWithStatus($"Error: Unknown action '{Action}'.", HttpContext);
+                IdentityStatusMessage = $"Error: Unknown action '{Action}'.";
+                RedirectManager.RedirectToCurrentPage();
                 break;
         }
     }
@@ -171,7 +184,7 @@ else
     {
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -182,17 +195,20 @@ else
         }
         catch (FormatException)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: The specified passkey ID had an invalid format.", HttpContext);
+            IdentityStatusMessage = "Error: The specified passkey ID had an invalid format.";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
         var result = await UserManager.RemovePasskeyAsync(user, credentialId);
         if (!result.Succeeded)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: The passkey could not be deleted.", HttpContext);
+            IdentityStatusMessage = "Error: The passkey could not be deleted.";
+            RedirectManager.RedirectToCurrentPage();
             return;
         }
 
-        RedirectManager.RedirectToCurrentPageWithStatus("Passkey deleted successfully.", HttpContext);
+        IdentityStatusMessage = "Passkey deleted successfully.";
+        RedirectManager.RedirectToCurrentPage();
     }
 }

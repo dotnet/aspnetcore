@@ -265,8 +265,26 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
             }
 
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     public IHeaderDictionary ResponseHeaders { get; set; } = default!;
@@ -539,7 +557,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         IncrementRequestHeadersCount();
 
-        // This method should be overriden in specific implementations and the base should be
+        // This method should be overridden in specific implementations and the base should be
         // called to validate the header count.
     }
 
@@ -575,7 +593,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         try
         {
-            // We run the request processing loop in a seperate async method so per connection
+            // We run the request processing loop in a separate async method so per connection
             // exception handling doesn't complicate the generated asm for the loop.
             await ProcessRequests(application);
         }

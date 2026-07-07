@@ -86,22 +86,28 @@ internal sealed class CreateCommand
 
             cmd.OnExecute(() =>
             {
+                if (!cmd.TryGetProjectOrFilePath(out var projectPath, out var isFileBasedApp))
+                {
+                    return 1;
+                }
+
                 var (options, isValid, optionsString, appsettingsFile) = ValidateArguments(
-                    cmd.Reporter, cmd.ProjectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption, appsettingsFileOption);
+                    cmd.Reporter, projectPath, isFileBasedApp, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption, appsettingsFileOption);
 
                 if (!isValid)
                 {
                     return 1;
                 }
 
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, cmd.OutputOption.Value(), appsettingsFile, program);
+                return Execute(cmd.Reporter, projectPath, isFileBasedApp, options, optionsString, cmd.OutputOption.Value(), appsettingsFile, program);
             });
         });
     }
 
     private static (JwtCreatorOptions, bool, string, string) ValidateArguments(
         IReporter reporter,
-        CommandOption projectOption,
+        string projectPath,
+        bool isFileBasedApp,
         CommandOption schemeNameOption,
         CommandOption nameOption,
         CommandOption audienceOption,
@@ -115,12 +121,8 @@ internal sealed class CreateCommand
         CommandOption appsettingsFileOption)
     {
         var isValid = true;
-        var finder = new MsBuildProjectFinder(Directory.GetCurrentDirectory());
-        var project = finder.FindMsBuildProject(projectOption.Value());
-
-        if (project == null)
+        if (!DevJwtCliHelpers.TryResolveProjectOrFile(projectPath, isFileBasedApp, reporter, out var project))
         {
-            reporter.Error(Resources.ProjectOption_ProjectNotFound);
             isValid = false;
             // Break out early if we haven't been able to resolve a project
             // since we depend on it for the managing of JWT tokens
@@ -237,13 +239,14 @@ internal sealed class CreateCommand
     private static int Execute(
         IReporter reporter,
         string projectPath,
+        bool isFileBasedApp,
         JwtCreatorOptions options,
         string optionsString,
         string outputFormat,
         string appsettingsFile,
         Program program)
     {
-        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, isFileBasedApp, reporter, out var project, out var userSecretsId))
         {
             return 1;
         }
@@ -271,7 +274,7 @@ internal sealed class CreateCommand
                 reporter.Output(jwt.Token);
                 break;
             case "json":
-                reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerOptions.Default));
+                reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerContext.Default.Jwt));
                 break;
             default:
                 reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));

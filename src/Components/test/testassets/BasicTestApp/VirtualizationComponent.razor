@@ -6,7 +6,7 @@
 <p>
     Synchronous:<br />
     <div id="sync-container" style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize Items="@fixedItems" ItemSize="itemSize">
+        <Virtualize Items="@fixedItems" ItemSize="itemSize" OverscanCount="3">
             <div @key="context" id="sync-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </Virtualize>
     </div>
@@ -19,7 +19,7 @@
     <button id="refresh-data-async" @onclick="() => asyncComponent.RefreshDataAsync()">Call RefreshDataAsync</button><br />
     Cancellation count: <span id="cancellation-count">@asyncCancellationCount</span><br />
     <div id="async-container" style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize @ref="asyncComponent" ItemsProvider="GetItemsAsync" ItemSize="itemSize">
+        <Virtualize @ref="asyncComponent" ItemsProvider="GetItemsAsync" ItemSize="itemSize" OverscanCount="3">
             <ItemContent>
                 <div @key="context" id="async-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </ItemContent>
@@ -51,7 +51,7 @@
 <p>
     Slightly incorrect item size:<br />
     <div id="incorrect-size-container" style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize Items="@fixedItems" ItemSize="50">
+        <Virtualize Items="@fixedItems" ItemSize="50" OverscanCount="3">
             <div @key="context" class="incorrect-size-item" style="height: 49px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </Virtualize>
     </div>
@@ -59,7 +59,7 @@
 
 <p id="viewport-as-root">
     Viewport as root:<br />
-    <Virtualize Items="@fixedItems" ItemSize="itemSize">
+    <Virtualize Items="@fixedItems" ItemSize="itemSize" OverscanCount="3">
         <div @key="context" id="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
     </Virtualize>
 </p>
