@@ -1394,9 +1394,7 @@
             "dog": "#/components/schemas/PetDog",
             "pet": "#/components/schemas/PetPet"
           },
-          "x-oas-default-mapping": {
-            "$ref": "#/components/schemas/Pet"
-          }
+          "x-oas-default-mapping": "#/components/schemas/Pet"
         }
       },
       "PetCat": {

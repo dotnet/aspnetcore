@@ -97,38 +97,12 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         Assert.NotNull(actual.Document);
         Assert.NotNull(actual.Diagnostic);
         Assert.NotNull(actual.Diagnostic.Errors);
-        Assert.DoesNotContain(
-            actual.Diagnostic.Errors,
-            error => !IsKnownOpenApiNetDefaultMappingValidationError(documentName, version, error));
+        Assert.Empty(actual.Diagnostic.Errors);
 
         var ruleSet = ValidationRuleSet.GetDefaultRuleSet();
 
         var errors = actual.Document.Validate(ruleSet);
-        Assert.DoesNotContain(
-            errors,
-            error => !IsKnownOpenApiNetDefaultMappingValidationError(documentName, version, error));
-    }
-
-    private static bool IsKnownOpenApiNetDefaultMappingValidationError(string documentName, OpenApiSpecVersion version, object error)
-    {
-        if (documentName is not "schemas-by-ref")
-        {
-            return false;
-        }
-
-        var errorMessage = error.ToString();
-        return version switch
-        {
-            OpenApiSpecVersion.OpenApi3_1 => string.Equals(
-                errorMessage,
-                "Expected scalar value. [#/components/schemas/Pet/discriminator/x-oas-default-mapping]",
-                StringComparison.Ordinal),
-            OpenApiSpecVersion.OpenApi3_2 => string.Equals(
-                errorMessage,
-                "Expected scalar value. [#/components/schemas/Pet/discriminator/defaultMapping]",
-                StringComparison.Ordinal),
-            _ => false
-        };
+        Assert.Empty(errors);
     }
 
     [Theory] // See https://github.com/dotnet/aspnetcore/issues/63090
@@ -165,7 +139,11 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         var scopedServiceProvider = fixture.Services.CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
 
-        return await document.SerializeAsJsonAsync(version);
+        var writer = new StringWriter();
+        var openApiWriter = new OpenApiJsonWriter(writer);
+        await OpenApiDocumentService.SerializeAsync(document, openApiWriter, version);
+
+        return writer.ToString();
     }
 
     private sealed class OpenApiSchemaReferenceVisitor(

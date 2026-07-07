@@ -1394,9 +1394,7 @@
             "dog": "#/components/schemas/PetDog",
             "pet": "#/components/schemas/PetPet"
           },
-          "defaultMapping": {
-            "$ref": "#/components/schemas/Pet"
-          }
+          "defaultMapping": "#/components/schemas/Pet"
         }
       },
       "PetCat": {

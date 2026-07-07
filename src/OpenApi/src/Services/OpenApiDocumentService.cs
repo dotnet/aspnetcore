@@ -42,6 +42,8 @@ internal sealed class OpenApiDocumentService(
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
+    private const string OpenApi31DiscriminatorDefaultMappingKeyword = "x-oas-default-mapping";
+    private const string OpenApi32DiscriminatorDefaultMappingKeyword = "defaultMapping";
 
     /// <summary>
     /// Cache of <see cref="OpenApiOperationTransformerContext"/> instances keyed by the
@@ -99,6 +101,85 @@ internal sealed class OpenApiDocumentService(
                 StringComparer.Ordinal);
         }
         return document;
+    }
+
+    internal static async Task SerializeAsync(OpenApiDocument document, OpenApiWriterBase writer, OpenApiSpecVersion openApiSpecVersion, CancellationToken cancellationToken = default)
+    {
+        // OpenAPI.NET represents the discriminator default mapping as a schema reference, but the
+        // serialized document needs a scalar reference string under the version-specific keyword.
+        var discriminatorDefaultMappings = ApplyDiscriminatorDefaultMappings(document, openApiSpecVersion);
+        try
+        {
+            await document.SerializeAsync(writer, openApiSpecVersion, cancellationToken);
+        }
+        finally
+        {
+            foreach (var discriminatorDefaultMapping in discriminatorDefaultMappings)
+            {
+                discriminatorDefaultMapping.Restore();
+            }
+        }
+    }
+
+    private static List<DiscriminatorDefaultMappingState> ApplyDiscriminatorDefaultMappings(OpenApiDocument document, OpenApiSpecVersion openApiSpecVersion)
+    {
+        var defaultMappingKeyword = openApiSpecVersion switch
+        {
+            OpenApiSpecVersion.OpenApi3_1 => OpenApi31DiscriminatorDefaultMappingKeyword,
+            OpenApiSpecVersion.OpenApi3_2 => OpenApi32DiscriminatorDefaultMappingKeyword,
+            _ => null
+        };
+
+        if (defaultMappingKeyword is null)
+        {
+            return [];
+        }
+
+        var visitor = new DiscriminatorDefaultMappingVisitor(defaultMappingKeyword);
+        var walker = new OpenApiWalker(visitor);
+        walker.Walk(document);
+
+        return visitor.DefaultMappings;
+    }
+
+    private sealed class DiscriminatorDefaultMappingVisitor(string defaultMappingKeyword) : OpenApiVisitorBase
+    {
+        public List<DiscriminatorDefaultMappingState> DefaultMappings { get; } = [];
+
+        public override void Visit(IOpenApiSchema schema)
+        {
+            if (schema is not OpenApiSchema { Discriminator: { DefaultMapping: { } defaultMapping } discriminator })
+            {
+                return;
+            }
+
+            var defaultMappingReference = defaultMapping.Reference.ReferenceV3 ??
+                throw new InvalidOperationException("The discriminator default mapping must resolve to an OpenAPI v3 schema reference.");
+
+            DefaultMappings.Add(new(discriminator, defaultMapping));
+
+            var extensions = discriminator.Extensions is null
+                ? new Dictionary<string, IOpenApiExtension>()
+                : new Dictionary<string, IOpenApiExtension>(discriminator.Extensions);
+            extensions.Remove(OpenApi31DiscriminatorDefaultMappingKeyword);
+            extensions.Remove(OpenApi32DiscriminatorDefaultMappingKeyword);
+            extensions[defaultMappingKeyword] = new JsonNodeExtension(JsonValue.Create(defaultMappingReference)!);
+            discriminator.DefaultMapping = null;
+            discriminator.Extensions = extensions;
+        }
+    }
+
+    private sealed class DiscriminatorDefaultMappingState(
+        OpenApiDiscriminator discriminator,
+        OpenApiSchemaReference defaultMapping)
+    {
+        private readonly IDictionary<string, IOpenApiExtension>? _extensions = discriminator.Extensions;
+
+        public void Restore()
+        {
+            discriminator.DefaultMapping = defaultMapping;
+            discriminator.Extensions = _extensions;
+        }
     }
 
     private async Task ApplyTransformersAsync(OpenApiDocument document, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
