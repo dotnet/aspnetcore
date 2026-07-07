@@ -356,32 +356,20 @@ internal sealed class OpenApiDocumentService(
     private static HashSet<OpenApiTagReference> GetTags(ApiDescription description, OpenApiDocument document)
     {
         var actionDescriptor = description.ActionDescriptor;
+        document.Tags ??= new SortedSet<OpenApiTag>(_openApiTagComparer);
         if (actionDescriptor.EndpointMetadata?.OfType<ITagsMetadata>().LastOrDefault() is { } tagsMetadata)
         {
             HashSet<OpenApiTagReference> tags = [];
             foreach (var tag in tagsMetadata.Tags)
             {
-                document.Tags = document.Tags switch
-                {
-                    null => new SortedSet<OpenApiTag>(_openApiTagComparer),
-                    SortedSet<OpenApiTag> sortedTags => sortedTags,
-                    _ => new SortedSet<OpenApiTag>(document.Tags, _openApiTagComparer)
-                };
                 document.Tags.Add(new OpenApiTag { Name = tag });
                 tags.Add(new OpenApiTagReference(tag, document));
-
             }
             return tags;
         }
         // If no tags are specified, use the controller name as the tag. This effectively
         // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
         var controllerName = description.ActionDescriptor.RouteValues["controller"];
-        document.Tags = document.Tags switch
-        {
-            null => new SortedSet<OpenApiTag>(_openApiTagComparer),
-            SortedSet<OpenApiTag> sortedTags => sortedTags,
-            _ => new SortedSet<OpenApiTag>(document.Tags, _openApiTagComparer)
-        };
         document.Tags.Add(new OpenApiTag { Name = controllerName });
         return controllerName is not null ? [new(controllerName, document)] : [];
     }
