@@ -99,6 +99,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         }
 
         // Per RFC 9110 §8.6, Content-Length is 1*DIGIT: only ASCII digits are allowed.
+        // https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6
         // Utf8Parser.TryParse accepts a leading '+' or '-' sign, so checking first symbol is ASCII digit
         long parsed = -1;
         if (value.IsEmpty ||
@@ -128,6 +129,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         long parsed = -1;
 
         // Per RFC 9110 §8.6, Content-Length is 1*DIGIT. NumberStyles.None
+        // https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6
         // disallows leading signs and whitespace that NumberStyles.Integer would accept.
         if (numChars > 19 ||
             !long.TryParse(decodedChars.Slice(0, numChars), NumberStyles.None, CultureInfo.InvariantCulture, out parsed) ||
