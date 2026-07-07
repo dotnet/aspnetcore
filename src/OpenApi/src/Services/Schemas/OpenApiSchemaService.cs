@@ -359,18 +359,20 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.Properties is not null)
         {
-            foreach (var property in schema.Properties)
+            // Materialize the collection first because IDictionary<TKey, TValue> implementations
+            // (e.g. SortedDictionary) may disallow modifying the collection while enumerating it.
+            foreach (var (key, propertyValue) in schema.Properties.ToList())
             {
-                var resolvedProperty = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
-                if (property.Value is OpenApiSchema targetSchema &&
+                var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
+                if (propertyValue is OpenApiSchema targetSchema &&
                     targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
                     isNullableProperty is true)
                 {
-                    schema.Properties[property.Key] = resolvedProperty.CreateOneOfNullableWrapper();
+                    schema.Properties[key] = resolvedProperty.CreateOneOfNullableWrapper();
                 }
                 else
                 {
-                    schema.Properties[property.Key] = resolvedProperty;
+                    schema.Properties[key] = resolvedProperty;
                 }
             }
         }
