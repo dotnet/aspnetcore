@@ -1711,6 +1711,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
     public void NavigationManagerNavigateToSameUrlWithHash_ScrollsToElementOnTheSamePage()
     {
         SetUrlViaPushState("/");
@@ -1727,6 +1728,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
     public void NavigationManagerNavigateToSameUrlWithQueryAndHash_ScrollsToElementOnTheSamePage()
     {
         SetUrlViaPushState("/");
@@ -1743,6 +1745,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
     public void NavigationManagerNavigateToSameUrlWithParamAndHash_ScrollsToElementOnTheSamePage()
     {
         SetUrlViaPushState("/");
