@@ -328,6 +328,8 @@ internal sealed class OpenApiGenerator
         var metadataList = metadata.GetOrderedMetadata<ITagsMetadata>();
         var document = new OpenApiDocument();
 
+        document.Tags ??= new SortedSet<OpenApiTag>(_openApiTagComparer);
+
         if (metadataList.Count > 0)
         {
             var tags = new HashSet<OpenApiTagReference>();
@@ -336,12 +338,6 @@ internal sealed class OpenApiGenerator
             {
                 foreach (var tag in metadataItem.Tags)
                 {
-                    document.Tags = document.Tags switch
-                    {
-                        null => new SortedSet<OpenApiTag>(_openApiTagComparer),
-                        SortedSet<OpenApiTag> sortedTags => sortedTags,
-                        _ => new SortedSet<OpenApiTag>(document.Tags, _openApiTagComparer)
-                    };
                     document.Tags.Add(new OpenApiTag { Name = tag });
                     tags.Add(new OpenApiTagReference(tag, document));
                 }
@@ -363,12 +359,6 @@ internal sealed class OpenApiGenerator
             controllerName = _environment?.ApplicationName ?? string.Empty;
         }
 
-        document.Tags = document.Tags switch
-        {
-            null => new SortedSet<OpenApiTag>(_openApiTagComparer),
-            SortedSet<OpenApiTag> sortedTags => sortedTags,
-            _ => new SortedSet<OpenApiTag>(document.Tags, _openApiTagComparer)
-        };
         document.Tags.Add(new OpenApiTag { Name = controllerName });
         return [new(controllerName, document)];
     }
