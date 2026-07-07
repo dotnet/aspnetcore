@@ -45,15 +45,6 @@ public interface ITlsConnectionFeature
     /// specification and Microsoft's "Extended Protection for Authentication"
     /// documentation for the Windows usage model.
     /// </para>
-    /// <para>
-    /// The returned bytes form the same SSPI/GSS-API compatible
-    /// <c>SEC_CHANNEL_BINDINGS</c> blob produced by
-    /// <see cref="System.Net.TransportContext.GetChannelBinding(ChannelBindingKind)"/>
-    /// and can be wrapped in a <see cref="ChannelBinding"/> to be passed to
-    /// <c>AcceptSecurityContext</c>, or forwarded to a backend server (for example
-    /// by a TLS-terminating reverse proxy) so the backend can validate authentication
-    /// relayed over the front-end TLS channel.
-    /// </para>
     /// </remarks>
     bool TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
     {
