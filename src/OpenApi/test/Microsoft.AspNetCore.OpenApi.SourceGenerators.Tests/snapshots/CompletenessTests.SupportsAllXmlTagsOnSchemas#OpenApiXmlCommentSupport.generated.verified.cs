@@ -475,7 +475,8 @@ T", null, null, false, null, null, null));
                     foreach (var parameterComment in methodComment.Parameters)
                     {
                         var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
-                        var operationParameter = GetOperationParameter(operation, parameterInfo, parameterComment);
+                        var modelNames = GetModelNames(parameterInfo, parameterInfo?.Name ?? parameterComment.Name);
+                        var operationParameter = GetOperationParameter(operation, modelNames);
                         if (operationParameter is not null)
                         {
                             var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
@@ -489,7 +490,7 @@ T", null, null, false, null, null, null));
                         // Only fall back to the request body when the parameter is actually bound to it.
                         // This avoids applying documentation for parameters that aren't part of the
                         // OpenAPI surface (e.g. a `CancellationToken`) to the request body.
-                        else if (IsRequestBodyParameter(context, parameterInfo, parameterComment))
+                        else if (IsRequestBodyParameter(context, modelNames))
                         {
                             var requestBody = operation.RequestBody;
                             if (requestBody is not null)
@@ -545,7 +546,8 @@ T", null, null, false, null, null, null));
                     }
                     if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                     {
-                        var parameter = GetOperationParameter(operation, propertyInfo);
+                        var modelNames = GetModelNames(propertyInfo, propertyInfo.Name);
+                        var parameter = GetOperationParameter(operation, modelNames);
                         var description = propertyComment.Summary;
                         if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
                         {
@@ -557,7 +559,8 @@ T", null, null, false, null, null, null));
                         }
                         if (parameter is null)
                         {
-                            if (operation.RequestBody is not null)
+                            // Only fall back to the request body when the property is actually bound to it.
+                            if (IsRequestBodyParameter(parameterDescription.Source) && operation.RequestBody is not null)
                             {
                                 operation.RequestBody.Description = description;
                                 if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -592,25 +595,13 @@ T", null, null, false, null, null, null));
             return Task.CompletedTask;
         }
 
-        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, PropertyInfo propertyInfo)
-        {
-            return GetOperationParameter(operation, propertyInfo, propertyInfo?.Name);
-        }
-
-        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ParameterInfo? parameterInfo, XmlParameterComment comment)
-        {
-            return GetOperationParameter(operation, parameterInfo, parameterInfo?.Name ?? comment.Name);
-        }
-
-        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ICustomAttributeProvider? attributeProvider, string? name)
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, IReadOnlySet<string> modelNames)
         {
             var parameters = operation.Parameters;
             if (parameters is null || parameters.Count == 0)
             {
                 return null;
             }
-
-            var modelNames = GetModelNames(attributeProvider, name);
 
             foreach (var parameter in parameters)
             {
@@ -630,13 +621,11 @@ T", null, null, false, null, null, null));
             return null;
         }
 
-        private static bool IsRequestBodyParameter(OpenApiOperationTransformerContext context, ParameterInfo? parameterInfo, XmlParameterComment comment)
+        private static bool IsRequestBodyParameter(OpenApiOperationTransformerContext context, IReadOnlySet<string> modelNames)
         {
-            var modelNames = GetModelNames(parameterInfo, parameterInfo?.Name ?? comment.Name);
-
             foreach (var parameterDescription in context.Description.ParameterDescriptions)
             {
-                if (parameterDescription.Source == BindingSource.Body
+                if (IsRequestBodyParameter(parameterDescription.Source)
                     && parameterDescription.Name is { } parameterName
                     && modelNames.Contains(parameterName))
                 {
@@ -646,6 +635,11 @@ T", null, null, false, null, null, null));
 
             return false;
         }
+
+        private static bool IsRequestBodyParameter(BindingSource? source)
+            => source == BindingSource.Body
+                || source == BindingSource.Form
+                || source == BindingSource.FormFile;
 
         private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider? attributeProvider, string? name)
         {

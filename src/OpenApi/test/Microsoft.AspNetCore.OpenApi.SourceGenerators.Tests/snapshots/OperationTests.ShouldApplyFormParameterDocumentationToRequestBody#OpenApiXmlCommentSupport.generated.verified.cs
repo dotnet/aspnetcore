@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new Dictionary<string, XmlComment>();
 
-            cache.Add(@"M:TestController.Create(Person,ITestService)", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"service", @"The service used to create the resource.", null, false)], null));
+            cache.Add(@"M:TestController.Create(System.String)", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the resource to create.", null, false)], null));
 
             return cache;
         }
