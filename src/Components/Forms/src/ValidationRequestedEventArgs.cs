@@ -48,7 +48,7 @@ public sealed class ValidationRequestedEventArgs : EventArgs
         {
             throw new InvalidOperationException(
                 $"Asynchronous validation is not supported during a synchronous {nameof(EditContext)}.{nameof(EditContext.Validate)} call. " +
-                $"Call {nameof(EditContext.ValidateAsync)} instead, or guard the handler with {nameof(ValidationRequestedEventArgs)}.{nameof(IsAsync)}.");
+                $"Call {nameof(EditContext.ValidateAsync)} instead.");
         }
 
         (_asyncValidators ??= []).Add(validator);
