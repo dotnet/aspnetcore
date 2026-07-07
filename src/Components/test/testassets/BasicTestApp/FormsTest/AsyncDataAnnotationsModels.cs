@@ -106,12 +106,18 @@ public sealed class AsyncValidationResolver : IValidatableInfoResolver
     {
         if (type == typeof(MevPathModel))
         {
-            validatableTypeInfo = new ModelTypeInfo(typeof(MevPathModel),
+            validatableTypeInfo = new ModelTypeInfo(typeof(MevPathModel), []);
+            return true;
+        }
+
+        if (type == typeof(AsyncRegistrationModelBase))
+        {
+            validatableTypeInfo = new ModelTypeInfo(typeof(AsyncRegistrationModelBase),
             [
                 new ModelPropertyInfo(
-                    typeof(MevPathModel),
+                    typeof(AsyncRegistrationModelBase),
                     typeof(string),
-                    nameof(MevPathModel.Username),
+                    nameof(AsyncRegistrationModelBase.Username),
                     [new RequiredAttribute { ErrorMessage = "Username is required." }, new AsyncAvailabilityAttribute()]),
             ]);
             return true;
