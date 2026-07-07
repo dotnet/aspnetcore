@@ -47,6 +47,41 @@ public class MiddlewareTests
         Assert.Equal("/article.aspx?id=10&title=hey", response.Headers.Location.OriginalString);
     }
 
+    [Theory]
+    [InlineData("legacy//example.com")]
+    [InlineData("legacy///example.com")]
+    [InlineData(@"legacy/\example.com")]
+    public async Task Invoke_RedirectCollapsesSchemeRelativeBackReference(string requestPath)
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Collapse"">
+                <match url=""^legacy/(.*)"" />
+                <action type=""Redirect"" url=""/{R:1}"" redirectType=""Found"" />
+                </rule>
+                </rules>
+                </rewrite>"));
+        using var host = new HostBuilder()
+             .ConfigureWebHost(webHostBuilder =>
+             {
+                 webHostBuilder
+                 .UseTestServer()
+                 .Configure(app =>
+                 {
+                     app.UseRewriter(options);
+                     app.Run(context => context.Response.WriteAsync(context.Response.Headers.Location));
+                 });
+             }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetAsync(requestPath);
+
+        Assert.Equal("/example.com", response.Headers.Location.OriginalString);
+    }
+
     [Fact]
     public async Task Invoke_RewritePathToPathAndQuery()
     {

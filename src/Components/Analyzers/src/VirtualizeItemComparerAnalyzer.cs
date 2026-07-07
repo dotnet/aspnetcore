@@ -38,95 +38,99 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            compilationContext.RegisterOperationBlockStartAction(blockContext =>
+            compilationContext.RegisterOperationBlockAction(blockContext =>
             {
                 var componentStack = new Stack<ComponentState>();
                 var completedVirtualizeComponents = new List<ComponentState>();
 
-                blockContext.RegisterOperationAction(operationContext =>
+                foreach (var operationBlock in blockContext.OperationBlocks)
                 {
-                    var invocation = (IInvocationOperation)operationContext.Operation;
-                    var targetMethod = invocation.TargetMethod;
-
-                    if (!SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, renderTreeBuilderType))
+                    foreach (var operation in operationBlock.DescendantsAndSelf())
                     {
-                        return;
-                    }
+                        if (operation is not IInvocationOperation invocation)
+                        {
+                            continue;
+                        }
 
-                    switch (targetMethod.Name)
-                    {
-                        case "OpenComponent":
-                            if (targetMethod.IsGenericMethod && targetMethod.TypeArguments.Length == 1)
-                            {
-                                var typeArg = targetMethod.TypeArguments[0];
-                                var originalDef = typeArg is INamedTypeSymbol namedType && namedType.IsGenericType
-                                    ? namedType.OriginalDefinition
-                                    : typeArg;
+                        var targetMethod = invocation.TargetMethod;
 
-                                if (SymbolEqualityComparer.Default.Equals(originalDef, virtualizeType))
+                        if (!SymbolEqualityComparer.Default.Equals(targetMethod.ContainingType, renderTreeBuilderType))
+                        {
+                            continue;
+                        }
+
+                        switch (targetMethod.Name)
+                        {
+                            case "OpenComponent":
+                                if (targetMethod.IsGenericMethod && targetMethod.TypeArguments.Length == 1)
                                 {
-                                    componentStack.Push(new ComponentState { IsVirtualize = true });
+                                    var typeArg = targetMethod.TypeArguments[0];
+                                    var originalDef = typeArg is INamedTypeSymbol namedType && namedType.IsGenericType
+                                        ? namedType.OriginalDefinition
+                                        : typeArg;
+
+                                    if (SymbolEqualityComparer.Default.Equals(originalDef, virtualizeType))
+                                    {
+                                        componentStack.Push(new ComponentState { IsVirtualize = true });
+                                    }
+                                    else
+                                    {
+                                        componentStack.Push(new ComponentState { IsVirtualize = false });
+                                    }
                                 }
                                 else
                                 {
                                     componentStack.Push(new ComponentState { IsVirtualize = false });
                                 }
-                            }
-                            else
-                            {
-                                componentStack.Push(new ComponentState { IsVirtualize = false });
-                            }
-                            break;
+                                break;
 
-                        case "AddComponentParameter":
-                            if (componentStack.Count > 0 && componentStack.Peek().IsVirtualize)
-                            {
-                                if (invocation.Arguments.Length >= 2)
+                            case "AddComponentParameter":
+                                if (componentStack.Count > 0 && componentStack.Peek().IsVirtualize)
                                 {
-                                    var nameArg = invocation.Arguments[1];
-                                    if (nameArg.Value.ConstantValue.HasValue &&
-                                        nameArg.Value.ConstantValue.Value is string paramName)
+                                    if (invocation.Arguments.Length >= 2)
                                     {
-                                        var state = componentStack.Peek();
-                                        if (paramName == "ItemsProvider")
+                                        var nameArg = invocation.Arguments[1];
+                                        if (nameArg.Value.ConstantValue.HasValue &&
+                                            nameArg.Value.ConstantValue.Value is string paramName)
                                         {
-                                            state.HasItemsProvider = true;
-                                            state.ItemsProviderLocation = invocation.Syntax.GetLocation();
-                                        }
-                                        else if (paramName == "ItemComparer")
-                                        {
-                                            state.HasItemComparer = true;
+                                            var state = componentStack.Peek();
+                                            if (paramName == "ItemsProvider")
+                                            {
+                                                state.HasItemsProvider = true;
+                                                state.ItemsProviderLocation = invocation.Syntax.GetLocation();
+                                            }
+                                            else if (paramName == "ItemComparer")
+                                            {
+                                                state.HasItemComparer = true;
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            break;
+                                break;
 
-                        case "CloseComponent":
-                            if (componentStack.Count > 0)
-                            {
-                                var state = componentStack.Pop();
-                                if (state.IsVirtualize)
+                            case "CloseComponent":
+                                if (componentStack.Count > 0)
                                 {
-                                    completedVirtualizeComponents.Add(state);
+                                    var state = componentStack.Pop();
+                                    if (state.IsVirtualize)
+                                    {
+                                        completedVirtualizeComponents.Add(state);
+                                    }
                                 }
-                            }
-                            break;
-                    }
-                }, OperationKind.Invocation);
-
-                blockContext.RegisterOperationBlockEndAction(endContext =>
-                {
-                    foreach (var state in completedVirtualizeComponents)
-                    {
-                        if (state.HasItemsProvider && !state.HasItemComparer && state.ItemsProviderLocation != null)
-                        {
-                            endContext.ReportDiagnostic(Diagnostic.Create(
-                                DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemComparer,
-                                state.ItemsProviderLocation));
+                                break;
                         }
                     }
-                });
+                }
+
+                foreach (var state in completedVirtualizeComponents)
+                {
+                    if (state.HasItemsProvider && !state.HasItemComparer && state.ItemsProviderLocation is not null)
+                    {
+                        blockContext.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemComparer,
+                            state.ItemsProviderLocation));
+                    }
+                }
             });
         });
     }

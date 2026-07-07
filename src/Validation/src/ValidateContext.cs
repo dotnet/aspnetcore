@@ -228,6 +228,24 @@ public sealed class ValidateContext
         }
     }
 
+    internal void ValidateAllAttributesSynchronously(
+        object? value,
+        object? container,
+        IValidationErrorReporter reporter)
+    {
+        var validationAttributes = reporter.GetValidationAttributes();
+        for (var i = 0; i < validationAttributes.Length; i++)
+        {
+            var attribute = validationAttributes[i];
+
+            var result = attribute.GetValidationResult(value, ValidationContext);
+            if (result is not null && result != ValidationResult.Success)
+            {
+                reporter.ReportError(this, container, attribute, result);
+            }
+        }
+    }
+
     private bool ValidateSynchronousOnly(
         ValidationAttribute[] validationAttributes,
         object? value,

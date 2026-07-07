@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
@@ -426,7 +427,7 @@ internal sealed partial class ComponentHub : Hub
     }
 
     // Client initiated pauses work as follows:
-    // * The client calls PauseCircuit, we dissasociate the circuit from the connection.
+    // * The client calls PauseCircuit, we disassociate the circuit from the connection.
     // * We trigger the circuit pause to collect the current root components and dispose the current circuit.
     // * We push the current root components and application state to the client.
     //   * If that succeeds, the client receives the state and we are done.
@@ -434,7 +435,7 @@ internal sealed partial class ComponentHub : Hub
     // * The client will disconnect after receiving the state or after a 30s timeout.
     //   * From that point on, it can choose to resume the circuit by calling ResumeCircuit with or without the state
     //     depending on whether the transfer was successful.
-    // * Most of the time we expect the state push to succeed, if that fails, the possibilites are:
+    // * Most of the time we expect the state push to succeed, if that fails, the possibilities are:
     //   * Client tries to resume before the state has been saved to the server-side cache storage.
     //     * Resumption fails as the state is not there.
     //     * The state eventually makes it to the server-side cache storage, but the client will have already given up and
@@ -458,7 +459,7 @@ internal sealed partial class ComponentHub : Hub
         return true;
     }
 
-    public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+    public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)
