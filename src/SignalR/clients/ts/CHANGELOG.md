@@ -1,5 +1,9 @@
 Change log contains changes for both @microsoft/signalr and @microsoft/signalr-protocol-msgpack.
 
+## 11.0.0-preview.7
+
+- Include LICENSE.txt in bundled packages. [#67496](https://github.com/dotnet/aspnetcore/pull/67496)
+
 ## 11.0.0-preview.6
 
 - Removed invalid `/*#__PURE__*/` annotations from SignalR TypeScript client helper declarations. [#66778](https://github.com/dotnet/aspnetcore/pull/66778)
