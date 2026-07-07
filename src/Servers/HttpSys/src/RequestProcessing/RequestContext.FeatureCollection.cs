@@ -27,7 +27,6 @@ internal partial class RequestContext :
     IHttpResponseBodyFeature,
     ITlsConnectionFeature,
     ITlsHandshakeFeature,
-    ITlsChannelBindingFeature,
     // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
     IHttpRequestLifetimeFeature,
     IHttpAuthenticationFeature,
@@ -391,38 +390,42 @@ internal partial class RequestContext :
     private ReadOnlyMemory<byte>? _channelBindingBytes;
     private bool _channelBindingFetched;
 
-    ReadOnlyMemory<byte>? ITlsChannelBindingFeature.GetChannelBindingBytes(ChannelBindingKind kind)
+    bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
     {
+        channelBindingToken = default;
+
         // http.sys's HTTP_REQUEST_CHANNEL_BIND_STATUS only reports the endpoint binding
         // (tls-server-end-point per RFC 5929). Other kinds are unsupported.
         if (kind != ChannelBindingKind.Endpoint)
         {
-            return null;
+            return false;
         }
 
         if (!Request.IsHttps)
         {
-            return null;
+            return false;
         }
 
-        if (_channelBindingFetched)
+        // disabled via settings
+        if (Server.Options.HttpAuthenticationHardeningLevel == HttpAuthenticationHardeningLevel.Legacy)
         {
-            return _channelBindingBytes;
+            return false;
         }
 
-        _channelBindingFetched = true;
-        var tokenBytes = GetChannelBindingToken();
-        if (tokenBytes is null)
+        if (!_channelBindingFetched)
         {
-            return null;
+            _channelBindingFetched = true;
+            _channelBindingBytes = GetChannelBindingToken();
         }
 
-        _channelBindingBytes = tokenBytes;
-        return _channelBindingBytes;
+        if (_channelBindingBytes is { } bytes)
+        {
+            channelBindingToken = bytes;
+            return true;
+        }
+
+        return false;
     }
-
-    internal ITlsChannelBindingFeature? GetTlsChannelBindingFeature()
-        => Request.IsHttps && Server.Options.EnableTlsChannelBinding ? this : null;
 
     internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
     {

@@ -89,6 +89,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     }
 
     /// <summary>
+    /// Specifies the Http.Sys authentication hardening level (source-build stub).
+    /// </summary>
+    public enum HttpAuthenticationHardeningLevel
+    {
+        /// <summary>Legacy (default). No CBT validation and no CBT exposed to the app.</summary>
+        Legacy = 0,
+
+        /// <summary>Medium. CBT validated if present; CBT exposed to the app.</summary>
+        Medium = 1,
+
+        /// <summary>Strict. CBT required; CBT exposed to the app.</summary>
+        Strict = 2,
+    }
+
+    /// <summary>
     /// Defines the types of request processing timestamps exposed via the Http.Sys HTTP_REQUEST_TIMING_INFO extensibility point.
     /// </summary>
     /// <remarks>
@@ -749,12 +764,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public bool EnableKernelResponseBuffering { get; set; }
 
         /// <summary>
-        /// When <see langword="true"/>, Http.Sys is configured to expose the RFC 5929
-        /// TLS channel binding token (CBT) for each request via
-        /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsChannelBindingFeature"/>.
-        /// The default is <see langword="false"/>.
+        /// Configures the Http.Sys authentication hardening level and, when non-Legacy,
+        /// exposes the RFC 5929 TLS channel binding token (CBT) for each request via
+        /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.TryGetChannelBindingBytes"/>.
+        /// The default is <c>Legacy</c>.
         /// </summary>
-        public bool EnableTlsChannelBinding { get; set; }
+        public HttpAuthenticationHardeningLevel HttpAuthenticationHardeningLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of concurrent connections to accept. Set <c>-1</c> for infinite.

@@ -121,19 +121,19 @@ public class HttpSysOptions
     public bool EnableKernelResponseBuffering { get; set; }
 
     /// <summary>
-    /// When <see langword="true"/>, Http.Sys is configured to expose the RFC 5929 TLS
-    /// channel binding token (CBT) for each request via
-    /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsChannelBindingFeature"/>.
-    /// The default is <see langword="false"/>.
+    /// Configures the Http.Sys authentication hardening level. Non-<see cref="HttpAuthenticationHardeningLevel.Legacy"/>
+    /// values instruct Http.Sys to validate the RFC 5929 TLS channel binding token (CBT) against
+    /// authenticated requests and to expose the per-request CBT to the application via
+    /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.TryGetChannelBindingBytes"/>.
+    /// The default is <see cref="HttpAuthenticationHardeningLevel.Legacy"/>.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// Enabling this option sets the <c>HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN</c> flag
-    /// on the URL group's <c>HttpServerChannelBindProperty</c>, instructing Http.Sys to
-    /// attach <c>HTTP_REQUEST_CHANNEL_BIND_STATUS</c> to every incoming TLS request.
-    /// </para>
+    /// Setting this to <see cref="HttpAuthenticationHardeningLevel.Medium"/> or
+    /// <see cref="HttpAuthenticationHardeningLevel.Strict"/> both raises the hardening
+    /// level and sets the <c>HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN</c> flag on the URL
+    /// group's <c>HttpServerChannelBindProperty</c>.
     /// </remarks>
-    public bool EnableTlsChannelBinding { get; set; }
+    public HttpAuthenticationHardeningLevel HttpAuthenticationHardeningLevel { get; set; } = HttpAuthenticationHardeningLevel.Legacy;
 
     /// <summary>
     /// Gets or sets the maximum number of concurrent connections to accept. Set `-1` for infinite.
@@ -292,9 +292,9 @@ public class HttpSysOptions
         Authentication.SetUrlGroupSecurity(urlGroup);
         Timeouts.SetUrlGroupTimeouts(urlGroup);
 
-        if (EnableTlsChannelBinding)
+        if (HttpAuthenticationHardeningLevel != HttpAuthenticationHardeningLevel.Legacy)
         {
-            urlGroup.SetChannelBindingProperty();
+            urlGroup.SetChannelBindingProperty(HttpAuthenticationHardeningLevel);
         }
     }
 }

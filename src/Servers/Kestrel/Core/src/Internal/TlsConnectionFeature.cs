@@ -14,7 +14,7 @@ using Obsoletions = Microsoft.AspNetCore.Shared.Obsoletions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature, ITlsChannelBindingFeature, ISslStreamFeature
+internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature, ISslStreamFeature
 {
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
@@ -192,12 +192,24 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         };
     }
 
-    ReadOnlyMemory<byte>? ITlsChannelBindingFeature.GetChannelBindingBytes(ChannelBindingKind kind) => kind switch
+    bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
     {
-        ChannelBindingKind.Endpoint => EnsureEndpointChannelBindingCached(),
-        ChannelBindingKind.Unique => EnsureUniqueChannelBindingCached(),
-        _ => null,
-    };
+        var bytes = kind switch
+        {
+            ChannelBindingKind.Endpoint => EnsureEndpointChannelBindingCached(),
+            ChannelBindingKind.Unique => EnsureUniqueChannelBindingCached(),
+            _ => null,
+        };
+
+        if (bytes is { } value)
+        {
+            channelBindingToken = value;
+            return true;
+        }
+
+        channelBindingToken = default;
+        return false;
+    }
 
     private ReadOnlyMemory<byte>? EnsureEndpointChannelBindingCached()
     {

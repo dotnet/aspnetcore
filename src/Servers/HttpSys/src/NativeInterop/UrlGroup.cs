@@ -44,7 +44,8 @@ internal sealed partial class UrlGroup : IDisposable
         Debug.Assert(urlGroupId != 0, "Invalid id returned by HttpCreateUrlGroup");
         Id = urlGroupId;
 
-        // Legacy behavior: the AppContext switch alone raises Hardening only.
+        // Legacy behavior: the AppContext switch alone raises hardening only.
+        // Prefer HttpSysOptions.HttpAuthenticationHardeningLevel instead.
         if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.EnableCBTHardening", out var enabled) && enabled)
         {
             var channelBindingSettings = new HTTP_CHANNEL_BIND_INFO
@@ -57,21 +58,22 @@ internal sealed partial class UrlGroup : IDisposable
         }
     }
 
-    // Re-issues HttpServerChannelBindProperty with the combined flags so the
-    // per-request CBT (HTTP_REQUEST_CHANNEL_BIND_STATUS) is delivered to the app.
-    // No-op when the feature is not requested and the legacy hardening AppContext
-    // switch is not set (the constructor already covered that case).
-    internal unsafe void SetChannelBindingProperty()
+    // Re-issues HttpServerChannelBindProperty with the requested hardening level and the
+    // HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN flag so the per-request CBT
+    // (HTTP_REQUEST_CHANNEL_BIND_STATUS) is delivered to the app.
+    internal unsafe void SetChannelBindingProperty(HttpAuthenticationHardeningLevel level)
     {
-        var hardeningEnabled = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.EnableCBTHardening", out var enabled) && enabled;
-
-        // todo maybe have public API to control the HTTP_AUTHENTICATION_HARDENING_LEVELS? Or new app context switch?
+        Debug.Assert(level != HttpAuthenticationHardeningLevel.Legacy,
+            "SetChannelBindingProperty should not be called with Legacy hardening.");
 
         var info = new HTTP_CHANNEL_BIND_INFO
         {
-            Hardening = hardeningEnabled
-                ? HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium
-                : HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningLegacy,
+            Hardening = level switch
+            {
+                HttpAuthenticationHardeningLevel.Strict => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningStrict,
+                HttpAuthenticationHardeningLevel.Legacy => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningLegacy,
+                _ or HttpAuthenticationHardeningLevel.Medium => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium,
+            },
             ServiceNames = (HTTP_SERVICE_BINDING_BASE**)IntPtr.Zero,
             NumberOfServiceNames = 0,
             Flags = HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN,

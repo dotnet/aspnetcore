@@ -32,7 +32,6 @@ internal sealed class StandardFeatureCollection : IFeatureCollection
         { typeof(IHttpResetFeature), ctx => ctx.GetResetFeature() },
         { typeof(IConnectionLifetimeNotificationFeature), ctx => ctx.GetConnectionLifetimeNotificationFeature() },
         { typeof(IConnectionEndPointFeature), _identityFunc },
-        { typeof(ITlsChannelBindingFeature), ctx => ctx.GetTlsChannelBindingFeature() },
     };
 
     private readonly RequestContext _featureContext;

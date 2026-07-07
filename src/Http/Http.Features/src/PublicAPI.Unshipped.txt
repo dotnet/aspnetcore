@@ -1,3 +1,2 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Features.ITlsChannelBindingFeature
-Microsoft.AspNetCore.Http.Features.ITlsChannelBindingFeature.GetChannelBindingBytes(System.Security.Authentication.ExtendedProtection.ChannelBindingKind kind) -> System.ReadOnlyMemory<byte>?
+Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.TryGetChannelBindingBytes(System.Security.Authentication.ExtendedProtection.ChannelBindingKind kind, out System.ReadOnlyMemory<byte> channelBindingToken) -> bool

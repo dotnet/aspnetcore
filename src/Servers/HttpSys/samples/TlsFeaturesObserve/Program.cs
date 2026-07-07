@@ -25,47 +25,43 @@ builder.WebHost.UseHttpSys(options =>
     options.Authentication.Schemes = AuthenticationSchemes.None;
     options.Authentication.AllowAnonymous = true;
 
-    // enable ITlsChannelBindingFeature
-    options.EnableTlsChannelBinding = true;
+    // Expose the RFC 5929 TLS channel binding token
+    options.HttpAuthenticationHardeningLevel = HttpAuthenticationHardeningLevel.Medium;
 });
 
 var app = builder.Build();
 
-// Example middleware using ITlsChannelBindingFeature to load the channel binding token bytes and parse them.
+// Example middleware using ITlsConnectionFeature.TryGetChannelBindingBytes to load the channel binding token bytes and parse them.
 app.Use(async (context, next) =>
 {
-    var cbtFeature = context.Features.Get<ITlsChannelBindingFeature>();
-    if (cbtFeature is not null)
+    var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+    if (tlsFeature is not null && tlsFeature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var bytes))
     {
-        var token = cbtFeature.GetChannelBindingBytes(ChannelBindingKind.Endpoint);
-        if (token is { } bytes)
-        {
-            // Parse the SEC_CHANNEL_BINDINGS header so we can see the RFC 5929 (https://datatracker.ietf.org/doc/html/rfc5929)
-            // application data ("tls-server-end-point:" + SHA-256 of the cert).
-            var span = bytes.Span;
-            var appLen = BitConverter.ToInt32(span.Slice(24, 4));
-            var appOff = BitConverter.ToInt32(span.Slice(28, 4));
-            var app = span.Slice(appOff, appLen);
-            var asciiPrefix = System.Text.Encoding.ASCII.GetString(app[..Math.Min(21, app.Length)]);
-            var hash = Convert.ToHexString(app[Math.Min(21, app.Length)..]);
+        // Parse the SEC_CHANNEL_BINDINGS header so we can see the RFC 5929 (https://datatracker.ietf.org/doc/html/rfc5929)
+        // application data ("tls-server-end-point:" + SHA-256 of the cert).
+        var span = bytes.Span;
+        var appLen = BitConverter.ToInt32(span.Slice(24, 4));
+        var appOff = BitConverter.ToInt32(span.Slice(28, 4));
+        var app = span.Slice(appOff, appLen);
+        var asciiPrefix = System.Text.Encoding.ASCII.GetString(app[..Math.Min(21, app.Length)]);
+        var hash = Convert.ToHexString(app[Math.Min(21, app.Length)..]);
 
-            await context.Response.WriteAsync(
-                $"""
-                    ITlsChannelBindingFeature.GetChannelBindingBytes(Endpoint)
-                    ----------------------------------------------------------
-                    raw length      = {bytes.Length} bytes (SEC_CHANNEL_BINDINGS header + appdata)
-                    appdata length  = {appLen}
-                    appdata offset  = {appOff}
-                    ASCII prefix    = "{asciiPrefix}"
-                    cert hash (hex) = {hash}
+        await context.Response.WriteAsync(
+            $"""
+                ITlsConnectionFeature.TryGetChannelBindingBytes(Endpoint)
+                ----------------------------------------------------------
+                raw length      = {bytes.Length} bytes (SEC_CHANNEL_BINDINGS header + appdata)
+                appdata length  = {appLen}
+                appdata offset  = {appOff}
+                ASCII prefix    = "{asciiPrefix}"
+                cert hash (hex) = {hash}
 
 
-                """);
-        }
-        else
-        {
-            await context.Response.WriteAsync("\tITlsChannelBindingFeature.GetChannelBindingBytes(Endpoint) returned null \n\n");
-        }
+            """);
+    }
+    else
+    {
+        await context.Response.WriteAsync("\tITlsConnectionFeature.TryGetChannelBindingBytes(Endpoint) returned false \n\n");
     }
 
     await next(context);

@@ -167,7 +167,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "tls-server-end-point format is well-defined on Windows; other platforms may return null or a different shape.")]
-    public async Task TlsChannelBindingFeatureExposesEndpointBinding()
+    public async Task TlsConnectionFeatureExposesEndpointChannelBinding()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
@@ -176,15 +176,14 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
         await using (var server = new TestServer(context =>
         {
-            var feature = context.Features.Get<ITlsChannelBindingFeature>();
+            var feature = context.Features.Get<ITlsConnectionFeature>();
             Assert.NotNull(feature);
 
-            var bytes = feature.GetChannelBindingBytes(ChannelBindingKind.Endpoint);
-            Assert.NotNull(bytes);
+            Assert.True(feature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var bytes));
 
             // The buffer is a SEC_CHANNEL_BINDINGS struct (32-byte header) followed by the
             // application data: ASCII "tls-server-end-point:" + SHA-256 of the server cert.
-            var raw = bytes.Value.Span;
+            var raw = bytes.Span;
             Assert.True(raw.Length >= 32, "Buffer should be at least the header size.");
 
             var appDataLength = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(24, 4));
@@ -207,7 +206,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    public async Task TlsChannelBindingFeatureReturnsNullForUnsupportedKind()
+    public async Task TryGetChannelBindingBytesReturnsFalseForUnsupportedKind()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
@@ -216,9 +215,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
         await using (var server = new TestServer(context =>
         {
-            var feature = context.Features.Get<ITlsChannelBindingFeature>();
+            var feature = context.Features.Get<ITlsConnectionFeature>();
             Assert.NotNull(feature);
-            Assert.Null(feature.GetChannelBindingBytes(ChannelBindingKind.Unknown));
+            Assert.False(feature.TryGetChannelBindingBytes(ChannelBindingKind.Unknown, out var bytes));
+            Assert.True(bytes.IsEmpty);
 
             return context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
