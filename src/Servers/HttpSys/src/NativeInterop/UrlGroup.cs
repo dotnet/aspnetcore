@@ -48,13 +48,7 @@ internal sealed partial class UrlGroup : IDisposable
         // Prefer HttpSysOptions.HttpAuthenticationHardeningLevel instead.
         if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.EnableCBTHardening", out var enabled) && enabled)
         {
-            var channelBindingSettings = new HTTP_CHANNEL_BIND_INFO
-            {
-                Hardening = HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium,
-                ServiceNames = (HTTP_SERVICE_BINDING_BASE**)IntPtr.Zero,
-                NumberOfServiceNames = 0,
-            };
-            SetProperty(HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty, new(&channelBindingSettings), (uint)ChannelBindInfoSize);
+            SetChannelBindingProperty(HttpAuthenticationHardeningLevel.Medium);
         }
     }
 

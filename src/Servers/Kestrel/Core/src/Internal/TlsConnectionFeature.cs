@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.Extensions.Logging;
 using Obsoletions = Microsoft.AspNetCore.Shared.Obsoletions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -18,6 +20,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 {
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
+    private readonly ILogger<HttpsConnectionMiddleware>? _logger;
     private bool _snapshotted;
 
     private X509Certificate2? _clientCert;
@@ -26,10 +29,6 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     private SslProtocols _protocol;
     private TlsCipherSuite? _negotiatedCipherSuite;
     private ReadOnlyMemory<byte> _applicationProtocol;
-    private ReadOnlyMemory<byte>? _endpointChannelBinding;
-    private bool _endpointChannelBindingFetched;
-    private ReadOnlyMemory<byte>? _uniqueChannelBinding;
-    private bool _uniqueChannelBindingFetched;
 #pragma warning disable SYSLIB0058 // Obsolete TLS cipher algorithm enums
     private CipherAlgorithmType _cipherAlgorithm;
     private int _cipherStrength;
@@ -40,12 +39,18 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 #pragma warning restore SYSLIB0058
 
     public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
+        : this(sslStream, context, logger: null)
+    {
+    }
+
+    internal TlsConnectionFeature(SslStream sslStream, ConnectionContext context, ILogger<HttpsConnectionMiddleware>? logger)
     {
         ArgumentNullException.ThrowIfNull(sslStream);
         ArgumentNullException.ThrowIfNull(context);
 
         _sslStream = sslStream;
         _context = context;
+        _logger = logger;
     }
 
     /// <summary>
@@ -194,77 +199,42 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
     {
-        var bytes = kind switch
+        // The SslStream may be disposed after Snapshot() runs at connection teardown, so channel
+        // bindings are only retrievable while the connection is live. Callers should read the token
+        // once during request processing.
+        if (_snapshotted || (kind != ChannelBindingKind.Endpoint && kind != ChannelBindingKind.Unique))
         {
-            ChannelBindingKind.Endpoint => EnsureEndpointChannelBindingCached(),
-            ChannelBindingKind.Unique => EnsureUniqueChannelBindingCached(),
-            _ => null,
-        };
-
-        if (bytes is { } value)
-        {
-            channelBindingToken = value;
-            return true;
+            channelBindingToken = default;
+            return false;
         }
 
-        channelBindingToken = default;
-        return false;
-    }
-
-    private ReadOnlyMemory<byte>? EnsureEndpointChannelBindingCached()
-    {
-        if (!_endpointChannelBindingFetched)
-        {
-            // After Snapshot() the SslStream may be disposed; don't attempt to read.
-            if (!_snapshotted)
-            {
-                _endpointChannelBinding = ReadChannelBindingFromSslStream(ChannelBindingKind.Endpoint);
-            }
-            _endpointChannelBindingFetched = true;
-        }
-
-        return _endpointChannelBinding;
-    }
-
-    private ReadOnlyMemory<byte>? EnsureUniqueChannelBindingCached()
-    {
-        if (!_uniqueChannelBindingFetched)
-        {
-            // After Snapshot() the SslStream may be disposed; don't attempt to read.
-            if (!_snapshotted)
-            {
-                _uniqueChannelBinding = ReadChannelBindingFromSslStream(ChannelBindingKind.Unique);
-            }
-            _uniqueChannelBindingFetched = true;
-        }
-
-        return _uniqueChannelBinding;
-    }
-
-    private ReadOnlyMemory<byte>? ReadChannelBindingFromSslStream(ChannelBindingKind kind)
-    {
         try
         {
             using var binding = _sslStream.TransportContext?.GetChannelBinding(kind);
             if (binding is null || binding.IsInvalid || binding.IsClosed)
             {
-                return null;
+                channelBindingToken = default;
+                return false;
             }
 
             var size = binding.Size;
             if (size <= 0)
             {
-                return null;
+                channelBindingToken = default;
+                return false;
             }
 
             var buffer = new byte[size];
             Marshal.Copy(binding.DangerousGetHandle(), buffer, 0, size);
-            return buffer;
+            channelBindingToken = buffer;
+            return true;
         }
-        catch
+        catch (Exception ex)
         {
             // SslStream/TransportContext may throw if the handshake hasn't completed or the connection is torn down.
-            return null;
+            _logger?.FailedToReadChannelBinding(kind, ex);
+            channelBindingToken = default;
+            return false;
         }
     }
 }
