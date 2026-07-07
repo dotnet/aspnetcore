@@ -272,16 +272,21 @@ public sealed class EditContext
         // validators during the raise; none have been invoked yet, so a throw leaves no work started.
         OnValidationRequested?.Invoke(this, args);
 
-        // Invoke all registered validators to start their work concurrently, tracking whether any suspends.
+        // Invoke all registered validators to start their work concurrently. Collect only the tasks that
+        // still need observation: those that will suspend, or that already completed as faulted/cancelled
+        // and must be awaited to record the fault. A task that completed successfully needs no await, so a
+        // pass where every validator succeeds synchronously allocates nothing.
         var validators = args.AsyncValidators;
-        List<Task>? pendingTasks = null;
+        List<Task>? tasksToAwait = null;
+        var anyPending = false;
 
         for (var i = 0; i < validators.Count; i++)
         {
             var task = InvokeAsyncValidator(validators[i], cancellationToken);
-            if (!task.IsCompleted)
+            if (!task.IsCompletedSuccessfully)
             {
-                (pendingTasks ??= new()).Add(task);
+                (tasksToAwait ??= []).Add(task);
+                anyPending |= !task.IsCompleted;
             }
         }
 
@@ -289,15 +294,18 @@ public sealed class EditContext
         {
             var faulted = false;
 
-            if (pendingTasks is { Count: > 0 } tasks)
+            if (tasksToAwait is not null)
             {
-                // Announce the pending transition only when some task actually suspends.
-                // If every task completed synchronously the form never observably enters the pending state.
-                // This prevents spurious state change notifications and UI flashes.
-                _isFormValidationPending = true;
-                NotifyValidationStateChanged();
+                // Announce the pending transition only when some task actually suspends. If every task
+                // completed synchronously (including synchronous faults) the form never observably enters
+                // the pending state, which prevents spurious state change notifications and UI flashes.
+                if (anyPending)
+                {
+                    _isFormValidationPending = true;
+                    NotifyValidationStateChanged();
+                }
 
-                foreach (var task in tasks)
+                foreach (var task in tasksToAwait)
                 {
                     try
                     {

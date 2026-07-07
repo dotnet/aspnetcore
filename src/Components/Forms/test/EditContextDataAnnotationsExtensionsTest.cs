@@ -173,11 +173,6 @@ public class EditContextDataAnnotationsExtensionsTest
     [Fact]
     public Task FormLevelAsyncValidationProducesMessages() => RunOnDispatcher(async () =>
     {
-        // Runs on the dispatcher to honor Blazor's single-threaded model: the DataAnnotations
-        // integration mutates non-thread-safe state (the ValidationMessageStore and the validation
-        // path to field mapping) from async continuations, so off-dispatcher execution can race.
-        // A plain model (no AddValidation) with an async [ValidationAttribute] validates through
-        // Validator.TryValidateObjectAsync and surfaces messages via ValidateAsync.
         var model = new AsyncTestModel();
         var editContext = new EditContext(model);
         editContext.EnableDataAnnotationsValidation(_serviceProvider);

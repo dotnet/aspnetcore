@@ -35,32 +35,10 @@ public sealed class ValidationRequestedEventArgs : EventArgs
     /// <param name="validator">A validator method that starts the asynchronous validation work and returns the
     /// resulting <see cref="Task"/>. It is invoked by <see cref="EditContext.ValidateAsync(CancellationToken)"/>
     /// with the validation pass's cancellation token, and the returned task is awaited before the pass
-    /// completes. The method must not return a <see langword="null"/> task; doing so throws
-    /// <see cref="InvalidOperationException"/> from <see cref="EditContext.ValidateAsync(CancellationToken)"/>.</param>
-    /// <remarks>
-    /// Subscribe to <see cref="EditContext.OnValidationRequested"/>, check that <see cref="IsAsync"/> is
-    /// <see langword="true"/>, and register a validator with this method. Registered validators are invoked
-    /// together so the tasks run concurrently. A validator that throws synchronously, or returns a
-    /// <see langword="null"/> task, is a programming error that propagates out of
-    /// <see cref="EditContext.ValidateAsync(CancellationToken)"/>. Calling this method when <see cref="IsAsync"/> is <see langword="false"/>
-    /// (a synchronous <see cref="EditContext.Validate"/> pass, or the shared <see cref="Empty"/> instance)
-    /// throws <see cref="InvalidOperationException"/> without invoking the validator.
-    /// <example>
-    /// <code>
-    /// editContext.OnValidationRequested += (sender, args) =&gt;
-    /// {
-    ///     if (args.IsAsync)
-    ///     {
-    ///         args.AddAsyncValidator(token =&gt; ValidateModelAsync(editContext.Model, token));
-    ///     }
-    /// };
-    /// </code>
-    /// </example>
-    /// </remarks>
+    /// completes. The method must not return a <see langword="null"/> task.</param>
     /// <exception cref="ArgumentNullException"><paramref name="validator"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
-    /// <see cref="IsAsync"/> is <see langword="false"/>: validation was started by the synchronous
-    /// <see cref="EditContext.Validate"/>, or this is the shared non-async <see cref="Empty"/> instance.
+    /// <paramref name="validator"/> returned <see langword="null"/>, or this is the shared non-async <see cref="Empty"/> instance.
     /// </exception>
     public void AddAsyncValidator(Func<CancellationToken, Task> validator)
     {
@@ -68,8 +46,6 @@ public sealed class ValidationRequestedEventArgs : EventArgs
 
         if (!IsAsync)
         {
-            // The validator is not invoked, so no async work starts. Async validation is not permitted in a
-            // synchronous Validate() pass, and the shared non-async Empty instance must not be mutated.
             throw new InvalidOperationException(
                 $"Asynchronous validation is not supported during a synchronous {nameof(EditContext)}.{nameof(EditContext.Validate)} call. " +
                 $"Call {nameof(EditContext.ValidateAsync)} instead, or guard the handler with {nameof(ValidationRequestedEventArgs)}.{nameof(IsAsync)}.");
