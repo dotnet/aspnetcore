@@ -135,7 +135,7 @@ namespace BlazorApp1.Components
     }
 }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
-        VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
+        VerifyCSharpFix(oldSource, newSource);
     }
 
     [Fact]
@@ -185,7 +185,7 @@ namespace BlazorApp1.Components
     }
 }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
-        VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
+        VerifyCSharpFix(oldSource, newSource);
     }
 
     [Fact]
@@ -233,7 +233,7 @@ namespace BlazorApp1.Components
     }
 }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
-        VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
+        VerifyCSharpFix(oldSource, newSource);
     }
 
     [Fact]
@@ -311,10 +311,5 @@ namespace BlazorApp1.Components
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(source, source);
-    }
-
-    private static string NormalizeLineEndings(string source)
-    {
-        return source.ReplaceLineEndings(Environment.NewLine);
     }
 }
