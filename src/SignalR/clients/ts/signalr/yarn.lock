@@ -263,7 +263,7 @@ whatwg-url@^5.0.0:
     tr46 "~0.0.3"
     webidl-conversions "^3.0.0"
 
-ws@^7.5.10:
+ws@^7.5.11:
   version "7.5.11"
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/ws/-/ws-7.5.11.tgz#9460daf1812bb81a423c5b9eac746941a86310fa"
   integrity sha1-lGDa8YEruBpCPFuerHRpQahjEPo=
