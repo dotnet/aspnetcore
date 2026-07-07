@@ -582,7 +582,7 @@ internal sealed class HttpsConnectionMiddleware
             sslServerAuthenticationOptions.ServerCertificate = null;
             sslServerAuthenticationOptions.ServerCertificateSelectionCallback = (sender, host) =>
             {
-                // There is no ConnectionContext available durring the QUIC handshake.
+                // There is no ConnectionContext available during the QUIC handshake.
                 var cert = httpsOptions.ServerCertificateSelector(null, host);
                 if (cert != null)
                 {
