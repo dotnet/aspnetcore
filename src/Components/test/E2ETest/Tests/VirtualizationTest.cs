@@ -2906,12 +2906,23 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() =>
         {
-            js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
             var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
             var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
             var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
             return sh - st - ch < 2;
-        }, TimeSpan.FromSeconds(30), "End mode: large append should still follow to bottom");
+        }, TimeSpan.FromSeconds(30), "End mode: large append should auto-follow to the new bottom without manual scrolling");
+
+        // The rows at the new bottom must materialize as real items (not async placeholders)
+        Browser.True(() =>
+        {
+            var maxIndex = (long)js.ExecuteScript(
+                "var els = arguments[0].querySelectorAll('.item[data-index]');" +
+                " var m = -1; for (var i = 0; i < els.length; i++) {" +
+                " var v = parseInt(els[i].getAttribute('data-index'), 10); if (v > m) { m = v; } } return m;",
+                               container);
+            return maxIndex >= 1090;
+        }, TimeSpan.FromSeconds(30),
+        "End mode: real rows near the end of the list (index ~1099) should be visible at the bottom, not placeholders");
     }
 
     [Fact]
