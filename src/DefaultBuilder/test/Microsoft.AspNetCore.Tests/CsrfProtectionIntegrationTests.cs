@@ -1443,7 +1443,7 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
-    public async Task Repro_BlazorTemplatePipeline_CsrfMarkerIsStampedBeforeEndpoint_OnReroute()
+    public async Task Repro_BlazorTemplatePipeline_CsrfMarkerIsStampedBeforeEndpoint_WithStatusCodePagesMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
@@ -1652,6 +1652,38 @@ public class CsrfProtectionIntegrationTests
         Assert.Contains(
             probe.ObservedEndpoints,
             e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    [Fact]
+    public async Task CsrfProtection_UseStatusCodePagesWithReExecute_ReadsCorsMetadataOnReroutedEndpoint()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddPolicy("Trusted", p => p.WithOrigins("https://trusted.example.com")));
+        using var app = builder.Build();
+
+        app.UseStatusCodePagesWithReExecute("/not-found");
+        app.UseCors();
+        app.MapPost("/not-found", EnforceCsrfProtected)
+            .RequireCors("Trusted")
+            .WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var client = app.GetTestClient();
+
+        var trusted = new HttpRequestMessage(HttpMethod.Post, "/does-not-exist");
+        trusted.Headers.Add("Sec-Fetch-Site", "cross-site");
+        trusted.Headers.Add("Origin", "https://trusted.example.com");
+        var trustedResponse = await client.SendAsync(trusted);
+        Assert.Equal("allowed", await trustedResponse.Content.ReadAsStringAsync());
+
+        var untrusted = new HttpRequestMessage(HttpMethod.Post, "/does-not-exist");
+        untrusted.Headers.Add("Sec-Fetch-Site", "cross-site");
+        untrusted.Headers.Add("Origin", "https://evil.example.com");
+        var untrustedResponse = await client.SendAsync(untrusted);
+        Assert.Equal(HttpStatusCode.BadRequest, untrustedResponse.StatusCode);
+        Assert.Equal("protected", await untrustedResponse.Content.ReadAsStringAsync());
     }
 
     [Fact]
