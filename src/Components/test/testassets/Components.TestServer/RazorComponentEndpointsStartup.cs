@@ -38,6 +38,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
         // switch value once at static initialization and won't see subsequent AppContext changes.
+        // This write at fixture creation is only safe because the E2E suite runs serially
+        // (parallelizeAssembly/parallelizeTestCollections are false); enabling parallelization would
+        // let servers needing opposite values race on this process-global field and reintroduce #66883.
         var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
             .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
         featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
@@ -51,6 +54,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
         services.AddValidation();
         services.AddValidationLocalization();
+
+        // Increase 10 MB hub message limit (default 32 KB)
+        if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
+        {
+            services.Configure<Microsoft.AspNetCore.SignalR.HubOptions>(o =>
+            {
+                o.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+            });
+        }
 
         var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
@@ -127,6 +139,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         services.AddScoped<PauseTrackingHandler>();
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
+
+        services.AddSingleton<AutoPauseTestStreamGate>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -199,6 +213,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseExceptionHandler("/Error", createScopeForErrors: true);
         }
 
+        app.UseWebSockets();
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();
@@ -269,6 +284,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
             MapEnhancedNavigationEndpoints(endpoints);
+            endpoints.MapAutoPauseTestEndpoints();
         });
     }
 
