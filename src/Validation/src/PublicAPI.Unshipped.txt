@@ -11,6 +11,7 @@
 *REMOVED*Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo) -> bool
 *REMOVED*Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableInfo? validatableTypeInfo) -> bool
 *REMOVED*virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+*REMOVED*abstract Microsoft.Extensions.Validation.ValidatableTypeInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
 abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? type) -> string?
 Microsoft.Extensions.Validation.DisplayNameInfo
 Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
@@ -60,4 +61,5 @@ Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(Syst
 virtual Microsoft.Extensions.Validation.ValidatableParameterInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void
 virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.Validate(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context) -> void
 virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidateAsync(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+virtual Microsoft.Extensions.Validation.ValidatableTypeInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
 virtual Microsoft.Extensions.Validation.ValidatableTypeInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void

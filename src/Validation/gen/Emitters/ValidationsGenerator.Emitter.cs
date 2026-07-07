@@ -90,9 +90,6 @@ namespace Microsoft.Extensions.Validation.Generated
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
         internal global::System.Type Type { get; }
-
-        protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
-            => ValidationAttributeCache.GetTypeValidationAttributes(Type);
     }
 
     {{GeneratedCodeAttribute}}
@@ -186,20 +183,6 @@ namespace Microsoft.Extensions.Validation.Generated
                 }
 
                 return results.ToArray();
-            });
-        }
-
-
-        public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetTypeValidationAttributes(
-            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
-            global::System.Type type
-        )
-        {
-            return TypeCache.GetOrAdd(type, static t =>
-            {
-                var typeAttributes = global::System.Reflection.CustomAttributeExtensions
-                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(t, inherit: true);
-                return global::System.Linq.Enumerable.ToArray(typeAttributes);
             });
         }
     }
