@@ -732,7 +732,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     {
         var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken).ConfigureAwait(false);
         // If the negotiationVersion is greater than zero then we know that the negotiation response contains a
-        // connectionToken that will be required to conenct. Otherwise we just set the connectionId and the
+        // connectionToken that will be required to connect. Otherwise we just set the connectionId and the
         // connectionToken on the client to the same value.
         _connectionId = negotiationResponse.ConnectionId!;
         if (negotiationResponse.Version == 0)
