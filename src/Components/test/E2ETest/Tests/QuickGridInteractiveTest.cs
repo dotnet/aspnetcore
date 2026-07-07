@@ -155,6 +155,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_quickgrid_sort")]
     public void SortByTypeMismatchVirtualizedShowsClearError()
     {
         Navigate($"{ServerPathBase}/quickgrid-typemismatch");
