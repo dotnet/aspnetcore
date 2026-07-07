@@ -2280,6 +2280,234 @@ public class RendererTest
             edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-test-1");
     }
 
+    // Boolean attributes that follow HTML "boolean attribute" semantics (disabled, readonly, etc.)
+    // are special because their text value is empty string ("") when present. They still go through
+    // the same CaptureUnmatchedValues path so the removal logic must work for them too. See #56463.
+
+    [Fact]
+    public void RemovesBooleanUnmatchedAttributeFromChildElementWhenOmittedOnSubsequentRender()
+    {
+        var renderer = new TestRenderer();
+        var includeDisabled = true;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<MyStrongComponent>(1);
+            builder.AddComponentParameter(2, nameof(MyStrongComponent.Text), "hi there.");
+            if (includeDisabled)
+            {
+                // HTML boolean attributes are typically added with empty string value
+                builder.AddAttribute(10, "disabled", "");
+            }
+            builder.CloseComponent();
+        });
+
+        renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        var childComponentId = renderer.Batches.Single()
+            .ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+            .ComponentId;
+
+        includeDisabled = false;
+        component.TriggerRender();
+
+        var childDiff = renderer.Batches[1].DiffsByComponentId[childComponentId].Single();
+        Assert.Contains(childDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "disabled");
+    }
+
+    [Fact]
+    public void RemovesMultipleUnmatchedAttributesFromChildElementWhenAllOmittedOnSubsequentRender()
+    {
+        // Tests removing more than one splat attribute at the same time, e.g. when a Razor
+        // block is gated behind a debug/feature flag and produces two or more attributes.
+        var renderer = new TestRenderer();
+        var includeBlock = true;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<MyStrongComponent>(1);
+            builder.AddComponentParameter(2, nameof(MyStrongComponent.Text), "hi there.");
+            if (includeBlock)
+            {
+                builder.AddAttribute(10, "data-test-1", "value1");
+                builder.AddAttribute(11, "data-test-2", "value2");
+                builder.AddAttribute(12, "data-test-3", "value3");
+            }
+            builder.CloseComponent();
+        });
+
+        renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        var childComponentId = renderer.Batches.Single()
+            .ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+            .ComponentId;
+
+        includeBlock = false;
+        component.TriggerRender();
+
+        var childDiff = renderer.Batches[1].DiffsByComponentId[childComponentId].Single();
+        Assert.Contains(childDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-test-1");
+        Assert.Contains(childDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-test-2");
+        Assert.Contains(childDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-test-3");
+    }
+
+    [Fact]
+    public void RemovesOnlyTheOmittedUnmatchedAttributesWhenOthersAreKeptOrChanged()
+    {
+        // Tests the trickier case where some unmatched attributes persist across renders
+        // and only a subset are removed. The diff must NOT spuriously remove the kept ones.
+        var renderer = new TestRenderer();
+        var includeKeptAttribute = true;
+        var includePatchedAttribute = true;
+        var includeRemovedAttribute = true;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<MyStrongComponent>(1);
+            builder.AddComponentParameter(2, nameof(MyStrongComponent.Text), "hi there.");
+            if (includeKeptAttribute)
+            {
+                builder.AddAttribute(10, "data-kept", "kept");
+            }
+            if (includePatchedAttribute)
+            {
+                builder.AddAttribute(11, "data-patched", "v2");
+            }
+            if (includeRemovedAttribute)
+            {
+                builder.AddAttribute(12, "data-removed", "will-be-removed");
+            }
+            builder.CloseComponent();
+        });
+
+        renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        var childComponentId = renderer.Batches.Single()
+            .ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+            .ComponentId;
+
+        includeRemovedAttribute = false;
+        component.TriggerRender();
+
+        var childDiff = renderer.Batches[1].DiffsByComponentId[childComponentId].Single();
+
+        // The omitted attribute must be removed.
+        Assert.Contains(childDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-removed");
+
+        // The kept attribute must NOT have a RemoveAttribute edit.
+        Assert.DoesNotContain(childDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-kept");
+
+        // The patched attribute may have a SetAttribute (not RemoveAttribute) edit.
+        Assert.DoesNotContain(childDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-patched");
+    }
+
+    [Fact]
+    public void RemovesUnmatchedAttributesAcrossMultipleChildComponentsInTheSameRender()
+    {
+        // When a single parent render removes attributes from two siblings (each holding its own
+        // CaptureUnmatchedValues writer), the per-component diff must include the matching
+        // RemoveAttribute edits on both child components.
+        var renderer = new TestRenderer();
+        var includeAttrOnFirst = true;
+        var includeAttrOnSecond = true;
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<MyStrongComponent>(1);
+            builder.AddComponentParameter(2, nameof(MyStrongComponent.Text), "first");
+            if (includeAttrOnFirst)
+            {
+                builder.AddAttribute(10, "data-x", "first-x");
+            }
+            builder.CloseComponent();
+
+            builder.OpenComponent<MyStrongComponent>(20);
+            builder.AddComponentParameter(21, nameof(MyStrongComponent.Text), "second");
+            if (includeAttrOnSecond)
+            {
+                builder.AddAttribute(30, "data-y", "second-y");
+            }
+            builder.CloseComponent();
+        });
+
+        renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        var childComponentIds = renderer.Batches.Single()
+            .ReferenceFrames
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Component)
+            .Select(frame => frame.ComponentId)
+            .ToList();
+        Assert.Equal(2, childComponentIds.Count);
+
+        includeAttrOnFirst = false;
+        includeAttrOnSecond = false;
+        component.TriggerRender();
+
+        var firstChildDiff = renderer.Batches[1].DiffsByComponentId[childComponentIds[0]].Single();
+        var secondChildDiff = renderer.Batches[1].DiffsByComponentId[childComponentIds[1]].Single();
+
+        Assert.Contains(firstChildDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-x");
+        Assert.Contains(secondChildDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-y");
+    }
+
+    [Fact]
+    public void RemovesUnmatchedAttribute_AcrossRapidAddRemoveCycles()
+    {
+        // Rapid toggle: present -> absent -> present -> absent. The final state must produce
+        // a RemoveAttribute edit (not just spurious SetAttribute edits), guarding against
+        // "sticky" behavior where the previously-rendered AdditionalAttributes keep leaking.
+        var renderer = new TestRenderer();
+        var includeAttribute = true;
+        var renderCount = 0;
+        var component = new TestComponent(builder =>
+        {
+            renderCount++;
+            builder.OpenComponent<MyStrongComponent>(1);
+            builder.AddComponentParameter(2, nameof(MyStrongComponent.Text), "hi there.");
+            if (includeAttribute)
+            {
+                builder.AddAttribute(10, "data-toggle", "present");
+            }
+            builder.CloseComponent();
+        });
+
+        renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        var childComponentId = renderer.Batches.Single()
+            .ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+            .ComponentId;
+
+        // Remove -> Add -> Remove
+        includeAttribute = false;
+        component.TriggerRender();
+
+        includeAttribute = true;
+        component.TriggerRender();
+
+        includeAttribute = false;
+        component.TriggerRender();
+
+        // Last batch: includeAttribute == false -> expect RemoveAttribute("data-toggle").
+        var lastBatchIndex = renderer.Batches.Count - 1;
+        var lastChildDiff = renderer.Batches[lastBatchIndex].DiffsByComponentId[childComponentId].Single();
+        Assert.Contains(lastChildDiff.Edits, edit =>
+            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-toggle");
+    }
+
     [Fact]
     public void RenderBatchIncludesListOfDisposedComponents()
     {
