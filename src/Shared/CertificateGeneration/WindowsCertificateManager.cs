@@ -15,7 +15,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 [SupportedOSPlatform("windows")]
 internal sealed class WindowsCertificateManager : CertificateManager
 {
-    private const int UserCancelledErrorCode = 1223;
+    // HResult and ErrorCode are two different things.
+    // The ErrorCode of this HResult is 1223 (0x4C7)
+    // See https://msdn.microsoft.com/library/cc231198.aspx to understand how HResult is composed.
+    // See https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1000-1299- for the meaning of the error code.
+    // ERROR_CANCELLED (1223) -> The operation was canceled by the user.
+    private const int UserCancelledHResult = unchecked((int)0x800704C7);
 
     public WindowsCertificateManager()
     {
@@ -91,7 +96,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
             store.Add(publicCertificate);
             return TrustLevel.Full;
         }
-        catch (CryptographicException exception) when (exception.HResult == UserCancelledErrorCode)
+        catch (CryptographicException exception) when (exception.HResult == UserCancelledHResult)
         {
             Log.WindowsCertificateTrustCanceled();
             throw new UserCancelledTrustException();

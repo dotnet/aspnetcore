@@ -137,4 +137,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: GetHelpLinkUrl("RDG014"));
+
+    public static DiagnosticDescriptor UnableToResolveReturnType { get; } = new(
+        "RDG015",
+        CreateLocalizableResourceString(nameof(Resources.UnableToResolveReturnType_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnableToResolveReturnType_Message)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: GetHelpLinkUrl("RDG015"));
 }

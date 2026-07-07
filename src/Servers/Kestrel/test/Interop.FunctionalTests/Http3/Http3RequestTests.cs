@@ -2133,11 +2133,11 @@ public class Http3RequestTests : LoggedTest
     }
 
     // Verify HTTP/2 and HTTP/3 match behavior
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39985")]
     [ConditionalTheory]
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39985")]
     public async Task GET_GracefulServerShutdown_AbortRequestsAfterHostTimeout(HttpProtocols protocol)
     {
         // Arrange

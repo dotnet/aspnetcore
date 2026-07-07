@@ -102,4 +102,40 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
+
+    public static readonly DiagnosticDescriptor VirtualizeItemsProviderRequiresItemComparer = new(
+        "BL0011",
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Title)),
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
+
+    public static readonly DiagnosticDescriptor UnnecessaryStateHasChangedCall = new(
+        "BL0012",
+        CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Description)));
+
+    public static readonly DiagnosticDescriptor AuthenticationStateProviderCachedWithoutSubscription = new(
+        "BL0013",
+        CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Title)),
+        CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Description)));
+
+    public static readonly DiagnosticDescriptor ForLoopIteratorVariableUsedInClosure = new(
+        "BL0014",
+        CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Description)));
 }

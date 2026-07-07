@@ -77,6 +77,9 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<TempDataCascadingValueSupplier>();
         services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
             sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);
+        services.TryAddScoped<SessionCascadingValueSupplier>();
+        services.TryAddCascadingValueSupplier<SupplyParameterFromSessionAttribute>(
+            sp => sp.GetRequiredService<SessionCascadingValueSupplier>().CreateSubscription);
 
         services.TryAddScoped<ResourceCollectionProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);
@@ -91,6 +94,7 @@ public static class RazorComponentsServiceCollectionExtensions
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(services, RenderMode.InteractiveAuto);
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
+        services.AddClientValidation();
 
         if (configure != null)
         {

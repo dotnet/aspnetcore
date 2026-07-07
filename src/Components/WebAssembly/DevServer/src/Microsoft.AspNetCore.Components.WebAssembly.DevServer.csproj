@@ -61,6 +61,7 @@
     <GenerateFileFromTemplate
       TemplateFile="blazor-devserver.runtimeconfig.json.in"
       Properties="$(_RuntimeConfigProperties)"
+      SkipUnchanged="true"
       OutputPath="$(_RuntimeConfigPath)" />
   </Target>
 

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.OpenApi;
@@ -63,12 +64,12 @@ public static class OpenApiServiceCollectionExtensions
         // To achieve parity with ASP.NET Core routing, which is case-insensitive, we need to ensure the document name is lowercased.
         var lowercasedDocumentName = documentName.ToLowerInvariant();
 
-        services.AddOpenApiCore(lowercasedDocumentName);
-        services.Configure<OpenApiOptions>(lowercasedDocumentName, options =>
-        {
-            options.DocumentName = lowercasedDocumentName;
-            configureOptions(options);
-        });
+        services.AddOpenApiCore();
+
+        // Required to resolve document names for build-time generation
+        services.AddSingleton(new NamedService<OpenApiDocumentService>(lowercasedDocumentName));
+
+        services.Configure<OpenApiOptions>(lowercasedDocumentName, configureOptions);
         return services;
     }
 
@@ -106,19 +107,48 @@ public static class OpenApiServiceCollectionExtensions
     public static IServiceCollection AddOpenApi(this IServiceCollection services)
         => services.AddOpenApi(OpenApiConstants.DefaultDocumentName);
 
-    private static IServiceCollection AddOpenApiCore(this IServiceCollection services, string documentName)
+    /// <summary>
+    /// Adds the core OpenAPI services, not tied to a specific document name, to the specified <see cref="IServiceCollection"/> with the specified options.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
+    public static IServiceCollection AddOpenApiCore(this IServiceCollection services)
     {
+        // NOTE, we don't have a public AddOpenApiCore yet that allows users to configure options.
+        // Today, callers can do services.Configure<OpenApiOptions>(...) themselves.
+        // We can consider in the future if we want to add an overload of AddOpenApiCore that
+        // takes in an Action<OpenApiOptions> to allow users to configure core OpenAPI options
+        // that aren't specific to a document.
+        // If we did that in the future, we should decide what option we want to go:
+        // 1. ensure that such configuration callback called **BEFORE** the document-specific configuration callbacks.
+        // 2. ensure that the global configuration is only applied to document names that are not explicitly registered.
+        // Note that services.Configure<OpenApiOptions>(null, ...) will make the callback apply to all document names.
+        // But also it's dependent on the order of registration.
+        // To avoid answering this potential design question, we are not shipping the overload with configureOptions.
+        // We are waiting for user feedback to understand if there is really a need to ship it and what the behavior should be.
+        ArgumentNullException.ThrowIfNull(services);
+
         services.AddEndpointsApiExplorer();
-        services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
-        services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
-        services.AddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(documentName);
+        services.TryAddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
+        services.TryAddKeyedSingleton<OpenApiDocumentService>(KeyedService.AnyKey);
+        services.TryAddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(KeyedService.AnyKey);
 
         // Required for build-time generation
-        services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
-        // Required to resolve document names for build-time generation
-        services.AddSingleton(new NamedService<OpenApiDocumentService>(documentName));
+        services.TryAddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<OpenApiOptions>, ConfigureNamedOpenApiOptions>());
+
         // Required to support JSON serializations
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, OpenApiSchemaJsonOptions>());
+
         return services;
+    }
+
+    private sealed class ConfigureNamedOpenApiOptions : IConfigureNamedOptions<OpenApiOptions>
+    {
+        public void Configure(string? name, OpenApiOptions options)
+            => options.DocumentName = name ?? throw new UnreachableException();
+
+        public void Configure(OpenApiOptions options)
+            => throw new UnreachableException();
     }
 }

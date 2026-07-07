@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -762,6 +763,11 @@ internal partial class RequestContext :
     public bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned)
     {
         return TryGetTlsClientHelloMessageBytes(tlsClientHelloBytesDestination, out bytesReturned);
+    }
+
+    public bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned)
+    {
+        return TryGetRequestPropertyCore((HTTP_REQUEST_PROPERTY)propertyId, qualifier, output, out bytesReturned);
     }
 
     EndPoint? IConnectionEndPointFeature.LocalEndPoint

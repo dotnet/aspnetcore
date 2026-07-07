@@ -1,0 +1,58 @@
+﻿{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Sample | enum-camelcase-nullable-param",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/enums/camelcase/nullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "Active",
+                "Inactive",
+                "Pending"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CamelCaseStatus": {
+        "enum": [
+          "active",
+          "inactive",
+          "pending",
+          null
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

@@ -4,7 +4,8 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text.Json;
+using System.Runtime.Serialization.Json;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -134,14 +135,20 @@ public class GenerateE2EManifest : Task
             }
         }
 
-        var json = JsonSerializer.Serialize(manifest, E2EManifestJsonContext.Default.E2EManifestModel);
-
         var manifestDir = Path.GetDirectoryName(ManifestPath);
         if (!string.IsNullOrEmpty(manifestDir))
         {
             Directory.CreateDirectory(manifestDir);
         }
-        File.WriteAllText(ManifestPath, json);
+
+        using var fileStream = File.Create(ManifestPath);
+        var serializer = new DataContractJsonSerializer(typeof(E2EManifestModel), new DataContractJsonSerializerSettings
+        {
+            UseSimpleDictionaryFormat = true,
+        });
+        using var writer = JsonReaderWriterFactory.CreateJsonWriter(fileStream, Encoding.UTF8, ownsStream: false, indent: true);
+        serializer.WriteObject(writer, manifest);
+
         Log.LogMessage(MessageImportance.High, "Generated E2E manifest: {0}", ManifestPath);
         return true;
     }

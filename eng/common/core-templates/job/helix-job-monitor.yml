@@ -1,0 +1,217 @@
+parameters:
+# Maximum run time of the monitor job in minutes. Also used for --max-wait-minutes.
+- name: timeoutInMinutes
+  type: number
+  default: 360
+
+# Owner segment of the source repository (e.g. 'dotnet' for 'dotnet/runtime') passed via --organization.
+# Defaults to the owner segment of BUILD_REPOSITORY_NAME when empty.
+- name: organization
+  type: string
+  default: ''
+
+# Name of the source repository (e.g. 'runtime' for 'dotnet/runtime') passed via --repository.
+# Defaults to the repo segment of BUILD_REPOSITORY_NAME when empty.
+- name: repository
+  type: string
+  default: ''
+
+# Optional dependency list for the generated job.
+- name: dependsOn
+  type: object
+  default: []
+
+# Optional condition for the generated job.
+- name: condition
+  type: string
+  default: ''
+
+# NuGet package id of the Helix job monitor tool.
+- name: toolPackageId
+  type: string
+  default: Microsoft.DotNet.Helix.JobMonitor
+
+# Console command exposed by the installed tool package.
+- name: toolCommand
+  type: string
+  default: dotnet-helix-job-monitor
+
+# Optional explicit tool version. Only honored when 'toolNupkgArtifactName' is set; in the
+# default code path the version is taken from the consuming repo's .config/dotnet-tools.json.
+- name: toolVersion
+  type: string
+  default: ''
+
+# Base URI for the Helix service (--helix-base-uri).
+- name: helixBaseUri
+  type: string
+  default: https://helix.dot.net/
+
+# Helix API access token forwarded to the tool via the HELIX_ACCESSTOKEN environment variable.
+- name: helixAccessToken
+  type: string
+  default: ''
+
+# Polling interval in seconds (--polling-interval-seconds).
+- name: pollingIntervalSeconds
+  type: number
+  default: 30
+
+# Advanced: optional pipeline artifact (produced earlier in this run) that contains the tool
+# nupkg. When set, the artifact is downloaded and the tool is installed from the nupkg into
+# a local tool-path; this bypasses the repo's .config/dotnet-tools.json manifest and is
+# primarily intended for the Arcade repository itself, where the Helix job monitor tool is
+# built in the same pipeline that runs this template.
+#
+# When this parameter is empty (the default), the consuming repository must declare the tool
+# in its .config/dotnet-tools.json manifest (alongside other local .NET tools); the template
+# will check out the repo and run 'dotnet tool restore' to install the version pinned there.
+- name: toolNupkgArtifactName
+  type: string
+  default: ''
+
+# Advanced: sub-path within the downloaded artifact where the tool nupkg is located. Defaults
+# to the standard Arcade non-shipping packages location for a Release build (relative to the
+# pipeline artifact root, which is itself the build's 'artifacts' directory).
+- name: toolNupkgArtifactSubPath
+  type: string
+  default: 'packages/Release/NonShipping'
+
+jobs:
+- job: HelixJobMonitor
+  displayName: Monitor Helix Jobs
+  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+  ${{ if ne(length(parameters.dependsOn), 0) }}:
+    dependsOn: ${{ parameters.dependsOn }}
+  ${{ if ne(parameters.condition, '') }}:
+    condition: ${{ parameters.condition }}
+  pool:
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      name: $(DncEngPublicBuildPool)
+      demands: ImageOverride -equals build.azurelinux.3.amd64.open
+    ${{ else }}:
+      name: $(DncEngInternalBuildPool)
+      demands: ImageOverride -equals build.azurelinux.3.amd64
+  steps:
+  - checkout: self
+    fetchDepth: 1
+
+  - ${{ if ne(parameters.toolNupkgArtifactName, '') }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download Helix Job Monitor artifact
+      inputs:
+        buildType: current
+        artifactName: ${{ parameters.toolNupkgArtifactName }}
+        itemPattern: '${{ parameters.toolNupkgArtifactSubPath }}/${{ parameters.toolPackageId }}.*.nupkg'
+        targetPath: $(Agent.TempDirectory)/helix-job-monitor-nupkg
+
+    - bash: |
+        set -euo pipefail
+
+        toolPath="$AGENT_TEMPDIRECTORY/helix-job-monitor-tool"
+        mkdir -p "$toolPath"
+
+        packageId='${{ parameters.toolPackageId }}'
+        toolVersion='${{ parameters.toolVersion }}'
+        nupkgArtifactSubPath='${{ parameters.toolNupkgArtifactSubPath }}'
+        nupkgDir="$AGENT_TEMPDIRECTORY/helix-job-monitor-nupkg/$nupkgArtifactSubPath"
+
+        if [ ! -d "$nupkgDir" ]; then
+          echo "Expected nupkg directory '$nupkgDir' was not produced by the artifact download." >&2
+          exit 1
+        fi
+
+        nupkg=$(find "$nupkgDir" -maxdepth 1 -type f -name "$packageId.*.nupkg" | head -n 1)
+        if [ -z "$nupkg" ]; then
+          echo "No '$packageId.*.nupkg' found in '$nupkgDir'." >&2
+          exit 1
+        fi
+
+        # Derive the version from the nupkg filename so the local package is selected
+        # deterministically instead of resolving against any other configured feed.
+        nupkgBase=$(basename "$nupkg" .nupkg)
+        derivedVersion="${nupkgBase#${packageId}.}"
+        if [ -z "$toolVersion" ]; then
+          toolVersion="$derivedVersion"
+        fi
+
+        echo "Using locally built '$packageId' version '$toolVersion' from '$nupkgDir'."
+
+        # Create a minimal NuGet.config that only references the local nupkg directory.
+        # This avoids conflicts with the repo's package source mapping which blocks --add-source.
+        toolNugetConfig="$AGENT_TEMPDIRECTORY/helix-job-monitor-nuget.config"
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<configuration>\n  <packageSources>\n    <clear />\n    <add key="local-tool" value="%s" />\n  </packageSources>\n</configuration>\n' "$nupkgDir" > "$toolNugetConfig"
+
+        pushd "$(Build.SourcesDirectory)" > /dev/null
+        ./eng/common/dotnet.sh tool install \
+          --tool-path "$toolPath" "$packageId" \
+          --version "$toolVersion" \
+          --configfile "$toolNugetConfig"
+
+        # Locate the tool DLL so the run step can invoke it via ./eng/common/dotnet.sh exec.
+        toolDll=$(find "$toolPath/.store" -path '*/tools/*/any/*.deps.json' -type f | head -n 1)
+        toolDll="${toolDll%.deps.json}.dll"
+        if [ ! -f "$toolDll" ]; then
+          echo "Could not find tool DLL in '$toolPath/.store'." >&2
+          exit 1
+        fi
+
+        echo "Tool DLL: $toolDll"
+        echo "##vso[task.setvariable variable=HelixJobMonitorDll]$toolDll"
+      displayName: Install Helix Job Monitor
+
+  - ${{ else }}:
+    - bash: ./eng/common/dotnet.sh tool restore
+      displayName: Restore Helix Job Monitor
+
+  - bash: |
+      set -euo pipefail
+
+      toolArgs=(
+        --helix-base-uri           '${{ parameters.helixBaseUri }}'
+        --polling-interval-seconds '${{ parameters.pollingIntervalSeconds }}'
+        --max-wait-minutes         "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
+        --stage-name               '$(System.StageName)'
+      )
+
+      organization='${{ parameters.organization }}'
+      repository='${{ parameters.repository }}'
+
+      # Fall back to Azure DevOps-provided environment variables when the caller did not
+      # supply organization / repository explicitly. BUILD_REPOSITORY_NAME is typically
+      # 'owner/repo' for GitHub-backed builds.
+      if [ -z "$organization" ] || [ -z "$repository" ]; then
+        buildRepoName="${BUILD_REPOSITORY_NAME:-}"
+        if [ -n "$buildRepoName" ] && [[ "$buildRepoName" == */* ]]; then
+          repoOwner="${buildRepoName%%/*}"
+          repoName="${buildRepoName#*/}"
+          if [ -z "$organization" ]; then organization="$repoOwner"; fi
+          if [ -z "$repository" ];   then repository="$repoName";   fi
+        fi
+      fi
+
+      if [ -n "$organization" ]; then toolArgs+=( --organization "$organization" ); fi
+      if [ -n "$repository" ];   then toolArgs+=( --repository   "$repository" );   fi
+
+      # Build.Reason and Build.SourceBranch are required to derive the Helix source filter
+      # the same way the Helix SDK submitter does (PR -> 'pr', internal -> 'official',
+      # otherwise -> 'ci'). Without these, manually-queued / scheduled / CI builds would
+      # be looked up under the wrong source prefix and find zero jobs.
+      toolArgs+=( --build-reason  "$(Build.Reason)" )
+      toolArgs+=( --source-branch "$(Build.SourceBranch)" )
+
+      if [ -n '${{ parameters.toolNupkgArtifactName }}' ]; then
+        # Tool was installed from a local nupkg; run the DLL via the repo-local dotnet.
+        export DOTNET_ROOT="$(Build.SourcesDirectory)/.dotnet"
+        ./eng/common/dotnet.sh exec "$(HelixJobMonitorDll)" "${toolArgs[@]}"
+      else
+        # Tool was restored from the local .config/dotnet-tools.json manifest; invoke it
+        # through the manifest from the repo root.
+        pushd "$BUILD_SOURCESDIRECTORY" > /dev/null
+        trap 'popd > /dev/null' EXIT
+        ./eng/common/dotnet.sh tool run '${{ parameters.toolCommand }}' -- "${toolArgs[@]}"
+      fi
+    displayName: Monitor Helix Jobs
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      HELIX_ACCESSTOKEN: ${{ parameters.helixAccessToken }}

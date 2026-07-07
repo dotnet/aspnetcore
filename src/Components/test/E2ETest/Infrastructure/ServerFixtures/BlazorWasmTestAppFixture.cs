@@ -6,32 +6,28 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Gateway;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TestServer;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
 public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
 {
-    public readonly bool TestTrimmedOrMultithreadingApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
+    public readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
-        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedOrMultithreadingApps")
+        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
         .Value == "true";
 
     public string Environment { get; set; }
     public string PathBase { get; set; }
     public string ContentRoot { get; private set; }
 
-    public bool RequiresMultithreadingHeaders { get; set; }
-
     protected override IHost CreateWebHost()
     {
-        if (TestTrimmedOrMultithreadingApps)
+        if (TestTrimmedApps)
         {
-            var staticFilePath = Path.Combine(AppContext.BaseDirectory, "trimmed-or-threading", typeof(TProgram).Assembly.GetName().Name);
+            var staticFilePath = Path.Combine(AppContext.BaseDirectory, "trimmed", typeof(TProgram).Assembly.GetName().Name);
             if (!Directory.Exists(staticFilePath))
             {
                 throw new DirectoryNotFoundException($"Test is configured to use trimmed outputs, but trimmed outputs were not found in {staticFilePath}.");
@@ -66,11 +62,6 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             args.Add(Environment);
         }
 
-        if (RequiresMultithreadingHeaders || WebAssemblyTestHelper.MultithreadingIsEnabled())
-        {
-            args.Add("--apply-cop-headers");
-        }
-
         return BlazorGateway.BuildWebHost(args.ToArray());
     }
 
@@ -102,14 +93,6 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             {
                 app.UsePathBase(PathBase);
             }
-
-            app.Use(async (ctx, next) =>
-            {
-                // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
-                ctx.Response.Headers.Append("Cross-Origin-Embedder-Policy", "require-corp");
-                ctx.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");
-                await next(ctx);
-            });
 
             app.UseStaticFiles(new StaticFileOptions
             {

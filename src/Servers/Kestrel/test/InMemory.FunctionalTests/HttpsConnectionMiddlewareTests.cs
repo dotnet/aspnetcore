@@ -1360,8 +1360,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             using (var connection = server.CreateConnection())
             {
                 var stream = OpenSslStreamWithCert(connection.Stream);
-                await stream.AuthenticateAsClientAsync("localhost");
-                await AssertConnectionResult(stream, false);
+                await AssertConnectionRejected(stream);
             }
         }
     }
@@ -1385,8 +1384,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             using (var connection = server.CreateConnection())
             {
                 var stream = OpenSslStreamWithCert(connection.Stream);
-                await stream.AuthenticateAsClientAsync("localhost");
-                await AssertConnectionResult(stream, false);
+                await AssertConnectionRejected(stream);
             }
         }
     }
@@ -1663,6 +1661,24 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     {
         return new SslStream(rawStream, false, (sender, certificate, chain, errors) => true,
             (sender, host, certificates, certificate, issuers) => clientCertificate ?? _x509Certificate2);
+    }
+
+    private static async Task AssertConnectionRejected(SslStream stream)
+    {
+        // The server is expected to reject the connection because of the client certificate.
+        // Depending on the platform and runtime, this surfaces in one of two ways: either the TLS
+        // handshake fails directly (the peer sends a fatal certificate alert, e.g. macOS since
+        // https://github.com/dotnet/runtime/pull/128316), or the handshake completes and the server
+        // closes the connection immediately afterward. Both outcomes are valid rejections.
+        try
+        {
+            await stream.AuthenticateAsClientAsync("localhost");
+        }
+        catch (AuthenticationException)
+        {
+            return;
+        }
+        await AssertConnectionResult(stream, false);
     }
 
     private static async Task AssertConnectionResult(SslStream stream, bool success, string body = null)

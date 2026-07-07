@@ -1,0 +1,36 @@
+@page "/forms/client-validation/server-rendered-messages"
+
+@*
+    Simulates Blazor SSR rendering after a POST with server-side validation errors.
+    The first <div> for a field has data-valmsg-for (JS manages it); the second is a plain
+    sibling (extra server-rendered error). JS should remove the sibling when client validation
+    runs and the field becomes valid or shows a different client-side error.
+*@
+
+<h2 id="page-title">Server-rendered validation messages</h2>
+
+<style>
+    .validation-message { color: red; }
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+</style>
+
+<form id="test-form" method="post">
+    <div>
+        <input id="name" name="Name" type="text"
+               data-val="true"
+               data-val-required="Name is required." />
+        <div class="validation-message" data-valmsg-for="Name" data-valmsg-replace="true">Name is required.</div>
+        <div class="validation-message">Name must be at least 2 characters.</div>
+    </div>
+
+    <div>
+        <input id="email" name="Email" type="text"
+               data-val="true"
+               data-val-required="Email is required."
+               data-val-email="Invalid email." />
+        <div class="validation-message" data-valmsg-for="Email" data-valmsg-replace="true">Email is required.</div>
+    </div>
+
+    <button type="submit" id="submit">Submit</button>
+</form>

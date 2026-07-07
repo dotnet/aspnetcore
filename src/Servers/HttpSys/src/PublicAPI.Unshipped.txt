@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature.TryGetRequestProperty(int propertyId, System.ReadOnlySpan<byte> qualifier, System.Span<byte> output, out int bytesReturned) -> bool
