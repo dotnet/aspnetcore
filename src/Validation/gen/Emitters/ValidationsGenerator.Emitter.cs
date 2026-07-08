@@ -204,7 +204,7 @@ namespace Microsoft.Extensions.Validation.Generated
     {{GeneratedCodeAttribute}}
     file sealed class TypeResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
     {
-        private readonly global::System.ComponentModel.DataAnnotations.DisplayAttribute _displayAttribute;
+        private readonly global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
 
         public TypeResourceDisplayName(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
