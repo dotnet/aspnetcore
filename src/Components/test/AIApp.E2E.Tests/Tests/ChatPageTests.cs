@@ -144,9 +144,13 @@ public class ChatPageTests : BrowserTest
             new() { HasText = "You're welcome! Let me know if you need anything else." });
         await Expect(secondResponse).ToBeVisibleAsync();
 
-        // Verify multiple turns are rendered
+        // Each conversation turn (a user message plus its assistant response) renders as a
+        // single .sc-ai-turn element; user/assistant differentiation is at the message level.
         var turns = page.Locator(TurnSelector);
-        await Expect(turns).ToHaveCountAsync(4); // 2 user turns + 2 assistant turns
+        await Expect(turns).ToHaveCountAsync(2); // 2 exchanges = 2 turns
+
+        await Expect(page.Locator(".sc-ai-message--user")).ToHaveCountAsync(2);
+        await Expect(page.Locator(".sc-ai-message--assistant")).ToHaveCountAsync(2);
     }
 
     [Fact]
