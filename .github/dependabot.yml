@@ -12,6 +12,15 @@ updates:
   - dependency-name: "martincostello*"
   - dependency-name: "github/gh-aw-actions/**"
   - dependency-name: "github/gh-aw-actions" # Managed by gh aw compile. Version-locked to the gh-aw compiler; do not bump.
+  # Actions pinned in the generated agentic .lock.yml files, managed by gh aw
+  # compile; Dependabot bumps to those files are reverted on the next compile.
+  - dependency-name: "actions/cache/restore"
+  - dependency-name: "actions/cache/save"
+  - dependency-name: "actions/checkout"
+  - dependency-name: "actions/download-artifact"
+  - dependency-name: "actions/github-script"
+  - dependency-name: "actions/setup-node"
+  - dependency-name: "actions/upload-artifact"
   labels:
   - area-infrastructure
   package-ecosystem: github-actions
