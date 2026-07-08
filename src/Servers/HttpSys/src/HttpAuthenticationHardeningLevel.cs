@@ -23,23 +23,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 public enum HttpAuthenticationHardeningLevel
 {
     /// <summary>
-    /// Legacy (default). Http.Sys does not enforce channel binding validation and does
-    /// not expose the RFC 5929 TLS channel binding token to the application. This
-    /// matches the pre-hardening default behavior.
+    /// Http.Sys does not enforce channel binding validation and does not expose the RFC 5929 TLS channel binding token to the application.
+    /// This matches the pre-hardening default behavior.
     /// </summary>
     Legacy = 0,
 
     /// <summary>
-    /// Medium hardening. Http.Sys validates channel binding tokens when clients supply
-    /// them but tolerates their absence. The per-request TLS channel binding token is
-    /// exposed to the application.
+    /// Http.Sys validates channel binding tokens when clients supply them but tolerates their absence.
+    /// The per-request TLS channel binding token is exposed to the application.
     /// </summary>
     Medium = 1,
 
     /// <summary>
-    /// Strict hardening. Http.Sys requires channel binding tokens on authenticated
-    /// requests and rejects those without one. The per-request TLS channel binding
-    /// token is exposed to the application.
+    /// Http.Sys requires channel binding tokens on authenticated requests and rejects those without one.
+    /// The per-request TLS channel binding token is exposed to the application.
     /// </summary>
     Strict = 2,
 }
