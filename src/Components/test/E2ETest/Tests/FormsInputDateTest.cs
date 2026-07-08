@@ -107,7 +107,7 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
 
         // Can become invalid
-        // Stricly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
+        // Strictly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
         // We don't know of any way to produce a different (non-empty-equivalent) state using UI gestures, so there's nothing else to test
         SetDateInputValue(departureTimeInput, "");
         Browser.Equal("modified invalid", () => departureTimeInput.GetDomAttribute("class"));
