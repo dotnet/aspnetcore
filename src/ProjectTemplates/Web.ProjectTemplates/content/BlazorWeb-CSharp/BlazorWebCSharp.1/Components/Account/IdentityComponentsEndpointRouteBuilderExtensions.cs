@@ -55,7 +55,8 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
-            if (context.Features.Get<IAntiforgeryValidationFeature>() is not { IsValid: true } antiforgeryValidationFeature)
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is not { IsValid: true })
             {
                 return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
             }
@@ -83,7 +84,8 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromQuery] string? username) =>
         {
-            if (context.Features.Get<IAntiforgeryValidationFeature>() is not { IsValid: true } antiforgeryValidationFeature)
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is not { IsValid: true })
             {
                 return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
             }
@@ -120,7 +122,8 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] AuthenticationStateProvider authenticationStateProvider) =>
         {
-            if (context.Features.Get<IAntiforgeryValidationFeature>() is not { IsValid: true } antiforgeryValidationFeature)
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is not { IsValid: true })
             {
                 return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
             }
