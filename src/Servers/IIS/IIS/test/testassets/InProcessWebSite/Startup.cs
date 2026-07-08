@@ -679,12 +679,9 @@ public partial class Startup
 
     private async Task ReadAndWriteEchoLinesNoBuffering(HttpContext ctx)
     {
-#if FORWARDCOMPAT
-        var feature = ctx.Features.Get<IHttpBufferingFeature>();
-        feature.DisableResponseBuffering();
-#else
         var feature = ctx.Features.Get<IHttpResponseBodyFeature>();
         feature.DisableBuffering();
+#if !FORWARDCOMPAT
         Assert.True(ctx.Request.CanHaveBody());
 #endif
 
