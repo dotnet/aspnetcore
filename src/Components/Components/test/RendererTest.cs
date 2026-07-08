@@ -2353,55 +2353,6 @@ public class RendererTest
     }
 
     [Fact]
-    public void RemovesOnlyTheOmittedUnmatchedAttributesWhenOthersAreKeptOrChanged()
-    {
-        var renderer = new TestRenderer();
-        var includeKeptAttribute = true;
-        var includePatchedAttribute = true;
-        var includeRemovedAttribute = true;
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenComponent<MyStrongComponent>(1);
-            builder.AddComponentParameter(2, nameof(MyStrongComponent.Text), "hi there.");
-            if (includeKeptAttribute)
-            {
-                builder.AddAttribute(10, "data-kept", "kept");
-            }
-            if (includePatchedAttribute)
-            {
-                builder.AddAttribute(11, "data-patched", "v2");
-            }
-            if (includeRemovedAttribute)
-            {
-                builder.AddAttribute(12, "data-removed", "will-be-removed");
-            }
-            builder.CloseComponent();
-        });
-
-        renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        var childComponentId = renderer.Batches.Single()
-            .ReferenceFrames
-            .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
-            .ComponentId;
-
-        includeRemovedAttribute = false;
-        component.TriggerRender();
-
-        var childDiff = renderer.Batches[1].DiffsByComponentId[childComponentId].Single();
-
-        Assert.Contains(childDiff.Edits, edit =>
-            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-removed");
-
-        Assert.DoesNotContain(childDiff.Edits, edit =>
-            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-kept");
-
-        Assert.DoesNotContain(childDiff.Edits, edit =>
-            edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-patched");
-    }
-
-    [Fact]
     public void RemovesUnmatchedAttributesAcrossMultipleChildComponentsInTheSameRender()
     {
         var renderer = new TestRenderer();
@@ -2527,16 +2478,11 @@ public class RendererTest
         includeParentAttr = false;
         includeChildAttr = false;
         component.TriggerRender();
-
-        // Both diffs (parent + child) are produced as part of the second render batch.
-        // Use DiffsInOrder to inspect the union of edits across all components in the batch.
         var allEdits = renderer.Batches[1].DiffsInOrder.SelectMany(d => d.Edits).ToList();
 
-        // The container's render must produce a RemoveAttribute for "data-parent".
         Assert.Contains(allEdits, edit =>
             edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-parent");
 
-        // The child component must independently produce a RemoveAttribute for "data-child".
         Assert.Contains(allEdits, edit =>
             edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-child");
     }

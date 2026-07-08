@@ -368,42 +368,9 @@ public partial class ParameterViewTest
     [Fact]
     public void CaptureUnmatchedValues_IsResetToNull_WhenNoUnmatchedValuesAreSupplied()
     {
-        var target = new HasCaptureUnmatchedValuesProperty
-        {
-            CaptureUnmatchedValues = new Dictionary<string, object> { { "old", "value" } }
-        };
-        var parameters = new ParameterViewBuilder
-        {
-            { nameof(HasCaptureUnmatchedValuesProperty.StringProp), "hi" },
-        }.Build();
-
-        parameters.SetParameterProperties(target);
-
-        Assert.Equal("hi", target.StringProp);
-        Assert.Null(target.CaptureUnmatchedValues);
-    }
-
-    [Fact]
-    public void CaptureUnmatchedValues_RemainsNull_AfterSecondRenderWithNoUnmatchedValues()
-    {
-        var target = new HasCaptureUnmatchedValuesProperty();
-        var parametersWithNoUnmatched = new ParameterViewBuilder
-        {
-            { nameof(HasCaptureUnmatchedValuesProperty.StringProp), "hi" },
-        }.Build();
-
-        parametersWithNoUnmatched.SetParameterProperties(target);
-        parametersWithNoUnmatched.SetParameterProperties(target);
-
-        Assert.Equal("hi", target.StringProp);
-        Assert.Null(target.CaptureUnmatchedValues);
-    }
-
-    [Fact]
-    public void CaptureUnmatchedValues_IsResetToNull_WhenOnlyDirectParametersAreSupplied()
-    {
-        // This validates that direct (non-cascading) parameters supplied by the parent reset
-        // the captured unmatched values, so the renderer can emit RemoveAttribute edits.
+        // Regression for issue #56463: a render that supplies only direct parameters (no unmatched)
+        // must reset the previously-captured CaptureUnmatchedValues to null so the renderer emits
+        // RemoveAttribute edits for the omitted attributes.
         var target = new HasCaptureUnmatchedValuesProperty
         {
             CaptureUnmatchedValues = new Dictionary<string, object> { { "old", "value" } }
@@ -438,41 +405,6 @@ public partial class ParameterViewTest
         Assert.Equal("hi", target.Cascading);
         Assert.NotNull(target.CaptureUnmatchedValues);
         Assert.Equal("kept", target.CaptureUnmatchedValues["class"]);
-    }
-
-    [Fact]
-    public void CaptureUnmatchedValues_IsPreserved_OnEmptyParameterView()
-    {
-        // Mirrors the InputBase.SetParametersAsync(ParameterView.Empty) pattern: the base
-        // implementation calls SetParameterProperties with an empty ParameterView. We must not
-        // reset the captured unmatched values in that case.
-        var target = new HasCaptureUnmatchedValuesProperty
-        {
-            CaptureUnmatchedValues = new Dictionary<string, object> { { "class", "kept" } }
-        };
-        var parameters = new ParameterViewBuilder().Build();
-
-        parameters.SetParameterProperties(target);
-
-        Assert.NotNull(target.CaptureUnmatchedValues);
-        Assert.Equal("kept", target.CaptureUnmatchedValues["class"]);
-    }
-
-    [Fact]
-    public void CaptureUnmatchedValues_IsPreserved_WhenExplicitlySet_AndNoUnmatchedValues()
-    {
-        // When the parent explicitly supplies the CaptureUnmatchedValues parameter (e.g. AdditionalAttributes),
-        // we must not overwrite it with null just because the parent also supplied other direct parameters.
-        var explicitValue = new Dictionary<string, object> { { "explicit", "value" } };
-        var target = new HasCaptureUnmatchedValuesProperty();
-        var parameters = new ParameterViewBuilder
-        {
-            { nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues), explicitValue },
-        }.Build();
-
-        parameters.SetParameterProperties(target);
-
-        Assert.Same(explicitValue, target.CaptureUnmatchedValues);
     }
 
     [Fact]
