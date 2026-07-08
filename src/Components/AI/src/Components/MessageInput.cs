@@ -153,7 +153,14 @@ public class MessageInput : IComponent, IDisposable
             builder.AddAttribute(15, "aria-label", _placeholder ?? "Type a message...");
             builder.AddAttribute(16, "oninput",
                 EventCallback.Factory.Create<ChangeEventArgs>(
-                    this, e => _text = e.Value?.ToString() ?? ""));
+                    this, e =>
+                    {
+                        _text = e.Value?.ToString() ?? "";
+                        // Re-render so the component's rendered value tracks the DOM value.
+                        // Without this, clearing _text on submit produces no diff (the last
+                        // rendered value was already empty) and the textarea is never cleared.
+                        Render();
+                    }));
             builder.AddAttribute(17, "onkeydown",
                 EventCallback.Factory.Create<KeyboardEventArgs>(
                     this, OnKeyDown));
