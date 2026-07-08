@@ -120,6 +120,11 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] AuthenticationStateProvider authenticationStateProvider) =>
         {
+            if (context.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            {
+                return Results.BadRequest(antiforgeryValidationFeature.Error?.Message ?? "Antiforgery validation failed.");
+            }
+
             var user = await userManager.GetUserAsync(context.User);
             if (user is null)
             {
