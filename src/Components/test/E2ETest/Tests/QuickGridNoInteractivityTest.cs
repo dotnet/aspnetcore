@@ -86,6 +86,13 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
         Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-disabled"));
         Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("aria-disabled"));
 
+        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("href"));
+        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("href"));
+        Assert.Equal("-1", Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("tabindex"));
+        Assert.Equal("-1", Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("tabindex"));
+        Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("tabindex"));
+        Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("tabindex"));
+
         Browser.FindElement(By.CssSelector(".first-paginator .go-last")).Click();
         Browser.Equal("5", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
 
@@ -93,6 +100,13 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
         Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("aria-disabled"));
         Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-disabled"));
         Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("aria-disabled"));
+
+        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("href"));
+        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("href"));
+        Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("tabindex"));
+        Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("tabindex"));
+        Assert.Equal("-1", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("tabindex"));
+        Assert.Equal("-1", Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("tabindex"));
     }
 
     [Fact]
