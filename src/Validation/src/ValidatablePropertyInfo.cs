@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Validation;
 public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValidationErrorReporter
 {
     private RequiredAttribute? _requiredAttribute;
-    private readonly ValidationAttribute[] _validationAttributes;
+    private ValidationAttribute[]? _validationAttributes;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
@@ -37,7 +37,6 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         PropertyType = propertyType;
         Name = name;
         DisplayNameInfo = displayNameInfo;
-        _validationAttributes = GetValidationAttributesCore();
     }
 
     /// <summary>
@@ -70,7 +69,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     /// </summary>
     /// <returns>An array of validation attributes to apply to this property.</returns>
     protected virtual ValidationAttribute[] GetValidationAttributes()
-        => _validationAttributes;
+        => _validationAttributes ??= GetValidationAttributesCore();
 
     private ValidationAttribute[] GetValidationAttributesCore()
     {
