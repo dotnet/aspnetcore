@@ -1,0 +1,58 @@
+@page "/persistent-state/auto-pause-shadow-media"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause veto — media inside shadow DOM</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>Verifies that auto-pause is vetoed while a <code>&lt;video&gt;</code> element is
+    playing audibly <em>inside a shadow root</em>. Detecting this requires
+    <code>isMediaPlaying</code> to traverse the shadow DOM, not just the main-document
+    light DOM.</p>
+
+<div id="media-host"></div>
+
+<button id="start-video" type="button">Start playback</button>
+
+<script>
+    window.autoPauseShadowMedia = (function () {
+        var host = document.getElementById('media-host');
+        var root = host.attachShadow({ mode: 'open' });
+        var video = document.createElement('video');
+        video.id = 'shadow-video';
+        video.loop = true;
+        video.style = 'width:120px;height:80px;background:#222;';
+        root.appendChild(video);
+
+        function startCanvasCapture() {
+            if (video.srcObject) {
+                return video.play();
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = 2;
+            canvas.height = 2;
+            var ctx = canvas.getContext('2d');
+            setInterval(function () {
+                ctx.fillStyle = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+                ctx.fillRect(0, 0, 2, 2);
+            }, 100);
+            video.srcObject = canvas.captureStream();
+            return video.play();
+        }
+
+        return {
+            startCanvasCapture: startCanvasCapture,
+            // The video lives in a shadow root, so it is not reachable via document.getElementById.
+            isPlaying: function () { return !video.paused; },
+        };
+    })();
+
+    document.getElementById('start-video').addEventListener('click', function () {
+        window.autoPauseShadowMedia.startCanvasCapture();
+    });
+</script>
