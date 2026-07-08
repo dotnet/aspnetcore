@@ -262,7 +262,7 @@ public class ComponentHubTest
         providerMock.Setup(m => m.RestoreCircuitAsync(It.IsAny<CircuitId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PersistedCircuitState
             {
-                RootComponents = [],
+                RootComponents = [.. """{}"""u8],
                 ApplicationState = ReadOnlyDictionary<string, byte[]>.Empty,
             });
 
