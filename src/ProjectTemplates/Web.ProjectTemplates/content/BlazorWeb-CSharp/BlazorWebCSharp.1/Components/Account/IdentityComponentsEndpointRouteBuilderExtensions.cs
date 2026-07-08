@@ -55,9 +55,9 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
-            if (context.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            if (context.Features.Get<IAntiforgeryValidationFeature>() is not { IsValid: true } antiforgeryValidationFeature)
             {
-                return Results.BadRequest(antiforgeryValidationFeature.Error?.Message ?? "Antiforgery validation failed.");
+                return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
             }
 
             var user = await userManager.GetUserAsync(context.User);
@@ -83,9 +83,9 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromQuery] string? username) =>
         {
-            if (context.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            if (context.Features.Get<IAntiforgeryValidationFeature>() is not { IsValid: true } antiforgeryValidationFeature)
             {
-                return Results.BadRequest(antiforgeryValidationFeature.Error?.Message ?? "Antiforgery validation failed.");
+                return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
             }
 
             var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
@@ -120,9 +120,9 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] AuthenticationStateProvider authenticationStateProvider) =>
         {
-            if (context.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            if (context.Features.Get<IAntiforgeryValidationFeature>() is not { IsValid: true } antiforgeryValidationFeature)
             {
-                return Results.BadRequest(antiforgeryValidationFeature.Error?.Message ?? "Antiforgery validation failed.");
+                return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
             }
 
             var user = await userManager.GetUserAsync(context.User);
