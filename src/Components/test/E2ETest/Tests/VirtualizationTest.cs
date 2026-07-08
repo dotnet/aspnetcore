@@ -1832,6 +1832,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void QuickGrid_Virtualize_ToleratesIncorrectItemSize_UnderFastScroll()
     {
         Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
+        Browser.Exists(By.Id("qg-mode-fixed")).Click();
 
         var container = Browser.Exists(By.Id("qg-capacity"));
 
@@ -1858,16 +1859,58 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             tick();
         ");
 
-        // The window advanced past the top.
         Browser.NotEqual("0", () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
-        Browser.True(() => ViewportCenterShowsRealData(container));
+        Browser.True(() => ViewportCenterShowsRealData("qg-capacity"));
     }
 
-    private bool ViewportCenterShowsRealData(IWebElement container)
+    [Fact]
+    public void QuickGrid_Virtualize_VariableHeight_ToleratesIncorrectItemSize_UnderFastScroll()
+    {
+        // Same declared-too-small scenario as above, but with VARIABLE-height rows and an async
+        // ItemsProvider. Regression guard: QuickGrid placeholder rows used to ignore
+        // PlaceholderContext.Size and render at a fixed ~21px, far shorter than the estimated row
+        // height, which shifted the rendered window out of the viewport and left it blank. QuickGrid
+        // now reserves the estimated height on placeholder rows so the geometry stays consistent.
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
+        Browser.Exists(By.Id("qg-mode-variable")).Click();
+
+        var container = Browser.Exists(By.Id("qg-variable-capacity"));
+
+        WaitForQuickGridDataRows(container);
+        var topSpacer = container.FindElements(By.CssSelector("[data-blazor-virtualize-reserved-height]"))[0];
+        Assert.Equal("0", topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
+
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteAsyncScript(@"
+            const done = arguments[arguments.length - 1];
+            const el = document.getElementById('qg-variable-capacity');
+            let i = 0;
+            const positions = [];
+            for (let k = 1; k <= 40; k++) { positions.push(k * 1500); }
+            positions.push(58000, 57700, 58200, 57900);
+            const tick = () => {
+                const p = positions[i];
+                el.dispatchEvent(new WheelEvent('wheel', { deltaY: 1500, bubbles: true }));
+                el.scrollTop = p;
+                i++;
+                if (i < positions.length) {
+                    setTimeout(tick, 40);
+                } else {
+                    done();
+                }
+            };
+            tick();
+        ");
+
+        Browser.NotEqual("0", () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
+        Browser.True(() => ViewportCenterShowsRealData("qg-variable-capacity"));
+    }
+
+    private bool ViewportCenterShowsRealData(string containerId)
     {
         var js = (IJavaScriptExecutor)Browser;
         return (bool)js.ExecuteScript(@"
-            const el = document.getElementById('qg-capacity');
+            const el = document.getElementById(arguments[0]);
             const r = el.getBoundingClientRect();
             const centerY = r.height / 2;
             const rows = el.querySelectorAll('tbody tr:not([aria-hidden])');
@@ -1881,7 +1924,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 if (top <= centerY && bottom >= centerY) { return true; }
             }
             return false;
-        ");
+        ", containerId);
     }
 
     private void WaitForQuickGridDataRows(IWebElement container)
