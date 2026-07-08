@@ -170,6 +170,118 @@ public class EditContextDataAnnotationsExtensionsTest
         Assert.Empty(editContext.GetValidationMessages());
     }
 
+    [Fact]
+    public Task FormLevelAsyncValidationProducesMessages() => RunOnDispatcher(async () =>
+    {
+        var model = new AsyncTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var isValid = await editContext.ValidateAsync();
+
+        Assert.False(isValid);
+        Assert.Equal(new[] { "AsyncString:asyncnonempty" }, editContext.GetValidationMessages());
+    });
+
+    [Fact]
+    public void FormLevelAsyncOnlyValidation_ValidateInvokesSyncFallbackAndThrows()
+    {
+        // Synchronous Validate() runs DataAnnotations through the synchronous Validator.TryValidateObject,
+        // which invokes the synchronous IsValid fallback of an async-only attribute. AsyncNonEmptyAttribute's
+        // fallback is not supported, so the exception it throws propagates out of Validate().
+        var model = new AsyncTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var ex = Assert.Throws<NotSupportedException>(() => editContext.Validate());
+        Assert.Contains("only supports asynchronous validation", ex.Message);
+    }
+
+    [Fact]
+    public Task FieldLevelAsyncValidationBecomesPendingThenSettles() => RunOnDispatcher(async () =>
+    {
+        var model = new AsyncTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var field = editContext.Field(nameof(AsyncTestModel.AsyncString));
+
+        editContext.NotifyFieldChanged(field);
+
+        Assert.True(editContext.IsValidationPending(field));
+        await WaitUntilAsync(() => !editContext.IsValidationPending(field));
+
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.Equal(new[] { "AsyncString:asyncnonempty" }, editContext.GetValidationMessages(field));
+    });
+
+    [Fact]
+    public Task FieldLevelAsyncValidationThrowing_MarksFieldFaulted() => RunOnDispatcher(async () =>
+    {
+        var model = new AsyncThrowingModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var field = editContext.Field(nameof(AsyncThrowingModel.ThrowingString));
+
+        editContext.NotifyFieldChanged(field);
+        await WaitUntilAsync(() => !editContext.IsValidationPending(field));
+
+        Assert.True(editContext.IsValidationFaulted(field));
+    });
+
+    private static Task RunOnDispatcher(Func<Task> body)
+        => Dispatcher.CreateDefault().InvokeAsync(body);
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        var timeout = TimeSpan.FromSeconds(5);
+        var start = DateTime.UtcNow;
+        while (!condition())
+        {
+            if (DateTime.UtcNow - start > timeout)
+            {
+                throw new TimeoutException("The expected condition was not reached before the timeout.");
+            }
+
+            await Task.Yield();
+        }
+    }
+
+    private sealed class AsyncNonEmptyAttribute : AsyncValidationAttribute
+    {
+        protected override async Task<ValidationResult> IsValidAsync(object value, ValidationContext validationContext, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            return value is string s && s.Length > 0
+                ? ValidationResult.Success
+                : new ValidationResult($"{validationContext.MemberName}:asyncnonempty", new[] { validationContext.MemberName });
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            => throw new NotSupportedException("This attribute only supports asynchronous validation.");
+    }
+
+    private sealed class AsyncThrowingAttribute : AsyncValidationAttribute
+    {
+        protected override async Task<ValidationResult> IsValidAsync(object value, ValidationContext validationContext, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException("Async validation failed");
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            => throw new NotSupportedException("This attribute only supports asynchronous validation.");
+    }
+
+    private sealed class AsyncTestModel
+    {
+        [AsyncNonEmpty] public string AsyncString { get; set; }
+    }
+
+    private sealed class AsyncThrowingModel
+    {
+        [AsyncThrowing] public string ThrowingString { get; set; }
+    }
+
     class TestModel
     {
         [Required(ErrorMessage = "RequiredString:required")] public string RequiredString { get; set; }

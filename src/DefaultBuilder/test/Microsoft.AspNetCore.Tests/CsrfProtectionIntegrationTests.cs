@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -825,12 +826,12 @@ public class CsrfProtectionIntegrationTests
 
         var endpointInvoked = false;
         IAntiforgeryValidationFeature? capturedFeature = null;
-        object? observedMarker = null;
+        var observedHasMarker = true;
         app.MapPost("/plain", (HttpContext ctx) =>
         {
             endpointInvoked = true;
             capturedFeature = ctx.Features.Get<IAntiforgeryValidationFeature>();
-            observedMarker = ctx.Items[CsrfProtectionInvokedKey];
+            observedHasMarker = ctx.Items.ContainsKey(CsrfProtectionInvokedKey);
             return "ok";
         });
         await app.StartAsync();
@@ -845,8 +846,7 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(endpointInvoked, "Endpoint should run when the CSRF middleware passes through.");
         Assert.Null(capturedFeature);
-        // The sentinel is still set: it is the FormFeature backstop contract (PR #67082).
-        Assert.NotNull(observedMarker);
+        Assert.False(observedHasMarker);
     }
 
     [Fact]
@@ -1096,16 +1096,16 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
-    public async Task CsrfProtection_SetsItemsMarker_WhenEndpointMatched()
+    public async Task CsrfProtection_DoesNotSetItemsMarker_WhenEndpointHasNoAntiforgeryMetadata()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         using var app = builder.Build();
 
-        object? observedMarker = null;
+        var observedHasMarker = true;
         app.MapPost("/probe", (HttpContext ctx) =>
         {
-            observedMarker = ctx.Items[CsrfProtectionInvokedKey];
+            observedHasMarker = ctx.Items.ContainsKey(CsrfProtectionInvokedKey);
             return "ok";
         });
 
@@ -1118,7 +1118,7 @@ public class CsrfProtectionIntegrationTests
         var response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(observedMarker);
+        Assert.False(observedHasMarker);
     }
 
     [Fact]
@@ -1203,6 +1203,45 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task CsrfProtection_NotAutoInjected_WhenAppHasNoEndpointDataSources()
+    {
+        // Regression guard for the aspnet/Benchmarks-style perf regression (companion to #67119
+        // comment 4835979504). Apps that never register any endpoints (e.g. `app.UsePlainText()`
+        // in TechEmpower's classic plaintext.benchmarks.yml) cannot possibly hit a
+        // RequiresValidation:true endpoint, so the auto-injected CSRF middleware has no consumer.
+        // Injecting it anyway forces the lazy HttpContext.Items dictionary to allocate on every
+        // request. This test ensures the middleware is NOT wired into the pipeline when the app
+        // has zero EndpointDataSource registrations.
+
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+
+        await using var app = builder.Build();
+
+        var observedHasMarker = true;
+
+        // No MapGet / MapControllers / MapRazorPages calls. Pure middleware pipeline.
+        app.Run(async context =>
+        {
+            observedHasMarker = context.Items.ContainsKey(CsrfProtectionInvokedKey);
+            await context.Response.WriteAsync("hello");
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/anything");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("hello", await response.Content.ReadAsStringAsync());
+        // If the CSRF middleware were still auto-injected, it would stamp the marker onto
+        // HttpContext.Items (via the endpoint-is-null defensive branch), which is exactly the
+        // allocation we want to avoid. Absence of the marker proves the middleware is not
+        // running.
+        Assert.False(observedHasMarker);
+    }
+
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
@@ -1270,5 +1309,406 @@ public class CsrfProtectionIntegrationTests
                 }
             }
         }
+    }
+
+    [Fact]
+    public async Task Probe_ImplicitRouting_ReExecuteIntoAntiforgeryEndpoint_CsrfSeesMatchedEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseStatusCodePagesWithReExecute("/rerouted");
+
+        app.MapGet("/rerouted", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return ctx.Response.WriteAsync("rerouted");
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/does-not-exist");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    [Fact]
+    public async Task Probe_ExplicitRouting_ReExecuteIntoAntiforgeryEndpoint_CsrfSeesMatchedEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseRouting();
+        app.UseStatusCodePagesWithReExecute("/rerouted");
+
+        app.MapGet("/rerouted", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return ctx.Response.WriteAsync("rerouted");
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/does-not-exist");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    [Fact]
+    public async Task Probe_ImplicitRouting_NormalRequestToAntiforgeryEndpoint_CsrfSeesEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.MapPost("/protected", () => "ok").WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+        await client.SendAsync(request);
+
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    [Fact]
+    public async Task Probe_ExplicitRouting_NormalRequestToAntiforgeryEndpoint_CsrfSeesEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseRouting();
+
+        app.MapPost("/protected", () => "ok").WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+        await client.SendAsync(request);
+
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    private sealed class EndpointCapturingCsrfProtection : ICsrfProtection
+    {
+        private readonly ICsrfProtection _inner;
+
+        public EndpointCapturingCsrfProtection()
+            : this(new DefaultCsrfProtection())
+        {
+        }
+
+        public EndpointCapturingCsrfProtection(ICsrfProtection inner)
+        {
+            _inner = inner;
+        }
+
+        public List<Endpoint?> ObservedEndpoints { get; } = new();
+
+        public async ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
+        {
+            lock (ObservedEndpoints)
+            {
+                ObservedEndpoints.Add(context.GetEndpoint());
+            }
+            return await _inner.ValidateAsync(context);
+        }
+    }
+
+    [Fact]
+    public async Task Repro_BlazorTemplatePipeline_CsrfMarkerIsStampedBeforeEndpoint_WithStatusCodePagesMiddleware()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+
+        object? observedMarker = null;
+        app.MapGet("/", (HttpContext ctx) =>
+        {
+            ctx.Items.TryGetValue(CsrfProtectionInvokedKey, out observedMarker);
+            return "home";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+        app.MapGet("/not-found", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return Task.CompletedTask;
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(observedMarker);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_MultipleUseRouting_CsrfMarkerStamped()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseRouting();
+        app.UseRouting();
+
+        object? observedMarker = null;
+        app.MapPost("/", (HttpContext ctx) =>
+        {
+            ctx.Items.TryGetValue(CsrfProtectionInvokedKey, out observedMarker);
+            return "home";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var req = new HttpRequestMessage(HttpMethod.Post, "/");
+        req.Headers.Add("Sec-Fetch-Site", "same-origin");
+        var response = await app.GetTestClient().SendAsync(req);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(observedMarker);
+        Assert.Equal(2, probe.ObservedEndpoints.Count);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_ExplicitUseRoutingAndUseEndpoints_CsrfMarkerStamped()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseRouting();
+
+        object? observedMarker = null;
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapPost("/", (HttpContext ctx) =>
+            {
+                ctx.Items.TryGetValue(CsrfProtectionInvokedKey, out observedMarker);
+                return "home";
+            }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+        });
+
+        await app.StartAsync();
+        var req = new HttpRequestMessage(HttpMethod.Post, "/");
+        req.Headers.Add("Sec-Fetch-Site", "same-origin");
+        var response = await app.GetTestClient().SendAsync(req);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(observedMarker);
+        Assert.Single(probe.ObservedEndpoints);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_MapWhen_MainPipelineEndpoint_CsrfMarkerStamped()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.MapWhen(
+            ctx => ctx.Request.Path.StartsWithSegments("/branch"),
+            branch => branch.Run(ctx => ctx.Response.WriteAsync("branch")));
+
+        object? observedMarker = null;
+        app.MapPost("/", (HttpContext ctx) =>
+        {
+            ctx.Items.TryGetValue(CsrfProtectionInvokedKey, out observedMarker);
+            return "home";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var req = new HttpRequestMessage(HttpMethod.Post, "/");
+        req.Headers.Add("Sec-Fetch-Site", "same-origin");
+        var response = await app.GetTestClient().SendAsync(req);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(observedMarker);
+        Assert.Single(probe.ObservedEndpoints);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_MapWhenBranchTaken_MainEndpointNotHit()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.MapWhen(
+            ctx => ctx.Request.Path.StartsWithSegments("/branch"),
+            branch => branch.Run(ctx => ctx.Response.WriteAsync("branch")));
+
+        app.MapGet("/", () => "home").WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var response = await app.GetTestClient().GetAsync("/branch");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("branch", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task CsrfProtection_UsePathBase_CsrfMarkerStamped()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.UsePathBase("/base");
+
+        object? observedMarker = null;
+        app.MapGet("/hello", (HttpContext ctx) =>
+        {
+            ctx.Items.TryGetValue(CsrfProtectionInvokedKey, out observedMarker);
+            return "hello";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var response = await app.GetTestClient().GetAsync("/base/hello");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(observedMarker);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_UseExceptionHandler_CsrfMarkerStampedOnErrorEndpoint()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.UseExceptionHandler("/error");
+
+        object? observedMarkerOnError = null;
+        app.MapGet("/throw", (HttpContext _) => { throw new InvalidOperationException("boom"); });
+        app.MapGet("/error", (HttpContext ctx) =>
+        {
+            ctx.Items.TryGetValue(CsrfProtectionInvokedKey, out observedMarkerOnError);
+            return "error";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var response = await app.GetTestClient().GetAsync("/throw");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.NotNull(observedMarkerOnError);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_UseStatusCodePagesWithReExecute_CsrfMarkerStampedOnReroutedRequest()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseStatusCodePagesWithReExecute("/not-found");
+
+        app.MapGet("/not-found", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return ctx.Response.WriteAsync("not found");
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var response = await app.GetTestClient().GetAsync("/does-not-exist");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    [Fact]
+    public async Task CsrfProtection_UseStatusCodePagesWithReExecute_ReadsCorsMetadataOnReroutedEndpoint()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddPolicy("Trusted", p => p.WithOrigins("https://trusted.example.com")));
+        using var app = builder.Build();
+
+        app.UseStatusCodePagesWithReExecute("/not-found");
+        app.UseCors();
+        app.MapPost("/not-found", EnforceCsrfProtected)
+            .RequireCors("Trusted")
+            .WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var client = app.GetTestClient();
+
+        var trusted = new HttpRequestMessage(HttpMethod.Post, "/does-not-exist");
+        trusted.Headers.Add("Sec-Fetch-Site", "cross-site");
+        trusted.Headers.Add("Origin", "https://trusted.example.com");
+        var trustedResponse = await client.SendAsync(trusted);
+        Assert.Equal("allowed", await trustedResponse.Content.ReadAsStringAsync());
+
+        var untrusted = new HttpRequestMessage(HttpMethod.Post, "/does-not-exist");
+        untrusted.Headers.Add("Sec-Fetch-Site", "cross-site");
+        untrusted.Headers.Add("Origin", "https://evil.example.com");
+        var untrustedResponse = await client.SendAsync(untrusted);
+        Assert.Equal(HttpStatusCode.BadRequest, untrustedResponse.StatusCode);
+        Assert.Equal("protected", await untrustedResponse.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task CsrfProtection_UseRewriter_CsrfMarkerStampedOnRewrittenEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseRewriter(new RewriteOptions().AddRewrite("^old/(.*)", "new/$1", skipRemainingRules: true));
+
+        object? observedMarker = null;
+        app.MapGet("/new/{value}", (HttpContext ctx, string value) =>
+        {
+            ctx.Items.TryGetValue(CsrfProtectionInvokedKey, out observedMarker);
+            return value;
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+        var response = await app.GetTestClient().GetAsync("/old/hello");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(observedMarker);
+        Assert.Contains(probe.ObservedEndpoints, e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
     }
 }
