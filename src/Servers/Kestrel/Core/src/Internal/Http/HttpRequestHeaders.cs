@@ -101,7 +101,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         // Per RFC 9110 §8.6, Content-Length is 1*DIGIT: only ASCII digits are allowed.
         // https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6
         // Utf8Parser.TryParse accepts a leading '+' or '-' sign, so ensure the first byte is a digit.
-        long parsed;
+        long parsed = 0;
         if (value.IsEmpty ||
             value[0] is < (byte)'0' or > (byte)'9' ||
             !Utf8Parser.TryParse(value, out parsed, out var consumed) ||
