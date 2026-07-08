@@ -2920,7 +2920,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 " var m = -1; for (var i = 0; i < els.length; i++) {" +
                 " var v = parseInt(els[i].getAttribute('data-index'), 10); if (v > m) { m = v; } } return m;",
                                container);
-            return maxIndex >= 1090;
+            return maxIndex >= 1099;
         }, TimeSpan.FromSeconds(30),
         "End mode: real rows near the end of the list (index ~1099) should be visible at the bottom, not placeholders");
     }
