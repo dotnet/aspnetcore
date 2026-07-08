@@ -159,9 +159,9 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
         }
       } catch (error) {
         const markerPreview = candidateStart.textContent ? candidateStart.textContent.substring(0, 100) : 'unknown';
-        throw new Error(`Blazor hydration failed: malformed component marker. This usually occurs when
-server-rendered HTML doesn't match the browser DOM, often due to invalid markup (e.g., block elements inside <p>).
-Ensure valid HTML structure. [Marker: ${markerPreview}...]`);
+        throw new Error(
+          `Blazor hydration failed: malformed component marker. This usually occurs when server-rendered HTML doesn't match the browser DOM, often due to invalid markup (e.g., block elements inside <p>). Ensure valid HTML structure. [Marker: ${markerPreview}...]`
+        );
       }
     } else {
       return;
