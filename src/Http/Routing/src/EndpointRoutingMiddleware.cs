@@ -55,16 +55,13 @@ internal sealed partial class EndpointRoutingMiddleware
         if (endpointRouteBuilder is IApplicationBuilder applicationBuilder &&
             applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingPipeline, out var value))
         {
-            // Consume the block so additional UseRouting() calls don't run it again.
-            applicationBuilder.Properties.Remove(MiddlewareInvokedKeys.PostRoutingPipeline);
-
             // Reject any custom user-placed code under PostRoutingPipeline
-            if (value is not Func<RequestDelegate, RequestDelegate> postRoutingMiddleware || !IsFrameworkPostRoutingMiddleware(postRoutingMiddleware))
+            if (value is not Func<RequestDelegate, RequestDelegate> postRoutingPipeline || !IsFrameworkPostRoutingMiddleware(postRoutingPipeline))
             {
                 throw new InvalidOperationException($"The '{MiddlewareInvokedKeys.PostRoutingPipeline}' application property is reserved for the framework and cannot be set by application code.");
             }
 
-            next = postRoutingMiddleware(next);
+            next = postRoutingPipeline(next);
         }
 
         _next = next;
