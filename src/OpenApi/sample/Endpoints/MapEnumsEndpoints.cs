@@ -42,6 +42,16 @@ public static class EnumsEndpointsExtensions
         endpointRouteBuilder.MapPost("/enums/camelcase/nullable-body-direct", ([FromBody] CamelCaseStatus? status) => TypedResults.Ok(status))
             .WithGroupName("enum-camelcase-nullable-body-direct");
 
+        // Response where the enum is returned directly.
+        endpointRouteBuilder.MapPost("/enums/pascalcase/nonnullable-response", () => TypedResults.Ok<PascalCaseStatus>(PascalCaseStatus.Active))
+            .WithGroupName("enum-pascalcase-nonnullable-response");
+        endpointRouteBuilder.MapPost("/enums/pascalcase/nullable-response", () => TypedResults.Ok<PascalCaseStatus?>(PascalCaseStatus.Active))
+            .WithGroupName("enum-pascalcase-nullable-response");
+        endpointRouteBuilder.MapPost("/enums/camelcase/nonnullable-response", () => TypedResults.Ok<CamelCaseStatus>(CamelCaseStatus.Active))
+            .WithGroupName("enum-camelcase-nonnullable-response");
+        endpointRouteBuilder.MapPost("/enums/camelcase/nullable-response", () => TypedResults.Ok<CamelCaseStatus?>(CamelCaseStatus.Active))
+            .WithGroupName("enum-camelcase-nullable-response");
+
         return endpointRouteBuilder;
     }
 

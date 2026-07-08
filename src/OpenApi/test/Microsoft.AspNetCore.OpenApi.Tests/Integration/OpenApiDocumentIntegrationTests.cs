@@ -57,6 +57,10 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         "enum-pascalcase-nullable-body-direct",
         "enum-camelcase-nonnullable-body-direct",
         "enum-camelcase-nullable-body-direct",
+        "enum-pascalcase-nonnullable-response",
+        "enum-pascalcase-nullable-response",
+        "enum-camelcase-nonnullable-response",
+        "enum-camelcase-nullable-response",
     ];
 
     public static TheoryData<string> EnumDocumentNames()

@@ -58,6 +58,10 @@ builder.Services.AddOpenApi("enum-pascalcase-nonnullable-body-direct");
 builder.Services.AddOpenApi("enum-pascalcase-nullable-body-direct");
 builder.Services.AddOpenApi("enum-camelcase-nonnullable-body-direct");
 builder.Services.AddOpenApi("enum-camelcase-nullable-body-direct");
+builder.Services.AddOpenApi("enum-pascalcase-nonnullable-response");
+builder.Services.AddOpenApi("enum-pascalcase-nullable-response");
+builder.Services.AddOpenApi("enum-camelcase-nonnullable-response");
+builder.Services.AddOpenApi("enum-camelcase-nullable-response");
 builder.Services.AddOpenApi("localized", options =>
 {
     options.ShouldInclude = _ => true;
