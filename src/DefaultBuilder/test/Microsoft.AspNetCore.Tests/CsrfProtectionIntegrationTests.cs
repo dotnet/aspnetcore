@@ -1203,6 +1203,94 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
+    public async Task CsrfProtection_ImplicitRouting_WithReExecute_NormalRequestToAntiforgeryEndpoint_Succeeds()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/67628 (the Blazor Web template shape).
+        // UseStatusCodePagesWithReExecute builds a re-execution branch whose routing consumes the framework's
+        // single-use post-routing (auth/authz/CSRF) block. Before the fix, the re-execution branch stole that block
+        // from the primary pipeline, so a normal request to an antiforgery-required endpoint threw
+        // "a middleware was not found that supports anti-forgery" (HTTP 500).
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.UseStatusCodePagesWithReExecute("/not-found");
+
+        app.MapGet("/", () => "home").WithMetadata(new RequireAntiforgeryTokenAttribute());
+        app.MapGet("/not-found", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return ctx.Response.WriteAsync("not found");
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("home", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task CsrfProtection_ExplicitRouting_WithReExecute_NormalRequestToAntiforgeryEndpoint_Succeeds()
+    {
+        // Companion to the implicit-routing regression test above: the same block-stealing bug also affects apps that
+        // call UseRouting() explicitly (the framework defers auth/authz/CSRF into the same single-use slot).
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.UseRouting();
+        app.UseStatusCodePagesWithReExecute("/not-found");
+
+        app.MapGet("/", () => "home").WithMetadata(new RequireAntiforgeryTokenAttribute());
+        app.MapGet("/not-found", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return ctx.Response.WriteAsync("not found");
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("home", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task CsrfProtection_ImplicitRouting_WithReExecute_StillProtectsNormalCrossOriginPost()
+    {
+        // Ensures restoring the post-routing block for the primary pipeline does not weaken protection: a cross-origin
+        // POST to an antiforgery-required endpoint must still be rejected when re-execution is configured.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.UseStatusCodePagesWithReExecute("/not-found");
+
+        app.MapPost("/protected", EnforceCsrfProtected);
+        app.MapGet("/not-found", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return ctx.Response.WriteAsync("not found");
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("protected", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
     public async Task CsrfProtection_NotAutoInjected_WhenAppHasNoEndpointDataSources()
     {
         // Regression guard for the aspnet/Benchmarks-style perf regression (companion to #67119
