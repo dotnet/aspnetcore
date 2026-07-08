@@ -36,7 +36,14 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// </summary>
     public ValidationMessage()
     {
-        _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
+        _validationStateChangedHandler = (sender, eventArgs) =>
+        {
+            // Re-render for form-level validation updates or when this field's validation state changes.
+            if (!eventArgs.FieldIdentifier.HasValue || eventArgs.FieldIdentifier.Value.Equals(_fieldIdentifier))
+            {
+                StateHasChanged();
+            }
+        };
     }
 
     /// <inheritdoc />

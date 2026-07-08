@@ -298,6 +298,13 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
     {
+        // If the notification is field-specific, only update state when the change targets this input's field.
+        // Notifications without a field (e.g. form-level validation) still re-render this input.
+        if (eventArgs.FieldIdentifier.HasValue && !eventArgs.FieldIdentifier.Value.Equals(FieldIdentifier))
+        {
+            return;
+        }
+
         UpdateAdditionalValidationAttributes();
 
         StateHasChanged();

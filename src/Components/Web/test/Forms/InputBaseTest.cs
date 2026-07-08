@@ -479,6 +479,51 @@ public class InputBaseTest
     }
 
     [Fact]
+    public async Task DoesNotRerenderForValidationStateChangesOfOtherFields()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringProperty
+        };
+        var otherFieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var renderer = new TestRenderer();
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        Assert.Single(renderer.Batches);
+
+        // notify a field-specific validation state change for a different field.
+        await renderer.Dispatcher.InvokeAsync(() => rootComponent.EditContext.NotifyValidationStateChanged(otherFieldIdentifier));
+
+        // the input was not re-rendered because the change is for a different field.
+        Assert.Single(renderer.Batches);
+    }
+
+    [Fact]
+    public async Task RerendersForFormLevelValidationStateChanges()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringProperty
+        };
+        var renderer = new TestRenderer();
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        Assert.Single(renderer.Batches);
+
+        // notify a form-level validation state change (no field identifier).
+        await renderer.Dispatcher.InvokeAsync(() => rootComponent.EditContext.NotifyValidationStateChanged());
+
+        // the input was re-rendered because the change applies to the whole form.
+        Assert.Equal(2, renderer.Batches.Count);
+    }
+
+    [Fact]
     public async Task UnsubscribesFromValidationStateChangeNotifications()
     {
         // Arrange

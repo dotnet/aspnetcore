@@ -130,7 +130,7 @@ public class EditContextDataAnnotationsExtensionsTest
     }
 
     [Fact]
-    public void Validate_HasNullFieldIdentifier_OnValidationStateChanged()
+    public void ValidateHasNullFieldIdentifierOnValidationStateChanged()
     {
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
@@ -149,7 +149,7 @@ public class EditContextDataAnnotationsExtensionsTest
     }
 
     [Fact]
-    public void NotifyFieldChanged_DataAnnotations_Raises_FieldSpecific_FieldName()
+    public void NotifyFieldChangedDataAnnotationsRaisesFieldSpecificFieldName()
     {
         var model = new TestModel(); // RequiredString is null → invalid
         var editContext = new EditContext(model);
