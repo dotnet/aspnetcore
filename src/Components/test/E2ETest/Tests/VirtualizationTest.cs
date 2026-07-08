@@ -1831,11 +1831,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void QuickGrid_Virtualize_ToleratesIncorrectItemSize_UnderFastScroll()
     {
-        // Regression guard for the declared-too-small fast-scroll scenario: an async
-        // ItemsProvider combined with a declared ItemSize (25) that is smaller than the real
-        // row height (50). Under fast scrolling the virtualization window advances (top spacer
-        // grows); the visible area must not be left permanently blank / on placeholders. It's
-        // not enough that data rows exist in the DOM — a real row must actually cover the viewport.
         Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
 
         var container = Browser.Exists(By.Id("qg-capacity"));
