@@ -48,6 +48,7 @@
            value="@_batchSize" @onchange="OnBatchChanged" />
 </label>
 <button id="append-btn" @onclick="AppendBatchAsync">Append @_batchSize rows</button>
+<button id="prepend-btn" @onclick="PrependBatchAsync">Prepend @_batchSize rows</button>
 
 @if (Gate)
 {
@@ -85,7 +86,7 @@
                         ItemSize="46"
                         OverscanCount="100"
                         ItemsProvider="ProvideItemsAsync"
-                        AnchorMode="VirtualizeAnchorMode.End"
+                        AnchorMode="_anchorMode"
                         SpacerElement="tr">
                 <ItemContent>
                     <tr class="repro-row" aria-rowindex="@(context.RowIndex + 1)">
@@ -121,7 +122,12 @@
     [SupplyParameterFromQuery(Name = "gate")]
     public bool Gate { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "anchor")]
+    public string? AnchorQuery { get; set; }
+
     private int _batchSize;
+    private VirtualizeAnchorMode _anchorMode;
 
     private Virtualize<(int RowIndex, LogItem Data)>? _virtualize;
     private bool _interactive;
@@ -143,6 +149,9 @@
     protected override void OnInitialized()
     {
         _batchSize = BatchQuery ?? 30;
+        _anchorMode = string.Equals(AnchorQuery, "beginning", StringComparison.OrdinalIgnoreCase)
+            ? VirtualizeAnchorMode.Beginning
+            : VirtualizeAnchorMode.End;
 
         for (var i = 0; i < InitialItemCount; i++)
         {
@@ -193,6 +202,22 @@
         StateHasChanged();
     }
 
+    private async Task PrependBatchAsync()
+    {
+        // Symmetric to append for Start/Beginning anchoring: new items arrive at the front.
+        for (var i = 0; i < _batchSize; i++)
+        {
+            _items.Insert(0, MakeItem());
+        }
+
+        if (_virtualize is not null)
+        {
+            await _virtualize.RefreshDataAsync();
+        }
+
+        StateHasChanged();
+    }
+
     private async ValueTask<ItemsProviderResult<(int RowIndex, LogItem Data)>> ProvideItemsAsync(ItemsProviderRequest request)
     {
         if (Gate)
@@ -237,14 +262,13 @@
 
     private void OpenGate()
     {
-        // Let every pending and future provider call resolve.
         _gateOpen = true;
         _gateTcs.TrySetResult();
     }
 
     private void CloseGate()
     {
-        // Arm the gate at the currently loaded tail; subsequent tail-advancing fetches block.
+        // Arm the gate at the current tail; later tail-advancing fetches block.
         _gateOpen = false;
         _gateThresholdStartIndex = _lastCompletedStartIndex;
         _gateTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

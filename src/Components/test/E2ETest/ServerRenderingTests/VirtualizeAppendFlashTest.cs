@@ -28,30 +28,30 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
     {
     }
 
-    [Fact]
-    public void AsyncItemsProvider_DoesNotFlashPlaceholderRows_OnEndAnchoredAppend()
+    [Theory]
+    [InlineData(null, "append-btn")]
+    [InlineData("beginning", "prepend-btn")]
+    public void AsyncItemsProvider_DoesNotFlashPlaceholderRows_OnAnchoredEdgeGrowth(string anchor, string growButton)
     {
-        Navigate($"{ServerPathBase}/virtualize-append?gate=true");
+        var query = anchor is null ? "gate=true" : $"anchor={anchor}&gate=true";
+        Navigate($"{ServerPathBase}/virtualize-append?{query}");
 
         // Wait for the circuit so clicks aren't lost during prerender.
         Browser.Exists(By.Id("interactive-ready"));
 
+        // Load the initial window at the anchored edge: real rows, no placeholders.
         ClickById("open-gate");
         Browser.True(() => GetDataRowCount() > 0);
         Browser.Equal(0, GetPlaceholderCellCount);
-        var initialFirstRow = GetFirstDataRowText();
-        Assert.NotEqual(string.Empty, initialFirstRow);
 
-        // Arm the gate so the append's tail-advancing fetch blocks.
+        // Arm the gate (blocks any fetch that advances past the loaded window), then grow the list.
         ClickById("close-gate");
-        ClickById("append-btn");
+        ClickById(growButton);
 
-        // The bug: while the tail fetch is pending, placeholder ("…") rows for the unloaded
-        // appended slots flashed in and persisted. With the fix the loaded rows are reused, so none.
+        // While any advancing fetch is pending, no placeholder renders and real rows stay on screen.
         Browser.Equal(0, GetPlaceholderCellCount);
         Browser.True(() => GetDataRowCount() > 0);
 
-        // Resolving the fetch reveals the appended rows (proving a load was pending) — still no flash.
         ClickById("open-gate");
         Browser.True(() => GetDataRowCount() > 0);
         Browser.Equal(0, GetPlaceholderCellCount);
@@ -129,12 +129,6 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
         }
 
         return false;
-    }
-
-    private string GetFirstDataRowText()
-    {
-        var rows = Browser.FindElements(By.CssSelector(DataRows));
-        return rows.Count > 0 ? rows[0].Text : string.Empty;
     }
 
     private void ClickById(string id)
