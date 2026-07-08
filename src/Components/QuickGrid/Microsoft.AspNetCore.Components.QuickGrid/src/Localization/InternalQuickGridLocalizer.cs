@@ -4,7 +4,7 @@
 using System.Globalization;
 using System.Resources;
 
-namespace Microsoft.AspNetCore.Components.QuickGrid;
+namespace Microsoft.AspNetCore.Components.QuickGrid.Localization;
 
 /// <summary>
 /// Internal localization entry point for QuickGrid pagination.

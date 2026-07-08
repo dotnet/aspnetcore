@@ -7,7 +7,7 @@ override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> 
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnInitialized() -> void
 *REMOVED*override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSet() -> void
-Microsoft.AspNetCore.Components.QuickGrid.QuickGridLocalizer
-Microsoft.AspNetCore.Components.QuickGrid.QuickGridLocalizer.QuickGridLocalizer() -> void
-virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridLocalizer.this[string! key, params object![]! arguments].get -> Microsoft.Extensions.Localization.LocalizedString!
-virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridLocalizer.this[string! key].get -> Microsoft.Extensions.Localization.LocalizedString!
+Microsoft.AspNetCore.Components.QuickGrid.Localization.QuickGridLocalizer
+Microsoft.AspNetCore.Components.QuickGrid.Localization.QuickGridLocalizer.QuickGridLocalizer() -> void
+virtual Microsoft.AspNetCore.Components.QuickGrid.Localization.QuickGridLocalizer.this[string! key, params object![]! arguments].get -> Microsoft.Extensions.Localization.LocalizedString!
+virtual Microsoft.AspNetCore.Components.QuickGrid.Localization.QuickGridLocalizer.this[string! key].get -> Microsoft.Extensions.Localization.LocalizedString!

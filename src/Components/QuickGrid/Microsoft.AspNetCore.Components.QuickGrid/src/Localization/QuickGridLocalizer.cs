@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNetCore.Components.QuickGrid;
+namespace Microsoft.AspNetCore.Components.QuickGrid.Localization;
 
 /// <summary>
 /// Base localizer that applications can override to provide QuickGrid translations.

@@ -3,10 +3,10 @@
 
 #nullable enable
 using System.Resources;
+using Microsoft.AspNetCore.Components.QuickGrid.Localization;
 using Microsoft.Extensions.Localization;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components.QuickGrid;
+namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 
 public class InternalQuickGridLocalizerTest
 {
