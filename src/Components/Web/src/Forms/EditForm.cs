@@ -157,7 +157,7 @@ public class EditForm : ComponentBase
         // to include the handler and antiforgery token in the post data
         if (MappingContext != null)
         {
-            if (!string.IsNullOrEmpty(FormName))
+            if (!string.IsNullOrWhiteSpace(FormName))
             {
                 builder.AddNamedEvent("onsubmit", FormName);
             }

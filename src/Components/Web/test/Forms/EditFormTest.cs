@@ -396,6 +396,23 @@ public class EditFormTest
         Assert.True(string.IsNullOrEmpty(input.GetValue()));
     }
 
+    [Fact]
+    public async Task Reset_ClearsInputValue_WithInitialEmptyState()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var input = new TestInputComponent();
+        await input.InitializeAsync(editContext, () => model.Value, "");
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
+
+        input.SetCurrentValue("test");
+
+        editContext.NotifyResetRequested();
+
+        Assert.True(string.IsNullOrEmpty(input.GetValue()));
+    }
+
     private async Task RenderAsyncRootAsync(AsyncEditFormHostComponent rootComponent)
     {
         var componentId = _testRenderer.AssignRootComponentId(rootComponent);
@@ -552,7 +569,6 @@ public class EditFormTest
     {
         public Task InitializeAsync(EditContext editContext, Expression<Func<string>> valueExpression, string initialValue)
         {
-            // Inject CascadedEditContext
             var property = typeof(InputBase<string>)
                 .GetProperty("CascadedEditContext", BindingFlags.Instance | BindingFlags.NonPublic);
 

@@ -302,7 +302,6 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     {
         CurrentValue = default!;
 
-        // Clear parsing validation messages
         if (_parsingValidationMessages is not null)
         {
             _parsingValidationMessages.Clear();
