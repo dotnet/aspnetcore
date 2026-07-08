@@ -318,6 +318,32 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).ReasonPhrase = "Reason phrase");
     }
 
+    [Theory]
+    [InlineData("Injected\r\nHeader: value")]
+    [InlineData("Has\rCarriageReturn")]
+    [InlineData("Has\nLineFeed")]
+    [InlineData("Has\0Null")]
+    [InlineData("Control\u001FChar")]
+    [InlineData("Del\u007FChar")]
+    [InlineData("Non-ASCII\u0080Char")]
+    [InlineData("Caf\u00E9")]
+    public void ThrowsWhenReasonPhraseContainsControlCharacters(string reasonPhrase)
+    {
+        Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).ReasonPhrase = reasonPhrase);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("OK")]
+    [InlineData("Custom Reason")]
+    [InlineData("Includes\tHTAB")]
+    public void AcceptsValidReasonPhrase(string reasonPhrase)
+    {
+        ((IHttpResponseFeature)_http1Connection).ReasonPhrase = reasonPhrase;
+        Assert.Equal(reasonPhrase, ((IHttpResponseFeature)_http1Connection).ReasonPhrase);
+    }
+
     [Fact]
     public async Task ThrowsWhenOnStartingIsSetAfterResponseStarted()
     {

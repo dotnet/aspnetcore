@@ -1,12 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.AspNetCore.DataProtection.Tests.Internal;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Tests.Aes;
 public class AesAuthenticatedEncryptorTests
@@ -25,3 +28,5 @@ public class AesAuthenticatedEncryptorTests
         RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
 }
+
+#endif

@@ -58,7 +58,10 @@ public class NameAuthorizationRequirement : AuthorizationHandler<NameAuthorizati
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns a string representation of the requirement.
+    /// </summary>
+    /// <returns>A description of the required user name.</returns>
     public override string ToString()
     {
         return $"{nameof(NameAuthorizationRequirement)}:Requires a user identity with Name equal to {RequiredName}";

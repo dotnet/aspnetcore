@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -107,6 +107,34 @@ namespace Test
 
         // Assert
         Assert.DoesNotContain(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+    [Fact]
+    public async Task DiagnosticsAreReturned_IfCreatedCalledWithNullValue()
+    {
+        // Arrange
+        var source = @"
+using System;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    [Route(""[controller]"")]
+    public class TestController : ControllerBase
+    {
+        [HttpPost]
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
+        public IActionResult PostSomething()
+        {
+            return Created(new Uri(""/somepath""), null);
+        }
+    }
+}";
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(source);
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1002_ActionDoesNotReturnDocumentedStatusCode.Id);
     }
 
     [Fact]

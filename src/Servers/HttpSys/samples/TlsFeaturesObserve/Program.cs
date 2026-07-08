@@ -27,6 +27,7 @@ builder.WebHost.UseHttpSys(options =>
 
 var app = builder.Build();
 
+// Example middleware using TryGetTlsClientHello API to query TLS Client Hello raw bytes.
 app.Use(async (context, next) =>
 {
     var connectionFeature = context.Features.GetRequiredFeature<IHttpConnectionFeature>();
@@ -45,12 +46,73 @@ app.Use(async (context, next) =>
 
     await context.Response.WriteAsync(
         $"""
+            TryGetTlsClientHello
+            --------------------
             connectionId            = {connectionFeature.ConnectionId};
             negotiated cipher suite = {tlsHandshakeFeature.NegotiatedCipherSuite}; 
             tlsClientHello.length   = {bytesReturned};
             tlsclienthello start    = {string.Join(' ', bytes.AsSpan(0, 30).ToArray())}
+
+
         """);
         
+    await next(context);
+});
+
+// Example middleware exercising the generic IHttpSysRequestPropertyFeature.TryGetRequestProperty API.
+app.Use(async (context, next) =>
+{
+    // From Win SDK http.h
+    const int HttpRequestPropertyTlsClientHello = 11;
+
+    var httpSysPropFeature = context.Features.GetRequiredFeature<IHttpSysRequestPropertyFeature>();
+
+    try
+    {
+        // probe required size with empty output buffer and empty qualifier
+        var success = httpSysPropFeature.TryGetRequestProperty(
+            HttpRequestPropertyTlsClientHello,
+            qualifier: default,
+            output: default,
+            out var requiredSize);
+        Debug.Assert(!success);
+        Debug.Assert(requiredSize > 0);
+
+        var rented = ArrayPool<byte>.Shared.Rent(requiredSize);
+        try
+        {
+            success = httpSysPropFeature.TryGetRequestProperty(
+                HttpRequestPropertyTlsClientHello,
+                qualifier: default,
+                output: rented.AsSpan(0, requiredSize),
+                out var written);
+            Debug.Assert(success);
+
+            await context.Response.WriteAsync(
+                $"""
+                    TryGetRequestProperty(HttpRequestPropertyTlsClientHello)
+                    --------------------------------------------------------
+                    requiredSize     = {requiredSize}
+                    bytesReturned    = {written}
+                    first 30 bytes   = {string.Join(' ', rented.AsSpan(0, Math.Min(30, written)).ToArray())}
+
+
+                """);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rented);
+        }
+    }
+    catch (Exception ex)
+    {
+        await context.Response.WriteAsync(
+            $"""
+
+                TryGetRequestProperty(HttpRequestPropertyTlsClientHello) threw: {ex.GetType().Name}: {ex.Message}
+            """);
+    }
+
     await next(context);
 });
 

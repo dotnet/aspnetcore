@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
@@ -23,7 +24,6 @@ internal struct FormDataReader : IDisposable
     // As an implementation detail, reuse FormKey for the values.
     // It's just a thin wrapper over ReadOnlyMemory<char> that caches
     // the computed hash code.
-    private IReadOnlyDictionary<FormKey, HashSet<FormKey>>? _formDictionaryKeysByPrefix;
 
     private PrefixResolver _prefixResolver;
 
@@ -47,6 +47,8 @@ internal struct FormDataReader : IDisposable
     public IFormFileCollection? FormFileCollection { get; internal set; }
 
     public int MaxRecursionDepth { get; set; } = 64;
+
+    public int MaxCollectionSize { get; set; } = FormReader.DefaultValueCountLimit;
 
     public Action<string, FormattableString, string?>? ErrorHandler { get; set; }
 
@@ -107,61 +109,52 @@ internal struct FormDataReader : IDisposable
 
     internal FormKeyCollection GetKeys()
     {
-        if (_formDictionaryKeysByPrefix == null)
+        // Scan the input dictionary for keys matching the current prefix followed by a bracket segment.
+        // This avoids building a large upfront dictionary of all prefix→key mappings.
+        var prefix = _currentPrefixBuffer;
+        var result = new HashSet<FormKey>();
+
+        foreach (var kvp in _readOnlyMemoryKeys)
         {
-            _formDictionaryKeysByPrefix = ProcessFormKeys();
-        }
+            var key = kvp.Key.Value;
 
-        if (_formDictionaryKeysByPrefix.TryGetValue(new FormKey(_currentPrefixBuffer), out var foundKeys))
-        {
-            return new FormKeyCollection(foundKeys);
-        }
-
-        return FormKeyCollection.Empty;
-    }
-
-    // Internal for testing purposes
-    internal IReadOnlyDictionary<FormKey, HashSet<FormKey>> ProcessFormKeys()
-    {
-        var keys = _readOnlyMemoryKeys.Keys;
-        var result = new Dictionary<FormKey, HashSet<FormKey>>();
-        // We need to iterate over all the keys in the dictionary and process each key to split it into segments where
-        // the prefixes are string separated by . and the keys are enclosed in []. For example if the key is
-        // Customer.Orders[<<OrderId>>]BillingInfo.FirstName, then we need to split it into Customer.Orders,
-        // [<<OrderId>>] and BillingInfo.FirstName. We then, need to group all the keys by the prefix. So, for the
-        // above example, we will have an entry for the prefix Customer.Orders that will include [<<OrderId>>] as the
-        // key.
-
-        foreach (var key in keys)
-        {
-            var startIndex = key.Value.Span.IndexOf('[');
-            while (startIndex >= 0)
+            // The key must start with the current prefix (case-insensitive).
+            if (key.Length <= prefix.Length ||
+                !key.Span[..prefix.Length].Equals(prefix.Span, StringComparison.OrdinalIgnoreCase))
             {
-                var endIndex = key.Value.Span[startIndex..].IndexOf(']') + startIndex;
-                if (endIndex == -1)
-                {
-                    // Ignore malformed keys
-                    break;
-                }
+                continue;
+            }
 
-                var prefix = key.Value[..startIndex];
-                var keyValue = key.Value[startIndex..(endIndex + 1)];
-                if (result.TryGetValue(new FormKey(prefix), out var foundKeys))
-                {
-                    foundKeys.Add(new FormKey(keyValue));
-                }
-                else
-                {
-                    result.Add(new FormKey(prefix), new HashSet<FormKey> { new FormKey(keyValue) });
-                }
+            // Immediately after the prefix, there must be a '['.
+            if (key.Span[prefix.Length] != '[')
+            {
+                continue;
+            }
 
-                var nextOpenBracket = key.Value.Span[(endIndex + 1)..].IndexOf('[');
+            // Find the closing ']' after the '['.
+            var remaining = key[prefix.Length..];
+            var closeIndex = remaining.Span[1..].IndexOf(']');
+            if (closeIndex == -1)
+            {
+                // Malformed key — no closing bracket. Skip it.
+                continue;
+            }
 
-                startIndex = nextOpenBracket != -1 ? endIndex + 1 + nextOpenBracket : -1;
+            // Extract "[value]" (closeIndex is relative to position 1, so add 2 for the full segment).
+            var segment = remaining[..(closeIndex + 2)];
+            result.Add(new FormKey(segment));
+
+            // Allow one extra item through so collection/dictionary binding can still detect overflow
+            // and report the existing max-size error instead of silently truncating the input.
+            if (result.Count > MaxCollectionSize)
+            {
+                break;
             }
         }
 
-        return result;
+        return result.Count > 0
+            ? new FormKeyCollection(result)
+            : FormKeyCollection.Empty;
     }
 
     // This only ever gets invoked if we have a recursive type.

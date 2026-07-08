@@ -1,0 +1,12 @@
+@page "/static-info"
+
+<PageTitle>Static Info</PageTitle>
+
+<h1>Static Info</h1>
+
+<p>This page uses <strong>Static SSR</strong> (no render mode). It cannot handle interactive events.</p>
+
+<div id="static-content">
+    <p>Server time at render: @DateTime.UtcNow.ToString("O")</p>
+    <p>Environment: @Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")</p>
+</div>

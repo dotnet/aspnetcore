@@ -1,0 +1,59 @@
+@page "/forms/async-validation-static-ssr"
+@using BasicTestApp.FormsTest
+@using Microsoft.AspNetCore.Components.Forms
+
+@* Static SSR (no @@rendermode) async validation form. On POST the framework awaits EditContext.ValidateAsync,
+   so async DataAnnotations validation runs fully as part of request handling and the resulting messages are
+   rendered in the response. This exercises form-level async validation (async [ValidationAttribute] and
+   IAsyncValidatableObject) through both the static Validator path and the Microsoft.Extensions.Validation
+   (MEV) path. Per-field on-edit validation and the pending UX do not apply without interactivity. *@
+
+<h2>Async validation (static SSR)</h2>
+
+@if (RendererInfo.IsInteractive)
+{
+    <p id="is-interactive"></p>
+}
+
+<EditForm id="validator-form" Enhance FormName="validator-path" Model="ValidatorModel" method="POST"
+          OnValidSubmit="() => _validatorSubmitted = true">
+    <DataAnnotationsValidator />
+    <InputText id="validator-username" @bind-Value="ValidatorModel.Username" />
+    <ValidationSummary />
+    <button id="validator-submit" type="submit">Submit (Validator path)</button>
+</EditForm>
+
+@if (_validatorSubmitted)
+{
+    <p id="validator-valid">validator-valid</p>
+}
+
+<EditForm id="mev-form" Enhance FormName="mev-path" Model="MevModel" method="POST"
+          OnValidSubmit="() => _mevSubmitted = true">
+    <DataAnnotationsValidator />
+    <InputText id="mev-username" @bind-Value="MevModel.Username" />
+    <ValidationSummary />
+    <button id="mev-submit" type="submit">Submit (MEV path)</button>
+</EditForm>
+
+@if (_mevSubmitted)
+{
+    <p id="mev-valid">mev-valid</p>
+}
+
+@code {
+    private bool _validatorSubmitted;
+    private bool _mevSubmitted;
+
+    [SupplyParameterFromForm(FormName = "validator-path")]
+    public ValidatorPathModel ValidatorModel { get; set; }
+
+    [SupplyParameterFromForm(FormName = "mev-path")]
+    public MevPathModel MevModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ValidatorModel ??= new();
+        MevModel ??= new();
+    }
+}

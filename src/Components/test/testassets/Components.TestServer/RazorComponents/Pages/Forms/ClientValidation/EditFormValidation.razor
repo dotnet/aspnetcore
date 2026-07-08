@@ -1,0 +1,79 @@
+@page "/forms/client-validation/editform-validation"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2 id="page-title">EditForm client-side validation</h2>
+
+<p>
+    Renders an <code>EditForm</code> with <code>DataAnnotationsValidator</code> + Blazor input
+    components so the server-side <code>DefaultClientValidationService</code> emits
+    <code>data-val-*</code> attributes from the model's <code>DataAnnotations</code>. No
+    <code>IValidationLocalizer</code> involvement — this page pins the non-localized baseline
+    output of the .NET rendering pipeline. Localized output is covered separately by the
+    <code>LocalizedValidation</code> page.
+</p>
+
+<EditForm Model="Form" FormName="editform-baseline" method="post">
+    <DataAnnotationsValidator />
+
+    <div>
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="Form!.Name" />
+    </div>
+
+    <div>
+        <label for="bio">Bio</label>
+        <InputTextArea id="bio" @bind-Value="Form.Bio" />
+    </div>
+
+    <div>
+        <label for="zipcode">Zip Code</label>
+        <InputText id="zipcode" @bind-Value="Form.ZipCode" />
+    </div>
+
+    <div>
+        <label for="website">Website</label>
+        <InputText id="website" @bind-Value="Form.Website" />
+    </div>
+
+    <div>
+        <label for="password">Password</label>
+        <InputText id="password" type="password" @bind-Value="Form.Password" />
+    </div>
+
+    <div>
+        <label for="confirmpassword">Confirm Password</label>
+        <InputText id="confirmpassword" type="password" @bind-Value="Form.ConfirmPassword" />
+    </div>
+
+    <button type="submit" id="submit">Submit</button>
+</EditForm>
+
+@code {
+    [SupplyParameterFromForm] private EditFormBaselineModel? Form { get; set; }
+
+    protected override void OnInitialized() => Form ??= new EditFormBaselineModel();
+
+    public class EditFormBaselineModel
+    {
+        [Required]
+        [Display(Name = "Full Name")]
+        public string? Name { get; set; }
+
+        [StringLength(500, MinimumLength = 10)]
+        public string? Bio { get; set; }
+
+        [RegularExpression(@"\d{5}")]
+        public string? ZipCode { get; set; }
+
+        [Url]
+        public string? Website { get; set; }
+
+        [Required]
+        public string? Password { get; set; }
+
+        [Compare(nameof(Password))]
+        [Display(Name = "Confirm Password")]
+        public string? ConfirmPassword { get; set; }
+    }
+}

@@ -24,7 +24,8 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.RoutingTestContext);
 
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/57153")]
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66043")]
     public void ExternalNavigationIsLockedAfterPrerendering()
     {
         Navigate("/locked-navigation");

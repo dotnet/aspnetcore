@@ -1,5 +1,5 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.177.0/containers/dotnet
+// https://github.com/devcontainers/templates/tree/main/src/dotnet
 {
   "name": "C# (.NET)",
   "build": {
@@ -24,6 +24,11 @@
     "omnisharp.enableRoslynAnalyzers": true,
     "omnisharp.enableEditorConfigSupport": true,
     "omnisharp.enableImportCompletion": true,
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/sshd:1": {},
+    "ghcr.io/devcontainers/features/copilot-cli:1": {}
   },
   // Use 'postCreateCommand' to run commands after the container is created.
   "onCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/container-creation.sh",

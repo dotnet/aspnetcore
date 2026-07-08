@@ -250,4 +250,80 @@ public class TempDataTest
         Assert.True(tempData.WasLoaded);
         Assert.Equal("Value", value);
     }
+
+    [Fact]
+    public void Get_ConsumesValue_WhenFirstAccessTriggersLazyLoad()
+    {
+        var tempData = new TempData(() => new Dictionary<string, object>
+        {
+            ["Message"] = "hello"
+        });
+
+        var value = tempData.Get("Message");
+        var saved = tempData.Save();
+
+        Assert.Equal("hello", value);
+        Assert.Empty(saved);
+    }
+
+    [Fact]
+    public void Indexer_ConsumesValue_WhenFirstAccessTriggersLazyLoad()
+    {
+        var tempData = new TempData(() => new Dictionary<string, object>
+        {
+            ["Message"] = "hello"
+        });
+
+        var value = tempData["Message"];
+        var saved = tempData.Save();
+
+        Assert.Equal("hello", value);
+        Assert.Empty(saved);
+    }
+
+    [Fact]
+    public void Remove_RemovesValue_WhenFirstAccessTriggersLazyLoad()
+    {
+        var tempData = new TempData(() => new Dictionary<string, object>
+        {
+            ["Message"] = "hello"
+        });
+
+        var result = tempData.Remove("Message");
+        var saved = tempData.Save();
+
+        Assert.True(result);
+        Assert.Empty(saved);
+    }
+
+    [Fact]
+    public void Keep_RetainsAllKeys_WhenFirstAccessTriggersLazyLoad()
+    {
+        var tempData = new TempData(() => new Dictionary<string, object>
+        {
+            ["Key1"] = "Value1",
+            ["Key2"] = "Value2"
+        });
+
+        tempData.Keep();
+        var saved = tempData.Save();
+
+        Assert.Equal(2, saved.Count);
+        Assert.Equal("Value1", saved["Key1"]);
+        Assert.Equal("Value2", saved["Key2"]);
+    }
+
+    [Fact]
+    public void Enumerator_IteratesAllKeys_WhenFirstAccessTriggersLazyLoad()
+    {
+        var tempData = new TempData(() => new Dictionary<string, object>
+        {
+            ["Key1"] = "Value1",
+            ["Key2"] = "Value2"
+        });
+
+        var items = ((IEnumerable<KeyValuePair<string, object>>)tempData).ToList();
+
+        Assert.Equal(2, items.Count);
+    }
 }

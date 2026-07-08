@@ -22,7 +22,7 @@ public class RouteView : IComponent
 
     static RouteView()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _layoutAttributeCache.Clear;
         }

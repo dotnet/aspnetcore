@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -37,6 +38,7 @@ internal partial class IISHttpContext : IFeatureCollection,
                                         IHttpResponseTrailersFeature,
                                         IHttpResetFeature,
                                         IConnectionLifetimeNotificationFeature,
+                                        IConnectionEndPointFeature,
                                         IHttpSysRequestInfoFeature,
                                         IHttpSysRequestTimingFeature
 {
@@ -520,6 +522,48 @@ internal partial class IISHttpContext : IFeatureCollection,
         if (!HasResponseStarted)
         {
             ResponseHeaders.Connection = ConnectionClose;
+        }
+    }
+
+    EndPoint? IConnectionEndPointFeature.LocalEndPoint
+    {
+        get
+        {
+            var localIp = ((IHttpConnectionFeature)this).LocalIpAddress;
+            if (localIp is not null)
+            {
+                return new IPEndPoint(localIp, ((IHttpConnectionFeature)this).LocalPort);
+            }
+            return null;
+        }
+        set
+        {
+            if (value is IPEndPoint localIPEndPoint)
+            {
+                ((IHttpConnectionFeature)this).LocalIpAddress = localIPEndPoint.Address;
+                ((IHttpConnectionFeature)this).LocalPort = localIPEndPoint.Port;
+            }
+        }
+    }
+
+    EndPoint? IConnectionEndPointFeature.RemoteEndPoint
+    {
+        get
+        {
+            var remoteIp = ((IHttpConnectionFeature)this).RemoteIpAddress;
+            if (remoteIp is not null)
+            {
+                return new IPEndPoint(remoteIp, ((IHttpConnectionFeature)this).RemotePort);
+            }
+            return null;
+        }
+        set
+        {
+            if (value is IPEndPoint remoteIPEndPoint)
+            {
+                ((IHttpConnectionFeature)this).RemoteIpAddress = remoteIPEndPoint.Address;
+                ((IHttpConnectionFeature)this).RemotePort = remoteIPEndPoint.Port;
+            }
         }
     }
 }
