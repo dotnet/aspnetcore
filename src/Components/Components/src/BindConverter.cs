@@ -380,11 +380,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            // Return an empty string (rather than null) so a null nullable date formats the same way an
-            // empty date input reports its value to the server. This keeps the rendered 'value' attribute
-            // in sync with what the browser already shows, preventing the diff from re-writing it and
-            // resetting the caret/segments while the user is typing (e.g. <input type="date">).
-            return string.Empty;
+            return null;
         }
 
         if (format != null)
@@ -399,7 +395,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return string.Empty;
+            return null;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -470,9 +466,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            // See FormatNullableDateTimeValueCore: a null value formats as empty so the rendered
-            // 'value' attribute matches what an empty date/time input reports to the server.
-            return string.Empty;
+            return null;
         }
 
         if (format != null)
@@ -487,7 +481,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return string.Empty;
+            return null;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -559,9 +553,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            // See FormatNullableDateTimeValueCore: a null value formats as empty so the rendered
-            // 'value' attribute matches what an empty date/time input reports to the server.
-            return string.Empty;
+            return null;
         }
 
         if (format != null)
@@ -577,7 +569,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return string.Empty;
+            return null;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
@@ -649,9 +641,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            // See FormatNullableDateTimeValueCore: a null value formats as empty so the rendered
-            // 'value' attribute matches what an empty date/time input reports to the server.
-            return string.Empty;
+            return null;
         }
 
         if (format != null)
@@ -667,7 +657,7 @@ public static class BindConverter
     {
         if (value == null)
         {
-            return string.Empty;
+            return null;
         }
 
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
