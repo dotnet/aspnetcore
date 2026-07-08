@@ -33,7 +33,7 @@ public static class ElementReferenceExtensions
     {
         var jsRuntime = elementReference.GetJSRuntime();
 
-        if (jsRuntime == null)
+        if (jsRuntime is null)
         {
             throw new InvalidOperationException("No JavaScript runtime found.");
         }

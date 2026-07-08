@@ -48,6 +48,21 @@ public class ElementReferenceExtensionsTest
         Assert.Equal("blur failed", ex.Message);
     }
 
+    [Fact]
+    public void BlurAsync_ThrowsWhenContextIsNotWebElementReferenceContext()
+    {
+        var elementReference = new ElementReference("id", new NonWebElementReferenceContext());
+        var ex = Assert.Throws<InvalidOperationException>(() => elementReference.BlurAsync());
+        Assert.Equal("ElementReference has not been configured correctly.", ex.Message);
+    }
+
+    [Fact]
+    public void BlurAsync_ThrowsWhenNoJSRuntime()
+    {
+        var elementReference = default(ElementReference);
+        Assert.Throws<InvalidOperationException>(() => elementReference.BlurAsync());
+    }
+
     private sealed class TestJSRuntime : IJSRuntime
     {
         public List<(string Identifier, IReadOnlyList<object?> Args)> Invocations { get; } = new();
