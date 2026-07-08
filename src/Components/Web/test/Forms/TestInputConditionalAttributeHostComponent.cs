@@ -55,10 +55,6 @@ internal class TestInputConditionalAttributeHostComponent<TValue, TComponent> : 
             childBuilder.AddComponentParameter(2, "ValueExpression", ValueExpression);
             if (IncludeAttribute)
             {
-                // This matches the call site from the bug report:
-                //     builder.AddAttribute(10, "class", IncludeClass ? "x" : null);
-                // where, depending on a flag, the attribute is either added or
-                // omitted from the render tree on subsequent renders.
                 childBuilder.AddAttribute(3, AttributeName, AttributeValue);
             }
             childBuilder.CloseComponent();
