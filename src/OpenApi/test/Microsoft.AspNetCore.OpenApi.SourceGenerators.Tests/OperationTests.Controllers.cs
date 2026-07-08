@@ -427,4 +427,71 @@ public class DerivedQuery : BaseQuery
             Assert.Equal("The maximum number of results to return.", limitParameter.Description);
         });
     }
+
+    [Fact]
+    public async Task SupportsXmlCommentsOnShadowedPropertiesFromControllers()
+    {
+        var source =
+"""
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services
+    .AddControllers()
+    .AddApplicationPart(typeof(TestController).Assembly);
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapControllers();
+
+app.Run();
+
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase
+{
+    [HttpGet]
+    public IEnumerable<Person> Search([FromQuery] DerivedQuery query)
+    {
+        return [];
+    }
+}
+
+public partial class Program {}
+
+public record Person(int Id, string Name);
+
+public class BaseQuery
+{
+    /// <summary>
+    /// The base filter value.
+    /// </summary>
+    public object? Filter { get; init; }
+}
+
+public class DerivedQuery : BaseQuery
+{
+    /// <summary>
+    /// The filter to apply to the search.
+    /// </summary>
+    public new string? Filter { get; init; }
+}
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var searchOperation = document.Paths["/Test"].Operations[HttpMethod.Get];
+            // `Filter` is redeclared on the derived type with `new` and a different type,
+            // so a plain `Type.GetProperty(name)` would throw an `AmbiguousMatchException`.
+            // The lookup must resolve the most-derived declaration and apply its documentation.
+            var filterParameter = Assert.Single(searchOperation.Parameters, parameter => parameter.Name == "Filter");
+            Assert.Equal("The filter to apply to the search.", filterParameter.Description);
+        });
+    }
 }
