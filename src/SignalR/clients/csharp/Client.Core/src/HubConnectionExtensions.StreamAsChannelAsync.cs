@@ -276,7 +276,7 @@ public static partial class HubConnectionExtensions
         var inputChannel = await hubConnection.StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cancellationToken).ConfigureAwait(false);
         var outputChannel = Channel.CreateUnbounded<TResult>();
 
-        // Intentionally avoid passing the CancellationToken to RunChannel. The token is only meant to cancel the intial setup, not the enumeration.
+        // Intentionally avoid passing the CancellationToken to RunChannel. The token is only meant to cancel the initial setup, not the enumeration.
         _ = RunChannel(inputChannel, outputChannel);
 
         return outputChannel.Reader;

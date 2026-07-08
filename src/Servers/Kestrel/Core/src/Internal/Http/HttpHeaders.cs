@@ -370,7 +370,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
                 offset++;
                 if ((uint)offset > (uint)value.Length)
                 {
-                    // Consumed enitre string, move to next.
+                    // Consumed entire string, move to next.
                     break;
                 }
 
@@ -428,7 +428,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
                 if ((uint)offset >= (uint)value.Length)
                 {
-                    // Consumed enitre string, move to next string.
+                    // Consumed entire string, move to next string.
                     connectionOptions |= potentialConnectionOptions;
                     break;
                 }
@@ -453,19 +453,19 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
                 if ((uint)offset >= (uint)value.Length)
                 {
-                    // Consumed enitre string, move to next string.
+                    // Consumed entire string, move to next string.
                     connectionOptions |= potentialConnectionOptions;
                     break;
                 }
                 else if (c == ',')
                 {
-                    // Consumed value corretly.
+                    // Consumed value correctly.
                     connectionOptions |= potentialConnectionOptions;
                     // Skip comma.
                     offset++;
                     if ((uint)offset >= (uint)value.Length)
                     {
-                        // Consumed enitre string, move to next string.
+                        // Consumed entire string, move to next string.
                         break;
                     }
                     else
