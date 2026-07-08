@@ -64,8 +64,7 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    if (iDisposableType is not null
-                        && !implementsIDisposable
+                    if (!implementsIDisposable
                         && method.Name == "Dispose"
                         && method.ReturnType.SpecialType == SpecialType.System_Void)
                     {
