@@ -559,6 +559,13 @@ internal sealed class OpenApiSchemaService(
 
     private JsonNode CreateSchema(Type type)
     {
+        // We always create a oneOf nullable wrapper. So we never want to include 'null' literal in the enum array.
+        var underlyingType = Nullable.GetUnderlyingType(type);
+        if (underlyingType?.IsEnum == true)
+        {
+            type = underlyingType;
+        }
+        
         var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, type, _configuration);
         return ResolveReferences(schema, schema);
     }
