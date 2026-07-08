@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     foreach (var parameterComment in methodComment.Parameters)
                     {
                         var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
-                        var modelNames = GetModelNames(parameterInfo, parameterInfo?.Name ?? parameterComment.Name);
+                        var modelNames = GetModelNames(parameterInfo, parameterComment.Name);
                         var operationParameter = GetOperationParameter(operation, modelNames);
                         if (operationParameter is not null)
                         {
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     && metadata.ContainerType is { } containerType
                     && metadata.PropertyName is { } propertyName)
                 {
-                    var propertyInfo = containerType.GetProperty(propertyName);
+                    var propertyInfo = GetPropertyInfo(containerType, propertyName);
                     if (propertyInfo is null)
                     {
                         continue;
@@ -544,6 +544,23 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 || source == BindingSource.Form
                 || source == BindingSource.FormFile;
 
+        private static PropertyInfo? GetPropertyInfo(Type containerType, string propertyName)
+        {
+            // Walk the type hierarchy explicitly with `DeclaredOnly` so that a property shadowing a
+            // base member (via `new`) doesn't throw an `AmbiguousMatchException`, while still
+            // resolving properties that are inherited from a base type.
+            for (var type = containerType; type is not null; type = type.BaseType)
+            {
+                var propertyInfo = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                if (propertyInfo is not null)
+                {
+                    return propertyInfo;
+                }
+            }
+
+            return null;
+        }
+
         private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider? attributeProvider, string? name)
         {
             var modelNames = new HashSet<string>();
@@ -558,7 +575,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 return modelNames;
             }
 
-            foreach (var attribute in attributeProvider.GetCustomAttributes(inherit: false))
+            foreach (var attribute in attributeProvider.GetCustomAttributes(inherit: true))
             {
                 if (attribute is IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
                 {
