@@ -1,0 +1,57 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using System.Linq
+
+<h3>QuickGrid Virtualize fast-scroll capacity test</h3>
+
+<p>
+    <strong>Test:</strong> With an async ItemsProvider and a declared ItemSize that is
+    smaller than the real row height, fast scrolling must not leave the viewport stuck
+    on placeholders. The window advances (top spacer grows), so the async data for the
+    resting window must eventually render.
+</p>
+
+<p id="items-provider-call-count">ItemsProvider calls: @ItemsProviderCallCount</p>
+
+<style>
+    .qg-cap-cell { height: 50px; line-height: 50px; }
+</style>
+
+<div id="qg-capacity" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
+    <QuickGrid ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="25">
+        <PropertyColumn Property="@(p => p.Id)" Title="ID" Class="qg-cap-cell" />
+        <PropertyColumn Property="@(p => p.Name)" Title="Name" Class="qg-cap-cell" />
+    </QuickGrid>
+</div>
+
+@code {
+    internal class Person
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private const int TotalItems = 1000;
+
+    private GridItemsProvider<Person> itemsProvider = default!;
+
+    int ItemsProviderCallCount = 0;
+
+    protected override void OnInitialized()
+    {
+        itemsProvider = async request =>
+        {
+            // Truly async with latency: the placeholder renders before data arrives,
+            // and fast scrolling can outrun the provider (starvation).
+            await Task.Delay(50);
+            ItemsProviderCallCount++;
+
+            var items = Enumerable.Range(request.StartIndex, request.Count ?? TotalItems)
+                .Where(i => i < TotalItems)
+                .Select(i => new Person { Id = i + 1, Name = $"Person {i + 1}" })
+                .ToList();
+
+            StateHasChanged();
+            return GridItemsProviderResult.From(items: items, totalItemCount: TotalItems);
+        };
+    }
+}

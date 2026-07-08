@@ -1828,6 +1828,67 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(isFirstRowId1);
     }
 
+    [Fact]
+    public void QuickGrid_Virtualize_ToleratesIncorrectItemSize_UnderFastScroll()
+    {
+        // Regression guard for the declared-too-small fast-scroll scenario: an async
+        // ItemsProvider combined with a declared ItemSize (25) that is smaller than the real
+        // row height (50). Under fast scrolling the virtualization window advances (top spacer
+        // grows); the visible area must not be left permanently blank / on placeholders. It's
+        // not enough that data rows exist in the DOM — a real row must actually cover the viewport.
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
+
+        var container = Browser.Exists(By.Id("qg-capacity"));
+
+        WaitForQuickGridDataRows(container);
+        var topSpacer = container.FindElements(By.CssSelector("[data-blazor-virtualize-reserved-height]"))[0];
+        Assert.Equal("0", topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
+
+        // Fast scroll entirely in the browser (tight timing that starves the async provider).
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteAsyncScript(@"
+            const done = arguments[arguments.length - 1];
+            const el = document.getElementById('qg-capacity');
+            let i = 0;
+            const tick = () => {
+                i++;
+                el.dispatchEvent(new WheelEvent('wheel', { deltaY: 1000, bubbles: true }));
+                el.scrollTop = i * 1000;
+                if (i < 40) {
+                    setTimeout(tick, 40);
+                } else {
+                    done();
+                }
+            };
+            tick();
+        ");
+
+        // The window advanced past the top.
+        Browser.NotEqual("0", () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
+        Browser.True(() => ViewportCenterShowsRealData(container));
+    }
+
+    private bool ViewportCenterShowsRealData(IWebElement container)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+        return (bool)js.ExecuteScript(@"
+            const el = document.getElementById('qg-capacity');
+            const r = el.getBoundingClientRect();
+            const centerY = r.height / 2;
+            const rows = el.querySelectorAll('tbody tr:not([aria-hidden])');
+            for (const row of rows) {
+                if (row.querySelector('td.grid-cell-placeholder')) { continue; }
+                const cell = row.querySelector('td');
+                if (!cell || !cell.textContent || !cell.textContent.trim()) { continue; }
+                const rr = row.getBoundingClientRect();
+                const top = rr.top - r.top;
+                const bottom = rr.bottom - r.top;
+                if (top <= centerY && bottom >= centerY) { return true; }
+            }
+            return false;
+        ");
+    }
+
     private void WaitForQuickGridDataRows(IWebElement container)
         => Browser.True(() => CheckQuickGridFirstRow(container, text => int.TryParse(text, out _)));
 
