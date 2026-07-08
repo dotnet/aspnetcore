@@ -357,4 +357,74 @@ public partial class Program {}
             Assert.Equal("The name of the resource to create.", postOperation.RequestBody.Description);
         });
     }
+
+    [Fact]
+    public async Task SupportsXmlCommentsOnInheritedPropertiesFromControllers()
+    {
+        var source =
+"""
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services
+    .AddControllers()
+    .AddApplicationPart(typeof(TestController).Assembly);
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapControllers();
+
+app.Run();
+
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase
+{
+    [HttpGet]
+    public IEnumerable<Person> Search([FromQuery] DerivedQuery query)
+    {
+        return [];
+    }
+}
+
+public partial class Program {}
+
+public record Person(int Id, string Name);
+
+public class BaseQuery
+{
+    /// <summary>
+    /// The full name of the person.
+    /// </summary>
+    public string? Name { get; init; }
+}
+
+public class DerivedQuery : BaseQuery
+{
+    /// <summary>
+    /// The maximum number of results to return.
+    /// </summary>
+    public int Limit { get; init; }
+}
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var searchOperation = document.Paths["/Test"].Operations[HttpMethod.Get];
+            // `Name` is declared on `BaseQuery` but bound through the derived model, so its
+            // documentation must be resolved by walking up to the inherited property. This
+            // would regress if the property lookup only considered members declared directly
+            // on the container (derived) type.
+            var nameParameter = Assert.Single(searchOperation.Parameters, parameter => parameter.Name == "Name");
+            Assert.Equal("The full name of the person.", nameParameter.Description);
+            var limitParameter = Assert.Single(searchOperation.Parameters, parameter => parameter.Name == "Limit");
+            Assert.Equal("The maximum number of results to return.", limitParameter.Description);
+        });
+    }
 }
