@@ -41,6 +41,7 @@
         "type": "object",
         "properties": {
           "status": {
+            "type": "string",
             "oneOf": [
               {
                 "$ref": "#/components/schemas/CamelCaseStatus"
