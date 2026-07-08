@@ -89,14 +89,15 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         Activity? activity = null;
         try
         {
+            var hubCallerContext = connection.HubCallerContext;
             // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
-            InitializeHub(hub, connection, invokeAllowed: false);
+            InitializeHub(hub, connection, hubCallerContext, invokeAllowed: false);
 
             activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger, connection);
 
             if (_onConnectedMiddleware != null)
             {
-                var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                var context = new HubLifetimeContext(hubCallerContext, scope.ServiceProvider, hub);
                 await _onConnectedMiddleware(context);
             }
             else
@@ -125,13 +126,14 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         Activity? activity = null;
         try
         {
-            InitializeHub(hub, connection);
+            var hubCallerContext = connection.HubCallerContext;
+            InitializeHub(hub, connection, hubCallerContext);
 
             activity = StartActivity(SignalRServerActivitySource.OnDisconnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger, connection);
 
             if (_onDisconnectedMiddleware != null)
             {
-                var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                var context = new HubLifetimeContext(hubCallerContext, scope.ServiceProvider, hub);
                 await _onDisconnectedMiddleware(context, exception);
             }
             else
@@ -149,6 +151,49 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             activity?.Stop();
             hubActivator.Release(hub);
         }
+    }
+
+    public override Task OnAuthenticationRefreshedAsync(HubConnectionContext connection)
+    {
+        // Acquire the per-connection invocation limit so that OnAuthenticationRefreshedAsync interleaves with hub method
+        // invocations the same way other invocations do (respecting MaximumParallelInvocations).
+        return connection.ActiveInvocationLimit.RunAsync(static state =>
+        {
+            var (dispatcher, connection) = state;
+            return dispatcher.InvokeOnAuthenticationRefreshedAsync(connection);
+        }, (this, connection)).AsTask();
+    }
+
+    private async Task<bool> InvokeOnAuthenticationRefreshedAsync(HubConnectionContext connection)
+    {
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+
+        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        var hub = hubActivator.Create();
+        Activity? activity = null;
+        try
+        {
+            var hubCallerContext = connection.HubCallerContext;
+            InitializeHub(hub, connection, hubCallerContext, invokeAllowed: false);
+
+            activity = StartActivity(SignalRServerActivitySource.OnAuthenticationRefreshed, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthenticationRefreshedAsync), headers: null, _logger, connection);
+
+            await hub.OnAuthenticationRefreshedAsync();
+        }
+        catch (Exception ex)
+        {
+            // Must not throw out of a ChannelBasedSemaphore.RunAsync callback.
+            SetActivityError(activity, ex);
+            Log.FailedInvokingHubMethod(_logger, nameof(Hub.OnAuthenticationRefreshedAsync), ex);
+        }
+        finally
+        {
+            activity?.Stop();
+            hubActivator.Release(hub);
+        }
+
+        // Release the semaphore so other invocations can proceed.
+        return true;
     }
 
     public override Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
@@ -181,17 +226,17 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
 
             case CancelInvocationMessage cancelInvocationMessage:
-                // Check if there is an associated active stream and cancel it if it exists.
-                // The cts will be removed when the streaming method completes executing
+                // Check if there is an associated active invocation or stream and cancel it if it exists.
+                // The cts will be removed when the hub method completes executing
                 if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId!, out var cts))
                 {
-                    Log.CancelStream(_logger, cancelInvocationMessage.InvocationId!);
+                    Log.CancelInvocation(_logger, cancelInvocationMessage.InvocationId!);
                     cts.Cancel();
                 }
                 else
                 {
-                    // Stream can be canceled on the server while client is canceling stream.
-                    Log.UnexpectedCancel(_logger);
+                    // Invocation can be canceled on the server while client is canceling invocation.
+                    Log.UnexpectedCancelWithId(_logger, cancelInvocationMessage.InvocationId!);
                 }
                 break;
 
@@ -329,8 +374,9 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         {
             hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
             hub = hubActivator.Create();
+            var hubCallerContext = connection.HubCallerContext;
 
-            if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor, hubMethodInvocationMessage.Arguments, hub))
+            if (!await IsHubMethodAuthorized(scope.ServiceProvider, hubCallerContext, descriptor, hubMethodInvocationMessage.Arguments, hub))
             {
                 Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
                 await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -356,7 +402,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                     return true;
                 }
 
-                InitializeHub(hub, connection);
+                InitializeHub(hub, connection, hubCallerContext);
                 Task? invocation = null;
 
                 var arguments = hubMethodInvocationMessage.Arguments;
@@ -377,7 +423,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
                 if (isStreamResponse)
                 {
-                    _ = StreamAsync(hubMethodInvocationMessage.InvocationId!, connection, arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor);
+                    _ = StreamAsync(hubMethodInvocationMessage.InvocationId!, connection, hubCallerContext,
+                        arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor);
                 }
                 else
                 {
@@ -389,8 +436,10 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                                                         AsyncServiceScope scope,
                                                         IHubActivator<THub> hubActivator,
                                                         HubConnectionContext connection,
+                                                        HubCallerContext hubCallerContext,
                                                         HubMethodInvocationMessage hubMethodInvocationMessage,
-                                                        bool isStreamCall)
+                                                        bool isStreamCall,
+                                                        CancellationTokenSource? cts)
                     {
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
@@ -406,10 +455,26 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         // We want to take HubMethodNameAttribute into account which will be the same as what the invocation target is
                         var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger, connection);
 
+                        // Register the CancellationTokenSource if present so CancelInvocationMessage can cancel it
+                        var ctsRegistered = false;
+                        if (cts != null && !string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
+                        {
+                            if (!connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId!, cts))
+                            {
+                                Log.InvocationIdInUse(logger, hubMethodInvocationMessage.InvocationId);
+                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                    $"Invocation ID '{hubMethodInvocationMessage.InvocationId}' is already in use.");
+                                cts.Dispose();
+                                return;
+                            }
+                            ctsRegistered = true;
+                        }
+
                         object? result;
                         try
                         {
-                            result = await dispatcher.ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                            result = await dispatcher.ExecuteHubMethod(
+                                methodExecutor, hub, arguments, hubCallerContext, scope.ServiceProvider);
                             Log.SendingResult(logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                         }
                         catch (Exception ex)
@@ -430,6 +495,16 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                                 Activity.Current = previousActivity;
                             }
 
+                            // Remove the CancellationTokenSource from active requests. Only do this if we
+                            // successfully registered it, otherwise we'd evict another invocation's CTS on ID collision.
+                            if (ctsRegistered)
+                            {
+                                connection.ActiveRequestCancellationSources.TryRemove(hubMethodInvocationMessage.InvocationId!, out _);
+                            }
+                            // Always dispose the CTS if one was created (covers SendAsync with a CancellationToken
+                            // synthetic arg, which has no InvocationId and was therefore not added to the dictionary).
+                            cts?.Dispose();
+
                             // Stream response handles cleanup in StreamResultsAsync
                             // And normal invocations handle cleanup below in the finally
                             if (isStreamCall)
@@ -446,7 +521,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         }
                     }
 
-                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubMethodInvocationMessage, isStreamCall);
+                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall, cts);
                 }
 
                 if (isStreamCall || isStreamResponse)
@@ -508,7 +583,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return scope.DisposeAsync();
     }
 
-    private async Task StreamAsync(string invocationId, HubConnectionContext connection, object?[] arguments, AsyncServiceScope scope,
+    private async Task StreamAsync(string invocationId, HubConnectionContext connection, HubCallerContext hubCallerContext, object?[] arguments, AsyncServiceScope scope,
         IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource? streamCts, HubMethodInvocationMessage hubMethodInvocationMessage, HubMethodDescriptor descriptor)
     {
         string? error = null;
@@ -524,6 +599,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
         var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger, connection);
 
+        var ctsRegistered = false;
         try
         {
             if (!connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts))
@@ -532,11 +608,12 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 error = $"Invocation ID '{invocationId}' is already in use.";
                 return;
             }
+            ctsRegistered = true;
 
             object? result;
             try
             {
-                result = await ExecuteHubMethod(descriptor.MethodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                result = await ExecuteHubMethod(descriptor.MethodExecutor, hub, arguments, hubCallerContext, scope.ServiceProvider);
             }
             catch (Exception ex)
             {
@@ -596,18 +673,23 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
             await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
-            streamCts.Dispose();
-            connection.ActiveRequestCancellationSources.TryRemove(invocationId, out _);
+            // Only remove/dispose the CTS if we successfully registered it, otherwise we'd evict
+            // another invocation's CTS on ID collision.
+            if (ctsRegistered)
+            {
+                connection.ActiveRequestCancellationSources.TryRemove(invocationId, out _);
+                streamCts.Dispose();
+            }
 
             await connection.WriteAsync(CompletionMessage.WithError(invocationId, error));
         }
     }
 
-    private ValueTask<object?> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object?[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
+    private ValueTask<object?> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object?[] arguments, HubCallerContext hubCallerContext, IServiceProvider serviceProvider)
     {
         if (_invokeMiddleware != null)
         {
-            var invocationContext = new HubInvocationContext(methodExecutor, connection.HubCallerContext, serviceProvider, hub, arguments);
+            var invocationContext = new HubInvocationContext(methodExecutor, hubCallerContext, serviceProvider, hub, arguments);
             return _invokeMiddleware(invocationContext);
         }
 
@@ -655,14 +737,26 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         await connection.WriteAsync(CompletionMessage.WithError(invocationId, errorMessage));
     }
 
-    private void InitializeHub(THub hub, HubConnectionContext connection, bool invokeAllowed = true)
+    private void InitializeHub(
+        THub hub,
+        HubConnectionContext connection,
+        HubCallerContext hubCallerContext,
+        bool invokeAllowed = true)
     {
-        hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId, connection.ActiveInvocationLimit) { InvokeAllowed = invokeAllowed };
-        hub.Context = connection.HubCallerContext;
+        hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId, connection.ActiveInvocationLimit)
+        {
+            InvokeAllowed = invokeAllowed
+        };
+        hub.Context = hubCallerContext;
         hub.Groups = _hubContext.Groups;
     }
 
-    private static Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, HubMethodDescriptor descriptor, object?[] hubMethodArguments, Hub hub)
+    private static Task<bool> IsHubMethodAuthorized(
+        IServiceProvider provider,
+        HubCallerContext hubCallerContext,
+        HubMethodDescriptor descriptor,
+        object?[] hubMethodArguments,
+        Hub hub)
     {
         // If there are no policies we don't need to run auth
         if (descriptor.Policies.Count == 0)
@@ -670,7 +764,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             return TaskCache.True;
         }
 
-        return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, descriptor.Policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
+        return IsHubMethodAuthorizedSlow(
+            provider,
+            hubCallerContext.User ?? new ClaimsPrincipal(),
+            descriptor.Policies,
+            new HubInvocationContext(hubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
     }
 
     private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)

@@ -12,7 +12,7 @@
         <label>Anchor Mode:
             <select id="anchor-mode-select" @onchange="OnAnchorModeChanged">
                 <option value="0" selected="@(anchorMode == VirtualizeAnchorMode.None)">None</option>
-                <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Beginning)">Beginning</option>
+                <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Start)">Start</option>
                 <option value="2" selected="@(anchorMode == VirtualizeAnchorMode.End)">End</option>
             </select>
         </label>
@@ -64,7 +64,7 @@
 @code {
     private List<DynamicItem> items = new();
     private string statusMessage = "Ready";
-    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning;
+    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
     private Virtualize<DynamicItem> virtualizeRef;
@@ -242,7 +242,7 @@
         scrollStatus = $"Scrolling to {scrollTargetIndex}...";
         try
         {
-            await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex);
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex);
             scrollStatus = $"Completed: {scrollTargetIndex}";
         }
         catch (Exception ex)

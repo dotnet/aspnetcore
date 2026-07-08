@@ -8,12 +8,16 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Validation;
 
+using static Microsoft.Extensions.Validation.Tests.ValidationTestBase;
+
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
-    [Fact]
-    public async Task DoesNotEmit_ForSkipValidationAttribute_OnClassProperties()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DoesNotEmit_ForSkipValidationAttribute_OnClassProperties(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -125,7 +129,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -143,7 +147,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -165,7 +169,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -189,7 +193,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(rootInstance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, rootInstance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -217,7 +221,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(rootInstance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, rootInstance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -237,7 +241,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 // Errors are (currently) reported in the order from derived to base type.
                 Assert.Collection(context.ValidationErrors,
@@ -266,15 +270,17 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
         });
     }
 
-    [Fact]
-    public async Task DoesNotEmit_ForSkipValidationAttribute_OnRecordProperties()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DoesNotEmit_ForSkipValidationAttribute_OnRecordProperties(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -343,7 +349,7 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -367,7 +373,7 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -385,7 +391,7 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }

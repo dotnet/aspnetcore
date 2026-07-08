@@ -167,10 +167,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     /// <summary>
     /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
-    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Beginning"/>.
+    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Start"/>.
     /// </summary>
     [Parameter]
-    public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Beginning;
+    public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
 
     /// <summary>
     /// Gets or sets a comparer used to detect whether items were prepended or appended
@@ -204,11 +204,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// <summary>
     /// Gets or sets the zero-based index of the item to scroll to on first interactive render.
     /// Applied once when the component first knows its item count and ignored on subsequent re-renders;
-    /// to scroll programmatically at any later point, call <see cref="ScrollToIndexAsync(int, CancellationToken)"/>.
+    /// to scroll programmatically at any later point, call <see cref="ScrollToItemAsync(int, CancellationToken)"/>.
     /// Out-of-range values are clamped. The default value, <c>0</c>, means no initial scroll.
     /// </summary>
     [Parameter]
-    public int InitialIndex { get; set; }
+    public int InitialItemIndex { get; set; }
 
     private IEqualityComparer<TItem> _itemComparer = EqualityComparer<TItem>.Default;
 
@@ -232,7 +232,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// Scrolls the viewport so the item at <paramref name="itemIndex"/> is aligned to the start of the visible area.
     /// </summary>
     /// <remarks>
-    /// Each call cancels any previously-running <see cref="ScrollToIndexAsync(int, CancellationToken)"/> (last call wins).
+    /// Each call cancels any previously-running <see cref="ScrollToItemAsync(int, CancellationToken)"/> (last call wins).
     /// Must be called on the renderer's synchronization context; background-thread callers should wrap with
     /// <see cref="ComponentBase.InvokeAsync(Func{Task})"/> to await completion.
     /// </remarks>
@@ -240,20 +240,20 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// <param name="cancellationToken">A token that lets the caller request cancellation.</param>
     /// <returns>A <see cref="Task"/> that completes when the target is aligned or superseded by another call,
     /// or faults with <see cref="OperationCanceledException"/> if <paramref name="cancellationToken"/> is cancelled.</returns>
-    public Task ScrollToIndexAsync(int itemIndex, CancellationToken cancellationToken = default)
+    public Task ScrollToItemAsync(int itemIndex, CancellationToken cancellationToken = default)
     {
         if (_jsInterop is null)
         {
             // Throw synchronously so misuse is reported on the call site, not on the Task.
             throw new InvalidOperationException(
-                $"{nameof(ScrollToIndexAsync)} cannot be called before the {nameof(Virtualize<TItem>)} has been initialized for interactive rendering. " +
-                $"Use the {nameof(InitialIndex)} parameter to set the initial scroll position.");
+                $"{nameof(ScrollToItemAsync)} cannot be called before the {nameof(Virtualize<TItem>)} has been initialized for interactive rendering. " +
+                $"Use the {nameof(InitialItemIndex)} parameter to set the initial scroll position.");
         }
 
-        return ScrollToIndexAsyncCore(itemIndex, cancellationToken);
+        return ScrollToItemAsyncCore(itemIndex, cancellationToken);
     }
 
-    private async Task ScrollToIndexAsyncCore(int itemIndex, CancellationToken cancellationToken)
+    private async Task ScrollToItemAsyncCore(int itemIndex, CancellationToken cancellationToken)
     {
         // Cancel-and-switch (last call wins); finally block guards cleanup by ref-equality.
         _currentScrollCts?.Cancel();
@@ -436,11 +436,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         _placeholder = Placeholder ?? DefaultPlaceholder;
         _emptyContent = EmptyContent;
 
-        // Pre-position the window at InitialIndex before the first render so the initial
+        // Pre-position the window at InitialItemIndex before the first render so the initial
         // ItemsProvider fetch targets the right slice and avoids a flash of item 0.
-        if (!_initialScrollApplied && InitialIndex > 0)
+        if (!_initialScrollApplied && InitialItemIndex > 0)
         {
-            MoveWindowToContain(InitialIndex);
+            MoveWindowToContain(InitialItemIndex);
         }
     }
 
@@ -479,7 +479,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             }
 
             // If a mutation captured an anchor snapshot, restore it to keep the same row at the
-            // same viewport offset. Skip while a ScrollToIndexAsync is in flight — we are
+            // same viewport offset. Skip while a ScrollToItemAsync is in flight — we are
             // intentionally moving the viewport.
             var shouldRestore = _pendingAnchorRestore && !_pendingScrollToBottom && _currentScrollCts is null;
             _pendingAnchorRestore = false;
@@ -492,14 +492,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             await _jsInterop.RefreshObserversAsync();
         }
 
-        // Apply InitialIndex once: drive the first fetch via ScrollToIndexAsync rather than
+        // Apply InitialItemIndex once: drive the first fetch via ScrollToItemAsync rather than
         // letting the spacer-IO callback fire at scrollTop=0 and reset the window to index 0.
         if (!_initialScrollApplied && _jsInterop is not null)
         {
-            if (InitialIndex > 0)
+            if (InitialItemIndex > 0)
             {
                 _initialScrollApplied = true;
-                await ScrollToIndexAsync(InitialIndex);
+                await ScrollToItemAsync(InitialItemIndex);
             }
             else if (_itemCount > 0)
             {
@@ -629,9 +629,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool ShouldSuppressSpacerCallback()
     {
-        // Before the initial ScrollToIndexAsync runs, ignore IO callbacks: at scrollTop=0
+        // Before the initial ScrollToItemAsync runs, ignore IO callbacks: at scrollTop=0
         // they would compute itemsBefore=0 and overwrite the pre-positioned window.
-        if (!_initialScrollApplied && InitialIndex > 0)
+        if (!_initialScrollApplied && InitialItemIndex > 0)
         {
             return true;
         }
@@ -820,7 +820,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             var result = await _itemsProvider(request);
 
-            // InitialIndex out-of-range or TotalItemCount shrank between fetches: re-clamp
+            // InitialItemIndex out-of-range or TotalItemCount shrank between fetches: re-clamp
             if (!cancellationToken.IsCancellationRequested
                 && result.TotalItemCount > 0
                 && _itemsBefore >= result.TotalItemCount)
@@ -915,7 +915,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 // Cache this exception so the renderer can throw it.
                 _refreshException = e;
 
-                // Surface the exception to any waiting ScrollToIndexAsync caller.
+                // Surface the exception to any waiting ScrollToItemAsync caller.
                 _nextRenderTcs?.TrySetException(e);
 
                 // Re-render the component to throw the exception.
