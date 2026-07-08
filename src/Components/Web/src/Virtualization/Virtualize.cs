@@ -878,6 +878,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         }
                     }
                 }
+                else if (itemsAdded
+                    && !isDefaultProvider
+                    && EndAnchoredAppendNeedsWindowAdvance(previousItemCount))
+                {
+                    (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
+                }
 
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
@@ -960,6 +966,30 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         => countDelta > 0
             && (AnchorMode & VirtualizeAnchorMode.End) != 0
             && previousItemCount <= _visibleItemCapacity;
+
+    private bool EndAnchoredAppendNeedsWindowAdvance(int previousItemCount)
+        => !_itemComparerExplicitlySet
+            && (AnchorMode & VirtualizeAnchorMode.End) != 0
+            && _visibleItemCapacity > 0
+            && _itemsBefore + _visibleItemCapacity >= previousItemCount;
+
+    // Advances the window to the appended tail and refetches it in the current refresh pass, so the
+    // applied result already holds the real tail rows. Otherwise the window advances later via the
+    // async spacer round-trip, which first flashes with placeholder rows.
+    private async ValueTask<(ItemsProviderResult<TItem> Result, ItemsProviderRequest Request)> AdvanceWindowToAppendedTailAsync(
+        ItemsProviderResult<TItem> result, ItemsProviderRequest request, CancellationToken cancellationToken)
+    {
+        var tailItemsBefore = Math.Max(0, result.TotalItemCount - _visibleItemCapacity);
+        if (tailItemsBefore != _itemsBefore)
+        {
+            _itemsBefore = tailItemsBefore;
+            request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+            result = await _itemsProvider(request);
+        }
+
+        _pendingScrollToBottom = true;
+        return (result, request);
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
