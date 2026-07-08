@@ -24,6 +24,6 @@ internal sealed class Obsoletions
     internal const string AspNetCoreDeprecate010Url = "https://aka.ms/aspnet/deprecate/010";
 
     // ITlsTokenBindingFeature (RFC 8471 TLS Token Binding) has been abandoned by browsers (Chrome/Edge) and IETF work has stalled.
-    internal const string TlsTokenBindingFeatureMessage = "ITlsTokenBindingFeature is deprecated. TLS Token Binding (RFC 8471) has been abandoned by browsers (Chrome/Edge).";
+    internal const string TlsTokenBindingFeatureMessage = "ITlsTokenBindingFeature is deprecated. TLS Token Binding (RFC 8471) has not been adopted by browsers.";
     internal const string TlsTokenBindingFeatureDiagId = "ASPDEPR010";
 }

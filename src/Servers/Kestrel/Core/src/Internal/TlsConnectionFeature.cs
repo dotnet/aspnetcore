@@ -20,7 +20,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 {
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
-    private readonly ILogger<HttpsConnectionMiddleware>? _logger;
+    private readonly ILogger<HttpsConnectionMiddleware> _logger;
     private bool _snapshotted;
 
     private X509Certificate2? _clientCert;
@@ -38,12 +38,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     private int _keyExchangeStrength;
 #pragma warning restore SYSLIB0058
 
-    public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
-        : this(sslStream, context, logger: null)
-    {
-    }
-
-    internal TlsConnectionFeature(SslStream sslStream, ConnectionContext context, ILogger<HttpsConnectionMiddleware>? logger)
+    internal TlsConnectionFeature(SslStream sslStream, ConnectionContext context, ILogger<HttpsConnectionMiddleware> logger)
     {
         ArgumentNullException.ThrowIfNull(sslStream);
         ArgumentNullException.ThrowIfNull(context);
@@ -232,7 +227,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         catch (Exception ex)
         {
             // SslStream/TransportContext may throw if the handshake hasn't completed or the connection is torn down.
-            _logger?.FailedToReadChannelBinding(kind, ex);
+            _logger.FailedToReadChannelBinding(kind, ex);
             channelBindingToken = default;
             return false;
         }

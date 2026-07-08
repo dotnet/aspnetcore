@@ -43,18 +43,10 @@ internal sealed partial class UrlGroup : IDisposable
 
         Debug.Assert(urlGroupId != 0, "Invalid id returned by HttpCreateUrlGroup");
         Id = urlGroupId;
-
-        // Legacy behavior: the AppContext switch alone raises hardening only.
-        // Prefer HttpSysOptions.HttpAuthenticationHardeningLevel instead.
-        if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.EnableCBTHardening", out var enabled) && enabled)
-        {
-            SetChannelBindingProperty(HttpAuthenticationHardeningLevel.Medium);
-        }
     }
 
-    // Re-issues HttpServerChannelBindProperty with the requested hardening level and the
-    // HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN flag so the per-request CBT
-    // (HTTP_REQUEST_CHANNEL_BIND_STATUS) is delivered to the app.
+    // Sets HttpServerChannelBindProperty with the requested hardening level and the HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN flag
+    // so the per-request CBT is delivered to the app.
     internal unsafe void SetChannelBindingProperty(HttpAuthenticationHardeningLevel level)
     {
         var info = new HTTP_CHANNEL_BIND_INFO
