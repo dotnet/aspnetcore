@@ -1,0 +1,56 @@
+@page "/client-validation-feedback"
+@using BlazorUnitedApp.Data
+
+<PageTitle>Client validation - feedback</PageTitle>
+
+<h1>Client-side validation - feedback</h1>
+
+<p>
+    A second static-SSR form with a <strong>different</strong> set of rules. Navigating here from the
+    <a href="client-validation">Registration form</a> with enhanced navigation reuses the same
+    <code>&lt;blazor-client-validation-data&gt;</code> carrier element with a new payload, so the JS
+    engine must drop the registration form's rules and register these instead.
+</p>
+
+<EditForm Model="Input" method="POST" OnValidSubmit="HandleValidSubmit" FormName="feedback">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Subject</label>
+        <InputText class="form-control" @bind-Value="Input!.Subject" />
+        <ValidationMessage For="() => Input!.Subject" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Message</label>
+        <InputTextArea class="form-control" @bind-Value="Input!.Message" />
+        <ValidationMessage For="() => Input!.Message" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Rating (1-5)</label>
+        <InputNumber class="form-control" @bind-Value="Input!.Rating" />
+        <ValidationMessage For="() => Input!.Rating" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Send feedback</button>
+</EditForm>
+
+@if (_submitted)
+{
+    <div class="alert alert-success mt-3" role="alert">
+        Feedback submitted on the server: <strong>@Input!.Subject</strong> (rating @Input!.Rating).
+    </div>
+}
+
+@code {
+    [SupplyParameterFromForm]
+    private FeedbackModel? Input { get; set; }
+
+    private bool _submitted;
+
+    protected override void OnInitialized() => Input ??= new();
+
+    private void HandleValidSubmit() => _submitted = true;
+}

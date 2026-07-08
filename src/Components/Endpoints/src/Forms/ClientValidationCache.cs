@@ -106,7 +106,8 @@ internal sealed class ClientValidationCache : IDisposable
     private bool HasValidatablePropertyInfo(Type ownerType, string fieldName) =>
         _validationOptions.Resolvers.Count > 0
             && _propertyHasValidatableInfo.GetOrAdd((ownerType, fieldName),
-                key => _validationOptions.TryGetValidatablePropertyInfo(key.ModelType, key.FieldName, out _));
+                key => _validationOptions.TryGetValidatableTypeInfo(key.ModelType, out var typeInfo)
+                    && typeInfo.TryFindProperty(key.FieldName, _validationOptions, out _));
 #pragma warning restore ASP0029
 
     private void ClearCache()

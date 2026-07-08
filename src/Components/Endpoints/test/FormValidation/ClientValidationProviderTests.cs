@@ -286,7 +286,7 @@ public class ClientValidationProviderTests
 #pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
     private static ValidationOptions CreateMevOptions(Type formModelType, params (Type Type, string Member)[] nestedMembers)
     {
-        var map = new Dictionary<Type, IValidatableInfo>
+        var map = new Dictionary<Type, IValidatableTypeInfo>
         {
             [formModelType] = new TestTypeInfo(formModelType, Array.Empty<TestPropertyInfo>()),
         };
@@ -300,12 +300,12 @@ public class ClientValidationProviderTests
         return options;
     }
 
-    private sealed class TestResolver(Dictionary<Type, IValidatableInfo> map) : IValidatableInfoResolver
+    private sealed class TestResolver(Dictionary<Type, IValidatableTypeInfo> map) : IValidatableInfoResolver
     {
-        public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableInfo)
             => map.TryGetValue(type, out validatableInfo);
 
-        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
         {
             validatableInfo = null;
             return false;
