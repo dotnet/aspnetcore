@@ -16,14 +16,36 @@ public class JSInvokableCodeFixProviderTest : CodeFixVerifier
         var test = /* lang=c#-test */ """
             namespace ConsoleApplication1
             {
+                using Microsoft.JSInterop;
+
                 class TypeName
                 {
                     private string MyMethod() { return null; }
+                    [JSInvokable] private void BadMethod() { return; }
                 }
             }
             """ + ComponentsTestDeclarations.SourceWithJSInvokable;
 
-        VerifyCSharpDiagnostic(test);
+        VerifyCSharpDiagnostic(test, new DiagnosticResult
+        {
+            Id = DiagnosticDescriptors.JSInvokableMethodShouldBePublic.Id,
+            Message = "Method 'ConsoleApplication1.TypeName.BadMethod()' decorated with [JSInvokable] should be public.",
+            Severity = DiagnosticSeverity.Warning,
+            Locations = [new DiagnosticResultLocation("Test0.cs", 8, 36)]
+        });
+
+        VerifyCSharpFix(test, /* lang=c#-test */ """
+            namespace ConsoleApplication1
+            {
+                using Microsoft.JSInterop;
+
+                class TypeName
+                {
+                    private string MyMethod() { return null; }
+                    [JSInvokable] public void BadMethod() { return; }
+                }
+            }
+            """ + ComponentsTestDeclarations.SourceWithJSInvokable);
     }
 
     [Fact]
