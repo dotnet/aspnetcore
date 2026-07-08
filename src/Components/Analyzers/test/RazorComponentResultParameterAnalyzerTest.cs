@@ -117,14 +117,14 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = "BL0015",
-                Message = "Component 'TestComponent' does not have a parameter matching the name 'AuthorId'.",
+                Message = "Component 'ConsoleApplication1.TestComponent' does not have a parameter matching the name 'AuthorId'.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 18, 21) }
             },
             new DiagnosticResult
             {
                 Id = "BL0015",
-                Message = "Component 'TestComponent' does not have a parameter matching the name 'Missing'.",
+                Message = "Component 'ConsoleApplication1.TestComponent' does not have a parameter matching the name 'Missing'.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 19, 21) }
             });
