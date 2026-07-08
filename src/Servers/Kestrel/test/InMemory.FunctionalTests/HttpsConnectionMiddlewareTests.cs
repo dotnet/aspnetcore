@@ -228,6 +228,32 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "tls-server-end-point format is well-defined on Windows; other platforms may return null or a different shape.")]
+    public async Task TryGetChannelBindingBytesReturnsConsistentBytesOnRepeatedCalls()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        };
+
+        await using (var server = new TestServer(context =>
+        {
+            var feature = context.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(feature);
+
+            Assert.True(feature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var first));
+            Assert.True(feature.TryGetChannelBindingBytes(ChannelBindingKind.Endpoint, out var second));
+            Assert.True(first.Span.SequenceEqual(second.Span));
+
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+    }
+
     [Fact]
     public async Task HandshakeDetailsAreAvailableAfterAsyncCallback()
     {
