@@ -764,12 +764,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public bool EnableKernelResponseBuffering { get; set; }
 
         /// <summary>
-        /// Configures the Http.Sys authentication hardening level and, when non-Legacy,
+        /// Configures the Http.Sys authentication hardening level and, when non-<see cref="HttpAuthenticationHardeningLevel.Legacy"/>,
         /// exposes the RFC 5929 TLS channel binding token (CBT) for each request via
         /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.TryGetChannelBindingBytes"/>.
-        /// The default is <c>Legacy</c>.
+        /// The default is <see cref="HttpAuthenticationHardeningLevel.Medium"/>.
         /// </summary>
-        public HttpAuthenticationHardeningLevel HttpAuthenticationHardeningLevel { get; set; }
+        public HttpAuthenticationHardeningLevel HttpAuthenticationHardeningLevel { get; set; } = HttpAuthenticationHardeningLevel.Medium;
 
         /// <summary>
         /// Gets or sets the maximum number of concurrent connections to accept. Set <c>-1</c> for infinite.

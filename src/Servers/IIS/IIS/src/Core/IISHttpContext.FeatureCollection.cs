@@ -476,9 +476,6 @@ internal partial class IISHttpContext : IFeatureCollection,
         return IsHttps ? this : null;
     }
 
-    private ReadOnlyMemory<byte>? _channelBindingBytes;
-    private bool _channelBindingFetched;
-
     bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
     {
         channelBindingToken = default;
@@ -500,13 +497,8 @@ internal partial class IISHttpContext : IFeatureCollection,
         // extendedProtection), not by managed code — IIS owns the URL group properties.
         // If IIS has not enabled per-request channel binding, GetChannelBindingToken()
         // will return null and we will report false to the caller.
-        if (!_channelBindingFetched)
-        {
-            _channelBindingFetched = true;
-            _channelBindingBytes = GetChannelBindingToken();
-        }
-
-        if (_channelBindingBytes is { } bytes)
+        var bytes = GetChannelBindingToken();
+        if (bytes is not null)
         {
             channelBindingToken = bytes;
             return true;

@@ -57,20 +57,21 @@ internal sealed partial class UrlGroup : IDisposable
     // (HTTP_REQUEST_CHANNEL_BIND_STATUS) is delivered to the app.
     internal unsafe void SetChannelBindingProperty(HttpAuthenticationHardeningLevel level)
     {
-        Debug.Assert(level != HttpAuthenticationHardeningLevel.Legacy,
-            "SetChannelBindingProperty should not be called with Legacy hardening.");
-
         var info = new HTTP_CHANNEL_BIND_INFO
         {
             Hardening = level switch
             {
                 HttpAuthenticationHardeningLevel.Strict => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningStrict,
                 HttpAuthenticationHardeningLevel.Legacy => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningLegacy,
-                _ or HttpAuthenticationHardeningLevel.Medium => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium,
+                HttpAuthenticationHardeningLevel.Medium or _ => HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium,
             },
             ServiceNames = (HTTP_SERVICE_BINDING_BASE**)IntPtr.Zero,
             NumberOfServiceNames = 0,
-            Flags = HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN,
+
+            // optimize: Flags control if CBT is included in NativeRequest, and if legacy level is used, no point to load the CBT data.
+            Flags = level == HttpAuthenticationHardeningLevel.Legacy
+                ? default
+                : HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN,
         };
 
         SetProperty(HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty, new IntPtr(&info), (uint)ChannelBindInfoSize);

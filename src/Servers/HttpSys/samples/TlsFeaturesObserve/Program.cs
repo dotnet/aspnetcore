@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -40,9 +41,23 @@ app.Use(async (context, next) =>
         // Parse the SEC_CHANNEL_BINDINGS header so we can see the RFC 5929 (https://datatracker.ietf.org/doc/html/rfc5929)
         // application data ("tls-server-end-point:" + SHA-256 of the cert).
         var span = bytes.Span;
-        var appLen = BitConverter.ToInt32(span.Slice(24, 4));
-        var appOff = BitConverter.ToInt32(span.Slice(28, 4));
-        var app = span.Slice(appOff, appLen);
+        if (span.Length < 32)
+        {
+            await context.Response.WriteAsync("\tITlsConnectionFeature.TryGetChannelBindingBytes(Endpoint) returned an unexpected payload (< 32 bytes).\n\n");
+            await next(context);
+            return;
+        }
+
+        var appLen = BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(24, 4));
+        var appOff = BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(28, 4));
+        if (appOff + appLen > (uint)span.Length)
+        {
+            await context.Response.WriteAsync("\tITlsConnectionFeature.TryGetChannelBindingBytes(Endpoint) returned an unexpected payload (appdata outside buffer).\n\n");
+            await next(context);
+            return;
+        }
+
+        var app = span.Slice((int)appOff, (int)appLen);
         var asciiPrefix = System.Text.Encoding.ASCII.GetString(app[..Math.Min(21, app.Length)]);
         var hash = Convert.ToHexString(app[Math.Min(21, app.Length)..]);
 

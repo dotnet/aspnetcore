@@ -291,10 +291,6 @@ public class HttpSysOptions
 
         Authentication.SetUrlGroupSecurity(urlGroup);
         Timeouts.SetUrlGroupTimeouts(urlGroup);
-
-        if (HttpAuthenticationHardeningLevel != HttpAuthenticationHardeningLevel.Legacy)
-        {
-            urlGroup.SetChannelBindingProperty(HttpAuthenticationHardeningLevel);
-        }
+        urlGroup.SetChannelBindingProperty(HttpAuthenticationHardeningLevel);
     }
 }
