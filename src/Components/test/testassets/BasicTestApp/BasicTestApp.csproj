@@ -12,8 +12,6 @@
     <!-- Project supports more than one language -->
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
 
-    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
-
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 
   </PropertyGroup>

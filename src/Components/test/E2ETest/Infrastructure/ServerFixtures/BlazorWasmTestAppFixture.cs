@@ -50,7 +50,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             {
                 "--urls", $"http://{host}:0",
                 "--contentroot", ContentRoot,
-                "--Gateway:PathBase", PathBase,
+                "--pathbase", PathBase,
                 "--staticWebAssets", Path.ChangeExtension(assemblyLocation, ".staticwebassets.runtime.json"),
                 "--ClientApps:app:EndpointsManifest", Path.ChangeExtension(assemblyLocation, ".staticwebassets.endpoints.json"),
                 "--ClientApps:app:PathPrefix", "",

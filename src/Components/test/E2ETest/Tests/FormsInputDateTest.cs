@@ -45,21 +45,22 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => renewalDateInput.GetDomAttribute("class"));
-        SetDateInputValue(renewalDateInput, "2000-01-01");
+        renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+        renewalDateInput.SendKeys("01/01/2000\t");
         Browser.Equal("modified valid", () => renewalDateInput.GetDomAttribute("class"));
 
-        // Can become invalid (year is out of range for DateTime)
-        SetDateInputValue(renewalDateInput, "11111-11-11");
+        // Can become invalid
+        renewalDateInput.SendKeys("11-11-11111\t");
         Browser.Equal("modified invalid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
         // Empty is invalid, because it's not nullable
-        SetDateInputValue(renewalDateInput, "");
+        renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
         Browser.Equal("modified invalid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
         // Can become valid
-        SetDateInputValue(renewalDateInput, "2001-01-01");
+        renewalDateInput.SendKeys("01/01/01\t");
         Browser.Equal("modified valid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
@@ -73,16 +74,16 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => expiryDateInput.GetDomAttribute("class"));
-        SetDateInputValue(expiryDateInput, "2000-01-01");
+        expiryDateInput.SendKeys("01-01-2000\t");
         Browser.Equal("modified valid", () => expiryDateInput.GetDomAttribute("class"));
 
-        // Can become invalid (year is out of range for DateTimeOffset)
-        SetDateInputValue(expiryDateInput, "11111-11-11");
+        // Can become invalid
+        expiryDateInput.SendKeys("11-11-11111\t");
         Browser.Equal("modified invalid", () => expiryDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
         // Empty is valid, because it's nullable
-        SetDateInputValue(expiryDateInput, "");
+        expiryDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
         Browser.Equal("modified valid", () => expiryDateInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
@@ -103,13 +104,13 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => departureTimeInput.GetDomAttribute("class"));
-        SetDateInputValue(departureTimeInput, "06:43");
+        departureTimeInput.SendKeys("06:43\t");
         Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
 
         // Can become invalid
-        // Strictly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
+        // Stricly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
         // We don't know of any way to produce a different (non-empty-equivalent) state using UI gestures, so there's nothing else to test
-        SetDateInputValue(departureTimeInput, "");
+        departureTimeInput.SendKeys($"20{Keys.Backspace}\t");
         Browser.Equal("modified invalid", () => departureTimeInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
     }
@@ -130,12 +131,13 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Input works with seconds value of zero and has the expected final value
         Browser.Equal("valid", () => departureTimeInput.GetDomAttribute("class"));
-        SetDateInputValue(departureTimeInput, "11:11:11");
+        departureTimeInput.SendKeys("111111");
         Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
         Browser.Equal("11:11:11", () => departureTimeInput.GetDomProperty("value"));
 
         // Input works with non-zero seconds value
-        SetDateInputValue(departureTimeInput, "10:10:10");
+        // Move to the beginning of the input and put the new time
+        departureTimeInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 3)) + "101010");
         Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
         Browser.Equal("10:10:10", () => departureTimeInput.GetDomProperty("value"));
     }
@@ -149,21 +151,22 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => visitMonthInput.GetDomAttribute("class"));
-        SetDateInputValue(visitMonthInput, "2005-03");
+        visitMonthInput.SendKeys($"03{Keys.ArrowRight}2005\t");
         Browser.Equal("modified valid", () => visitMonthInput.GetDomAttribute("class"));
 
         // Empty is invalid because it's not nullable
-        SetDateInputValue(visitMonthInput, "");
+        visitMonthInput.Clear();
         Browser.Equal("modified invalid", () => visitMonthInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
-        // Invalid year (11111, out of range for DateTime)
-        SetDateInputValue(visitMonthInput, "11111-11");
+        // Invalid year (11111)
+        visitMonthInput.SendKeys($"11{Keys.ArrowRight}11111\t");
         Browser.Equal("modified invalid", () => visitMonthInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
         // Can become valid again
-        SetDateInputValue(visitMonthInput, "1111-11");
+        visitMonthInput.Clear();
+        visitMonthInput.SendKeys($"11{Keys.ArrowRight}1111\t");
         Browser.Equal("modified valid", () => visitMonthInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
@@ -184,21 +187,22 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit and has the expected value
         Browser.Equal("valid", () => appointmentInput.GetDomAttribute("class"));
-        SetDateInputValue(appointmentInput, "1970-01-01T05:42");
+        appointmentInput.SendKeys($"01011970{Keys.ArrowRight}05421");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
 
         // Empty is invalid because it's not nullable
-        SetDateInputValue(appointmentInput, "");
+        appointmentInput.Clear();
         Browser.Equal("modified invalid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
-        // Invalid year (11111, out of range for DateTime)
-        SetDateInputValue(appointmentInput, "11111-11-11T11:11");
+        // Invalid year (11111)
+        appointmentInput.SendKeys($"111111111{Keys.ArrowRight}11111");
         Browser.Equal("modified invalid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
         // Can become valid again
-        SetDateInputValue(appointmentInput, "1111-11-11T11:11");
+        appointmentInput.Clear();
+        appointmentInput.SendKeys($"11111111{Keys.ArrowRight}11111");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
@@ -219,12 +223,13 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Input works with seconds value of zero (as in, starting from a zero value, which is the default) and has the expected final value
         Browser.Equal("valid", () => appointmentInput.GetDomAttribute("class"));
-        SetDateInputValue(appointmentInput, "1970-11-11T11:42:16");
+        appointmentInput.SendKeys($"11111970{Keys.ArrowRight}114216");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal("1970-11-11T11:42:16", () => appointmentInput.GetDomProperty("value"));
 
         // Input works when starting with a non-zero seconds value
-        SetDateInputValue(appointmentInput, "1970-10-10T10:53:21");
+        // Move to the beginning of the input and put the new value
+        appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetDomProperty("value"));
     }
@@ -236,15 +241,4 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
             .OrderBy(x => x)
             .ToArray();
     }
-
-    // Sets the value of a native date/time input directly and raises the "change" event that
-    // InputDate binds to. This avoids the well-known flakiness of driving the browser's native
-    // date-picker segments via simulated keystrokes (see the class-level comment above), while
-    // still exercising the real value-parsing and EditContext validation path.
-    private void SetDateInputValue(IWebElement input, string value)
-        => ((IJavaScriptExecutor)Browser).ExecuteScript(
-            "arguments[0].value = arguments[1];" +
-            "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
-            input,
-            value);
 }
