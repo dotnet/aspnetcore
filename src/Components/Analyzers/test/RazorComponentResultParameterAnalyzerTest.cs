@@ -73,7 +73,7 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
         var expected = new DiagnosticResult
         {
             Id = "BL0015",
-            Message = "Component 'TestComponent' does not have a parameter matching the name 'AuthorId'.",
+            Message = "Component 'ConsoleApplication1.TestComponent' does not have a [Parameter] property matching the name 'AuthorId'.",
             Severity = DiagnosticSeverity.Warning,
             Locations = new[]
             {
