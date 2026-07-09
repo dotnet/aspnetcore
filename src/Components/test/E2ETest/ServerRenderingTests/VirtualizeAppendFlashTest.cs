@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -106,7 +108,7 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
     private int GetDataRowCount() => Browser.FindElements(By.CssSelector(DataRows)).Count;
 
     private int GetRowCount()
-        => int.Parse(Browser.FindElement(By.Id("repro-rowcount")).Text, System.Globalization.CultureInfo.InvariantCulture);
+        => int.Parse(Browser.FindElement(By.Id("repro-rowcount")).Text, CultureInfo.InvariantCulture);
 
     private readonly record struct ProviderCall(int Start, int Count, int Total);
 
@@ -125,12 +127,12 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
     }
 
     private static int ParseAttr(IWebElement el, string name)
-        => int.Parse(el.GetAttribute(name), System.Globalization.CultureInfo.InvariantCulture);
+        => int.Parse(el.GetAttribute(name), CultureInfo.InvariantCulture);
 
     private int GetIntValue(string id)
     {
         var el = Browser.FindElement(By.Id(id));
-        return int.Parse(el.GetAttribute("value"), System.Globalization.CultureInfo.InvariantCulture);
+        return int.Parse(el.GetAttribute("value"), CultureInfo.InvariantCulture);
     }
 
     // Appended rows have indices >= the seed count; a visible one proves the tail actually loaded.
@@ -138,8 +140,8 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
     {
         foreach (var row in Browser.FindElements(By.CssSelector(DataRows)))
         {
-            var match = System.Text.RegularExpressions.Regex.Match(row.Text, @"Log entry (\d+)");
-            if (match.Success && int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) >= InitialItemCount)
+            var match = Regex.Match(row.Text, @"Log entry (\d+)");
+            if (match.Success && int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) >= InitialItemCount)
             {
                 return true;
             }

@@ -168,7 +168,7 @@
     {
         _batchSize = BatchQuery ?? 30;
         _anchorMode = string.Equals(AnchorQuery, "beginning", StringComparison.OrdinalIgnoreCase)
-            ? VirtualizeAnchorMode.Beginning
+            ? VirtualizeAnchorMode.Start
             : VirtualizeAnchorMode.End;
 
         if (Comparer)
