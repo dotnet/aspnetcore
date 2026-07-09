@@ -37,9 +37,9 @@ public sealed class ValidateContext
     }
 
     /// <summary>
-    /// Gets or sets the service provider. This will also be made available on the <see cref="ValidationContext"/> instances..
+    /// Gets or sets the service provider. This will also be made available on the <see cref="ValidationContext"/> instances.
     /// </summary>
-    public required IServiceProvider? ServiceProvider { get; init; }
+    public IServiceProvider? ServiceProvider { get; init; }
 
     /// <summary>
     /// Gets or sets the prefix used to identify the current object being validated in a complex object graph.
@@ -53,7 +53,7 @@ public sealed class ValidateContext
     /// Gets or sets the validation options that control validation behavior,
     /// including validation depth limits and resolver registration.
     /// </summary>
-    public required ValidationOptions ValidationOptions { get; set; }
+    public required ValidationOptions ValidationOptions { get; init; }
 
     /// <summary>
     /// Gets the dictionary of validation errors collected during validation.
