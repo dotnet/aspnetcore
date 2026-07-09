@@ -13,6 +13,7 @@
 *REMOVED*virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext!
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationContext.set -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationOptions.set -> void
 abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? type) -> string?
 Microsoft.Extensions.Validation.DisplayNameInfo
 Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
@@ -57,6 +58,7 @@ Microsoft.Extensions.Validation.ValidateContext.AddValidationError(Microsoft.Ext
 Microsoft.Extensions.Validation.ValidateContext.ServiceProvider.get -> System.IServiceProvider?
 Microsoft.Extensions.Validation.ValidateContext.ServiceProvider.init -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>?
+Microsoft.Extensions.Validation.ValidateContext.ValidationOptions.init -> void
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableInfo) -> bool
