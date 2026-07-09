@@ -42,7 +42,7 @@
     "minimist": ">=1.2.6"
   },
   "overrides": {
-    "fast-uri": "3.1.1",
+    "fast-uri": "3.1.2",
     "serialize-javascript": "7.0.3"
   }
 }
