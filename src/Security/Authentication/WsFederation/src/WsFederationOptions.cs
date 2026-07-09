@@ -26,6 +26,7 @@ public class WsFederationOptions : RemoteAuthenticationOptions
             new JwtSecurityTokenHandler()
         };
 
+    // codeql[SM04554] - Valid issuer is populated at runtime by the handler from the authority's discovery metadata, not statically here. codeql[SM04555] - Issuer validation runs in the handler; ValidateIssuer defaults to true in Microsoft.IdentityModel.
     private TokenValidationParameters _tokenValidationParameters = new TokenValidationParameters();
 
     /// <summary>

@@ -285,6 +285,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// Gets or sets the parameters used to validate identity tokens.
     /// </summary>
     /// <remarks>Contains the types and definitions required for validating a token.</remarks>
+    // codeql[SM04554] - Valid issuer is populated at runtime by the handler from the authority's discovery metadata, not statically here. codeql[SM04555] - Issuer validation runs in the handler; ValidateIssuer defaults to true in Microsoft.IdentityModel.
     public TokenValidationParameters TokenValidationParameters { get; set; } = new TokenValidationParameters();
 
     /// <summary>
