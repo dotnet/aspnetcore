@@ -11,7 +11,7 @@
     <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <Reference Include="System.Security.Cryptography.Xml" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
   </ItemGroup>
 
 </Project>

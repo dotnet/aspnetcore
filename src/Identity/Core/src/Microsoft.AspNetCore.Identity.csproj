@@ -12,7 +12,7 @@
     <Reference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Identity.Core" />
-    <Reference Include="System.Security.Cryptography.Xml" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
   </ItemGroup>
 
 </Project>
