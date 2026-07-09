@@ -1162,7 +1162,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         var cookieOptions = Options.NonceCookie.Build(Context, TimeProvider.GetUtcNow());
 
-        // codeql[SM02373] - The nonce cookie is always Secure: NonceCookie.SecurePolicy defaults to CookieSecurePolicy.Always.
+        // codeql[SM02373] - The nonce cookie is Secure by default because NonceCookie.SecurePolicy defaults to CookieSecurePolicy.Always.
         Response.Cookies.Append(
             Options.NonceCookie.Name + Options.StringDataFormat.Protect(nonce),
             NonceProperty,
