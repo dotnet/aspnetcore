@@ -231,7 +231,9 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     [Fact]
     public void PaginatorRendersCorrectlyUnderNonEnglishCulture()
     {
-        Browser.Navigate().GoToUrl(_serverFixture.RootUri + ServerPathBase + "?culture=fr-FR");
+        var url = new Uri(_serverFixture.RootUri, $"{ServerPathBase.TrimStart('/')}?culture=fr-FR");
+        Browser.Navigate().GoToUrl(url.ToString());
+
         app = Browser.MountTestComponent<SampleQuickGridComponent>();
 
         var paginator = app.FindElement(By.ClassName("paginator"));
