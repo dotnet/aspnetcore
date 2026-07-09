@@ -191,31 +191,18 @@
         }
     }
 
-    private void OnBatchChanged(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v))
-        {
-            _batchSize = Math.Max(1, v);
-        }
-    }
+    private void OnBatchChanged(ChangeEventArgs e) => _batchSize = Math.Max(1, ParseInt(e, _batchSize));
 
-    private void OnDelayChanged(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v))
-        {
-            _providerDelayMs = Math.Max(0, v);
-        }
-    }
+    private void OnDelayChanged(ChangeEventArgs e) => _providerDelayMs = Math.Max(0, ParseInt(e, _providerDelayMs));
 
-    private void OnIntervalChanged(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v))
-        {
-            _autoIntervalMs = Math.Max(50, v);
-        }
-    }
+    private void OnIntervalChanged(ChangeEventArgs e) => _autoIntervalMs = Math.Max(50, ParseInt(e, _autoIntervalMs));
 
-    // For manula, non-deterministic checks
+    private static int ParseInt(ChangeEventArgs e, int fallback)
+        => int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)
+            ? v
+            : fallback;
+
+    // For manual testing, non-deterministic checks
     private void ToggleAutoAppend()
     {
         if (_autoAppend)
@@ -256,11 +243,22 @@
             Message: $"Log entry {i}: {Guid.NewGuid():N}");
     }
 
-    private async Task AppendBatchAsync()
+    private Task AppendBatchAsync() => GrowAsync(atFront: false);
+
+    private Task PrependBatchAsync() => GrowAsync(atFront: true);
+
+    private async Task GrowAsync(bool atFront)
     {
         for (var i = 0; i < _batchSize; i++)
         {
-            _items.Add(MakeItem());
+            if (atFront)
+            {
+                _items.Insert(0, MakeItem());
+            }
+            else
+            {
+                _items.Add(MakeItem());
+            }
         }
 
         if (_virtualize is not null)
@@ -269,22 +267,6 @@
         }
 
         // Sync the rowcount label, which lives outside the Virtualize region.
-        StateHasChanged();
-    }
-
-    private async Task PrependBatchAsync()
-    {
-        // Symmetric to append for Start/Beginning anchoring: new items arrive at the front.
-        for (var i = 0; i < _batchSize; i++)
-        {
-            _items.Insert(0, MakeItem());
-        }
-
-        if (_virtualize is not null)
-        {
-            await _virtualize.RefreshDataAsync();
-        }
-
         StateHasChanged();
     }
 
@@ -321,13 +303,13 @@
             }
         }
 
-        var count = Math.Min(request.Count, _items.Count - request.StartIndex);
-        var slice = Enumerable.Range(request.StartIndex, Math.Max(0, count))
+        var count = Math.Max(0, Math.Min(request.Count, _items.Count - request.StartIndex));
+        var slice = Enumerable.Range(request.StartIndex, count)
             .Select(i => (RowIndex: i, Data: _items[i]));
 
         _lastCompletedStartIndex = request.StartIndex;
 
-        _providerCalls.Add(new ProviderCall(request.StartIndex, count < 0 ? 0 : count, _items.Count));
+        _providerCalls.Add(new ProviderCall(request.StartIndex, count, _items.Count));
         StateHasChanged();
 
         return new ItemsProviderResult<(int RowIndex, LogItem Data)>(slice, _items.Count);

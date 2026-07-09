@@ -139,7 +139,7 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
         foreach (var row in Browser.FindElements(By.CssSelector(DataRows)))
         {
             var match = System.Text.RegularExpressions.Regex.Match(row.Text, @"Log entry (\d+)");
-            if (match.Success && int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) >= 600)
+            if (match.Success && int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) >= InitialItemCount)
             {
                 return true;
             }
