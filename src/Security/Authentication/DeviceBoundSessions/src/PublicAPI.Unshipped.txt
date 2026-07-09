@@ -45,6 +45,10 @@ Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.Name.s
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.SessionCredential() -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.Type.get -> string!
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction
+Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.AllowedRefreshInitiators.get -> System.Collections.Generic.List<string!>?
+Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.AllowedRefreshInitiators.set -> void
+Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.Continue.get -> bool
+Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.Continue.set -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.Credentials.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential!>?
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.Credentials.set -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.RefreshUrl.get -> string?

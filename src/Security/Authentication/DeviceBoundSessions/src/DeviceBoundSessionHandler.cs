@@ -304,6 +304,12 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
             ?? throw new InvalidOperationException(
                 $"The session cookie scheme '{Options.SessionScheme}' has no configured cookie name; cannot build a valid DBSC session instruction.");
 
+        List<string>? allowedRefreshInitiators = null;
+        if (Options.AllowedRefreshInitiators.Count > 0)
+        {
+            allowedRefreshInitiators = [.. Options.AllowedRefreshInitiators];
+        }
+
         return new SessionInstruction
         {
             SessionIdentifier = sessionId,
@@ -322,6 +328,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
                     Attributes = BuildCredentialAttributes(sessionCookieOptions),
                 }
             },
+            AllowedRefreshInitiators = allowedRefreshInitiators,
         };
     }
 

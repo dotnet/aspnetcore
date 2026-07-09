@@ -27,6 +27,14 @@ public sealed class SessionInstruction
     public string? RefreshUrl { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the session should continue to apply. Registration and
+    /// refresh endpoints can set this to <see langword="false"/> to terminate the session. Defaults to
+    /// <see langword="true"/>.
+    /// </summary>
+    [JsonPropertyName("continue")]
+    public bool Continue { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the session scope.
     /// </summary>
     [JsonPropertyName("scope")]
@@ -37,4 +45,12 @@ public sealed class SessionInstruction
     /// </summary>
     [JsonPropertyName("credentials")]
     public List<SessionCredential>? Credentials { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of out-of-scope hosts allowed to initiate DBSC refreshes. When
+    /// <see langword="null"/> or empty the field is omitted and the browser uses its default (an empty
+    /// list). See W3C Device Bound Session Credentials §8.3.
+    /// </summary>
+    [JsonPropertyName("allowed_refresh_initiators")]
+    public List<string>? AllowedRefreshInitiators { get; set; }
 }
