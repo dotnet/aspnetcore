@@ -77,9 +77,6 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
         var source = _services.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>().Get(sourceScheme);
 
         // Copy cookie builder settings (preserving any name/path already set)
-        var targetName = target.Cookie.Name;
-        var targetPath = target.Cookie.Path;
-
         target.Cookie.HttpOnly = source.Cookie.HttpOnly;
         target.Cookie.SecurePolicy = source.Cookie.SecurePolicy;
         target.Cookie.SameSite = source.Cookie.SameSite;
@@ -87,12 +84,5 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
         target.Cookie.IsEssential = source.Cookie.IsEssential;
         target.ExpireTimeSpan = source.ExpireTimeSpan;
         target.SlidingExpiration = source.SlidingExpiration;
-
-        // Restore the target-specific name and path
-        target.Cookie.Name = targetName;
-        if (targetPath is not null)
-        {
-            target.Cookie.Path = targetPath;
-        }
     }
 }
