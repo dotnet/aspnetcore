@@ -435,8 +435,10 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // Set the route builder so that UseRouting will use the WebApplication as the IEndpointRouteBuilder for route matching
         app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
 
+        var hasEndpointDataSources = _builtApplication.DataSources.Count > 0;
+
         // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
-        if (_builtApplication.DataSources.Count > 0)
+        if (hasEndpointDataSources)
         {
             // If this is set, someone called UseRouting() when a global route builder was already set
             if (!_builtApplication.Properties.TryGetValue(EndpointRouteBuilderKey, out var localRouteBuilder))
@@ -471,9 +473,11 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
         }
 
+        // Skip auto-injecting CSRF protection when the app has no endpoints registered.
         if (addCsrfProtection = !WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"])
             && serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true
-            && !_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
+            && !_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey)
+            && hasEndpointDataSources)
         {
             _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
         }
@@ -496,6 +500,19 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             }
         };
 
+        var configureAuthImplicitMiddlewares = (IApplicationBuilder pipeline) =>
+        {
+            if (addAuthentication)
+            {
+                pipeline.UseAuthentication();
+            }
+
+            if (addAuthorization)
+            {
+                pipeline.UseAuthorization();
+            }
+        };
+
         // When the app calls UseRouting() explicitly, the framework skips adding its own UseRouting() above, so
         // routing runs later, inside the source pipeline. The implicit authentication/authorization/CSRF middleware
         // must still run AFTER routing so they observe the matched endpoint (e.g. CSRF reads a per-endpoint CORS
@@ -507,14 +524,21 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         }
         else
         {
-            configureImplicitMiddlewares(app);
+            configureAuthImplicitMiddlewares(app);
+
+            // Chain CSRF via PostRoutingPipeline so it runs after routing on both the outer pass and any re-routed branch (e.g. UseStatusCodePagesWithReExecute).
+            if (addCsrfProtection && !_builtApplication.Properties.ContainsKey(MiddlewareInvokedKeys.PostRoutingPipeline))
+            {
+                var csrfPostRoutingPipeline = new PostRoutingPipeline(app, static pipeline => pipeline.UseMiddleware<CsrfProtectionMiddleware>());
+                _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingPipeline] = (Func<RequestDelegate, RequestDelegate>)csrfPostRoutingPipeline.CreateMiddleware;
+            }
         }
 
         // Wire the source pipeline to run in the destination pipeline
         var wireSourcePipeline = new WireSourcePipeline(_builtApplication);
         app.Use(wireSourcePipeline.CreateMiddleware);
 
-        if (_builtApplication.DataSources.Count > 0)
+        if (hasEndpointDataSources)
         {
             // We don't know if user code called UseEndpoints(), so we will call it just in case, UseEndpoints() will ignore duplicate DataSources
             app.UseEndpoints(_ => { });

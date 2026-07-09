@@ -885,7 +885,7 @@ describe("hubConnection", () => {
         }
     });
 
-    it("connection id is alwys null is negotiation is skipped", async () => {
+    it("connection id is always null if negotiation is skipped", async () => {
         try {
             const hubConnection = getConnectionBuilder(
                     HttpTransportType.WebSockets,

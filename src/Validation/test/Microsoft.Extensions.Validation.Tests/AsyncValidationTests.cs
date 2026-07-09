@@ -1010,7 +1010,7 @@ public class AsyncValidationTests
             context.ValidationErrors is null || context.ValidationErrors.Count == 0,
             "Deep validators did not run in parallel: " + string.Join(
                 "; ",
-                (context.ValidationErrors ?? (IReadOnlyDictionary<string, IEnumerable<string>>)new Dictionary<string, IEnumerable<string>>())
+                (context.ValidationErrors ?? (IReadOnlyDictionary<string, IReadOnlyList<string>>)new Dictionary<string, IReadOnlyList<string>>())
                     .SelectMany(e => e.Value.Select(v => $"{e.Key}: {v}"))));
     }
 
