@@ -462,7 +462,9 @@ public class HttpsTests : LoggedTest
         }
         using HttpClient client = new HttpClient(handler);
         return await client.GetStringAsync(uri);
-    }    private async Task<string> SendRequestAsync(string uri, string upload)
+    }
+
+    private async Task<string> SendRequestAsync(string uri, string upload)
     {
         var handler = new WinHttpHandler();
         handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
