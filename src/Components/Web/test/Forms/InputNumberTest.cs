@@ -351,62 +351,67 @@ public class InputNumberTest
         Assert.Contains("Guid", exception.InnerException!.Message);
     }
 
-    // Type-Specific Boundary Tests
-    [Fact]
-    public void ParsesIntMinValue()
+    [Theory]
+    [InlineData(-2147483648, "int.MinValue")]
+    [InlineData(2147483647, "int.MaxValue")]
+    [InlineData(0, "int.Zero")]
+    public void ParsesIntBoundaryValues(int value, string scenario)
     {
         var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("IntMin");
+        component.SetFieldName(scenario);
 
-        var success = component.TryParseValue(int.MinValue.ToString(CultureInfo.InvariantCulture), out var result, out _);
-
-        Assert.True(success);
-        Assert.Equal(int.MinValue, result);
-    }
-
-    [Fact]
-    public void ParsesIntMaxValue()
-    {
-        var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("IntMax");
-
-        var success = component.TryParseValue(int.MaxValue.ToString(CultureInfo.InvariantCulture), out var result, out _);
+        var success = component.TryParseValue(value.ToString(CultureInfo.InvariantCulture), out var result, out _);
 
         Assert.True(success);
-        Assert.Equal(int.MaxValue, result);
+        Assert.Equal(value, result);
     }
 
-    [Fact]
-    public void ParsesLongMinValue()
+    [Theory]
+    [InlineData(-9223372036854775808L, "long.MinValue")]
+    [InlineData(9223372036854775807L, "long.MaxValue")]
+    [InlineData(0L, "long.Zero")]
+    public void ParsesLongBoundaryValues(long value, string scenario)
     {
         var component = new StandaloneInputNumber<long>();
-        component.SetFieldName("LongMin");
+        component.SetFieldName(scenario);
 
-        var success = component.TryParseValue(long.MinValue.ToString(CultureInfo.InvariantCulture), out var result, out _);
+        var success = component.TryParseValue(value.ToString(CultureInfo.InvariantCulture), out var result, out _);
 
         Assert.True(success);
-        Assert.Equal(long.MinValue, result);
+        Assert.Equal(value, result);
     }
 
-    [Fact]
-    public void FormatsIntMinValue()
+    [Theory]
+    [InlineData(-2147483648, "int.MinValue")]
+    [InlineData(2147483647, "int.MaxValue")]
+    [InlineData(0, "int.Zero")]
+    public void FormatsIntBoundaryValues(int value, string scenario)
     {
-        var formatted = FormatValue(int.MinValue);
-        Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), formatted);
+        var component = new StandaloneInputNumber<int>();
+        component.SetFieldName(scenario);
+        var formatted = component.FormatValue(value);
+        Assert.Equal(value.ToString(CultureInfo.InvariantCulture), formatted);
     }
 
-    [Fact]
-    public void FormatsIntMaxValue()
+    [Theory]
+    [InlineData(-9223372036854775808L, "long.MinValue")]
+    [InlineData(9223372036854775807L, "long.MaxValue")]
+    public void FormatsLongBoundaryValues(long value, string scenario)
     {
-        var formatted = FormatValue(int.MaxValue);
-        Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), formatted);
+        var component = new StandaloneInputNumber<long>();
+        component.SetFieldName(scenario);
+        var formatted = component.FormatValue(value);
+        Assert.Equal(value.ToString(CultureInfo.InvariantCulture), formatted);
     }
 
-    [Fact]
-    public void FormatsLongMinValue()
+    [Theory]
+    [MemberData(nameof(DecimalBoundaryValues))]
+    public void FormatsDecimalBoundaryValues(decimal value, string scenario)
     {
-        var formatted = FormatValue(long.MinValue);
-        Assert.Equal(long.MinValue.ToString(CultureInfo.InvariantCulture), formatted);
+        var component = new StandaloneInputNumber<decimal>();
+        component.SetFieldName(scenario);
+        var formatted = component.FormatValue(value);
+        Assert.Equal(value.ToString(CultureInfo.InvariantCulture), formatted);
     }
 
     [Fact]
@@ -457,28 +462,17 @@ public class InputNumberTest
         Assert.Equal(1700000000000000000000000d, result);
     }
 
-    [Fact]
-    public void ParsesDecimalMinValue()
+    [Theory]
+    [MemberData(nameof(DecimalBoundaryValues))]
+    public void ParsesDecimalBoundaryValues(decimal value, string scenario)
     {
         var component = new StandaloneInputNumber<decimal>();
-        component.SetFieldName("DecimalMin");
+        component.SetFieldName(scenario);
 
-        var success = component.TryParseValue(decimal.MinValue.ToString(CultureInfo.InvariantCulture), out var result, out _);
-
-        Assert.True(success);
-        Assert.Equal(decimal.MinValue, result);
-    }
-
-    [Fact]
-    public void ParsesDecimalMaxValue()
-    {
-        var component = new StandaloneInputNumber<decimal>();
-        component.SetFieldName("DecimalMax");
-
-        var success = component.TryParseValue(decimal.MaxValue.ToString(CultureInfo.InvariantCulture), out var result, out _);
+        var success = component.TryParseValue(value.ToString(CultureInfo.InvariantCulture), out var result, out _);
 
         Assert.True(success);
-        Assert.Equal(decimal.MaxValue, result);
+        Assert.Equal(value, result);
     }
 
     [Fact]
@@ -517,224 +511,160 @@ public class InputNumberTest
         Assert.Equal(value.ToString(CultureInfo.InvariantCulture), formatted);
     }
 
-    [Fact]
-    public void FormatsDecimalMinValue()
-    {
-        var formatted = FormatValue(decimal.MinValue);
-        Assert.Equal(decimal.MinValue.ToString(CultureInfo.InvariantCulture), formatted);
-    }
-
-    [Fact]
-    public void FormatsDecimalMaxValue()
-    {
-        var formatted = FormatValue(decimal.MaxValue);
-        Assert.Equal(decimal.MaxValue.ToString(CultureInfo.InvariantCulture), formatted);
-    }
-
-    // Nullable Type Coverage
-    [Fact]
-    public void ParsesNullableFloatWithValidInput()
+    [Theory]
+    [InlineData("3.14")]
+    [InlineData("")]
+    public void ParsesNullableFloatCorrectly(string input)
     {
         var component = new StandaloneInputNumber<float?>();
         component.SetFieldName("NullableFloat");
 
-        var success = component.TryParseValue("3.14", out var result, out _);
+        var success = component.TryParseValue(input, out var result, out _);
 
-        Assert.True(success);
-        Assert.NotNull(result);
-        Assert.Equal(3.14f, result.Value, 2);
+        if (input == string.Empty)
+        {
+            Assert.True(success);
+            Assert.Null(result);
+        }
+        else
+        {
+            Assert.True(success);
+            Assert.NotNull(result);
+            Assert.Equal(3.14f, result.Value, 2);
+        }
     }
 
-    [Fact]
-    public void ParsesNullableFloatWithEmptyString()
-    {
-        var component = new StandaloneInputNumber<float?>();
-        component.SetFieldName("NullableFloat");
-
-        var success = component.TryParseValue(string.Empty, out var result, out _);
-
-        Assert.True(success);
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void FormatsNullableFloatWithValue()
-    {
-        var component = new StandaloneInputNumber<float?>();
-        var formatted = component.FormatValue(3.14f);
-
-        Assert.NotNull(formatted);
-        Assert.Equal(BindConverter.FormatValue(3.14f, CultureInfo.InvariantCulture), formatted);
-    }
-
-    [Fact]
-    public void FormatsNullableFloatAsNull()
-    {
-        var component = new StandaloneInputNumber<float?>();
-        var formatted = component.FormatValue(null);
-
-        Assert.Null(formatted);
-    }
-
-    [Fact]
-    public void ParsesNullableDoubleWithValidInput()
+    [Theory]
+    [InlineData("2.718")]
+    [InlineData("")]
+    public void ParsesNullableDoubleCorrectly(string input)
     {
         var component = new StandaloneInputNumber<double?>();
         component.SetFieldName("NullableDouble");
 
-        var success = component.TryParseValue("2.718", out var result, out _);
+        var success = component.TryParseValue(input, out var result, out _);
 
-        Assert.True(success);
-        Assert.NotNull(result);
-        Assert.Equal(2.718, result.Value, 3);
+        if (input == string.Empty)
+        {
+            Assert.True(success);
+            Assert.Null(result);
+        }
+        else
+        {
+            Assert.True(success);
+            Assert.NotNull(result);
+            Assert.Equal(2.718, result.Value, 3);
+        }
     }
 
-    [Fact]
-    public void ParsesNullableDecimalWithValidInput()
+    [Theory]
+    [InlineData("99.99")]
+    [InlineData("")]
+    public void ParsesNullableDecimalCorrectly(string input)
     {
         var component = new StandaloneInputNumber<decimal?>();
         component.SetFieldName("NullableDecimal");
 
-        var success = component.TryParseValue("99.99", out var result, out _);
+        var success = component.TryParseValue(input, out var result, out _);
 
-        Assert.True(success);
-        Assert.Equal(99.99m, result);
+        if (input == string.Empty)
+        {
+            Assert.True(success);
+            Assert.Null(result);
+        }
+        else
+        {
+            Assert.True(success);
+            Assert.Equal(99.99m, result);
+        }
     }
 
-    [Fact]
-    public void ParsesNullableLongWithValidInput()
+    [Theory]
+    [InlineData("123456789")]
+    [InlineData("")]
+    public void ParsesNullableLongCorrectly(string input)
     {
         var component = new StandaloneInputNumber<long?>();
         component.SetFieldName("NullableLong");
 
-        var success = component.TryParseValue("123456789", out var result, out _);
+        var success = component.TryParseValue(input, out var result, out _);
+
+        if (input == string.Empty)
+        {
+            Assert.True(success);
+            Assert.Null(result);
+        }
+        else
+        {
+            Assert.True(success);
+            Assert.Equal(123456789L, result);
+        }
+    }
+
+    [Theory]
+    [InlineData("   ", false, 0, "whitespace-only")]
+    [InlineData("  42", true, 42, "leading-whitespace")]
+    [InlineData("42  ", true, 42, "trailing-whitespace")]
+    [InlineData(" 42 ", true, 42, "both-whitespaces")]
+    public void HandlesWhitespaceInNumericInput(string input, bool shouldSucceed, int expectedValue, string scenario)
+    {
+        var component = new StandaloneInputNumber<int>();
+        component.SetFieldName($"Whitespace_{scenario}");
+
+        var success = component.TryParseValue(input, out var result, out var errorMessage);
+
+        Assert.Equal(shouldSucceed, success);
+        if (shouldSucceed)
+        {
+            Assert.Equal(expectedValue, result);
+        }
+        else
+        {
+            Assert.NotNull(errorMessage);
+        }
+    }
+
+    [Theory]
+    [InlineData("1.5e10", false, "scientific-notation")]
+    [InlineData("0x2A", false, "hex-notation")]
+    [InlineData("$99.99", false, "currency-symbol")]
+    [InlineData("--42", false, "double-negative")]
+    [InlineData("3.14.159", false, "multiple-decimal-points")]
+    [InlineData("", false, "empty-string-non-nullable")]
+    public void RejectsInvalidInputPatterns(string input, bool shouldSucceed, string pattern)
+    {
+        if (pattern == "empty-string-non-nullable")
+        {
+            var component = new StandaloneInputNumber<int>();
+            component.SetFieldName($"Invalid_{pattern}");
+            var success = component.TryParseValue(input, out int _, out string errorMessage);
+            Assert.Equal(shouldSucceed, success);
+            Assert.NotNull(errorMessage);
+        }
+        else
+        {
+            var component = new StandaloneInputNumber<double>();
+            component.SetFieldName($"Invalid_{pattern}");
+            var success = component.TryParseValue(input, out double _, out string errorMessage);
+            Assert.Equal(shouldSucceed, success);
+            Assert.NotNull(errorMessage);
+        }
+    }
+
+    [Theory]
+    [InlineData("+42", 42, "plus-sign")]
+    [InlineData("-123", -123, "negative-sign")]
+    public void AcceptsValidSignPatterns(string input, int expectedValue, string pattern)
+    {
+        var component = new StandaloneInputNumber<int>();
+        component.SetFieldName($"Sign_{pattern}");
+
+        var success = component.TryParseValue(input, out var result, out _);
 
         Assert.True(success);
-        Assert.Equal(123456789L, result);
+        Assert.Equal(expectedValue, result);
     }
 
-    // Invalid Input Pattern Tests
-    [Fact]
-    public void RejectsWhitespaceOnlyInput()
-    {
-        var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("WhitespaceTest");
-
-        var success = component.TryParseValue("   ", out _, out var validationErrorMessage);
-
-        Assert.False(success);
-        Assert.NotNull(validationErrorMessage);
-    }
-
-    [Fact]
-    public void AcceptsLeadingWhitespace()
-    {
-        var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("LeadingWhitespaceTest");
-
-        var success = component.TryParseValue("  42", out var result, out _);
-
-        Assert.True(success);
-        Assert.Equal(42, result);
-    }
-
-    [Fact]
-    public void AcceptsTrailingWhitespace()
-    {
-        var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("TrailingWhitespaceTest");
-
-        var success = component.TryParseValue("42  ", out var result, out _);
-
-        Assert.True(success);
-        Assert.Equal(42, result);
-    }
-
-    [Fact]
-    public void RejectsScientificNotation()
-    {
-        var component = new StandaloneInputNumber<double>();
-        component.SetFieldName("ScientificNotationTest");
-
-        var success = component.TryParseValue("1.5e10", out _, out var validationErrorMessage);
-
-        Assert.False(success);
-        Assert.NotNull(validationErrorMessage);
-    }
-
-    [Fact]
-    public void RejectsHexNotation()
-    {
-        var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("HexNotationTest");
-
-        var success = component.TryParseValue("0x2A", out _, out var validationErrorMessage);
-
-        Assert.False(success);
-        Assert.NotNull(validationErrorMessage);
-    }
-
-    [Fact]
-    public void RejectsCurrencySymbol()
-    {
-        var component = new StandaloneInputNumber<decimal>();
-        component.SetFieldName("CurrencyTest");
-
-        var success = component.TryParseValue("$99.99", out _, out var validationErrorMessage);
-
-        Assert.False(success);
-        Assert.NotNull(validationErrorMessage);
-    }
-
-    [Fact]
-    public void AcceptsPlusSign()
-    {
-        var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("PlusSignTest");
-
-        var success = component.TryParseValue("+42", out var result, out _);
-
-        Assert.True(success);
-        Assert.Equal(42, result);
-    }
-
-    [Fact]
-    public void RejectsDoubleNegative()
-    {
-        var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("DoubleNegativeTest");
-
-        var success = component.TryParseValue("--42", out _, out var validationErrorMessage);
-
-        Assert.False(success);
-        Assert.NotNull(validationErrorMessage);
-    }
-
-    [Fact]
-    public void RejectsMultipleDecimalPoints()
-    {
-        var component = new StandaloneInputNumber<double>();
-        component.SetFieldName("MultipleDecimalTest");
-
-        var success = component.TryParseValue("3.14.159", out _, out var validationErrorMessage);
-
-        Assert.False(success);
-        Assert.NotNull(validationErrorMessage);
-    }
-
-    [Fact]
-    public void RejectsEmptyStringForNonNullableType()
-    {
-        var component = new StandaloneInputNumber<int>();
-        component.SetFieldName("NonNullableEmptyTest");
-
-        var success = component.TryParseValue(string.Empty, out _, out var validationErrorMessage);
-
-        Assert.False(success);
-        Assert.NotNull(validationErrorMessage);
-    }
-
-    // Binding & Event Behavior Tests
     [Fact]
     public async Task ValueChangedCallbackNotFiredOnInvalidInput()
     {
@@ -798,12 +728,10 @@ public class InputNumberTest
         var fieldIdentifier = FieldIdentifier.Create(() => model.SomeNumber);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // First, set valid value - should have no errors
         await inputComponent.SetCurrentValueAsStringAsync("42");
         var validMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.Empty(validMessages);
 
-        // Now set invalid value - should have errors
         await inputComponent.SetCurrentValueAsStringAsync("invalid");
         var invalidMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(invalidMessages);
@@ -852,16 +780,13 @@ public class InputNumberTest
         };
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Set valid value
         await inputComponent.SetCurrentValueAsStringAsync("42");
         Assert.Equal(42, model.SomeNumber);
 
-        // Try to set invalid value - model should retain previous value
         await inputComponent.SetCurrentValueAsStringAsync("invalid");
         Assert.Equal(42, model.SomeNumber);
     }
 
-    // Attributes & Rendering Tests
     [Fact]
     public async Task CustomAttributePreservationInRenderTree()
     {
@@ -880,7 +805,6 @@ public class InputNumberTest
         var componentId = await RenderAndGetComponentIdAsync(hostComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Find custom attributes in render tree
         var testIdAttribute = frames.Array.FirstOrDefault(f =>
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "data-testid");
@@ -912,7 +836,6 @@ public class InputNumberTest
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "name");
 
-        // Name attribute should exist and be properly formatted
         Assert.NotNull(nameAttribute.AttributeName);
         Assert.True(((string)nameAttribute.AttributeValue).Length > 0);
     }
@@ -957,7 +880,6 @@ public class InputNumberTest
         var componentId = await RenderAndGetComponentIdAsync(hostComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Verify default attributes still present
         var typeAttribute = frames.Array.FirstOrDefault(f =>
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "type");
@@ -966,7 +888,6 @@ public class InputNumberTest
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "step");
 
-        // Verify custom attributes present
         var minAttribute = frames.Array.FirstOrDefault(f =>
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "min");
@@ -1005,19 +926,15 @@ public class InputNumberTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
         var attributes = frames.Array.Where(f => f.FrameType == RenderTreeFrameType.Attribute).ToList();
 
-        // Should have multiple attributes (type, step, id, name, value, plus custom ones)
         Assert.NotEmpty(attributes);
 
-        // Check for some of our custom attributes
         var placeholderAttr = attributes.Single(f => f.AttributeName == "placeholder");
         var classAttr = attributes.Single(f => f.AttributeName == "class");
 
         Assert.Equal("Enter a number", placeholderAttr.AttributeValue);
-        // Class attribute includes custom class plus validation classes from EditContext
         Assert.Contains("custom-input", (string)classAttr.AttributeValue);
     }
 
-    // Integration & Polish Tests
     [Fact]
     public void FormatParseFormatRoundTrip()
     {
@@ -1026,13 +943,10 @@ public class InputNumberTest
         var component = new StandaloneInputNumber<float>();
         component.SetFieldName("Number");
 
-        // Format
         var formatted = component.FormatValue(value);
 
-        // Parse
         var success = component.TryParseValue(formatted, out var parsed, out _);
 
-        // Format again
         var reformatted = component.FormatValue(parsed);
 
         Assert.True(success);
@@ -1047,13 +961,10 @@ public class InputNumberTest
         var component = new StandaloneInputNumber<double>();
         component.SetFieldName("Number");
 
-        // Parse
         var parseSuccess = component.TryParseValue(input, out var parsed, out _);
 
-        // Format
         var formatted = component.FormatValue(parsed);
 
-        // Parse again
         var reparseSuccess = component.TryParseValue(formatted, out var reparsed, out _);
 
         Assert.True(parseSuccess);
@@ -1075,7 +986,6 @@ public class InputNumberTest
         var fieldIdentifier = FieldIdentifier.Create(() => model.SomeNumber);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Multiple edits in sequence
         await inputComponent.SetCurrentValueAsStringAsync("10");
         Assert.Equal(10, model.SomeNumber);
         Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
@@ -1098,7 +1008,6 @@ public class InputNumberTest
 
         foreach (var value in values)
         {
-            // Format → Parse → Format
             var formatted1 = component.FormatValue(value);
             var parseSuccess = component.TryParseValue(formatted1, out var parsed, out _);
             var formatted2 = component.FormatValue(parsed);
@@ -1109,7 +1018,6 @@ public class InputNumberTest
         }
     }
 
-    // CSS Class & EditContext Tests
     [Fact]
     public async Task CssClassesAddedForValidationState()
     {
@@ -1122,7 +1030,6 @@ public class InputNumberTest
         var fieldIdentifier = FieldIdentifier.Create(() => model.SomeNumber);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Set invalid value to trigger validation
         await inputComponent.SetCurrentValueAsStringAsync("invalid");
 
         var componentId = await RenderAndGetComponentIdAsync(rootComponent);
@@ -1132,7 +1039,6 @@ public class InputNumberTest
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "class");
 
-        // Verify the class attribute exists and has a value
         Assert.True(classAttribute.AttributeName == "class");
         var classValue = (string)classAttribute.AttributeValue;
         Assert.NotEmpty(classValue);
@@ -1151,7 +1057,6 @@ public class InputNumberTest
         };
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Set valid value
         await inputComponent.SetCurrentValueAsStringAsync("42");
 
         var componentId = await RenderAndGetComponentIdAsync(rootComponent);
@@ -1161,7 +1066,6 @@ public class InputNumberTest
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "class");
 
-        // Verify the class attribute exists and has a value
         Assert.True(classAttribute.AttributeName == "class");
         var classValue = (string)classAttribute.AttributeValue;
         Assert.NotEmpty(classValue);
@@ -1177,7 +1081,7 @@ public class InputNumberTest
             ValueExpression = () => model.SomeNumber,
             AdditionalAttributes = new Dictionary<string, object>
             {
-                { "step", "5" }  // Override default step="any"
+                { "step", "5" }
             }
         };
 
@@ -1225,7 +1129,7 @@ public class InputNumberTest
     }
 
     [Fact]
-    public async Task ParsesNegativeIntegerValue()
+    public void ParsesNegativeIntegerValue()
     {
         var component = new StandaloneInputNumber<int>();
         component.SetFieldName("NegativeInt");
@@ -1237,7 +1141,7 @@ public class InputNumberTest
     }
 
     [Fact]
-    public async Task ParsesNegativeDecimalValue()
+    public void ParsesNegativeDecimalValue()
     {
         var component = new StandaloneInputNumber<decimal>();
         component.SetFieldName("NegativeDecimal");
@@ -1249,7 +1153,7 @@ public class InputNumberTest
     }
 
     [Fact]
-    public async Task HandlesZeroValue()
+    public void HandlesZeroValue()
     {
         var component = new StandaloneInputNumber<int>();
         component.SetFieldName("ZeroValue");
@@ -1259,6 +1163,13 @@ public class InputNumberTest
         Assert.True(success);
         Assert.Equal(0, result);
     }
+
+    public static IEnumerable<object[]> DecimalBoundaryValues =>
+    new List<object[]>
+    {
+        new object[] { decimal.MinValue, "decimal.MinValue" },
+        new object[] { decimal.MaxValue, "decimal.MaxValue" }
+    };
 
     private async Task<int> RenderAndGetComponentIdAsync<TValue, TComponent>(TestInputHostComponent<TValue, TComponent> hostComponent)
         where TComponent : InputBase<TValue>
@@ -1288,11 +1199,10 @@ public class InputNumberTest
     {
         public Task SetCurrentValueAsStringAsync(string value)
         {
-            // This is equivalent to the subclass writing to CurrentValueAsString
-            // (e.g., from @bind), except to simplify the test code there's an InvokeAsync
-            // here. In production code it wouldn't normally be required because @bind
-            // calls run on the sync context anyway.
-            return InvokeAsync(() => { base.CurrentValueAsString = value; });
+            return InvokeAsync(() =>
+            {
+                base.CurrentValueAsString = value;
+            });
         }
     }
 
