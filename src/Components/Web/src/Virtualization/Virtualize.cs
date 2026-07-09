@@ -968,8 +968,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             && previousItemCount <= _visibleItemCapacity;
 
     private bool EndAnchoredAppendNeedsWindowAdvance(int previousItemCount)
-        => !_itemComparerExplicitlySet
-            && (AnchorMode & VirtualizeAnchorMode.End) != 0
+        => (AnchorMode & VirtualizeAnchorMode.End) != 0
             && _visibleItemCapacity > 0
             && _itemsBefore + _visibleItemCapacity >= previousItemCount;
 
