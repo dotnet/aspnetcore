@@ -293,12 +293,14 @@
         if (Gate)
         {
             // Block tail-advancing fetches so the test can observe the pending phase deterministically.
-            using var registration = request.CancellationToken.Register(() => _gateTcs.TrySetCanceled(request.CancellationToken));
             try
             {
                 while (!_gateOpen && request.StartIndex > _gateThresholdStartIndex)
                 {
-                    await _gateTcs.Task;
+                    var tcs = _gateTcs;
+                    using var registration = request.CancellationToken.Register(
+                        static state => ((TaskCompletionSource)state!).TrySetCanceled(), tcs);
+                    await tcs.Task;
                 }
             }
             catch (OperationCanceledException)
@@ -309,8 +311,6 @@
         }
         else
         {
-            // Aspire's provider is always async (SignalR round trip). An optional delay makes the
-            // pending phase last long enough to see the placeholder flash during streaming.
             if (_providerDelayMs > 0)
             {
                 await Task.Delay(_providerDelayMs);
@@ -327,8 +327,6 @@
 
         _lastCompletedStartIndex = request.StartIndex;
 
-        // Record the call for the count assertion. This StateHasChanged re-renders only the log,
-        // so it doesn't shift the Virtualize distribution or trigger another provider call.
         _providerCalls.Add(new ProviderCall(request.StartIndex, count < 0 ? 0 : count, _items.Count));
         StateHasChanged();
 
