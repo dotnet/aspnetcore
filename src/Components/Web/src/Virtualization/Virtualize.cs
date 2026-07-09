@@ -872,9 +872,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         {
                             _pendingAnchorRestore = true;
                         }
-                        else if (ShouldScrollToBottomForAppend(countDelta, previousItemCount))
+                        else if (EndAnchoredAppendNeedsWindowAdvance(previousItemCount))
                         {
-                            _pendingScrollToBottom = true;
+                            (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
                         }
                     }
                 }

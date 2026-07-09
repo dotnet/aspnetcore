@@ -2,6 +2,7 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @rendermode RenderMode.InteractiveServer
+@implements IDisposable
 
 @* Repro of the Aspire dashboard "append two-phase" flash: framework <Virtualize> driven like
    Aspire's Structured Logs grid — Blazor Server, AnchorMode="End", no ItemComparer, async provider. *@
@@ -39,7 +40,8 @@
 <h3>Virtualize append repro (AnchorMode=End, no ItemComparer)</h3>
 <p id="repro-info">
     Rows: <b id="repro-rowcount">@_items.Count</b>,
-    ItemSize=46, OverscanCount=100, SpacerElement=tr, AnchorMode=End (async provider)
+    ItemSize=46, OverscanCount=100, SpacerElement=tr, AnchorMode=@_anchorMode,
+    ItemComparer=@(Comparer ? "explicit" : "none") (async provider)
 </p>
 
 <label>
@@ -49,6 +51,17 @@
 </label>
 <button id="append-btn" @onclick="AppendBatchAsync">Append @_batchSize rows</button>
 <button id="prepend-btn" @onclick="PrependBatchAsync">Prepend @_batchSize rows</button>
+<button id="auto-append-btn" @onclick="ToggleAutoAppend">@(_autoAppend ? "Stop auto-append" : "Start auto-append")</button>
+<label style="margin-left: 12px;">
+    Provider delay (ms):
+    <input type="number" id="delay-input" min="0" step="50" style="width: 70px;"
+           value="@_providerDelayMs" @onchange="OnDelayChanged" />
+</label>
+<label style="margin-left: 12px;">
+    Auto interval (ms):
+    <input type="number" id="interval-input" min="50" step="50" style="width: 70px;"
+           value="@_autoIntervalMs" @onchange="OnIntervalChanged" />
+</label>
 
 @if (Gate)
 {
@@ -87,6 +100,7 @@
                         OverscanCount="100"
                         ItemsProvider="ProvideItemsAsync"
                         AnchorMode="_anchorMode"
+                        @attributes="_virtualizeAttributes"
                         SpacerElement="tr">
                 <ItemContent>
                     <tr class="repro-row" aria-rowindex="@(context.RowIndex + 1)">
@@ -126,7 +140,19 @@
     [SupplyParameterFromQuery(Name = "anchor")]
     public string? AnchorQuery { get; set; }
 
+    // When true, the grid passes an explicit ItemComparer (like a consumer that opts into prepend
+    // detection), routing appends through the comparer-set branch instead of the no-comparer branch.
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "comparer")]
+    public bool Comparer { get; set; }
+
+    private readonly Dictionary<string, object> _virtualizeAttributes = new();
+
     private int _batchSize;
+    private int _providerDelayMs;
+    private int _autoIntervalMs = 200;
+    private bool _autoAppend;
+    private CancellationTokenSource? _autoCts;
     private VirtualizeAnchorMode _anchorMode;
 
     private Virtualize<(int RowIndex, LogItem Data)>? _virtualize;
@@ -153,6 +179,11 @@
             ? VirtualizeAnchorMode.Beginning
             : VirtualizeAnchorMode.End;
 
+        if (Comparer)
+        {
+            _virtualizeAttributes["ItemComparer"] = EqualityComparer<(int RowIndex, LogItem Data)>.Default;
+        }
+
         for (var i = 0; i < InitialItemCount; i++)
         {
             _items.Add(MakeItem());
@@ -174,6 +205,54 @@
         {
             _batchSize = Math.Max(1, v);
         }
+    }
+
+    private void OnDelayChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v))
+        {
+            _providerDelayMs = Math.Max(0, v);
+        }
+    }
+
+    private void OnIntervalChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v))
+        {
+            _autoIntervalMs = Math.Max(50, v);
+        }
+    }
+
+    // Manual-only affordance: continuously stream batches so the append flash can be felt the way
+    // Aspire's live log grid streams entries. Not used by the E2E test.
+    private void ToggleAutoAppend()
+    {
+        if (_autoAppend)
+        {
+            _autoAppend = false;
+            _autoCts?.Cancel();
+            _autoCts = null;
+            return;
+        }
+
+        _autoAppend = true;
+        _autoCts = new CancellationTokenSource();
+        var token = _autoCts.Token;
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await InvokeAsync(AppendBatchAsync);
+                try
+                {
+                    await Task.Delay(_autoIntervalMs, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+        });
     }
 
     private LogItem MakeItem()
@@ -241,8 +320,16 @@
         }
         else
         {
-            // Aspire's provider is always async (SignalR round trip).
-            await Task.Yield();
+            // Aspire's provider is always async (SignalR round trip). An optional delay makes the
+            // pending phase last long enough to see the placeholder flash during streaming.
+            if (_providerDelayMs > 0)
+            {
+                await Task.Delay(_providerDelayMs);
+            }
+            else
+            {
+                await Task.Yield();
+            }
         }
 
         var count = Math.Min(request.Count, _items.Count - request.StartIndex);
@@ -277,4 +364,10 @@
     public record LogItem(string Resource, string Level, string Timestamp, string Message);
 
     public record ProviderCall(int Start, int Count, int Total);
+
+    public void Dispose()
+    {
+        _autoCts?.Cancel();
+        _autoCts?.Dispose();
+    }
 }

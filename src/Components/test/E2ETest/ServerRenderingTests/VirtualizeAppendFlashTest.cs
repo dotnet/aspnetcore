@@ -29,12 +29,21 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
     }
 
     [Theory]
-    [InlineData(null, "append-btn")]
-    [InlineData("beginning", "prepend-btn")]
-    public void AsyncItemsProvider_DoesNotFlashPlaceholderRows_OnAnchoredEdgeGrowth(string anchor, string growButton)
+    [InlineData(null, "append-btn", false)]
+    [InlineData(null, "append-btn", true)]
+    [InlineData("beginning", "prepend-btn", true)]
+    public void AsyncItemsProvider_DoesNotFlashPlaceholderRows_OnAnchoredEdgeGrowth(string anchor, string growButton, bool comparer)
     {
-        var query = anchor is null ? "gate=true" : $"anchor={anchor}&gate=true";
-        Navigate($"{ServerPathBase}/virtualize-append?{query}");
+        var parts = new List<string> { "gate=true" };
+        if (anchor is not null)
+        {
+            parts.Add($"anchor={anchor}");
+        }
+        if (comparer)
+        {
+            parts.Add("comparer=true");
+        }
+        Navigate($"{ServerPathBase}/virtualize-append?{string.Join("&", parts)}");
 
         // Wait for the circuit so clicks aren't lost during prerender.
         Browser.Exists(By.Id("interactive-ready"));
@@ -52,16 +61,23 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
         Browser.Equal(0, GetPlaceholderCellCount);
         Browser.True(() => GetDataRowCount() > 0);
 
+        var batch = GetIntValue("batch-input");
+
         ClickById("open-gate");
         Browser.True(() => GetDataRowCount() > 0);
         Browser.Equal(0, GetPlaceholderCellCount);
-        Browser.True(HasAppendedRowVisible);
+        Browser.Equal(InitialItemCount + batch, GetRowCount);
+
+        if (anchor is null)
+        {
+            Browser.True(HasAppendedRowVisible);
+        }
     }
 
     [Fact]
     public void EndAnchoredAppend_IssuesExactlyTwoProviderCalls_AdvancingToTail()
     {
-        Navigate($"{ServerPathBase}/virtualize-append");
+        Navigate($"{ServerPathBase}/virtualize-append?comparer=true");
         Browser.Exists(By.Id("interactive-ready"));
 
         // Initial render loads the top window (start=0) then, once End-anchored, the tail (start>0).
@@ -90,6 +106,9 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
     private int GetPlaceholderCellCount() => Browser.FindElements(By.CssSelector(PlaceholderCells)).Count;
 
     private int GetDataRowCount() => Browser.FindElements(By.CssSelector(DataRows)).Count;
+
+    private int GetRowCount()
+        => int.Parse(Browser.FindElement(By.Id("repro-rowcount")).Text, System.Globalization.CultureInfo.InvariantCulture);
 
     private readonly record struct ProviderCall(int Start, int Count, int Total);
 
