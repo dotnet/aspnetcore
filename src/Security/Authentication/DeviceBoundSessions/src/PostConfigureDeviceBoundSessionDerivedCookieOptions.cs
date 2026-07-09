@@ -4,6 +4,7 @@
 #pragma warning disable ASP0030 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -35,11 +36,11 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
         if (schemes.RefreshSchemes.TryGetValue(name, out var refreshSourceScheme))
         {
             CopyFromSource(refreshSourceScheme, options);
-            // Override: scope the refresh cookie to the DBSC endpoints' directory, derived from the
-            // configured RefreshPath so a customized RefreshPath still receives the cookie. Lifetime and
-            // sliding behavior are inherited from the source scheme so the refresh cookie ages exactly
-            // like the auth cookie it replaces (renewed on each refresh when the source uses sliding).
-            options.Cookie.Path = ResolveRefreshCookiePath(refreshSourceScheme);
+            // Scope the refresh cookie to the DBSC endpoints' directory, applied relative to the request
+            // path base so an app mounted under a non-root path base still receives the cookie at its
+            // advertised refresh endpoint. Lifetime and sliding behavior are inherited from the source
+            // scheme so the refresh cookie ages exactly like the auth cookie it replaces.
+            options.Cookie = CreatePathBaseScopedCookie(options.Cookie, ResolveRefreshCookiePath(refreshSourceScheme));
         }
         else if (schemes.SessionSchemes.TryGetValue(name, out var sessionSourceScheme))
         {
@@ -84,5 +85,33 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
         target.Cookie.IsEssential = source.Cookie.IsEssential;
         target.ExpireTimeSpan = source.ExpireTimeSpan;
         target.SlidingExpiration = source.SlidingExpiration;
+    }
+
+    // Rebuilds the cookie as a path-base-aware builder so the cookie path becomes
+    // "{request path base}{additionalPath}" at emit time, instead of a fixed absolute path.
+    private static CookieBuilder CreatePathBaseScopedCookie(CookieBuilder source, string additionalPath)
+        => new PathBaseScopedCookieBuilder(additionalPath)
+        {
+            Name = source.Name,
+            HttpOnly = source.HttpOnly,
+            SecurePolicy = source.SecurePolicy,
+            SameSite = source.SameSite,
+            Domain = source.Domain,
+            IsEssential = source.IsEssential,
+            MaxAge = source.MaxAge,
+            Expiration = source.Expiration,
+            // Path is intentionally left unset so the builder derives (path base + additional path) per request.
+        };
+
+    private sealed class PathBaseScopedCookieBuilder : RequestPathBaseCookieBuilder
+    {
+        private readonly string _additionalPath;
+
+        public PathBaseScopedCookieBuilder(string additionalPath)
+        {
+            _additionalPath = additionalPath;
+        }
+
+        protected override string AdditionalPath => _additionalPath;
     }
 }

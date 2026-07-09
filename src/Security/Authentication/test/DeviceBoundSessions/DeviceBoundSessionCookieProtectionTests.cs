@@ -7,6 +7,7 @@ using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -34,7 +35,7 @@ public class DeviceBoundSessionCookieProtectionTests
         Assert.Same(sentinel, options.TicketDataFormat);
         // ...but the post-configure still ran (copied source lifetime, applied refresh path scope, kept the name).
         Assert.Equal(TimeSpan.FromHours(3), options.ExpireTimeSpan);
-        Assert.Equal("/.well-known/dbsc", options.Cookie.Path);
+        Assert.Equal("/.well-known/dbsc", options.Cookie.Build(new DefaultHttpContext()).Path);
         Assert.Equal(".AspNetCore." + RefreshScheme, options.Cookie.Name);
     }
 

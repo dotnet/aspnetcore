@@ -80,6 +80,45 @@ public class DeviceBoundSessionInstructionTests
         Assert.DoesNotContain("allowed_refresh_initiators", body);
     }
 
+    [Fact]
+    public async Task Registration_AdvertisesRegistrationPathAndRefreshUrl_WithPathBase()
+    {
+        using var host = await CreateHostAsync(pathBase: "/foo");
+        var client = host.GetTestServer().CreateClient();
+
+        // The registration header advertised on sign-in must include the path base.
+        var signIn = await client.GetAsync("/foo/signin");
+        signIn.EnsureSuccessStatusCode();
+        var registrationHeader = Assert.Single(
+            signIn.Headers.GetValues(DeviceBoundSessionConstants.Headers.Registration));
+        Assert.Contains("path=\"/foo/.well-known/dbsc/registration\"", registrationHeader);
+
+        // Completing registration returns a refresh_url that also includes the path base.
+        var sourceCookie = Assert.Single(signIn.Headers.GetValues("Set-Cookie"),
+            v => v.StartsWith(SourceCookieName + "=", StringComparison.Ordinal));
+        var challenge = ParseChallenge(signIn);
+        var proof = DbscProofKey.CreateEs256().CreateProof(challenge);
+        var register = new HttpRequestMessage(HttpMethod.Post, "/foo" + RegistrationPath);
+        register.Headers.TryAddWithoutValidation("Cookie", CookiePair(sourceCookie));
+        register.Headers.TryAddWithoutValidation(DeviceBoundSessionConstants.Headers.Proof, proof);
+        var response = await client.SendAsync(register);
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Contains("\"refresh_url\":\"/foo/.well-known/dbsc/refresh\"", body);
+
+        // The refresh cookie is path-scoped under the path base so the browser sends it to the refresh endpoint.
+        var refreshSetCookie = Assert.Single(response.Headers.GetValues("Set-Cookie"),
+            v => v.StartsWith(".AspNetCore.Source.Dbsc.Refresh=", StringComparison.Ordinal));
+        Assert.Contains("path=/foo/.well-known/dbsc", refreshSetCookie);
+
+        // The session cookie and the advertised credential attributes both carry the path base.
+        var sessionSetCookie = Assert.Single(response.Headers.GetValues("Set-Cookie"),
+            v => v.StartsWith(".AspNetCore.Source.Dbsc.Session=", StringComparison.Ordinal));
+        Assert.Contains("path=/foo", sessionSetCookie);
+        Assert.Contains("Path=/foo\"", body);
+    }
+
     private static string Serialize(SessionInstruction instruction)
         => JsonSerializer.Serialize(instruction, DeviceBoundSessionJsonContext.Default.SessionInstruction);
 
@@ -101,7 +140,7 @@ public class DeviceBoundSessionInstructionTests
         return await response.Content.ReadAsStringAsync();
     }
 
-    private static async Task<IHost> CreateHostAsync(Action<DeviceBoundSessionOptions>? configureDbsc = null)
+    private static async Task<IHost> CreateHostAsync(Action<DeviceBoundSessionOptions>? configureDbsc = null, string? pathBase = null)
     {
         var host = new HostBuilder()
             .ConfigureWebHost(webBuilder =>
@@ -125,6 +164,11 @@ public class DeviceBoundSessionInstructionTests
                     })
                     .Configure(app =>
                     {
+                        if (pathBase is not null)
+                        {
+                            app.UsePathBase(pathBase);
+                        }
+
                         app.UseRouting();
                         app.UseAuthentication();
                         app.UseEndpoints(endpoints =>

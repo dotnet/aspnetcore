@@ -313,7 +313,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         return new SessionInstruction
         {
             SessionIdentifier = sessionId,
-            RefreshUrl = Options.RefreshPath.Value,
+            RefreshUrl = Request.PathBase.Add(Options.RefreshPath).Value,
             Scope = new SessionScope
             {
                 Origin = origin,
@@ -345,20 +345,12 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
 
     private string BuildCredentialAttributes(CookieAuthenticationOptions cookieOptions)
     {
-        // Keep the credential's attributes aligned with the actual session cookie configuration so the
-        // browser interprets the session instruction the same way it treats the cookie we emit.
-        var cookie = cookieOptions.Cookie;
-
-        var secure = cookie.SecurePolicy switch
-        {
-            CookieSecurePolicy.Always => true,
-            CookieSecurePolicy.None => false,
-            // SameAsRequest (the cookie-auth default) follows the request scheme.
-            _ => Request.IsHttps,
-        };
+        // Build the cookie exactly as the session cookie handler will, so the advertised attributes —
+        // including the path, which the request path base is applied to — match the cookie we emit.
+        var cookie = cookieOptions.Cookie.Build(Context);
 
         var attributes = new List<string>();
-        if (secure)
+        if (cookie.Secure)
         {
             attributes.Add("Secure");
         }
@@ -380,8 +372,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
                 break;
         }
 
-        var path = cookie.Path;
-        attributes.Add($"Path={(string.IsNullOrEmpty(path) ? "/" : path)}");
+        attributes.Add($"Path={(string.IsNullOrEmpty(cookie.Path) ? "/" : cookie.Path)}");
 
         if (!string.IsNullOrEmpty(cookie.Domain))
         {
