@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
+using System.Resources;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
@@ -15,6 +16,8 @@ public partial class Paginator : IDisposable
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
     private string QueryName => State.QueryName;
 
     /// <summary>
@@ -35,6 +38,27 @@ public partial class Paginator : IDisposable
         // The "total item count" handler doesn't need to do anything except cause this component to re-render
         _totalItemCountChanged = new(new EventCallback<PaginationState>(this, null));
         _queryParameterValueSupplier = new();
+    }
+
+    private InternalQuickGridLocalizer? _internalLocalizer;
+    private InternalQuickGridLocalizer Localizer => _internalLocalizer ??= CreateInternalLocalizer();
+
+    private InternalQuickGridLocalizer CreateInternalLocalizer()
+    {
+        // Try to resolve a registered interceptor first
+        var interceptor = Services?.GetService(typeof(IQuickGridLocalizationInterceptor)) as IQuickGridLocalizationInterceptor;
+        if (interceptor is not null)
+        {
+            return new InternalQuickGridLocalizer(interceptor);
+        }
+
+        // Try to resolve a QuickGridLocalizer (optional customizer)
+        var customLocalizer = Services?.GetService(typeof(QuickGridLocalizer)) as QuickGridLocalizer;
+
+        // Build ResourceManager for QuickGridResources
+        var resourceManager = new ResourceManager(typeof(QuickGridResources));
+        var defaultInterceptor = new DefaultQuickGridLocalizationInterceptor(resourceManager, customLocalizer);
+        return new InternalQuickGridLocalizer(defaultInterceptor);
     }
 
     private readonly QueryParameterValueSupplier _queryParameterValueSupplier;
