@@ -75,11 +75,13 @@ public class TestServerTests : VerifiableLoggedTest
             await connection.StartAsync();
             await connection.InvokeAsync("Echo", originalMessage);
             Assert.True(webSocketFactoryCalled);
+
+            await connection.StopAsync();
+            await host.StopAsync();
         }
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67348")]
     public async Task LongPollingWorks()
     {
         using (StartVerifiableLog())
@@ -130,6 +132,9 @@ public class TestServerTests : VerifiableLoggedTest
 
             await connection.StartAsync();
             await connection.InvokeAsync("Echo", originalMessage);
+
+            await connection.StopAsync();
+            await host.StopAsync();
         }
     }
 }

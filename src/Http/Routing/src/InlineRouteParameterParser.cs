@@ -163,7 +163,7 @@ public static class InlineRouteParameterParser
                         case '=':
                             // In the original implementation, the Regex would've backtracked if it encountered an
                             // unbalanced opening bracket followed by (not necessarily immediately) a delimiter.
-                            // Simply verifying that the parantheses will eventually be closed should suffice to
+                            // Simply verifying that the parentheses will eventually be closed should suffice to
                             // determine if the terminator needs to be consumed as part of the current constraint
                             // specification.
                             var indexOfClosingParantheses = routeParameter.IndexOf(')', currentIndex + 1);

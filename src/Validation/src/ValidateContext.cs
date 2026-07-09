@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
-    private Dictionary<string, IEnumerable<string>>? _validationErrors;
+    private Dictionary<string, IReadOnlyList<string>>? _validationErrors;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -80,7 +80,7 @@ public sealed class ValidateContext
     /// Keys are property names or paths, and values are collection of error messages.
     /// There are no guarantees whether or not this dictionary is lazy. Usages should treat null and empty dictionary the same.
     /// </remarks>
-    public IReadOnlyDictionary<string, IEnumerable<string>>? ValidationErrors
+    public IReadOnlyDictionary<string, IReadOnlyList<string>>? ValidationErrors
         => _validationErrors;
 
     /// <summary>
@@ -159,9 +159,9 @@ public sealed class ValidateContext
         return hasErrors;
     }
 
-    private void AddValidationErrorSuppressEvent(string path, IEnumerable<string> errors)
+    private void AddValidationErrorSuppressEvent(string path, IReadOnlyList<string> errors)
     {
-        _validationErrors ??= new Dictionary<string, IEnumerable<string>>();
+        _validationErrors ??= new Dictionary<string, IReadOnlyList<string>>();
 
         if (!_validationErrors.TryGetValue(path, out var existingErrors))
         {
@@ -225,6 +225,24 @@ public sealed class ValidateContext
         {
             // Only validate async attributes if synchronous validation passed.
             await ValidateAsynchronousOnlyAsync(validationAttributes, value, container, reporter, cancellationToken);
+        }
+    }
+
+    internal void ValidateAllAttributesSynchronously(
+        object? value,
+        object? container,
+        IValidationErrorReporter reporter)
+    {
+        var validationAttributes = reporter.GetValidationAttributes();
+        for (var i = 0; i < validationAttributes.Length; i++)
+        {
+            var attribute = validationAttributes[i];
+
+            var result = attribute.GetValidationResult(value, ValidationContext);
+            if (result is not null && result != ValidationResult.Success)
+            {
+                reporter.ReportError(this, container, attribute, result);
+            }
         }
     }
 

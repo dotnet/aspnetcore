@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -172,13 +173,41 @@ public partial class OpenApiDocumentServiceTests
             },
             tag =>
             {
-                Assert.Equal("v1", tag.Name);
+                Assert.Equal("users", tag.Name);
             },
             tag =>
             {
-                Assert.Equal("users", tag.Name);
+                Assert.Equal("v1", tag.Name);
             });
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiOperation_CapturesTagsInDocumentWithStableOrderWhenEndpointsAreReordered()
+    {
+        // Arrange
+        var builderA = CreateBuilder();
+        var builderB = CreateBuilder();
+        string[] tagsA = [];
+        string[] tagsB = [];
+
+        // Act
+        builderA.MapGet("/api/todos", () => { }).WithTags(["todos", "v1"]);
+        builderA.MapGet("/api/users", () => { }).WithTags(["users", "v1"]);
+        await VerifyOpenApiDocument(builderA, document =>
+        {
+            tagsA = document.Tags.Select(tag => tag.Name).ToArray();
+        });
+
+        builderB.MapGet("/api/users", () => { }).WithTags(["users", "v1"]);
+        builderB.MapGet("/api/todos", () => { }).WithTags(["todos", "v1"]);
+        await VerifyOpenApiDocument(builderB, document =>
+        {
+            tagsB = document.Tags.Select(tag => tag.Name).ToArray();
+        });
+
+        // Assert
+        Assert.Equal(tagsA, tagsB);
     }
 
     [Fact]
