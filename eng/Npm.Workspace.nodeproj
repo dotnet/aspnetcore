@@ -138,8 +138,11 @@
   <Target Name="Restore" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
     <Message Text="Restoring NPM packages..." Importance="high" />
 
+    <!-- Run 'npm ci' through a retry wrapper to tolerate transient network
+         failures (e.g. ECONNRESET) that npm's built-in fetch-retries does not
+         reliably recover from. -->
     <Exec
-      Command="npm ci"
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/npm-ci-retry.mjs"
       WorkingDirectory="$(NpmWorkspaceRoot)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)"
       />
