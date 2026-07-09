@@ -131,6 +131,7 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
                         validationSubkey: Span<byte>.Empty /* filling in derivedKey only */);
 
                     // Perform the decryption operation directly into destination
+                    // codeql[SM04193] - By design: reviewed and signed off by the Crypto Board; AES-GCM is enabled by default only in dev/non-prod and requires explicit opt-in in production, so there is no default prod exposure.
                     using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
                     aes.Decrypt(nonce, encrypted, tag, plaintext);
 
