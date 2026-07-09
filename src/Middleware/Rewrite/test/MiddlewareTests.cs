@@ -174,6 +174,37 @@ public class MiddlewareTests
         Assert.Equal(expectedUrl, response.Headers.Location.OriginalString);
     }
 
+    [Theory]
+    [InlineData("(.*)", "//example.com", "anything")]
+    [InlineData("(.*)", "///example.com", "anything")]
+    [InlineData("(.*)", @"/\example.com", "anything")]
+    [InlineData("(.*)", "//////example.com", "anything")]
+    [InlineData("legacy/(.*)", "/$1", "legacy//example.com")]
+    [InlineData("legacy/(.*)", "/$1", "legacy///example.com")]
+    [InlineData("legacy/(.*)", "/$1", @"legacy/\example.com")]
+    public async Task CheckRedirect_CollapsesSchemeRelativeTarget(string pattern, string replacement, string requestUrl)
+    {
+        var options = new RewriteOptions().AddRedirect(pattern, replacement, statusCode: StatusCodes.Status302Found);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetAsync(requestUrl);
+
+        Assert.Equal("/example.com", response.Headers.Location.OriginalString);
+    }
+
     [Fact]
     public async Task RewriteRulesCanComeFromConfigureOptions()
     {

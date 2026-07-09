@@ -1190,7 +1190,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
 
         // At scrollTop=0, the natural floor prevents native anchoring from compensating — new items
-        // appear at the top and old items shift down. This is the default AnchorMode.Beginning behavior.
+        // appear at the top and old items shift down. This is the default AnchorMode.Start behavior.
         // In contrast, AnchorMode.None compensates scrollTop so old items stay in view.
         var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         Assert.True(scrollTopAfter < 50,
@@ -2673,7 +2673,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -2699,7 +2699,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_AppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_AppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -2724,7 +2724,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_SmallAppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_SmallAppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -2752,7 +2752,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_MidList_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_MidList_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -3082,7 +3082,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_LargePrependAtTop_StillShowsNewItems(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_LargePrependAtTop_StillShowsNewItems(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3151,11 +3151,56 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_End_SmallDataset_AppendAfterScrollingUpAFewRows_DoesNotReengage(bool useItemsProvider)
+    {
+        MountAnchorModeComponent("2", useItemsProvider: useItemsProvider);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Enter the console-logs regime: large overscan + dataset taller than the viewport but
+        // with fewer total items than the visible capacity.
+        Browser.Exists(By.Id("set-console-scenario")).Click();
+        Browser.Contains("Console scenario", () => Browser.Exists(By.Id("status")).Text);
+        Browser.True(() => GetElementCount(container, ".item") > 6);
+        WaitForRenderToSettle(container, js);
+
+        // Start pinned at the bottom (End mode), then scroll UP just a few rows (~3 * 50px).
+        ScrollToBottomAndWait(container, js);
+        var bottomScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var targetScrollTop = (int)(bottomScrollTop - 150);
+        ScrollUntil(js, container, () => ScrollContainer(js, container, targetScrollTop),
+            st => st <= bottomScrollTop - 100,
+            $"scrolled up a few rows from the bottom (target {targetScrollTop})");
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var scrollHeightBefore = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        Assert.True(scrollHeightBefore - scrollTopBefore - clientHeight > 50,
+            "Precondition: the user should be scrolled up away from the bottom before the append.");
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var scrollHeightAfter = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        Assert.True(Math.Abs(scrollTopAfter - scrollTopBefore) < 5,
+            $"End mode (small dataset): after the user scrolled up only a few rows, an append must NOT " +
+            $"re-engage and pull the viewport back to the bottom. " +
+            $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter}, " +
+            $"scrollHeight before: {scrollHeightBefore}, after: {scrollHeightAfter}, clientHeight: {clientHeight}");
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_PrependAfterLeavingTop_DoesNotReengage(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_PrependAfterLeavingTop_DoesNotReengage(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3186,11 +3231,52 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_Start_SmallDataset_PrependAfterScrollingDownAFewRows_DoesNotReengage(bool useItemsProvider)
+    {
+        MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Enter the console-logs regime: large overscan + dataset taller than the viewport but
+        // with fewer total items than the visible capacity.
+        Browser.Exists(By.Id("set-console-scenario")).Click();
+        Browser.Contains("Console scenario", () => Browser.Exists(By.Id("status")).Text);
+        Browser.True(() => GetElementCount(container, ".item") > 6);
+        WaitForRenderToSettle(container, js);
+
+        // Start pinned at the top (Start mode), then scroll DOWN just a few rows (~3 * 50px).
+        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+        ScrollUntil(js, container, () => ScrollContainer(js, container, 150),
+            st => st >= 100,
+            "scrolled down a few rows from the top (target 150)");
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopBefore >= 100,
+            "Precondition: the user should be scrolled down away from the top before the prepend.");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        // A stable viewport keeps scrollTop at (or below, once the prepended rows push content down)
+        // where the user left it. The bug would instead snap scrollTop back toward 0.
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopAfter >= 100,
+            $"Start mode (small dataset): after the user scrolled down a few rows, a prepend must NOT " +
+            $"re-engage and pull the viewport back to the top. " +
+            $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter} (expected >=100, not near 0)");
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3387,7 +3473,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_WindowScroll_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3408,7 +3494,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_WindowScroll_Beginning_AppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_AppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -3429,7 +3515,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_WindowScroll_Beginning_MidList_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_MidList_ViewportStable(bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -4195,7 +4281,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void ScrollToItem_WithProviderDelay_NoPlaceholderAtTarget()
     {
-        // When ScrollToIndexAsync completes, the target row must show content, not placeholder.
+        // When ScrollToItemAsync completes, the target row must show content, not placeholder.
         MountAnchorModeForScrollToItem(delay: true);
         var js = (IJavaScriptExecutor)Browser;
 
@@ -4269,7 +4355,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             if (!last) return false;
             // Scroller must be pinned at max (within 2px) — proves the clamp targeted the end.
             return Math.abs((c.scrollTop + c.clientHeight) - c.scrollHeight) <= 2;
-        "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialIndex=100000.");
+        "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialItemIndex=100000.");
     }
 
     [Theory]
@@ -4326,7 +4412,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void ScrollToItem_UserScrollDuringProviderFetch_UserScrollWins()
     {
-        // While the provider is fetching for ScrollToIndexAsync, a real user scroll must win.
+        // While the provider is fetching for ScrollToItemAsync, a real user scroll must win.
         MountAnchorModeForScrollToItem();
         var js = (IJavaScriptExecutor)Browser;
         var container = Browser.Exists(By.Id("scroll-container"));
@@ -4408,7 +4494,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void ScrollToItem_AnchorBeginning_AtTop_LandsAtTarget()
+    public void ScrollToItem_AnchorStart_AtTop_LandsAtTarget()
     {
         // Anchor restore must NOT fight an active scroll.
         MountAnchorModeForScrollToItem();
