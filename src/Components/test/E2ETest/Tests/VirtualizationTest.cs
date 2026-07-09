@@ -1840,7 +1840,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var topSpacer = container.FindElements(By.CssSelector("[data-blazor-virtualize-reserved-height]"))[0];
         Assert.Equal("0", topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
 
-        // Fast scroll entirely in the browser (tight timing that starves the async provider).
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteAsyncScript(@"
             const done = arguments[arguments.length - 1];
@@ -1866,11 +1865,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void QuickGrid_Virtualize_VariableHeight_ToleratesIncorrectItemSize_UnderFastScroll()
     {
-        // Same declared-too-small scenario as above, but with VARIABLE-height rows and an async
-        // ItemsProvider. Regression guard: QuickGrid placeholder rows used to ignore
-        // PlaceholderContext.Size and render at a fixed ~21px, far shorter than the estimated row
-        // height, which shifted the rendered window out of the viewport and left it blank. QuickGrid
-        // now reserves the estimated height on placeholder rows so the geometry stays consistent.
         Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
         Browser.Exists(By.Id("qg-mode-variable")).Click();
 

@@ -65,7 +65,6 @@ else if (_variableHeight == true)
     {
         itemsProvider = async request =>
         {
-            // Latency so the placeholder renders before data arrives; fast scrolling can outrun it.
             await Task.Delay(50);
             ItemsProviderCallCount++;
 
@@ -86,7 +85,6 @@ else if (_variableHeight == true)
 
     private static string GenerateDescription(int index)
     {
-        // Varying content length (1-8 lines) produces different row heights.
         var lineCount = 1 + (index % 8);
         var lines = Enumerable.Range(0, lineCount)
             .Select(l => $"Line {l + 1}: Item {index + 1} description text.");
