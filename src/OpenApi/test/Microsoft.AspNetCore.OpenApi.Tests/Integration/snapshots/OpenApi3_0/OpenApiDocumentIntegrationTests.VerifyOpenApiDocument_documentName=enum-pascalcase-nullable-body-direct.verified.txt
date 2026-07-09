@@ -14,6 +14,7 @@
           "content": {
             "application/json": {
               "schema": {
+                "type": "string",
                 "oneOf": [
                   {
                     "$ref": "#/components/schemas/PascalCaseStatus"
