@@ -30,6 +30,7 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="System.Security.Cryptography.Xml" />
 
     <PackageReference Update="Microsoft.NETCore.App" PrivateAssets="All" />
   </ItemGroup>

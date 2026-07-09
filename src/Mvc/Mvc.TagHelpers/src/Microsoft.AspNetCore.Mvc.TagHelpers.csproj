@@ -22,5 +22,6 @@
     <Reference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.Primitives" />
+    <Reference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 </Project>

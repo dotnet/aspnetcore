@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.OAuth" />
+    <Reference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
 </Project>
