@@ -5,7 +5,8 @@
 @implements IDisposable
 
 @* Repro of the Aspire dashboard "append two-phase" flash: framework <Virtualize> driven like
-   Aspire's Structured Logs grid — Blazor Server, AnchorMode="End", no ItemComparer, async provider. *@
+   Aspire's Structured Logs grid — Blazor Server, End-anchored, async provider. Anchor and
+   ItemComparer are query-configurable (?anchor, ?comparer). *@
 
 <style>
     #repro-scroll-container {
@@ -37,7 +38,7 @@
     }
 </style>
 
-<h3>Virtualize append repro (AnchorMode=End, no ItemComparer)</h3>
+<h3>Virtualize append repro</h3>
 <p id="repro-info">
     Rows: <b id="repro-rowcount">@_items.Count</b>,
     ItemSize=46, OverscanCount=100, SpacerElement=tr, AnchorMode=@_anchorMode,
@@ -65,9 +66,7 @@
 
 @if (Gate)
 {
-    @* Gate buttons for the flash test: open-gate lets provider calls through (load the initial
-       tail); close-gate arms the gate so the next tail-advancing fetch blocks — exactly where the
-       "…" flash happens without the fix. *@
+    @* open-gate lets provider calls through; close-gate blocks the next tail-advancing fetch. *@
     <button id="open-gate" @onclick="OpenGate">Open gate (load data)</button>
     <button id="close-gate" @onclick="CloseGate">Close gate (block tail fetch)</button>
 }
@@ -76,8 +75,6 @@
     <span id="interactive-ready"></span>
 }
 
-@* Machine-readable mirror of every completed provider call (Console output isn't visible to the
-   Selenium test) so it can count provider round-trips per append. One <li> per call, in order. *@
 <ol id="provider-call-log" style="display: none;">
     @foreach (var c in _providerCalls)
     {
@@ -130,8 +127,6 @@
     [SupplyParameterFromQuery(Name = "batch")]
     public int? BatchQuery { get; set; }
 
-    // When true, the provider blocks tail-advancing calls until the gate is opened, giving the
-    // E2E test a deterministic way to observe the append two-phase instead of relying on timing.
     [Parameter]
     [SupplyParameterFromQuery(Name = "gate")]
     public bool Gate { get; set; }
@@ -140,8 +135,7 @@
     [SupplyParameterFromQuery(Name = "anchor")]
     public string? AnchorQuery { get; set; }
 
-    // When true, the grid passes an explicit ItemComparer (like a consumer that opts into prepend
-    // detection), routing appends through the comparer-set branch instead of the no-comparer branch.
+    // Passes an explicit ItemComparer, routing appends through the comparer-set branch.
     [Parameter]
     [SupplyParameterFromQuery(Name = "comparer")]
     public bool Comparer { get; set; }
@@ -159,14 +153,12 @@
     private bool _interactive;
     private int _seq;
 
-    // Machine-readable record of every completed provider call (mirrored into #provider-call-log
-    // in the DOM) so E2E tests can assert the exact number of provider round-trips per append.
+    // Mirrored into #provider-call-log so E2E tests can count provider round-trips per append.
     private readonly List<ProviderCall> _providerCalls = new();
 
     private bool _gateOpen;
     private TaskCompletionSource _gateTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    // The StartIndex of the tail window loaded when the gate was last closed. Calls whose
-    // StartIndex exceeds this (i.e. attempts to reach the newly appended tail) are blocked.
+    // Tail StartIndex loaded at gate-close; fetches beyond it are blocked while the gate is closed.
     private int _gateThresholdStartIndex = -1;
     private int _lastCompletedStartIndex = -1;
 
@@ -223,8 +215,7 @@
         }
     }
 
-    // Manual-only affordance: continuously stream batches so the append flash can be felt the way
-    // Aspire's live log grid streams entries. Not used by the E2E test.
+    // For manula, non-deterministic checks
     private void ToggleAutoAppend()
     {
         if (_autoAppend)
@@ -301,9 +292,7 @@
     {
         if (Gate)
         {
-            // Block only tail-advancing fetches (StartIndex beyond the tail loaded at gate-close).
-            // The append's old-window fetch passes; the window-advancing fetch blocks here so the
-            // test can observe the pending phase deterministically.
+            // Block tail-advancing fetches so the test can observe the pending phase deterministically.
             using var registration = request.CancellationToken.Register(() => _gateTcs.TrySetCanceled(request.CancellationToken));
             try
             {
@@ -338,9 +327,8 @@
 
         _lastCompletedStartIndex = request.StartIndex;
 
-        // Record the completed call and flush it to #provider-call-log for the count assertion.
-        // StateHasChanged here re-renders the log only; it doesn't change the Virtualize
-        // distribution, so it won't trigger another provider call.
+        // Record the call for the count assertion. This StateHasChanged re-renders only the log,
+        // so it doesn't shift the Virtualize distribution or trigger another provider call.
         _providerCalls.Add(new ProviderCall(request.StartIndex, count < 0 ? 0 : count, _items.Count));
         StateHasChanged();
 

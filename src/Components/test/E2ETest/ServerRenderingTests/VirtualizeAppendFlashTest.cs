@@ -45,19 +45,17 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
         }
         Navigate($"{ServerPathBase}/virtualize-append?{string.Join("&", parts)}");
 
-        // Wait for the circuit so clicks aren't lost during prerender.
         Browser.Exists(By.Id("interactive-ready"));
 
-        // Load the initial window at the anchored edge: real rows, no placeholders.
         ClickById("open-gate");
         Browser.True(() => GetDataRowCount() > 0);
         Browser.Equal(0, GetPlaceholderCellCount);
 
-        // Arm the gate (blocks any fetch that advances past the loaded window), then grow the list.
+        // Arm the gate so any fetch that advances past the loaded window blocks, then grow the list.
         ClickById("close-gate");
         ClickById(growButton);
 
-        // While any advancing fetch is pending, no placeholder renders and real rows stay on screen.
+        // The core assertion: while the advancing fetch is pending, no placeholder flashes.
         Browser.Equal(0, GetPlaceholderCellCount);
         Browser.True(() => GetDataRowCount() > 0);
 
@@ -152,7 +150,6 @@ public class VirtualizeAppendFlashTest : ServerTestBase<BasicTestAppServerSiteFi
 
     private void ClickById(string id)
     {
-        // Atomic JS query+click to avoid StaleElementReferenceException on re-render.
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("document.getElementById(arguments[0]).click();", id);
     }
