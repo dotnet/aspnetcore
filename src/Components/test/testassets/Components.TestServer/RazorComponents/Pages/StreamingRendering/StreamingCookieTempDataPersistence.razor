@@ -1,7 +1,7 @@
-﻿@page "/streaming-session-persistence"
+﻿@page "/streaming-cookie-tempdata-persistence"
 @attribute [StreamRendering]
 
-<h1>Streaming Session Persistence Test</h1>
+<h1>Streaming Cookie TempData Persistence Test</h1>
 
 @if (_done)
 {
@@ -15,9 +15,6 @@ else
 @code {
     private bool _done;
 
-    [SupplyParameterFromSession]
-    public string? Email { get; set; }
-
     [SupplyParameterFromTempData]
     private string SupplyParameterFromTempDataValue { get; set; } = string.Empty;
 
@@ -28,7 +25,6 @@ else
     {
         await EnterStreamingPhaseAsync();
 
-        Email = "set-during-streaming";
         SupplyParameterFromTempDataValue = "tempdata-set-during-streaming";
         if (TempData is not null)
         {
