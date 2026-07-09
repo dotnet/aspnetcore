@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0030 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
@@ -48,6 +51,7 @@ internal sealed class DeviceBoundSessionCookieEvents : CookieAuthenticationEvent
 
     public override async Task SigningOut(CookieSigningOutContext context)
     {
+        await ClearDerivedCookiesAsync(context.HttpContext, _dbscScheme);
         await GetInnerEvents(context.HttpContext).SigningOut(context);
     }
 
@@ -79,5 +83,45 @@ internal sealed class DeviceBoundSessionCookieEvents : CookieAuthenticationEvent
         }
 
         return (CookieAuthenticationEvents)httpContext.RequestServices.GetRequiredService(_innerEventsType);
+    }
+
+    /// <summary>
+    /// Marker set on <see cref="HttpContext.Items"/> during the DBSC registration cookie exchange, when
+    /// the handler signs out the source scheme to drop the long-lived cookie. It tells the source
+    /// scheme's sign-out hook that this is an exchange, not a user logout, so it leaves the
+    /// freshly-minted session and refresh cookies intact.
+    /// </summary>
+    internal const string RegistrationExchangeItemKey = "__DeviceBoundSession.RegistrationExchange";
+
+    /// <summary>
+    /// Clears the DBSC-derived session and refresh cookies when the source scheme signs out, so a plain
+    /// <c>SignOutAsync(sourceScheme)</c> fully logs the user out. The application never needs to know the
+    /// derived scheme names to clear them — just as it never needs them to create them. Shared with the
+    /// delegate-based sign-out wiring installed by <see cref="PostConfigureDeviceBoundSessionCookieOptions"/>.
+    /// </summary>
+    /// <param name="httpContext">The current HTTP context.</param>
+    /// <param name="dbscScheme">The resolved DBSC handler scheme whose options name the derived schemes.</param>
+    internal static async Task ClearDerivedCookiesAsync(HttpContext httpContext, string dbscScheme)
+    {
+        // During DBSC registration the handler signs out the source scheme to complete the cookie
+        // exchange. That is not a user logout, so leave the session/refresh cookies just minted intact.
+        if (httpContext.Items.ContainsKey(RegistrationExchangeItemKey))
+        {
+            return;
+        }
+
+        var options = httpContext.RequestServices
+            .GetRequiredService<IOptionsMonitor<DeviceBoundSessionOptions>>()
+            .Get(dbscScheme);
+
+        if (options.SessionScheme is not null)
+        {
+            await httpContext.SignOutAsync(options.SessionScheme);
+        }
+
+        if (options.RefreshScheme is not null)
+        {
+            await httpContext.SignOutAsync(options.RefreshScheme);
+        }
     }
 }

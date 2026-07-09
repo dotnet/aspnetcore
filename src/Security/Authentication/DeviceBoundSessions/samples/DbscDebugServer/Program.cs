@@ -53,7 +53,10 @@ public class Startup
     {
         services.AddSingleton(_debug);
 
-        services.AddAuthentication()
+        // The app makes the source cookie its default scheme; AddDeviceBoundSession detects that and
+        // redirects the default authenticate scheme to its policy scheme, so the app never has to know
+        // (or wire) the derived DBSC scheme names.
+        services.AddAuthentication(DbscNames.Source)
             // The source cookie scheme (long-lived sign-in cookie)
             .AddCookie(DbscNames.Source, o =>
             {
@@ -220,8 +223,7 @@ public class Startup
 
     private static async Task SignOutAllAsync(HttpContext context)
     {
+        // Signing out the source scheme now also clears the DBSC session and refresh cookies.
         await context.SignOutAsync(DbscNames.Source);
-        await context.SignOutAsync(DbscNames.Refresh);
-        await context.SignOutAsync(DbscNames.Session);
     }
 }

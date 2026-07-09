@@ -162,7 +162,10 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         };
         await Context.SignInAsync(Options.SessionScheme, principal, sessionProperties);
 
-        // 3. Delete the long-lived source cookie (exchange complete)
+        // 3. Delete the long-lived source cookie (exchange complete). Flag this as the DBSC
+        // registration exchange so the source scheme's sign-out hook does not treat it as a user
+        // logout and clear the session and refresh cookies we just minted.
+        Context.Items[DeviceBoundSessionCookieEvents.RegistrationExchangeItemKey] = true;
         await Context.SignOutAsync(Options.RegistrationSourceScheme);
 
         // Build and return session instructions JSON.

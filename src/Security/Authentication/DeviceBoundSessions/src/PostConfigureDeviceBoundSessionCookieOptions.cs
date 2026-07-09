@@ -38,6 +38,13 @@ internal sealed class PostConfigureDeviceBoundSessionCookieOptions : IPostConfig
                 DeviceBoundSessionRegistrationHeader.Emit(context.HttpContext, context.Principal, dbscScheme);
                 await priorSigningIn(context);
             };
+
+            var priorSigningOut = options.Events.OnSigningOut;
+            options.Events.OnSigningOut = async context =>
+            {
+                await DeviceBoundSessionCookieEvents.ClearDerivedCookiesAsync(context.HttpContext, dbscScheme);
+                await priorSigningOut(context);
+            };
             return;
         }
 

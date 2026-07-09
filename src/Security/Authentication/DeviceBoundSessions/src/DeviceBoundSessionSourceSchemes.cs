@@ -13,4 +13,7 @@ internal sealed class DeviceBoundSessionSourceSchemes
 
     /// <summary>Maps session cookie scheme → source cookie scheme.</summary>
     public IDictionary<string, string> SessionSchemes { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>Maps source cookie scheme → DBSC policy scheme.</summary>
+    public IDictionary<string, string> PolicySchemes { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
 }

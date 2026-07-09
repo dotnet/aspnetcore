@@ -119,11 +119,13 @@ public static class DeviceBoundSessionExtensions
         builder.Services.TryAddSingleton<DeviceBoundSessionChallengeProtector>();
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureDeviceBoundSessionCookieOptions>());
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureDeviceBoundSessionDerivedCookieOptions>());
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, PostConfigureDeviceBoundSessionAuthenticationOptions>());
         builder.Services.Configure<DeviceBoundSessionSourceSchemes>(o =>
         {
             o.Schemes[sourceScheme] = authenticationScheme;
             o.RefreshSchemes[refreshScheme] = sourceScheme;
             o.SessionSchemes[sessionScheme] = sourceScheme;
+            o.PolicySchemes[sourceScheme] = policyScheme;
         });
 
         // Add the DBSC protocol handler
@@ -133,13 +135,6 @@ public static class DeviceBoundSessionExtensions
             o.RefreshScheme = refreshScheme;
             o.SessionScheme = sessionScheme;
             configureOptions?.Invoke(o);
-        });
-
-        // Set the policy scheme as the default authenticate scheme
-        builder.Services.Configure<AuthenticationOptions>(o =>
-        {
-            o.DefaultAuthenticateScheme = policyScheme;
-            o.DefaultSignInScheme = sourceScheme;
         });
 
         return builder;
