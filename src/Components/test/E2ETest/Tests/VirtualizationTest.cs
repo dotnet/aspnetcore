@@ -1828,64 +1828,44 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(isFirstRowId1);
     }
 
-    [Fact]
-    public void QuickGrid_Virtualize_ToleratesIncorrectItemSize_UnderFastScroll()
+    [Theory]
+    [InlineData("qg-mode-fixed", "qg-capacity")]
+    [InlineData("qg-mode-variable", "qg-variable-capacity")]
+    public void QuickGrid_Virtualize_ToleratesIncorrectItemSize_UnderFastScroll(
+        string modeButtonId, string containerId)
     {
-        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
-        Browser.Exists(By.Id("qg-mode-fixed")).Click();
+        const int scrollStep = 1500;
 
-        var container = Browser.Exists(By.Id("qg-capacity"));
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
+        Browser.Exists(By.Id(modeButtonId)).Click();
+
+        var container = Browser.Exists(By.Id(containerId));
 
         WaitForQuickGridDataRows(container);
         var topSpacer = container.FindElements(By.CssSelector("[data-blazor-virtualize-reserved-height]"))[0];
         Assert.Equal("0", topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
 
-        var js = (IJavaScriptExecutor)Browser;
-        js.ExecuteAsyncScript(@"
-            const done = arguments[arguments.length - 1];
-            const el = document.getElementById('qg-capacity');
-            let i = 0;
-            const tick = () => {
-                i++;
-                el.dispatchEvent(new WheelEvent('wheel', { deltaY: 1000, bubbles: true }));
-                el.scrollTop = i * 1000;
-                if (i < 40) {
-                    setTimeout(tick, 40);
-                } else {
-                    done();
-                }
-            };
-            tick();
-        ");
+        var positions = Enumerable.Range(1, 40).Select(k => (long)k * scrollStep).ToList();
+        // Jitter around a deep offset to provoke placeholder oscillation.
+        positions.AddRange(new long[] { 58000, 57700, 58200, 57900 });
+        FastScroll(containerId, positions.ToArray(), deltaY: scrollStep);
 
         Browser.NotEqual("0", () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
-        Browser.True(() => ViewportCenterShowsRealData("qg-capacity"));
+        Browser.True(() => ViewportCenterShowsRealData(containerId));
     }
 
-    [Fact]
-    public void QuickGrid_Virtualize_VariableHeight_ToleratesIncorrectItemSize_UnderFastScroll()
+    private void FastScroll(string containerId, long[] positions, int deltaY)
     {
-        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
-        Browser.Exists(By.Id("qg-mode-variable")).Click();
-
-        var container = Browser.Exists(By.Id("qg-variable-capacity"));
-
-        WaitForQuickGridDataRows(container);
-        var topSpacer = container.FindElements(By.CssSelector("[data-blazor-virtualize-reserved-height]"))[0];
-        Assert.Equal("0", topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
-
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteAsyncScript(@"
             const done = arguments[arguments.length - 1];
-            const el = document.getElementById('qg-variable-capacity');
+            const el = document.getElementById(arguments[0]);
+            const positions = arguments[1];
+            const deltaY = arguments[2];
             let i = 0;
-            const positions = [];
-            for (let k = 1; k <= 40; k++) { positions.push(k * 1500); }
-            positions.push(58000, 57700, 58200, 57900);
             const tick = () => {
-                const p = positions[i];
-                el.dispatchEvent(new WheelEvent('wheel', { deltaY: 1500, bubbles: true }));
-                el.scrollTop = p;
+                el.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY, bubbles: true }));
+                el.scrollTop = positions[i];
                 i++;
                 if (i < positions.length) {
                     setTimeout(tick, 40);
@@ -1894,10 +1874,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 }
             };
             tick();
-        ");
-
-        Browser.NotEqual("0", () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
-        Browser.True(() => ViewportCenterShowsRealData("qg-variable-capacity"));
+        ", containerId, positions, deltaY);
     }
 
     private bool ViewportCenterShowsRealData(string containerId)
