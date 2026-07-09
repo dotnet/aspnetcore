@@ -670,6 +670,11 @@
                   "type": "object",
                   "oneOf": [
                     {
+                      "enum": [
+                        null
+                      ]
+                    },
+                    {
                       "$ref": "#/components/schemas/NullableResponseModel"
                     }
                   ],
@@ -692,6 +697,11 @@
               "schema": {
                 "type": "object",
                 "oneOf": [
+                  {
+                    "enum": [
+                      null
+                    ]
+                  },
                   {
                     "$ref": "#/components/schemas/NullableRequestModel"
                   }
@@ -874,6 +884,11 @@
             "type": "object",
             "oneOf": [
               {
+                "enum": [
+                  null
+                ]
+              },
+              {
                 "$ref": "#/components/schemas/NestedModel"
               }
             ],
@@ -997,6 +1012,11 @@
           "nullableEnum": {
             "type": "integer",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/TestEnum"
               }
@@ -1158,6 +1178,11 @@
             "type": "object",
             "oneOf": [
               {
+                "enum": [
+                  null
+                ]
+              },
+              {
                 "$ref": "#/components/schemas/ComplexType"
               }
             ],
@@ -1235,6 +1260,11 @@
           "nullableComplexProperty": {
             "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/ComplexType"
               }
@@ -1474,6 +1504,11 @@
           "secondaryUser": {
             "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/RefProfile"
               }

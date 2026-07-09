@@ -17,6 +17,11 @@
                 "type": "string",
                 "oneOf": [
                   {
+                    "enum": [
+                      null
+                    ]
+                  },
+                  {
                     "$ref": "#/components/schemas/CamelCaseStatus"
                   }
                 ],
