@@ -377,6 +377,82 @@
         }
       }
     },
+    "/enums/pascalcase/nonnullable-response": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nullable-response": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nonnullable-response": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nullable-response": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/first-doc/get1": {
       "get": {
         "tags": [
