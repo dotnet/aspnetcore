@@ -328,7 +328,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
 
         return new ValidateContext
         {
-            ServiceProvider = null,
+            ServiceProvider = serviceProvider,
             ValidationOptions = new TestValidationOptions(typeMapping ?? new Dictionary<Type, ValidatableTypeInfo>())
         };
     }
