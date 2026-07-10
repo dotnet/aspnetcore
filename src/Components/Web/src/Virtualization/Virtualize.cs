@@ -982,7 +982,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return false;
         }
 
-        return await _jsInterop.IsFollowingBottomAsync();
+        try
+        {
+            return await _jsInterop.IsFollowingBottomAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            return false;
+        }
     }
 
     // Advances the window to the appended tail and refetches it in the current refresh pass, so the
