@@ -2086,13 +2086,25 @@ public class RenderTreeBuilderTest
     [Fact]
     public void ReportsBreakInsideRenderLoopAsInvalid()
     {
-        // Simulates a `break` inside a `@foreach` block: the render method opens a parent element,
-        // opens a child element inside an early-exit branch, and then returns without closing either frame.
         var builder = new RenderTreeBuilder();
         var component = new TestComponent();
-        builder.OpenElement(0, "table");
-        builder.OpenElement(1, "tr");
-        builder.OpenElement(2, "td");
+
+        RenderFragment fragment = fragmentBuilder =>
+        {
+            fragmentBuilder.OpenElement(0, "ul");
+            foreach (var item in new[] { "a", "b", "c" })
+            {
+                fragmentBuilder.OpenElement(1, "li");
+                fragmentBuilder.AddContent(2, item);
+                if (item == "a")
+                {
+                    break; // Exits the loop, leaving <ul> and <li> unclosed.
+                }
+                fragmentBuilder.CloseElement();
+            }
+        };
+
+        builder.AddContent(0, fragment);
 
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
         Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed", ex.Message);
