@@ -17,7 +17,7 @@ public class AuthorizeViewTest
 {
     // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
     // failures.
-    private static readonly TimeSpan s_timeout = Debugger.IsAttached ? System.Threading.s_timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan s_timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
     [Fact]
     public void RendersNothingIfNotAuthorized()
