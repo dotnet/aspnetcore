@@ -12,7 +12,7 @@ public class UserOptions
     /// Gets or sets the list of allowed characters in the username used to validate user names. Defaults to abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+
     /// </summary>
     /// <remarks>
-    /// When set to <c>null</c> there is no restrictions on the characters that can be used in user names.
+    /// When set to <c>null</c> or empty, there are no restrictions on the characters that can be used in user names.
     /// </remarks>
     /// <value>
     /// The list of allowed characters in the username used to validate user names.
