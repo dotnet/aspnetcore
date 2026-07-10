@@ -906,13 +906,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                     : default;
             }
 
-                _loading = false;
-                _skipNextDistributionRefresh = request.Count > 0;
+            _loading = false;
+            _skipNextDistributionRefresh = request.Count > 0;
 
-                if (renderOnSuccess)
-                {
-                    StateHasChanged();
-                }
+            if (renderOnSuccess)
+            {
+                StateHasChanged();
             }
         }
         catch (Exception e)
