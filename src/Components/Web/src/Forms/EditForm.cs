@@ -174,10 +174,6 @@ public class EditForm : ComponentBase
             {
                 childBuilder.AddContent(0, ChildContent(_editContext));
             }
-            // ClientValidationData must be a descendant of CascadingValue<EditContext> so its
-            // [CascadingParameter] EditContext is populated. Validators inside ChildContent
-            // (e.g. <DataAnnotationsValidator />) initialize first and set the activation marker
-            // on EditContext.Properties; ClientValidationData reads the marker on its first render.
             childBuilder.OpenComponent<ClientValidationData>(1);
             childBuilder.CloseComponent();
         }));

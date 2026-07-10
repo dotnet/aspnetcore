@@ -108,7 +108,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
         services.TryAddSingleton<ClientValidationCache>();
-        services.TryAddScoped<ClientValidationProvider, EndpointClientValidationProvider>();
+        services.TryAddScoped<ClientValidationProvider, DataAnnotationsClientValidationProvider>();
 
         if (configure != null)
         {

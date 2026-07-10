@@ -19,13 +19,13 @@ public class ClientValidationDataTest
     private const string CarrierElementName = "blazor-client-validation-data";
 
     [Fact]
-    public async Task Renders_BlazorClientValidationData_WhenMarkerSetRegistryPopulatedAndProviderReturnsNonNull()
+    public async Task Renders_ProviderFragment_WhenActivatedRegistryPopulatedAndProviderReturnsFragment()
     {
         var editContext = new EditContext(new object());
-        editContext.Properties[typeof(ClientValidationMarker)] = true; // any non-null value satisfies the marker contract
+        Activate(editContext);
         RegisterField(editContext, "F");
 
-        var renderer = CreateRenderer(provider: new FakeProvider(SampleDescriptor()));
+        var renderer = CreateRenderer(provider: new FakeProvider(CarrierFragment()));
 
         var elementName = await RenderClientValidationDataAndGetCarrierElementName(renderer, editContext);
 
@@ -33,13 +33,13 @@ public class ClientValidationDataTest
     }
 
     [Fact]
-    public async Task NoOp_WhenMarkerNotSet()
+    public async Task NoOp_WhenNotActivated()
     {
         var editContext = new EditContext(new object());
-        // Marker deliberately not written.
+        // Activation flag deliberately not written.
         RegisterField(editContext, "F");
 
-        var renderer = CreateRenderer(provider: new FakeProvider(SampleDescriptor()));
+        var renderer = CreateRenderer(provider: new FakeProvider(CarrierFragment()));
 
         var elementName = await RenderClientValidationDataAndGetCarrierElementName(renderer, editContext);
 
@@ -49,13 +49,13 @@ public class ClientValidationDataTest
     [Fact]
     public async Task NoOp_WhenNoFieldsRegistered()
     {
-        // Marker is set and the provider would return a descriptor, but no input registered a
-        // field (e.g. interactive render modes, where InputBase does not register). The component
-        // short-circuits at the registry check before resolving the provider.
+        // Activated and the provider would return a fragment, but no input registered a field
+        // (e.g. interactive render modes, where InputBase does not register). The component
+        // short-circuits at the registry check before invoking the provider.
         var editContext = new EditContext(new object());
-        editContext.Properties[typeof(ClientValidationMarker)] = true;
+        Activate(editContext);
 
-        var renderer = CreateRenderer(provider: new FakeProvider(SampleDescriptor()));
+        var renderer = CreateRenderer(provider: new FakeProvider(CarrierFragment()));
 
         var elementName = await RenderClientValidationDataAndGetCarrierElementName(renderer, editContext);
 
@@ -65,11 +65,11 @@ public class ClientValidationDataTest
     [Fact]
     public async Task NoOp_WhenProviderNotRegistered()
     {
-        // Server / WASM / interactive paths: marker is set by a validator, but no
-        // ClientValidationProvider is registered in DI, so the optional Services lookup
-        // returns null and the component renders nothing.
+        // Server / WASM / interactive paths: a validator activates client validation, but no
+        // ClientValidationProvider is registered in DI, so the optional Services lookup returns
+        // null and the component renders nothing.
         var editContext = new EditContext(new object());
-        editContext.Properties[typeof(ClientValidationMarker)] = true; // any non-null value satisfies the marker contract
+        Activate(editContext);
         RegisterField(editContext, "F");
 
         var renderer = CreateRenderer(provider: null);
@@ -79,22 +79,16 @@ public class ClientValidationDataTest
         Assert.Null(elementName);
     }
 
-    [Theory]
-    [InlineData(/* providerReturnsNull */ true)]
-    [InlineData(/* providerReturnsNull */ false)]
-    public async Task NoOp_WhenProviderReturnsNullOrEmptyDescriptor(bool providerReturnsNull)
+    [Fact]
+    public async Task NoOp_WhenProviderReturnsNullFragment()
     {
-        // Both null and an empty-fields descriptor must short-circuit before serialization,
-        // so no <blazor-client-validation-data> element is emitted.
+        // The provider decides there is nothing to emit (e.g. none of the rendered fields are
+        // validated on the server) and returns null, so no carrier element is rendered.
         var editContext = new EditContext(new object());
-        editContext.Properties[typeof(ClientValidationMarker)] = true; // any non-null value satisfies the marker contract
+        Activate(editContext);
         RegisterField(editContext, "F");
 
-        var descriptor = providerReturnsNull
-            ? null
-            : new ClientValidationFormDescriptor(Array.Empty<ClientValidationFieldDescriptor>());
-
-        var renderer = CreateRenderer(provider: new FakeProvider(descriptor));
+        var renderer = CreateRenderer(provider: new FakeProvider(fragment: null));
 
         var elementName = await RenderClientValidationDataAndGetCarrierElementName(renderer, editContext);
 
@@ -104,23 +98,16 @@ public class ClientValidationDataTest
     [Fact]
     public async Task EditForm_RendersClientValidationDataInsideEditContextCascade()
     {
-        // End-to-end at the render layer: <EditForm><DataAnnotationsValidator/></EditForm>
-        // must produce a <blazor-client-validation-data> element with the serialized rules.
+        // End-to-end at the render layer: <EditForm><DataAnnotationsValidator/></EditForm> must
+        // reach ClientValidationData, which renders the provider's fragment (the carrier element).
         //
         // This pins three things at once:
-        //   (a) DataAnnotationsValidator successfully writes the marker.
-        //   (b) ClientValidationData is inside the EditContext cascade scope so it resolves
-        //       the cascading parameter (its [CascadingParameter] EditContext is populated).
-        //   (c) Render order: validators inside ChildContent initialize before
-        //       ClientValidationData renders, so the marker is observable.
-        var renderer = CreateRenderer(provider: new FakeProvider(new ClientValidationFormDescriptor(
-            new List<ClientValidationFieldDescriptor>
-            {
-                new(nameof(EditFormTestModel.Name), new List<ClientValidationRule>
-                {
-                    new("required", "Name is required."),
-                }),
-            })));
+        //   (a) DataAnnotationsValidator successfully writes the activation flag.
+        //   (b) ClientValidationData is inside the EditContext cascade scope so it resolves the
+        //       cascading parameter (its [CascadingParameter] EditContext is populated).
+        //   (c) Render order: validators and inputs inside ChildContent initialize before
+        //       ClientValidationData renders, so the flag and the registered fields are observable.
+        var renderer = CreateRenderer(provider: new FakeProvider(CarrierFragment()));
 
         var host = new EditFormHostComponent { Model = new EditFormTestModel() };
         var hostId = renderer.AssignRootComponentId(host);
@@ -135,14 +122,21 @@ public class ClientValidationDataTest
 
     // ---- Helpers ----
 
+    // Mirrors DataAnnotationsValidator: writes the activation flag keyed by the validator type.
+    private static void Activate(EditContext editContext)
+        => editContext.Properties[typeof(DataAnnotationsValidator)] = true;
+
     private static void RegisterField(EditContext editContext, string name)
         => RenderedFieldRegistry.GetOrCreate(editContext).Register(editContext.Field(name), name);
 
-    private static ClientValidationFormDescriptor SampleDescriptor()
-        => new(new List<ClientValidationFieldDescriptor>
+    // A stand-in for the fragment a real ClientValidationProvider returns: emits the carrier element.
+    private static RenderFragment CarrierFragment()
+        => builder =>
         {
-            new("F", new List<ClientValidationRule> { new("required", "F is required.") }),
-        });
+            builder.OpenElement(0, CarrierElementName);
+            builder.AddAttribute(1, "data-rules", "{}");
+            builder.CloseElement();
+        };
 
     private static TestRenderer CreateRenderer(ClientValidationProvider? provider)
     {
@@ -227,7 +221,7 @@ public class ClientValidationDataTest
 
                 // A real input registers its field on the EditContext (gated on AssignedRenderMode
                 // is null, which holds in the test renderer), populating the registry that
-                // ClientValidationData reads before emitting the carrier.
+                // ClientValidationData reads before invoking the provider.
                 childBuilder.OpenComponent<InputText>(1);
                 childBuilder.AddComponentParameter(2, "Value", Model.Name);
                 childBuilder.AddComponentParameter(3, "ValueExpression", (Expression<Func<string>>)(() => Model.Name));
@@ -244,11 +238,11 @@ public class ClientValidationDataTest
 
     private sealed class FakeProvider : ClientValidationProvider
     {
-        private readonly ClientValidationFormDescriptor? _descriptor;
-        public FakeProvider(ClientValidationFormDescriptor? descriptor) => _descriptor = descriptor;
-        public override ClientValidationFormDescriptor? GetFormDescriptor(
+        private readonly RenderFragment? _fragment;
+        public FakeProvider(RenderFragment? fragment) => _fragment = fragment;
+        public override RenderFragment? RenderClientValidationRules(
             EditContext editContext,
-            IReadOnlyDictionary<FieldIdentifier, string> renderedFields) => _descriptor;
+            IReadOnlyDictionary<FieldIdentifier, string> renderedFields) => _fragment;
     }
 
     private sealed class NullFormValueMapper : IFormValueMapper

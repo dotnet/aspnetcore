@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 public abstract class ClientValidationProvider
 {
     /// <summary>
-    /// Returns the descriptor describing client-side validation for the fields rendered in the
-    /// form, or <see langword="null"/> when no client-side validation data applies (for example
-    /// when none of the rendered fields are validated on the server).
+    /// Returns a <see cref="RenderFragment"/> that renders the client-side validation rules for
+    /// the form's rendered fields, or <see langword="null"/> when no client-side validation data
+    /// applies (for example when none of the rendered fields are validated on the server).
     /// </summary>
     /// <param name="editContext">The <see cref="EditContext"/> of the form being rendered.</param>
     /// <param name="renderedFields">
@@ -20,10 +20,10 @@ public abstract class ClientValidationProvider
     /// these fields.
     /// </param>
     /// <returns>
-    /// A <see cref="ClientValidationFormDescriptor"/> describing the client-side validation rules,
-    /// or <see langword="null"/> when there is nothing to emit.
+    /// A <see cref="RenderFragment"/> that emits the rules markup, or <see langword="null"/> when
+    /// there is nothing to render.
     /// </returns>
-    public abstract ClientValidationFormDescriptor? GetFormDescriptor(
+    public abstract RenderFragment? RenderClientValidationRules(
         EditContext editContext,
         IReadOnlyDictionary<FieldIdentifier, string> renderedFields);
 }

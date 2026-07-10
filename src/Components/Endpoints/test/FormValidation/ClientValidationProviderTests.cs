@@ -8,14 +8,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Tests.FormValidation;
 
 // Integration tests for the SSR client-validation rule pipeline:
-// EndpointClientValidationProvider + ClientValidationCache. These exercise the real reflection,
+// DataAnnotationsClientValidationProvider + ClientValidationCache. These exercise the real reflection,
 // rule mapping, server-validation gating, and localization, driven by the set of fields an input
 // rendered for (the renderedFields map that ClientValidationData passes in).
 public class ClientValidationProviderTests
@@ -116,7 +115,7 @@ public class ClientValidationProviderTests
         var provider = CreateProvider();
         var model = new TwoFieldModel();
 
-        var descriptor = provider.GetFormDescriptor(new EditContext(model), new Dictionary<FieldIdentifier, string>());
+        var descriptor = provider.BuildFormDescriptor(new EditContext(model), new Dictionary<FieldIdentifier, string>());
 
         Assert.Null(descriptor);
     }
@@ -209,7 +208,7 @@ public class ClientValidationProviderTests
             [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
         };
 
-        var descriptor = provider.GetFormDescriptor(new EditContext(model), fields);
+        var descriptor = provider.BuildFormDescriptor(new EditContext(model), fields);
 
         Assert.Null(descriptor);
     }
@@ -225,7 +224,7 @@ public class ClientValidationProviderTests
             [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
         };
 
-        var descriptor = provider.GetFormDescriptor(new EditContext(model), fields);
+        var descriptor = provider.BuildFormDescriptor(new EditContext(model), fields);
 
         var field = Assert.Single(descriptor!.Fields);
         Assert.Equal("Child.Street", field.Name);
@@ -246,18 +245,18 @@ public class ClientValidationProviderTests
             [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
         };
 
-        var descriptor = provider.GetFormDescriptor(new EditContext(model), fields);
+        var descriptor = provider.BuildFormDescriptor(new EditContext(model), fields);
 
         Assert.Null(descriptor);
     }
 
     // ---- Helpers ----
 
-    private static EndpointClientValidationProvider CreateProvider(ValidationOptions? options = null)
+    private static DataAnnotationsClientValidationProvider CreateProvider(ValidationOptions? options = null)
     {
         var opts = Options.Create(options ?? new ValidationOptions());
         var cache = new ClientValidationCache(opts);
-        return new EndpointClientValidationProvider(cache, opts);
+        return new DataAnnotationsClientValidationProvider(cache, opts);
     }
 
     private static ClientValidationFormDescriptor? GetDescriptor<TModel>(params string[] fieldNames)
@@ -274,7 +273,7 @@ public class ClientValidationProviderTests
         {
             fields[new FieldIdentifier(model, name)] = name;
         }
-        return provider.GetFormDescriptor(new EditContext(model), fields);
+        return provider.BuildFormDescriptor(new EditContext(model), fields);
     }
 
     private static ClientValidationRule SingleRule(ClientValidationFormDescriptor descriptor, string fieldName)

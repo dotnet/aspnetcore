@@ -13,24 +13,48 @@ using Microsoft.Extensions.Validation;
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
 /// <summary>
-/// Iterates the inputs registered on the <see cref="EditContext"/> and builds a typed <see cref="ClientValidationFormDescriptor"/>
+/// Iterates the inputs registered on the <see cref="EditContext"/> and builds a <see cref="RenderFragment"/>
 /// describing client-side validation rules.
 /// Emits client-side validation rules only for fields that would be validated on the server as well.
 /// </summary>
-internal sealed class EndpointClientValidationProvider : ClientValidationProvider
+internal sealed class DataAnnotationsClientValidationProvider : ClientValidationProvider
 {
     private readonly ClientValidationCache _clientValidationCache;
     private readonly IValidationLocalizer? _validationLocalizer;
 
     [UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "Preserves ValidationOptions's parameterless constructor used by Microsoft.Extensions.Options to materialize IOptions<ValidationOptions>.")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ValidationOptions))]
-    public EndpointClientValidationProvider(ClientValidationCache clientValidationCache, IOptions<ValidationOptions> validationOptions)
+    public DataAnnotationsClientValidationProvider(ClientValidationCache clientValidationCache, IOptions<ValidationOptions> validationOptions)
     {
         _clientValidationCache = clientValidationCache;
         _validationLocalizer = validationOptions.Value.Localizer;
     }
 
-    public override ClientValidationFormDescriptor? GetFormDescriptor(EditContext editContext, IReadOnlyDictionary<FieldIdentifier, string> renderedFields)
+    public override RenderFragment? RenderClientValidationRules(EditContext editContext, IReadOnlyDictionary<FieldIdentifier, string> renderedFields)
+    {
+        var formDescriptor = BuildFormDescriptor(editContext, renderedFields);
+        if (formDescriptor is null)
+        {
+            return null;
+        }
+
+        var json = ClientValidationDataSerializer.Serialize(formDescriptor);
+
+        return builder =>
+        {
+            builder.OpenElement(0, "blazor-client-validation-data");
+            // The rules are carried in the data-rules attribute, not as element content, so the
+            // element renders nothing at all in the DOM.
+            builder.AddAttribute(1, "data-rules", json);
+            builder.CloseElement();
+        };
+    }
+
+    // Builds the typed descriptor of the client-side rules for the rendered fields, or null when
+    // there is nothing to emit. Separated from RenderClientValidationRules so the rule-building
+    // (the reflection/attribute-mapping logic) can be unit-tested without going through the wire
+    // format and the carrier RenderFragment.
+    internal ClientValidationFormDescriptor? BuildFormDescriptor(EditContext editContext, IReadOnlyDictionary<FieldIdentifier, string> renderedFields)
     {
         ArgumentNullException.ThrowIfNull(editContext);
 
@@ -50,9 +74,7 @@ internal sealed class EndpointClientValidationProvider : ClientValidationProvide
             }
         }
 
-        return fieldDescriptors is { Count: > 0 }
-           ? new ClientValidationFormDescriptor(fieldDescriptors)
-           : null;
+        return fieldDescriptors is null ? null : new ClientValidationFormDescriptor(fieldDescriptors);
     }
 
     private ClientValidationFieldDescriptor? BuildFieldDescriptor(string renderedName, ClientValidationFieldMetadata fieldMetadata)

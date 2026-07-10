@@ -3,15 +3,14 @@
 
 #nullable enable
 
-using Microsoft.AspNetCore.Components.Forms.ClientValidation;
-
-namespace Microsoft.AspNetCore.Components.Forms;
+namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
 public class ClientValidationDataSerializerTest
 {
     // Regression guard: the serializer must use Utf8JsonWriter's default HTML-safe encoder,
-    // not UnsafeRelaxedJsonEscaping. The payload sits as text inside <blazor-client-validation-data>;
-    // without escaping, hostile strings could break out of the carrier element.
+    // not UnsafeRelaxedJsonEscaping. The payload sits in the data-rules attribute of
+    // <blazor-client-validation-data>; without escaping, hostile strings could break out of the
+    // element or its attribute.
     [Fact]
     public void Serialize_EscapesHtmlSensitiveCharacters()
     {

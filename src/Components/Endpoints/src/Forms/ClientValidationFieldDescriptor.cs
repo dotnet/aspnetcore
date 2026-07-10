@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
+namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
 /// <summary>
 /// Describes the client-side validation rules for one field within a form.
 /// </summary>
-public sealed class ClientValidationFieldDescriptor
+internal sealed class ClientValidationFieldDescriptor
 {
     /// <summary>
     /// Creates a field descriptor.
@@ -23,7 +23,10 @@ public sealed class ClientValidationFieldDescriptor
         Rules = rules;
     }
 
-    /// <summary>Field name as it appears in form posts. Dotted path for nested fields (e.g. <c>Address.Street</c>).</summary>
+    /// <summary>
+    /// Field name as it appears in form posts.
+    /// Dotted path for nested fields (e.g. <c>Address.Street</c>).
+    /// </summary>
     public string Name { get; }
 
     /// <summary>Ordered list of client-side validation rules.</summary>

@@ -5,7 +5,7 @@ using System.Buffers;
 using System.Text;
 using System.Text.Json;
 
-namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
+namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
 internal static class ClientValidationDataSerializer
 {

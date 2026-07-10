@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Forms.ClientValidation;
-
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
@@ -40,7 +38,7 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
         if (EnableClientValidation)
         {
-            CurrentEditContext.Properties[typeof(ClientValidationMarker)] = ClientValidationMarker.Instance;
+            CurrentEditContext.Properties[typeof(DataAnnotationsValidator)] = true;
         }
     }
 
@@ -69,7 +67,7 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
         _subscriptions?.Dispose();
         _subscriptions = null;
 
-        CurrentEditContext?.Properties.Remove(typeof(ClientValidationMarker));
+        CurrentEditContext?.Properties.Remove(typeof(DataAnnotationsValidator));
 
         Dispose(disposing: true);
     }

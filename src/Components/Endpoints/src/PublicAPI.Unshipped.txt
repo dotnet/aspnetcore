@@ -84,3 +84,10 @@ Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.ApplicationCulture.set
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.get -> string?
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.set -> void
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentVariables.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.AspNetCore.Components.Endpoints.Forms.ClientValidationRule
+Microsoft.AspNetCore.Components.Endpoints.Forms.ClientValidationRule.ClientValidationRule(string! name, string! errorMessage, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? parameters = null) -> void
+Microsoft.AspNetCore.Components.Endpoints.Forms.ClientValidationRule.ErrorMessage.get -> string!
+Microsoft.AspNetCore.Components.Endpoints.Forms.ClientValidationRule.Name.get -> string!
+Microsoft.AspNetCore.Components.Endpoints.Forms.ClientValidationRule.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Microsoft.AspNetCore.Components.Endpoints.Forms.IClientValidationAdapter
+Microsoft.AspNetCore.Components.Endpoints.Forms.IClientValidationAdapter.GetClientValidationRules(string! errorMessage) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Endpoints.Forms.ClientValidationRule!>!
