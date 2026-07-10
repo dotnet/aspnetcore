@@ -793,9 +793,6 @@ function beginProgrammaticScroll(dotNetHelper: DotNet.DotNetObject): void {
   observersByDotNetObjectId[id]?.beginProgrammaticScroll?.();
 }
 
-// Server-initiated (outbound) pull: lets the server ask "is the user still pinned at the bottom?"
-// before it proactively advances the loaded window to a freshly appended tail. Returns false once
-// the user has scrolled up, so following stops and no re-engage/jump-to-bottom occurs.
 function isFollowingBottom(dotNetHelper: DotNet.DotNetObject): boolean {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   return observersByDotNetObjectId[id]?.isFollowingBottom?.() ?? false;
