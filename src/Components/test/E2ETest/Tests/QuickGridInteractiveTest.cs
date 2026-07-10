@@ -153,4 +153,16 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Assert.Contains("people_sort=FirstName", Browser.Url);
         Assert.Contains("people_order=asc", Browser.Url);
     }
+
+    [Fact]
+    public void SortByTypeMismatchVirtualizedShowsClearError()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        Browser.Exists(By.CssSelector("#type-mismatch-error-virtualized"));
+
+        Browser.Contains("Column 'Summary' expects item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+        Browser.Contains("Employee", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+        Browser.Contains("does not match the parent QuickGrid's item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+    }
 }
