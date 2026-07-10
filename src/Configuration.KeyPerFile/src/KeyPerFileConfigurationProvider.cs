@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Configuration.KeyPerFile;
@@ -30,9 +30,9 @@ public class KeyPerFileConfigurationProvider : ConfigurationProvider, IDisposabl
         {
             _changeTokenRegistration = ChangeToken.OnChange(
                 () => Source.FileProvider.Watch("*"),
-                () =>
+                async () =>
                 {
-                    Thread.Sleep(Source.ReloadDelay);
+                    await Task.Delay(Source.ReloadDelay).ConfigureAwait(false);
                     Load(reload: true);
                 });
         }
