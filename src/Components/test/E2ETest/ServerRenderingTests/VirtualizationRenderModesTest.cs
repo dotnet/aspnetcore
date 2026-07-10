@@ -15,12 +15,6 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
 public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
-    private const string PlaceholderCells = "#repro-scroll-container td.grid-cell-placeholder";
-    private const string DataRows = "#repro-scroll-container tr.repro-row:not(.placeholder-row)";
-
-    // Match VirtualizeAppendRepro.razor's seed count.
-    private const int InitialItemCount = 600;
-
     public VirtualizationRenderModesTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
@@ -69,6 +63,7 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
         Navigate($"{ServerPathBase}/virtualize-append?{string.Join("&", parts)}");
 
         Browser.Exists(By.Id("interactive-ready"));
+        var initialCount = GetReportedItemCount();
 
         ClickById("open-gate");
         Browser.True(() => GetDataRowCount() > 0);
@@ -82,16 +77,16 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
         Browser.Equal(0, GetPlaceholderCellCount);
         Browser.True(() => GetDataRowCount() > 0);
 
-        var batch = GetIntValue("batch-input");
+        var batch = GetInputValue("batch-input");
 
         ClickById("open-gate");
         Browser.True(() => GetDataRowCount() > 0);
         Browser.Equal(0, GetPlaceholderCellCount);
-        Browser.Equal(InitialItemCount + batch, GetRowCount);
+        Browser.Equal(initialCount + batch, GetReportedItemCount);
 
         if (anchor is null)
         {
-            Browser.True(HasAppendedRowVisible);
+            Browser.True(() => HasAppendedRowVisible(initialCount));
         }
     }
 
@@ -100,14 +95,15 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
     {
         Navigate($"{ServerPathBase}/virtualize-append?comparer=true");
         Browser.Exists(By.Id("interactive-ready"));
+        var initialCount = GetReportedItemCount();
 
         // Initial render loads the top window (start=0) then, once End-anchored, the tail (start>0).
-        Browser.True(() => GetProviderCalls().Any(c => c.Total == InitialItemCount && c.Start > 0));
+        Browser.True(() => GetProviderCalls().Any(c => c.Total == initialCount && c.Start > 0));
         Browser.Equal(2, () => GetProviderCalls().Count);
 
         var initial = GetProviderCalls();
-        var tailStart = initial.Where(c => c.Total == InitialItemCount).Max(c => c.Start);
-        var batch = GetIntValue("batch-input");
+        var tailStart = initial.Where(c => c.Total == initialCount).Max(c => c.Start);
+        var batch = GetInputValue("batch-input");
 
         ClickById("append-btn");
 
@@ -116,8 +112,8 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
 
         var appendCalls = GetProviderCalls().Skip(2).ToList();
         Assert.Equal(2, appendCalls.Count);
-        Assert.Equal(InitialItemCount + batch, appendCalls[0].Total);
-        Assert.Equal(InitialItemCount + batch, appendCalls[1].Total);
+        Assert.Equal(initialCount + batch, appendCalls[0].Total);
+        Assert.Equal(initialCount + batch, appendCalls[1].Total);
 
         // First refetches the old window; second advances to the new tail (old tail + batch).
         Assert.Equal(tailStart, appendCalls[0].Start);
@@ -136,11 +132,14 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
         js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", elem);
     }
 
-    private int GetPlaceholderCellCount() => Browser.FindElements(By.CssSelector(PlaceholderCells)).Count;
+    private int GetPlaceholderCellCount() => Browser.FindElements(By.CssSelector("#repro-scroll-container td.grid-cell-placeholder")).Count;
 
-    private int GetDataRowCount() => Browser.FindElements(By.CssSelector(DataRows)).Count;
+    private IReadOnlyCollection<IWebElement> GetDataRows()
+        => Browser.FindElements(By.CssSelector("#repro-scroll-container tr.repro-row:not(.placeholder-row)"));
 
-    private int GetRowCount()
+    private int GetDataRowCount() => GetDataRows().Count;
+
+    private int GetReportedItemCount()
         => int.Parse(Browser.FindElement(By.Id("repro-rowcount")).Text, CultureInfo.InvariantCulture);
 
     private readonly record struct ProviderCall(int Start, int Count, int Total);
@@ -162,19 +161,19 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
     private static int ParseAttr(IWebElement el, string name)
         => int.Parse(el.GetAttribute(name), CultureInfo.InvariantCulture);
 
-    private int GetIntValue(string id)
+    private int GetInputValue(string id)
     {
         var el = Browser.FindElement(By.Id(id));
         return int.Parse(el.GetAttribute("value"), CultureInfo.InvariantCulture);
     }
 
     // Appended rows have indices >= the seed count; a visible one proves the tail actually loaded.
-    private bool HasAppendedRowVisible()
+    private bool HasAppendedRowVisible(int seedCount)
     {
-        foreach (var row in Browser.FindElements(By.CssSelector(DataRows)))
+        foreach (var row in GetDataRows())
         {
             var match = Regex.Match(row.Text, @"Log entry (\d+)");
-            if (match.Success && int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) >= InitialItemCount)
+            if (match.Success && int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) >= seedCount)
             {
                 return true;
             }
