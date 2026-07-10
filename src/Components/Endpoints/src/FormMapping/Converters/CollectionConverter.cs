@@ -24,10 +24,10 @@ internal abstract class CollectionConverter<TCollection> : FormDataConverter<TCo
 internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TElement> : CollectionConverter<TCollection>
     where TCollectionPolicy : ICollectionBufferAdapter<TCollection, TBuffer, TElement>
 {
-    private static readonly Type _elementType = typeof(TElement);
+    private static readonly Type s_elementType = typeof(TElement);
 
     // Indexes up to 100 are pre-allocated to avoid allocations for common cases.
-    private static readonly string[] Indexes = new string[] {
+    private static readonly string[] s_indexes = new string[] {
         "[0]", "[1]", "[2]", "[3]", "[4]", "[5]", "[6]", "[7]", "[8]", "[9]",
         "[10]", "[11]", "[12]", "[13]", "[14]", "[15]", "[16]", "[17]", "[18]", "[19]",
         "[20]", "[21]", "[22]", "[23]", "[24]", "[25]", "[26]", "[27]", "[28]", "[29]",
@@ -67,7 +67,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         try
         {
             context.PushPrefix("[0]");
-            succeeded = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out found);
+            succeeded = _elementConverter.TryRead(ref context, s_elementType, options, out currentElement!, out found);
         }
         finally
         {
@@ -89,7 +89,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         try
         {
             context.PushPrefix("[1]");
-            currentElementSuccess = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out foundCurrentElement);
+            currentElementSuccess = _elementConverter.TryRead(ref context, s_elementType, options, out currentElement!, out foundCurrentElement);
             succeeded = succeeded && currentElementSuccess;
         }
         catch
@@ -122,11 +122,11 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
             buffer = TCollectionPolicy.Add(ref buffer, currentElement!);
 
             // Get the precomputed prefix and try and bind the element.
-            var prefix = Indexes[index];
+            var prefix = s_indexes[index];
             try
             {
                 context.PushPrefix(prefix);
-                currentElementSuccess = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out foundCurrentElement);
+                currentElementSuccess = _elementConverter.TryRead(ref context, s_elementType, options, out currentElement!, out foundCurrentElement);
                 succeeded = succeeded && currentElementSuccess;
             }
             catch
@@ -178,7 +178,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
             {
                 computedPrefix[charsWritten + 1] = ']';
                 context.PushPrefix(computedPrefix[..(charsWritten + 2)]);
-                currentElementSuccess = _elementConverter.TryRead(ref context, _elementType, options, out currentElement!, out foundCurrentElement);
+                currentElementSuccess = _elementConverter.TryRead(ref context, s_elementType, options, out currentElement!, out foundCurrentElement);
                 succeeded = succeeded && currentElementSuccess;
             }
             catch

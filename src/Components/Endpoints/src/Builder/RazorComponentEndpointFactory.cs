@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class RazorComponentEndpointFactory
 {
-    private static readonly HttpMethodMetadata HttpMethodsMetadata = new([HttpMethods.Get, HttpMethods.Head, HttpMethods.Post]);
+    private static readonly HttpMethodMetadata s_httpMethodsMetadata = new([HttpMethods.Get, HttpMethods.Head, HttpMethods.Post]);
 
 #pragma warning disable CA1822 // It's a singleton
     internal void AddEndpoints(
@@ -46,7 +46,7 @@ internal class RazorComponentEndpointFactory
 
         // We do not support link generation, so explicitly opt-out.
         builder.Metadata.Add(new SuppressLinkGenerationMetadata());
-        builder.Metadata.Add(HttpMethodsMetadata);
+        builder.Metadata.Add(s_httpMethodsMetadata);
         builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type));
         builder.Metadata.Add(new RootComponentMetadata(rootComponent));
         builder.Metadata.Add(configuredRenderModesMetadata);

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public static class EditContextFieldClassExtensions
 {
-    private static readonly object FieldCssClassProviderKey = new object();
+    private static readonly object s_fieldCssClassProviderKey = new object();
 
     /// <summary>
     /// Gets a string that indicates the status of the specified field as a CSS class. This will include
@@ -31,7 +31,7 @@ public static class EditContextFieldClassExtensions
     /// <returns>A string that indicates the status of the field.</returns>
     public static string FieldCssClass(this EditContext editContext, in FieldIdentifier fieldIdentifier)
     {
-        var provider = editContext.Properties.TryGetValue(FieldCssClassProviderKey, out var customProvider)
+        var provider = editContext.Properties.TryGetValue(s_fieldCssClassProviderKey, out var customProvider)
             ? (FieldCssClassProvider)customProvider
             : FieldCssClassProvider.Instance;
 
@@ -48,6 +48,6 @@ public static class EditContextFieldClassExtensions
     {
         ArgumentNullException.ThrowIfNull(fieldCssClassProvider);
 
-        editContext.Properties[FieldCssClassProviderKey] = fieldCssClassProvider;
+        editContext.Properties[s_fieldCssClassProviderKey] = fieldCssClassProvider;
     }
 }

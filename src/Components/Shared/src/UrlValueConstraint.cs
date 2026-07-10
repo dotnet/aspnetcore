@@ -14,11 +14,11 @@ internal abstract class UrlValueConstraint
 {
     public delegate bool TryParseDelegate<T>(ReadOnlySpan<char> str, [MaybeNullWhen(false)] out T result);
 
-    private static readonly ConcurrentDictionary<Type, UrlValueConstraint> _cachedInstances = new();
+    private static readonly ConcurrentDictionary<Type, UrlValueConstraint> s_cachedInstances = new();
 
     public static bool TryGetByTargetType(Type targetType, [MaybeNullWhen(false)] out UrlValueConstraint result)
     {
-        if (!_cachedInstances.TryGetValue(targetType, out result))
+        if (!s_cachedInstances.TryGetValue(targetType, out result))
         {
             result = Create(targetType);
             if (result is null)
@@ -26,7 +26,7 @@ internal abstract class UrlValueConstraint
                 return false;
             }
 
-            _cachedInstances.TryAdd(targetType, result);
+            s_cachedInstances.TryAdd(targetType, result);
         }
 
         return true;

@@ -11,7 +11,7 @@ public class VirtualizeItemComparerAnalyzerTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new VirtualizeItemComparerAnalyzer();
 
-    private static readonly string VirtualizeDeclarations = @"
+    private static readonly string s_virtualizeDeclarations = @"
     namespace Microsoft.AspNetCore.Components.Rendering
     {
         public class RenderTreeBuilder
@@ -63,7 +63,7 @@ public class VirtualizeItemComparerAnalyzerTest : DiagnosticVerifier
                 __builder.CloseComponent();
             }
         }
-    }" + VirtualizeDeclarations;
+    }" + s_virtualizeDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -97,7 +97,7 @@ public class VirtualizeItemComparerAnalyzerTest : DiagnosticVerifier
                 __builder.CloseComponent();
             }
         }
-    }" + VirtualizeDeclarations;
+    }" + s_virtualizeDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -120,7 +120,7 @@ public class VirtualizeItemComparerAnalyzerTest : DiagnosticVerifier
                 __builder.CloseComponent();
             }
         }
-    }" + VirtualizeDeclarations;
+    }" + s_virtualizeDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }

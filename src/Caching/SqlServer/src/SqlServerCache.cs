@@ -18,8 +18,8 @@ namespace Microsoft.Extensions.Caching.SqlServer;
 /// </summary>
 public class SqlServerCache : IDistributedCache, IBufferDistributedCache
 {
-    private static readonly TimeSpan MinimumExpiredItemsDeletionInterval = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan DefaultExpiredItemsDeletionInterval = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan s_minimumExpiredItemsDeletionInterval = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan s_defaultExpiredItemsDeletionInterval = TimeSpan.FromMinutes(30);
 
     private readonly IDatabaseOperations _dbOperations;
     private readonly ISystemClock _systemClock;
@@ -42,11 +42,11 @@ public class SqlServerCache : IDistributedCache, IBufferDistributedCache
         ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.TableName);
 
         if (cacheOptions.ExpiredItemsDeletionInterval.HasValue &&
-            cacheOptions.ExpiredItemsDeletionInterval.Value < MinimumExpiredItemsDeletionInterval)
+            cacheOptions.ExpiredItemsDeletionInterval.Value < s_minimumExpiredItemsDeletionInterval)
         {
             throw new ArgumentException(
                 $"{nameof(SqlServerCacheOptions.ExpiredItemsDeletionInterval)} cannot be less than the minimum " +
-                $"value of {MinimumExpiredItemsDeletionInterval.TotalMinutes} minutes.");
+                $"value of {s_minimumExpiredItemsDeletionInterval.TotalMinutes} minutes.");
         }
         if (cacheOptions.DefaultSlidingExpiration <= TimeSpan.Zero)
         {
@@ -60,7 +60,7 @@ public class SqlServerCache : IDistributedCache, IBufferDistributedCache
 
         _systemClock = cacheOptions.SystemClock ?? new SystemClock();
         _expiredItemsDeletionInterval =
-            cacheOptions.ExpiredItemsDeletionInterval ?? DefaultExpiredItemsDeletionInterval;
+            cacheOptions.ExpiredItemsDeletionInterval ?? s_defaultExpiredItemsDeletionInterval;
         _deleteExpiredCachedItemsDelegate = DeleteExpiredCacheItems;
         _defaultSlidingExpiration = cacheOptions.DefaultSlidingExpiration;
 

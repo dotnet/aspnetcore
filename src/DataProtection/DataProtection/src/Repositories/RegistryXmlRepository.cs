@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 [SupportedOSPlatform("windows")]
 public class RegistryXmlRepository : IDeletableXmlRepository
 {
-    private static readonly Lazy<RegistryKey?> _defaultRegistryKeyLazy = new Lazy<RegistryKey?>(GetDefaultHklmStorageKey);
+    private static readonly Lazy<RegistryKey?> s_defaultRegistryKeyLazy = new Lazy<RegistryKey?>(GetDefaultHklmStorageKey);
 
     private readonly ILogger _logger;
 
@@ -45,7 +45,7 @@ public class RegistryXmlRepository : IDeletableXmlRepository
     /// This property can return null if no suitable default registry key can
     /// be found, such as the case when this application is not hosted inside IIS.
     /// </remarks>
-    public static RegistryKey? DefaultRegistryKey => _defaultRegistryKeyLazy.Value;
+    public static RegistryKey? DefaultRegistryKey => s_defaultRegistryKeyLazy.Value;
 
     /// <summary>
     /// The registry key into which key material will be written.

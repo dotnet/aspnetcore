@@ -357,7 +357,7 @@ public class CircuitPersistenceManagerTest
         ServerComponentDeserializer deserializer,
         (int Id, ComponentMarkerKey Key, (Type ComponentType, Dictionary<string, object> Parameters))[] expected, byte[] rootComponents)
     {
-        var actual = JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(rootComponents, SerializerOptions);
+        var actual = JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(rootComponents, s_serializerOptions);
         Assert.NotNull(actual);
         Assert.Equal(expected.Length, actual.Count);
         foreach (var (id, key, (componentType, parameters)) in expected)
@@ -627,7 +627,7 @@ public class CircuitPersistenceManagerTest
         }
     }
 
-    private static readonly JsonSerializerOptions SerializerOptions = new()
+    private static readonly JsonSerializerOptions s_serializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,

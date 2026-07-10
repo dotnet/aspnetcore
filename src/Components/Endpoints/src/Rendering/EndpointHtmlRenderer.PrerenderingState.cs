@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
-    private static readonly object InvokedRenderModesKey = new object();
+    private static readonly object s_invokedRenderModesKey = new object();
 
     public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext)
     {
@@ -168,9 +168,9 @@ internal partial class EndpointHtmlRenderer
                 _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(mode), nameof(mode)),
             };
 
-            if (!httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
+            if (!httpContext.Items.TryGetValue(s_invokedRenderModesKey, out var result))
             {
-                httpContext.Items[InvokedRenderModesKey] = new InvokedRenderModes(currentInvocation);
+                httpContext.Items[s_invokedRenderModesKey] = new InvokedRenderModes(currentInvocation);
             }
             else
             {
@@ -193,7 +193,7 @@ internal partial class EndpointHtmlRenderer
 
     internal static InvokedRenderModes.Mode GetPersistStateRenderMode(HttpContext httpContext)
     {
-        return httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result)
+        return httpContext.Items.TryGetValue(s_invokedRenderModesKey, out var result)
             ? ((InvokedRenderModes)result!).Value
             : InvokedRenderModes.Mode.None;
     }

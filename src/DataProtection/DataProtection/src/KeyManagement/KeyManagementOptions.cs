@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 /// </summary>
 public class KeyManagementOptions
 {
-    private static readonly TimeSpan _keyPropagationWindow = TimeSpan.FromDays(2);
-    private static readonly TimeSpan _keyRingRefreshPeriod = TimeSpan.FromHours(24);
-    private static readonly TimeSpan _maxServerClockSkew = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan s_keyPropagationWindow = TimeSpan.FromDays(2);
+    private static readonly TimeSpan s_keyRingRefreshPeriod = TimeSpan.FromHours(24);
+    private static readonly TimeSpan s_maxServerClockSkew = TimeSpan.FromMinutes(5);
     private TimeSpan _newKeyLifetime = TimeSpan.FromDays(90);
 
     /// <summary>
@@ -54,7 +54,7 @@ public class KeyManagementOptions
         {
             // This value is not settable since there's a complex interaction between
             // it and the key ring refresh period.
-            return _keyPropagationWindow;
+            return s_keyPropagationWindow;
         }
     }
 
@@ -72,7 +72,7 @@ public class KeyManagementOptions
         {
             // This value is not settable since there's a complex interaction between
             // it and the key expiration safety period.
-            return _keyRingRefreshPeriod;
+            return s_keyRingRefreshPeriod;
         }
     }
 
@@ -90,7 +90,7 @@ public class KeyManagementOptions
     {
         get
         {
-            return _maxServerClockSkew;
+            return s_maxServerClockSkew;
         }
     }
 

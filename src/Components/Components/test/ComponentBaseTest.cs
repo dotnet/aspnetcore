@@ -11,7 +11,7 @@ public class ComponentBaseTest
 {
     // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
     // failures.
-    private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan s_timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
     [Fact]
     public void RunsOnInitWhenRendered()
@@ -210,7 +210,7 @@ public class ComponentBaseTest
         initTask.SetResult(true);
 
         // We need to wait here, because the continuation from SetResult needs to be scheduled.
-        @event.Wait(Timeout);
+        @event.Wait(s_timeout);
         @event.Reset();
 
         // Component should be rendered once, after set parameters

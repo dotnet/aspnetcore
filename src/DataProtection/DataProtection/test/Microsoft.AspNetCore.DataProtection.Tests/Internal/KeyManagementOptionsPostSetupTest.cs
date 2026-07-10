@@ -18,15 +18,15 @@ namespace Microsoft.AspNetCore.DataProtection.Internal;
 
 public class KeyManagementOptionsPostSetupTest
 {
-    private static readonly string keyDir = new DirectoryInfo("/testpath").FullName;
-    private static readonly XElement xElement = new("element");
+    private static readonly string s_keyDir = new DirectoryInfo("/testpath").FullName;
+    private static readonly XElement s_xElement = new("element");
 
     [Fact]
     public void ConfigureReadOnly()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(
         [
-            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, keyDir),
+            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, s_keyDir),
         ]).Build();
 
         IPostConfigureOptions<KeyManagementOptions> setup = new KeyManagementOptionsPostSetup(config, NullLoggerFactory.Instance);
@@ -35,7 +35,7 @@ public class KeyManagementOptionsPostSetupTest
 
         setup.PostConfigure(Options.DefaultName, options);
 
-        AssertReadOnly(options, keyDir);
+        AssertReadOnly(options, s_keyDir);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class KeyManagementOptionsPostSetupTest
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(
         [
-            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, keyDir),
+            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, s_keyDir),
         ]).Build();
 
         IPostConfigureOptions<KeyManagementOptions> setup = new KeyManagementOptionsPostSetup(config, NullLoggerFactory.Instance);
@@ -52,7 +52,7 @@ public class KeyManagementOptionsPostSetupTest
 
         setup.PostConfigure(Options.DefaultName + 1, options);
 
-        AssertNotReadOnly(options, keyDir);
+        AssertNotReadOnly(options, s_keyDir);
 
         Assert.True(options.AutoGenerateKeys);
     }
@@ -71,7 +71,7 @@ public class KeyManagementOptionsPostSetupTest
 
         setup.PostConfigure(Options.DefaultName, options);
 
-        AssertNotReadOnly(options, keyDir);
+        AssertNotReadOnly(options, s_keyDir);
 
         Assert.True(options.AutoGenerateKeys);
     }
@@ -81,7 +81,7 @@ public class KeyManagementOptionsPostSetupTest
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(
         [
-            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, keyDir),
+            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, s_keyDir),
         ]).Build();
 
         IPostConfigureOptions<KeyManagementOptions> setup = new KeyManagementOptionsPostSetup(config, NullLoggerFactory.Instance);
@@ -97,7 +97,7 @@ public class KeyManagementOptionsPostSetupTest
 
             setup.PostConfigure(Options.DefaultName, options);
 
-            AssertNotReadOnly(options, keyDir);
+            AssertNotReadOnly(options, s_keyDir);
 
             Assert.True(options.AutoGenerateKeys);
         }
@@ -112,7 +112,7 @@ public class KeyManagementOptionsPostSetupTest
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(
         [
-            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, keyDir),
+            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, s_keyDir),
         ]).Build();
 
         IPostConfigureOptions<KeyManagementOptions> setup = new KeyManagementOptionsPostSetup(config, NullLoggerFactory.Instance);
@@ -124,7 +124,7 @@ public class KeyManagementOptionsPostSetupTest
 
         setup.PostConfigure(Options.DefaultName, options);
 
-        AssertNotReadOnly(options, keyDir);
+        AssertNotReadOnly(options, s_keyDir);
 
         Assert.True(options.AutoGenerateKeys);
     }
@@ -140,7 +140,7 @@ public class KeyManagementOptionsPostSetupTest
 
         setup.PostConfigure(Options.DefaultName, options);
 
-        AssertNotReadOnly(options, keyDir);
+        AssertNotReadOnly(options, s_keyDir);
 
         Assert.True(options.AutoGenerateKeys);
     }
@@ -154,7 +154,7 @@ public class KeyManagementOptionsPostSetupTest
 
         setup.PostConfigure(Options.DefaultName, options);
 
-        AssertNotReadOnly(options, keyDir);
+        AssertNotReadOnly(options, s_keyDir);
 
         Assert.True(options.AutoGenerateKeys);
     }
@@ -171,11 +171,11 @@ public class KeyManagementOptionsPostSetupTest
         Assert.Equal(keyDir, repository.Directory.FullName);
 
         // Effect 3: No writing
-        Assert.Throws<InvalidOperationException>(() => repository.StoreElement(xElement, friendlyName: null));
+        Assert.Throws<InvalidOperationException>(() => repository.StoreElement(s_xElement, friendlyName: null));
 
         // Effect 4: No key encryption
         Assert.NotNull(options.XmlEncryptor);
-        Assert.Throws<InvalidOperationException>(() => options.XmlEncryptor.Encrypt(xElement));
+        Assert.Throws<InvalidOperationException>(() => options.XmlEncryptor.Encrypt(s_xElement));
     }
 
     private static void AssertNotReadOnly(KeyManagementOptions options, string keyDir)
@@ -190,14 +190,14 @@ public class KeyManagementOptionsPostSetupTest
             Assert.NotEqual(keyDir, (repository as FileSystemXmlRepository)?.Directory.FullName);
 
             // Missing effect 3: No writing
-            repository.StoreElement(xElement, friendlyName: null);
+            repository.StoreElement(s_xElement, friendlyName: null);
         }
 
         var encryptor = options.XmlEncryptor;
         if (encryptor is not null)
         {
             // Missing effect 4: No key encryption
-            options.XmlEncryptor.Encrypt(xElement);
+            options.XmlEncryptor.Encrypt(s_xElement);
         }
     }
 }

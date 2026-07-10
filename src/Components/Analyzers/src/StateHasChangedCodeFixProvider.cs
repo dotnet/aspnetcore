@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(StateHasChangedCodeFixProvider)), Shared]
 public class StateHasChangedCodeFixProvider : CodeFixProvider
 {
-    private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_FixTitle), Resources.ResourceManager, typeof(Resources));
+    private static readonly LocalizableString s_title = new LocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_FixTitle), Resources.ResourceManager, typeof(Resources));
 
     public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id);
 
@@ -48,7 +48,7 @@ public class StateHasChangedCodeFixProvider : CodeFixProvider
             return;
         }
 
-        var title = Title.ToString(CultureInfo.CurrentCulture);
+        var title = s_title.ToString(CultureInfo.CurrentCulture);
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: title,

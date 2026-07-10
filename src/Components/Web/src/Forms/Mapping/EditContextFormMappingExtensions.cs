@@ -7,14 +7,14 @@ namespace Microsoft.AspNetCore.Components.Forms.Mapping;
 
 internal static class EditContextFormMappingExtensions
 {
-    private static readonly object _key = new();
+    private static readonly object s_key = new();
 
     public static IDisposable EnableFormMappingContextExtensions(this EditContext context, FormMappingContext mappingContext)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
         ArgumentNullException.ThrowIfNull(mappingContext, nameof(mappingContext));
 
-        context.Properties[_key] = mappingContext;
+        context.Properties[s_key] = mappingContext;
 
         return new MappingContextEventSubscriptions(context, mappingContext);
     }
@@ -24,7 +24,7 @@ internal static class EditContextFormMappingExtensions
         ArgumentNullException.ThrowIfNull(context, nameof(context));
         ArgumentNullException.ThrowIfNull(fieldName, nameof(fieldName));
 
-        if (context.Properties.TryGetValue(_key, out var result) && result is FormMappingContext mappingContext)
+        if (context.Properties.TryGetValue(s_key, out var result) && result is FormMappingContext mappingContext)
         {
             return mappingContext.GetAttemptedValue(fieldName);
         }

@@ -9,14 +9,14 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 internal static class ClipboardEventArgsReader
 {
-    private static readonly JsonEncodedText TypeKey = JsonEncodedText.Encode("type");
+    private static readonly JsonEncodedText s_typeKey = JsonEncodedText.Encode("type");
 
     internal static ClipboardEventArgs Read(JsonElement jsonElement)
     {
         var eventArgs = new ClipboardEventArgs();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(TypeKey.EncodedUtf8Bytes))
+            if (property.NameEquals(s_typeKey.EncodedUtf8Bytes))
             {
                 eventArgs.Type = property.Value.GetString()!;
             }

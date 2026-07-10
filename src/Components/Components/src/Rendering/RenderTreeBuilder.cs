@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// </summary>
 public sealed class RenderTreeBuilder : IDisposable
 {
-    private static readonly object BoxedTrue = true;
-    private static readonly object BoxedFalse = false;
+    private static readonly object s_boxedTrue = true;
+    private static readonly object s_boxedFalse = false;
 
     // On WebAssembly, bool element attributes must be stored as strings because the JS
     // shared memory render batch reader cannot distinguish boxed bools from strings.
-    private static readonly object ElementBoolTrueValue = OperatingSystem.IsBrowser() ? string.Empty : BoxedTrue;
-    private static readonly string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
+    private static readonly object s_elementBoolTrueValue = OperatingSystem.IsBrowser() ? string.Empty : s_boxedTrue;
+    private static readonly string s_componentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
     private readonly RenderTreeFrameArrayBuilder _entries = new RenderTreeFrameArrayBuilder();
     private readonly Stack<int> _openElementIndices = new Stack<int>();
@@ -174,7 +174,7 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
-        _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
+        _entries.AppendAttribute(sequence, name, s_elementBoolTrueValue);
     }
 
     /// <summary>
@@ -194,13 +194,13 @@ public sealed class RenderTreeBuilder : IDisposable
         AssertCanAddAttribute();
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
-            _entries.AppendAttribute(sequence, name, value ? BoxedTrue : BoxedFalse);
+            _entries.AppendAttribute(sequence, name, value ? s_boxedTrue : s_boxedFalse);
         }
         else if (value)
         {
             // Don't add 'false' attributes for elements. We want booleans to map to the presence
             // or absence of an attribute, and false => "False" which isn't falsy in js.
-            _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
+            _entries.AppendAttribute(sequence, name, s_elementBoolTrueValue);
         }
         else
         {
@@ -370,7 +370,7 @@ public sealed class RenderTreeBuilder : IDisposable
             {
                 if (boolValue)
                 {
-                    _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
+                    _entries.AppendAttribute(sequence, name, s_elementBoolTrueValue);
                 }
                 else
                 {
@@ -614,13 +614,13 @@ public sealed class RenderTreeBuilder : IDisposable
         var parentFrameIndex = GetCurrentParentFrameIndex();
         if (!parentFrameIndex.HasValue)
         {
-            throw new InvalidOperationException(ComponentReferenceCaptureInvalidParentMessage);
+            throw new InvalidOperationException(s_componentReferenceCaptureInvalidParentMessage);
         }
 
         var parentFrameIndexValue = parentFrameIndex.Value;
         if (_entries.Buffer[parentFrameIndexValue].FrameTypeField != RenderTreeFrameType.Component)
         {
-            throw new InvalidOperationException(ComponentReferenceCaptureInvalidParentMessage);
+            throw new InvalidOperationException(s_componentReferenceCaptureInvalidParentMessage);
         }
 
         _entries.AppendComponentReferenceCapture(sequence, componentReferenceCaptureAction, parentFrameIndexValue);

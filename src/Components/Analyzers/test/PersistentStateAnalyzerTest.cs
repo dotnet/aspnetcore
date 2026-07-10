@@ -11,7 +11,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new PersistentStateAnalyzer();
 
-    private static readonly string TestDeclarations = $@"
+    private static readonly string s_testDeclarations = $@"
     namespace {typeof(ParameterAttribute).Namespace}
     {{
         public class {typeof(ParameterAttribute).Name} : System.Attribute
@@ -61,7 +61,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -77,7 +77,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             [PersistentState] public string MyProperty {{ get; set; }}
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -93,7 +93,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             [PersistentState] public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -109,7 +109,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             [PersistentState] public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -141,7 +141,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             public string Value {{ get; set; }} = """";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -168,7 +168,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             [PersistentState] public string MyProperty {{ get; set; }} = null;
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -184,7 +184,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             [PersistentState] public string MyProperty {{ get; set; }} = null!;
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -200,7 +200,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             [PersistentState] public string MyProperty {{ get; set; }} = default;
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -216,7 +216,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             [PersistentState] public string MyProperty {{ get; set; }} = default!;
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -236,7 +236,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
         {{
             [PersistentState] public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -264,7 +264,7 @@ public class PersistentStateAnalyzerTest : DiagnosticVerifier
             [PersistentState(RestoreBehavior = RestoreBehavior.SkipInitialValue, AllowUpdates = true)] 
             public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         var expected = new DiagnosticResult
         {

@@ -186,7 +186,7 @@ public class EditContextAsyncTest
         Assert.False(editContext.IsValidationFaulted(field));
 
         formGate.SetResult();
-        Assert.True(await validateTask.WaitAsync(DefaultTimeout));
+        Assert.True(await validateTask.WaitAsync(s_defaultTimeout));
     });
 
     [Fact]
@@ -873,7 +873,7 @@ public class EditContextAsyncTest
         Assert.True(editContext.IsValidationPending());
 
         gate.SetResult();
-        Assert.True(await task.WaitAsync(DefaultTimeout));
+        Assert.True(await task.WaitAsync(s_defaultTimeout));
         Assert.False(editContext.IsValidationPending());
     });
 
@@ -937,7 +937,7 @@ public class EditContextAsyncTest
         Assert.DoesNotContain(observed, item => item.Pending && !item.Faulted);
 
         gate.SetResult();
-        Assert.True(await task.WaitAsync(DefaultTimeout));
+        Assert.True(await task.WaitAsync(s_defaultTimeout));
         Assert.False(editContext.IsValidationFaulted());
     });
 
@@ -1183,7 +1183,7 @@ public class EditContextAsyncTest
         var start = DateTime.UtcNow;
         while (!condition())
         {
-            if (DateTime.UtcNow - start > DefaultTimeout)
+            if (DateTime.UtcNow - start > s_defaultTimeout)
             {
                 throw new TimeoutException("The expected condition was not reached before the timeout.");
             }
@@ -1202,7 +1202,7 @@ public class EditContextAsyncTest
     private static Task RunOnDispatcher(Func<Task> body)
         => Dispatcher.CreateDefault().InvokeAsync(body);
 
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan s_defaultTimeout = TimeSpan.FromSeconds(5);
 
     private sealed class TestModel
     {

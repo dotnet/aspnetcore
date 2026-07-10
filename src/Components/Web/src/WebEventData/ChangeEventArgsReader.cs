@@ -9,14 +9,14 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 internal static class ChangeEventArgsReader
 {
-    private static readonly JsonEncodedText ValueKey = JsonEncodedText.Encode("value");
+    private static readonly JsonEncodedText s_valueKey = JsonEncodedText.Encode("value");
 
     internal static ChangeEventArgs Read(JsonElement jsonElement)
     {
         var changeArgs = new ChangeEventArgs();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(ValueKey.EncodedUtf8Bytes))
+            if (property.NameEquals(s_valueKey.EncodedUtf8Bytes))
             {
                 var value = property.Value;
                 switch (value.ValueKind)

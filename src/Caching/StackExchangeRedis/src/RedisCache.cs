@@ -31,12 +31,12 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
     private const string DataKey = "data";
 
     // combined keys - same hash keys fetched constantly; avoid allocating an array each time
-    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpirationData = [AbsoluteExpirationKey, SlidingExpirationKey, DataKey];
-    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpiration = [AbsoluteExpirationKey, SlidingExpirationKey];
+    private static readonly RedisValue[] s_hashMembersAbsoluteExpirationSlidingExpirationData = [AbsoluteExpirationKey, SlidingExpirationKey, DataKey];
+    private static readonly RedisValue[] s_hashMembersAbsoluteExpirationSlidingExpiration = [AbsoluteExpirationKey, SlidingExpirationKey];
 
     private static RedisValue[] GetHashFields(bool getData) => getData
-        ? _hashMembersAbsoluteExpirationSlidingExpirationData
-        : _hashMembersAbsoluteExpirationSlidingExpiration;
+        ? s_hashMembersAbsoluteExpirationSlidingExpirationData
+        : s_hashMembersAbsoluteExpirationSlidingExpiration;
 
     private const long NotPresent = -1;
 

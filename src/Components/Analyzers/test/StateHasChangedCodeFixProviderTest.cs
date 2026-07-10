@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test;
 
 public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
 {
-    private static readonly string ComponentDeclarations = @"
+    private static readonly string s_componentDeclarations = @"
     namespace Microsoft.AspNetCore.Components
     {
         using System;
@@ -76,7 +76,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         var newSource = @"
     namespace ConsoleApplication1
@@ -90,7 +90,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
                 
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }
@@ -115,7 +115,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         var newSource = @"
     namespace ConsoleApplication1
@@ -134,7 +134,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
                 
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }
@@ -151,7 +151,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
         {
             protected override void OnInitialized() => StateHasChanged();
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         var newSource = @"
     namespace ConsoleApplication1
@@ -162,7 +162,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
         {
             
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }
@@ -185,7 +185,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
                 var value = 1;
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         var newSource = @"
     namespace ConsoleApplication1
@@ -202,7 +202,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
                 var value = 1;
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }
@@ -219,7 +219,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
         {
             protected override void OnParametersSet() => StateHasChanged();
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         var newSource = @"
     namespace ConsoleApplication1
@@ -230,7 +230,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
         {
             
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }
@@ -257,7 +257,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         var newSource = @"
     namespace ConsoleApplication1
@@ -278,7 +278,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
                 
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }

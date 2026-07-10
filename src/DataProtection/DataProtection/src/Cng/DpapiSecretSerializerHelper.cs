@@ -21,7 +21,7 @@ internal static unsafe class DpapiSecretSerializerHelper
     private const uint CRYPTPROTECT_UI_FORBIDDEN = 0x1;
     private const uint CRYPTPROTECT_LOCAL_MACHINE = 0x4;
 
-    private static readonly byte[] _purpose = Encoding.UTF8.GetBytes("DPAPI-Protected Secret");
+    private static readonly byte[] s_purpose = Encoding.UTF8.GetBytes("DPAPI-Protected Secret");
 
     // Probes to see if protecting to the current Windows user account is available.
     // In theory this should never fail if the user profile is available, so it's more a defense-in-depth check.
@@ -50,9 +50,9 @@ internal static unsafe class DpapiSecretSerializerHelper
             try
             {
                 secret.WriteSecretIntoBuffer(new ArraySegment<byte>(plaintextSecret));
-                fixed (byte* pbPurpose = _purpose)
+                fixed (byte* pbPurpose = s_purpose)
                 {
-                    return ProtectWithDpapiCore(pbPlaintextSecret, (uint)plaintextSecret.Length, pbPurpose, (uint)_purpose.Length, fLocalMachine: protectToLocalMachine);
+                    return ProtectWithDpapiCore(pbPlaintextSecret, (uint)plaintextSecret.Length, pbPurpose, (uint)s_purpose.Length, fLocalMachine: protectToLocalMachine);
                 }
             }
             finally
@@ -199,9 +199,9 @@ internal static unsafe class DpapiSecretSerializerHelper
 
         fixed (byte* pbProtectedSecret = protectedSecret)
         {
-            fixed (byte* pbPurpose = _purpose)
+            fixed (byte* pbPurpose = s_purpose)
             {
-                return UnprotectWithDpapiCore(pbProtectedSecret, (uint)protectedSecret.Length, pbPurpose, (uint)_purpose.Length);
+                return UnprotectWithDpapiCore(pbProtectedSecret, (uint)protectedSecret.Length, pbPurpose, (uint)s_purpose.Length);
             }
         }
     }

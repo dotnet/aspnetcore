@@ -40,12 +40,12 @@ public class GridSortTest
 
     private class MismatchedTupleColumnWithTitleComponent : ComponentBase
     {
-        private static readonly WeatherForecast[] _items = [];
+        private static readonly WeatherForecast[] s_items = [];
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<QuickGrid<WeatherForecast>>(0);
-            builder.AddAttribute(1, "Items", _items.AsQueryable());
+            builder.AddAttribute(1, "Items", s_items.AsQueryable());
             builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
             {
                 b.OpenComponent<TemplateColumn<(WeatherForecast, bool)>>(0);
@@ -58,12 +58,12 @@ public class GridSortTest
 
     private class MismatchedTupleColumnWithoutTitleComponent : ComponentBase
     {
-        private static readonly WeatherForecast[] _items = [];
+        private static readonly WeatherForecast[] s_items = [];
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<QuickGrid<WeatherForecast>>(0);
-            builder.AddAttribute(1, "Items", _items.AsQueryable());
+            builder.AddAttribute(1, "Items", s_items.AsQueryable());
             builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
             {
                 b.OpenComponent<TemplateColumn<(WeatherForecast, bool)>>(0);
@@ -75,12 +75,12 @@ public class GridSortTest
 
     private class MismatchedPropertyColumnComponent : ComponentBase
     {
-        private static readonly WeatherForecast[] _items = [];
+        private static readonly WeatherForecast[] s_items = [];
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<QuickGrid<WeatherForecast>>(0);
-            builder.AddAttribute(1, "Items", _items.AsQueryable());
+            builder.AddAttribute(1, "Items", s_items.AsQueryable());
             builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
             {
                 b.OpenComponent<PropertyColumn<Employee, string>>(0);

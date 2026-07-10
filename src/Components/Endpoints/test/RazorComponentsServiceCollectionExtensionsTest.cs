@@ -19,7 +19,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
     // (one configure action for synchronous validation and one for asynchronous validation), so this
     // service type is expected to be registered more than once. StartupValidatorOptions is internal to
     // Microsoft.Extensions.Options, so it is resolved via reflection.
-    private static readonly Type StartupValidatorConfigureOptionsType =
+    private static readonly Type s_startupValidatorConfigureOptionsType =
         typeof(IConfigureOptions<>).MakeGenericType(
             typeof(IConfigureOptions<>).Assembly.GetType("Microsoft.Extensions.Options.StartupValidatorOptions", throwOnError: true)!);
 
@@ -109,7 +109,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
                     typeof(ResourceCollectionProvider),
                     typeof(AntiforgeryStateProvider),
                 },
-                [StartupValidatorConfigureOptionsType] = Array.Empty<Type>(),
+                [s_startupValidatorConfigureOptionsType] = Array.Empty<Type>(),
             };
         }
     }

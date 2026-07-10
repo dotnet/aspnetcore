@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 /// </summary>
 public sealed class ClientValidationRule
 {
-    private static readonly IReadOnlyDictionary<string, object?> EmptyParameters = ReadOnlyDictionary<string, object?>.Empty;
+    private static readonly IReadOnlyDictionary<string, object?> s_emptyParameters = ReadOnlyDictionary<string, object?>.Empty;
 
     private Dictionary<string, object?>? _parameters;
 
@@ -46,7 +46,7 @@ public sealed class ClientValidationRule
     /// <summary>
     /// Gets the parameters associated with this rule, keyed by parameter name.
     /// </summary>
-    public IReadOnlyDictionary<string, object?> Parameters => _parameters ?? EmptyParameters;
+    public IReadOnlyDictionary<string, object?> Parameters => _parameters ?? s_emptyParameters;
 
     /// <summary>
     /// Adds or replaces a parameter on the rule.

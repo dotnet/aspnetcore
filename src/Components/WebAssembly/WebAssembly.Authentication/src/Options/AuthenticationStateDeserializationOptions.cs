@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// </summary>
 public sealed class AuthenticationStateDeserializationOptions
 {
-    private static readonly Task<AuthenticationState> _defaultUnauthenticatedStateTask =
+    private static readonly Task<AuthenticationState> s_defaultUnauthenticatedStateTask =
         Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
 
     /// <summary>
@@ -26,7 +26,7 @@ public sealed class AuthenticationStateDeserializationOptions
     {
         if (authenticationStateData is null)
         {
-            return _defaultUnauthenticatedStateTask;
+            return s_defaultUnauthenticatedStateTask;
         }
 
         return Task.FromResult(

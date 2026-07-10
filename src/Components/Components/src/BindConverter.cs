@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Components;
 // to allocate.
 public static class BindConverter
 {
-    private static readonly object BoxedTrue = true;
-    private static readonly object BoxedFalse = false;
+    private static readonly object s_boxedTrue = true;
+    private static readonly object s_boxedFalse = false;
 
     private delegate object? BindFormatter<T>(T value, CultureInfo? culture);
 
@@ -66,7 +66,7 @@ public static class BindConverter
     {
         // Formatting for bool is special-cased. We need to produce a boolean value for conditional attributes
         // to work.
-        return value ? BoxedTrue : BoxedFalse;
+        return value ? s_boxedTrue : s_boxedFalse;
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ public static class BindConverter
     {
         // Formatting for bool is special-cased. We need to produce a boolean value for conditional attributes
         // to work.
-        return value == null ? null : value.Value ? BoxedTrue : BoxedFalse;
+        return value == null ? null : value.Value ? s_boxedTrue : s_boxedFalse;
     }
 
     /// <summary>
@@ -1666,13 +1666,13 @@ public static class BindConverter
 
     private static class FormatterDelegateCache
     {
-        private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
+        private static readonly ConcurrentDictionary<Type, Delegate> s_cache = new ConcurrentDictionary<Type, Delegate>();
 
         static FormatterDelegateCache()
         {
             if (HotReloadManager.IsSupported)
             {
-                HotReloadManager.Default.OnDeltaApplied += _cache.Clear;
+                HotReloadManager.Default.OnDeltaApplied += s_cache.Clear;
             }
         }
 
@@ -1692,7 +1692,7 @@ public static class BindConverter
             Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public static BindFormatter<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
-            if (!_cache.TryGetValue(typeof(T), out var formatter))
+            if (!s_cache.TryGetValue(typeof(T), out var formatter))
             {
                 // We need to replicate all of the primitive cases that we handle here so that they will behave the same way.
                 // The result will be cached.
@@ -1803,7 +1803,7 @@ public static class BindConverter
                     formatter = MakeTypeConverterFormatter<T>();
                 }
 
-                _cache.TryAdd(typeof(T), formatter);
+                s_cache.TryAdd(typeof(T), formatter);
             }
 
             return (BindFormatter<T>)formatter;
@@ -1863,13 +1863,13 @@ public static class BindConverter
 
     internal static class ParserDelegateCache
     {
-        private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
+        private static readonly ConcurrentDictionary<Type, Delegate> s_cache = new ConcurrentDictionary<Type, Delegate>();
 
         static ParserDelegateCache()
         {
             if (HotReloadManager.IsSupported)
             {
-                HotReloadManager.Default.OnDeltaApplied += _cache.Clear;
+                HotReloadManager.Default.OnDeltaApplied += s_cache.Clear;
             }
         }
 
@@ -1891,7 +1891,7 @@ public static class BindConverter
             Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public static BindParser<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
-            if (!_cache.TryGetValue(typeof(T), out var parser))
+            if (!s_cache.TryGetValue(typeof(T), out var parser))
             {
                 // We need to replicate all of the primitive cases that we handle here so that they will behave the same way.
                 // The result will be cached.
@@ -2018,7 +2018,7 @@ public static class BindConverter
                     parser = MakeTypeConverterConverter<T>();
                 }
 
-                _cache.TryAdd(typeof(T), parser);
+                s_cache.TryAdd(typeof(T), parser);
             }
 
             return (BindParser<T>)parser;

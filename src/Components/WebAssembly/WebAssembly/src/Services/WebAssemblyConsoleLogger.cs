@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
 {
     private const string _loglevelPadding = ": ";
-    private static readonly string _messagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + _loglevelPadding.Length);
-    private static readonly string _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
-    private static readonly StringBuilder _logBuilder = new StringBuilder();
+    private static readonly string s_messagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + _loglevelPadding.Length);
+    private static readonly string s_newLineWithMessagePadding = Environment.NewLine + s_messagePadding;
+    private static readonly StringBuilder s_logBuilder = new StringBuilder();
 
     private readonly string _name;
     private readonly WebAssemblyJSRuntime _jsRuntime;
@@ -60,12 +60,12 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
 
     private void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
     {
-        lock (_logBuilder)
+        lock (s_logBuilder)
         {
             try
             {
-                CreateDefaultLogMessage(_logBuilder, logLevel, logName, eventId, message, exception);
-                var formattedMessage = _logBuilder.ToString();
+                CreateDefaultLogMessage(s_logBuilder, logLevel, logName, eventId, message, exception);
+                var formattedMessage = s_logBuilder.ToString();
 
                 switch (logLevel)
                 {
@@ -99,7 +99,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
             }
             finally
             {
-                _logBuilder.Clear();
+                s_logBuilder.Clear();
             }
         }
     }
@@ -117,11 +117,11 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
         {
             // message
             logBuilder.AppendLine();
-            logBuilder.Append(_messagePadding);
+            logBuilder.Append(s_messagePadding);
 
             var len = logBuilder.Length;
             logBuilder.Append(message);
-            logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
+            logBuilder.Replace(Environment.NewLine, s_newLineWithMessagePadding, len, message.Length);
         }
 
         // Example:

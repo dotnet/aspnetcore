@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class EndpointComponentState : ComponentState
 {
-    private static readonly ConcurrentDictionary<Type, StreamRenderingAttribute?> _streamRenderingAttributeByComponentType = new();
+    private static readonly ConcurrentDictionary<Type, StreamRenderingAttribute?> s_streamRenderingAttributeByComponentType = new();
 
     static EndpointComponentState()
     {
         if (HotReloadManager.IsSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += _streamRenderingAttributeByComponentType.Clear;
+            HotReloadManager.Default.OnDeltaApplied += s_streamRenderingAttributeByComponentType.Clear;
         }
     }
 
@@ -31,7 +31,7 @@ internal sealed class EndpointComponentState : ComponentState
     {
         _renderer = (EndpointHtmlRenderer)renderer;
 
-        var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
+        var streamRenderingAttribute = s_streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
             type => type.GetCustomAttribute<StreamRenderingAttribute>());
 
         if (streamRenderingAttribute is not null)
@@ -66,5 +66,5 @@ internal sealed class EndpointComponentState : ComponentState
     /// <summary>
     /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
     /// </summary>
-    public static void UpdateApplication(Type[]? _) => _streamRenderingAttributeByComponentType.Clear();
+    public static void UpdateApplication(Type[]? _) => s_streamRenderingAttributeByComponentType.Clear();
 }

@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 
 public partial class StaticHtmlRenderer
 {
-    private static readonly HashSet<string> SelfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> s_selfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"
     };
 
-    private static readonly CascadingParameterInfo _findFormMappingContext = new CascadingParameterInfo(
+    private static readonly CascadingParameterInfo s_findFormMappingContext = new CascadingParameterInfo(
         new CascadingParameterAttribute(),
         string.Empty,
         typeof(FormMappingContext));
@@ -164,7 +164,7 @@ public partial class StaticHtmlRenderer
         }
         else
         {
-            if (SelfClosingElements.Contains(frame.ElementName))
+            if (s_selfClosingElements.Contains(frame.ElementName))
             {
                 output.Write(" />");
             }
@@ -248,11 +248,11 @@ public partial class StaticHtmlRenderer
     {
         var componentState = GetComponentState(forComponentId);
         var supplier = CascadingParameterState.GetMatchingCascadingValueSupplier(
-            in _findFormMappingContext,
+            in s_findFormMappingContext,
             componentState.Renderer,
             componentState);
 
-        return (FormMappingContext?)supplier?.GetCurrentValue(null, _findFormMappingContext);
+        return (FormMappingContext?)supplier?.GetCurrentValue(null, s_findFormMappingContext);
     }
 
     private static bool TryFindEnclosingElementFrame(ArrayRange<RenderTreeFrame> frames, int frameIndex, out int result)

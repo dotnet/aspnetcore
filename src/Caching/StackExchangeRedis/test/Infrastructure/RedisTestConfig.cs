@@ -17,8 +17,8 @@ public static class RedisTestConfig
     internal const string UserProfileRedisNugetPackageServerPath = @".dotnet\packages\Redis-64\2.8.9";
     internal const string CIMachineRedisNugetPackageServerPath = @"Redis-64\2.8.9";
 
-    private static volatile Process _redisServerProcess; // null implies if server exists it was not started by this code
-    private static readonly object _redisServerProcessLock = new object();
+    private static volatile Process s_redisServerProcess; // null implies if server exists it was not started by this code
+    private static readonly object s_redisServerProcessLock = new object();
     public static int RedisPort = 6379; // override default so that do not interfere with anyone else's server
 
     public static IDistributedCache CreateCacheInstance(string instanceName)
@@ -49,8 +49,8 @@ public static class RedisTestConfig
     private static bool AlreadyOwnRunningRedisServer()
     {
         // Does RedisTestConfig already know about a running server?
-        if (_redisServerProcess != null
-            && !_redisServerProcess.HasExited)
+        if (s_redisServerProcess != null
+            && !s_redisServerProcess.HasExited)
         {
             return true;
         }
@@ -78,12 +78,12 @@ public static class RedisTestConfig
 
         if (CanFindExistingRedisServer())
         {
-            lock (_redisServerProcessLock)
+            lock (s_redisServerProcessLock)
             {
-                if (_redisServerProcess != null)
+                if (s_redisServerProcess != null)
                 {
-                    _redisServerProcess.Kill();
-                    _redisServerProcess = null;
+                    s_redisServerProcess.Kill();
+                    s_redisServerProcess = null;
                 }
             }
         }
@@ -94,16 +94,16 @@ public static class RedisTestConfig
         var process = Process.GetProcessesByName(FunctionalTestsRedisServerExeName).SingleOrDefault();
         if (process == null || process.HasExited)
         {
-            lock (_redisServerProcessLock)
+            lock (s_redisServerProcessLock)
             {
-                _redisServerProcess = null;
+                s_redisServerProcess = null;
             }
             return false;
         }
 
-        lock (_redisServerProcessLock)
+        lock (s_redisServerProcessLock)
         {
-            _redisServerProcess = process;
+            s_redisServerProcess = process;
         }
         return true;
     }
@@ -145,9 +145,9 @@ public static class RedisTestConfig
 
     private static bool RunServer(string serverExePath)
     {
-        if (_redisServerProcess == null)
+        if (s_redisServerProcess == null)
         {
-            lock (_redisServerProcessLock)
+            lock (s_redisServerProcessLock)
             {
                 // copy the redis-server.exe to a directory under the user's TMP path under a different
                 // name - so we know the difference between a redis-server started by us and a redis-server
@@ -160,7 +160,7 @@ public static class RedisTestConfig
                     File.Copy(serverExePath, tempRedisServerFullPath);
                 }
 
-                if (_redisServerProcess == null)
+                if (s_redisServerProcess == null)
                 {
                     var serverArgs = "--port " + RedisPort + " --maxheap 512MB";
                     var processInfo = new ProcessStartInfo
@@ -176,15 +176,15 @@ public static class RedisTestConfig
                     };
                     try
                     {
-                        _redisServerProcess = Process.Start(processInfo);
+                        s_redisServerProcess = Process.Start(processInfo);
                         Thread.Sleep(3000); // to give server time to initialize
 
-                        if (_redisServerProcess.HasExited)
+                        if (s_redisServerProcess.HasExited)
                         {
                             throw new Exception("Could not start Redis Server at path "
                                                 + tempRedisServerFullPath + " with Arguments '" + serverArgs + "', working dir = " + tempPath + Environment.NewLine
-                                                + _redisServerProcess.StandardError.ReadToEnd() + Environment.NewLine
-                                                + _redisServerProcess.StandardOutput.ReadToEnd());
+                                                + s_redisServerProcess.StandardError.ReadToEnd() + Environment.NewLine
+                                                + s_redisServerProcess.StandardOutput.ReadToEnd());
                         }
                     }
                     catch (Exception e)
@@ -193,7 +193,7 @@ public static class RedisTestConfig
                                             + tempRedisServerFullPath + " with Arguments '" + serverArgs + "', working dir = " + tempPath, e);
                     }
 
-                    if (_redisServerProcess == null)
+                    if (s_redisServerProcess == null)
                     {
                         throw new Exception("Got null process trying to  start Redis Server at path "
                                             + tempRedisServerFullPath + " with Arguments '" + serverArgs + "', working dir = " + tempPath);

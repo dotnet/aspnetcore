@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 public class NavLink : ComponentBase, IDisposable
 {
     private const string EnableMatchAllForQueryStringAndFragmentSwitchKey = "Microsoft.AspNetCore.Components.Routing.NavLink.EnableMatchAllForQueryStringAndFragment";
-    private static readonly bool _enableMatchAllForQueryStringAndFragment = AppContext.TryGetSwitch(EnableMatchAllForQueryStringAndFragmentSwitchKey, out var switchValue) && switchValue;
+    private static readonly bool s_enableMatchAllForQueryStringAndFragment = AppContext.TryGetSwitch(EnableMatchAllForQueryStringAndFragmentSwitchKey, out var switchValue) && switchValue;
 
     private const string DefaultActiveClass = "active";
 
@@ -151,7 +151,7 @@ public class NavLink : ComponentBase, IDisposable
             return true;
         }
 
-        if (_enableMatchAllForQueryStringAndFragment || Match != NavLinkMatch.All)
+        if (s_enableMatchAllForQueryStringAndFragment || Match != NavLinkMatch.All)
         {
             return false;
         }
@@ -197,11 +197,11 @@ public class NavLink : ComponentBase, IDisposable
         return uri.Slice(0, minPos);
     }
 
-    private static readonly CaseInsensitiveCharComparer CaseInsensitiveComparer = new CaseInsensitiveCharComparer();
+    private static readonly CaseInsensitiveCharComparer s_caseInsensitiveComparer = new CaseInsensitiveCharComparer();
 
     private static bool EqualsHrefExactlyOrIfTrailingSlashAdded(ReadOnlySpan<char> currentUriAbsolute, ReadOnlySpan<char> hrefAbsolute)
     {
-        if (currentUriAbsolute.SequenceEqual(hrefAbsolute, CaseInsensitiveComparer))
+        if (currentUriAbsolute.SequenceEqual(hrefAbsolute, s_caseInsensitiveComparer))
         {
             return true;
         }
@@ -217,7 +217,7 @@ public class NavLink : ComponentBase, IDisposable
             // for http://host/vdir as they do for host://host/vdir/ as it's no
             // good to display a blank page in that case.
             if (hrefAbsolute[hrefAbsolute.Length - 1] == '/' &&
-                currentUriAbsolute.SequenceEqual(hrefAbsolute.Slice(0, hrefAbsolute.Length - 1), CaseInsensitiveComparer))
+                currentUriAbsolute.SequenceEqual(hrefAbsolute.Slice(0, hrefAbsolute.Length - 1), s_caseInsensitiveComparer))
             {
                 return true;
             }

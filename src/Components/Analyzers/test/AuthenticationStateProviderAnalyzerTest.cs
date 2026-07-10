@@ -11,7 +11,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new AuthenticationStateProviderAnalyzer();
 
-    private static readonly string TestDeclarations = @"
+    private static readonly string s_testDeclarations = @"
     namespace System.Security.Claims
     {
         public class ClaimsPrincipal { }
@@ -69,7 +69,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 _provider.AuthenticationStateChanged -= OnAuthStateChanged;
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -91,7 +91,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 _provider = provider;
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -119,7 +119,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 var state = await _provider.GetAuthenticationStateAsync();
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -169,7 +169,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 var state = await _provider.GetAuthenticationStateAsync();
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -221,7 +221,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 _provider.AuthenticationStateChanged -= OnAuthStateChanged;
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -249,7 +249,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 _name = name;
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -286,7 +286,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 Provider.AuthenticationStateChanged -= OnAuthStateChanged;
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -319,7 +319,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 var state = await _provider.GetAuthenticationStateAsync();
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -364,7 +364,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
             {
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -399,7 +399,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 var state = await Provider.GetAuthenticationStateAsync();
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -446,7 +446,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
             {
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -483,7 +483,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 var state = await _provider2.GetAuthenticationStateAsync();
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -532,7 +532,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
             {
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -578,7 +578,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
                 var state = await Provider.GetAuthenticationStateAsync();
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -636,7 +636,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
             {
             }
         }
-    }" + TestDeclarations;
+    }" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }

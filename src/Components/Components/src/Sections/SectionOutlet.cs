@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Sections;
 /// </summary>
 public sealed class SectionOutlet : IComponent, IDisposable
 {
-    private static readonly RenderFragment _emptyRenderFragment = _ => { };
+    private static readonly RenderFragment s_emptyRenderFragment = _ => { };
     private object? _subscribedIdentifier;
     private RenderHandle _renderHandle;
     private SectionRegistry _registry = default!;
@@ -96,7 +96,7 @@ public sealed class SectionOutlet : IComponent, IDisposable
 
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var fragment = _currentContentProvider?.ChildContent ?? _emptyRenderFragment;
+        var fragment = _currentContentProvider?.ChildContent ?? s_emptyRenderFragment;
 
         builder.OpenComponent<SectionOutletContentRenderer>(0);
         builder.SetKey(fragment);

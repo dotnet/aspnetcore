@@ -14,10 +14,10 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
     // Do not change. This must match all versions of the server-side AuthenticationStateSerializer.PersistenceKey.
     private const string PersistenceKey = $"__internal__{nameof(AuthenticationState)}";
 
-    private static readonly Task<AuthenticationState> _defaultUnauthenticatedTask =
+    private static readonly Task<AuthenticationState> s_defaultUnauthenticatedTask =
         Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
 
-    private readonly Task<AuthenticationState> _authenticationStateTask = _defaultUnauthenticatedTask;
+    private readonly Task<AuthenticationState> _authenticationStateTask = s_defaultUnauthenticatedTask;
 
     [UnconditionalSuppressMessage(
         "Trimming",

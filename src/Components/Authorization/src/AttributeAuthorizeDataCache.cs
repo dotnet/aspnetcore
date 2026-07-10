@@ -17,16 +17,16 @@ internal static class AttributeAuthorizeDataCache
         }
     }
 
-    private static readonly ConcurrentDictionary<Type, IAuthorizeData[]?> _cache = new();
+    private static readonly ConcurrentDictionary<Type, IAuthorizeData[]?> s_cache = new();
 
-    private static void ClearCache() => _cache.Clear();
+    private static void ClearCache() => s_cache.Clear();
 
     public static IAuthorizeData[]? GetAuthorizeDataForType(Type type)
     {
-        if (!_cache.TryGetValue(type, out var result))
+        if (!s_cache.TryGetValue(type, out var result))
         {
             result = ComputeAuthorizeDataForType(type);
-            _cache[type] = result; // Safe race - doesn't matter if it overwrites
+            s_cache[type] = result; // Safe race - doesn't matter if it overwrites
         }
 
         return result;

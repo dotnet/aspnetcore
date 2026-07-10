@@ -16,7 +16,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
     where TDictionaryPolicy : IDictionaryBufferAdapter<TDictionary, TBuffer, TKey, TValue>
 {
     private readonly FormDataConverter<TValue> _valueConverter;
-    private static readonly Type _elementType = typeof(TValue);
+    private static readonly Type s_elementType = typeof(TValue);
 
     public DictionaryConverter(FormDataConverter<TValue> elementConverter)
     {
@@ -59,7 +59,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         foreach (var key in keys)
         {
             context.PushPrefix(key.Span);
-            currentElementSuccess = _valueConverter.TryRead(ref context, _elementType, options, out currentValue!, out foundCurrentValue);
+            currentElementSuccess = _valueConverter.TryRead(ref context, s_elementType, options, out currentValue!, out foundCurrentValue);
             succeeded &= currentElementSuccess;
             context.PopPrefix(key.Span);
 

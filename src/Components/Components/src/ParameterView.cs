@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public readonly struct ParameterView
 {
-    private static readonly RenderTreeFrame[] _emptyFrames = new RenderTreeFrame[]
+    private static readonly RenderTreeFrame[] s_emptyFrames = new RenderTreeFrame[]
     {
         RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
     };
 
-    private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, Array.Empty<CascadingParameterState>());
+    private static readonly ParameterView s_empty = new ParameterView(ParameterViewLifetime.Unbound, s_emptyFrames, 0, Array.Empty<CascadingParameterState>());
 
     private readonly ParameterViewLifetime _lifetime;
     private readonly RenderTreeFrame[] _frames;
@@ -42,7 +42,7 @@ public readonly struct ParameterView
     /// <summary>
     /// Gets an empty <see cref="ParameterView"/>.
     /// </summary>
-    public static ParameterView Empty => _empty;
+    public static ParameterView Empty => s_empty;
 
     internal ParameterViewLifetime Lifetime => _lifetime;
 
@@ -115,7 +115,7 @@ public readonly struct ParameterView
 
     internal ParameterView Clone()
     {
-        if (ReferenceEquals(_frames, _emptyFrames))
+        if (ReferenceEquals(_frames, s_emptyFrames))
         {
             return Empty;
         }

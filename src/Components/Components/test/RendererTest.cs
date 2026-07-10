@@ -21,7 +21,7 @@ public class RendererTest
 {
     // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
     // failures.
-    private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan s_timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
     private const string EventActionsName = nameof(NestedAsyncComponent.EventActions);
     private const string WhatToRenderName = nameof(NestedAsyncComponent.WhatToRender);
@@ -3354,7 +3354,7 @@ public class RendererTest
         afterRenderTcs.SetResult();
 
         // We need to wait here because the completions from SetResult will be scheduled.
-        @event.Wait(Timeout);
+        @event.Wait(s_timeout);
 
         // Assert
         Assert.True(component.Called);
@@ -3382,7 +3382,7 @@ public class RendererTest
         afterRenderTcs.SetResult();
 
         // We need to wait here because the completions from SetResult will be scheduled.
-        @event.Wait(Timeout);
+        @event.Wait(s_timeout);
 
         // Assert
         Assert.True(component.Called);
@@ -3730,7 +3730,7 @@ public class RendererTest
         asyncExceptionTcs.SetException(exception);
 
         // We need to wait here because the continuations of SetException will be scheduled to run asynchronously.
-        @event.Wait(Timeout);
+        @event.Wait(s_timeout);
 
         // Assert
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());

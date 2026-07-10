@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Builder;
 
 internal static class DebugProxyLauncher
 {
-    private static readonly object LaunchLock = new object();
-    private static readonly TimeSpan DebugProxyLaunchTimeout = TimeSpan.FromSeconds(10);
-    private static Task<string>? LaunchedDebugProxyUrl;
-    private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None, TimeSpan.FromSeconds(10));
-    private static readonly Regex ApplicationStartedRegex = new Regex(@"^\s*Application started\. Press Ctrl\+C to shut down\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
-    private static readonly Regex NowListeningFirefoxRegex = new Regex(@"^\s*Debug proxy for firefox now listening on tcp://(?<url>.*)\. And expecting firefox at port 6000\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
-    private static readonly string[] MessageSuppressionPrefixes = new[]
+    private static readonly object s_launchLock = new object();
+    private static readonly TimeSpan s_debugProxyLaunchTimeout = TimeSpan.FromSeconds(10);
+    private static Task<string>? s_launchedDebugProxyUrl;
+    private static readonly Regex s_nowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None, TimeSpan.FromSeconds(10));
+    private static readonly Regex s_applicationStartedRegex = new Regex(@"^\s*Application started\. Press Ctrl\+C to shut down\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
+    private static readonly Regex s_nowListeningFirefoxRegex = new Regex(@"^\s*Debug proxy for firefox now listening on tcp://(?<url>.*)\. And expecting firefox at port 6000\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
+    private static readonly string[] s_messageSuppressionPrefixes = new[]
     {
         "Hosting environment:",
         "Content root path:",
@@ -30,11 +30,11 @@ internal static class DebugProxyLauncher
 
     public static Task<string> EnsureLaunchedAndGetUrl(IServiceProvider serviceProvider, string devToolsHost, bool isFirefox)
     {
-        lock (LaunchLock)
+        lock (s_launchLock)
         {
-            LaunchedDebugProxyUrl ??= LaunchAndGetUrl(serviceProvider, devToolsHost, isFirefox);
+            s_launchedDebugProxyUrl ??= LaunchAndGetUrl(serviceProvider, devToolsHost, isFirefox);
 
-            return LaunchedDebugProxyUrl;
+            return s_launchedDebugProxyUrl;
         }
     }
 
@@ -72,7 +72,7 @@ internal static class DebugProxyLauncher
         };
         RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
-        using var cts = new CancellationTokenSource(DebugProxyLaunchTimeout);
+        using var cts = new CancellationTokenSource(s_debugProxyLaunchTimeout);
         var ctr = default(CancellationTokenRegistration);
         var debugProxyProcess = Process.Start(processStartInfo);
         if (debugProxyProcess is null)
@@ -86,7 +86,7 @@ internal static class DebugProxyLauncher
 
             ctr = cts.Token.Register(() =>
             {
-                tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
+                tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {s_debugProxyLaunchTimeout.TotalSeconds} seconds."));
             });
         }
 
@@ -149,7 +149,7 @@ internal static class DebugProxyLauncher
             // according to culture.
             if (eventArgs.Data is not null)
             {
-                foreach (var prefix in MessageSuppressionPrefixes)
+                foreach (var prefix in s_messageSuppressionPrefixes)
                 {
                     if (eventArgs.Data.StartsWith(prefix, StringComparison.Ordinal))
                     {
@@ -195,7 +195,7 @@ internal static class DebugProxyLauncher
                 return;
             }
 
-            if (ApplicationStartedRegex.IsMatch(eventArgs.Data) && !isFirefox)
+            if (s_applicationStartedRegex.IsMatch(eventArgs.Data) && !isFirefox)
             {
                 aspNetProcess.OutputDataReceived -= OnOutputDataReceived;
                 aspNetProcess.ErrorDataReceived -= OnErrorDataReceived;
@@ -211,7 +211,7 @@ internal static class DebugProxyLauncher
             }
             else
             {
-                var matchFirefox = NowListeningFirefoxRegex.Match(eventArgs.Data);
+                var matchFirefox = s_nowListeningFirefoxRegex.Match(eventArgs.Data);
                 if (matchFirefox.Success && isFirefox)
                 {
                     aspNetProcess.OutputDataReceived -= OnOutputDataReceived;
@@ -220,7 +220,7 @@ internal static class DebugProxyLauncher
                     taskCompletionSource.TrySetResult(capturedUrl);
                     return;
                 }
-                var match = NowListeningRegex.Match(eventArgs.Data);
+                var match = s_nowListeningRegex.Match(eventArgs.Data);
                 if (match.Success)
                 {
                     capturedUrl = match.Groups["url"].Value;

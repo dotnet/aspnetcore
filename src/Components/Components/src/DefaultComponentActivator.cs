@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 
 internal sealed class DefaultComponentActivator(IServiceProvider serviceProvider) : IComponentActivator
 {
-    private static readonly ConcurrentDictionary<Type, ObjectFactory> _cachedComponentTypeInfo = new();
+    private static readonly ConcurrentDictionary<Type, ObjectFactory> s_cachedComponentTypeInfo = new();
 
     static DefaultComponentActivator()
     {
@@ -20,7 +20,7 @@ internal sealed class DefaultComponentActivator(IServiceProvider serviceProvider
         }
     }
 
-    public static void ClearCache() => _cachedComponentTypeInfo.Clear();
+    public static void ClearCache() => s_cachedComponentTypeInfo.Clear();
 
     /// <inheritdoc />
     public IComponent CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type componentType)
@@ -40,10 +40,10 @@ internal sealed class DefaultComponentActivator(IServiceProvider serviceProvider
         // Unfortunately we can't use 'GetOrAdd' here because the DynamicallyAccessedMembers annotation doesn't flow through to the
         // callback, so it becomes an IL2111 warning. The following is equivalent and thread-safe because it's a ConcurrentDictionary
         // and it doesn't matter if we build a cache entry more than once.
-        if (!_cachedComponentTypeInfo.TryGetValue(componentType, out var factory))
+        if (!s_cachedComponentTypeInfo.TryGetValue(componentType, out var factory))
         {
             factory = ActivatorUtilities.CreateFactory(componentType, Type.EmptyTypes);
-            _cachedComponentTypeInfo.TryAdd(componentType, factory);
+            s_cachedComponentTypeInfo.TryAdd(componentType, factory);
         }
 
         return factory;

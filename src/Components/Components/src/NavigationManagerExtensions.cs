@@ -23,7 +23,7 @@ public static class NavigationManagerExtensions
     // to see if the parameter should be excluded from the querystring. Therefore, we will only
     // invoke these formatters for non-null values. We also get the underlying type of any Nullable
     // types before performing lookups in this dictionary.
-    private static readonly Dictionary<Type, QueryParameterFormatter<object>> _queryParameterFormatters = new()
+    private static readonly Dictionary<Type, QueryParameterFormatter<object>> s_queryParameterFormatters = new()
     {
         [typeof(string)] = value => Format((string)value)!,
         [typeof(bool)] = value => Format((bool)value),
@@ -718,7 +718,7 @@ public static class NavigationManagerExtensions
     {
         var underlyingParameterValueType = Nullable.GetUnderlyingType(parameterValueType) ?? parameterValueType;
 
-        if (!_queryParameterFormatters.TryGetValue(underlyingParameterValueType, out var formatter))
+        if (!s_queryParameterFormatters.TryGetValue(underlyingParameterValueType, out var formatter))
         {
             throw new InvalidOperationException(
                 $"Cannot format query parameters with values of type '{underlyingParameterValueType}'.");

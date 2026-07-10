@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 internal partial class PersistentValueProviderComponentSubscription : IDisposable
 {
-    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
-    private static readonly object _uninitializedSentinel = new();
+    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> s_propertyGetterCache = new();
+    private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> s_serializerCache = new();
+    private static readonly object s_uninitializedSentinel = new();
 
     static PersistentValueProviderComponentSubscription()
     {
@@ -29,8 +29,8 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
 
     private static void ClearCaches()
     {
-        _propertyGetterCache.Clear();
-        _serializerCache.Clear();
+        s_propertyGetterCache.Clear();
+        s_serializerCache.Clear();
     }
 
     private readonly PersistentComponentState _state;
@@ -43,7 +43,7 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
 
     private readonly PersistingComponentStateSubscription? _persistingSubscription;
     private readonly RestoringComponentStateSubscription? _restoringSubscription;
-    private object? _lastValue = _uninitializedSentinel;
+    private object? _lastValue = s_uninitializedSentinel;
     private bool _hasPendingInitialValue;
     private bool _ignoreComponentPropertyValue;
     private string? _storageKey;
@@ -62,8 +62,8 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         _logger = logger;
         var attribute = (PersistentStateAttribute)parameterInfo.Attribute;
 
-        _customSerializer = _serializerCache.GetOrAdd(_propertyType, SerializerFactory, serviceProvider);
-        _propertyGetter = _propertyGetterCache.GetOrAdd((subscriber.Component.GetType(), _propertyName), PropertyGetterFactory);
+        _customSerializer = s_serializerCache.GetOrAdd(_propertyType, SerializerFactory, serviceProvider);
+        _propertyGetter = s_propertyGetterCache.GetOrAdd((subscriber.Component.GetType(), _propertyName), PropertyGetterFactory);
 
         _persistingSubscription = state.RegisterOnPersisting(
             PersistProperty,
@@ -82,7 +82,7 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
     // value we restored from the persistent state.
     internal object? GetOrComputeLastValue()
     {
-        var isInitialized = !ReferenceEquals(_lastValue, _uninitializedSentinel);
+        var isInitialized = !ReferenceEquals(_lastValue, s_uninitializedSentinel);
         if (!isInitialized)
         {
             // Remove the uninitialized sentinel.
@@ -123,7 +123,7 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
     internal void RestoreProperty()
     {
         var skipNotifications = _hasPendingInitialValue;
-        if (ReferenceEquals(_lastValue, _uninitializedSentinel) && !_hasPendingInitialValue)
+        if (ReferenceEquals(_lastValue, s_uninitializedSentinel) && !_hasPendingInitialValue)
         {
             // Upon subscribing, the callback might be invoked right away,
             // but this is too early to restore the first value since the component state

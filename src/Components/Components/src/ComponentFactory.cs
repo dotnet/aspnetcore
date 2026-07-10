@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class ComponentFactory
 {
     // This switch is unsupported and will be removed in a future version.
-    private static readonly bool _propertyInjectionDisabled =
+    private static readonly bool s_propertyInjectionDisabled =
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Components.Unsupported.DisablePropertyInjection", out var isDisabled) &&
         isDisabled;
 
-    private static readonly ConcurrentDictionary<Type, IComponentRenderMode?> _cachedComponentTypeRenderModes = new();
+    private static readonly ConcurrentDictionary<Type, IComponentRenderMode?> s_cachedComponentTypeRenderModes = new();
 
     static ComponentFactory()
     {
@@ -38,17 +38,17 @@ internal sealed class ComponentFactory
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
     }
 
-    public static void ClearCache() => _cachedComponentTypeRenderModes.Clear();
+    public static void ClearCache() => s_cachedComponentTypeRenderModes.Clear();
 
     private static IComponentRenderMode? GetComponentTypeRenderMode([DynamicallyAccessedMembers(Component)] Type componentType)
     {
         // Unfortunately we can't use 'GetOrAdd' here because the DynamicallyAccessedMembers annotation doesn't flow through to the
         // callback, so it becomes an IL2111 warning. The following is equivalent and thread-safe because it's a ConcurrentDictionary
         // and it doesn't matter if we build a cache entry more than once.
-        if (!_cachedComponentTypeRenderModes.TryGetValue(componentType, out var renderMode))
+        if (!s_cachedComponentTypeRenderModes.TryGetValue(componentType, out var renderMode))
         {
             renderMode = componentType.GetCustomAttribute<RenderModeAttribute>()?.Mode;
-            _cachedComponentTypeRenderModes.TryAdd(componentType, renderMode);
+            s_cachedComponentTypeRenderModes.TryAdd(componentType, renderMode);
         }
 
         return renderMode;
@@ -81,7 +81,7 @@ internal sealed class ComponentFactory
             throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
         }
 
-        if (!_propertyInjectionDisabled)
+        if (!s_propertyInjectionDisabled)
         {
             PerformPropertyInjection(serviceProvider, component);
         }

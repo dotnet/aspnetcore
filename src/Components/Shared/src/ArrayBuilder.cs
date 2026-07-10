@@ -36,7 +36,7 @@ internal class ArrayBuilder<T> : IDisposable
     protected T[] _items;
     protected int _itemsInUse;
 
-    private static readonly T[] Empty = Array.Empty<T>();
+    private static readonly T[] s_empty = Array.Empty<T>();
     private readonly ArrayPool<T> _arrayPool;
     private readonly int _minCapacity;
     private bool _disposed;
@@ -48,7 +48,7 @@ internal class ArrayBuilder<T> : IDisposable
     {
         _arrayPool = arrayPool ?? ArrayPool<T>.Shared;
         _minCapacity = minCapacity;
-        _items = Empty;
+        _items = s_empty;
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ internal class ArrayBuilder<T> : IDisposable
     public void Clear()
     {
         ReturnBuffer();
-        _items = Empty;
+        _items = s_empty;
         _itemsInUse = 0;
     }
 
@@ -191,7 +191,7 @@ internal class ArrayBuilder<T> : IDisposable
 
     private void ReturnBuffer()
     {
-        if (!ReferenceEquals(_items, Empty))
+        if (!ReferenceEquals(_items, s_empty))
         {
             // ArrayPool<>.Return with clearArray: true calls Array.Clear on the entire buffer.
             // In the most common case, _itemsInUse would be much smaller than _items.Length so we'll specifically clear that subset.
@@ -206,7 +206,7 @@ internal class ArrayBuilder<T> : IDisposable
         {
             _disposed = true;
             ReturnBuffer();
-            _items = Empty;
+            _items = s_empty;
             _itemsInUse = 0;
         }
     }

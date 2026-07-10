@@ -16,7 +16,7 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
     private readonly Lock _lock = new();
     private readonly CircuitOptions _options;
     private readonly MemoryCache _persistedCircuits;
-    private static readonly Task<PersistedCircuitState> _noMatch = Task.FromResult<PersistedCircuitState>(null);
+    private static readonly Task<PersistedCircuitState> s_noMatch = Task.FromResult<PersistedCircuitState>(null);
     private readonly ILogger<ICircuitPersistenceProvider> _logger;
 
     public PostEvictionCallbackRegistration PostEvictionCallback { get; internal set; }
@@ -106,7 +106,7 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
             if (state == null)
             {
                 Log.FailedToFindCircuitState(_logger, circuitId);
-                return _noMatch;
+                return s_noMatch;
             }
 
             return Task.FromResult(state);

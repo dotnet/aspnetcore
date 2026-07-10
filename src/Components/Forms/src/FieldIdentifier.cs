@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 {
-    private static readonly ConcurrentDictionary<(Type ModelType, MemberInfo Member), Func<object, object>> _fieldAccessors = new();
+    private static readonly ConcurrentDictionary<(Type ModelType, MemberInfo Member), Func<object, object>> s_fieldAccessors = new();
 
     static FieldIdentifier()
     {
@@ -168,7 +168,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         MemberExpression member,
         ConcurrentDictionary<(Type ModelType, MemberInfo Member), Func<object, object>>? cache = null)
     {
-        cache ??= _fieldAccessors;
+        cache ??= s_fieldAccessors;
         Func<object, object>? accessor = null;
         object? value = null;
         switch (member.Expression)
@@ -228,6 +228,6 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 
     private static void ClearCache()
     {
-        _fieldAccessors.Clear();
+        s_fieldAccessors.Clear();
     }
 }

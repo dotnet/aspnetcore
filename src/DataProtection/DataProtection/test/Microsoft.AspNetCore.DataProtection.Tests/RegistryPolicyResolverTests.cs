@@ -275,7 +275,7 @@ public class RegistryPolicyResolverTests
     private static RegistryPolicy WithUniqueTempRegKey(Func<RegistryKey, RegistryPolicy> testCode)
     {
         string uniqueName = Guid.NewGuid().ToString();
-        var uniqueSubkey = LazyHkcuTempKey.Value.CreateSubKey(uniqueName);
+        var uniqueSubkey = s_lazyHkcuTempKey.Value.CreateSubKey(uniqueName);
         try
         {
             return testCode(uniqueSubkey);
@@ -283,11 +283,11 @@ public class RegistryPolicyResolverTests
         finally
         {
             // clean up when test is done
-            LazyHkcuTempKey.Value.DeleteSubKeyTree(uniqueName, throwOnMissingSubKey: false);
+            s_lazyHkcuTempKey.Value.DeleteSubKeyTree(uniqueName, throwOnMissingSubKey: false);
         }
     }
 
-    private static readonly Lazy<RegistryKey> LazyHkcuTempKey = new Lazy<RegistryKey>(() =>
+    private static readonly Lazy<RegistryKey> s_lazyHkcuTempKey = new Lazy<RegistryKey>(() =>
     {
         try
         {
@@ -302,7 +302,7 @@ public class RegistryPolicyResolverTests
 
     private class ConditionalRunTestOnlyIfHkcuRegistryAvailable : Attribute, ITestCondition
     {
-        public bool IsMet => (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && LazyHkcuTempKey.Value != null);
+        public bool IsMet => (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && s_lazyHkcuTempKey.Value != null);
 
         public string SkipReason { get; } = "HKCU registry couldn't be opened.";
     }

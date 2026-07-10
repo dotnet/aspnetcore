@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection;
 /// </summary>
 internal class SimpleActivator : IActivator
 {
-    private static readonly Type[] _serviceProviderTypeArray = { typeof(IServiceProvider) };
+    private static readonly Type[] s_serviceProviderTypeArray = { typeof(IServiceProvider) };
 
     /// <summary>
     /// A default <see cref="SimpleActivator"/> whose wrapped <see cref="IServiceProvider"/> is null.
@@ -46,7 +46,7 @@ internal class SimpleActivator : IActivator
         }
 
         // If an IServiceProvider was specified or if .ctor() doesn't exist, prefer .ctor(IServiceProvider) [if it exists]
-        var ctorWhichTakesServiceProvider = implementationType.GetConstructor(_serviceProviderTypeArray);
+        var ctorWhichTakesServiceProvider = implementationType.GetConstructor(s_serviceProviderTypeArray);
         if (ctorWhichTakesServiceProvider != null)
         {
             return ctorWhichTakesServiceProvider.Invoke(new[] { _services });

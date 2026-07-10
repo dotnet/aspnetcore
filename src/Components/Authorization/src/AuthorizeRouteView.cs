@@ -20,9 +20,9 @@ public sealed class AuthorizeRouteView : RouteView
     // We expect applications to supply their own authorizing/not-authorized content, but
     // it's better to have defaults than to make the parameters mandatory because in some
     // cases they will never be used (e.g., "authorizing" in out-of-box server-side Blazor)
-    private static readonly RenderFragment<AuthenticationState> _defaultNotAuthorizedContent
+    private static readonly RenderFragment<AuthenticationState> s_defaultNotAuthorizedContent
         = state => builder => builder.AddContent(0, "Not authorized");
-    private static readonly RenderFragment _defaultAuthorizingContent
+    private static readonly RenderFragment s_defaultAuthorizingContent
         = builder => builder.AddContent(0, "Authorizing...");
 
     private readonly RenderFragment _renderAuthorizeRouteViewCoreDelegate;
@@ -111,13 +111,13 @@ public sealed class AuthorizeRouteView : RouteView
 
     private void RenderNotAuthorizedInDefaultLayout(RenderTreeBuilder builder, AuthenticationState authenticationState)
     {
-        var content = NotAuthorized ?? _defaultNotAuthorizedContent;
+        var content = NotAuthorized ?? s_defaultNotAuthorizedContent;
         RenderContentInDefaultLayout(builder, content(authenticationState));
     }
 
     private void RenderAuthorizingInDefaultLayout(RenderTreeBuilder builder)
     {
-        var content = Authorizing ?? _defaultAuthorizingContent;
+        var content = Authorizing ?? s_defaultAuthorizingContent;
         RenderContentInDefaultLayout(builder, content);
     }
 

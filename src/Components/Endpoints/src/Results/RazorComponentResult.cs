@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// </summary>
 public class RazorComponentResult : IResult, IStatusCodeHttpResult, IContentTypeHttpResult
 {
-    private static readonly IReadOnlyDictionary<string, object?> EmptyParameters
+    private static readonly IReadOnlyDictionary<string, object?> s_emptyParameters
         = new Dictionary<string, object?>().AsReadOnly();
 
     /// <summary>
@@ -54,7 +54,7 @@ public class RazorComponentResult : IResult, IStatusCodeHttpResult, IContentType
         // Note that the Blazor renderer will validate that componentType implements IComponent and throws a suitable
         // exception if not, so we don't need to duplicate that logic here.
         ComponentType = componentType;
-        Parameters = parameters ?? EmptyParameters;
+        Parameters = parameters ?? s_emptyParameters;
     }
 
     private static IReadOnlyDictionary<string, object?> CoerceParametersObjectToDictionary(object? parameters)

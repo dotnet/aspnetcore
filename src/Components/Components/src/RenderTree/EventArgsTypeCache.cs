@@ -9,19 +9,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 
 internal static class EventArgsTypeCache
 {
-    private static readonly ConcurrentDictionary<MethodInfo, Type> Cache = new ConcurrentDictionary<MethodInfo, Type>();
+    private static readonly ConcurrentDictionary<MethodInfo, Type> s_cache = new ConcurrentDictionary<MethodInfo, Type>();
 
     static EventArgsTypeCache()
     {
         if (HotReloadManager.IsSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += Cache.Clear;
+            HotReloadManager.Default.OnDeltaApplied += s_cache.Clear;
         }
     }
 
     public static Type GetEventArgsType(MethodInfo methodInfo)
     {
-        return Cache.GetOrAdd(methodInfo, methodInfo =>
+        return s_cache.GetOrAdd(methodInfo, methodInfo =>
         {
             var parameterInfos = methodInfo.GetParameters();
             if (parameterInfos.Length == 0)

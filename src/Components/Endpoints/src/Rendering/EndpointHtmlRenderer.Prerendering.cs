@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
-    private static readonly object ComponentSequenceKey = new object();
+    private static readonly object s_componentSequenceKey = new object();
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
@@ -274,10 +274,10 @@ internal partial class EndpointHtmlRenderer
 
     internal static ServerComponentInvocationSequence GetOrCreateInvocationId(HttpContext httpContext)
     {
-        if (!httpContext.Items.TryGetValue(ComponentSequenceKey, out var result))
+        if (!httpContext.Items.TryGetValue(s_componentSequenceKey, out var result))
         {
             result = new ServerComponentInvocationSequence();
-            httpContext.Items[ComponentSequenceKey] = result;
+            httpContext.Items[s_componentSequenceKey] = result;
         }
 
         return (ServerComponentInvocationSequence)result!;

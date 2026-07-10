@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public class LayoutView : IComponent
 {
-    private static readonly RenderFragment EmptyRenderFragment = builder => { };
+    private static readonly RenderFragment s_emptyRenderFragment = builder => { };
 
     private RenderHandle _renderHandle;
 
@@ -50,7 +50,7 @@ public class LayoutView : IComponent
     private void Render()
     {
         // In the middle goes the supplied content
-        var fragment = ChildContent ?? EmptyRenderFragment;
+        var fragment = ChildContent ?? s_emptyRenderFragment;
 
         // Then repeatedly wrap that in each layer of nested layout until we get
         // to a layout that has no parent

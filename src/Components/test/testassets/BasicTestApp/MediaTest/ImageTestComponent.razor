@@ -1,4 +1,4 @@
-@using System.IO
+﻿@using System.IO
 @using Microsoft.AspNetCore.Components.Media
 @implements IAsyncDisposable
 
@@ -113,12 +113,12 @@
     private string _currentStatus = "Ready";
     private bool _isCurrentlyShowingPng = true;
 
-    private static readonly byte[] TestPngData = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
-    private static readonly byte[] TestJpgData = Convert.FromBase64String("/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AN//Z");
+    private static readonly byte[] s_testPngData = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
+    private static readonly byte[] s_testJpgData = Convert.FromBase64String("/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AN//Z");
 
     private void ReloadPng()
     {
-        _basicImageSource = new MediaSource(TestPngData, "image/png", "test-png-basic");
+        _basicImageSource = new MediaSource(s_testPngData, "image/png", "test-png-basic");
         _pngBasic = true;
         _currentStatus = "PNG basic loaded";
     }
@@ -126,7 +126,7 @@
     private void LoadJpgFromStream()
     {
         _currentStatus = "Loading JPG from stream...";
-        var stream = new MemoryStream(TestJpgData);
+        var stream = new MemoryStream(s_testJpgData);
         _jpgStreamSource = new MediaSource(stream, "image/jpeg", "test-jpg-stream");
         _jpgStream = true;
         _currentStatus = "JPG from stream loaded";
@@ -137,7 +137,7 @@
         if (!_dynamicSource)
         {
             _currentStatus = "Dynamic source initialized with PNG";
-            _dynamicImageSource = new MediaSource(TestPngData, "image/png", "dynamic-png");
+            _dynamicImageSource = new MediaSource(s_testPngData, "image/png", "dynamic-png");
             _dynamicSource = true;
             _isCurrentlyShowingPng = true;
         }
@@ -146,12 +146,12 @@
             if (_isCurrentlyShowingPng)
             {
                 _currentStatus = "Dynamic source changed to JPG";
-                _dynamicImageSource = new MediaSource(TestJpgData, "image/jpeg", "dynamic-jpg");
+                _dynamicImageSource = new MediaSource(s_testJpgData, "image/jpeg", "dynamic-jpg");
             }
             else
             {
                 _currentStatus = "Dynamic source changed to PNG";
-                _dynamicImageSource = new MediaSource(TestPngData, "image/png", "dynamic-png");
+                _dynamicImageSource = new MediaSource(s_testPngData, "image/png", "dynamic-png");
             }
             _isCurrentlyShowingPng = !_isCurrentlyShowingPng;
         }
@@ -160,7 +160,7 @@
     private void LoadPairSequence()
     {
         _currentStatus = "Loading pair sequence...";
-        _pairSource = new MediaSource(TestJpgData, "image/jpeg", "pair-cache");
+        _pairSource = new MediaSource(s_testJpgData, "image/jpeg", "pair-cache");
         _pair1Visible = true;
         _pair2Visible = true;
         _currentStatus = "Pair second loaded";
@@ -179,7 +179,7 @@
     private void LoadCachedJpg()
     {
         _currentStatus = "Loading cached JPG...";
-        _cachedJpgSource = new MediaSource(TestJpgData, "image/jpeg", "single-cached-jpg");
+        _cachedJpgSource = new MediaSource(s_testJpgData, "image/jpeg", "single-cached-jpg");
         _cachedJpgVisible = true;
         _currentStatus = "Cached JPG loaded";
     }
@@ -196,7 +196,7 @@
     private void LoadTemplatedImage()
     {
         _currentStatus = "Loading templated image...";
-        _templatedImageSource = new MediaSource(TestPngData, "image/png", "templated-png");
+        _templatedImageSource = new MediaSource(s_testPngData, "image/png", "templated-png");
         _templatedImageVisible = true;
         _currentStatus = "Templated image loaded";
     }

@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http;
 /// </summary>
 public static class WebAssemblyHttpRequestMessageExtensions
 {
-    private static readonly HttpRequestOptionsKey<IDictionary<string, object>> FetchRequestOptionsKey = new HttpRequestOptionsKey<IDictionary<string, object>>("WebAssemblyFetchOptions");
-    private static readonly HttpRequestOptionsKey<bool> WebAssemblyEnableStreamingRequestKey = new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingRequest");
-    private static readonly HttpRequestOptionsKey<bool> WebAssemblyEnableStreamingResponseKey = new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingResponse");
+    private static readonly HttpRequestOptionsKey<IDictionary<string, object>> s_fetchRequestOptionsKey = new HttpRequestOptionsKey<IDictionary<string, object>>("WebAssemblyFetchOptions");
+    private static readonly HttpRequestOptionsKey<bool> s_webAssemblyEnableStreamingRequestKey = new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingRequest");
+    private static readonly HttpRequestOptionsKey<bool> s_webAssemblyEnableStreamingResponseKey = new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingResponse");
 
     /// <summary>
     /// Configures a value for the 'credentials' option for the HTTP request.
@@ -117,14 +117,14 @@ public static class WebAssemblyHttpRequestMessageExtensions
         ArgumentNullException.ThrowIfNull(requestMessage);
 
         IDictionary<string, object> fetchOptions;
-        if (requestMessage.Options.TryGetValue(FetchRequestOptionsKey, out var entry))
+        if (requestMessage.Options.TryGetValue(s_fetchRequestOptionsKey, out var entry))
         {
             fetchOptions = entry;
         }
         else
         {
             fetchOptions = new Dictionary<string, object>(StringComparer.Ordinal);
-            requestMessage.Options.Set(FetchRequestOptionsKey, fetchOptions);
+            requestMessage.Options.Set(s_fetchRequestOptionsKey, fetchOptions);
         }
 
         fetchOptions[name] = value;
@@ -147,7 +147,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     {
         ArgumentNullException.ThrowIfNull(requestMessage);
 
-        requestMessage.Options.Set(WebAssemblyEnableStreamingRequestKey, streamingEnabled);
+        requestMessage.Options.Set(s_webAssemblyEnableStreamingRequestKey, streamingEnabled);
 
         return requestMessage;
     }
@@ -166,7 +166,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     {
         ArgumentNullException.ThrowIfNull(requestMessage);
 
-        requestMessage.Options.Set(WebAssemblyEnableStreamingResponseKey, streamingEnabled);
+        requestMessage.Options.Set(s_webAssemblyEnableStreamingResponseKey, streamingEnabled);
 
         return requestMessage;
     }

@@ -11,7 +11,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new StateHasChangedAnalyzer();
 
-    private static readonly string ComponentDeclarations = @"
+    private static readonly string s_componentDeclarations = @"
     namespace Microsoft.AspNetCore.Components
     {
         using System;
@@ -88,7 +88,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -153,7 +153,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -218,7 +218,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -252,7 +252,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
 
             protected override void OnParametersSet() => StateHasChanged();
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -289,7 +289,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -320,7 +320,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 await Task.Delay(1);
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -353,7 +353,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 await Task.Delay(1);
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -380,7 +380,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
 
             private void OnRefreshClicked() => StateHasChanged();
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -412,7 +412,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -440,7 +440,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 this.StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -470,7 +470,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(
             test,
@@ -503,7 +503,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 await Task.Delay(1);
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -525,7 +525,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
             {
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -549,7 +549,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 refresh();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -570,7 +570,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 await InvokeAsync(() => StateHasChanged());
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -590,7 +590,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 StateHasChanged();
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -613,7 +613,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 return Task.CompletedTask;
             }
         }
-    }" + ComponentDeclarations;
+    }" + s_componentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }

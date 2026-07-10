@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public static class RazorComponentsEndpointHttpContextExtensions
 {
-    private static readonly ConcurrentDictionary<Type, bool> AcceptsInteractiveRoutingCache = new();
+    private static readonly ConcurrentDictionary<Type, bool> s_acceptsInteractiveRoutingCache = new();
 
     /// <summary>
     /// Determines whether the current endpoint is a Razor component that can be reached through
@@ -33,7 +33,7 @@ public static class RazorComponentsEndpointHttpContextExtensions
         var pageType = context.GetEndpoint()?.Metadata.GetMetadata<ComponentTypeMetadata>()?.Type;
 
         return pageType is not null
-            && AcceptsInteractiveRoutingCache.GetOrAdd(
+            && s_acceptsInteractiveRoutingCache.GetOrAdd(
                 pageType,
                 static pageType => !pageType.IsDefined(typeof(ExcludeFromInteractiveRoutingAttribute)));
     }
@@ -44,6 +44,6 @@ public static class RazorComponentsEndpointHttpContextExtensions
         /// Invoked as part of <see cref="MetadataUpdateHandlerAttribute" /> contract for hot reload.
         /// </summary>
         public static void ClearCache(Type[]? _)
-            => AcceptsInteractiveRoutingCache.Clear();
+            => s_acceptsInteractiveRoutingCache.Clear();
     }
 }

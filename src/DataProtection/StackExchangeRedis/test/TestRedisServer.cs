@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -9,11 +9,11 @@ namespace Microsoft.AspNetCore.DataProtection;
 internal class TestRedisServer
 {
     public const string ConnectionStringKeyName = "Test:Redis:Server";
-    private static readonly IConfigurationRoot _config;
+    private static readonly IConfigurationRoot s_config;
 
     static TestRedisServer()
     {
-        _config = new ConfigurationBuilder()
+        s_config = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("testconfig.json")
             .AddEnvironmentVariables()
@@ -22,6 +22,6 @@ internal class TestRedisServer
 
     internal static string GetConnectionString()
     {
-        return _config[ConnectionStringKeyName];
+        return s_config[ConnectionStringKeyName];
     }
 }

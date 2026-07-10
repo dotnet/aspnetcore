@@ -43,7 +43,7 @@ public static partial class EditContextDataAnnotationsExtensions
 
     private sealed partial class DataAnnotationsEventSubscriptions : IDisposable
     {
-        private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
+        private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> s_propertyInfoCache = new();
 
         private readonly EditContext _editContext;
         private readonly IServiceProvider? _serviceProvider;
@@ -363,7 +363,7 @@ public static partial class EditContextDataAnnotationsExtensions
         private static bool TryGetValidatableProperty(in FieldIdentifier fieldIdentifier, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
         {
             var cacheKey = (ModelType: fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
-            if (!_propertyInfoCache.TryGetValue(cacheKey, out propertyInfo))
+            if (!s_propertyInfoCache.TryGetValue(cacheKey, out propertyInfo))
             {
                 // DataAnnotations only validates public properties, so that's all we'll look for
                 // If we can't find it, cache 'null' so we don't have to try again next time
@@ -379,7 +379,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 }
 
                 // No need to lock, because it doesn't matter if we write the same value twice
-                _propertyInfoCache[cacheKey] = propertyInfo;
+                s_propertyInfoCache[cacheKey] = propertyInfo;
             }
 
             return propertyInfo != null;
@@ -387,7 +387,7 @@ public static partial class EditContextDataAnnotationsExtensions
 
         internal void ClearCache()
         {
-            _propertyInfoCache.Clear();
+            s_propertyInfoCache.Clear();
         }
     }
 }

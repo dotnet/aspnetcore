@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 public abstract class AnalyzerTestBase
 {
     // Test files are copied to both the bin/ and publish/ folders. Use BaseDirectory on or off Helix.
-    private static readonly string ProjectDirectory = AppContext.BaseDirectory;
+    private static readonly string s_projectDirectory = AppContext.BaseDirectory;
 
     public TestSource Read(string source)
     {
@@ -18,7 +18,7 @@ public abstract class AnalyzerTestBase
             source += ".cs";
         }
 
-        var filePath = Path.Combine(ProjectDirectory, "TestFiles", GetType().Name, source);
+        var filePath = Path.Combine(s_projectDirectory, "TestFiles", GetType().Name, source);
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"TestFile {source} could not be found at {filePath}.", filePath);
