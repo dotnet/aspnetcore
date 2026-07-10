@@ -35,7 +35,7 @@
 else if (_variableHeight == true)
 {
     <div id="qg-variable-capacity" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
-        <QuickGrid ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="30">
+        <QuickGrid ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="25">
             <PropertyColumn Property="@(p => p.Id)" Title="ID" Class="qg-varcap-cell" />
             <PropertyColumn Property="@(p => p.Name)" Title="Name" Class="qg-varcap-cell" />
             <TemplateColumn Title="Description" Class="qg-varcap-cell">
