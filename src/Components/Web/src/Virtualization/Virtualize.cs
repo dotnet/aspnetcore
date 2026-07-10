@@ -833,9 +833,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 result = await _itemsProvider(request);
             }
 
-            // Only apply result if the task was not canceled.
-            if (!cancellationToken.IsCancellationRequested)
+            // Only apply the result if the task was not canceled.
+            if (cancellationToken.IsCancellationRequested)
             {
+                return;
+            }
+
             var previousItemCount = _itemCount;
             var countDelta = result.TotalItemCount - previousItemCount;
             var itemsAdded = countDelta > 0 && previousItemCount > 0;
