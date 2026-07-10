@@ -12,6 +12,7 @@ export const Virtualize = {
   restoreAnchor,
   alignToItem,
   beginProgrammaticScroll,
+  isFollowingBottom,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
@@ -554,7 +555,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     setConvergingToBottom: () => { convergingToBottom = true; },
-    getFollowingBottom: () => followingBottom,
+    isFollowingBottom: () => followingBottom,
     setAnchorMode: (mode: number) => { anchorMode = mode; followingBottom = (mode & 2) !== 0; },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
@@ -757,7 +758,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
-  if (entry && entry.getFollowingBottom?.()) {
+  if (entry && entry.isFollowingBottom?.()) {
     entry.setConvergingToBottom?.();
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
     entry.startConvergenceObserving?.();
@@ -790,6 +791,14 @@ function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): voi
 function beginProgrammaticScroll(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   observersByDotNetObjectId[id]?.beginProgrammaticScroll?.();
+}
+
+// Server-initiated (outbound) pull: lets the server ask "is the user still pinned at the bottom?"
+// before it proactively advances the loaded window to a freshly appended tail. Returns false once
+// the user has scrolled up, so following stops and no re-engage/jump-to-bottom occurs.
+function isFollowingBottom(dotNetHelper: DotNet.DotNetObject): boolean {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  return observersByDotNetObjectId[id]?.isFollowingBottom?.() ?? false;
 }
 
 function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {

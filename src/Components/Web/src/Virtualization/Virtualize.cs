@@ -872,7 +872,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         {
                             _pendingAnchorRestore = true;
                         }
-                        else if (EndAnchoredAppendNeedsWindowAdvance(previousItemCount))
+                        else if (await ShouldFollowAppendedTailAsync(previousItemCount))
                         {
                             (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
                         }
@@ -880,7 +880,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 }
                 else if (itemsAdded
                     && !isDefaultProvider
-                    && EndAnchoredAppendNeedsWindowAdvance(previousItemCount))
+                    && await ShouldFollowAppendedTailAsync(previousItemCount))
                 {
                     (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
                 }
@@ -967,10 +967,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             && (AnchorMode & VirtualizeAnchorMode.End) != 0
             && previousItemCount <= _visibleItemCapacity;
 
-    private bool EndAnchoredAppendNeedsWindowAdvance(int previousItemCount)
-        => (AnchorMode & VirtualizeAnchorMode.End) != 0
-            && _visibleItemCapacity > 0
-            && _itemsBefore + _visibleItemCapacity >= previousItemCount;
+    private async ValueTask<bool> ShouldFollowAppendedTailAsync(int previousItemCount)
+    {
+        if ((AnchorMode & VirtualizeAnchorMode.End) == 0
+            || _visibleItemCapacity <= 0
+            || _itemsBefore + _visibleItemCapacity < previousItemCount
+            || _jsInterop is null)
+        {
+            return false;
+        }
+
+        return await _jsInterop.IsFollowingBottomAsync();
+    }
 
     // Advances the window to the appended tail and refetches it in the current refresh pass, so the
     // applied result already holds the real tail rows. Otherwise the window advances later via the
