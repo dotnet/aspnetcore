@@ -237,6 +237,7 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
 
         var cookieName = Options.CorrelationCookie.Name + correlationId;
 
+        // codeql[SM02373] - The correlation cookie is Secure by default because CorrelationCookie.SecurePolicy defaults to CookieSecurePolicy.Always.
         Response.Cookies.Append(cookieName, CorrelationMarker, cookieOptions);
     }
 
