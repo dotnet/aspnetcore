@@ -2,12 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.Extensions.Logging;
 using Obsoletions = Microsoft.AspNetCore.Shared.Obsoletions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -16,6 +20,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 {
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
+    private readonly ILogger<HttpsConnectionMiddleware> _logger;
     private bool _snapshotted;
 
     private X509Certificate2? _clientCert;
@@ -33,13 +38,14 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     private int _keyExchangeStrength;
 #pragma warning restore SYSLIB0058
 
-    public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
+    internal TlsConnectionFeature(SslStream sslStream, ConnectionContext context, ILogger<HttpsConnectionMiddleware> logger)
     {
         ArgumentNullException.ThrowIfNull(sslStream);
         ArgumentNullException.ThrowIfNull(context);
 
         _sslStream = sslStream;
         _context = context;
+        _logger = logger;
     }
 
     /// <summary>
@@ -184,5 +190,46 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
             X509Certificate2 cert2 => cert2,
             _ => new X509Certificate2(certificate),
         };
+    }
+
+    bool ITlsConnectionFeature.TryGetChannelBindingBytes(ChannelBindingKind kind, out ReadOnlyMemory<byte> channelBindingToken)
+    {
+        // The SslStream may be disposed after Snapshot() runs at connection teardown, so channel
+        // bindings are only retrievable while the connection is live. Callers should read the token
+        // once during request processing.
+        if (_snapshotted || (kind != ChannelBindingKind.Endpoint && kind != ChannelBindingKind.Unique))
+        {
+            channelBindingToken = default;
+            return false;
+        }
+
+        try
+        {
+            using var binding = _sslStream.TransportContext?.GetChannelBinding(kind);
+            if (binding is null || binding.IsInvalid || binding.IsClosed)
+            {
+                channelBindingToken = default;
+                return false;
+            }
+
+            var size = binding.Size;
+            if (size <= 0)
+            {
+                channelBindingToken = default;
+                return false;
+            }
+
+            var buffer = new byte[size];
+            Marshal.Copy(binding.DangerousGetHandle(), buffer, 0, size);
+            channelBindingToken = buffer;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // SslStream/TransportContext may throw if the handshake hasn't completed or the connection is torn down.
+            _logger.FailedToReadChannelBinding(kind, ex);
+            channelBindingToken = default;
+            return false;
+        }
     }
 }
