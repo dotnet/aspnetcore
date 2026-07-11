@@ -190,7 +190,7 @@ WebApplication app = builder. Build();
 app.MapPost("/base", (BaseClass model) => Results.Ok(model));
 app.MapPost("/derived", (DerivedClass model) => Results.Ok(model));
 app.MapPost("/complex", (ComplexClass model) => Results.Ok(model));
-app.MapPost("/array", (BaseClass[] model) => Results.Ok(model)); 
+app.MapPost("/array", (BaseClass[] model) => Results.Ok(model));
 app.MapPost("/complex-array", (ComplexArrayClass model) => Results.Ok(model));
 
 app.Run();
