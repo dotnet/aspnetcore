@@ -225,6 +225,54 @@ public class EndpointRoutingMiddlewareTest
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
     }
 
+    [Fact]
+    public async Task ThrowIfAuthorizationPolicyMetadataPresent()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        var metadata = new EndpointMetadataCollection(
+            new ShortCircuitAttribute(),
+            new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+    
+        var middleware = CreateMiddleware(
+            matcherFactory: new TestMatcherFactory(isHandled: true, setEndpointCallback: c =>
+            {
+                c.SetEndpoint(new Endpoint(TestConstants.ShortCircuitRequestDelegate, metadata, "Test"));
+            }),
+            next: context =>
+            {
+                // should not be reached
+                throw new Exception();
+            });
+    
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
+    }
+    
+    [Fact]
+    public async Task ThrowIfAuthorizationRequirementDataMetadataPresent()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        var metadata = new EndpointMetadataCollection(
+            new ShortCircuitAttribute(),
+            Mock.Of<IAuthorizationRequirementData>());
+    
+        var middleware = CreateMiddleware(
+            matcherFactory: new TestMatcherFactory(isHandled: true, setEndpointCallback: c =>
+            {
+                c.SetEndpoint(new Endpoint(TestConstants.ShortCircuitRequestDelegate, metadata, "Test"));
+            }),
+            next: context =>
+            {
+                // should not be reached
+                throw new Exception();
+            });
+    
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
