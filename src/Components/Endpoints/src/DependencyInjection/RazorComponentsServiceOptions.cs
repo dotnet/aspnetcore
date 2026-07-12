@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -103,4 +104,31 @@ public sealed class RazorComponentsServiceOptions
     /// Defaults to <see cref="TempDataProviderType.Cookie"/>.
     /// </summary>
     public TempDataProviderType TempDataProviderType { get; set; } = TempDataProviderType.Cookie;
+
+    /// <summary>
+    /// Gets or sets the maximum size, in bytes, of the in-memory cache used by <see cref="CacheBoundary"/>
+    /// for server-side rendering. When the limit is reached, no new entries are cached until
+    /// existing entries expire. Defaults to 100 MB. A value of 0 configures a zero-byte
+    /// cache size limit, so entries are not cached.
+    /// </summary>
+    public long CacheBoundarySizeLimit
+    {
+        get => _cacheBoundarySizeLimit;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            _cacheBoundarySizeLimit = value;
+        }
+    }
+
+    private long _cacheBoundarySizeLimit = 100 * 1024 * 1024;
+
+    /// <summary>
+    /// Gets or sets the <see cref="HybridCache"/> used by <see cref="CacheBoundary"/> for server-side
+    /// rendering. When left unset, the registered <see cref="HybridCache"/> service is used if one is
+    /// available; otherwise the in-memory store is used.
+    /// </summary>
+    public HybridCache? CacheBoundaryHybridCache { get; set; }
+
+    internal static readonly TimeSpan DefaultCacheBoundaryExpiration = TimeSpan.FromSeconds(30);
 }

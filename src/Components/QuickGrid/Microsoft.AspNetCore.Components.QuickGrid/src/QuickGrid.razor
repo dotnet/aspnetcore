@@ -84,7 +84,7 @@
 
     private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
     {
-        <tr aria-rowindex="@(placeholderContext.Index + 1)">
+        <tr aria-rowindex="@(placeholderContext.Index + 1)" data-blazor-virtualize-reserved-height="@placeholderContext.Size.ToString(System.Globalization.CultureInfo.InvariantCulture)">
             @foreach (var col in _columns)
             {
                 <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>

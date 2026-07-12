@@ -36,12 +36,18 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
             ?.SetValue(null, true);
 
-        var builder = services.AddRazorComponents(options =>
+        services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         });
+
+        if (Configuration.GetValue<bool>("UseHybridCacheBoundaryStore"))
+        {
+            services.AddHybridCache();
+        }
+
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
 
