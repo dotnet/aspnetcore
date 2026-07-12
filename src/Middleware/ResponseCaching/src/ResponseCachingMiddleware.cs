@@ -224,7 +224,7 @@ public class ResponseCachingMiddleware
             {
                 foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
                 {
-                    if (await TryServeCachedResponseAsync(context, _cache.Get(varyKey)))
+                    if (varyKey is not null && await TryServeCachedResponseAsync(context, _cache.Get(varyKey)))
                     {
                         return true;
                     }

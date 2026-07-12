@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Primitives;
+
 namespace Microsoft.AspNetCore.ResponseCaching;
 
 internal interface IResponseCachingKeyProvider
@@ -23,6 +25,6 @@ internal interface IResponseCachingKeyProvider
     /// Create one or more vary keys for looking up cached responses.
     /// </summary>
     /// <param name="context">The <see cref="ResponseCachingContext"/>.</param>
-    /// <returns>An ordered <see cref="IEnumerable{T}"/> containing the vary keys to try when looking up items.</returns>
-    IEnumerable<string> CreateLookupVaryByKeys(ResponseCachingContext context);
+    /// <returns>An ordered <see cref="StringValues"/> containing the vary keys to try when looking up items.</returns>
+    StringValues CreateLookupVaryByKeys(ResponseCachingContext context);
 }
