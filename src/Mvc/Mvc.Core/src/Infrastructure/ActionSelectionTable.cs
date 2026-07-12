@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -36,6 +37,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 // actions.
 internal sealed class ActionSelectionTable<TItem>
 {
+    private readonly Dictionary<string[], List<TItem>>.AlternateLookup<ReadOnlySpan<string>> _ordinalLookup;
+    private readonly Dictionary<string[], List<TItem>>.AlternateLookup<ReadOnlySpan<string>> _ordinalIgnoreCaseLookup;
+
     private ActionSelectionTable(
         int version,
         string[] routeKeys,
@@ -46,6 +50,8 @@ internal sealed class ActionSelectionTable<TItem>
         RouteKeys = routeKeys;
         OrdinalEntries = ordinalEntries;
         OrdinalIgnoreCaseEntries = ordinalIgnoreCaseEntries;
+        _ordinalLookup = ordinalEntries.GetAlternateLookup<ReadOnlySpan<string>>();
+        _ordinalIgnoreCaseLookup = ordinalIgnoreCaseEntries.GetAlternateLookup<ReadOnlySpan<string>>();
     }
 
     public int Version { get; }
@@ -162,24 +168,37 @@ internal sealed class ActionSelectionTable<TItem>
     public IReadOnlyList<TItem> Select(RouteValueDictionary values)
     {
         // Select works based on a string[] of the route values in a pre-calculated order. This code extracts
-        // those values in the correct order.
+        // those values in the correct order into a pooled buffer so we don't allocate a string[] per request.
         var routeKeys = RouteKeys;
-        var routeValues = new string[routeKeys.Length];
-        for (var i = 0; i < routeKeys.Length; i++)
+        var length = routeKeys.Length;
+        var routeValues = ArrayPool<string>.Shared.Rent(length);
+        try
         {
-            values.TryGetValue(routeKeys[i], out var value);
-            routeValues[i] = value as string ?? Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
-        }
+            for (var i = 0; i < length; i++)
+            {
+                values.TryGetValue(routeKeys[i], out var value);
+                routeValues[i] = value as string ?? Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
+            }
 
-        // Now look up, first case-sensitive, then case-insensitive.
-        if (OrdinalEntries.TryGetValue(routeValues, out var matches) ||
-            OrdinalIgnoreCaseEntries.TryGetValue(routeValues, out matches))
+            // Slice to the exact length - the rented buffer may be longer than needed, and the lookup
+            // hashing/equality depends on the span length matching the stored keys' length.
+            var lookupKey = routeValues.AsSpan(0, length);
+
+            // Now look up, first case-sensitive, then case-insensitive.
+            if (_ordinalLookup.TryGetValue(lookupKey, out var matches) ||
+                _ordinalIgnoreCaseLookup.TryGetValue(lookupKey, out matches))
+            {
+                Debug.Assert(matches != null);
+                Debug.Assert(matches.Count >= 0);
+                return matches;
+            }
+
+            return Array.Empty<TItem>();
+        }
+        finally
         {
-            Debug.Assert(matches != null);
-            Debug.Assert(matches.Count >= 0);
-            return matches;
+            // Clear the buffer so we don't retain references to the route value strings.
+            ArrayPool<string>.Shared.Return(routeValues, clearArray: true);
         }
-
-        return Array.Empty<TItem>();
     }
 }
