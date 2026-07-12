@@ -163,10 +163,15 @@ public class QueryFeature : IQueryFeature
                     _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(capacity: 5, StringComparer.OrdinalIgnoreCase);
                 }
 
-                // Already 2 (1 existing + the new one) entries so use List's expansion mechanism for more
-                var list = new List<string>();
+                // Already 2 (1 existing + the new one) entries, so pre-size the list to avoid an
+                // immediate growth/copy when the second value is added.
+                var list = new List<string>(values.Count + 1);
 
-                list.AddRange(values);
+                for (var i = 0; i < values.Count; i++)
+                {
+                    list.Add(values[i]!);
+                }
+
                 list.Add(value);
 
                 _expandingAccumulator[key] = list;
