@@ -1009,7 +1009,7 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         private bool _visitedRoot;
 
         /// <summary>
-        /// Intializes a new instance of <see cref="Enumerator"/>.
+        /// Initializes a new instance of <see cref="Enumerator"/>.
         /// </summary>
         /// <param name="dictionary">The <see cref="ModelStateDictionary"/>.</param>
         /// <param name="prefix">The prefix.</param>

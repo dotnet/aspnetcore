@@ -103,7 +103,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
         if (!string.IsNullOrEmpty(connection.UserIdentifier))
         {
-            userTask = SubscribeToUser(connection);
+            userTask = SubscribeToUser(connection, connection.UserIdentifier);
         }
 
         await Task.WhenAll(connectionTask, userTask);
@@ -143,7 +143,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
         if (!string.IsNullOrEmpty(connection.UserIdentifier))
         {
-            tasks.Add(RemoveUserAsync(connection));
+            tasks.Add(RemoveUserAsync(connection, connection.UserIdentifier));
         }
 
         return Task.WhenAll(tasks);
@@ -354,9 +354,9 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         await ack;
     }
 
-    private Task RemoveUserAsync(HubConnectionContext connection)
+    private Task RemoveUserAsync(HubConnectionContext connection, string userIdentifier)
     {
-        var userChannel = _channels.User(connection.UserIdentifier!);
+        var userChannel = _channels.User(userIdentifier);
 
         return _users.RemoveSubscriptionAsync(userChannel, connection, this, static (state, channelName) =>
         {
@@ -580,9 +580,9 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         });
     }
 
-    private Task SubscribeToUser(HubConnectionContext connection)
+    private Task SubscribeToUser(HubConnectionContext connection, string userIdentifier)
     {
-        var userChannel = _channels.User(connection.UserIdentifier!);
+        var userChannel = _channels.User(userIdentifier);
 
         return _users.AddSubscriptionAsync(userChannel, connection, async (channelName, subscriptions) =>
         {

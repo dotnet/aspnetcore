@@ -4,10 +4,10 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AssemblyName>Microsoft.AspNetCore.Tools.NativeAot.Tests</AssemblyName>
     <TestGroupName>NativeAotToolTests</TestGroupName>
-    <NativeAotToolPublishRoot>$([MSBuild]::NormalizeDirectory('$(OutputPath)', '$(TargetFramework)', 'nativeaot-tools'))</NativeAotToolPublishRoot>
     <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == '' AND '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
     <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == '' AND '$(TargetRuntimeIdentifier)' != ''">$(TargetRuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
     <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
+    <NativeAotToolPublishRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'aspnetcoretools', '$(Configuration)', '$(TargetFramework)', '$(NativeAotToolPublishRuntimeIdentifier)', 'publish'))</NativeAotToolPublishRoot>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <SkipTests Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SkipTests>
   </PropertyGroup>
@@ -22,26 +22,19 @@
     <Reference Include="Microsoft.AspNetCore.InternalTesting" />
   </ItemGroup>
 
-  <ItemGroup>
-    <NativeAotToolUnderTest Include="dotnet-dev-certs">
-      <ProjectPath>..\..\dotnet-dev-certs\src\dotnet-dev-certs.csproj</ProjectPath>
-    </NativeAotToolUnderTest>
-    <NativeAotToolUnderTest Include="dotnet-user-jwts">
-      <ProjectPath>..\..\dotnet-user-jwts\src\dotnet-user-jwts.csproj</ProjectPath>
-    </NativeAotToolUnderTest>
-    <NativeAotToolUnderTest Include="dotnet-user-secrets">
-      <ProjectPath>..\..\dotnet-user-secrets\src\dotnet-user-secrets.csproj</ProjectPath>
-    </NativeAotToolUnderTest>
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <!-- Sequence the aggregate tool build/publish before this test payload consumes its published files.
+         aspnetcoretools is single-targeted, so the solution traversal builds it with NO TargetFramework
+         (or RuntimeIdentifier) global property. Pass no explicit properties here so this reference resolves
+         to that same MSBuild project instance and dedupes onto it, instead of spawning a second, differently
+         keyed NativeAOT compile that races with it on the shared intermediate sourcelink file. -->
+    <ProjectReference Include="..\aspnetcoretools\aspnetcoretools.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      Targets="Build"
+                      UndefineProperties="TargetFramework;RuntimeIdentifier"
+                      Private="false" />
   </ItemGroup>
-
-  <Target Name="PublishNativeAotToolsForTests"
-    BeforeTargets="Build"
-    Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <MSBuild
-      Projects="%(NativeAotToolUnderTest.ProjectPath)"
-      Targets="Publish"
-      Properties="Configuration=$(Configuration);RuntimeIdentifier=$(NativeAotToolPublishRuntimeIdentifier);SelfContained=true;PublishAot=true;PublishDir=$([MSBuild]::NormalizeDirectory('$(NativeAotToolPublishRoot)', '%(NativeAotToolUnderTest.Identity)'))" />
-  </Target>
 
   <ItemGroup>
     <HelixContent Include="$(NativeAotToolPublishRoot)**" LinkBase="nativeaot-tools" />

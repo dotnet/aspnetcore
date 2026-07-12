@@ -177,7 +177,7 @@ public class EditContextValidatableInfoFieldTest
     }
 
     // Runs a test body under Blazor's default dispatcher to simulate the renderer threading model:
-    // validator continuations, the framework's ObserveValidationTaskAsync continuation, and the test
+    // validator continuations, the framework's ObserveFieldValidationTask continuation, and the test
     // body's polling/assertions all serialize through a single logical thread. This matches
     // EditContext's documented threading model (see EditContext class XML remarks) and removes
     // incidental cross-thread races that would otherwise occur when raw EditContext is exercised on
@@ -241,21 +241,21 @@ public class EditContextValidatableInfoFieldTest
                 _mappings = mappings;
             }
 
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
             {
                 if (_mappings.TryGetValue(type, out var info))
                 {
-                    validatableInfo = info;
+                    validatableTypeInfo = info;
                     return true;
                 }
 
-                validatableInfo = null;
+                validatableTypeInfo = null;
                 return false;
             }
 
-            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
             {
-                validatableInfo = null;
+                validatableParameterInfo = null;
                 return false;
             }
         }

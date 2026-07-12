@@ -227,46 +227,39 @@ public class NavigationManagerTest
     [InlineData("scheme://host/subdir/page", "#section1", "scheme://host/subdir/page#section1")]
     [InlineData("scheme://host/subdir/page#old", "section1", "scheme://host/subdir/page#section1")]
     [InlineData("scheme://host/app/subdir/page?query=value", "section1", "scheme://host/app/subdir/page?query=value#section1")]
-    public void GetUriWithHash_AddsOrReplacesHash(string baseUri, string hash, string expectedUri)
+    public void GetUriWithFragment_AddsOrReplacesFragment(string baseUri, string fragment, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
-        var actualUri = navigationManager.GetUriWithHash(hash);
+        var actualUri = navigationManager.GetUriWithFragment(fragment);
 
         Assert.Equal(expectedUri, actualUri);
     }
 
     [Theory]
-    [InlineData("scheme://host/", "scheme://host/")]
-    [InlineData("scheme://host/path", "scheme://host/path")]
-    [InlineData("scheme://host/path#hash", "scheme://host/path")]
-    [InlineData("scheme://host/path?query=value#hash", "scheme://host/path?query=value")]
+    [InlineData("scheme://host/", "", "scheme://host/")]
+    [InlineData("scheme://host/path", "", "scheme://host/path")]
+    [InlineData("scheme://host/path#hash", "", "scheme://host/path")]
+    [InlineData("scheme://host/path?query=value#hash", "", "scheme://host/path?query=value")]
     // Tests with non-root base paths (e.g., when using <base href="/subdir/">)
-    [InlineData("scheme://host/subdir/page#hash", "scheme://host/subdir/page")]
-    [InlineData("scheme://host/app/subdir/page?query=value#hash", "scheme://host/app/subdir/page?query=value")]
-    public void GetUriWithHash_RemovesHashWhenHashIsEmpty(string baseUri, string expectedUri)
+    [InlineData("scheme://host/subdir/page#hash", "", "scheme://host/subdir/page")]
+    [InlineData("scheme://host/app/subdir/page?query=value#hash", "", "scheme://host/app/subdir/page?query=value")]
+    [InlineData("scheme://host/path#hash", null, "scheme://host/path")]
+    [InlineData("scheme://host/path?query=value#hash", null, "scheme://host/path?query=value")]
+    public void GetUriWithFragment_RemovesFragmentWhenFragmentIsNullOrEmpty(string baseUri, string fragment, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
 
-        var actualUriWithEmpty = navigationManager.GetUriWithHash(string.Empty);
-        Assert.Equal(expectedUri, actualUriWithEmpty);
+        var actualUri = navigationManager.GetUriWithFragment(fragment);
+        Assert.Equal(expectedUri, actualUri);
     }
 
     [Fact]
-    public void GetUriWithHash_ThrowsWhenNavigationManagerIsNull()
+    public void GetUriWithFragment_ThrowsWhenNavigationManagerIsNull()
     {
         NavigationManager navigationManager = null;
 
-        var exception = Assert.Throws<ArgumentNullException>(() => navigationManager.GetUriWithHash("hash"));
+        var exception = Assert.Throws<ArgumentNullException>(() => navigationManager.GetUriWithFragment("fragment"));
         Assert.Equal("navigationManager", exception.ParamName);
-    }
-
-    [Fact]
-    public void GetUriWithHash_ThrowsWhenHashIsNull()
-    {
-        var navigationManager = new TestNavigationManager("scheme://host/");
-
-        var exception = Assert.Throws<ArgumentNullException>(() => navigationManager.GetUriWithHash(null));
-        Assert.Equal("hash", exception.ParamName);
     }
 
     [Fact]

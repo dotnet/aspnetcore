@@ -5,7 +5,6 @@ using BlazorWasm.ServiceDefaults1;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
@@ -68,23 +67,22 @@ public static class BlazorClientExtensions
         // the SDK, then fires the real request with retries in the background.
         builder.Services.AddSingleton<IPostConfigureOptions<OtlpExporterOptions>>(sp =>
         {
-            var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("Aspire.OtlpExport");
             return new PostConfigureOptions<OtlpExporterOptions>(null, o =>
             {
-                o.HttpClientFactory = () => new HttpClient(new BackgroundExportHandler(pipeline, logger));
+                o.HttpClientFactory = () => new HttpClient(new BackgroundExportHandler(pipeline, sp));
             });
-        });
-
-        builder.Logging.AddOpenTelemetry(logging =>
-        {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
-            logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName, serviceInstanceId: serviceName));
-            logging.AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint, "v1/logs"));
         });
 
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(r => r.AddService(serviceName, serviceInstanceId: serviceName))
+            .WithLogging(logging =>
+            {
+                logging.AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint, "v1/logs"));
+            }, options =>
+            {
+                options.IncludeFormattedMessage = true;
+                options.IncludeScopes = true;
+            })
             .WithMetrics(metrics =>
             {
                 metrics.AddMeter("Microsoft.AspNetCore.Components");

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Globalization;
 using System.Security.Claims;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -223,6 +225,24 @@ app.MapGet("/{value}", TestAction);
         await endpoint.RequestDelegate(httpContext);
 
         Assert.Equal(expectedValue, httpContext.Items["input"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateGenerator_AsParameters_MergesPropertyAndParameterValidationAttributes()
+    {
+        var source = """
+void TestAction([AsParameters] ParameterListRecordWithValidationAttributes args)
+{
+}
+app.MapGet("/{id}", TestAction);
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var parameterBindingMetadata = Assert.Single(endpoint.Metadata.OfType<Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata>(), p => p.Name == "Id");
+        var requiredAttributes = CustomAttributeExtensions.GetCustomAttributes<RequiredAttribute>(parameterBindingMetadata.ParameterInfo).ToArray();
+
+        Assert.Equal(2, requiredAttributes.Length);
     }
 
     [Fact]

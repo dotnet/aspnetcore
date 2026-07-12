@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -411,39 +410,53 @@ internal static class RequestDelegateGeneratorSources
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
             var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
-
-            if (constructorAttributes == null || constructorAttributes is { Length: 0 })
-            {
-                return _underlyingProperty.GetCustomAttributes(attributeType, inherit);
-            }
-
             var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
 
-            var mergedAttributes = new Attribute[constructorAttributes.Length + propertyAttributes.Length];
+            // We don't have constructor attributes, so we can safely return the property attributes.
+            if (constructorAttributes == null || constructorAttributes.Length == 0)
+            {
+                return propertyAttributes;
+            }
+
+            // We don't have property attributes, so we can safely return the constructor attributes.
+            if (propertyAttributes.Length == 0)
+            {
+                return constructorAttributes;
+            }
+
+            // We have both, and we need to merge (rare scenario).
+            var arrayType = constructorAttributes.GetType();
+            var mergedAttributes = Array.CreateInstanceFromArrayType(arrayType, constructorAttributes.Length + propertyAttributes.Length);
             Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
             Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
 
-            return mergedAttributes;
+            return (object[])mergedAttributes;
         }
 
         public override object[] GetCustomAttributes(bool inherit)
         {
             var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(inherit);
-
-            if (constructorAttributes == null || constructorAttributes is { Length: 0 })
-            {
-                return _underlyingProperty.GetCustomAttributes(inherit);
-            }
-
             var propertyAttributes = _underlyingProperty.GetCustomAttributes(inherit);
 
-            // Since the constructors attributes should take priority we will add them first,
-            // as we usually call it as First() or FirstOrDefault() in the argument creation
-            var mergedAttributes = new object[constructorAttributes.Length + propertyAttributes.Length];
+            // We don't have constructor attributes, so we can safely return the property attributes.
+            if (constructorAttributes == null || constructorAttributes.Length == 0)
+            {
+                return propertyAttributes;
+            }
+
+            // We don't have property attributes, so we can safely return the constructor attributes.
+            if (propertyAttributes.Length == 0)
+            {
+                return constructorAttributes;
+            }
+
+            // We have both, and we need to merge (rare scenario).
+            var arrayType = constructorAttributes.GetType();
+            var mergedAttributes = Array.CreateInstanceFromArrayType(arrayType, constructorAttributes.Length + propertyAttributes.Length);
             Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
             Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
 
-            return mergedAttributes;
+            return (object[])mergedAttributes;
         }
 
         public override IList<CustomAttributeData> GetCustomAttributesData()

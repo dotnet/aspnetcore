@@ -14,7 +14,6 @@ internal sealed partial class EndpointMiddleware
 {
     internal const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareWithEndpointInvoked";
     internal const string CorsMiddlewareInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
-    internal const string AntiforgeryMiddlewareWithEndpointInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
 
     private readonly ILogger _logger;
     private readonly RequestDelegate _next;
@@ -51,7 +50,8 @@ internal sealed partial class EndpointMiddleware
                 }
 
                 if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
-                    !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey))
+                    !httpContext.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery) &&
+                    !httpContext.Items.ContainsKey(MiddlewareInvokedKeys.CsrfProtection))
                 {
                     ThrowMissingAntiforgeryMiddlewareException(endpoint);
                 }

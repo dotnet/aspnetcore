@@ -25,7 +25,7 @@ public class CorsPolicyBuilder
     /// <summary>
     /// Creates a new instance of the <see cref="CorsPolicyBuilder"/>.
     /// </summary>
-    /// <param name="policy">The policy which will be used to intialize the builder.</param>
+    /// <param name="policy">The policy which will be used to initialize the builder.</param>
     public CorsPolicyBuilder(CorsPolicy policy)
     {
         Combine(policy);

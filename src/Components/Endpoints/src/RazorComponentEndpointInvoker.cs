@@ -65,12 +65,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         Log.BeginRenderRootComponent(_logger, rootComponent.Name, pageComponent.Name);
 
-        // Metadata controls whether we require antiforgery protection for this endpoint or we should skip it.
-        // The default for razor component endpoints is to require the metadata, but it can be overriden by
-        // the developer.
-        var antiforgeryMetadata = endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>();
-        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
-        var result = await ValidateRequestAsync(context, antiforgeryMetadata?.RequiresValidation == true ? antiforgery : null);
+        var result = await ValidateRequestAsync(context);
         if (!result.IsValid)
         {
             // If the request is not valid we've already set the response to a 400 or similar
@@ -142,8 +137,13 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
             bufferingFeature.DisableBuffering();
 
-            // Store the tokens if not emitted already in case we stream a form in the response.
-            antiforgery!.GetAndStoreTokens(context);
+            // if AntiforgeryMiddleware is not in the pipeline (it should have been invoked by the time we get here),
+            // then there is no need to get and store tokens
+            if (context.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery))
+            {
+                var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+                antiforgery.GetAndStoreTokens(context);
+            }
 
             context.Response.Headers.ContentEncoding = "identity";
         }
@@ -205,7 +205,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         await bufferWriter.FlushAsync();
     }
 
-    private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
+    private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context)
     {
         var processPost = HttpMethods.IsPost(context.Request.Method) &&
             // Disable POST functionality during exception handling.
@@ -230,44 +230,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                 }
             }
 
-            // Respect the token validation done by the middleware _if_ it has been set, otherwise
-            // run the validation here.
-            var valid = false;
-            if (context.Features.Get<IAntiforgeryValidationFeature>() is { } antiForgeryValidationFeature)
+            // EndpointMiddleware already validated that at least CsrfProtection or AntiforgeryMiddleware was invoked before ending up here.
+            // No responsibility to call Antiforgery/CsrfProtection explicitly here, just check what was set
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is { IsValid: false })
             {
-                if (!antiForgeryValidationFeature.IsValid)
-                {
-                    Log.MiddlewareAntiforgeryValidationFailed(_logger);
-                }
-                else
-                {
-                    valid = true;
-                    Log.MiddlewareAntiforgeryValidationSucceeded(_logger);
-                }
-            }
-            else
-            {
-                if (antiforgery == null)
-                {
-                    valid = true;
-                    Log.EndpointAntiforgeryValidationDisabled(_logger);
-                }
-                else
-                {
-                    valid = await antiforgery.IsRequestValidAsync(context);
-                    if (valid)
-                    {
-                        Log.EndpointAntiforgeryValidationSucceeded(_logger);
-                    }
-                    else
-                    {
-                        Log.EndpointAntiforgeryValidationFailed(_logger);
-                    }
-                }
-            }
-
-            if (!valid)
-            {
+                Log.MiddlewareAntiforgeryValidationFailed(_logger);
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
                 if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
@@ -277,11 +245,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                 return RequestValidationState.InvalidPostRequest;
             }
 
-            // Read the form asynchronously to ensure Request.Form has been populated.
+            Log.MiddlewareAntiforgeryValidationSucceeded(_logger);
             await context.Request.ReadFormAsync();
 
             var handler = GetFormHandler(context, out var isBadRequest);
-            return new(valid && !isBadRequest, processPost, handler);
+            return new(!isBadRequest, processPost, handler);
         }
 
         return RequestValidationState.ValidNonPostRequest;
@@ -333,15 +301,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         [LoggerMessage(3, LogLevel.Debug, "The antiforgery middleware already succeeded to validate the current token.", EventName = nameof(MiddlewareAntiforgeryValidationSucceeded))]
         public static partial void MiddlewareAntiforgeryValidationSucceeded(ILogger<RazorComponentEndpointInvoker> logger);
-
-        [LoggerMessage(4, LogLevel.Debug, "The endpoint disabled antiforgery token validation.", EventName = nameof(EndpointAntiforgeryValidationDisabled))]
-        public static partial void EndpointAntiforgeryValidationDisabled(ILogger<RazorComponentEndpointInvoker> logger);
-
-        [LoggerMessage(5, LogLevel.Information, "Antiforgery token validation failed for the current request.", EventName = nameof(EndpointAntiforgeryValidationFailed))]
-        public static partial void EndpointAntiforgeryValidationFailed(ILogger<RazorComponentEndpointInvoker> logger);
-
-        [LoggerMessage(6, LogLevel.Debug, "Antiforgery token validation succeeded for the current request.", EventName = nameof(EndpointAntiforgeryValidationSucceeded))]
-        public static partial void EndpointAntiforgeryValidationSucceeded(ILogger<RazorComponentEndpointInvoker> logger);
 
         [LoggerMessage(7, LogLevel.Debug, "Error handling in progress. Interactive components are not enabled.", EventName = nameof(InteractivityDisabledForErrorHandling))]
         public static partial void InteractivityDisabledForErrorHandling(ILogger<RazorComponentEndpointInvoker> logger);

@@ -423,7 +423,7 @@ function InitializeToolset {
   if [[ -z "$nuget_config" ]]; then
     # Search for any variation of nuget.config in the RepoRoot
     local found_config
-    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname "nuget.config" -print -quit)
+    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname nuget.config | head -n 1)
 
     if [[ -n "$found_config" ]]; then
       nuget_config="$found_config"
@@ -466,7 +466,8 @@ function ExitWithExitCode {
 function StopProcesses {
   echo "Killing running build processes..."
   pkill -9 "dotnet" || true
-  pkill -9 "vbcscompiler" || true
+  pkill -9 -i -x VBCSCompiler || true
+  pkill -9 -i -x MSBuild || true
   return 0
 }
 
@@ -493,12 +494,7 @@ function DotNet {
 function MSBuild {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true && "$exclude_ci_binary_log" != true ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the -noBinaryLog switch."
-      ExitWithExitCode 1
-    fi
-
-    if [[ "$node_reuse" == true ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Node reuse must be disabled in CI build."
+      Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the --excludeCIBinarylog switch."
       ExitWithExitCode 1
     fi
   fi

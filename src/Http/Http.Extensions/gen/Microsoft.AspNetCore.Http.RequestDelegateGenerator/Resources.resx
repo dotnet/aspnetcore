@@ -138,6 +138,12 @@
   <data name="UnableToResolveAnonymousReturnType_Message" xml:space="preserve">
     <value>Unable to resolve anonymous return type. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see https://aka.ms/aspnet/rdg-known-issues</value>
   </data>
+  <data name="UnableToResolveReturnType_Title" xml:space="preserve">
+    <value>Unable to resolve endpoint handler return type</value>
+  </data>
+  <data name="UnableToResolveReturnType_Message" xml:space="preserve">
+    <value>Unable to statically resolve the return type of the endpoint handler. This can occur when the return type is produced by another source generator or is otherwise unavailable at compile time. Compile-time endpoint generation will skip this endpoint and the endpoint will be generated at runtime. For more information, please see https://aka.ms/aspnet/rdg-known-issues</value>
+  </data>
   <data name="UnableToResolveAnonymousReturnType_Title" xml:space="preserve">
     <value>Unable to resolve anonymous type</value>
   </data>
