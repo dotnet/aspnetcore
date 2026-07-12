@@ -868,7 +868,7 @@ public partial class HubConnection : IAsyncDisposable
 
             // I just want an excuse to use 'irq' as a variable name...
             var irq = InvocationRequest.Stream(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, activity, out channel);
-            await InvokeStreamCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
+            await InvokeStreamCore(connectionState, methodName, irq, args, streamIds, cancellationToken).ConfigureAwait(false);
 
             var streamTasks = LaunchStreams(connectionState, readers, cancellationToken);
 
@@ -890,7 +890,7 @@ public partial class HubConnection : IAsyncDisposable
         return channel;
     }
 
-    private Dictionary<string, object>? PackageStreamingParams(ConnectionState connectionState, ref object?[] args, out List<string>? streamIds)
+    private Dictionary<string, object>? PackageStreamingParams(ConnectionState connectionState, ref object?[] args, out string[]? streamIds)
     {
         Dictionary<string, object>? readers = null;
         streamIds = null;
@@ -899,6 +899,7 @@ public partial class HubConnection : IAsyncDisposable
         Span<bool> isStreaming = args.Length <= MaxStackSize
             ? stackalloc bool[MaxStackSize].Slice(0, args.Length)
             : new bool[args.Length];
+        var streamCount = 0;
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
@@ -906,21 +907,26 @@ public partial class HubConnection : IAsyncDisposable
             {
                 isStreaming[i] = true;
                 newArgsCount--;
+                streamCount++;
+            }
+        }
 
-                if (readers is null)
+        if (streamCount > 0)
+        {
+            readers = new Dictionary<string, object>();
+            streamIds = new string[streamCount];
+            var streamIndex = 0;
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (isStreaming[i])
                 {
-                    readers = new Dictionary<string, object>();
-                }
-                if (streamIds is null)
-                {
-                    streamIds = new List<string>();
-                }
+                    var id = connectionState.GetNextId();
+                    readers[id] = args[i]!;
+                    streamIds[streamIndex] = id;
+                    streamIndex++;
 
-                var id = connectionState.GetNextId();
-                readers[id] = arg;
-                streamIds.Add(id);
-
-                Log.StartingStream(_logger, id);
+                    Log.StartingStream(_logger, id);
+                }
             }
         }
 
@@ -1219,7 +1225,7 @@ public partial class HubConnection : IAsyncDisposable
             readers = PackageStreamingParams(connectionState, ref args, out var streamIds);
 
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, activity, out invocationTask);
-            await InvokeCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
+            await InvokeCore(connectionState, methodName, irq, args, streamIds, cancellationToken).ConfigureAwait(false);
 
             var streamTasks = LaunchStreams(connectionState, readers, cancellationToken);
 
@@ -1414,7 +1420,7 @@ public partial class HubConnection : IAsyncDisposable
             readers = PackageStreamingParams(connectionState, ref args, out var streamIds);
 
             Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
-            var invocationMessage = new InvocationMessage(null, methodName, args, streamIds?.ToArray());
+            var invocationMessage = new InvocationMessage(null, methodName, args, streamIds);
             if (activity is not null)
             {
                 InjectHeaders(activity, invocationMessage);
@@ -2357,14 +2363,19 @@ public partial class HubConnection : IAsyncDisposable
         {
             lock (_lock)
             {
-                if (_pendingCalls.ContainsKey(irq.InvocationId))
+#if NETSTANDARD2_0 || NETFRAMEWORK
+                var added = !_pendingCalls.ContainsKey(irq.InvocationId);
+                if (added)
+                {
+                    _pendingCalls.Add(irq.InvocationId, irq);
+                }
+#else
+                var added = _pendingCalls.TryAdd(irq.InvocationId, irq);
+#endif
+                if (!added)
                 {
                     Log.InvocationAlreadyInUse(_logger, irq.InvocationId);
                     throw new InvalidOperationException($"Invocation ID '{irq.InvocationId}' is already in use.");
-                }
-                else
-                {
-                    _pendingCalls.Add(irq.InvocationId, irq);
                 }
             }
         }

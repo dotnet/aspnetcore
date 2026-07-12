@@ -243,7 +243,7 @@ internal abstract class MessagePackHubProtocolWorker
         var headerCount = ReadMapLength(ref reader, "headers");
         if (headerCount > 0)
         {
-            var headers = new Dictionary<string, string>(StringComparer.Ordinal);
+            var headers = new Dictionary<string, string>((int)headerCount, StringComparer.Ordinal);
 
             for (var i = 0; i < headerCount; i++)
             {
@@ -266,21 +266,22 @@ internal abstract class MessagePackHubProtocolWorker
     private static string[]? ReadStreamIds(ref MessagePackReader reader)
     {
         var streamIdCount = ReadArrayLength(ref reader, "streamIds");
-        List<string>? streams = null;
 
         if (streamIdCount > 0)
         {
-            streams = new List<string>();
+            var streams = new string[streamIdCount];
             for (var i = 0; i < streamIdCount; i++)
             {
                 var id = reader.ReadString();
                 ThrowIfNullOrEmpty(id, "value in streamIds received");
 
-                streams.Add(id);
+                streams[i] = id;
             }
+
+            return streams;
         }
 
-        return streams?.ToArray();
+        return null;
     }
 
     private static AckMessage CreateAckMessage(ref MessagePackReader reader)
