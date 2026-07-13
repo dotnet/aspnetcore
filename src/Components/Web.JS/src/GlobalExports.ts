@@ -75,7 +75,7 @@ export interface IBlazor {
       getParameterValues: (id) => any;
     };
     renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void;
-    renderBatchOutOfProcess?: (browserRendererId: number, batchData: Uint8Array) => void;
+    renderBatchOutOfProcess?: (browserRendererId: number, batchData: Uint8Array) => Promise<void>;
     getConfig?: (fileName: string) => Uint8Array | undefined;
     getApplicationEnvironment?: () => string;
     getApplicationCulture?: () => string;
@@ -88,6 +88,7 @@ export interface IBlazor {
     receiveWebViewDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     attachWebRendererInterop?: typeof attachWebRendererInterop;
     isBlazorWeb?: boolean;
+    usingWebWorker?: boolean;
 
     // JSExport APIs
     dotNetExports?: {

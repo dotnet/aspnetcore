@@ -6,7 +6,7 @@ import { isRendererAttached, registerRendererAttachedListener } from '../Renderi
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
 import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer, updateServerRootComponents } from '../Boot.Server.Common';
-import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
+import { getWebAssemblyRendererId, hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
 import { getRendererer } from '../Rendering/Renderer';
@@ -312,12 +312,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
               operationsByRendererId.set(WebRendererId.Server, []);
             }
           }
-        } else if (rendererId === WebRendererId.WebAssembly) {
+        } else if (rendererId === getWebAssemblyRendererId()) {
           webAssemblyState = discoverWebAssemblyPersistedState(document) || '';
           if (webAssemblyState && webAssemblyState !== '') {
-            const ops = operationsByRendererId.get(WebRendererId.WebAssembly);
+            const ops = operationsByRendererId.get(rendererId);
             if (!ops) {
-              operationsByRendererId.set(WebRendererId.WebAssembly, []);
+              operationsByRendererId.set(rendererId, []);
             }
           }
         } else {
@@ -360,7 +360,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         return WebRendererId.Server;
       case 'webassembly':
         this.startWebAssemblyIfNotStarted();
-        return WebRendererId.WebAssembly;
+        return getWebAssemblyRendererId();
       case null:
         return null;
     }
@@ -368,7 +368,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private getAutoRenderMode(): 'webassembly' | 'server' | null {
     // If WebAssembly components exist or may exist soon, use WebAssembly.
-    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly, 'webassembly')) {
+    if (this.rendererHasExistingOrPendingComponents(getWebAssemblyRendererId(), 'webassembly')) {
       return 'webassembly';
     }
 

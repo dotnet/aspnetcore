@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-/* eslint-disable array-element-newline */
 import { Blazor } from './GlobalExports';
 import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
@@ -31,6 +30,7 @@ async function boot(options?: BlazorWebAssemblyStartOptions): Promise<void> {
   const webAssemblyOptions = discoverWebAssemblyOptions(document);
 
   const components = new InitialRootComponentsList(webAssemblyComponents);
+
   await startWebAssembly(components, webAssemblyOptions);
 }
 

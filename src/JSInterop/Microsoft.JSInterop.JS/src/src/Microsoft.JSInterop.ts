@@ -826,7 +826,9 @@ export module DotNet {
   }
 
   function argReplacer(key: string, value: any) {
-      if (value instanceof Element) {
+      // 'Element' does not exist in non-DOM contexts (e.g. a Web Worker hosting the
+      // runtime); guard the check so serialization there doesn't throw a ReferenceError.
+      if (typeof Element !== "undefined" && value instanceof Element) {
           return { [dotNetElementRefKey]: getCaptureIdFromElement(value) };
       }
       if (value instanceof DotNetObject) {

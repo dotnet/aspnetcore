@@ -123,7 +123,10 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
-    protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
+    protected override int GetWebRendererId() =>
+        Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") == "true"
+            ? (int)WebRendererId.WebAssemblyOutOfProcess
+            : (int)WebRendererId.WebAssembly;
 
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
@@ -165,9 +168,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     /// <inheritdoc />
     protected override unsafe Task UpdateDisplayAsync(in RenderBatch batch)
     {
+        var updateDisplayTask = Task.CompletedTask;
+
         if (_useOutOfProcessRendering)
         {
-            UpdateDisplayOutOfProcess(in batch);
+            updateDisplayTask = UpdateDisplayOutOfProcess(in batch);
         }
         else
         {
@@ -193,17 +198,19 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             // other, and because various bits of cleanup logic rely on this ordering.
             var tcs = new TaskCompletionSource();
             WebAssemblyCallQueue.Schedule(tcs, static tcs => tcs.SetResult());
-            return tcs.Task;
+            return updateDisplayTask.IsCompletedSuccessfully
+                ? tcs.Task
+                : Task.WhenAll(updateDisplayTask, tcs.Task);
         }
         else
         {
             // Nothing else is pending, so we can treat the renderbatch as acknowledged synchronously.
             // This lets upstream code skip an expensive code path and avoids some allocations.
-            return Task.CompletedTask;
+            return updateDisplayTask;
         }
     }
 
-    private void UpdateDisplayOutOfProcess(in RenderBatch batch)
+    private Task UpdateDisplayOutOfProcess(in RenderBatch batch)
     {
         // Serialize the render batch using the same binary format as Server rendering.
         // This creates a self-contained byte[] copy that JS can process without a heap lock.
@@ -217,7 +224,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             }
 
             var batchBytes = arrayBuilder.Buffer.AsSpan(0, arrayBuilder.Count).ToArray();
-            RenderBatchOutOfProcess(RendererId, batchBytes);
+            return RenderBatchOutOfProcess(RendererId, batchBytes);
         }
         finally
         {
@@ -270,5 +277,5 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private static unsafe partial void RenderBatch(int id, void* batch);
 
     [JSImport("Blazor._internal.renderBatchOutOfProcess", "blazor-internal")]
-    private static partial void RenderBatchOutOfProcess(int rendererId, byte[] batchData);
+    private static partial Task RenderBatchOutOfProcess(int rendererId, byte[] batchData);
 }

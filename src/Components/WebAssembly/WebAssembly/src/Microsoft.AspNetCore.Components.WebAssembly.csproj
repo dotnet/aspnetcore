@@ -72,11 +72,14 @@
     <_BlazorWasmJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorWasmJSContentRoot>
   </PropertyGroup>
 
-  <!-- Include blazor.webassembly.js as Content under wwwroot/ so the SWA pipeline discovers it.
+  <!-- Include blazor.webassembly.js and the Web Worker bundle as Content under wwwroot/
+       so the SWA pipeline discovers them.
        ContentRoot points to the JS dist folder so the runtime middleware can serve files directly. -->
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
     <Content Include="$(_BlazorWasmJSContentRoot)\_framework\blazor.webassembly.js" Link="wwwroot\_framework\blazor.webassembly.js" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
     <Content Include="$(_BlazorWasmJSContentRoot)\_framework\blazor.webassembly.js.map" Link="wwwroot\_framework\blazor.webassembly.js.map" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
+    <Content Include="$(_BlazorWasmJSContentRoot)\_framework\blazor.webassembly.worker.js" Link="wwwroot\_framework\blazor.webassembly.worker.js" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
+    <Content Include="$(_BlazorWasmJSContentRoot)\_framework\blazor.webassembly.worker.js.map" Link="wwwroot\_framework\blazor.webassembly.worker.js.map" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
   </ItemGroup>
 
   <ItemGroup>

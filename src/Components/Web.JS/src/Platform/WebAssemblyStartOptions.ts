@@ -34,6 +34,21 @@ export interface WebAssemblyStartOptions {
    * Allows to override .NET runtime configuration.
    */
   configureRuntime(builder: DotnetHostBuilder): void;
+
+  /**
+   * Controls whether the .NET runtime runs inside a Web Worker so the main UI thread
+   * stays responsive during CPU-intensive operations such as garbage collection.
+   *
+   * - `undefined` (default): automatically enabled when the browser supports Web Workers.
+   * - `false`: always run on the main thread even if Web Workers are available.
+   * - `true`: force Web Worker mode (throws if the browser does not support it).
+   *
+   * When Web Worker mode is active, render batches are transferred to the main thread
+   * via postMessage and DOM events are forwarded to the worker.
+   * Requires the <c>__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER</c> environment
+   * variable to be set to <c>true</c> on the .NET side.
+   */
+  useWebWorker?: boolean;
 }
 
 // This type doesn't have to align with anything in BootConfig.

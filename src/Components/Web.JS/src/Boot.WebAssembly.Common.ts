@@ -11,7 +11,7 @@ import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRen
 import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { addDispatchEventMiddleware, attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebAssemblyComponentDescriptor, WebAssemblyServerOptions, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
@@ -19,6 +19,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
+import type { WorkerToMainMessage, MainToWorkerMessage } from './Boot.WebAssemblyWorker';
 
 let options: Partial<WebAssemblyStartOptions> | undefined;
 let platformLoadPromise: Promise<void> | undefined;
@@ -27,6 +28,7 @@ let started = false;
 let firstUpdate = true;
 let waitForRootComponents = false;
 let startPromise: Promise<void> | undefined;
+let usingWebWorker = false;
 
 let resolveBootConfigPromise: (value: MonoConfig) => void;
 const bootConfigPromise = new Promise<MonoConfig>(resolve => {
@@ -70,14 +72,194 @@ export function setWebAssemblyOptions(initializersReady: Promise<Partial<WebAsse
   }
 }
 
-export function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>, options: WebAssemblyServerOptions | undefined): Promise<void> {
+export function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>, serverOptions: WebAssemblyServerOptions | undefined): Promise<void> {
   if (startPromise !== undefined) {
     throw new Error('Blazor WebAssembly has already started.');
   }
 
-  startPromise = new Promise(startCore.bind(null, components, options));
+  startPromise = startWebAssemblyDispatch(components, serverOptions);
 
   return startPromise;
+}
+
+async function startWebAssemblyDispatch(components: RootComponentManager<WebAssemblyComponentDescriptor>, serverOptions: WebAssemblyServerOptions | undefined): Promise<void> {
+  await initializersPromise;
+
+  usingWebWorker = shouldUseWebWorker(options?.useWebWorker);
+
+  Blazor._internal.usingWebWorker = usingWebWorker;
+
+  if (usingWebWorker) {
+    await startWebAssemblyWorkerHost(components);
+  } else {
+    await new Promise<void>((resolve, reject) => startCore(components, serverOptions, resolve, reject));
+  }
+}
+
+export function isUsingWebWorker(): boolean {
+  return usingWebWorker;
+}
+
+export function getWebAssemblyRendererId(): WebRendererId {
+  return usingWebWorker ? WebRendererId.WebAssemblyOutOfProcess : WebRendererId.WebAssembly;
+}
+
+function isWebWorkerSupported(): boolean {
+  return typeof Worker !== 'undefined';
+}
+
+function shouldUseWebWorker(option: boolean | undefined): boolean {
+  if (option === false) {
+    return false;
+  }
+  if (option === true) {
+    return true;
+  }
+  return isWebWorkerSupported();
+}
+
+async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAssemblyComponentDescriptor>): Promise<void> {
+  const dotnetJsUrl = resolveDotnetJsUrl();
+  const persistedState = discoverWebAssemblyPersistedState(document) ?? '';
+
+  const workerScriptUrl = new URL('_framework/blazor.webassembly.worker.js', document.baseURI).href;
+  const worker = new Worker(workerScriptUrl, { type: 'module' });
+
+  const mainDispatcher = DotNet.attachDispatcher({
+    beginInvokeDotNetFromJS() {
+      throw new Error('[Blazor Worker Host] Cannot invoke .NET from the main thread in Worker mode.');
+    },
+    endInvokeJSFromDotNet(_asyncHandle, _succeeded, serializedArgs) {
+      // JS interop completed: send the serialised result back to the Worker so
+      // .NET can resolve its Task.
+      sendToWorker(worker, { type: 'blazor:jsCallResult', serializedArgs });
+    },
+    sendByteArray() { /* not handled */ },
+    invokeDotNetFromJS() {
+      throw new Error('[Blazor Worker Host] Cannot invoke .NET from the main thread in Worker mode.');
+    },
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    worker.addEventListener('error', e => reject(new Error(e.message ?? 'Web Worker error')));
+
+    worker.addEventListener('message', (e: MessageEvent<WorkerToMainMessage>) => {
+      const msg = e.data;
+
+      switch (msg.type) {
+        case 'blazor:workerReady':
+          resolve();
+          break;
+
+        case 'blazor:error':
+          reject(new Error(`Blazor Web Worker failed to start: ${msg.message}`));
+          break;
+
+        case 'blazor:renderBatch': {
+          // Apply the serialised render batch to the DOM on the main thread.
+          try {
+            const batchData = new Uint8Array(msg.batchData);
+            renderBatch(msg.rendererId, new OutOfProcessRenderBatch(batchData, /* useUtf16StringTable */ true));
+            sendToWorker(worker, { type: 'blazor:renderBatchCompleted', batchId: msg.batchId });
+          } catch (err: unknown) {
+            sendToWorker(worker, {
+              type: 'blazor:renderBatchCompleted',
+              batchId: msg.batchId,
+              errorMessage: err instanceof Error ? err.message : String(err),
+            });
+            throw err;
+          }
+          break;
+        }
+
+        case 'blazor:attachRootComponentToElement':
+          attachRootComponentToElement(msg.selector, msg.componentId, msg.rendererId);
+          break;
+
+        case 'blazor:rendererAttached': {
+          const rendererId = msg.rendererId;
+          attachWebRendererInterop(rendererId, createEventForwardingProxy(worker, rendererId) as any);
+          break;
+        }
+
+        case 'blazor:jsCall':
+          // .NET called a JS function asynchronously; execute it on the main thread.
+          mainDispatcher.beginInvokeJSFromDotNet(
+            msg.asyncHandle,
+            msg.identifier,
+            msg.argsJson,
+            msg.resultType,
+            msg.targetInstanceId,
+            msg.callType,
+          );
+          break;
+
+        case 'blazor:endLocationChanging':
+          Blazor._internal.navigationManager.endLocationChanging(msg.callId, msg.shouldContinue);
+          break;
+
+        case 'blazor:endUpdateRootComponents':
+          components.onAfterUpdateRootComponents?.(msg.batchId);
+          break;
+      }
+    });
+
+    // .NET's own call to enableNavigationInterception is swallowed by the Worker's no-op
+    // stub (it has no document to intercept clicks on), so it must be triggered here instead
+    // otherwise link clicks fall through to full browser navigations instead of SPA routing.
+    Blazor._internal.navigationManager.enableNavigationInterception(WebRendererId.WebAssemblyOutOfProcess);
+
+    // Forward DOM navigation events to the Worker.
+    Blazor._internal.navigationManager.listenForNavigationEvents(
+      WebRendererId.WebAssemblyOutOfProcess,
+      (uri: string, state: string | undefined, intercepted: boolean) => {
+        sendToWorker(worker, { type: 'blazor:locationChanged', uri, state, intercepted });
+        return Promise.resolve();
+      },
+      (callId: number, uri: string, state: string | undefined, intercepted: boolean) => {
+        sendToWorker(worker, { type: 'blazor:locationChanging', callId, uri, state, intercepted });
+        return Promise.resolve();
+      },
+    );
+
+    // Send the initialisation message to the Worker. The Worker has no document/location
+    // of its own, so the current base URI and location must be supplied from the main thread.
+    sendToWorker(worker, {
+      type: 'blazor:init',
+      dotnetJsUrl,
+      persistedState,
+      baseUri: document.baseURI,
+      locationHref: location.href,
+    });
+  });
+}
+
+function createEventForwardingProxy(worker: Worker, rendererId: number) {
+  return {
+    invokeMethodAsync(method: string, ...args: unknown[]): Promise<void> {
+      if (method === 'DispatchEventAsync') {
+        // EventDescriptor has no renderer id of its own, so it must be supplied from the
+        // closure (captured when this proxy was created) rather than read off the descriptor.
+        sendToWorker(worker, {
+          type: 'blazor:dispatchEvent',
+          rendererId,
+          eventDescriptor: JSON.stringify(args[0]),
+          eventArgs: JSON.stringify(args[1]),
+        });
+      }
+      return Promise.resolve();
+    },
+  };
+}
+
+/** Resolves the fingerprinted dotnet.js URL via the page's import map. */
+function resolveDotnetJsUrl(): string {
+  const bare = new URL('_framework/dotnet.js', document.baseURI).href;
+  return (import.meta as any).resolve?.(bare) ?? bare;
+}
+
+function sendToWorker(worker: Worker, msg: MainToWorkerMessage): void {
+  worker.postMessage(msg);
 }
 
 async function startCore(components: RootComponentManager<WebAssemblyComponentDescriptor>, options: WebAssemblyServerOptions | undefined, resolve, _) {
@@ -122,11 +304,12 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   };
 
-  Blazor._internal.renderBatchOutOfProcess = (browserRendererId: number, batchData: Uint8Array): void => {
+  Blazor._internal.renderBatchOutOfProcess = (browserRendererId: number, batchData: Uint8Array): Promise<void> => {
     // No heap lock needed — batchData is a self-contained byte[] copy,
     // not a pointer into the .NET managed heap.
     // Uses UTF-16LE string table encoding to avoid UTF-8 transcoding on both sides.
     renderBatch(browserRendererId, new OutOfProcessRenderBatch(batchData, /* useUtf16StringTable */ true));
+    return Promise.resolve();
   };
 
   Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
