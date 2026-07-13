@@ -29,9 +29,7 @@ import { resolveOptions, CircuitStartOptions, ReconnectionOptions } from './Plat
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { createValidationService, ValidationOptions } from './Validation';
-import { ClientValidationElementName } from './Validation/Adapters/BlazorAdapter';
-import { refreshValidationService } from './Validation/ValidationService';
+import { createBlazorValidation, ensureNovalidateOnForms, ValidationOptions } from './Validation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -178,16 +176,13 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
 function initFormValidationIfNeeded(validationOptions?: ValidationOptions): void {
   if (Blazor.formValidation) {
-    // The service already exists. An enhanced-navigation update may have reused/updated carrier
-    // elements in place (without re-firing their connectedCallback), so reconcile them against
-    // the current DOM.
-    refreshValidationService();
+    // The service already exists. An enhanced-navigation morph reuses forms in place and strips the
+    // JS-added novalidate, so re-add it.
+    ensureNovalidateOnForms();
     return;
   }
 
-  if (document.querySelector(ClientValidationElementName)) {
-    Blazor.formValidation = createValidationService(validationOptions);
-  }
+  Blazor.formValidation = createBlazorValidation(validationOptions);
 }
 
 async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {
