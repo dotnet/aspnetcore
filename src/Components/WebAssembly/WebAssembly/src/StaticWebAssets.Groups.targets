@@ -1,5 +1,5 @@
 <Project>
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or (('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(UsingMicrosoftNETSdkWeb)' == 'true')">
     <StaticWebAssetGroup Include="BlazorWebAssembly"
       Value="enabled"
       SourceId="Microsoft.AspNetCore.Components.WebAssembly" />
