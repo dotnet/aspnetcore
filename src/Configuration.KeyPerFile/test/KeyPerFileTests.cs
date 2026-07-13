@@ -268,7 +268,7 @@ public class KeyPerFileTests
         await changeTaskCompletion.Task;
 
         Assert.Equal("NewSecretValue1", config["Secret1"]);
-        Assert.Null(config["NewSecret2"]);
+        Assert.Null(config["Secret2"]);
         Assert.Equal("NewSecretValue3", config["Secret3"]);
     }
 
@@ -353,7 +353,7 @@ public class KeyPerFileTests
         await changeTaskCompletion.Task;
 
         Assert.Equal("NewSecretValue1", config["Secret1"]);
-        Assert.Null(config["NewSecret2"]);
+        Assert.Null(config["Secret2"]);
         Assert.Equal("NewSecretValue3", config["Secret3"]);
     }
 
