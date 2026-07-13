@@ -1352,6 +1352,7 @@ jobs:
     needs:
       - activation
       - agent
+      - pat_pool
     if: always() && needs.agent.result != 'skipped'
     runs-on: ubuntu-latest
     environment: copilot-pat-pool
