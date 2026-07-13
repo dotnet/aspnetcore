@@ -97,34 +97,48 @@ public abstract class AuthorizeViewCore : ComponentBase
     /// </summary>
     protected abstract IAuthorizeData[]? GetAuthorizeData();
 
+    /// <summary>
+    /// Gets the full set of authorization metadata used to apply authorization rules.
+    /// </summary>
+    /// <remarks>
+    /// By default this returns the value of <see cref="GetAuthorizeData"/>. Override this method to
+    /// contribute additional metadata such as <see cref="AuthorizationPolicy"/> or
+    /// <see cref="IAuthorizationRequirementData"/> instances in addition to <see cref="IAuthorizeData"/>.
+    /// Returning <see langword="null"/> indicates that no authorization applies.
+    /// </remarks>
+    /// <returns>
+    /// The authorization metadata used to build the effective policy, or <see langword="null"/> if no
+    /// authorization applies.
+    /// </returns>
+    protected virtual object[]? GetAuthorizeMetadata() => GetAuthorizeData();
+
     private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
     {
-        var authorizeData = GetAuthorizeData();
-        if (authorizeData == null)
+        var authorizeMetadata = GetAuthorizeMetadata();
+        if (authorizeMetadata == null)
         {
             // No authorization applies, so no need to consult the authorization service
             return true;
         }
 
-        EnsureNoAuthenticationSchemeSpecified(authorizeData);
+        EnsureNoAuthenticationSchemeSpecified(authorizeMetadata);
 
         var policy = await AuthorizationPolicy.CombineAsync(
-            AuthorizationPolicyProvider, authorizeData);
+            AuthorizationPolicyProvider, authorizeMetadata);
         var result = await AuthorizationService.AuthorizeAsync(user, Resource, policy!);
         return result.Succeeded;
     }
 
-    private static void EnsureNoAuthenticationSchemeSpecified(IAuthorizeData[] authorizeData)
+    private static void EnsureNoAuthenticationSchemeSpecified(object[] authorizeMetadata)
     {
         // It's not meaningful to specify a nonempty scheme, since by the time Components
         // authorization runs, we already have a specific ClaimsPrincipal (we're stateful).
         // To avoid any confusion, ensure the developer isn't trying to specify a scheme.
-        for (var i = 0; i < authorizeData.Length; i++)
+        for (var i = 0; i < authorizeMetadata.Length; i++)
         {
-            var entry = authorizeData[i];
-            if (!string.IsNullOrEmpty(entry.AuthenticationSchemes))
+            if (authorizeMetadata[i] is IAuthorizeData { AuthenticationSchemes: { Length: > 0 } authenticationSchemes })
             {
-                throw new NotSupportedException($"The authorization data specifies an authentication scheme with value '{entry.AuthenticationSchemes}'. Authentication schemes cannot be specified for components.");
+                throw new NotSupportedException($"The authorization data specifies an authentication scheme with value '{authenticationSchemes}'. Authentication schemes cannot be specified for components.");
             }
         }
     }

@@ -18,8 +18,13 @@ internal static class AttributeAuthorizeDataCache
     }
 
     private static readonly ConcurrentDictionary<Type, IAuthorizeData[]?> _cache = new();
+    private static readonly ConcurrentDictionary<Type, object[]?> _metadataCache = new();
 
-    private static void ClearCache() => _cache.Clear();
+    private static void ClearCache()
+    {
+        _cache.Clear();
+        _metadataCache.Clear();
+    }
 
     public static IAuthorizeData[]? GetAuthorizeDataForType(Type type)
     {
@@ -27,6 +32,17 @@ internal static class AttributeAuthorizeDataCache
         {
             result = ComputeAuthorizeDataForType(type);
             _cache[type] = result; // Safe race - doesn't matter if it overwrites
+        }
+
+        return result;
+    }
+
+    public static object[]? GetAuthorizeMetadataForType(Type type)
+    {
+        if (!_metadataCache.TryGetValue(type, out var result))
+        {
+            result = ComputeAuthorizeMetadataForType(type);
+            _metadataCache[type] = result; // Safe race - doesn't matter if it overwrites
         }
 
         return result;
@@ -52,5 +68,27 @@ internal static class AttributeAuthorizeDataCache
         }
 
         return authorizeDatas?.ToArray();
+    }
+
+    private static object[]? ComputeAuthorizeMetadataForType(Type type)
+    {
+        // Allow Anonymous skips all authorization
+        var allAttributes = type.GetCustomAttributes(inherit: true);
+        List<object>? metadata = null;
+        for (var i = 0; i < allAttributes.Length; i++)
+        {
+            if (allAttributes[i] is IAllowAnonymous)
+            {
+                return null;
+            }
+
+            if (allAttributes[i] is IAuthorizeData or IAuthorizationRequirementData)
+            {
+                metadata ??= new();
+                metadata.Add(allAttributes[i]);
+            }
+        }
+
+        return metadata?.ToArray();
     }
 }

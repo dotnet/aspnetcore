@@ -493,6 +493,30 @@ public class AuthorizeViewTest
         Assert.Equal("The authorization data specifies an authentication scheme with value 'test scheme'. Authentication schemes cannot be specified for components.", ex.Message);
     }
 
+    [Fact]
+    public void FlowsRequirementDataMetadataToAuthorizationService()
+    {
+        // Arrange
+        var authorizationService = new TestAuthorizationService();
+        var renderer = CreateTestRenderer(authorizationService);
+        var rootComponent = new TestAuthStateProviderComponent(builder =>
+        {
+            builder.OpenComponent<AuthorizeViewCoreWithRequirementData>(0);
+            builder.CloseComponent();
+        });
+        rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
+        renderer.AssignRootComponentId(rootComponent);
+
+        // Act
+        rootComponent.TriggerRender();
+
+        // Assert: the requirement contributed via IAuthorizationRequirementData metadata flows through
+        Assert.Collection(authorizationService.AuthorizeCalls, call =>
+        {
+            Assert.Contains(call.requirements, req => req is AuthorizeViewCoreWithRequirementData.TestRequirement);
+        });
+    }
+
     private static TestAuthStateProviderComponent WrapInAuthorizeView(
         RenderFragment<AuthenticationState> childContent = null,
         RenderFragment<AuthenticationState> authorized = null,
@@ -573,5 +597,26 @@ public class AuthorizeViewTest
     {
         protected override IAuthorizeData[] GetAuthorizeData()
             => new[] { new AuthorizeAttribute { AuthenticationSchemes = "test scheme" } };
+    }
+
+    public class AuthorizeViewCoreWithRequirementData : AuthorizeViewCore
+    {
+        protected override IAuthorizeData[] GetAuthorizeData()
+            => throw new NotImplementedException("GetAuthorizeMetadata should be used instead.");
+
+        protected override object[] GetAuthorizeMetadata()
+            => new object[] { new RequirementDataAttribute() };
+
+        public sealed class TestRequirement : IAuthorizationRequirement
+        {
+        }
+
+        private sealed class RequirementDataAttribute : Attribute, IAuthorizationRequirementData
+        {
+            public IEnumerable<IAuthorizationRequirement> GetRequirements()
+            {
+                yield return new TestRequirement();
+            }
+        }
     }
 }
