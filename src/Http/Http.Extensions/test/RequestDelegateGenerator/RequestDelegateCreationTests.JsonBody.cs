@@ -5,7 +5,10 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -101,13 +104,36 @@ app.MapPost("/", postTodoWithDefault){withFilter}
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        var httpContext = CreateHttpContext();
-        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
-        httpContext.Request.Headers["Content-Type"] = "application/json";
-        httpContext.Request.Headers["Content-Length"] = "0";
+        var httpContext = CreateHttpContextWithEmptyJsonBody();
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, string.Empty, expectedStatusCode: 400);
+    }
+
+    [Fact]
+    public async Task MapAction_ExplicitBodyParam_SharedDelegateSignature_PreservesEmptyBodyBehavior()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/66912.
+        // Two endpoints that share the same delegate signature (Todo) => IResult but differ only
+        // in their binding attribute ([FromBody] required vs [FromBody(EmptyBodyBehavior = Allow)])
+        // must each get their own interceptor. Otherwise the second endpoint's EmptyBodyBehavior is
+        // silently dropped and it incorrectly returns 400 for an empty body.
+        var source = """
+app.MapPost("/required", ([FromBody] Todo todo) => TypedResults.Ok(todo));
+app.MapPost("/allow-empty", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo));
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        Assert.Equal(2, endpoints.Length);
+
+        var requiredHttpContext = CreateHttpContextWithEmptyJsonBody();
+        await endpoints[0].RequestDelegate(requiredHttpContext);
+        await VerifyResponseBodyAsync(requiredHttpContext, string.Empty, expectedStatusCode: 400);
+
+        var allowEmptyHttpContext = CreateHttpContextWithEmptyJsonBody();
+        await endpoints[1].RequestDelegate(allowEmptyHttpContext);
+        await VerifyResponseBodyAsync(allowEmptyHttpContext, string.Empty, expectedStatusCode: 200);
     }
 
     [Fact]
@@ -483,4 +509,85 @@ app.MapPost("/", handler);
         }
     }
 
+    [Fact]
+    public async Task JsonException_ShouldWriteViaProblemDetailsService()
+    {
+        var source = """
+            app.MapPost("/", string (ModelWithRequiredProperty model) => $"Hello {model.Prop}");
+            """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContextWithJson("{}", CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.AddSingleton<IProblemDetailsService>(new ProblemDetailsService(
+                [new DefaultProblemDetailsWriter(
+                    Options.Create(new ProblemDetailsOptions()),
+                    Options.Create(new Json.JsonOptions()))]));
+        }));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(httpContext.Response.Body, JsonSerializerOptions.Web);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", responseDetails.Type);
+        Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
+        Assert.Equal(400, responseDetails.Status);
+        Assert.Null(responseDetails.Detail);
+        Assert.Null(responseDetails.Instance);
+
+        Assert.Equal(2, responseDetails.Extensions.Count);
+        Assert.Equal(httpContext.TraceIdentifier, responseDetails.Extensions["traceId"].ToString());
+
+        var errors = ((JsonElement)responseDetails.Extensions["errors"]).EnumerateObject();
+        var error = Assert.Single(errors);
+
+        Assert.Equal("$", error.Name);
+        Assert.Equal("JSON deserialization for type 'Microsoft.AspNetCore.Http.Generators.Tests.ModelWithRequiredProperty' was missing required properties including: 'prop'.", ((JsonElement)error.Value).EnumerateArray().Single().ToString());
+    }
+
+    [Fact]
+    public async Task JsonException_ShouldWriteViaProblemDetailsService_SimplifiedCustomProblemDetailsWriter()
+    {
+        var source = """
+            app.MapPost("/", string (ModelWithRequiredProperty model) => $"Hello {model.Prop}");
+            """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContextWithJson("{}", CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.AddSingleton<IProblemDetailsService>(new ProblemDetailsService(
+                [new SimplifiedCustomProblemDetailsWriter()]));
+        }));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(httpContext.Response.Body, JsonSerializerOptions.Web);
+        Assert.Null(responseDetails.Type);
+        Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
+        Assert.Equal(400, responseDetails.Status);
+        Assert.Null(responseDetails.Detail);
+        Assert.Null(responseDetails.Instance);
+
+        var extension = Assert.Single(responseDetails.Extensions);
+        Assert.Equal("errors", extension.Key);
+        var errors = ((JsonElement)extension.Value).EnumerateObject();
+        var error = Assert.Single(errors);
+
+        Assert.Equal("$", error.Name);
+        Assert.Equal("JSON deserialization for type 'Microsoft.AspNetCore.Http.Generators.Tests.ModelWithRequiredProperty' was missing required properties including: 'prop'.", ((JsonElement)error.Value).EnumerateArray().Single().ToString());
+    }
+
+    private sealed class SimplifiedCustomProblemDetailsWriter : IProblemDetailsWriter
+    {
+        public bool CanWrite(ProblemDetailsContext context)
+            => true;
+
+        public async ValueTask WriteAsync(ProblemDetailsContext context)
+        {
+            await context.HttpContext.Response.WriteAsJsonAsync(context.ProblemDetails, context.ProblemDetails.GetType());
+        }
+    }
 }

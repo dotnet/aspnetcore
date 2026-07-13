@@ -70,7 +70,10 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// </summary>
     public string FieldName { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns the hash code for this field identifier.
+    /// </summary>
+    /// <returns>A hash code based on the model instance and field name.</returns>
     public override int GetHashCode()
     {
         // We want to compare Model instances by reference. RuntimeHelpers.GetHashCode returns identical hashes for equal object references (ignoring any `Equals`/`GetHashCode` overrides) which is what we want.
@@ -83,12 +86,20 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         .GetHashCode();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether the specified object is equal to the current field identifier.
+    /// </summary>
+    /// <param name="obj">The object to compare with the current field identifier.</param>
+    /// <returns><see langword="true"/> if the specified object is equal to the current field identifier; otherwise, <see langword="false"/>.</returns>
     public override bool Equals(object? obj)
         => obj is FieldIdentifier otherIdentifier
         && Equals(otherIdentifier);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether the specified <see cref="FieldIdentifier"/> is equal to the current field identifier.
+    /// </summary>
+    /// <param name="otherIdentifier">The field identifier to compare with the current instance.</param>
+    /// <returns><see langword="true"/> if the two instances are equal; otherwise, <see langword="false"/>.</returns>
     public bool Equals(FieldIdentifier otherIdentifier)
     {
         return ReferenceEquals(otherIdentifier.Model, Model) &&

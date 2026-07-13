@@ -27,6 +27,7 @@ public class TempDataSessionStorageTest : ServerTestBase<BasicTestAppServerSiteF
     protected override void InitializeAsyncCore()
     {
         _serverFixture.AdditionalArguments.Add("--UseSessionStorageTempDataProvider=true");
+        _serverFixture.AdditionalArguments.Add("--UseSession=true");
         Browser.Manage().Cookies.DeleteCookieNamed(SessionCookieName);
         base.InitializeAsyncCore();
     }

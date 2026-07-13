@@ -11,7 +11,9 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
+using System.Net.ServerSentEvents;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
@@ -49,6 +51,8 @@ internal sealed class OpenApiDocumentService(
     /// </summary>
     private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
     private static readonly ApiResponseType _defaultApiResponseType = new() { StatusCode = StatusCodes.Status200OK };
+    private static readonly IComparer<OpenApiTag> _openApiTagComparer = Comparer<OpenApiTag>.Create(
+        static (left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
 
     private static readonly FrozenSet<string> _disallowedHeaderParameters = new[] { HeaderNames.Accept, HeaderNames.Authorization, HeaderNames.ContentType }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
@@ -163,14 +167,13 @@ internal sealed class OpenApiDocumentService(
     {
         foreach (var pathItem in document.Paths.Values)
         {
-            for (var i = 0; i < OpenApiConstants.HttpMethods.Length; i++)
+            if (pathItem.Operations is null)
             {
-                var httpMethod = OpenApiConstants.HttpMethods[i];
-                if (pathItem.Operations is null || !pathItem.Operations.TryGetValue(httpMethod, out var operation))
-                {
-                    continue;
-                }
+                continue;
+            }
 
+            foreach (var operation in pathItem.Operations.Values)
+            {
                 if (operation.Metadata is { } annotations &&
                     annotations.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionId) &&
                     descriptionId is string descriptionIdString &&
@@ -294,7 +297,7 @@ internal sealed class OpenApiDocumentService(
 
             if (description.GetHttpMethod() is not { } method)
             {
-                // Skip unsupported HTTP methods
+                // Skip descriptions with a missing or invalid HTTP method.
                 continue;
             }
 
@@ -353,22 +356,20 @@ internal sealed class OpenApiDocumentService(
     private static HashSet<OpenApiTagReference> GetTags(ApiDescription description, OpenApiDocument document)
     {
         var actionDescriptor = description.ActionDescriptor;
+        document.Tags ??= new SortedSet<OpenApiTag>(_openApiTagComparer);
         if (actionDescriptor.EndpointMetadata?.OfType<ITagsMetadata>().LastOrDefault() is { } tagsMetadata)
         {
             HashSet<OpenApiTagReference> tags = [];
             foreach (var tag in tagsMetadata.Tags)
             {
-                document.Tags ??= new HashSet<OpenApiTag>();
                 document.Tags.Add(new OpenApiTag { Name = tag });
                 tags.Add(new OpenApiTagReference(tag, document));
-
             }
             return tags;
         }
         // If no tags are specified, use the controller name as the tag. This effectively
         // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
         var controllerName = description.ActionDescriptor.RouteValues["controller"];
-        document.Tags ??= new HashSet<OpenApiTag>();
         document.Tags.Add(new OpenApiTag { Name = controllerName });
         return controllerName is not null ? [new(controllerName, document)] : [];
     }
@@ -387,22 +388,26 @@ internal sealed class OpenApiDocumentService(
         {
             return new OpenApiResponses
             {
-                ["200"] = await GetResponseAsync(document, description, StatusCodes.Status200OK, _defaultApiResponseType, scopedServiceProvider, schemaTransformers, cancellationToken)
+                ["200"] = await GetResponseAsync(document, description, StatusCodes.Status200OK, [_defaultApiResponseType], scopedServiceProvider, schemaTransformers, cancellationToken)
             };
         }
 
+        // Group response types by their response key so that multiple ApiResponseType entries
+        // sharing the same status code are merged into a single OpenApiResponse. This supports
+        // scenarios where different Produces attributes specify different content-types or
+        // different CLR types for the same HTTP status code.
         var responses = new OpenApiResponses();
-        foreach (var responseType in description.SupportedResponseTypes)
-        {
-            // The "default" response type is a special case in OpenAPI used to describe
-            // the response for all HTTP status codes that are not explicitly defined
-            // for a given operation. This is typically used to describe catch-all scenarios
-            // like error responses.
-            var responseKey = responseType.IsDefaultResponse
+        var groupedResponseTypes = description.SupportedResponseTypes
+            .GroupBy(r => r.IsDefaultResponse
                 ? OpenApiConstants.DefaultOpenApiResponseKey
-                : responseType.StatusCode.ToString(CultureInfo.InvariantCulture);
-            responses.Add(responseKey, await GetResponseAsync(document, description, responseType.StatusCode, responseType, scopedServiceProvider, schemaTransformers, cancellationToken));
+                : r.StatusCode.ToString(CultureInfo.InvariantCulture));
+
+        foreach (var group in groupedResponseTypes)
+        {
+            var statusCode = group.First().StatusCode;
+            responses[group.Key] = await GetResponseAsync(document, description, statusCode, group.ToList(), scopedServiceProvider, schemaTransformers, cancellationToken);
         }
+
         return responses;
     }
 
@@ -410,34 +415,73 @@ internal sealed class OpenApiDocumentService(
         OpenApiDocument document,
         ApiDescription apiDescription,
         int statusCode,
-        ApiResponseType apiResponseType,
+        IReadOnlyList<ApiResponseType> apiResponseTypes,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
+        var description = apiResponseTypes.Select(r => r.Description).FirstOrDefault(d => d is not null);
         var response = new OpenApiResponse
         {
-            Description = apiResponseType.Description ?? ReasonPhrases.GetReasonPhrase(statusCode),
+            Description = description ?? ReasonPhrases.GetReasonPhrase(statusCode),
             Content = new Dictionary<string, IOpenApiMediaType>()
         };
 
-        // ApiResponseFormats aggregates information about the supported response content types
-        // from different types of Produces metadata. This is handled by ApiExplorer so looking
-        // up values in ApiResponseFormats should provide us a complete set of the information
-        // encoded in Produces metadata added via attributes or extension methods.
-        var apiResponseFormatContentTypes = apiResponseType.ApiResponseFormats
-            .Select(responseFormat => responseFormat.MediaType);
-        foreach (var contentType in apiResponseFormatContentTypes)
+        // Collect schemas per content-type across all ApiResponseType entries in this group.
+        // When multiple entries contribute different schemas for the same content-type, they
+        // will be merged into an anyOf composite schema.
+        var schemasByContentType = new Dictionary<string, OpenApiResponseContentSchemas>();
+
+        foreach (var apiResponseType in apiResponseTypes)
         {
-            IOpenApiSchema? schema = null;
-            if (apiResponseType.Type is { } responseType)
+            // ApiResponseFormats aggregates information about the supported response content types
+            // from different types of Produces metadata. This is handled by ApiExplorer so looking
+            // up values in ApiResponseFormats should provide us a complete set of the information
+            // encoded in Produces metadata added via attributes or extension methods.
+            var apiResponseFormatContentTypes = apiResponseType.ApiResponseFormats
+                .Select(responseFormat => responseFormat.MediaType);
+            foreach (var contentType in apiResponseFormatContentTypes)
             {
-                schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
-                schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
-                    ? schema.CreateOneOfNullableWrapper()
-                    : schema;
+                IOpenApiSchema? schema = null;
+                var useItemSchema = false;
+                if (apiResponseType.Type is { } responseType)
+                {
+                    if (IsServerSentEventsResponse(contentType, responseType, out var eventDataType))
+                    {
+                        var dataSchema = await _componentService.GetOrCreateSchemaAsync(document, eventDataType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                        schema = CreateServerSentEventsItemSchema(document, dataSchema);
+                        useItemSchema = true;
+                    }
+                    else
+                    {
+                        schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                        schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
+                            ? schema.CreateOneOfNullableWrapper()
+                            : schema;
+                    }
+                }
+
+                schema ??= new OpenApiSchema();
+
+                if (!schemasByContentType.TryGetValue(contentType, out var contentTypeSchemas))
+                {
+                    contentTypeSchemas = new OpenApiResponseContentSchemas();
+                    schemasByContentType[contentType] = contentTypeSchemas;
+                }
+
+                contentTypeSchemas.AddSchema(schema, useItemSchema);
             }
-            response.Content[contentType] = new OpenApiMediaType { Schema = schema ?? new OpenApiSchema() };
+        }
+
+        foreach (var (contentType, contentTypeSchemas) in schemasByContentType)
+        {
+            var schemas = contentTypeSchemas.Schemas;
+            IOpenApiSchema finalSchema = schemas.Count == 1
+                ? schemas[0]
+                : new OpenApiSchema { AnyOf = [.. schemas] };
+            response.Content[contentType] = contentTypeSchemas.UseItemSchema
+                ? new OpenApiMediaType { ItemSchema = finalSchema }
+                : new OpenApiMediaType { Schema = finalSchema };
         }
 
         // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
@@ -453,6 +497,80 @@ internal sealed class OpenApiDocumentService(
 
         return response;
     }
+
+    private sealed class OpenApiResponseContentSchemas
+    {
+        private readonly List<IOpenApiSchema> _schemas = [];
+
+        public IReadOnlyList<IOpenApiSchema> Schemas => _schemas;
+
+        public bool UseItemSchema { get; private set; }
+
+        public void AddSchema(IOpenApiSchema schema, bool useItemSchema)
+        {
+            _schemas.Add(schema);
+            UseItemSchema |= useItemSchema;
+        }
+    }
+
+    private static bool IsServerSentEventsResponse(string contentType, Type? responseType, [NotNullWhen(true)] out Type? eventDataType)
+    {
+        if (IsServerSentEventsContentType(contentType)
+            && responseType is { IsConstructedGenericType: true }
+            && responseType.GetGenericTypeDefinition() == typeof(SseItem<>))
+        {
+            eventDataType = responseType.GetGenericArguments()[0];
+            return true;
+        }
+
+        eventDataType = null;
+        return false;
+    }
+
+    private static OpenApiSchema CreateServerSentEventsItemSchema(OpenApiDocument document, IOpenApiSchema dataSchema)
+        => new()
+        {
+            Type = JsonSchemaType.Object,
+            Required = new HashSet<string> { "data" },
+            Properties = new Dictionary<string, IOpenApiSchema>
+            {
+                ["data"] = dataSchema,
+                ["event"] = CreateServerSentEventsEventSchema(document, dataSchema),
+                ["id"] = new OpenApiSchema { Type = JsonSchemaType.String }
+            }
+        };
+
+    private static OpenApiSchema CreateServerSentEventsEventSchema(OpenApiDocument document, IOpenApiSchema dataSchema)
+    {
+        var eventSchema = new OpenApiSchema { Type = JsonSchemaType.String };
+        var eventDataSchema = ResolveSchemaReference(document, dataSchema);
+        if (eventDataSchema.Discriminator?.Mapping is { Count: > 0 } mapping)
+        {
+            eventSchema.Enum = [.. mapping.Keys.Select(static eventName => JsonValue.Create(eventName)!)];
+        }
+        else if (eventDataSchema is OpenApiSchema { AnyOf.Count: > 0 } schema
+            && schema.IsUnion())
+        {
+            eventSchema.Enum =
+            [
+                .. schema.AnyOf
+                    .OfType<OpenApiSchemaReference>()
+                    .Select(static schemaReference => JsonValue.Create(schemaReference.Reference.Id)!)
+            ];
+        }
+
+        return eventSchema;
+    }
+
+    private static IOpenApiSchema ResolveSchemaReference(OpenApiDocument document, IOpenApiSchema schema)
+        => schema is OpenApiSchemaReference { Reference.Id: { } schemaId }
+            && document.Components?.Schemas?.TryGetValue(schemaId, out var targetSchema) is true
+            ? targetSchema
+            : schema;
+
+    private static bool IsServerSentEventsContentType(string contentType)
+        => MediaTypeHeaderValue.TryParse(contentType, out var mediaType)
+            && mediaType.MediaType.Equals("text/event-stream", StringComparison.OrdinalIgnoreCase);
 
     private async Task<List<IOpenApiParameter>?> GetParametersAsync(
         OpenApiDocument document,

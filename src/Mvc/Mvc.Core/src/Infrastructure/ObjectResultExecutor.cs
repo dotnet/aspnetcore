@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Net.Mime;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -123,18 +124,27 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
         Debug.Assert(result.ContentTypes != null);
 
-        // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
-        // then the one set on ObjectResult takes precedence over the Response object
-        var responseContentType = context.HttpContext.Response.ContentType;
-        if (result.ContentTypes.Count == 0 && !string.IsNullOrEmpty(responseContentType))
-        {
-            result.ContentTypes.Add(responseContentType);
-        }
+        var wasEmpty = result.ContentTypes.Count == 0;
 
+        // When dealing with ProblemDetails, we always add ProblemJson and ProblemXml at the
+        // beginning of the list so that they are preferred over anything else.
         if (result.Value is ProblemDetails)
         {
-            result.ContentTypes.Add("application/problem+json");
-            result.ContentTypes.Add("application/problem+xml");
+            result.ContentTypes.Insert(0, MediaTypeNames.Application.ProblemJson);
+            result.ContentTypes.Insert(1, MediaTypeNames.Application.ProblemXml);
+        }
+
+        // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
+        // then the one set on ObjectResult takes precedence over the Response object.
+        if (!wasEmpty)
+        {
+            return;
+        }
+
+        var responseContentType = context.HttpContext.Response.ContentType;
+        if (!string.IsNullOrEmpty(responseContentType))
+        {
+            result.ContentTypes.Add(responseContentType);
         }
     }
 

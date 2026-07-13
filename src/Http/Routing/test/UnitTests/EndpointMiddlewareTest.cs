@@ -15,6 +15,12 @@ public class EndpointMiddlewareTest
 {
     private readonly IOptions<RouteOptions> RouteOptions = Options.Create(new RouteOptions());
 
+    // This test project sees internals of both Microsoft.AspNetCore.Http and Microsoft.AspNetCore.Routing,
+    // which each embed an internal copy of the shared MiddlewareInvokedKeys, so the symbolic name is
+    // ambiguous here. Pinning the literal values keeps the test compiling and guards the wire contract.
+    private const string AntiforgeryInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
+    private const string CsrfProtectionInvokedKey = "__CsrfProtectionMiddlewareWithEndpointInvoked";
+
     [Fact]
     public async Task Invoke_NoFeature_NoOps()
     {
@@ -346,6 +352,69 @@ public class EndpointMiddlewareTest
     }
 
     [Fact]
+    public async Task Invoke_WithEndpoint_WorksIfAntiforgeryMetadataWasFound_AndCsrfProtectionMiddlewareInvoked()
+    {
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceProvider()
+        };
+
+        var calledEndpoint = false;
+        RequestDelegate endpointFunc = (c) =>
+        {
+            calledEndpoint = true;
+            return Task.CompletedTask;
+        };
+
+        httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
+
+        httpContext.Items[CsrfProtectionInvokedKey] = true;
+
+        RequestDelegate next = (c) =>
+        {
+            throw new InvalidTimeZoneException("Should not be called");
+        };
+
+        var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next, RouteOptions);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.True(calledEndpoint);
+    }
+
+    [Fact]
+    public async Task Invoke_WithEndpoint_WorksIfAntiforgeryMetadataWasFound_AndBothMiddlewaresInvoked()
+    {
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceProvider()
+        };
+
+        var calledEndpoint = false;
+        RequestDelegate endpointFunc = (c) =>
+        {
+            calledEndpoint = true;
+            return Task.CompletedTask;
+        };
+
+        httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
+
+        httpContext.Items[AntiforgeryInvokedKey] = true;
+        httpContext.Items[CsrfProtectionInvokedKey] = true;
+
+        RequestDelegate next = (c) =>
+        {
+            throw new InvalidTimeZoneException("Should not be called");
+        };
+
+        var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next, RouteOptions);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.True(calledEndpoint);
+    }
+
+    [Fact]
     public async Task Invoke_WithEndpoint_WorksIfAntiforgeryMetadataWasFound_AndAntiforgeryMiddlewareInvoked()
     {
         // Arrange
@@ -363,7 +432,7 @@ public class EndpointMiddlewareTest
 
         httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
 
-        httpContext.Items[EndpointMiddleware.AntiforgeryMiddlewareWithEndpointInvokedKey] = true;
+        httpContext.Items[AntiforgeryInvokedKey] = true;
 
         RequestDelegate next = (c) =>
         {

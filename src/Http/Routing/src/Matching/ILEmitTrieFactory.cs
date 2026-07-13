@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 [RequiresDynamicCode("ILEmitTrieFactory uses runtime IL generation.")]
 internal static class ILEmitTrieFactory
 {
-    // The algorthm we use only works for ASCII text. If we find non-ASCII text in the input
+    // The algorithm we use only works for ASCII text. If we find non-ASCII text in the input
     // we need to reject it and let is be processed with a fallback technique.
     public const int NotAscii = int.MinValue;
 

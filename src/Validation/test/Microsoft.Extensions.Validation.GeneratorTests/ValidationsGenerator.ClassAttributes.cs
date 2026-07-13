@@ -8,12 +8,16 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Validation;
 
+using static Microsoft.Extensions.Validation.Tests.ValidationTestBase;
+
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
-    [Fact]
-    public async Task CanValidateValidationAttributesOnClasses()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanValidateValidationAttributesOnClasses(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -90,7 +94,7 @@ public class SumLimitAttribute : ValidationAttribute
             await InvalidClassAttributeCheck_ProducesError(validatableTypeInfo);
             await InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(validatableTypeInfo);
 
-            async Task InvalidPropertyAttributeCheck_ProducesError_AndShortCircuits(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyAttributeCheck_ProducesError_AndShortCircuits(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("X")?.SetValue(instance, 16);
@@ -102,7 +106,7 @@ public class SumLimitAttribute : ValidationAttribute
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.NotNull(context.ValidationErrors);
                 var propertyAttributeError = Assert.Single(context.ValidationErrors);
@@ -110,7 +114,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.Equal("The field X must be between 0 and 15.", propertyAttributeError.Value.Single());
             }
 
-            async Task ValidClassAttributeCheck_DoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task ValidClassAttributeCheck_DoesNotProduceError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
 
@@ -120,12 +124,12 @@ public class SumLimitAttribute : ValidationAttribute
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
 
-            async Task InvalidClassAttributeCheck_ProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidClassAttributeCheck_ProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("X")?.SetValue(instance, 11);
@@ -137,7 +141,7 @@ public class SumLimitAttribute : ValidationAttribute
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.NotNull(context.ValidationErrors);
                 var classAttributeError = Assert.Single(context.ValidationErrors);
@@ -145,7 +149,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.Equal("Sum is too high", classAttributeError.Value.Single());
             }
 
-            async Task InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(IValidatableInfo validatableInfo)
+            async Task InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("ObjectProperty").GetValue(instance);
@@ -158,7 +162,7 @@ public class SumLimitAttribute : ValidationAttribute
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.NotNull(context.ValidationErrors);
                 var classAttributeError = Assert.Single(context.ValidationErrors);

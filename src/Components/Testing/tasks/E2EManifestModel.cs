@@ -2,30 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using System.Runtime.Serialization;
 
 namespace Microsoft.AspNetCore.Components.Testing.Tasks;
 
+[DataContract]
 internal class E2EManifestModel
 {
-    [JsonPropertyName("apps")]
+    [DataMember(Name = "apps")]
     public Dictionary<string, E2EAppEntryModel> Apps { get; set; } = new();
 }
 
+[DataContract]
 internal class E2EAppEntryModel
 {
-    [JsonPropertyName("executable")]
+    [DataMember(Name = "executable")]
     public string Executable { get; set; } = "";
 
-    [JsonPropertyName("arguments")]
+    [DataMember(Name = "arguments")]
     public string Arguments { get; set; } = "";
 
-    [JsonPropertyName("workingDirectory")]
+    [DataMember(Name = "workingDirectory")]
     public string WorkingDirectory { get; set; } = "";
 
-    [JsonPropertyName("publicUrl")]
+    [DataMember(Name = "publicUrl")]
     public string PublicUrl { get; set; } = "";
 
-    [JsonPropertyName("environmentVariables")]
+    [DataMember(Name = "environmentVariables")]
     public Dictionary<string, string> EnvironmentVariables { get; set; } = new();
 }

@@ -3136,15 +3136,21 @@ public class Http2ConnectionTests : Http2TestBase
             expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
-    [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsConnectionHeader_ConnectionError()
+    [Theory]
+    [InlineData("transfer-encoding", "chunked")]
+    [InlineData("keep-alive", "timeout=5, max=1000")]
+    [InlineData("proxy-connection", "keep-alive")]
+    [InlineData("upgrade", "websocket")]
+    [InlineData("connection", "keep-alive")]
+    [InlineData("te", "trailers, deflate")]
+    public Task HEADERS_Received_HeaderBlockContainsConnectionSpecificHeader_ConnectionError(string headerName, string headerValue)
     {
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("connection", "keep-alive")
+            new KeyValuePair<string, string>(headerName, headerValue)
         };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(
@@ -3154,20 +3160,32 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsNotTrailers_ConnectionError()
+    public async Task HEADERS_Received_TransferEncodingWithHPackIndexedName_ConnectionError()
     {
-        var headers = new[]
+        await InitializeConnectionAsync(_noopApplication);
+
+        // Reference the "transfer-encoding" name via HPACK's indexed-name representation (static table index 57)
+        // with a literal "chunked" value. This exercises the OnStaticIndexedHeader(index, value) path, which must
+        // still reject connection-specific header fields even though the name was not sent as a literal string.
+        var headerBlock = new byte[]
         {
-            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("te", "trailers, deflate")
+            0x82,                       // :method: GET (indexed, static index 2)
+            0x84,                       // :path: / (indexed, static index 4)
+            0x86,                       // :scheme: http (indexed, static index 6)
+            0x0f, 0x2a,                 // Literal Header Field without Indexing - Indexed Name (static index 57: transfer-encoding)
+            0x07,                       // value length: 7
+            (byte)'c', (byte)'h', (byte)'u', (byte)'n', (byte)'k', (byte)'e', (byte)'d',
         };
 
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
-            headers,
-            CoreStrings.HttpErrorConnectionSpecificHeaderField,
-            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headerBlock);
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: 1,
+            expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
+            expectedErrorMessage: CoreStrings.HttpErrorConnectionSpecificHeaderField);
+
+        AssertConnectionEndReason(ConnectionEndReason.InvalidRequestHeaders);
     }
 
     [Fact]
@@ -4299,7 +4317,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task GOAWAY_Received_ConnectionLifetimeNotification_Cancelled()
     {
         await InitializeConnectionAsync(_noopApplication, addKestrelFeatures: true);
@@ -5277,7 +5294,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task AbortSendsFinalGOAWAY()
     {
         await InitializeConnectionAsync(_noopApplication);
@@ -5351,7 +5367,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -5845,7 +5860,6 @@ public class Http2ConnectionTests : Http2TestBase
     [InlineData((int)(Http2FrameType.DATA))]
     [InlineData((int)(Http2FrameType.HEADERS))]
     [InlineData((int)(Http2FrameType.CONTINUATION))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(int intFinalFrameType)
     {
         var finalFrameType = (Http2FrameType)intFinalFrameType;
@@ -5921,7 +5935,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Theory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66309")]
     [InlineData((int)(Http2FrameType.DATA))]
     [InlineData((int)(Http2FrameType.HEADERS))]
     public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(int intFinalFrameType)

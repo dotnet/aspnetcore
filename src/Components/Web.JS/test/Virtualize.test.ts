@@ -7,5 +7,7 @@ describe('Virtualize exports', () => {
     expect(typeof Virtualize.dispose).toBe('function');
     expect(typeof Virtualize.scrollToBottom).toBe('function');
     expect(typeof Virtualize.refreshObservers).toBe('function');
+    expect(typeof Virtualize.setAnchorMode).toBe('function');
+    expect(typeof Virtualize.restoreAnchor).toBe('function');
   });
 });

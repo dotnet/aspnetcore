@@ -303,7 +303,7 @@ public static class DotNetDispatcher
     /// This method can throw any exception either from the argument received or as a result
     /// of executing any callback synchronously upon completion.
     /// </exception>
-    public static void EndInvokeJS(JSRuntime jsRuntime, string arguments)
+    public static void EndInvokeJS(JSRuntime jsRuntime, [StringSyntax(StringSyntaxAttribute.Json)] string arguments)
     {
         var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
 
@@ -341,8 +341,8 @@ public static class DotNetDispatcher
     /// Accepts the byte array data being transferred from JS to DotNet.
     /// </summary>
     /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
-    /// <param name="id">Identifier for the byte array being transfered.</param>
-    /// <param name="data">Byte array to be transfered from JS.</param>
+    /// <param name="id">Identifier for the byte array being transferred.</param>
+    /// <param name="data">Byte array to be transferred from JS.</param>
     public static void ReceiveByteArray(JSRuntime jsRuntime, int id, byte[] data)
     {
         jsRuntime.ReceiveByteArray(id, data);

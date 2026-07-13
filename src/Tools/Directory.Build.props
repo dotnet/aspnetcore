@@ -2,6 +2,7 @@
   <PropertyGroup>
     <ToolSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ToolSharedSourceRoot>
     <Nullable>disable</Nullable>
+    <BundledToolTargetRuntimeIdentifiers>linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;win-x64;win-x86;win-arm64;osx-x64;osx-arm64</BundledToolTargetRuntimeIdentifiers>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />

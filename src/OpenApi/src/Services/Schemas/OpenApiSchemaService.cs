@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text.Json;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -104,7 +106,8 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
-            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
+            if (underlyingType.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
             {
                 schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
             }
@@ -248,7 +251,47 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
+        // For non-body enum parameters, check if a naming policy transforms the enum values.
+        // If so, skip componentization and return an inline schema with the original C# member
+        // names (which Enum.TryParse accepts). The component schema keeps the naming-policy
+        // values for body serialization.
+        var inlineEnumParam = false;
+        if (parameterDescription is { Source: { } source, Type: { } paramType }
+            && IsNonBodyBindingSource(source)
+            && (Nullable.GetUnderlyingType(paramType) ?? paramType) is { IsEnum: true } enumType)
+        {
+            var rawNode = CreateSchema(type);
+            if (rawNode[OpenApiSchemaKeywords.EnumKeyword] is JsonArray rawEnum && rawEnum.Count > 0)
+            {
+                var memberNames = Enum.GetNames(enumType);
+                for (var i = 0; i < memberNames.Length && i < rawEnum.Count; i++)
+                {
+                    if (rawEnum[i]?.GetValue<string>() != memberNames[i])
+                    {
+                        inlineEnumParam = true;
+                        break;
+                    }
+                }
+            }
+        }
+
         var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+
+        if (inlineEnumParam)
+        {
+            // The schema was originally tagged for componentization (x-schema-id was set),
+            // so ApplyDefaultValue stored the default in the x-ref-default metadata annotation
+            // instead of the "default" keyword. Since we're now inlining this schema, promote
+            // the annotation to the schema's Default property.
+            if (schema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out var refDefault) == true
+                && refDefault is JsonNode defaultNode)
+            {
+                schema.Default = defaultNode;
+                schema.Metadata.Remove(OpenApiConstants.RefDefaultAnnotation);
+            }
+
+            return schema;
+        }
 
         // Cache the root schema IDs since we expect to be called
         // on the same type multiple times within an API
@@ -261,6 +304,12 @@ internal sealed class OpenApiSchemaService(
         return ResolveReferenceForSchema(document, schema, baseSchemaId);
     }
 
+    private static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
+        || bindingSource == BindingSource.Query
+        || bindingSource == BindingSource.Path
+        || bindingSource == BindingSource.Form
+        || bindingSource == BindingSource.FormFile;
+
     internal static IOpenApiSchema ResolveReferenceForSchema(OpenApiDocument document, IOpenApiSchema inputSchema, string? rootSchemaId, string? baseSchemaId = null)
     {
         var schema = UnwrapOpenApiSchema(inputSchema);
@@ -271,6 +320,16 @@ internal sealed class OpenApiSchemaService(
         OpenApiSchemaReference? resultSchemaReference = null;
         if (inputSchema is OpenApiSchema && isComponentizedSchema)
         {
+            // STJ's JsonSchemaExporter omits "type": "object" on object branches of an anyOf
+            // when EVERY branch is an object - factoring the keyword onto the parent instead.
+            //
+            // Since we lift the branch into a top-level #/components/schemas/* entry and replace it with a $ref
+            // we need to ensure the schema has an explicit "type": "object" to avoid losing that information in the translation.
+            if (schema.Type is null && schema.Properties is { Count: > 0 })
+            {
+                schema.Type = JsonSchemaType.Object;
+            }
+
             var targetReferenceId = baseSchemaId is not null
                 ? $"{baseSchemaId}{schemaId}"
                 : schemaId;
@@ -286,26 +345,34 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.AnyOf is { Count: > 0 })
         {
+            // For union types, do not prefix branch components with the union's name.
+            // Union case schemas are structurally identical to the standalone case type
+            // (no `$type` discriminator like polymorphism adds), so they should reuse the
+            // standalone component name (e.g. "Kitten") instead of producing a duplicate
+            // component (e.g. "UnionPetKitten") with the same content.
+            var branchPrefix = schema.IsUnion() ? null : schemaId;
             for (var i = 0; i < schema.AnyOf.Count; i++)
             {
-                schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, schemaId);
+                schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, branchPrefix);
             }
         }
 
         if (schema.Properties is not null)
         {
-            foreach (var property in schema.Properties)
+            // Materialize the collection first because IDictionary<TKey, TValue> implementations
+            // (e.g. SortedDictionary) may disallow modifying the collection while enumerating it.
+            foreach (var (key, propertyValue) in schema.Properties.ToList())
             {
-                var resolvedProperty = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
-                if (property.Value is OpenApiSchema targetSchema &&
+                var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
+                if (propertyValue is OpenApiSchema targetSchema &&
                     targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
                     isNullableProperty is true)
                 {
-                    schema.Properties[property.Key] = resolvedProperty.CreateOneOfNullableWrapper();
+                    schema.Properties[key] = resolvedProperty.CreateOneOfNullableWrapper();
                 }
                 else
                 {
-                    schema.Properties[property.Key] = resolvedProperty;
+                    schema.Properties[key] = resolvedProperty;
                 }
             }
         }
@@ -531,6 +598,9 @@ internal sealed class OpenApiSchemaService(
 
     private static JsonNode? ResolveReference(string refPath, JsonNode rootSchema)
     {
+        // The refPath is expected to be a JSON Pointer (RFC 6901)
+        // https://www.rfc-editor.org/info/rfc6901/
+        // It follows the URI Fragment Identifier Representation.
         if (string.IsNullOrWhiteSpace(refPath))
         {
             throw new InvalidOperationException("Reference path cannot be null or empty.");
@@ -541,37 +611,125 @@ internal sealed class OpenApiSchemaService(
             throw new InvalidOperationException($"Only fragment references (starting with '{OpenApiConstants.RefPrefix}') are supported. Found: {refPath}");
         }
 
-        var path = refPath.TrimStart('#', '/');
-        if (string.IsNullOrEmpty(path))
+        // We already checked that the path starts with '#'.
+        var currentPath = refPath.AsSpan().Slice(OpenApiConstants.RefPrefix.Length);
+        var currentNode = rootSchema;
+
+        while (currentPath.Length > 0)
         {
-            return rootSchema;
+            // https://www.rfc-editor.org/info/rfc6901/#section-3
+            // json-pointer    = *( "/" reference-token )
+            if (currentPath[0] != '/')
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{refPath}'. Expected '{currentPath}' to start with '/'");
+            }
+
+            var currentPathWithoutSlash = currentPath.Slice(1);
+            var indexOfNextPath = currentPathWithoutSlash.IndexOf('/');
+
+            var currentReferenceToken =
+                indexOfNextPath == -1
+                ? currentPathWithoutSlash
+                : currentPathWithoutSlash.Slice(0, indexOfNextPath);
+
+            var unescapedReferenceToken = ParseReferenceToken(currentReferenceToken);
+            currentNode = EvaluateReferenceToken(unescapedReferenceToken, currentNode, refPath);
+
+            currentPath = indexOfNextPath == -1
+                ? ReadOnlySpan<char>.Empty
+                : currentPathWithoutSlash.Slice(indexOfNextPath);
         }
 
-        var segments = path.Split('/');
-        var current = rootSchema;
+        return currentNode;
+    }
 
-        for (var i = 0; i < segments.Length; i++)
+    private static string ParseReferenceToken(ReadOnlySpan<char> referenceToken)
+    {
+        // https://www.rfc-editor.org/info/rfc6901/#section-6
+        var unescapedReferenceToken = Uri.UnescapeDataString(referenceToken.ToString());
+
+        // https://www.rfc-editor.org/info/rfc6901/#section-4
+        // Evaluation of each reference token begins by decoding any escaped
+        // character sequence.  This is performed by first transforming any
+        // occurrence of the sequence '~1' to '/', and then transforming any
+        // occurrence of the sequence '~0' to '~'.  By performing the
+        // substitutions in this order, an implementation avoids the error of
+        // turning '~01' first into '~1' and then into '/', which would be
+        // incorrect (the string '~01' correctly becomes '~1' after
+        // transformation).
+        //
+        // NOTE: we unescape the possibly percent-encoded value even if
+        // STJ doesn't correctly percent-encode the ref today.
+        // See https://github.com/dotnet/runtime/issues/130162
+        if (unescapedReferenceToken.Contains('~'))
         {
-            var segment = segments[i];
-            if (current is JsonObject currentObject)
-            {
-                if (currentObject.TryGetPropertyValue(segment, out var nextNode) && nextNode != null)
-                {
-                    current = nextNode;
-                }
-                else
-                {
-                    var partialPath = string.Join('/', segments.Take(i + 1));
-                    throw new InvalidOperationException($"Failed to resolve reference '{refPath}': path segment '{segment}' not found at '#{partialPath}'");
-                }
-            }
-            else
-            {
-                var partialPath = string.Join('/', segments.Take(i));
-                throw new InvalidOperationException($"Failed to resolve reference '{refPath}': cannot navigate beyond '#{partialPath}' - expected object but found {current?.GetType().Name ?? "null"}");
-            }
+            // Not common case, performance isn't super important.
+            return unescapedReferenceToken.Replace("~1", "/").Replace("~0", "~");
         }
 
-        return current;
+        return unescapedReferenceToken;
+    }
+
+    private static JsonNode EvaluateReferenceToken(string unescapedReferenceToken, JsonNode currentNode, string fullJsonPointer)
+    {
+        if (currentNode is JsonObject currentObject)
+        {
+            // https://www.rfc-editor.org/info/rfc6901/#section-4
+            // If the currently referenced value is a JSON object, the new
+            // referenced value is the object member with the name identified by
+            // the reference token.  The member name is equal to the token if it
+            // has the same number of Unicode characters as the token and their
+            // code points are byte-by-byte equal.  No Unicode character
+            // normalization is performed.  If a referenced member name is not
+            // unique in an object, the member that is referenced is undefined
+            // and evaluation fails (see below).
+            if (!currentObject.TryGetPropertyValue(unescapedReferenceToken, out var referencedValue) ||
+                referencedValue is null)
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': property '{unescapedReferenceToken}' not found.");
+            }
+
+            return referencedValue;
+        }
+
+        if (currentNode is JsonArray currentArray)
+        {
+            // https://www.rfc-editor.org/info/rfc6901/#section-4
+            // If the currently referenced value is a JSON array, the reference
+            // token MUST contain either:
+            //   - characters comprised of digits (see ABNF below; note that
+            //     leading zeros are not allowed) that represent an unsigned
+            //     base-10 integer value, making the new referenced value the
+            //     array element with the zero-based index identified by the
+            //     token, or
+            //   - exactly the single character "-", making the new referenced
+            //     value the (nonexistent) member after the last array element.
+            //
+            // The ABNF syntax for array indices is:
+            // array-index = %x30 / ( %x31-39 *(%x30-39) )
+            //               ; "0", or digits without a leading "0"
+            //
+            // Note that the use of the "-" character to index an array will always
+            // result in such an error condition because by definition it refers to
+            // a nonexistent array element.  Thus, applications of JSON Pointer need
+            // to specify how that character is to be handled, if it is to be
+            // useful.
+            //
+            // In our case, "-" doesn't seem to be useful so we will throw.
+            if (!int.TryParse(unescapedReferenceToken, NumberStyles.None, CultureInfo.InvariantCulture, out var arrayIndex))
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': cannot navigate an array when the current token '{unescapedReferenceToken}' isn't a valid number");
+            }
+
+            if (unescapedReferenceToken.StartsWith('0', StringComparison.Ordinal) && unescapedReferenceToken.Length > 1)
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': array index '{unescapedReferenceToken}' has a leading zero, which is not allowed.");
+            }
+
+            return currentArray[arrayIndex]
+                ?? throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': array index '{arrayIndex}' was not found.");
+        }
+
+        throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': Unexpected JsonNode '{currentNode.GetType()}'");
     }
 }

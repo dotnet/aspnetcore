@@ -50,13 +50,16 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return TypedResults.LocalRedirect($"~/{returnUrl}");
         });
 
-        accountGroup.MapPost("/PasskeyCreationOptions", async (
+        accountGroup.MapPost("/PasskeyCreationOptions", [RequireAntiforgeryToken] async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
-            [FromServices] SignInManager<ApplicationUser> signInManager,
-            [FromServices] IAntiforgery antiforgery) =>
+            [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
-            await antiforgery.ValidateRequestAsync(context);
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is not { IsValid: true })
+            {
+                return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
+            }
 
             var user = await userManager.GetUserAsync(context.User);
             if (user is null)
@@ -75,14 +78,17 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return TypedResults.Content(optionsJson, contentType: "application/json");
         });
 
-        accountGroup.MapPost("/PasskeyRequestOptions", async (
+        accountGroup.MapPost("/PasskeyRequestOptions", [RequireAntiforgeryToken] async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager,
-            [FromServices] IAntiforgery antiforgery,
             [FromQuery] string? username) =>
         {
-            await antiforgery.ValidateRequestAsync(context);
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is not { IsValid: true })
+            {
+                return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
+            }
 
             var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
             var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
@@ -111,11 +117,17 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
         var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
         var downloadLogger = loggerFactory.CreateLogger("DownloadPersonalData");
 
-        manageGroup.MapPost("/DownloadPersonalData", async (
+        manageGroup.MapPost("/DownloadPersonalData", [RequireAntiforgeryToken] async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] AuthenticationStateProvider authenticationStateProvider) =>
         {
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is not { IsValid: true })
+            {
+                return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
+            }
+
             var user = await userManager.GetUserAsync(context.User);
             if (user is null)
             {

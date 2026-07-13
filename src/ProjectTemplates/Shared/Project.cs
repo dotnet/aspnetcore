@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -346,11 +347,13 @@ public class Project : IDisposable
         }";
 
         // This comparison can break depending on how GIT checked out newlines on different files.
-        Assert.Contains(RemoveNewLines(emptyMigration), RemoveNewLines(contents));
+        // Whitespace is also normalized so the assertion works regardless of indentation
+        // (e.g. block-scoped vs file-scoped namespaces in generated migrations).
+        Assert.Contains(NormalizeWhitespace(emptyMigration), NormalizeWhitespace(contents));
 
-        static string RemoveNewLines(string str)
+        static string NormalizeWhitespace(string str)
         {
-            return str.Replace("\n", string.Empty).Replace("\r", string.Empty);
+            return new string(str.Where(c => !char.IsWhiteSpace(c)).ToArray());
         }
     }
 

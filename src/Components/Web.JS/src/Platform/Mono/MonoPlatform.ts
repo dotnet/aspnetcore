@@ -10,15 +10,17 @@ import { showErrorNotification } from '../../BootErrors';
 import { Platform, System_Array, Pointer, System_Object, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { Blazor } from '../../GlobalExports';
-import { DotnetModuleConfig, MonoConfig, ModuleAPI, RuntimeAPI, GlobalizationMode } from '@microsoft/dotnet-runtime';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
 import { JSInitializer } from '../../JSInitializers/JSInitializers';
+import { GlobalizationMode } from '@microsoft/dotnet-runtime';
+import type { DotnetModuleConfig, MonoConfig, ModuleAPI, RuntimeAPI } from '@microsoft/dotnet-runtime';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let dispatcher: DotNet.ICallDispatcher = undefined as any;
 let MONO_INTERNAL: any = undefined as any;
 let isMonoRuntime = true;
 let runtime: RuntimeAPI = undefined as any;
+let dotnet: any = undefined;
 let jsInitializer: JSInitializer;
 
 let currentHeapLock: MonoHeapLock | null = null;
@@ -29,8 +31,8 @@ export function getInitializer() {
 }
 
 export const monoPlatform: Platform = {
-  load: function load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void) {
-    return createRuntimeInstance(options, onConfigLoaded);
+  load: function load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
+    return createRuntimeInstance(options, onConfigLoaded, justDownload);
   },
 
   start: function start() {
@@ -181,8 +183,9 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfi
   return dotnetModuleConfig;
 }
 
-async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void): Promise<void> {
-  const { dotnet } = await importDotnetJs(options);
+async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
+  const module = await importDotnetJs(options);
+  dotnet = module.dotnet;
   const moduleConfig = prepareRuntimeConfig(options, onConfigLoaded);
 
   if (options.applicationCulture) {
@@ -203,13 +206,19 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
   if (options.configureRuntime) {
     options.configureRuntime(dotnet);
   }
-
-  runtime = await dotnet.create();
+  if (justDownload) {
+    await dotnet.download(true);
+  } else {
+    runtime = await dotnet.create();
+  }
 }
 
 async function configureRuntimeInstance(): Promise<PlatformApi> {
   if (!runtime) {
-    throw new Error('The runtime must be loaded it gets configured.');
+    runtime = await dotnet.create();
+  }
+  if (!runtime) {
+    throw new Error('The runtime must be loaded before it gets configured.');
   }
 
   const { setModuleImports, INTERNAL: mono_internal, getConfig, invokeLibraryInitializers } = runtime;

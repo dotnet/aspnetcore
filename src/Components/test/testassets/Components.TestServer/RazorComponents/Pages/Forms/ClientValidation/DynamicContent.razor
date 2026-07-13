@@ -1,0 +1,40 @@
+@page "/forms/client-validation/dynamic-content"
+
+<h2 id="page-title">Dynamic content + scanRules</h2>
+
+<style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+</style>
+
+<form id="test-form" method="post">
+    <input id="name" name="Name" type="text"
+           data-val="true"
+           data-val-required="Name is required." />
+    <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
+
+    <div id="dynamic-container"></div>
+
+    <button type="submit" id="submit">Submit</button>
+</form>
+
+<button id="add-field" type="button">Add field</button>
+<button id="remove-field" type="button">Remove field</button>
+
+<script suppress-error="BL9992">
+    document.getElementById('add-field').addEventListener('click', function () {
+        var container = document.getElementById('dynamic-container');
+        container.innerHTML =
+            '<input id="dyn" name="Dyn" type="text" data-val="true" data-val-required="Dyn is required." />' +
+            '<span data-valmsg-for="Dyn" data-valmsg-replace="true"></span>';
+        if (window.Blazor && Blazor.formValidation) {
+            Blazor.formValidation.scanRules();
+        }
+    });
+    document.getElementById('remove-field').addEventListener('click', function () {
+        document.getElementById('dynamic-container').innerHTML = '';
+        if (window.Blazor && Blazor.formValidation) {
+            Blazor.formValidation.scanRules();
+        }
+    });
+</script>

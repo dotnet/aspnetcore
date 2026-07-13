@@ -30,7 +30,7 @@ public class WebAssemblyTrimmingTest : ServerTestBase<BlazorWasmTestAppFixture<P
     [Fact]
     public void HotReloadTypesAreTrimmed_WhenPublishedWithTrimming()
     {
-        if (!_serverFixture.TestTrimmedOrMultithreadingApps)
+        if (!_serverFixture.TestTrimmedApps)
         {
             // In dev mode, hot reload types are expected to be present
             return;
@@ -48,13 +48,16 @@ public class WebAssemblyTrimmingTest : ServerTestBase<BlazorWasmTestAppFixture<P
     [Fact]
     public void MetricsTypesAreTrimmed_WhenPublishedWithTrimming()
     {
-        if (!_serverFixture.TestTrimmedOrMultithreadingApps)
+        if (!_serverFixture.TestTrimmedApps)
         {
             // In dev mode, metrics types are expected to be present
             return;
         }
 
         var appElement = Browser.MountTestComponent<MetricsTrimmingCheck>();
+
+        // Verify that System.Diagnostics.Metrics.Meter.IsSupported is false
+        Browser.Equal("false", () => appElement.FindElement(By.Id("is-supported")).Text);
 
         // There is trimmed empty type ComponentsMetrics
         Browser.Equal("true", () => appElement.FindElement(By.Id("metrics-found")).Text);

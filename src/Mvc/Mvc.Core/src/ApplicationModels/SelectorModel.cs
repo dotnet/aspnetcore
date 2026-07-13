@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 public class SelectorModel
 {
     /// <summary>
-    /// Intializes a new <see cref="SelectorModel"/>.
+    /// Initializes a new <see cref="SelectorModel"/>.
     /// </summary>
     public SelectorModel()
     {
@@ -20,7 +20,7 @@ public class SelectorModel
     }
 
     /// <summary>
-    /// Intializes a new <see cref="SelectorModel"/>.
+    /// Initializes a new <see cref="SelectorModel"/>.
     /// </summary>
     /// <param name="other">The <see cref="SelectorModel"/> to copy from.</param>
     public SelectorModel(SelectorModel other)
