@@ -15,7 +15,7 @@ internal sealed class ClientValidationFieldDescriptor
     /// <param name="rules">The ordered list of client-side validation rules for this field.</param>
     public ClientValidationFieldDescriptor(
         string name,
-        IReadOnlyList<ClientValidationRule> rules)
+        IReadOnlyList<ClientValidationRuleDescriptor> rules)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(rules);
@@ -30,5 +30,5 @@ internal sealed class ClientValidationFieldDescriptor
     public string Name { get; }
 
     /// <summary>Ordered list of client-side validation rules.</summary>
-    public IReadOnlyList<ClientValidationRule> Rules { get; }
+    public IReadOnlyList<ClientValidationRuleDescriptor> Rules { get; }
 }

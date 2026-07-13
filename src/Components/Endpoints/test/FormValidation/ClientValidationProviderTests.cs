@@ -276,7 +276,7 @@ public class ClientValidationProviderTests
         return provider.BuildFormDescriptor(new EditContext(model), fields);
     }
 
-    private static ClientValidationRule SingleRule(ClientValidationFormDescriptor descriptor, string fieldName)
+    private static ClientValidationRuleDescriptor SingleRule(ClientValidationFormDescriptor descriptor, string fieldName)
     {
         var field = Assert.Single(descriptor.Fields, f => f.Name == fieldName);
         return Assert.Single(field.Rules);
@@ -394,15 +394,15 @@ public class ClientValidationProviderTests
 
     private sealed class CustomAdapterModel
     {
-        [CustomAdapter]
+        [CustomAdapter(ErrorMessage = "custom message")]
         public string Value { get; set; } = "";
     }
 
     private sealed class CustomAdapterAttribute : ValidationAttribute, IClientValidationAdapter
     {
-        public IEnumerable<ClientValidationRule> GetClientValidationRules(string errorMessage)
+        public IEnumerable<ClientValidationRule> GetClientValidationRules()
         {
-            yield return new ClientValidationRule("custom", "custom message",
+            yield return new ClientValidationRule("custom",
                 new Dictionary<string, string> { ["foo"] = "bar" });
         }
     }

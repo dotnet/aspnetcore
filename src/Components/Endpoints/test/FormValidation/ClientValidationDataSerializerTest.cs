@@ -17,7 +17,7 @@ public class ClientValidationDataSerializerTest
         const string hostile = "<script>alert('&')</script></blazor-client-validation-data>";
         var descriptor = new ClientValidationFormDescriptor(new List<ClientValidationFieldDescriptor>
         {
-            new(hostile, new List<ClientValidationRule>
+            new(hostile, new List<ClientValidationRuleDescriptor>
             {
                 new(hostile, hostile, new Dictionary<string, string> { [hostile] = hostile }),
             }),

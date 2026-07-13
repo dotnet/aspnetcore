@@ -80,7 +80,7 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
     private ClientValidationFieldDescriptor? BuildFieldDescriptor(string renderedName, ClientValidationFieldMetadata fieldMetadata)
     {
         var displayName = ResolveDisplayName(fieldMetadata);
-        var rules = new List<ClientValidationRule>();
+        var rules = new List<ClientValidationRuleDescriptor>();
 
         foreach (var attribute in fieldMetadata.ValidationAttributes)
         {
@@ -92,9 +92,10 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
             }
             else if (attribute is IClientValidationAdapter adapter)
             {
-                foreach (var customRule in adapter.GetClientValidationRules(errorMessage))
+                foreach (var customRule in adapter.GetClientValidationRules())
                 {
-                    rules.Add(customRule);
+                    var ruleDescriptor = new ClientValidationRuleDescriptor(customRule.Name, errorMessage, customRule.Parameters);
+                    rules.Add(ruleDescriptor);
                 }
             }
         }
@@ -104,43 +105,43 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
             : null;
     }
 
-    // Maps each built-in ValidationAttribute to its single ClientValidationRule. Custom
+    // Maps each built-in ValidationAttribute to its single rule descriptor. Custom
     // attributes that implement IClientValidationAdapter contribute their own rules elsewhere.
-    private static ClientValidationRule? GetBuiltInValidationRule(ValidationAttribute validationAttribute, string errorMessage)
+    private static ClientValidationRuleDescriptor? GetBuiltInValidationRule(ValidationAttribute validationAttribute, string errorMessage)
     {
         return validationAttribute switch
         {
-            RequiredAttribute => new ClientValidationRule("required", errorMessage),
-            StringLengthAttribute sla => new ClientValidationRule("length", errorMessage, GetStringLengthParameters(sla)),
-            MaxLengthAttribute maxla => new ClientValidationRule("maxlength", errorMessage,
+            RequiredAttribute => new ClientValidationRuleDescriptor("required", errorMessage),
+            StringLengthAttribute sla => new ClientValidationRuleDescriptor("length", errorMessage, GetStringLengthParameters(sla)),
+            MaxLengthAttribute maxla => new ClientValidationRuleDescriptor("maxlength", errorMessage,
                 new Dictionary<string, string>
                 {
                     ["max"] = maxla.Length.ToString(CultureInfo.InvariantCulture),
                 }),
-            MinLengthAttribute minla => new ClientValidationRule("minlength", errorMessage,
+            MinLengthAttribute minla => new ClientValidationRuleDescriptor("minlength", errorMessage,
                 new Dictionary<string, string>
                 {
                     ["min"] = minla.Length.ToString(CultureInfo.InvariantCulture),
                 }),
             // The JS range validator is numeric-only (uses Number()); skip non-numeric operands.
             RangeAttribute ra when IsNumericRangeOperand(ra.OperandType) => GetRangeRule(ra, errorMessage),
-            RegularExpressionAttribute rea => new ClientValidationRule("regex", errorMessage,
+            RegularExpressionAttribute rea => new ClientValidationRuleDescriptor("regex", errorMessage,
                 new Dictionary<string, string>
                 {
                     ["pattern"] = rea.Pattern,
                 }),
-            CompareAttribute ca => new ClientValidationRule("equalto", errorMessage,
+            CompareAttribute ca => new ClientValidationRuleDescriptor("equalto", errorMessage,
                 new Dictionary<string, string>
                 {
                     // "*." prefix tells the JS equalto validator to resolve the other field
                     // relative to the current field's name prefix.
                     ["other"] = "*." + ca.OtherProperty,
                 }),
-            EmailAddressAttribute => new ClientValidationRule("email", errorMessage),
-            UrlAttribute => new ClientValidationRule("url", errorMessage),
-            PhoneAttribute => new ClientValidationRule("phone", errorMessage),
-            CreditCardAttribute => new ClientValidationRule("creditcard", errorMessage),
-            FileExtensionsAttribute fea => new ClientValidationRule("fileextensions", errorMessage,
+            EmailAddressAttribute => new ClientValidationRuleDescriptor("email", errorMessage),
+            UrlAttribute => new ClientValidationRuleDescriptor("url", errorMessage),
+            PhoneAttribute => new ClientValidationRuleDescriptor("phone", errorMessage),
+            CreditCardAttribute => new ClientValidationRuleDescriptor("creditcard", errorMessage),
+            FileExtensionsAttribute fea => new ClientValidationRuleDescriptor("fileextensions", errorMessage,
                 new Dictionary<string, string>
                 {
                     ["extensions"] = GetNormalizedExtensions(fea),
@@ -172,11 +173,11 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
         };
     }
 
-    private static ClientValidationRule GetRangeRule(RangeAttribute ra, string errorMessage)
+    private static ClientValidationRuleDescriptor GetRangeRule(RangeAttribute ra, string errorMessage)
     {
         // Triggers RangeAttribute.SetupConversion() to convert string Min/Max to OperandType.
         ra.IsValid(3);
-        return new ClientValidationRule("range", errorMessage,
+        return new ClientValidationRuleDescriptor("range", errorMessage,
             new Dictionary<string, string>
             {
                 ["min"] = Convert.ToString(ra.Minimum, CultureInfo.InvariantCulture)!,

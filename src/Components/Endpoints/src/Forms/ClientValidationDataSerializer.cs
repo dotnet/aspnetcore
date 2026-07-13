@@ -42,7 +42,7 @@ internal static class ClientValidationDataSerializer
         writer.WriteEndObject();
     }
 
-    private static void WriteRule(Utf8JsonWriter writer, ClientValidationRule rule)
+    private static void WriteRule(Utf8JsonWriter writer, ClientValidationRuleDescriptor rule)
     {
         writer.WriteStartObject();
         writer.WriteString("name"u8, rule.Name);

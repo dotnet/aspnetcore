@@ -1,7 +1,6 @@
 @page "/forms/client-validation/custom-validator"
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.Components.Endpoints.Forms
 
 <h2 id="page-title">Custom validator</h2>
 
@@ -65,12 +64,11 @@
         public override bool IsValid(object? value)
             => value is not string text || text.Length == 0 || text.StartsWith(_prefix, StringComparison.Ordinal);
 
-        public IEnumerable<ClientValidationRule> GetClientValidationRules(string errorMessage)
+        public IEnumerable<ClientValidationRule> GetClientValidationRules()
             => new[]
             {
                 new ClientValidationRule(
                     "startswith",
-                    errorMessage,
                     new Dictionary<string, string> { ["prefix"] = _prefix }),
             };
     }
