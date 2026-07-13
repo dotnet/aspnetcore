@@ -71,7 +71,7 @@ public class EditForm : ComponentBase
     /// A callback that will be invoked when the form is submitted.
     ///
     /// If using this parameter, you are responsible for triggering any validation
-    /// manually, e.g., by calling <see cref="EditContext.Validate"/>.
+    /// manually, e.g., by calling <see cref="EditContext.ValidateAsync"/>.
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnSubmit { get; set; }
 

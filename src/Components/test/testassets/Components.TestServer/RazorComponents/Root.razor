@@ -1,4 +1,4 @@
-﻿@using Components.TestServer.RazorComponents.Pages.Forms
+@using Components.TestServer.RazorComponents.Pages.Forms
 @using Microsoft.AspNetCore.Components.Endpoints
 @using Microsoft.AspNetCore.Components.Web
 
@@ -11,6 +11,11 @@
     <HeadOutlet />
 </head>
 <body>
+    @if (AutoPause)
+    {
+        <ConfigureBrowser Options="@AutoPauseConfig" />
+    }
+
     <ServerApp @rendermode="@RenderMode.InteractiveServer" />
 
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
@@ -42,6 +47,23 @@
         }
 
         function callBlazorStart() {
+            const params = new URLSearchParams(location.search);
+            const circuitOptions = {
+                logLevel: 0
+            };
+            if (params.get('auto-pause') === 'true') {
+                window.autoPauseEvents = [];
+            }
+            const pauseDeferrals = new Set();
+            window.myApp = {
+                deferPause: (handler) => {
+                    pauseDeferrals.add(handler);
+                    return () => pauseDeferrals.delete(handler);
+                }
+            };
+            circuitOptions.circuitHandlers = [{
+                onCircuitPausing: (signal) => Promise.all([...pauseDeferrals].map(h => h(signal)))
+            }];
             Blazor.start({
                 ssr: {
                     disableDomPreservation: suppressEnhancedNavigation,
@@ -51,9 +73,7 @@
                         return `WasmMinimal/_framework/${name}`;
                     },
                 },
-                circuit: {
-                    logLevel: 0
-                },
+                circuit: circuitOptions,
             });
         }
 
@@ -76,4 +96,16 @@
 
 @code {
     [SupplyParameterFromQuery(Name = "custom-reconnect-ui")] public bool CustomReconnectUI { get; set; }
+    [SupplyParameterFromQuery(Name = "auto-pause")] public bool AutoPause { get; set; }
+    [SupplyParameterFromQuery(Name = "auto-pause-delay-ms")] public int AutoPauseDelayMs { get; set; }
+
+    private BrowserOptions AutoPauseConfig
+    {
+        get
+        {
+            var options = new BrowserOptions();
+            options.AddAutoPause(p => p.HiddenDelay = TimeSpan.FromMilliseconds(AutoPauseDelayMs > 0 ? AutoPauseDelayMs : 200));
+            return options;
+        }
+    }
 }
