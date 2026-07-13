@@ -543,6 +543,131 @@ public class ActionSelectionTableTest
         Assert.Same(actions[0], action);
     }
 
+    [Fact]
+    public void Select_ManyRouteValues_MatchesAcrossOverLengthRentedBuffer()
+    {
+        // Select rents its lookup-key buffer from ArrayPool, whose Rent returns an array that is
+        // typically longer than requested. This exercises a table with several route keys to ensure
+        // the extra trailing slots in the rented buffer never affect hashing or matching.
+        var actions = new ActionDescriptor[]
+        {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "area", "Admin" },
+                        { "controller", "Home" },
+                        { "action", "Index" },
+                        { "page", "1" },
+                        { "sort", "asc" },
+                    },
+                },
+                new ActionDescriptor()
+                {
+                    DisplayName = "A2",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "area", "Admin" },
+                        { "controller", "Home" },
+                        { "action", "Index" },
+                        { "page", "2" },
+                        { "sort", "asc" },
+                    },
+                },
+        };
+
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { area = "admin", controller = "home", action = "index", page = "2", sort = "ASC", });
+
+        var matches = table.Select(values);
+
+        Assert.Collection(matches, (a) => Assert.Same(actions[1], a));
+    }
+
+    [Fact]
+    public void Select_RepeatedCalls_ReturnConsistentResults()
+    {
+        // The rented buffer is cleared and returned to the pool after every call. Repeated calls must
+        // keep returning identical results, proving the buffer reuse does not retain or corrupt state.
+        var actions = new ActionDescriptor[]
+        {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                },
+                new ActionDescriptor()
+                {
+                    DisplayName = "A2",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "About" }
+                    },
+                },
+        };
+
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+
+        for (var i = 0; i < 1000; i++)
+        {
+            var matches = table.Select(values);
+            Assert.Collection(matches, (a) => Assert.Same(actions[0], a));
+        }
+    }
+
+    [Fact]
+    public void Select_ConcurrentCalls_ReturnCorrectResults()
+    {
+        // Each Select call rents its own buffer, so concurrent lookups with different inputs must not
+        // interfere with each other.
+        var actions = new ActionDescriptor[]
+        {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                },
+                new ActionDescriptor()
+                {
+                    DisplayName = "A2",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "About" }
+                    },
+                },
+        };
+
+        var table = CreateTableWithActionDescriptors(actions);
+        var index = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        var about = new RouteValueDictionary(new { controller = "Home", action = "About", });
+
+        Parallel.For(0, 2000, i =>
+        {
+            if (i % 2 == 0)
+            {
+                var matches = table.Select(index);
+                Assert.Collection(matches, (a) => Assert.Same(actions[0], a));
+            }
+            else
+            {
+                var matches = table.Select(about);
+                Assert.Collection(matches, (a) => Assert.Same(actions[1], a));
+            }
+        });
+    }
+
     private static ActionSelectionTable<ActionDescriptor> CreateTableWithActionDescriptors(IReadOnlyList<ActionDescriptor> actions)
     {
         return ActionSelectionTable<ActionDescriptor>.Create(new ActionDescriptorCollection(actions, 0));
