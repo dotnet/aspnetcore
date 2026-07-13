@@ -44,4 +44,12 @@ public class LegacyParsing
     [Benchmark]
     public Duration DeserializeDuration() =>
         JsonSerializer.Deserialize<Duration>(DurationJson, _serializerOptions)!;
+
+    [Benchmark]
+    public string WriteTimestamp() =>
+        Legacy.GetTimestampText(123456789, 1606782600);
+
+    [Benchmark]
+    public bool ValidateFieldMask() =>
+        Legacy.IsPathValid("foo_bar.baz");
 }
