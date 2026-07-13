@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.AspNetCore.StaticAssets.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +20,11 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderExtensions
 {
+    private const string CrossOriginEmbedderPolicy = "Cross-Origin-Embedder-Policy";
+    private const string CrossOriginEmbedderPolicyValue = "require-corp";
+    private const string CrossOriginOpenerPolicy = "Cross-Origin-Opener-Policy";
+    private const string CrossOriginOpenerPolicyValue = "same-origin";
+
     /// <summary>
     /// Configures the application to support the <see cref="RenderMode.InteractiveWebAssembly"/> render mode.
     /// </summary>
@@ -41,8 +47,8 @@ public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderE
                 {
                     endpointBuilder.RequestDelegate = httpContext =>
                     {
-                        httpContext.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
-                        httpContext.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+                        httpContext.Response.Headers[CrossOriginEmbedderPolicy] = CrossOriginEmbedderPolicyValue;
+                        httpContext.Response.Headers[CrossOriginOpenerPolicy] = CrossOriginOpenerPolicyValue;
                         return originalDelegate(httpContext);
                     };
                 }
@@ -59,6 +65,11 @@ public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderE
         var descriptors = StaticAssetsEndpointDataSourceHelper.ResolveStaticAssetDescriptors(endpointBuilder, options.StaticAssetsManifestPath);
         if (descriptors != null && descriptors.Count > 0)
         {
+            if (options.ServeMultithreadingHeaders)
+            {
+                AddMultithreadingHeadersToStaticAssets(descriptors);
+            }
+
             return builder;
         }
 
@@ -76,6 +87,25 @@ public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderE
         }
 
         return builder;
+    }
+
+    private static void AddMultithreadingHeadersToStaticAssets(IReadOnlyList<StaticAssetDescriptor> descriptors)
+    {
+        foreach (var descriptor in descriptors)
+        {
+            var responseHeaders = descriptor.ResponseHeaders.ToList();
+            AddHeaderIfMissing(responseHeaders, CrossOriginEmbedderPolicy, CrossOriginEmbedderPolicyValue);
+            AddHeaderIfMissing(responseHeaders, CrossOriginOpenerPolicy, CrossOriginOpenerPolicyValue);
+            descriptor.ResponseHeaders = responseHeaders;
+        }
+    }
+
+    private static void AddHeaderIfMissing(List<StaticAssetResponseHeader> headers, string name, string value)
+    {
+        if (!headers.Any(header => string.Equals(header.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            headers.Add(new StaticAssetResponseHeader(name, value));
+        }
     }
 
     internal static partial class Log

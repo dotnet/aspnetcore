@@ -12,6 +12,10 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 internal class WebAssemblyEndpointProvider(IServiceProvider services) : RenderModeEndpointProvider
 {
+    private const string CrossOriginEmbedderPolicy = "Cross-Origin-Embedder-Policy";
+    private const string CrossOriginEmbedderPolicyValue = "require-corp";
+    private const string CrossOriginOpenerPolicy = "Cross-Origin-Opener-Policy";
+    private const string CrossOriginOpenerPolicyValue = "same-origin";
     private const string ResourceCollectionKey = "__ResourceCollectionKey";
 
     public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(IComponentRenderMode renderMode, IApplicationBuilder applicationBuilder)
@@ -37,6 +41,12 @@ internal class WebAssemblyEndpointProvider(IServiceProvider services) : RenderMo
 
             endpointRouteBuilder.Map($"{pathPrefix}/_framework/{{*path}}", context =>
             {
+                if (wasmWithOptions.EndpointOptions?.ServeMultithreadingHeaders == true)
+                {
+                    context.Response.Headers[CrossOriginEmbedderPolicy] = CrossOriginEmbedderPolicyValue;
+                    context.Response.Headers[CrossOriginOpenerPolicy] = CrossOriginOpenerPolicyValue;
+                }
+
                 // Set endpoint to null so the static files middleware will handle the request.
                 context.SetEndpoint(null);
 

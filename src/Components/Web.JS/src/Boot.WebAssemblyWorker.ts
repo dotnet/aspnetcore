@@ -18,6 +18,7 @@ export type WorkerToMainMessage =
   | { type: 'blazor:renderBatch'; rendererId: number; batchId: number; batchData: ArrayBuffer }
   | { type: 'blazor:attachRootComponentToElement'; selector: string; componentId: number; rendererId: number }
   | { type: 'blazor:jsCall'; asyncHandle: number; identifier: string; argsJson: string; resultType: number; targetInstanceId: number; callType: number }
+  | { type: 'blazor:syncJsCall'; identifier: string; argsJson: string; resultType: number; targetInstanceId: number; callType: number; signal: SharedArrayBuffer; resultBuffer: SharedArrayBuffer }
   | { type: 'blazor:rendererAttached'; rendererId: number }
   | { type: 'blazor:endLocationChanging'; callId: number; shouldContinue: boolean }
   | { type: 'blazor:endUpdateRootComponents'; batchId: number };
@@ -88,6 +89,14 @@ let resolveInitialComponentsUpdate: (value: string) => void;
 const initialComponentsUpdatePromise = new Promise<string>(resolve => {
   resolveInitialComponentsUpdate = resolve;
 });
+
+const syncJsCallStatusIndex = 0;
+const syncJsCallLengthIndex = 1;
+const syncJsCallStatusPending = 0;
+const syncJsCallStatusSuccess = 1;
+const syncJsCallStatusFailure = 2;
+const syncJsCallResultBufferSize = 1024 * 1024;
+const syncJsCallTimeoutMilliseconds = 30_000;
 
 (self as any).addEventListener('message', async (e: MessageEvent<MainToWorkerMessage>) => {
   const msg = e.data;
@@ -294,7 +303,7 @@ function buildInternalApis() {
       // Synchronous: only intercept framework-internal calls that we can handle
       // locally; reject everything else because we cannot synchronously round-trip
       // across the worker boundary.
-      return handleSyncJSCall(identifier, argsJson);
+      return handleSyncJSCall(identifier, targetInstanceId, resultType, argsJson, callType);
     },
 
     endInvokeDotNetFromJS(callId: string, success: boolean, resultJsonOrError: string) {
@@ -385,7 +394,7 @@ function buildInternalApis() {
 
 // Some framework-internal calls arrive synchronously (asyncHandle === 0).
 // We intercept the ones we can satisfy locally; everything else is unsupported.
-function handleSyncJSCall(identifier: string, argsJson: string): string | null {
+function handleSyncJSCall(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, callType: number): string | null {
   switch (identifier) {
     // attachWebRendererInterop is called synchronously from .NET on WebAssembly.
     // We already provide it as a dedicated JSImport above (via setModuleImports),
@@ -406,9 +415,56 @@ function handleSyncJSCall(identifier: string, argsJson: string): string | null {
       return JSON.stringify(locationHref);
 
     default:
-      throw new Error(`Synchronous JS interop call to '${identifier}' is not supported in Web Worker mode. ` +
-        'Use InvokeAsync instead of InvokeMethod.');
+      if (resultType === 3 && typeof SharedArrayBuffer === 'undefined') {
+        // JSVoidResult calls don't need a return value. We can safely forward these
+        // to the main thread without blocking the Worker, which preserves common
+        // in-process side-effect APIs such as NavigationManager.NavigateTo when
+        // cross-origin isolation is not enabled.
+        postToMain({ type: 'blazor:jsCall', asyncHandle: 0, identifier, argsJson, resultType, targetInstanceId, callType });
+        return null;
+      }
+
+      return invokeSyncJSCallOnMainThread(identifier, targetInstanceId, resultType, argsJson, callType);
   }
+}
+
+function invokeSyncJSCallOnMainThread(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, callType: number): string | null {
+  if (typeof SharedArrayBuffer === 'undefined') {
+    throw new Error(`Synchronous JS interop call to '${identifier}' with a return value requires SharedArrayBuffer. ` +
+      'Enable cross-origin isolation or use InvokeAsync instead of InvokeMethod.');
+  }
+
+  const signal = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 2);
+  const signalView = new Int32Array(signal);
+  const resultBuffer = new SharedArrayBuffer(syncJsCallResultBufferSize);
+
+  Atomics.store(signalView, syncJsCallStatusIndex, syncJsCallStatusPending);
+  Atomics.store(signalView, syncJsCallLengthIndex, -1);
+
+  postToMain({ type: 'blazor:syncJsCall', identifier, argsJson, resultType, targetInstanceId, callType, signal, resultBuffer });
+
+  const waitResult = Atomics.wait(
+    signalView,
+    syncJsCallStatusIndex,
+    syncJsCallStatusPending,
+    syncJsCallTimeoutMilliseconds,
+  );
+
+  if (waitResult === 'timed-out') {
+    throw new Error(`Synchronous JS interop call to '${identifier}' timed out in Web Worker mode.`);
+  }
+
+  const status = Atomics.load(signalView, syncJsCallStatusIndex);
+  const resultLength = Atomics.load(signalView, syncJsCallLengthIndex);
+  const resultJson = resultLength < 0
+    ? null
+    : new TextDecoder().decode(new Uint8Array(resultBuffer, 0, resultLength).slice());
+
+  if (status === syncJsCallStatusSuccess) {
+    return resultJson;
+  }
+
+  throw new Error(resultJson ?? `Synchronous JS interop call to '${identifier}' failed in Web Worker mode.`);
 }
 
 // Minimal JSON reviver that reconstructs DotNet.DotNetObject references so

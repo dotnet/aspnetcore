@@ -50,6 +50,11 @@ const initializersPromise = new Promise<void>(resolve => {
   resolveInitializersPromise = resolve;
 });
 
+const syncJsCallStatusIndex = 0;
+const syncJsCallLengthIndex = 1;
+const syncJsCallStatusSuccess = 1;
+const syncJsCallStatusFailure = 2;
+
 export function isFirstUpdate() {
   return firstUpdate;
 }
@@ -124,8 +129,12 @@ async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAs
   const componentAttacher = new WebAssemblyComponentAttacher(components);
   const registeredComponents = getRegisteredComponents(componentAttacher);
 
-  const workerScriptUrl = new URL('_framework/blazor.webassembly.worker.js', document.baseURI).href;
+  const workerScriptUrl = resolveWorkerScriptUrl();
   const worker = new Worker(workerScriptUrl, { type: 'module' });
+
+  Blazor._internal.updateRootComponents = (operations: string, webAssemblyState: string) => {
+    sendToWorker(worker, { type: 'blazor:updateRootComponents', operations, webAssemblyState });
+  };
 
   const mainDispatcher = DotNet.attachDispatcher({
     beginInvokeDotNetFromJS() {
@@ -205,6 +214,10 @@ async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAs
           );
           break;
 
+        case 'blazor:syncJsCall':
+          completeSyncJSCall(mainDispatcher, msg);
+          break;
+
         case 'blazor:endLocationChanging':
           Blazor._internal.navigationManager.endLocationChanging(msg.callId, msg.shouldContinue);
           break;
@@ -216,9 +229,12 @@ async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAs
     });
 
     // .NET's own call to enableNavigationInterception is swallowed by the Worker's no-op
-    // stub (it has no document to intercept clicks on), so it must be triggered here instead
-    // otherwise link clicks fall through to full browser navigations instead of SPA routing.
-    Blazor._internal.navigationManager.enableNavigationInterception(WebRendererId.WebAssemblyOutOfProcess);
+    // stub (it has no document to intercept clicks on), so it must be triggered here for
+    // standalone WebAssembly hosting. Under blazor.web.js, enabling a global interactive
+    // router would disable enhanced/server navigation for the host page.
+    if (!Blazor._internal.isBlazorWeb) {
+      Blazor._internal.navigationManager.enableNavigationInterception(WebRendererId.WebAssemblyOutOfProcess);
+    }
 
     // Forward DOM navigation events to the Worker.
     Blazor._internal.navigationManager.listenForNavigationEvents(
@@ -248,6 +264,46 @@ async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAs
       registeredComponents,
     });
   });
+}
+
+function completeSyncJSCall(mainDispatcher: DotNet.ICallDispatcher, msg: Extract<WorkerToMainMessage, { type: 'blazor:syncJsCall' }>): void {
+  try {
+    const resultJson = mainDispatcher.invokeJSFromDotNet(
+      msg.identifier,
+      msg.argsJson,
+      msg.resultType,
+      msg.targetInstanceId,
+      msg.callType,
+    );
+    writeSyncJSCallResult(msg, syncJsCallStatusSuccess, resultJson);
+  } catch (error: unknown) {
+    writeSyncJSCallResult(msg, syncJsCallStatusFailure, error instanceof Error ? error.message : String(error));
+  }
+}
+
+function writeSyncJSCallResult(msg: Extract<WorkerToMainMessage, { type: 'blazor:syncJsCall' }>, status: number, resultJson: string | null): void {
+  const signalView = new Int32Array(msg.signal);
+  const resultView = new Uint8Array(msg.resultBuffer);
+  let resultLength = -1;
+  let finalStatus = status;
+
+  if (resultJson !== null) {
+    let resultBytes = new TextEncoder().encode(resultJson);
+    if (resultBytes.byteLength > resultView.byteLength) {
+      finalStatus = syncJsCallStatusFailure;
+      resultBytes = new TextEncoder().encode(
+        `Synchronous JS interop result from '${msg.identifier}' exceeded ${resultView.byteLength} bytes. ` +
+        'Use InvokeAsync instead of InvokeMethod.',
+      );
+    }
+
+    resultLength = Math.min(resultBytes.byteLength, resultView.byteLength);
+    resultView.set(resultBytes.subarray(0, resultLength));
+  }
+
+  Atomics.store(signalView, syncJsCallLengthIndex, resultLength);
+  Atomics.store(signalView, syncJsCallStatusIndex, finalStatus);
+  Atomics.notify(signalView, syncJsCallStatusIndex);
 }
 
 function getRegisteredComponents(componentAttacher: WebAssemblyComponentAttacher): WorkerRegisteredComponent[] {
@@ -293,8 +349,37 @@ function resolveDotnetJsUrl(): string {
     throw new Error('For a dotnetjs resource, custom loaders must supply a URI string.');
   }
 
-  const bare = new URL(defaultUri, document.baseURI).href;
-  return (import.meta as any).resolve?.(bare) ?? bare;
+  return resolveFingerprintedUrl(defaultUri);
+}
+
+/** Resolves the fingerprinted Web Worker script URL via the page's import map. */
+function resolveWorkerScriptUrl(): string {
+  return resolveFingerprintedUrl('_framework/blazor.webassembly.worker.js');
+}
+
+function resolveFingerprintedUrl(defaultUri: string): string {
+  return resolveFromImportMap(`./${defaultUri}`)
+    ?? resolveFromImportMap(defaultUri)
+    ?? resolveFromImportMap(new URL(defaultUri, document.baseURI).href)
+    ?? new URL(defaultUri, document.baseURI).href;
+}
+
+function resolveFromImportMap(specifier: string): string | undefined {
+  let result: string | undefined;
+  const importMapElements = document.querySelectorAll<HTMLScriptElement>('script[type="importmap"]');
+  for (let i = 0; i < importMapElements.length; i++) {
+    try {
+      const importMapElement = importMapElements[i];
+      const importMap = JSON.parse(importMapElement.textContent || '{}') as { imports?: Record<string, string> };
+      const mappedUri = importMap.imports?.[specifier];
+      if (mappedUri) {
+        result = new URL(mappedUri, document.baseURI).href;
+      }
+    } catch {
+      // Ignore invalid import maps and fall back to the non-fingerprinted URI.
+    }
+  }
+  return result;
 }
 
 function sendToWorker(worker: Worker, msg: MainToWorkerMessage): void {
