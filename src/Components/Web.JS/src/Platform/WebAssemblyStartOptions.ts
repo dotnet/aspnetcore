@@ -45,8 +45,8 @@ export interface WebAssemblyStartOptions {
    *
    * When Web Worker mode is active, render batches are transferred to the main thread
    * via postMessage and DOM events are forwarded to the worker.
-   * Requires the <c>__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER</c> environment
-   * variable to be set to <c>true</c> on the .NET side.
+   * Requires the `__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER` environment
+   * variable to be set to `true` on the .NET side.
    */
   useWebWorker?: boolean;
 }
