@@ -33,7 +33,16 @@ public class KeyPerFileConfigurationProvider : ConfigurationProvider, IDisposabl
                 async () =>
                 {
                     await Task.Delay(Source.ReloadDelay).ConfigureAwait(false);
-                    Load(reload: true);
+                    try
+                    {
+                        Load(reload: true);
+                    }
+                    catch
+                    {
+                        // Any exception that escapes here is usually swallowed by OnChange
+                        // or by the FileProvider, so swallow it here instead,
+                        // to make it clear this is the intended behavior and to make it more consistent.
+                    }
                 });
         }
 
