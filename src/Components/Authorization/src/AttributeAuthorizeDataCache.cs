@@ -18,12 +18,12 @@ internal static class AttributeAuthorizeDataCache
     }
 
     private static readonly ConcurrentDictionary<Type, IAuthorizeData[]?> _cache = new();
-    private static readonly ConcurrentDictionary<Type, object[]?> _metadataCache = new();
+    private static readonly ConcurrentDictionary<Type, IAuthorizationRequirementData[]?> _requirementDataCache = new();
 
     private static void ClearCache()
     {
         _cache.Clear();
-        _metadataCache.Clear();
+        _requirementDataCache.Clear();
     }
 
     public static IAuthorizeData[]? GetAuthorizeDataForType(Type type)
@@ -37,12 +37,12 @@ internal static class AttributeAuthorizeDataCache
         return result;
     }
 
-    public static object[]? GetAuthorizeMetadataForType(Type type)
+    public static IAuthorizationRequirementData[]? GetAuthorizationRequirementDataForType(Type type)
     {
-        if (!_metadataCache.TryGetValue(type, out var result))
+        if (!_requirementDataCache.TryGetValue(type, out var result))
         {
-            result = ComputeAuthorizeMetadataForType(type);
-            _metadataCache[type] = result; // Safe race - doesn't matter if it overwrites
+            result = ComputeAuthorizationRequirementDataForType(type);
+            _requirementDataCache[type] = result; // Safe race - doesn't matter if it overwrites
         }
 
         return result;
@@ -70,11 +70,11 @@ internal static class AttributeAuthorizeDataCache
         return authorizeDatas?.ToArray();
     }
 
-    private static object[]? ComputeAuthorizeMetadataForType(Type type)
+    private static IAuthorizationRequirementData[]? ComputeAuthorizationRequirementDataForType(Type type)
     {
         // Allow Anonymous skips all authorization
         var allAttributes = type.GetCustomAttributes(inherit: true);
-        List<object>? metadata = null;
+        List<IAuthorizationRequirementData>? requirementDatas = null;
         for (var i = 0; i < allAttributes.Length; i++)
         {
             if (allAttributes[i] is IAllowAnonymous)
@@ -82,13 +82,13 @@ internal static class AttributeAuthorizeDataCache
                 return null;
             }
 
-            if (allAttributes[i] is IAuthorizeData or IAuthorizationRequirementData)
+            if (allAttributes[i] is IAuthorizationRequirementData requirementData)
             {
-                metadata ??= new();
-                metadata.Add(allAttributes[i]);
+                requirementDatas ??= new();
+                requirementDatas.Add(requirementData);
             }
         }
 
-        return metadata?.ToArray();
+        return requirementDatas?.ToArray();
     }
 }

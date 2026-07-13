@@ -601,11 +601,10 @@ public class AuthorizeViewTest
 
     public class AuthorizeViewCoreWithRequirementData : AuthorizeViewCore
     {
-        protected override IAuthorizeData[] GetAuthorizeData()
-            => throw new NotImplementedException("GetAuthorizeMetadata should be used instead.");
+        protected override IAuthorizeData[] GetAuthorizeData() => null;
 
-        protected override object[] GetAuthorizeMetadata()
-            => new object[] { new RequirementDataAttribute() };
+        protected override IAuthorizationRequirementData[] GetAuthorizationRequirementData()
+            => new IAuthorizationRequirementData[] { new RequirementDataAttribute() };
 
         public sealed class TestRequirement : IAuthorizationRequirement
         {

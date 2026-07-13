@@ -113,7 +113,7 @@ public class AuthorizationPolicy
     /// </returns>
     public static Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
         IEnumerable<IAuthorizeData> authorizeData,
-        IEnumerable<AuthorizationPolicy> policies) => CombineAsync(policyProvider, authorizeData, policies, requirementData: null);
+        IEnumerable<AuthorizationPolicy> policies) => CombineAsync(policyProvider, authorizeData, policies, Array.Empty<IAuthorizationRequirementData>());
 
     /// <summary>
     /// Combines the <see cref="AuthorizationPolicy"/> represented by the authorization metadata associated with an endpoint.
@@ -173,13 +173,13 @@ public class AuthorizationPolicy
             policyProvider,
             authorizeData ?? (IEnumerable<IAuthorizeData>)Array.Empty<IAuthorizeData>(),
             policies ?? Enumerable.Empty<AuthorizationPolicy>(),
-            requirementData);
+            requirementData ?? (IReadOnlyList<IAuthorizationRequirementData>)Array.Empty<IAuthorizationRequirementData>());
     }
 
     private static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
         IEnumerable<IAuthorizeData> authorizeData,
         IEnumerable<AuthorizationPolicy> policies,
-        IReadOnlyList<IAuthorizationRequirementData>? requirementData)
+        IReadOnlyList<IAuthorizationRequirementData> requirementData)
     {
         ArgumentNullThrowHelper.ThrowIfNull(policyProvider);
         ArgumentNullThrowHelper.ThrowIfNull(authorizeData);
@@ -265,7 +265,7 @@ public class AuthorizationPolicy
         }
 
         // Combine any requirements contributed by IAuthorizationRequirementData metadata.
-        if (requirementData is { Count: > 0 })
+        if (requirementData.Count > 0)
         {
             var reqPolicy = new AuthorizationPolicyBuilder();
             foreach (var rd in requirementData)

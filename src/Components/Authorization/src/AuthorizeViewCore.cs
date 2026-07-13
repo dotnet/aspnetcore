@@ -98,47 +98,96 @@ public abstract class AuthorizeViewCore : ComponentBase
     protected abstract IAuthorizeData[]? GetAuthorizeData();
 
     /// <summary>
-    /// Gets the full set of authorization metadata used to apply authorization rules.
+    /// Gets the <see cref="IAuthorizationRequirementData"/> used to apply authorization rules, if any.
     /// </summary>
     /// <remarks>
-    /// By default this returns the value of <see cref="GetAuthorizeData"/>. Override this method to
-    /// contribute additional metadata such as <see cref="AuthorizationPolicy"/> or
-    /// <see cref="IAuthorizationRequirementData"/> instances in addition to <see cref="IAuthorizeData"/>.
-    /// Returning <see langword="null"/> indicates that no authorization applies.
+    /// By default this returns <see langword="null"/>. Override this method to contribute
+    /// <see cref="IAuthorizationRequirementData"/> in addition to the <see cref="IAuthorizeData"/>
+    /// returned by <see cref="GetAuthorizeData"/>.
     /// </remarks>
     /// <returns>
-    /// The authorization metadata used to build the effective policy, or <see langword="null"/> if no
-    /// authorization applies.
+    /// The <see cref="IAuthorizationRequirementData"/> used to build the effective policy, or
+    /// <see langword="null"/> if none applies.
     /// </returns>
-    protected virtual object[]? GetAuthorizeMetadata() => GetAuthorizeData();
+    protected virtual IAuthorizationRequirementData[]? GetAuthorizationRequirementData() => null;
 
     private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
     {
-        var authorizeMetadata = GetAuthorizeMetadata();
-        if (authorizeMetadata == null)
+        var authorizeData = GetAuthorizeData();
+        var requirementData = GetAuthorizationRequirementData();
+        if (authorizeData is null && requirementData is null)
         {
             // No authorization applies, so no need to consult the authorization service
             return true;
         }
 
-        EnsureNoAuthenticationSchemeSpecified(authorizeMetadata);
+        EnsureNoAuthenticationSchemeSpecified(authorizeData);
 
+        var metadata = CombineAuthorizationMetadata(authorizeData, requirementData);
         var policy = await AuthorizationPolicy.CombineAsync(
-            AuthorizationPolicyProvider, authorizeMetadata);
+            AuthorizationPolicyProvider, metadata);
         var result = await AuthorizationService.AuthorizeAsync(user, Resource, policy!);
         return result.Succeeded;
     }
 
-    private static void EnsureNoAuthenticationSchemeSpecified(object[] authorizeMetadata)
+    private static object[] CombineAuthorizationMetadata(IAuthorizeData[]? authorizeData, IAuthorizationRequirementData[]? requirementData)
     {
+        // Arrays are covariant, so when only one kind of metadata is present the typed array can be
+        // handed to CombineAsync directly as object[].
+        if (requirementData is null || requirementData.Length == 0)
+        {
+            return authorizeData ?? Array.Empty<object>();
+        }
+
+        if (authorizeData is null || authorizeData.Length == 0)
+        {
+            return requirementData;
+        }
+
+        // Combine both sources, but ensure an attribute that implements both IAuthorizeData and
+        // IAuthorizationRequirementData is only included once so it isn't processed twice.
+        var combined = new List<object>(authorizeData.Length + requirementData.Length);
+        combined.AddRange(authorizeData);
+        foreach (var data in requirementData)
+        {
+            if (!ContainsReference(authorizeData, data))
+            {
+                combined.Add(data);
+            }
+        }
+
+        return combined.ToArray();
+    }
+
+    private static bool ContainsReference(IAuthorizeData[] authorizeData, object data)
+    {
+        foreach (var entry in authorizeData)
+        {
+            if (ReferenceEquals(entry, data))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void EnsureNoAuthenticationSchemeSpecified(IAuthorizeData[]? authorizeData)
+    {
+        if (authorizeData is null)
+        {
+            return;
+        }
+
         // It's not meaningful to specify a nonempty scheme, since by the time Components
         // authorization runs, we already have a specific ClaimsPrincipal (we're stateful).
         // To avoid any confusion, ensure the developer isn't trying to specify a scheme.
-        for (var i = 0; i < authorizeMetadata.Length; i++)
+        for (var i = 0; i < authorizeData.Length; i++)
         {
-            if (authorizeMetadata[i] is IAuthorizeData { AuthenticationSchemes: { Length: > 0 } authenticationSchemes })
+            var entry = authorizeData[i];
+            if (!string.IsNullOrEmpty(entry.AuthenticationSchemes))
             {
-                throw new NotSupportedException($"The authorization data specifies an authentication scheme with value '{authenticationSchemes}'. Authentication schemes cannot be specified for components.");
+                throw new NotSupportedException($"The authorization data specifies an authentication scheme with value '{entry.AuthenticationSchemes}'. Authentication schemes cannot be specified for components.");
             }
         }
     }
