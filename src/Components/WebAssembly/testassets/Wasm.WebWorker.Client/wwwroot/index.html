@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blazor WebAssembly Web Worker Test</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/app.css" />
+    <script type="importmap"></script>
+</head>
+<body>
+    <div id="app">Loading...</div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">x</span>
+    </div>
+
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            useWebWorker: true,
+        }).then(() => {
+            window['__aspnetcore__testing__blazor_wasm__started__'] = true;
+        });
+    </script>
+</body>
+</html>

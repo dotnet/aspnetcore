@@ -74,6 +74,7 @@
     <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.WebWorker.Client\Wasm.WebWorker.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedApps)' != 'true'">
@@ -92,6 +93,8 @@
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
 
     <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
+
+    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.WebWorker.Client\Wasm.WebWorker.Client.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.WebWorker.Client\;" />
 
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
 

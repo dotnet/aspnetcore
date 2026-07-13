@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 
 public class WebAssemblyOutOfProcessRendererTest(
     BrowserFixture browserFixture,
-    OutOfProcessRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>> serverFixture,
+    OutOfProcessRendererServerFixture<RazorComponentEndpointsStartup<WebAssemblyWebWorkerApp>> serverFixture,
     ITestOutputHelper output)
-    : ServerTestBase<OutOfProcessRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
+    : ServerTestBase<OutOfProcessRendererServerFixture<RazorComponentEndpointsStartup<WebAssemblyWebWorkerApp>>>(browserFixture, serverFixture, output)
 {
     [Fact]
     public void OutOfProcessRendererIsActiveAndComponentIsInteractive()

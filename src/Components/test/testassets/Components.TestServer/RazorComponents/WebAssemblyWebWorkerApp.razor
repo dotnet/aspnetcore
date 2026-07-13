@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="/subdir/" />
+    <HeadOutlet @rendermode="RenderMode.InteractiveWebAssembly" />
+</head>
+<body>
+    <Components.WasmMinimal.Routes @rendermode="RenderMode.InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
+    <script>
+        Blazor.start({
+            webAssembly: {
+                useWebWorker: true,
+                loadBootResource: (type, name, defaultUri, integrity) => `WasmMinimal/_framework/${name}`
+            }
+        });
+    </script>
+</body>
+</html>
