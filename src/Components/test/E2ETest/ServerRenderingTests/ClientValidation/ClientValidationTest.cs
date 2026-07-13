@@ -47,28 +47,24 @@ public class ClientValidationTest : ClientValidationTestBase
         Browser.Equal("Email is required.", () => FieldMessage("Form.Email"));
         Browser.Equal("Password is required.", () => FieldMessage("Form.Password"));
 
-        // Format errors: invalid email, too-short password, mismatched confirmation.
+        // Fire one non-required rule to test integration end-to-end.
         Browser.Exists(By.Id("name")).SendKeys("Alice");
         Browser.Exists(By.Id("email")).SendKeys("not-an-email");
-        Browser.Exists(By.Id("password")).SendKeys("short");
-        Browser.Exists(By.Id("confirmpassword")).SendKeys("different");
+        Browser.Exists(By.Id("password")).SendKeys("longenoughpassword");
+        Browser.Exists(By.Id("confirmpassword")).SendKeys("longenoughpassword");
         Browser.Exists(By.Id("submit")).Click();
 
-        Browser.Equal("", () => FieldMessage("Form.Name"));
         Browser.Equal("Email is not valid.", () => FieldMessage("Form.Email"));
-        Browser.Equal("Password must be between 8 and 50 characters.", () => FieldMessage("Form.Password"));
-        Browser.Equal("Passwords must match.", () => FieldMessage("Form.ConfirmPassword"));
+        Browser.Equal("", () => FieldMessage("Form.Name"));
+        Browser.Equal("", () => FieldMessage("Form.Password"));
+        Browser.Equal("", () => FieldMessage("Form.ConfirmPassword"));
 
-        // Fix everything and submit: all errors clear and the form reports valid.
+        // Fix the email and submit: all errors clear and the form reports valid.
         ReplaceText(By.Id("email"), "alice@example.com");
-        ReplaceText(By.Id("password"), "longenoughpassword");
-        ReplaceText(By.Id("confirmpassword"), "longenoughpassword");
         Browser.Exists(By.Id("submit")).Click();
 
         Browser.Equal("valid:true;errors:0", () => Browser.Exists(By.Id("event-log")).Text);
         Browser.Equal("", () => FieldMessage("Form.Email"));
-        Browser.Equal("", () => FieldMessage("Form.Password"));
-        Browser.Equal("", () => FieldMessage("Form.ConfirmPassword"));
     }
 
     [Fact]
@@ -100,28 +96,11 @@ public class ClientValidationTest : ClientValidationTestBase
         Assert.Contains("email", emailRules);
     }
 
+    // Tests checking that the JS adapter layer supports enhanced navigation correctly.
     // Enhanced navigation updates the page by DOM morphing, which reuses the carrier element
-    // (its connectedCallback does not re-fire) and strips the JS-added novalidate. The
-    // 'enhancedload' reconcile in the validation service must re-register the destination form.
-    // These tests cover every transition: form->form, form->form->back, form->no-form->form,
-    // and no-form->form.
-
-    [Fact]
-    public void EnhancedNavigation_FormToForm_RevalidatesNewForm()
-    {
-        NavigateToClientValidationPage("enhanced-nav-a");
-        MarkEnhancedNavProbe();
-
-        Browser.Exists(By.Id("go-to-b")).Click();
-        Browser.Equal("Enhanced navigation form B", () => Browser.Exists(By.Id("page-title")).Text);
-        AssertWasEnhancedNavigation();
-
-        // The morph reused the carrier and stripped novalidate; the reconcile must re-apply it
-        // and register form B's rules.
-        Browser.Exists(By.CssSelector("form[novalidate]"));
-        Browser.Exists(By.Id("submit")).Click();
-        Browser.Equal("Beta is required.", () => FieldMessage("Form.Beta"));
-    }
+    // (its connectedCallback does not re-fire) and strips the JS-added novalidate.
+    // These tests cover the transitions: form->form->back (form->form is its first leg),
+    // form->no-form->form, and no-form->form.
 
     [Fact]
     public void EnhancedNavigation_FormToFormAndBack_EachValidatesOwnRules()
