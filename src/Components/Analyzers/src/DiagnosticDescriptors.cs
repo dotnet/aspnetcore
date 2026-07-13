@@ -139,8 +139,17 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Description)));
 
-    public static readonly DiagnosticDescriptor RazorComponentResultParameterDoesNotExist = new(
+    public static readonly DiagnosticDescriptor JSInvokableMethodShouldBePublic = new(
         "BL0015",
+        CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Title)),
+        CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Description)));
+
+    public static readonly DiagnosticDescriptor RazorComponentResultParameterDoesNotExist = new(
+        "BL0016",
         CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Title)),
         CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Format)),
         Usage,
