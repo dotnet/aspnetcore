@@ -14,7 +14,7 @@ public class HubProtocolBenchmark
     private TestBinder _binder;
     private HubMessage _hubMessage;
 
-    [Params(Message.NoArguments, Message.FewArguments, Message.ManyArguments, Message.LargeArguments, Message.WithStreams)]
+    [Params(Message.NoArguments, Message.FewArguments, Message.ManyArguments, Message.LargeArguments, Message.WithStreams, Message.WithHeaders)]
     public Message Input { get; set; }
 
     [Params(Protocol.MsgPack, Protocol.Json, Protocol.NewtonsoftJson)]
@@ -53,6 +53,22 @@ public class HubProtocolBenchmark
             case Message.WithStreams:
                 _hubMessage = new InvocationMessage(invocationId: null, "Target", new object[] { 1, "Foo", 2.0f },
                     new[] { "stream-id-0", "stream-id-1", "stream-id-2", "stream-id-3" });
+                break;
+            case Message.WithHeaders:
+                _hubMessage = new InvocationMessage("Target", new object[] { 1, "Foo", 2.0f })
+                {
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "header-1", "value-1" },
+                        { "header-2", "value-2" },
+                        { "header-3", "value-3" },
+                        { "header-4", "value-4" },
+                        { "header-5", "value-5" },
+                        { "header-6", "value-6" },
+                        { "header-7", "value-7" },
+                        { "header-8", "value-8" },
+                    }
+                };
                 break;
         }
 
@@ -93,6 +109,7 @@ public class HubProtocolBenchmark
         FewArguments = 1,
         ManyArguments = 2,
         LargeArguments = 3,
-        WithStreams = 4
+        WithStreams = 4,
+        WithHeaders = 5
     }
 }
