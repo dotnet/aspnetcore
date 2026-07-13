@@ -188,7 +188,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
 
             for (var j = 0; j < httpMethods.Count; j++)
             {
-                // An endpoint that allows CORS reqests will match both CORS and non-CORS
+                // An endpoint that allows CORS requests will match both CORS and non-CORS
                 // so we model it as both.
                 var httpMethod = httpMethods[j];
                 var key = new EdgeKey(httpMethod, acceptCorsPreFlight);
@@ -197,7 +197,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
                     edges.Add(key, new List<Endpoint>());
                 }
 
-                // An endpoint that allows CORS reqests will match both CORS and non-CORS
+                // An endpoint that allows CORS requests will match both CORS and non-CORS
                 // so we model it as both.
                 if (acceptCorsPreFlight)
                 {
@@ -250,7 +250,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
 
                     edges[key].Add(endpoint);
 
-                    // An endpoint that allows CORS reqests will match both CORS and non-CORS
+                    // An endpoint that allows CORS requests will match both CORS and non-CORS
                     // so we model it as both.
                     if (acceptCorsPreFlight)
                     {

@@ -1828,6 +1828,76 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(isFirstRowId1);
     }
 
+    [Theory]
+    [InlineData("qg-mode-fixed", "qg-capacity")]
+    [InlineData("qg-mode-variable", "qg-variable-capacity")]
+    public void QuickGrid_Virtualize_ToleratesIncorrectItemSize_UnderFastScroll(
+        string modeButtonId, string containerId)
+    {
+        const int scrollStep = 1500;
+
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVirtualizeCapacityComponent>();
+        Browser.Exists(By.Id(modeButtonId)).Click();
+
+        var container = Browser.Exists(By.Id(containerId));
+
+        WaitForQuickGridDataRows(container);
+        var topSpacer = container.FindElements(By.CssSelector("[data-blazor-virtualize-reserved-height]"))[0];
+        Assert.Equal("0", topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
+
+        var positions = Enumerable.Range(1, 40).Select(k => (long)k * scrollStep).ToList();
+        // Jitter around a deep offset to provoke placeholder oscillation.
+        positions.AddRange(new long[] { 58000, 57700, 58200, 57900 });
+        FastScroll(containerId, positions.ToArray(), deltaY: scrollStep);
+
+        Browser.NotEqual("0", () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
+        Browser.True(() => ViewportCenterShowsRealData(containerId));
+    }
+
+    private void FastScroll(string containerId, long[] positions, int deltaY)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteAsyncScript(@"
+            const done = arguments[arguments.length - 1];
+            const el = document.getElementById(arguments[0]);
+            const positions = arguments[1];
+            const deltaY = arguments[2];
+            let i = 0;
+            const tick = () => {
+                el.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY, bubbles: true }));
+                el.scrollTop = positions[i];
+                i++;
+                if (i < positions.length) {
+                    setTimeout(tick, 40);
+                } else {
+                    done();
+                }
+            };
+            tick();
+        ", containerId, positions, deltaY);
+    }
+
+    private bool ViewportCenterShowsRealData(string containerId)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+        return (bool)js.ExecuteScript(@"
+            const el = document.getElementById(arguments[0]);
+            const r = el.getBoundingClientRect();
+            const centerY = r.height / 2;
+            const rows = el.querySelectorAll('tbody tr:not([aria-hidden])');
+            for (const row of rows) {
+                if (row.querySelector('td.grid-cell-placeholder')) { continue; }
+                const cell = row.querySelector('td');
+                if (!cell || !cell.textContent || !cell.textContent.trim()) { continue; }
+                const rr = row.getBoundingClientRect();
+                const top = rr.top - r.top;
+                const bottom = rr.bottom - r.top;
+                if (top <= centerY && bottom >= centerY) { return true; }
+            }
+            return false;
+        ", containerId);
+    }
+
     private void WaitForQuickGridDataRows(IWebElement container)
         => Browser.True(() => CheckQuickGridFirstRow(container, text => int.TryParse(text, out _)));
 
@@ -3151,6 +3221,51 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_End_SmallDataset_AppendAfterScrollingUpAFewRows_DoesNotReengage(bool useItemsProvider)
+    {
+        MountAnchorModeComponent("2", useItemsProvider: useItemsProvider);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Enter the console-logs regime: large overscan + dataset taller than the viewport but
+        // with fewer total items than the visible capacity.
+        Browser.Exists(By.Id("set-console-scenario")).Click();
+        Browser.Contains("Console scenario", () => Browser.Exists(By.Id("status")).Text);
+        Browser.True(() => GetElementCount(container, ".item") > 6);
+        WaitForRenderToSettle(container, js);
+
+        // Start pinned at the bottom (End mode), then scroll UP just a few rows (~3 * 50px).
+        ScrollToBottomAndWait(container, js);
+        var bottomScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var targetScrollTop = (int)(bottomScrollTop - 150);
+        ScrollUntil(js, container, () => ScrollContainer(js, container, targetScrollTop),
+            st => st <= bottomScrollTop - 100,
+            $"scrolled up a few rows from the bottom (target {targetScrollTop})");
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var scrollHeightBefore = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        Assert.True(scrollHeightBefore - scrollTopBefore - clientHeight > 50,
+            "Precondition: the user should be scrolled up away from the bottom before the append.");
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var scrollHeightAfter = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        Assert.True(Math.Abs(scrollTopAfter - scrollTopBefore) < 5,
+            $"End mode (small dataset): after the user scrolled up only a few rows, an append must NOT " +
+            $"re-engage and pull the viewport back to the bottom. " +
+            $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter}, " +
+            $"scrollHeight before: {scrollHeightBefore}, after: {scrollHeightAfter}, clientHeight: {clientHeight}");
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -3183,6 +3298,47 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.True(scrollTopAfter > 200,
             $"Beginning mode: should not pull user back to top after leaving. " +
             $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter} (expected >200, not near 0)");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_Start_SmallDataset_PrependAfterScrollingDownAFewRows_DoesNotReengage(bool useItemsProvider)
+    {
+        MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Enter the console-logs regime: large overscan + dataset taller than the viewport but
+        // with fewer total items than the visible capacity.
+        Browser.Exists(By.Id("set-console-scenario")).Click();
+        Browser.Contains("Console scenario", () => Browser.Exists(By.Id("status")).Text);
+        Browser.True(() => GetElementCount(container, ".item") > 6);
+        WaitForRenderToSettle(container, js);
+
+        // Start pinned at the top (Start mode), then scroll DOWN just a few rows (~3 * 50px).
+        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+        ScrollUntil(js, container, () => ScrollContainer(js, container, 150),
+            st => st >= 100,
+            "scrolled down a few rows from the top (target 150)");
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopBefore >= 100,
+            "Precondition: the user should be scrolled down away from the top before the prepend.");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        // A stable viewport keeps scrollTop at (or below, once the prepended rows push content down)
+        // where the user left it. The bug would instead snap scrollTop back toward 0.
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopAfter >= 100,
+            $"Start mode (small dataset): after the user scrolled down a few rows, a prepend must NOT " +
+            $"re-engage and pull the viewport back to the top. " +
+            $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter} (expected >=100, not near 0)");
     }
 
     [Theory]

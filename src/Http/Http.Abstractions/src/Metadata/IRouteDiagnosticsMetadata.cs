@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Http.Metadata;
 
 /// <summary>
-/// Interface for specifing diagnostics text for a route.
+/// Interface for specifying diagnostics text for a route.
 /// </summary>
 public interface IRouteDiagnosticsMetadata
 {
