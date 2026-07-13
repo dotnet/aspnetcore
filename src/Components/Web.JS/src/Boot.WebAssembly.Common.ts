@@ -19,7 +19,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
-import type { WorkerToMainMessage, MainToWorkerMessage } from './Boot.WebAssemblyWorker';
+import type { WorkerToMainMessage, MainToWorkerMessage, WorkerRegisteredComponent } from './Boot.WebAssemblyWorker';
 
 let options: Partial<WebAssemblyStartOptions> | undefined;
 let platformLoadPromise: Promise<void> | undefined;
@@ -90,7 +90,7 @@ async function startWebAssemblyDispatch(components: RootComponentManager<WebAsse
   Blazor._internal.usingWebWorker = usingWebWorker;
 
   if (usingWebWorker) {
-    await startWebAssemblyWorkerHost(components);
+    await startWebAssemblyWorkerHost(components, serverOptions);
   } else {
     await new Promise<void>((resolve, reject) => startCore(components, serverOptions, resolve, reject));
   }
@@ -118,9 +118,11 @@ function shouldUseWebWorker(option: boolean | undefined): boolean {
   return isWebWorkerSupported();
 }
 
-async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAssemblyComponentDescriptor>): Promise<void> {
+async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAssemblyComponentDescriptor>, serverOptions: WebAssemblyServerOptions | undefined): Promise<void> {
   const dotnetJsUrl = resolveDotnetJsUrl();
   const persistedState = discoverWebAssemblyPersistedState(document) ?? '';
+  const componentAttacher = new WebAssemblyComponentAttacher(components);
+  const registeredComponents = getRegisteredComponents(componentAttacher);
 
   const workerScriptUrl = new URL('_framework/blazor.webassembly.worker.js', document.baseURI).href;
   const worker = new Worker(workerScriptUrl, { type: 'module' });
@@ -142,6 +144,9 @@ async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAs
 
   await new Promise<void>((resolve, reject) => {
     worker.addEventListener('error', e => reject(new Error(e.message ?? 'Web Worker error')));
+
+    void initialUpdatePromise.then(operations =>
+      sendToWorker(worker, { type: 'blazor:initialComponentsUpdate', operations }));
 
     worker.addEventListener('message', (e: MessageEvent<WorkerToMainMessage>) => {
       const msg = e.data;
@@ -172,9 +177,15 @@ async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAs
           break;
         }
 
-        case 'blazor:attachRootComponentToElement':
-          attachRootComponentToElement(msg.selector, msg.componentId, msg.rendererId);
+        case 'blazor:attachRootComponentToElement': {
+          const element = componentAttacher.resolveRegisteredElement(msg.selector);
+          if (!element) {
+            attachRootComponentToElement(msg.selector, msg.componentId, msg.rendererId);
+          } else {
+            attachRootComponentToLogicalElement(msg.rendererId, element, msg.componentId, false);
+          }
           break;
+        }
 
         case 'blazor:rendererAttached': {
           const rendererId = msg.rendererId;
@@ -230,8 +241,28 @@ async function startWebAssemblyWorkerHost(components: RootComponentManager<WebAs
       persistedState,
       baseUri: document.baseURI,
       locationHref: location.href,
+      waitForRootComponents,
+      environment: options?.environment ?? serverOptions?.environmentName,
+      applicationCulture: options?.applicationCulture,
+      environmentVariables: serverOptions?.environmentVariables ?? {},
+      registeredComponents,
     });
   });
+}
+
+function getRegisteredComponents(componentAttacher: WebAssemblyComponentAttacher): WorkerRegisteredComponent[] {
+  const count = componentAttacher.getCount();
+  const result: WorkerRegisteredComponent[] = [];
+  for (let id = 0; id < count; id++) {
+    result.push({
+      assembly: componentAttacher.getAssembly(id),
+      typeName: componentAttacher.getTypeName(id),
+      parameterDefinitions: componentAttacher.getParameterDefinitions(id) || '',
+      parameterValues: componentAttacher.getParameterValues(id) || '',
+    });
+  }
+
+  return result;
 }
 
 function createEventForwardingProxy(worker: Worker, rendererId: number) {
@@ -254,7 +285,15 @@ function createEventForwardingProxy(worker: Worker, rendererId: number) {
 
 /** Resolves the fingerprinted dotnet.js URL via the page's import map. */
 function resolveDotnetJsUrl(): string {
-  const bare = new URL('_framework/dotnet.js', document.baseURI).href;
+  const defaultUri = '_framework/dotnet.js';
+  const customSrc = options?.loadBootResource?.('dotnetjs', 'dotnet.js', defaultUri, '', 'js-module-dotnet');
+  if (typeof customSrc === 'string') {
+    return new URL(customSrc, document.baseURI).toString();
+  } else if (customSrc) {
+    throw new Error('For a dotnetjs resource, custom loaders must supply a URI string.');
+  }
+
+  const bare = new URL(defaultUri, document.baseURI).href;
   return (import.meta as any).resolve?.(bare) ?? bare;
 }
 

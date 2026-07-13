@@ -17,6 +17,11 @@
 </p>
 
 <p>
+    Web Worker active:
+    <strong id="web-worker-active">@webWorkerActive</strong>
+</p>
+
+<p>
     Counter: <strong id="counter-value">@currentCount</strong>
 </p>
 <button id="increment-button" @onclick="IncrementCount">Click me</button>
@@ -52,18 +57,20 @@
 @code {
     private string executionMode = "static";
     private string outOfProcessRendererActive = "(unknown)";
+    private string webWorkerActive = "(unknown)";
     private int currentCount;
     private string textValue = "";
     private string jsResult = "(none)";
     private bool isVisible = true;
     private List<string> items = new() { "Item 1", "Item 2" };
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             executionMode = OperatingSystem.IsBrowser() ? "webassembly" : "server";
             outOfProcessRendererActive = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") ?? "(not set)";
+            webWorkerActive = await JSRuntime.InvokeAsync<bool>("eval", "Blazor._internal.usingWebWorker === true") ? "true" : "false";
             StateHasChanged();
         }
     }

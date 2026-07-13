@@ -28,6 +28,9 @@ public class WebAssemblyOutOfProcessRendererTest(
 
         // Verify OOP renderer env var is active
         Browser.Equal("true", () => Browser.Exists(By.Id("out-of-process-renderer-active")).Text);
+
+        // Verify the WebAssembly runtime is hosted in a Web Worker
+        Browser.Equal("true", () => Browser.Exists(By.Id("web-worker-active")).Text);
     }
 
     [Fact]

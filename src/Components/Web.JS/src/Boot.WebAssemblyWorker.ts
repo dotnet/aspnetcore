@@ -22,9 +22,28 @@ export type WorkerToMainMessage =
   | { type: 'blazor:endLocationChanging'; callId: number; shouldContinue: boolean }
   | { type: 'blazor:endUpdateRootComponents'; batchId: number };
 
+export type WorkerRegisteredComponent = {
+  assembly: string;
+  typeName: string;
+  parameterDefinitions: string;
+  parameterValues: string;
+};
+
 export type MainToWorkerMessage =
-  | { type: 'blazor:init'; dotnetJsUrl: string; persistedState: string; baseUri: string; locationHref: string }
+  | {
+    type: 'blazor:init';
+    dotnetJsUrl: string;
+    persistedState: string;
+    baseUri: string;
+    locationHref: string;
+    waitForRootComponents: boolean;
+    environment?: string;
+    applicationCulture?: string;
+    environmentVariables: Record<string, string>;
+    registeredComponents: WorkerRegisteredComponent[];
+  }
   | { type: 'blazor:dispatchEvent'; rendererId: number; eventDescriptor: string; eventArgs: string }
+  | { type: 'blazor:initialComponentsUpdate'; operations: string }
   | { type: 'blazor:renderBatchCompleted'; batchId: number; errorMessage?: string }
   | { type: 'blazor:jsCallResult'; serializedArgs: string }
   | { type: 'blazor:locationChanged'; uri: string; state: string | undefined; intercepted: boolean }
@@ -56,6 +75,7 @@ type WorkerCallDispatcher = DotNet.ICallDispatcher & {
 
 let workerDispatcher: WorkerCallDispatcher | null = null;
 let persistedState = '';
+let registeredComponents: WorkerRegisteredComponent[] = [];
 // The current base URI and location, supplied by the main thread at init time since
 // the Worker has no document/location of its own to read them from.
 let baseUri = '';
@@ -64,6 +84,10 @@ let locationHref = '';
 let applicationEnvironment = '';
 let applicationCulture = '';
 let nextRenderBatchId = 1;
+let resolveInitialComponentsUpdate: (value: string) => void;
+const initialComponentsUpdatePromise = new Promise<string>(resolve => {
+  resolveInitialComponentsUpdate = resolve;
+});
 
 (self as any).addEventListener('message', async (e: MessageEvent<MainToWorkerMessage>) => {
   const msg = e.data;
@@ -71,9 +95,10 @@ let nextRenderBatchId = 1;
   switch (msg.type) {
     case 'blazor:init':
       persistedState = msg.persistedState;
+      registeredComponents = msg.registeredComponents;
       baseUri = msg.baseUri;
       locationHref = msg.locationHref;
-      await bootBlazorInWorker(msg.dotnetJsUrl);
+      await bootBlazorInWorker(msg);
       break;
 
     case 'blazor:dispatchEvent': {
@@ -101,6 +126,10 @@ let nextRenderBatchId = 1;
       }
       break;
     }
+
+    case 'blazor:initialComponentsUpdate':
+      resolveInitialComponentsUpdate(msg.operations);
+      break;
 
     case 'blazor:jsCallResult':
       // Main thread completed a JS function called from .NET resume the .NET task.
@@ -136,16 +165,26 @@ let nextRenderBatchId = 1;
   }
 });
 
-async function bootBlazorInWorker(dotnetJsUrl: string): Promise<void> {
+async function bootBlazorInWorker(init: Extract<MainToWorkerMessage, { type: 'blazor:init' }>): Promise<void> {
   try {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore – dynamic import, URL resolved by the main thread
-    const { dotnet } = await import(/* webpackIgnore: true */ dotnetJsUrl);
+    const { dotnet } = await import(/* webpackIgnore: true */ init.dotnetJsUrl);
 
     // The OOP renderer must be active when running in a Worker so that render batches
     // are serialised to bytes and postMessage'd to the main thread rather than using
     // WASM heap pointers that are only valid on this thread.
     dotnet.withEnvironmentVariable('__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER', 'true');
+    dotnet.withEnvironmentVariables(init.environmentVariables);
+    if (init.waitForRootComponents) {
+      dotnet.withEnvironmentVariable('__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS', 'true');
+    }
+    if (init.environment) {
+      dotnet.withApplicationEnvironment(init.environment);
+    }
+    if (init.applicationCulture) {
+      dotnet.withApplicationCulture(init.applicationCulture);
+    }
 
     const runtime = await dotnet.create();
 
@@ -188,8 +227,13 @@ async function bootBlazorInWorker(dotnetJsUrl: string): Promise<void> {
       Blazor: { _internal: buildInternalApis() },
     });
 
-    // Start the user's Program entry point this initialises the full Blazor app.
-    await runtime.runMain(runtime.getConfig().mainAssemblyName!, []);
+    // Start the user's Program entry point. This does not normally complete because
+    // WebAssemblyHost.RunAsync keeps the app alive, matching the main-thread startup path.
+    runtime.runMain(runtime.getConfig().mainAssemblyName!, [])
+      .catch((err: unknown) => {
+        console.error('[Blazor Worker] Program failed:', err);
+        postToMain({ type: 'blazor:error', message: err instanceof Error ? err.message : String(err) });
+      });
 
     postToMain({ type: 'blazor:workerReady' });
   } catch (err: unknown) {
@@ -278,7 +322,7 @@ function buildInternalApis() {
 
     getPersistedState: () => persistedState,
 
-    getInitialComponentsUpdate: (): Promise<string> => Promise.resolve('[]'),
+    getInitialComponentsUpdate: (): Promise<string> => initialComponentsUpdatePromise,
 
     updateRootComponents(operations: string, webAssemblyState: string) {
       dotNetExports?.UpdateRootComponentsCore(operations, webAssemblyState);
@@ -300,11 +344,11 @@ function buildInternalApis() {
     },
 
     registeredComponents: {
-      getRegisteredComponentsCount: () => 0,
-      getAssembly: (_id: number) => '',
-      getTypeName: (_id: number) => '',
-      getParameterDefinitions: (_id: number) => '',
-      getParameterValues: (_id: number) => '',
+      getRegisteredComponentsCount: () => registeredComponents.length,
+      getAssembly: (id: number) => registeredComponents[id].assembly,
+      getTypeName: (id: number) => registeredComponents[id].typeName,
+      getParameterDefinitions: (id: number) => registeredComponents[id].parameterDefinitions,
+      getParameterValues: (id: number) => registeredComponents[id].parameterValues,
     },
 
     navigationManager: {
@@ -357,6 +401,9 @@ function handleSyncJSCall(identifier: string, argsJson: string): string | null {
       buildInternalApis().detachWebRendererInterop(rendererId);
       return null;
     }
+
+    case 'getCurrentUrl':
+      return JSON.stringify(locationHref);
 
     default:
       throw new Error(`Synchronous JS interop call to '${identifier}' is not supported in Web Worker mode. ` +
