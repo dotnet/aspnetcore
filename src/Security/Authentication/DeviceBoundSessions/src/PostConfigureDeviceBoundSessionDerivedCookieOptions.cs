@@ -41,6 +41,10 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
             // advertised refresh endpoint. Lifetime and sliding behavior are inherited from the source
             // scheme so the refresh cookie ages exactly like the auth cookie it replaces.
             options.Cookie = CreatePathBaseScopedCookie(options.Cookie, ResolveRefreshCookiePath(refreshSourceScheme));
+            // Re-run the source scheme's principal validation (e.g. Identity's security-stamp / revocation
+            // check) on the long-lived refresh cookie so revocation is enforced at refresh time — which the
+            // short-lived session cookie would otherwise bypass.
+            ForwardSourceValidatePrincipal(options, refreshSourceScheme);
         }
         else if (schemes.SessionSchemes.TryGetValue(name, out var sessionSourceScheme))
         {
@@ -85,6 +89,26 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
         target.Cookie.IsEssential = source.Cookie.IsEssential;
         target.ExpireTimeSpan = source.ExpireTimeSpan;
         target.SlidingExpiration = source.SlidingExpiration;
+    }
+
+    // Forwards the source scheme's OnValidatePrincipal to the refresh cookie so revocation checks
+    // (e.g. Identity's security stamp) run when the long-lived refresh cookie is used. Resolves the
+    // source's events at request time to support both delegate-based Events and EventsType, and invokes
+    // only ValidatePrincipal — not the source's sign-in/sign-out handlers.
+    private static void ForwardSourceValidatePrincipal(CookieAuthenticationOptions options, string sourceScheme)
+    {
+        var priorValidatePrincipal = options.Events.OnValidatePrincipal;
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            var services = context.HttpContext.RequestServices;
+            var sourceOptions = services.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>().Get(sourceScheme);
+            var sourceEvents = sourceOptions.EventsType is not null
+                ? (CookieAuthenticationEvents)services.GetRequiredService(sourceOptions.EventsType)
+                : sourceOptions.Events;
+
+            await sourceEvents.ValidatePrincipal(context);
+            await priorValidatePrincipal(context);
+        };
     }
 
     // Rebuilds the cookie as a path-base-aware builder so the cookie path becomes
