@@ -75,8 +75,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
+        // Skip file-local types, which are only accessible within their declaring file
+        // and cannot be referenced from generated code in a different file
+        if (typeSymbol is INamedTypeSymbol { IsFileLocal: true })
+        {
+            return false;
+        }
+
         // Skip types that are not accessible from generated code
-        if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
+        if (typeSymbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
         {
             return false;
         }
@@ -189,7 +196,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
-                        // Skip properties that are not accessible from generated code
+                        // We only validate public properties for now.
+                        // We could consider in the future if we want to support internal properties.
                         if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
                         {
                             continue;
@@ -250,7 +258,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            // Skip properties that are not accessible from generated code
+            // We only validate public properties for now.
+            // We could consider in the future if we want to support internal properties.
             if (member.DeclaredAccessibility is not Accessibility.Public)
             {
                 continue;

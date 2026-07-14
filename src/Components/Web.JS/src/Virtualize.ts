@@ -12,6 +12,7 @@ export const Virtualize = {
   restoreAnchor,
   alignToItem,
   beginProgrammaticScroll,
+  isFollowingBottom,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
@@ -154,8 +155,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // After anchor restore, suppress spacer IO callbacks until the next user scroll.
   let suppressSpacerCallbacks = false;
   let ignoreAnchorScroll = false;
-  // Whether the viewport was at the bottom before the last render (for End-mode follow).
+  const isViewportAtBottom = (): boolean =>
+    scrollElement.scrollHeight <= scrollElement.clientHeight
+    || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
+  // Live measurement: was the viewport at the bottom as of the last render? Drives the JS append-pin.
   let wasAtBottom = false;
+  // Are we following the bottom? Starts true in End mode; a user scrolling up turns it off.
+  let followingBottom = (anchorMode & 2) !== 0;
   // Pending scroll correction after redistribution changes spacer→item heights.
   let pendingScrollCorrection = false;
   let scrollCorrectionItemIndex = 0;
@@ -299,7 +305,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     scrollTriggeredRender = false;
 
-    // End mode: scroll to bottom when items were appended while viewport was at bottom.
+    // End mode: live measurement says the viewport was at the bottom, so pin the new items into view.
     if ((anchorMode & 2) && wasAtBottom) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
       ignoreAnchorScroll = true;
@@ -383,9 +389,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     // End mode: preserve wasAtBottom only if the viewport is actually at the bottom right now.
     // Don't rely on the cached wasAtBottom — it may be stale if the user scrolled away.
-    const atBottom = scrollElement.scrollHeight <= scrollElement.clientHeight
-      || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
-    const preserveWasAtBottom = (anchorMode & 2) && atBottom;
+    const preserveWasAtBottom = (anchorMode & 2) !== 0 && isViewportAtBottom();
 
     if (Math.abs(delta) > 1) {
       scrollElement.scrollTop += delta;
@@ -479,6 +483,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       reobserveSpacers();
     }
 
+    // A user scroll is the only thing that (re)sets follow intent (programmatic scrolls early-return above).
+    if (anchorMode & 2) {
+      followingBottom = isViewportAtBottom();
+    }
+
     updateAnchorSnapshot();
   }
   scrollEventTarget.addEventListener('scroll', handleScroll, { passive: true });
@@ -546,7 +555,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     setConvergingToBottom: () => { convergingToBottom = true; },
-    setAnchorMode: (mode: number) => { anchorMode = mode; },
+    isFollowingBottom: () => followingBottom,
+    setAnchorMode: (mode: number) => { anchorMode = mode; followingBottom = (mode & 2) !== 0; },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScrollSuppression,
@@ -646,8 +656,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Saves the first visible item's child index and viewport-relative position.
   function updateAnchorSnapshot(): void {
-    wasAtBottom = scrollElement.scrollHeight <= scrollElement.clientHeight
-      || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
+    wasAtBottom = isViewportAtBottom();
 
     const containerTop = scrollContainer
       ? scrollContainer.getBoundingClientRect().top
@@ -749,7 +758,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
-  if (entry) {
+  if (entry && entry.isFollowingBottom?.()) {
     entry.setConvergingToBottom?.();
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
     entry.startConvergenceObserving?.();
@@ -782,6 +791,11 @@ function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): voi
 function beginProgrammaticScroll(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   observersByDotNetObjectId[id]?.beginProgrammaticScroll?.();
+}
+
+function isFollowingBottom(dotNetHelper: DotNet.DotNetObject): boolean {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  return observersByDotNetObjectId[id]?.isFollowingBottom?.() ?? false;
 }
 
 function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {

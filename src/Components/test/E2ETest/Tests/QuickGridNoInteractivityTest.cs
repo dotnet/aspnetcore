@@ -12,7 +12,6 @@ using TestServer;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66883")]
 public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
     public QuickGridNoInteractivityTest(
@@ -81,18 +80,29 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     {
         Navigate($"{ServerPathBase}/quickgrid");
 
-        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("aria-disabled"));
-        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("aria-disabled"));
-        Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-disabled"));
-        Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("aria-disabled"));
+        AssertPaginatorBoundaryState(canGoBack: false, canGoForwards: true);
 
         Browser.FindElement(By.CssSelector(".first-paginator .go-last")).Click();
         Browser.Equal("5", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
 
-        Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("aria-disabled"));
-        Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("aria-disabled"));
-        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-disabled"));
-        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("aria-disabled"));
+        AssertPaginatorBoundaryState(canGoBack: true, canGoForwards: false);
+    }
+
+    private void AssertPaginatorBoundaryState(bool canGoBack, bool canGoForwards)
+    {
+        AssertControlState(".first-paginator .go-first", disabled: !canGoBack);
+        AssertControlState(".first-paginator .go-previous", disabled: !canGoBack);
+        AssertControlState(".first-paginator .go-next", disabled: !canGoForwards);
+        AssertControlState(".first-paginator .go-last", disabled: !canGoForwards);
+
+        void AssertControlState(string selector, bool disabled)
+        {
+            var control = Browser.FindElement(By.CssSelector(selector));
+
+            Assert.NotNull(control.GetDomAttribute("href"));
+            Assert.Equal(disabled ? "true" : "false", control.GetDomAttribute("aria-disabled"));
+            Assert.Equal(disabled ? "-1" : null, control.GetDomAttribute("tabindex"));
+        }
     }
 
     [Fact]

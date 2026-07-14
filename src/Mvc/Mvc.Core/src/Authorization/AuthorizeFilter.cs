@@ -139,7 +139,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
         {
             // When doing endpoint routing, MVC does not create filters for any authorization specific metadata i.e [Authorize] does not
             // get translated into AuthorizeFilter. Consequently, there are some rough edges when an application uses a mix of AuthorizeFilter
-            // explicilty configured by the user (e.g. global auth filter), and uses endpoint metadata.
+            // explicitly configured by the user (e.g. global auth filter), and uses endpoint metadata.
             // To keep the behavior of AuthFilter identical to pre-endpoint routing, we will gather auth data from endpoint metadata
             // and produce a policy using this. This would mean we would have effectively run some auth twice, but it maintains compat.
             var policyProvider = PolicyProvider ?? context.HttpContext.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>();
