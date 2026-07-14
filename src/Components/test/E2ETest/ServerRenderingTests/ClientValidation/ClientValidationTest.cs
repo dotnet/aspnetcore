@@ -13,18 +13,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.ClientValidation;
 
-// E2E coverage for the reworked client-side validation pipeline: a real Blazor SSR
-// EditForm renders a single <blazor-client-validation-data> carrier element whose JSON
-// payload the JS engine ingests, then validates user input in the browser before submit.
-//
-// This layer owns ONLY what requires a real browser + real Blazor SSR + the real JS engine
-// wired together end to end. Per-attribute rule emission is owned by the Endpoints provider
-// integration tests; the JS engine's validator/cleanup/ARIA behaviour is owned by the Jest
-// suite. See rework-client-validation-tests.md section 3.4.
-//
-// Field names are prefixed by the [SupplyParameterFromForm] property name (e.g. the page's
-// "Form" property yields rendered names "Form.Name", "Form.Email", ...). The input name,
-// the [data-valmsg-for] slot and the carrier payload all use that same prefixed name.
 public class ClientValidationTest : ClientValidationTestBase
 {
     public ClientValidationTest(
@@ -241,8 +229,7 @@ public class ClientValidationTest : ClientValidationTestBase
         var frenchMessage = Browser.Exists(By.CssSelector("[data-valmsg-for='Form.Email']")).Text;
         Assert.Equal("Le champ Adresse e-mail est requis (fr)", frenchMessage);
 
-        // German, on the same shared singleton cache: the per-request localization must not
-        // be poisoned by the earlier French request.
+        // German: the per-request localization must not be poisoned by the earlier French request.
         NavigateToClientValidationPage("localized-validation?culture=de");
         Browser.Exists(By.Id("submit")).Click();
         var germanMessage = Browser.Exists(By.CssSelector("[data-valmsg-for='Form.Email']")).Text;
