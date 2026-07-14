@@ -40,8 +40,8 @@ internal sealed class DeviceBoundSessionCookieEvents : CookieAuthenticationEvent
 
     public override async Task SigningIn(CookieSigningInContext context)
     {
-        DeviceBoundSessionRegistrationHeader.Emit(context.HttpContext, context.Principal, _dbscScheme);
         await GetInnerEvents(context.HttpContext).SigningIn(context);
+        DeviceBoundSessionRegistrationHeader.Emit(context.HttpContext, context.Principal, _dbscScheme);
     }
 
     public override async Task SignedIn(CookieSignedInContext context)

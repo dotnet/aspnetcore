@@ -43,5 +43,5 @@ internal static class DeviceBoundSessionConstants
     /// MUST stay in lock-step with the algorithms the proof validator accepts (<see cref="Es256"/>,
     /// <see cref="Rs256"/>).
     /// </summary>
-    internal const string AdvertisedAlgorithms = "(" + Es256 + " " + Rs256 + ")";
+    internal const string AdvertisedAlgorithms = $"({Es256} {Rs256})";
 }
