@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Characterizes allocation/timing of <c>QueryFeature</c> parsing as the number of
 /// repeated (duplicate) query keys grows. Exercises the <c>KvpAccumulator</c> path that
 /// promotes repeated keys into a <see cref="System.Collections.Generic.List{T}"/>, which is
-/// the code path affected by the duplicate-key list pre-sizing change.
+/// the code path affected by the duplicate-key list promotion change.
 /// </summary>
 [MemoryDiagnoser]
 public class QueryDuplicateKeyScalingBenchmarks
@@ -24,8 +24,9 @@ public class QueryDuplicateKeyScalingBenchmarks
 
     /// <summary>
     /// Total number of occurrences of a single repeated key. 1 == no duplicate (control,
-    /// no promotion); 2+ triggers promotion to a backing list with (Occurrences-1) growth
-    /// events on the un-optimized path.
+    /// no promotion); 2+ triggers a single promotion to a backing list, after which each
+    /// further occurrence appends to that list (the list grows through its normal capacity
+    /// doubling as more values are added).
     /// </summary>
     [Params(1, 2, 3, 4, 8, 16, 32)]
     public int Occurrences { get; set; }
