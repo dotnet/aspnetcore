@@ -40,12 +40,12 @@ internal static class AttributeAuthorizeDataCache
 
     private static (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData) ComputeAuthorizationDataForType(Type type)
     {
+        // Allow Anonymous skips all authorization
         var allAttributes = type.GetCustomAttributes(inherit: true);
         List<IAuthorizeData>? authorizeDatas = null;
         List<IAuthorizationRequirementData>? requirementDatas = null;
         for (var i = 0; i < allAttributes.Length; i++)
         {
-            // Allow Anonymous skips all authorization
             if (allAttributes[i] is IAllowAnonymous)
             {
                 return (null, null);
