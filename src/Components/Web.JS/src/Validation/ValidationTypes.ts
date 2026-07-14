@@ -30,13 +30,6 @@ export function fail(message?: string): ValidationResult {
 /** A function that validates a field value and returns a result. */
 export type Validator = (context: ValidationContext) => ValidationResult;
 
-/** Configuration options for the client-side form validation service. */
-export interface ValidationOptions {
-  /** Override default CSS class names for validation states.
-   *  Supports space-separated class names (e.g., 'border-red-500 ring-1'). */
-  cssClasses?: Partial<import('./ErrorDisplay').CssClassNames>;
-}
-
 /**
  * Public API for client-side form validation. Exposed as `Blazor.formValidation`
  * when embedded in blazor.web.js.

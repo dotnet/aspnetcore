@@ -6,8 +6,10 @@ import { ValidatableElement } from './ValidationTypes';
 
 /**
  * CSS class names applied to inputs, message elements, and the validation summary.
- * Override via ValidationOptions.cssClasses to integrate with CSS frameworks
- * (e.g., Bootstrap's 'is-invalid'/'is-valid', or Tailwind utility classes).
+ * The defaults match Blazor's interactive validation classes, so a single stylesheet styles both
+ * SSR client-side and interactive validation. The ErrorDisplay constructor accepts overrides as an
+ * internal seam for alternative adapters (e.g. an MVC / jquery-unobtrusive class set); this is not
+ * exposed through Blazor.start options.
  */
 export interface CssClassNames {
   inputError: string;
@@ -19,10 +21,10 @@ export interface CssClassNames {
 }
 
 export const defaultCssClassNames: CssClassNames = {
-  inputError: 'input-validation-error',
-  inputValid: 'input-validation-valid',
-  messageError: 'field-validation-error',
-  messageValid: 'field-validation-valid',
+  inputError: 'invalid',
+  inputValid: 'valid',
+  messageError: 'validation-message',
+  messageValid: 'validation-message',
   summaryError: 'validation-summary-errors',
   summaryValid: 'validation-summary-valid',
 };
@@ -75,17 +77,14 @@ export class ErrorDisplay {
   }
 
   clearFieldToPristine(input: ValidatableElement): void {
+    // Pristine differs from the valid state only for the input: it gets no valid class either, so
+    // the field looks untouched. The message is reset to its empty/valid state, keeping its base
+    // class (which for Blazor is the always-present 'validation-message').
     removeClasses(input, this.cssClasses.inputError);
     removeClasses(input, this.cssClasses.inputValid);
 
     const messageElements = findMessageElements(input);
-    for (const messageElement of messageElements) {
-      removeClasses(messageElement, this.cssClasses.messageError);
-      removeClasses(messageElement, this.cssClasses.messageValid);
-      if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
-        messageElement.textContent = '';
-      }
-    }
+    this.updateMessageElements(messageElements, '');
 
     input.removeAttribute('aria-invalid');
     const msgId = messageElements[0]?.id;
@@ -99,8 +98,10 @@ export class ErrorDisplay {
     const classToRemove = errorMessage ? this.cssClasses.messageValid : this.cssClasses.messageError;
 
     for (const messageElement of messageElements) {
-      addClasses(messageElement, classToAdd);
+      // Remove then add so a class shared by both states (Blazor's single 'validation-message')
+      // survives the transition.
       removeClasses(messageElement, classToRemove);
+      addClasses(messageElement, classToAdd);
 
       if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
         messageElement.textContent = errorMessage;
@@ -147,6 +148,7 @@ export class ErrorDisplay {
     } else {
       if (!ul) {
         ul = document.createElement('ul');
+        ul.className = 'validation-errors';
         summaryElement.appendChild(ul);
       }
 

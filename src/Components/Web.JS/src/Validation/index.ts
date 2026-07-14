@@ -7,7 +7,6 @@
 
 export type {
   ValidationService,
-  ValidationOptions,
   ValidationContext,
   ValidationResult,
   Validator,

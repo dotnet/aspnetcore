@@ -5,7 +5,7 @@ import { registerCoreValidators } from '../CoreValidators';
 import { ErrorDisplay } from '../ErrorDisplay';
 import { EventManager } from '../EventManager';
 import { ElementState, ValidationEngine } from '../ValidationEngine';
-import { ValidatableElement, ValidationOptions, ValidationService, Validator, ValidatorRegistry } from '../ValidationTypes';
+import { ValidatableElement, ValidationService, Validator, ValidatorRegistry } from '../ValidationTypes';
 
 const ClientValidationElementName = 'blazor-client-validation-data';
 
@@ -35,7 +35,7 @@ interface ClientValidationRule {
  * Registers built-in validators, defines the `<blazor-client-validation-data>` custom element that
  * ingests the SSR-rendered rules, and attaches the form event interceptors.
  */
-export function createBlazorValidation(options?: ValidationOptions): ValidationService | undefined {
+export function createBlazorValidation(): ValidationService | undefined {
   if (!document.querySelector(ClientValidationElementName)) {
     return undefined;
   }
@@ -43,7 +43,7 @@ export function createBlazorValidation(options?: ValidationOptions): ValidationS
   const registry = new ValidatorRegistry();
   registerCoreValidators(registry);
 
-  const errorDisplay = new ErrorDisplay(options?.cssClasses);
+  const errorDisplay = new ErrorDisplay();
   const engine = new ValidationEngine(registry, errorDisplay);
   const eventManager = new EventManager(engine);
 
