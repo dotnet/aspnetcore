@@ -302,7 +302,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         }
       }
     }
+
+    const wasScrollTriggeredRender = scrollTriggeredRender;
     scrollTriggeredRender = false;
+
+    if (useNativeAnchoring && !wasScrollTriggeredRender && !convergingElements
+        && !convergingToTop && !convergingToBottom
+        && scrollElement.style.overflowAnchor === 'none') {
+      scrollElement.style.overflowAnchor = '';
+    }
 
     // End mode: live measurement says the viewport was at the bottom, so pin the new items into view.
     if ((anchorMode & 2) && wasAtBottom) {
@@ -724,6 +732,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     rangeBetweenSpacers.setStartAfter(spacerBefore);
     rangeBetweenSpacers.setEndBefore(spacerAfter);
     const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
+
+    if (useNativeAnchoring) {
+      scrollElement.style.overflowAnchor = 'none';
+    }
 
     intersectingEntries.forEach((entry): void => {
       const containerSize = (entry.rootBounds?.height ?? 0) / scaleFactor;

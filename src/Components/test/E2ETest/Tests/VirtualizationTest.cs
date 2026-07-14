@@ -1980,6 +1980,27 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Large jumps indicate CSS scroll anchoring is miscalculating on <tr> elements.");
     }
 
+    [Fact]
+    public void ItemsIncrementalScroll_DoesNotJumpToStartOrEnd()
+    {
+        // Before the fix, each ~100px scroll produced large jumps in both directions.
+        Browser.MountTestComponent<VirtualizationComponent>();
+
+        Browser.True(() => GetElementCount(By.ClassName("incorrect-size-item")) > 0);
+
+        var result = ExecuteContainerScrollJumpDetectionScript("incorrect-size-container");
+
+        var maxJump = Convert.ToInt64(result["maxJump"], CultureInfo.InvariantCulture);
+        var scrollDelta = Convert.ToInt64(result["scrollDelta"], CultureInfo.InvariantCulture);
+
+        // Healthy behaviour: every step moves ~scrollDelta (100px)
+        Assert.True(maxJump < scrollDelta * 4,
+            $"Incremental scrolling should not cause the viewport to jump to the start/end of the list. " +
+            $"Largest single-step jump was {maxJump}px (each step requested {scrollDelta}px). " +
+            $"Down jumps: [{result["downJumps"]}]. Up jumps: [{result["upJumps"]}]. " +
+            $"Large jumps indicate the Virtualize reserved-height compensation is over-shifting (issue #67729).");
+    }
+
     private void MountAnchorModeComponent(string anchorMode, bool variableHeight = false, bool useItemsProvider = false)
     {
         Browser.MountTestComponent<VirtualizationAnchorMode>();
@@ -4076,6 +4097,75 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     expected: scrollCount * scrollDelta,
                     maxJump: maxJump,
                     jumps: jumps.join(',')
+                }});
+            }})();";
+
+        return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
+    }
+
+    private Dictionary<string, object> ExecuteContainerScrollJumpDetectionScript(
+        string containerId, int scrollCount = 40, int scrollDelta = 100)
+    {
+        var script = $@"
+            var done = arguments[0];
+            (async () => {{
+                const container = document.getElementById('{containerId}');
+
+                // Event-driven wait: watches for DOM mutations from C# re-renders,
+                // then waits 3 animation frames with no new mutations (layout settled).
+                // Falls back after 30 frames if no mutations occur.
+                const waitForRenderSettle = () => new Promise(resolve => {{
+                    let mutationSeen = false;
+                    let framesSinceLastMutation = 0;
+                    let totalFrames = 0;
+
+                    const mo = new MutationObserver(() => {{
+                        mutationSeen = true;
+                        framesSinceLastMutation = 0;
+                    }});
+                    mo.observe(container, {{ childList: true, subtree: true, attributes: true }});
+
+                    const checkSettle = () => {{
+                        totalFrames++;
+                        framesSinceLastMutation++;
+                        if ((mutationSeen && framesSinceLastMutation >= 3) || totalFrames >= 30) {{
+                            mo.disconnect();
+                            resolve();
+                        }} else {{
+                            requestAnimationFrame(checkSettle);
+                        }}
+                    }};
+                    requestAnimationFrame(checkSettle);
+                }});
+
+                const scrollCount = {scrollCount};
+                const scrollDelta = {scrollDelta};
+                let maxJump = 0;
+
+                const scrollPass = async (direction) => {{
+                    const jumps = [];
+                    for (let i = 0; i < scrollCount; i++) {{
+                        const before = Math.round(container.scrollTop);
+                        container.scrollTop = before + direction * scrollDelta;
+                        container.dispatchEvent(new Event('scroll'));
+                        await waitForRenderSettle();
+
+                        const after = Math.round(container.scrollTop);
+                        const jump = after - before;
+                        jumps.push(jump);
+                        if (Math.abs(jump) > Math.abs(maxJump)) maxJump = jump;
+                    }}
+                    return jumps;
+                }};
+
+                const downJumps = await scrollPass(1);
+                const upJumps = await scrollPass(-1);
+
+                done({{
+                    scrollDelta: scrollDelta,
+                    maxJump: Math.abs(maxJump),
+                    downJumps: downJumps.join(','),
+                    upJumps: upJumps.join(',')
                 }});
             }})();";
 
