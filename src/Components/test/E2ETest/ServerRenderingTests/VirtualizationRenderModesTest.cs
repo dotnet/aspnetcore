@@ -46,16 +46,11 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
     }
 
     [Theory]
-    [InlineData(null, "append-btn", false)]
-    [InlineData(null, "append-btn", true)]
-    [InlineData("beginning", "prepend-btn", true)]
-    public void AsyncItemsProvider_DoesNotFlashPlaceholderRows_OnAnchoredEdgeGrowth(string anchor, string growButton, bool comparer)
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsyncItemsProvider_DoesNotFlashPlaceholderRows_OnAnchoredEdgeGrowth(bool comparer)
     {
         var parts = new List<string> { "gate=true" };
-        if (anchor is not null)
-        {
-            parts.Add($"anchor={anchor}");
-        }
         if (comparer)
         {
             parts.Add("comparer=true");
@@ -71,7 +66,7 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
 
         // Arm the gate so any fetch that advances past the loaded window blocks, then grow the list.
         ClickById("close-gate");
-        ClickById(growButton);
+        ClickById("append-btn");
 
         // The core assertion: while the advancing fetch is pending, no placeholder flashes.
         Browser.Equal(0, GetPlaceholderCellCount);
@@ -84,10 +79,39 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
         Browser.Equal(0, GetPlaceholderCellCount);
         Browser.Equal(initialCount + batch, GetReportedItemCount);
 
-        if (anchor is null)
-        {
-            Browser.True(() => HasAppendedRowVisible(initialCount));
-        }
+        Browser.True(() => HasAppendedRowVisible(initialCount));
+    }
+
+    [Fact]
+    public void StartAnchoredPrepend_MovesViewportToNewHead_WithoutPlaceholderFlash()
+    {
+        Navigate($"{ServerPathBase}/virtualize-append?anchor=beginning&comparer=true&gate=true");
+        Browser.Exists(By.Id("interactive-ready"));
+
+        var initialCount = GetReportedItemCount();
+        var batch = GetInputValue("batch-input");
+
+        ClickById("open-gate");
+        Browser.True(() => GetDataRowCount() > 0);
+        // Precondition: at the top, the head row is the very first seeded item (entry 0).
+        Browser.Equal(0, GetTopVisibleRowEntryNumber);
+        Browser.Equal(0, GetVisiblePlaceholderCellCount);
+
+        // Arm the gate so the prepend's head fetch blocks, then prepend.
+        ClickById("close-gate");
+        ClickById("prepend-btn");
+
+        // The core assertion: while the head fetch is pending, no placeholder flashes in the viewport.
+        Browser.Equal(0, GetVisiblePlaceholderCellCount);
+
+        ClickById("open-gate");
+        Browser.Equal(initialCount + batch, GetReportedItemCount);
+
+        // The viewport followed up to the newly prepended head (entry index >= seed count),
+        // stayed pinned to the top, and never flashed a placeholder.
+        Browser.True(() => GetTopVisibleRowEntryNumber() >= initialCount);
+        Browser.Equal(0L, GetScrollTop);
+        Browser.Equal(0, GetVisiblePlaceholderCellCount);
     }
 
     [Fact]
@@ -126,6 +150,38 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
     }
 
     private int GetPlaceholderCellCount() => Browser.FindElements(By.CssSelector("#repro-scroll-container td.grid-cell-placeholder")).Count;
+
+    private int GetVisiblePlaceholderCellCount()
+        => Convert.ToInt32(((IJavaScriptExecutor)Browser).ExecuteScript(
+            @"var c = document.getElementById('repro-scroll-container');
+              var view = c.getBoundingClientRect();
+              var cells = c.querySelectorAll('td.grid-cell-placeholder');
+              var n = 0;
+              for (var i = 0; i < cells.length; i++) {
+                  var r = cells[i].getBoundingClientRect();
+                  if (r.height > 0 && r.bottom > view.top && r.top < view.bottom) { n++; }
+              }
+              return n;"), CultureInfo.InvariantCulture);
+
+    private long GetScrollTop()
+        => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return document.getElementById('repro-scroll-container').scrollTop;"), CultureInfo.InvariantCulture);
+
+    private int GetTopVisibleRowEntryNumber()
+    {
+        var value = ((IJavaScriptExecutor)Browser).ExecuteScript(
+            @"var c = document.getElementById('repro-scroll-container');
+              var top = c.getBoundingClientRect().top;
+              var rows = c.querySelectorAll('tr.repro-row:not(.placeholder-row)');
+              for (var i = 0; i < rows.length; i++) {
+                  if (rows[i].getBoundingClientRect().bottom > top + 1) {
+                      var m = rows[i].innerText.match(/Log entry (\d+)/);
+                      return m ? parseInt(m[1], 10) : -1;
+                  }
+              }
+              return -1;");
+        return Convert.ToInt32(value, CultureInfo.InvariantCulture);
+    }
 
     private IReadOnlyCollection<IWebElement> GetDataRows()
         => Browser.FindElements(By.CssSelector("#repro-scroll-container tr.repro-row:not(.placeholder-row)"));

@@ -116,6 +116,8 @@
     private TaskCompletionSource _gateTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     // Tail StartIndex loaded at gate-close; fetches beyond it are blocked while the gate is closed.
     private int _gateThresholdStartIndex = -1;
+    // Item count at gate-close; in Start mode, fetches that reflect a grown list (a prepend) are blocked.
+    private int _gateThresholdCount = -1;
     private int _lastCompletedStartIndex = -1;
 
     private readonly List<LogItem> _items = new();
@@ -233,7 +235,7 @@
             // Block tail-advancing fetches so the test can observe the pending phase deterministically.
             try
             {
-                while (!_gateOpen && request.StartIndex > _gateThresholdStartIndex)
+                while (!_gateOpen && IsGatedFetch(request.StartIndex))
                 {
                     var tcs = _gateTcs;
                     using var registration = request.CancellationToken.Register(
@@ -284,6 +286,11 @@
         }
     }
 
+    private bool IsGatedFetch(int startIndex)
+        => _anchorMode == VirtualizeAnchorMode.Start
+            ? _items.Count > _gateThresholdCount
+            : startIndex > _gateThresholdStartIndex;
+
     private void OpenGate()
     {
         _gateOpen = true;
@@ -292,9 +299,10 @@
 
     private void CloseGate()
     {
-        // Arm the gate at the current tail; later tail-advancing fetches block.
+        // Arm the gate at the current tail/count; later growth-driven fetches block.
         _gateOpen = false;
         _gateThresholdStartIndex = _lastCompletedStartIndex;
+        _gateThresholdCount = _items.Count;
         _gateTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
