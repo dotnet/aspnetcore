@@ -83,6 +83,14 @@ public class RequestDecompressionMiddlewareTests
         return await GetCompressedContent(compressorDelegate, uncompressedBytes);
     }
 
+    private static async Task<byte[]> GetZstdCompressedContentWithWindowLog(byte[] uncompressedBytes, int windowLog)
+    {
+        Stream compressorDelegate(Stream compressedContent) =>
+            new ZstandardStream(compressedContent, new ZstandardCompressionOptions { WindowLog = windowLog });
+
+        return await GetCompressedContent(compressorDelegate, uncompressedBytes);
+    }
+
     [Fact]
     public async Task Request_ContentEncodingBrotli_Decompressed()
     {
@@ -161,6 +169,21 @@ public class RequestDecompressionMiddlewareTests
         // Assert
         AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
         Assert.Equal(uncompressedBytes, decompressedBytes);
+    }
+
+    [Fact]
+    public async Task Request_ContentEncodingZstd_WindowExceedsMaxWindowLog_Throws()
+    {
+        // The middleware caps the Zstandard decompression window at 8 MB (windowLog 23) as
+        // required by RFC 9659, so a payload advertising a larger window must be rejected.
+
+        // Arrange
+        var contentEncoding = "zstd";
+        var uncompressedBytes = GetUncompressedContent();
+        var compressedBytes = await GetZstdCompressedContentWithWindowLog(uncompressedBytes, windowLog: 24);
+
+        // Act/Assert
+        await Assert.ThrowsAsync<IOException>(async () => await InvokeMiddleware(compressedBytes, new[] { contentEncoding }));
     }
 
     [Fact]
