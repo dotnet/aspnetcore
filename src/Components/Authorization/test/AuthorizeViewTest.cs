@@ -515,6 +515,66 @@ public class AuthorizeViewTest
         });
     }
 
+    [Fact]
+    public void RequirementDataMetadata_RendersNotAuthorized_WhenAuthorizationFails()
+    {
+        var authorizationService = new TestAuthorizationService();
+        // TestAuthorizationService denies by default (NextResult is AuthorizationResult.Failed()).
+        var renderer = CreateTestRenderer(authorizationService);
+        var rootComponent = new TestAuthStateProviderComponent(builder =>
+        {
+            builder.OpenComponent<AuthorizeViewCoreWithRequirementData>(0);
+            builder.AddComponentParameter(1, nameof(AuthorizeViewCore.NotAuthorized),
+                (RenderFragment<AuthenticationState>)(context => childBuilder => childBuilder.AddContent(0, "Not authorized")));
+            builder.CloseComponent();
+        });
+        rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
+        renderer.AssignRootComponentId(rootComponent);
+
+        rootComponent.TriggerRender();
+
+        var diff = renderer.Batches.Single().GetComponentDiffs<AuthorizeViewCoreWithRequirementData>().Single();
+        Assert.Collection(diff.Edits, edit =>
+        {
+            Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+            AssertFrame.Text(
+                renderer.Batches.Single().ReferenceFrames[edit.ReferenceFrameIndex],
+                "Not authorized");
+        });
+
+        // The requirement contributed via IAuthorizationRequirementData metadata was still evaluated.
+        Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            Assert.Contains(call.requirements, req => req is AuthorizeViewCoreWithRequirementData.TestRequirement));
+    }
+
+    [Fact]
+    public void RequirementDataMetadata_RendersAuthorized_WhenAuthorizationSucceeds()
+    {
+        var authorizationService = new TestAuthorizationService();
+        authorizationService.NextResult = AuthorizationResult.Success();
+        var renderer = CreateTestRenderer(authorizationService);
+        var rootComponent = new TestAuthStateProviderComponent(builder =>
+        {
+            builder.OpenComponent<AuthorizeViewCoreWithRequirementData>(0);
+            builder.AddComponentParameter(1, nameof(AuthorizeViewCore.Authorized),
+                (RenderFragment<AuthenticationState>)(context => childBuilder => childBuilder.AddContent(0, "Authorized")));
+            builder.CloseComponent();
+        });
+        rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
+        renderer.AssignRootComponentId(rootComponent);
+
+        rootComponent.TriggerRender();
+
+        var diff = renderer.Batches.Single().GetComponentDiffs<AuthorizeViewCoreWithRequirementData>().Single();
+        Assert.Collection(diff.Edits, edit =>
+        {
+            Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+            AssertFrame.Text(
+                renderer.Batches.Single().ReferenceFrames[edit.ReferenceFrameIndex],
+                "Authorized");
+        });
+    }
+
     private static TestAuthStateProviderComponent WrapInAuthorizeView(
         RenderFragment<AuthenticationState> childContent = null,
         RenderFragment<AuthenticationState> authorized = null,
