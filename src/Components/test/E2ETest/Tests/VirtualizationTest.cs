@@ -2018,6 +2018,111 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void ViewportAnchoring_RenderlessAboveViewportResize_AfterScroll_VisibleItemStaysInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+
+        var container = Browser.Exists(By.Id("incorrect-size-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".incorrect-size-item") > 0);
+
+        // Scroll down in increments so spacer redistribution runs, then let it settle.
+        // No further interaction happens after this, so there is no trailing Blazor render
+        // and the scroll-triggered suppression of overflow-anchor is the last state written.
+        for (var pos = 0; pos <= 1000; pos += 100)
+        {
+            ScrollContainer(js, container, pos);
+        }
+        AssertScrollTop(js, container, st => st >= 1000, "scrollTop >= 1000");
+
+        Browser.True(
+            () => (string)js.ExecuteScript(
+                "return getComputedStyle(arguments[0]).overflowAnchor", container) != "none",
+            TimeSpan.FromSeconds(5),
+            "overflow-anchor was not restored after scrolling settled");
+
+        // Record the first visible item (identified by its stable text) and its position.
+        var before = js.ExecuteScript(@"
+            var container = arguments[0];
+            var cRect = container.getBoundingClientRect();
+            var items = container.querySelectorAll('.incorrect-size-item');
+            for (var i = 0; i < items.length; i++) {
+                var r = items[i].getBoundingClientRect();
+                if (r.bottom > cRect.top + 1 && r.top < cRect.bottom - 1) {
+                    return { text: items[i].textContent, relTop: r.top - cRect.top };
+                }
+            }
+            return null;
+        ", container) as Dictionary<string, object>;
+
+        Assert.NotNull(before);
+        var visibleText = before["text"].ToString();
+        var relTopBefore = Convert.ToDouble(before["relTop"], CultureInfo.InvariantCulture);
+
+        // Grow the item immediately ABOVE the viewport by mutating its style directly.
+        // This is a browser-only reflow: it does NOT trigger a Blazor render, so the only
+        // thing that can keep the visible content stable is native scroll anchoring.
+        var growResult = js.ExecuteScript(@"
+            var container = arguments[0];
+            var grow = arguments[1];
+            var cRect = container.getBoundingClientRect();
+            var items = container.querySelectorAll('.incorrect-size-item');
+            for (var i = items.length - 1; i >= 0; i--) {
+                var r = items[i].getBoundingClientRect();
+                if (r.bottom <= cRect.top + 1) {
+                    items[i].style.height = (r.height + grow) + 'px';
+                    return { grew: true, text: items[i].textContent, anchor: getComputedStyle(container).overflowAnchor };
+                }
+            }
+            return { grew: false, anchor: getComputedStyle(container).overflowAnchor };
+        ", container, 200L) as Dictionary<string, object>;
+
+        Assert.NotNull(growResult);
+        Assert.True((bool)growResult["grew"], "Expected at least one item above the viewport to grow.");
+
+        // Poll until the visible item's position stops changing, so we measure the
+        // browser's settled response to the reflow (with or without scroll anchoring)
+        // deterministically instead of waiting a fixed amount of time.
+        var relTopAfter = relTopBefore;
+        var lastRelTop = double.NaN;
+        var stableReads = 0;
+        Browser.True(() =>
+        {
+            var current = js.ExecuteScript(@"
+                var container = arguments[0];
+                var text = arguments[1];
+                var cRect = container.getBoundingClientRect();
+                var items = container.querySelectorAll('.incorrect-size-item');
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].textContent === text) {
+                        return items[i].getBoundingClientRect().top - cRect.top;
+                    }
+                }
+                return null;
+            ", container, visibleText);
+
+            if (current == null)
+            {
+                stableReads = 0;
+                return false;
+            }
+
+            var relTop = Convert.ToDouble(current, CultureInfo.InvariantCulture);
+            stableReads = Math.Abs(relTop - lastRelTop) < 0.5 ? stableReads + 1 : 0;
+            lastRelTop = relTop;
+            relTopAfter = relTop;
+
+            // Require a few consecutive stable reads to be sure the reflow has settled.
+            return stableReads >= 3;
+        }, TimeSpan.FromSeconds(10), "Visible item position did not settle after the render-less resize");
+
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
+            $"Visible item '{visibleText}' should not have moved when an off-screen item grew via a " +
+            $"render-less browser reflow (overflow-anchor='{growResult["anchor"]}', grew item '{growResult["text"]}'). " +
+            $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px");
+    }
+
+    [Fact]
     public void Table_VariableHeight_IncrementalScrollDoesNotCauseWildJumps()
     {
         // Guards against a browser-level CSS Scroll Anchoring bug with <table> layout.

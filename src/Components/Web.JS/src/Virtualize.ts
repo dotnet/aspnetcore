@@ -237,8 +237,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       stopConvergenceObserving();
     }
 
+    let spacerResized = false;
     for (const entry of entries) {
       if (entry.target === spacerBefore || entry.target === spacerAfter) {
+        spacerResized = true;
         const spacer = entry.target as HTMLElement;
         if (spacer.isConnected) {
           intersectionObserver.unobserve(spacer);
@@ -250,6 +252,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // Manual scroll compensation: adjust scrollTop for above-viewport resizes.
     if (!useNativeAnchoring) {
       compensateScrollForItemResizes(entries);
+    }
+
+    if (spacerResized && useNativeAnchoring && !convergingElements
+        && !convergingToTop && !convergingToBottom
+        && scrollElement.style.overflowAnchor === 'none') {
+      scrollElement.style.overflowAnchor = '';
     }
   });
 
