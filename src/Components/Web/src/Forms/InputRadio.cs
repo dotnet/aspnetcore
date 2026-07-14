@@ -62,16 +62,23 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
     {
         Debug.Assert(Context != null);
 
+        // Render client validation attributes (data-val-*) only on the first radio in the group.
+        // Subsequent radios get null because we clear the context's attributes after consuming them.
+        // The JS validation library only needs to discover the rules once per radio group.
+        var clientValidationAttributes = Context.ClientValidationAttributes;
+        Context.ClientValidationAttributes = null;
+
         builder.OpenElement(0, "input");
-        builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttributeIfNotNullOrEmpty(2, "class", AttributeUtilities.CombineClassNames(AdditionalAttributes, Context.FieldClass));
-        builder.AddAttribute(3, "type", "radio");
-        builder.AddAttribute(4, "name", Context.GroupName);
-        builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));
-        builder.AddAttribute(6, "checked", Context.CurrentValue?.Equals(Value) == true ? GetToggledTrueValue() : null);
-        builder.AddAttribute(7, "onchange", Context.ChangeEventCallback);
+        builder.AddMultipleAttributes(1, clientValidationAttributes);
+        builder.AddMultipleAttributes(2, AdditionalAttributes);
+        builder.AddAttributeIfNotNullOrEmpty(3, "class", AttributeUtilities.CombineClassNames(AdditionalAttributes, Context.FieldClass));
+        builder.AddAttribute(4, "type", "radio");
+        builder.AddAttribute(5, "name", Context.GroupName);
+        builder.AddAttribute(6, "value", BindConverter.FormatValue(Value?.ToString()));
+        builder.AddAttribute(7, "checked", Context.CurrentValue?.Equals(Value) == true ? GetToggledTrueValue() : null);
+        builder.AddAttribute(8, "onchange", Context.ChangeEventCallback);
         builder.SetUpdatesAttributeName("checked");
-        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
+        builder.AddElementReferenceCapture(9, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 

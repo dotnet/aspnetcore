@@ -110,7 +110,7 @@ const frameReader = {
   textContent: (frame: RenderTreeFrame): string | null => platform.readStringField(frame as any, 16),
   markupContent: (frame: RenderTreeFrame): string => platform.readStringField(frame as any, 16)!,
   attributeName: (frame: RenderTreeFrame): string | null => platform.readStringField(frame as any, 16),
-  attributeValue: (frame: RenderTreeFrame): string | null => platform.readStringField(frame as any, 24, true),
+  attributeValue: (frame: RenderTreeFrame): string | null => platform.readStringField(frame as any, 24),
   attributeEventHandlerId: (frame: RenderTreeFrame): number => platform.readUint64Field(frame as any, 8),
 };
 

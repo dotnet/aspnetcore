@@ -768,6 +768,59 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.InRange(errorCodeFeature.Error, 0, (1L << 62) - 1); // Valid range for HTTP/3 error codes
     }
 
+    [Theory]
+    [InlineData(2)] // encoder
+    [InlineData(3)] // decoder
+    public async Task IgnoredControlStreams_CloseConnectionOnEndStream(int streamType)
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var stream = await Http3Api.CreateControlStream(streamType);
+
+        // PipeWriter will be completed when end of stream is received. Should exit read loop and close stream
+        // which will cause the connection to close with an error.
+        await stream.SendFrameAsync(Http3FrameType.Data, Memory<byte>.Empty, endStream: true);
+
+        await stream.OnStreamCompletedTask.DefaultTimeout();
+
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(TimeSpan.FromSeconds(1));
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
+    }
+
+    [Theory]
+    [InlineData(2)] // encoder
+    [InlineData(3)] // decoder
+    public async Task IgnoredControlStreams_CloseConnectionOnStreamClose(int streamType)
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var stream = await Http3Api.CreateControlStream(streamType);
+
+        await (streamType == 2 ? stream.OnEncoderStreamCreatedTask : stream.OnDecoderStreamCreatedTask).DefaultTimeout();
+
+        // Simulate quic layer closing the stream
+        stream.StreamContext.Close();
+
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(TimeSpan.FromSeconds(1));
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
+    }
+
     private sealed class ThrowingMultiplexedConnectionContext : TestMultiplexedConnectionContext
     {
         private int _skipCount;
@@ -871,5 +924,177 @@ public class Http3ConnectionTests : Http3TestBase
         public bool Remove(KeyValuePair<string, StringValues> item) => _innerHeaders.Remove(item);
         public bool TryGetValue(string key, out StringValues value) => _innerHeaders.TryGetValue(key, out value);
         IEnumerator IEnumerable.GetEnumerator() => _innerHeaders.GetEnumerator();
+    }
+
+    [Fact]
+    public async Task OutboundControlStream_BlockedConnect_RequestsStillProcessed()
+    {
+        // Test that if ConnectAsync blocks (simulating QUIC backpressure when client
+        // doesn't accept the outbound control stream), requests can still be processed.
+        var connectCalledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowConnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Http3Api.MultiplexedConnectionContext = new BlockingConnectMultiplexedConnectionContext(
+            Http3Api, connectCalledTcs, allowConnectTcs, connectionClosedTcs);
+
+        // Start connection - this will call ConnectAsync for the outbound control stream
+        // but ConnectAsync will block until we signal allowConnectTcs
+        var initTask = Http3Api.InitializeConnectionAsync(_echoApplication);
+
+        // Wait for ConnectAsync to be called (server is trying to open outbound control stream)
+        await connectCalledTcs.Task.DefaultTimeout();
+
+        // At this point, ConnectAsync is blocked. The server should still be able to accept
+        // and process requests because we don't wait for the control stream before allowing requests.
+        // https://datatracker.ietf.org/doc/html/rfc9114#section-7.2.4.2
+        // "Clients SHOULD NOT wait indefinitely for SETTINGS to arrive before sending requests"
+
+        // Create the client's control stream and send settings
+        await Http3Api.CreateControlStream();
+
+        // Process a request while ConnectAsync is still blocked
+        var requestStream = await Http3Api.CreateRequestStream(Headers, endStream: true);
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        // Now allow ConnectAsync to complete
+        allowConnectTcs.SetResult();
+
+        // Wait for initialization to complete (it was waiting on GetInboundControlStream)
+        await initTask.DefaultTimeout();
+
+        // Read the settings from the now-accepted outbound control stream
+        var inboundControlStream = await Http3Api.GetInboundControlStream();
+        await inboundControlStream.ExpectSettingsAsync();
+
+        // Gracefully close
+        Http3Api.CloseServerGracefully();
+
+        await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
+    }
+
+    [Fact]
+    public async Task OutboundControlStream_BlockedConnect_GracefulShutdownCompletes()
+    {
+        // Test that graceful shutdown completes even when ConnectAsync is blocked
+        // (simulating client never accepting the outbound control stream).
+        var connectCalledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowConnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Http3Api.MultiplexedConnectionContext = new BlockingConnectMultiplexedConnectionContext(
+            Http3Api, connectCalledTcs, allowConnectTcs, connectionClosedTcs);
+
+        // Start connection initialization on a background task since it will block
+        // waiting for GetInboundControlStream which we won't complete
+        var initTask = Task.Run(async () =>
+        {
+            try
+            {
+                await Http3Api.InitializeConnectionAsync(_noopApplication);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when connection is aborted
+            }
+        });
+
+        // Wait for ConnectAsync to be called
+        await connectCalledTcs.Task.DefaultTimeout();
+
+        // Create the client's control stream
+        await Http3Api.CreateControlStream();
+
+        // Trigger graceful shutdown while ConnectAsync is still blocked
+        Http3Api.CloseServerGracefully();
+
+        // Allow ConnectAsync to complete so the connection can finish shutting down
+        allowConnectTcs.SetResult();
+
+        // Connection should close
+        await connectionClosedTcs.Task.DefaultTimeout();
+    }
+
+    [Fact]
+    public async Task OutboundControlStream_BlockedConnect_AbortCompletes()
+    {
+        // Test that abort completes even when ConnectAsync is blocked.
+        var connectCalledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowConnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Http3Api.MultiplexedConnectionContext = new BlockingConnectMultiplexedConnectionContext(
+            Http3Api, connectCalledTcs, allowConnectTcs, connectionClosedTcs);
+
+        // Start connection initialization
+        var initTask = Task.Run(async () =>
+        {
+            try
+            {
+                await Http3Api.InitializeConnectionAsync(_noopApplication);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when connection is aborted
+            }
+        });
+
+        // Wait for ConnectAsync to be called
+        await connectCalledTcs.Task.DefaultTimeout();
+
+        // Create the client's control stream
+        await Http3Api.CreateControlStream();
+
+        // Abort while ConnectAsync is blocked
+        Http3Api.MultiplexedConnectionContext.Abort(new ConnectionAbortedException("Test abort"));
+
+        // Allow ConnectAsync to complete (it will throw due to abort)
+        allowConnectTcs.SetException(new OperationCanceledException());
+
+        // Connection should close
+        await connectionClosedTcs.Task.DefaultTimeout();
+    }
+
+    private sealed class BlockingConnectMultiplexedConnectionContext : TestMultiplexedConnectionContext
+    {
+        private readonly TaskCompletionSource _connectCalledTcs;
+        private readonly TaskCompletionSource _allowConnectTcs;
+        private readonly TaskCompletionSource _connectionClosedTcs;
+
+        public BlockingConnectMultiplexedConnectionContext(
+            Http3InMemory testBase,
+            TaskCompletionSource connectCalledTcs,
+            TaskCompletionSource allowConnectTcs,
+            TaskCompletionSource connectionClosedTcs)
+            : base(testBase)
+        {
+            _connectCalledTcs = connectCalledTcs;
+            _allowConnectTcs = allowConnectTcs;
+            _connectionClosedTcs = connectionClosedTcs;
+        }
+
+        public override async ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        {
+            // Signal that ConnectAsync was called
+            _connectCalledTcs.TrySetResult();
+
+            // Block until allowed to proceed
+            await _allowConnectTcs.Task;
+
+            // Now proceed with normal ConnectAsync behavior
+            return await base.ConnectAsync(features, cancellationToken);
+        }
+
+        public override void Abort(ConnectionAbortedException abortReason)
+        {
+            base.Abort(abortReason);
+            _connectionClosedTcs.TrySetResult();
+        }
     }
 }

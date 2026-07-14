@@ -6,12 +6,16 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Validation;
 
+using static Microsoft.Extensions.Validation.Tests.ValidationTestBase;
+
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
-    [Fact]
-    public async Task CanValidateClassTypesWithAttribute()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanValidateClassTypesWithAttribute(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -95,7 +99,7 @@ public class SubTypeWithInheritance : SubType
             await InvalidPropertyWithCustomValidationProducesError(validatableTypeInfo);
             await ValidInputProducesNoWarnings(validatableTypeInfo);
 
-            async Task InvalidIntegerWithRangeProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidIntegerWithRangeProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("IntegerWithRange")?.SetValue(instance, 5);
@@ -105,7 +109,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -114,7 +118,7 @@ public class SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidIntegerWithRangeAndDisplayNameProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidIntegerWithRangeAndDisplayNameProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("IntegerWithRangeAndDisplayName")?.SetValue(instance, 5);
@@ -124,7 +128,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -133,7 +137,7 @@ public class SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task MissingRequiredSubtypePropertyProducesError(IValidatableInfo validatableInfo)
+            async Task MissingRequiredSubtypePropertyProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("PropertyWithMemberAttributes")?.SetValue(instance, null);
@@ -143,7 +147,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -152,7 +156,7 @@ public class SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidRequiredSubtypePropertyProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidRequiredSubtypePropertyProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var subType = Activator.CreateInstance(type.Assembly.GetType("SubType")!);
@@ -165,7 +169,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -180,7 +184,7 @@ public class SubTypeWithInheritance : SubType
                     });
             }
 
-            async Task InvalidSubTypeWithInheritancePropertyProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidSubTypeWithInheritancePropertyProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var inheritanceType = Activator.CreateInstance(type.Assembly.GetType("SubTypeWithInheritance")!);
@@ -194,7 +198,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -214,7 +218,7 @@ public class SubTypeWithInheritance : SubType
                     });
             }
 
-            async Task InvalidListOfSubTypesProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidListOfSubTypesProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var subTypeList = Activator.CreateInstance(typeof(List<>).MakeGenericType(type.Assembly.GetType("SubType")!));
@@ -246,7 +250,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -266,7 +270,7 @@ public class SubTypeWithInheritance : SubType
                     });
             }
 
-            async Task InvalidPropertyWithDerivedValidationAttributeProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyWithDerivedValidationAttributeProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("IntegerWithCustomValidationAttribute")?.SetValue(instance, 5); // Odd number, should fail
@@ -276,7 +280,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -285,7 +289,7 @@ public class SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidPropertyWithMultipleAttributesProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyWithMultipleAttributesProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("PropertyWithMultipleAttributes")?.SetValue(instance, 5);
@@ -295,7 +299,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -312,7 +316,7 @@ public class SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidPropertyWithCustomValidationProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyWithCustomValidationProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("IntegerWithCustomValidationAttribute")?.SetValue(instance, 3); // Odd number should fail
@@ -322,7 +326,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -331,7 +335,7 @@ public class SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task ValidInputProducesNoWarnings(IValidatableInfo validatableInfo)
+            async Task ValidInputProducesNoWarnings(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
 
@@ -372,15 +376,17 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
         });
     }
 
-    [Fact]
-    public async Task CanValidateRecordTypesWithAttribute()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanValidateRecordTypesWithAttribute(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -464,7 +470,7 @@ public record SubTypeWithInheritance : SubType
             await InvalidPropertyWithCustomValidationProducesError(validatableTypeInfo);
             await ValidInputProducesNoWarnings(validatableTypeInfo);
 
-            async Task InvalidIntegerWithRangeProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidIntegerWithRangeProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("IntegerWithRange")?.SetValue(instance, 5);
@@ -474,7 +480,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -483,7 +489,7 @@ public record SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidIntegerWithRangeAndDisplayNameProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidIntegerWithRangeAndDisplayNameProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("IntegerWithRangeAndDisplayName")?.SetValue(instance, 5);
@@ -493,7 +499,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -502,7 +508,7 @@ public record SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task MissingRequiredSubtypePropertyProducesError(IValidatableInfo validatableInfo)
+            async Task MissingRequiredSubtypePropertyProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("PropertyWithMemberAttributes")?.SetValue(instance, null);
@@ -512,7 +518,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -521,7 +527,7 @@ public record SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidRequiredSubtypePropertyProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidRequiredSubtypePropertyProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var subType = Activator.CreateInstance(type.Assembly.GetType("SubType")!);
@@ -534,7 +540,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -549,7 +555,7 @@ public record SubTypeWithInheritance : SubType
                     });
             }
 
-            async Task InvalidSubTypeWithInheritancePropertyProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidSubTypeWithInheritancePropertyProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var inheritanceType = Activator.CreateInstance(type.Assembly.GetType("SubTypeWithInheritance")!);
@@ -563,7 +569,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -583,7 +589,7 @@ public record SubTypeWithInheritance : SubType
                     });
             }
 
-            async Task InvalidListOfSubTypesProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidListOfSubTypesProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var subTypeList = Activator.CreateInstance(typeof(List<>).MakeGenericType(type.Assembly.GetType("SubType")!));
@@ -615,7 +621,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -635,7 +641,7 @@ public record SubTypeWithInheritance : SubType
                     });
             }
 
-            async Task InvalidPropertyWithDerivedValidationAttributeProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyWithDerivedValidationAttributeProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("IntegerWithCustomValidationAttribute")?.SetValue(instance, 5); // Odd number, should fail
@@ -645,7 +651,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -654,7 +660,7 @@ public record SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidPropertyWithMultipleAttributesProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyWithMultipleAttributesProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("PropertyWithMultipleAttributes")?.SetValue(instance, 5);
@@ -664,7 +670,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -681,7 +687,7 @@ public record SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task InvalidPropertyWithCustomValidationProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyWithCustomValidationProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("IntegerWithCustomValidationAttribute")?.SetValue(instance, 3); // Odd number should fail
@@ -691,7 +697,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -700,7 +706,7 @@ public record SubTypeWithInheritance : SubType
                 });
             }
 
-            async Task ValidInputProducesNoWarnings(IValidatableInfo validatableInfo)
+            async Task ValidInputProducesNoWarnings(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
 
@@ -741,7 +747,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }

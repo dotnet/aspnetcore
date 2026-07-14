@@ -1,0 +1,16 @@
+<html>
+<head>
+  <base href="/subdir/" />
+</head>
+<body>
+  <div id="app">
+  </div>
+
+  <script src="_framework/blazor.server.js" autostart="false"></script>
+  <script>
+    Blazor.start().then(() => {
+      Blazor.rootComponents.add(document.getElementById("app"), "dynamic-js-root-counter", {});
+    });
+  </script>
+</body>
+</html>

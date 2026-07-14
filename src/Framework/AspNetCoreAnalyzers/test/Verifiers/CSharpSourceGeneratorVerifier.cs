@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 using Microsoft.CodeAnalysis;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Analyzers.Verifiers;
 public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
         where TSourceGenerator : IIncrementalGenerator, new()
 {
-    public static async Task VerifyAsync(string source, string generatedFileName, string generatedSource)
+    public static async Task VerifyAsync([StringSyntax("C#-test")] string source, string generatedFileName, string generatedSource)
     {
         var test = new CSharpSourceGeneratorTest<TSourceGenerator, DefaultVerifier>
         {
@@ -31,7 +32,7 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
         await test.RunAsync(CancellationToken.None);
     }
 
-    public static async Task VerifyAsync(string source)
+    public static async Task VerifyAsync([StringSyntax("C#-test")] string source)
     {
         var test = new CSharpSourceGeneratorTest<TSourceGenerator, DefaultVerifier>
         {

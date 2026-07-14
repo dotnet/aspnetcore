@@ -1,1 +1,29 @@
 #nullable enable
+Microsoft.AspNetCore.Components.CacheBoundaryLiveComponentAttribute
+Microsoft.AspNetCore.Components.CacheBoundaryLiveComponentAttribute.CacheBoundaryLiveComponentAttribute() -> void
+Microsoft.AspNetCore.Components.CacheBoundaryLiveComponentAttribute.Disallow.get -> bool
+Microsoft.AspNetCore.Components.CacheBoundaryLiveComponentAttribute.Disallow.set -> void
+Microsoft.AspNetCore.Components.CacheBoundaryLiveComponentAttribute.VaryBy.get -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryLiveComponentAttribute.VaryBy.set -> void
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Cookie = 8 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Culture = 32 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Header = 4 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.None = 0 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Query = 1 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Route = 2 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.User = 16 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.Dispose() -> void
+abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurrentValue() -> object?
+Microsoft.AspNetCore.Components.CascadingParameterSubscription
+Microsoft.AspNetCore.Components.CascadingParameterSubscription.CascadingParameterSubscription() -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int frameIndex, object? value) -> void
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithFragment(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string? fragment) -> string!
+Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
+Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
+Microsoft.AspNetCore.Components.IComponentPropertyActivator
+Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.Type! componentType) -> System.Action<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>!
+*REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+*REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
+*REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.TryAddCascadingValueSupplier<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, System.Func<Microsoft.AspNetCore.Components.Rendering.ComponentState!, TAttribute!, Microsoft.AspNetCore.Components.CascadingParameterInfo, Microsoft.AspNetCore.Components.CascadingParameterSubscription!>!>! subscribeFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -16,6 +16,7 @@
       "src\\DataProtection\\Extensions\\test\\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj",
       "src\\DataProtection\\StackExchangeRedis\\src\\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj",
       "src\\DataProtection\\StackExchangeRedis\\test\\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests.csproj",
+      "src\\DataProtection\\benchmarks\\Microsoft.AspNetCore.DataProtection.MicroBenchmarks\\Microsoft.AspNetCore.DataProtection.MicroBenchmarks.csproj",
       "src\\DataProtection\\samples\\CustomEncryptorSample\\CustomEncryptorSample.csproj",
       "src\\DataProtection\\samples\\EntityFrameworkCoreSample\\EntityFrameworkCoreSample.csproj",
       "src\\DataProtection\\samples\\KeyManagementSample\\KeyManagementSample.csproj",

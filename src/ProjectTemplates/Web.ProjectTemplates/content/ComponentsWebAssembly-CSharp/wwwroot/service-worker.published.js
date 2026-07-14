@@ -51,5 +51,14 @@ async function onFetch(event) {
         cachedResponse = await cache.match(request);
     }
 
+    if (cachedResponse && cachedResponse.redirected) {
+        const clonedResponse = cachedResponse.clone();
+        cachedResponse = new Response(clonedResponse.body, {
+            headers: clonedResponse.headers,
+            status: clonedResponse.status,
+            statusText: clonedResponse.statusText
+        });
+    }
+
     return cachedResponse || fetch(event.request);
 }

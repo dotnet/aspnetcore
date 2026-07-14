@@ -16,9 +16,10 @@
 
   <ItemGroup>
     <Compile Include="..\..\shared\src\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs" LinkBase="Shared"
-      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs" LinkBase="Shared" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
     <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)\Buffers\RefPooledArrayBufferWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Encoding\Int7BitEncodingUtils.cs" LinkBase="Shared" />
@@ -27,10 +28,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
@@ -53,5 +50,17 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
     <InternalsVisibleTo Include="KeyManagementSimulator" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>

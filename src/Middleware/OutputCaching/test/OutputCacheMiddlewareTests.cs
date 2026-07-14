@@ -492,6 +492,102 @@ public abstract class OutputCacheMiddlewareTests
         Assert.Empty(sink.Writes);
     }
 
+    [Fact]
+    public async Task TryServeFromCacheAsync_CachedResponseFresh_WhenResponseTimeEqualsCreated()
+    {
+        var cache = GetStore();
+        var sink = new TestSink();
+        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var options = new OutputCacheOptions { TimeProvider = timeProvider };
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, options: options, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
+        var context = TestUtils.CreateTestContext(cache: cache, options: options);
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
+
+        using (var entry = new OutputCacheEntry(timeProvider.GetUtcNow(), StatusCodes.Status200OK))
+        {
+            await OutputCacheEntryFormatter.StoreAsync(
+                "BaseKey",
+                entry,
+                null,
+                TimeSpan.FromSeconds(10),
+                cache,
+                NullLogger.Instance,
+                default);
+        }
+
+        Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
+        Assert.Equal(1, cache.GetCount);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.CachedResponseServed);
+    }
+
+    [Fact]
+    public async Task TryServeFromCacheAsync_CachedResponseFresh_WhenResponseTimeIsAfterCreated()
+    {
+        var cache = GetStore();
+        var sink = new TestSink();
+        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var options = new OutputCacheOptions { TimeProvider = timeProvider };
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, options: options, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
+        var context = TestUtils.CreateTestContext(cache: cache, options: options);
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
+
+        using (var entry = new OutputCacheEntry(timeProvider.GetUtcNow(), StatusCodes.Status200OK))
+        {
+            await OutputCacheEntryFormatter.StoreAsync(
+                "BaseKey",
+                entry,
+                null,
+                TimeSpan.FromSeconds(10),
+                cache,
+                NullLogger.Instance,
+                default);
+        }
+
+        timeProvider.Advance(TimeSpan.FromSeconds(5));
+
+        Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
+        Assert.Equal(1, cache.GetCount);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.CachedResponseServed);
+    }
+
+    [Fact]
+    // Technically not possible with the current code
+    // but no reason a response can't get the cached entry if there is a valid one
+    public async Task TryServeFromCacheAsync_CachedResponseFresh_WhenResponseTimeIsBeforeCreated()
+    {
+        var cache = GetStore();
+        var sink = new TestSink();
+        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var options = new OutputCacheOptions { TimeProvider = timeProvider };
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, options: options, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
+        var context = TestUtils.CreateTestContext(cache: cache, options: options);
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
+
+        using (var entry = new OutputCacheEntry(timeProvider.GetUtcNow(), StatusCodes.Status200OK))
+        {
+            await OutputCacheEntryFormatter.StoreAsync(
+                "BaseKey",
+                entry,
+                null,
+                TimeSpan.FromSeconds(10),
+                cache,
+                NullLogger.Instance,
+                default);
+        }
+
+        timeProvider.AdjustTime(timeProvider.GetUtcNow() - TimeSpan.FromSeconds(5));
+
+        Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
+        Assert.Equal(1, cache.GetCount);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.CachedResponseServed);
+    }
+
     public static TheoryData<StringValues> NullOrEmptyVaryRules
     {
         get
@@ -913,7 +1009,6 @@ public abstract class OutputCacheMiddlewareTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55652")]
     public async Task Locking_ExecuteAllRequestsWhenDisabled()
     {
         var responseCounter = 0;

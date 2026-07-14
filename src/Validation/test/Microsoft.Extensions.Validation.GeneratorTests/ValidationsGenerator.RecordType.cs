@@ -384,4 +384,146 @@ public record ValidatableRecord(
         });
 
     }
+
+    [Fact]
+    public async Task CanValidateRecordStructTypes()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/validatable-record-struct", (ValidatableRecordStruct validatableRecordStruct) => Results.Ok("Passed"));
+
+app.Run();
+
+public record struct SubRecordStruct([Required] string RequiredProperty, [StringLength(10)] string? StringWithLength);
+
+public record struct ValidatableRecordStruct(
+    [Range(10, 100)]
+    int IntegerWithRange,
+    [Range(10, 100), Display(Name = "Valid identifier")]
+    int IntegerWithRangeAndDisplayName,
+    SubRecordStruct SubProperty
+);
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/validatable-record-struct", async (endpoint, serviceProvider) =>
+        {
+            await InvalidIntegerWithRangeProducesError(endpoint);
+            await InvalidIntegerWithRangeAndDisplayNameProducesError(endpoint);
+            await InvalidSubPropertyProducesError(endpoint);
+            await ValidInputProducesNoWarnings(endpoint);
+
+            async Task InvalidIntegerWithRangeProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                    {
+                        "IntegerWithRange": 5,
+                        "IntegerWithRangeAndDisplayName": 50,
+                        "SubProperty": {
+                            "RequiredProperty": "valid",
+                            "StringWithLength": "valid"
+                        }
+                    }
+                    """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("IntegerWithRange", kvp.Key);
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                });
+            }
+
+            async Task InvalidIntegerWithRangeAndDisplayNameProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                    {
+                        "IntegerWithRange": 50,
+                        "IntegerWithRangeAndDisplayName": 5,
+                        "SubProperty": {
+                            "RequiredProperty": "valid",
+                            "StringWithLength": "valid"
+                        }
+                    }
+                    """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("IntegerWithRangeAndDisplayName", kvp.Key);
+                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.Single());
+                });
+            }
+
+            async Task InvalidSubPropertyProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                    {
+                        "IntegerWithRange": 50,
+                        "IntegerWithRangeAndDisplayName": 50,
+                        "SubProperty": {
+                            "RequiredProperty": "",
+                            "StringWithLength": "way-too-long"
+                        }
+                    }
+                    """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors,
+                kvp =>
+                {
+                    Assert.Equal("SubProperty.RequiredProperty", kvp.Key);
+                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("SubProperty.StringWithLength", kvp.Key);
+                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                });
+            }
+
+            async Task ValidInputProducesNoWarnings(Endpoint endpoint)
+            {
+                var payload = """
+                    {
+                        "IntegerWithRange": 50,
+                        "IntegerWithRangeAndDisplayName": 50,
+                        "SubProperty": {
+                            "RequiredProperty": "valid",
+                            "StringWithLength": "valid"
+                        }
+                    }
+                    """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+                await endpoint.RequestDelegate(context);
+
+                Assert.Equal(200, context.Response.StatusCode);
+            }
+        });
+
+    }
 }

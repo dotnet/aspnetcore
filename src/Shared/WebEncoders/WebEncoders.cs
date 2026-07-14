@@ -204,6 +204,38 @@ static class WebEncoders
         return Convert.FromBase64CharArray(buffer, bufferOffset, arraySizeRequired);
     }
 
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Decodes a base64url-encoded <paramref name="input"/> into <paramref name="output"/>.
+    /// </summary>
+    /// <param name="input">The base64url-encoded input to decode.</param>
+    /// <param name="output">The buffer to receive the decoded bytes.</param>
+    /// <returns>The number of bytes written to <paramref name="output"/>.</returns>
+    /// <remarks>
+    /// The input must not contain any whitespace or padding characters.
+    /// Throws <see cref="FormatException"/> if the input is malformed.
+    /// </remarks>
+    internal static int Base64UrlDecode(string input, Span<byte> output)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return 0;
+        }
+
+        var status = Base64Url.DecodeFromChars(input, output, out _, out int bytesWritten);
+        if (status != OperationStatus.Done)
+        {
+            throw new FormatException(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    EncoderResources.WebEncoders_MalformedInput,
+                    input.Length));
+        }
+
+        return bytesWritten;
+    }
+#endif
+
     /// <summary>
     /// Gets the minimum <c>char[]</c> size required for decoding of <paramref name="count"/> characters
     /// with the <see cref="Base64UrlDecode(string, int, char[], int, int)"/> method.

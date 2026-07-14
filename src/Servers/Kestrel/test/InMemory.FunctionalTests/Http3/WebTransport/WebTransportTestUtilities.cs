@@ -39,7 +39,6 @@ internal class WebTransportTestUtilities
             {
                 appCompletedTcs.SetException(exception);
             }
-#pragma warning restore CA2252 // WebTransport is a preview feature
 
             // wait for the test to tell us to kill the application
             await exitSessionTcs.Task;
@@ -53,10 +52,16 @@ internal class WebTransportTestUtilities
             H3Datagram = 1,
         };
 
-        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
+        var nonDefaultSettings = settings.GetNonProtocolDefaults();
+        await controlStream.SendSettingsAsync(nonDefaultSettings);
         var response1 = await controlStream2.ExpectSettingsAsync();
 
-        await inMemory.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        // Drain all received settings before sending the CONNECT request to avoid a race
+        // where the server processes the request before all settings (e.g. H3Datagram) are applied.
+        for (var i = 0; i < nonDefaultSettings.Count; i++)
+        {
+            await inMemory.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        }
 
         var requestStream = await inMemory.CreateRequestStream(new[]
         {
@@ -69,7 +74,8 @@ internal class WebTransportTestUtilities
             new KeyValuePair<string, string>(WebTransportSession.CurrentSupportedVersion, "1")
         });
 
-        return (WebTransportSession)await appCompletedTcs.Task;
+        return (WebTransportSession)await appCompletedTcs.Task.DefaultTimeout();
+#pragma warning restore CA2252 // WebTransport is a preview feature
     }
 
     public static WebTransportStream CreateStream(WebTransportStreamType type, Memory<byte>? memory = null)

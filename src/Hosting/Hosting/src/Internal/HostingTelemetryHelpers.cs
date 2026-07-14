@@ -11,14 +11,17 @@ namespace Microsoft.AspNetCore.Hosting;
 internal static class HostingTelemetryHelpers
 {
     // Semantic Conventions for HTTP.
-    // Note: Not all telemetry code is using these const attribute names yet.
     public const string AttributeHttpRequestMethod = "http.request.method";
     public const string AttributeHttpRequestMethodOriginal = "http.request.method_original";
+    public const string AttributeHttpResponseStatusCode = "http.response.status_code";
+    public const string AttributeHttpRoute = "http.route";
     public const string AttributeUrlScheme = "url.scheme";
     public const string AttributeUrlPath = "url.path";
     public const string AttributeServerAddress = "server.address";
     public const string AttributeServerPort = "server.port";
     public const string AttributeUserAgentOriginal = "user_agent.original";
+    public const string AttributeNetworkProtocolVersion = "network.protocol.version";
+    public const string AttributeErrorType = "error.type";
 
     // The value "_OTHER" is used for non-standard HTTP methods.
     // https://github.com/open-telemetry/semantic-conventions/blob/v1.23.0/docs/http/http-spans.md#common-attributes
@@ -35,6 +38,7 @@ internal static class HostingTelemetryHelpers
         KeyValuePair.Create(HttpMethods.Patch, HttpMethods.Patch),
         KeyValuePair.Create(HttpMethods.Post, HttpMethods.Post),
         KeyValuePair.Create(HttpMethods.Put, HttpMethods.Put),
+        KeyValuePair.Create(HttpMethods.Query, HttpMethods.Query),
         KeyValuePair.Create(HttpMethods.Trace, HttpMethods.Trace)
     ], StringComparer.OrdinalIgnoreCase);
 
@@ -69,7 +73,7 @@ internal static class HostingTelemetryHelpers
 
     public static object GetBoxedStatusCode(int statusCode)
     {
-        object[] boxes = BoxedStatusCodes;
+        var boxes = BoxedStatusCodes;
         return (uint)statusCode < (uint)boxes.Length
             ? boxes[statusCode] ??= statusCode
             : statusCode;
@@ -128,5 +132,19 @@ internal static class HostingTelemetryHelpers
         {
             tags.Add(AttributeHttpRequestMethodOriginal, originalHttpMethod);
         }
+    }
+
+    /// <summary>
+    /// Determines if the status code indicates a server error (5xx).
+    /// Client errors (4xx) are not considered server errors.
+    /// </summary>
+    public static bool IsErrorStatusCode(int statusCode) => statusCode >= 500 && statusCode <= 599;
+
+    public static string GetActivityDisplayName(string originalHttpMethod, string? httpRoute = null)
+    {
+        var normalizedHttpMethod = GetNormalizedHttpMethod(originalHttpMethod);
+        var namePrefix = normalizedHttpMethod == OtherHttpMethod ? "HTTP" : normalizedHttpMethod;
+
+        return string.IsNullOrEmpty(httpRoute) ? namePrefix : $"{namePrefix} {httpRoute}";
     }
 }
