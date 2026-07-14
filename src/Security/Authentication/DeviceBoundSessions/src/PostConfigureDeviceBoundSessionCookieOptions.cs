@@ -35,7 +35,6 @@ internal sealed class PostConfigureDeviceBoundSessionCookieOptions : IPostConfig
             var priorSigningIn = options.Events.OnSigningIn;
             options.Events.OnSigningIn = async context =>
             {
-                DeviceBoundSessionRegistrationHeader.Emit(context.HttpContext, context.Principal, dbscScheme);
                 await priorSigningIn(context);
                 DeviceBoundSessionRegistrationHeader.Emit(context.HttpContext, context.Principal, dbscScheme);
             };
