@@ -132,3 +132,30 @@ describe('enhanced-navigation reconciliation', () => {
     expect(input.validationMessage).toBe('Beta required.');
   });
 });
+
+describe('message element display toggle', () => {
+  // The server renders the empty message placeholder with the hidden attribute. When a field becomes
+  // invalid the engine reveals it (clears hidden) and fills the text. When it becomes valid the
+  // engine hides it again, so an empty message box never affects layout.
+  test('reveals the placeholder on error and hides it again when valid', () => {
+    const { form, input } = makeTestForm('Name', fieldPayload('Name', [{ name: 'required', message: 'Required.' }]));
+
+    const message = document.createElement('div');
+    message.className = 'validation-message';
+    message.setAttribute('data-valmsg-for', 'Name');
+    message.setAttribute('data-valmsg-replace', 'true');
+    message.hidden = true;
+    form.appendChild(message);
+
+    // Invalid: the placeholder is revealed and shows the message.
+    expect(service.validateField(input)).toBe(false);
+    expect(message.hidden).toBe(false);
+    expect(message.textContent).toBe('Required.');
+
+    // Valid: the placeholder is hidden again and emptied.
+    input.value = 'Ada';
+    expect(service.validateField(input)).toBe(true);
+    expect(message.hidden).toBe(true);
+    expect(message.textContent).toBe('');
+  });
+});

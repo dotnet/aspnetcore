@@ -70,8 +70,32 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        // Use HtmlFieldPrefix to compute the field name consistently with InputBase.
-        // In nested Editor scenarios, FieldPrefix adjusts the name to match the rendered input's name attribute.
+        if (AssignedRenderMode is not null)
+        {
+            // Interactive .NET validation
+            RenderInteractiveRenderTree(builder);
+        }
+        else
+        {
+            // Client-side JS validation
+            RenderStaticRenderTree(builder);
+        }
+    }
+
+    private void RenderInteractiveRenderTree(RenderTreeBuilder builder)
+    {
+        foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "validation-message");
+            builder.AddMultipleAttributes(2, AdditionalAttributes);
+            builder.AddContent(3, message);
+            builder.CloseElement();
+        }
+    }
+
+    private void RenderStaticRenderTree(RenderTreeBuilder builder)
+    {
         var fieldName = FieldPrefix?.GetFieldName(For!) ?? ExpressionFormatter.FormatLambda(For!);
         var first = true;
 
@@ -94,13 +118,16 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
 
         if (first)
         {
-            // No server-side messages - render an empty placeholder so the JS engine has an
-            // element to populate when client validation runs. Inert when no JS engine is present.
+            // No server-side messages: render a hidden placeholder so the JS engine has an element
+            // to populate when client validation runs.
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", "validation-message");
             builder.AddAttribute(2, "data-valmsg-for", fieldName);
             builder.AddAttribute(3, "data-valmsg-replace", "true");
-            builder.AddMultipleAttributes(4, AdditionalAttributes);
+            // Use the hidden attribute rather than an inline style="display:none" so the placeholder
+            // stays hidden under a strict Content-Security-Policy that forbids inline styles.
+            builder.AddAttribute(4, "hidden", true);
+            builder.AddMultipleAttributes(5, AdditionalAttributes);
             builder.CloseElement();
         }
     }

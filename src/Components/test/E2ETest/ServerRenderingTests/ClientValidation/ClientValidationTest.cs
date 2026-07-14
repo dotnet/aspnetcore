@@ -40,6 +40,15 @@ public class ClientValidationTest : ClientValidationTestBase
     {
         NavigateToClientValidationPage("basic-validation");
 
+        // The message placeholders are present in the DOM but hidden (display:none), so no empty
+        // message box shows before any validation runs.
+        var messageFields = new[] { "Form.Name", "Form.Email", "Form.Password", "Form.ConfirmPassword" };
+        Browser.Equal(messageFields.Length, () => Browser.FindElements(By.CssSelector("[data-valmsg-for]")).Count);
+        foreach (var field in messageFields)
+        {
+            AssertMessagePlaceholderHidden(field);
+        }
+
         // Empty submit: the three [Required] fields report errors. [Compare]/[EmailAddress]/
         // [StringLength] do not fire on empty values.
         Browser.Exists(By.Id("submit")).Click();
@@ -70,6 +79,12 @@ public class ClientValidationTest : ClientValidationTestBase
         Assert.Contains("modified", nameClasses);
         Assert.DoesNotContain("invalid", nameClasses);
         Assert.Contains("valid", nameClasses);
+
+        // After clearing, every message placeholder is hidden again (display:none), not just emptied.
+        foreach (var field in messageFields)
+        {
+            AssertMessagePlaceholderHidden(field);
+        }
     }
 
     [Fact]
@@ -260,6 +275,9 @@ public class ClientValidationTest : ClientValidationTestBase
 
     private string FieldMessage(string fieldName)
         => Browser.Exists(By.CssSelector($"[data-valmsg-for='{fieldName}']")).Text;
+
+    private void AssertMessagePlaceholderHidden(string fieldName)
+        => Browser.Equal("none", () => Browser.Exists(By.CssSelector($"[data-valmsg-for='{fieldName}']")).GetCssValue("display"));
 
     private void ReplaceText(By selector, string text)
     {

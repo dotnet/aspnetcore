@@ -115,6 +115,8 @@ export class ErrorDisplay {
 
       if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
         messageElement.textContent = errorMessage;
+        // Toggle the hidden attribute (not inline style) so revealing/hiding stays CSP-safe.
+        messageElement.hidden = !errorMessage;
       }
 
       this.removeServerRenderedSiblings(messageElement);
