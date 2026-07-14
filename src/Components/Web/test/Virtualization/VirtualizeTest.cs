@@ -1264,12 +1264,11 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_GridLayout_ThrowsWhenItemWidthNegativeWithIsGridLayoutTrue()
     {
-        // Test that validation requires positive ItemWidth when IsGridLayout is true
         var rootComponent = new VirtualizeTestHostcomponent
         {
             InnerContent = BuildVirtualizeGridLayout(
                 itemSize: 50f,
-                itemWidth: -100f,  // Negative width should throw
+                itemWidth: -100f,
                 isGridLayout: true,
                 items: Enumerable.Range(1, 100).ToList())
         };
@@ -1289,7 +1288,6 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_GridLayout_CalculatesItemsPerRowCorrectly()
     {
-        // Test that items per row is calculated correctly from container width and item width
         Virtualize<int> virtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
@@ -1304,7 +1302,6 @@ public class VirtualizeTest
         var serviceProvider = new ServiceCollection()
             .AddTransient((sp) => Mock.Of<IJSRuntime>())
             .BuildServiceProvider();
-
         var testRenderer = new TestRenderer(serviceProvider);
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
         await testRenderer.RenderRootComponentAsync(componentId);
@@ -1322,18 +1319,14 @@ public class VirtualizeTest
         // This validates that the component responds to width changes
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // Verify the component is in grid layout mode and properly initialized
         Assert.NotNull(virtualize);
-        // Component should have processed the width change
     }
 
     [Fact]
     public async Task Virtualize_GridLayout_RecalculatesOnContainerWidthChange()
     {
-        // Test that component recalculates items per row when container width changes significantly
         Virtualize<int> virtualize = null;
         var requests = new List<ItemsProviderRequest>();
-
         ValueTask<ItemsProviderResult<int>> trackingProvider(ItemsProviderRequest request)
         {
             requests.Add(request);
@@ -1375,10 +1368,9 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnContainerWidthChanged(600f));
 
-        // Re-render to apply the width change
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // Trigger a spacer callback to request data with the new layout
+
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 600f, 500f));
 
@@ -1388,17 +1380,13 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnContainerWidthChanged(900f));
 
-        // Re-render to apply the new width change
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // Trigger another spacer callback to request data with the updated layout
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 900f, 500f));
 
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // Verify that recalculation was triggered
-        // Component should have made multiple provider requests as width changed
         Assert.NotNull(virtualize);
         Assert.NotEmpty(requests);
         Assert.True(requests.Count > initialRequestCount,
@@ -1408,12 +1396,11 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_GridLayout_SpacerHeightCalculatedAsRows()
     {
-        // Test that spacer height is calculated based on rows, not individual items
         Virtualize<int> virtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
             InnerContent = BuildVirtualizeGridLayout(
-                itemSize: 50f,  // Each row is 50px tall
+                itemSize: 50f,
                 itemWidth: 100f,
                 isGridLayout: true,
                 items: Enumerable.Range(1, 100).ToList(),
@@ -1430,45 +1417,35 @@ public class VirtualizeTest
 
         Assert.NotNull(virtualize);
 
-        // Set container width to get 4 items per row via OnContainerWidthChanged
         await testRenderer.Dispatcher.InvokeAsync(() =>
         {
             ((IVirtualizeJsCallbacks)virtualize).OnContainerWidthChanged(400f);
         });
 
-        // Re-render with the new width
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // Trigger spacer visible callback
-        // With 100 items and 4 items per row = 25 rows total
-        // With 500px container height and 50px per row = 10 visible rows
         await testRenderer.Dispatcher.InvokeAsync(() =>
         {
             ((IVirtualizeJsCallbacks)virtualize).OnAfterSpacerVisible(0f, 500f, 500f);
         });
 
-        // Re-render after spacer callback
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // Verify that measurements have been accumulated for grid layout
-        // Component should calculate based on rows in grid mode
         Assert.True(virtualize._totalMeasuredHeight >= 0,
             "Grid layout should accumulate height measurements");
 
-        // Verify component is properly configured for grid layout
         Assert.NotNull(virtualize);
     }
 
     [Fact]
     public async Task Virtualize_GridLayout_ThrowsWhenItemHeightNegativeWithIsGridLayoutTrue()
     {
-        // Test that validation requires positive ItemHeight when IsGridLayout is true
         var rootComponent = new VirtualizeTestHostcomponent
         {
             InnerContent = BuildVirtualizeGridLayout(
                 itemSize: 50f,
                 itemWidth: 100f,
-                itemHeight: -200f,  // Invalid: negative
+                itemHeight: -200f,
                 isGridLayout: true,
                 items: Enumerable.Range(1, 100).ToList())
         };
@@ -1488,14 +1465,13 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_GridLayout_UsesExplicitItemHeightInGridMode()
     {
-        // Test that explicit ItemHeight is used instead of ItemSize in grid mode
         Virtualize<int> virtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
             InnerContent = BuildVirtualizeGridLayout(
                 itemSize: 50f,
                 itemWidth: 100f,
-                itemHeight: 75f,  // Different from ItemSize
+                itemHeight: 75f,
                 isGridLayout: true,
                 items: Enumerable.Range(1, 100).ToList(),
                 captureRenderedVirtualize: v => virtualize = v)
@@ -1518,21 +1494,19 @@ public class VirtualizeTest
 
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // Component should have rendered successfully with ItemHeight applied
         Assert.NotNull(virtualize);
     }
 
     [Fact]
     public async Task Virtualize_GridLayout_ItemHeightOptionalFallsBackToItemSize()
     {
-        // Test that when ItemHeight is not specified, ItemSize is used as fallback
         Virtualize<int> virtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
             InnerContent = BuildVirtualizeGridLayout(
                 itemSize: 50f,
                 itemWidth: 100f,
-                itemHeight: null,  // Not specified, should use ItemSize
+                itemHeight: null,
                 isGridLayout: true,
                 items: Enumerable.Range(1, 100).ToList(),
                 captureRenderedVirtualize: v => virtualize = v)
@@ -1548,14 +1522,12 @@ public class VirtualizeTest
 
         Assert.NotNull(virtualize);
 
-        // Verify component works correctly with ItemSize as height
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 400f, 500f));
 
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // Component should have rendered successfully with ItemSize as fallback
         Assert.NotNull(virtualize);
     }
 
