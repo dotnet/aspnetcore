@@ -48,6 +48,9 @@ export class EventManager {
     const signal = state.listenerController.signal;
 
     const validate = () => {
+      // This runs only on user interaction (change, or input once invalid/submitted), so it is where the
+      // field is marked modified.
+      this.engine.markModified(element);
       this.engine.validateElement(element);
       this.engine.updateValidationSummary(form);
     };

@@ -230,3 +230,58 @@ describe('EventManager validation triggers (lazy validation, eager recovery)', (
     expect(input.validationMessage).toBe('Name is required.');
   });
 });
+
+describe('EventManager modified state', () => {
+  // Blazor's default styling shows the "valid" (green) outline only via '.valid.modified'. Editing
+  // a field to a valid value and committing it (change) must add both 'valid' and 'modified' so the
+  // static and interactive render modes look the same.
+  test('marks the field modified with the valid class when edited to a valid value', () => {
+    const { engine, eventManager } = makeHarness();
+    const form = document.createElement('form');
+    document.body.appendChild(form);
+    const input = addRequiredField(engine, form, 'Name');
+    eventManager.attachInputListeners(input);
+
+    input.value = 'Ada';
+    input.dispatchEvent(new Event('change'));
+
+    expect(input.classList.contains('modified')).toBe(true);
+    expect(input.classList.contains('valid')).toBe(true);
+    expect(input.classList.contains('invalid')).toBe(false);
+  });
+
+  // An invalid edit is marked modified but keeps only the 'invalid' class (no 'valid'), so it never
+  // shows the green outline while invalid.
+  test('marks modified with the invalid class (not valid) when edited to an invalid value', () => {
+    const { engine, eventManager } = makeHarness();
+    const form = document.createElement('form');
+    document.body.appendChild(form);
+    const input = addRequiredField(engine, form, 'Name');
+    eventManager.attachInputListeners(input);
+
+    input.dispatchEvent(new Event('change')); // still empty -> invalid
+
+    expect(input.classList.contains('modified')).toBe(true);
+    expect(input.classList.contains('invalid')).toBe(true);
+    expect(input.classList.contains('valid')).toBe(false);
+  });
+
+  // Resetting the form returns fields to pristine, dropping the modified (and valid/invalid) classes.
+  test('a form reset clears the modified class', () => {
+    const { engine, eventManager } = makeHarness();
+    const form = document.createElement('form');
+    document.body.appendChild(form);
+    const input = addRequiredField(engine, form, 'Name');
+    eventManager.attachInputListeners(input);
+
+    input.value = 'Ada';
+    input.dispatchEvent(new Event('change'));
+    expect(input.classList.contains('modified')).toBe(true);
+
+    engine.resetForm(form);
+
+    expect(input.classList.contains('modified')).toBe(false);
+    expect(input.classList.contains('valid')).toBe(false);
+    expect(input.classList.contains('invalid')).toBe(false);
+  });
+});

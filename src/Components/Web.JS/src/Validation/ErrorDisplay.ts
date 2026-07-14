@@ -14,6 +14,7 @@ import { ValidatableElement } from './ValidationTypes';
 export interface CssClassNames {
   inputError: string;
   inputValid: string;
+  inputModified: string;
   messageError: string;
   messageValid: string;
   summaryError: string;
@@ -23,6 +24,7 @@ export interface CssClassNames {
 export const defaultCssClassNames: CssClassNames = {
   inputError: 'invalid',
   inputValid: 'valid',
+  inputModified: 'modified',
   messageError: 'validation-message',
   messageValid: 'validation-message',
   summaryError: 'validation-summary-errors',
@@ -76,12 +78,20 @@ export class ErrorDisplay {
     }
   }
 
+  // Marks the field as modified (its value has been changed by the user), mirroring the
+  // 'modified' class Blazor's interactive validation adds. Combined with the valid/invalid class
+  // this drives the template's '.valid.modified' styling. Idempotent.
+  markFieldModified(input: ValidatableElement): void {
+    addClasses(input, this.cssClasses.inputModified);
+  }
+
   clearFieldToPristine(input: ValidatableElement): void {
     // Pristine differs from the valid state only for the input: it gets no valid class either, so
     // the field looks untouched. The message is reset to its empty/valid state, keeping its base
     // class (which for Blazor is the always-present 'validation-message').
     removeClasses(input, this.cssClasses.inputError);
     removeClasses(input, this.cssClasses.inputValid);
+    removeClasses(input, this.cssClasses.inputModified);
 
     const messageElements = findMessageElements(input);
     this.updateMessageElements(messageElements, '');

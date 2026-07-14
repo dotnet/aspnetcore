@@ -65,6 +65,11 @@ public class ClientValidationTest : ClientValidationTestBase
 
         Browser.Equal("valid:true;errors:0", () => Browser.Exists(By.Id("event-log")).Text);
         Browser.Equal("", () => FieldMessage("Form.Email"));
+
+        var nameClasses = Browser.Exists(By.Id("name")).GetAttribute("class");
+        Assert.Contains("modified", nameClasses);
+        Assert.DoesNotContain("invalid", nameClasses);
+        Assert.Contains("valid", nameClasses);
     }
 
     [Fact]

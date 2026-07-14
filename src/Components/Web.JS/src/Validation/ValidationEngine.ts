@@ -104,6 +104,16 @@ export class ValidationEngine {
     return this.trackedElements.get(element);
   }
 
+  /**
+   * Marks a field as modified (user-edited), mirroring Blazor interactive's 'modified' class.
+   * Called from the user-interaction path only (not from submit), so untouched fields stay pristine.
+   */
+  markModified(element: ValidatableElement): void {
+    if (this.trackedElements.has(element)) {
+      this.errorDisplay.markFieldModified(element);
+    }
+  }
+
   getFormState(form: HTMLFormElement): FormState | undefined {
     return this.trackedForms.get(form);
   }
