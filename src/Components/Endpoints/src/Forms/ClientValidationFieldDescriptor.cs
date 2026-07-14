@@ -3,16 +3,8 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
-/// <summary>
-/// Describes the client-side validation rules for one field within a form.
-/// </summary>
 internal sealed class ClientValidationFieldDescriptor
 {
-    /// <summary>
-    /// Creates a field descriptor.
-    /// </summary>
-    /// <param name="name">The field name as it appears in form posts. Should use dotted path for nested fields (e.g. <c>Address.Street</c>).</param>
-    /// <param name="rules">The ordered list of client-side validation rules for this field.</param>
     public ClientValidationFieldDescriptor(
         string name,
         IReadOnlyList<ClientValidationRuleDescriptor> rules)
@@ -29,6 +21,5 @@ internal sealed class ClientValidationFieldDescriptor
     /// </summary>
     public string Name { get; }
 
-    /// <summary>Ordered list of client-side validation rules.</summary>
     public IReadOnlyList<ClientValidationRuleDescriptor> Rules { get; }
 }

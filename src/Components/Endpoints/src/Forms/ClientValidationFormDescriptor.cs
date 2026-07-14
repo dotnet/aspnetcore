@@ -3,23 +3,13 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
-/// <summary>
-/// Describes the client-side validation data for one form: the set of validated fields
-/// and their rules.
-/// </summary>
 internal sealed class ClientValidationFormDescriptor
 {
-    /// <summary>
-    /// Creates a descriptor with the given field descriptors.
-    /// </summary>
     public ClientValidationFormDescriptor(IReadOnlyList<ClientValidationFieldDescriptor> fields)
     {
         ArgumentNullException.ThrowIfNull(fields);
         Fields = fields;
     }
 
-    /// <summary>
-    /// Per-field client-side validation data.
-    /// </summary>
     public IReadOnlyList<ClientValidationFieldDescriptor> Fields { get; }
 }
