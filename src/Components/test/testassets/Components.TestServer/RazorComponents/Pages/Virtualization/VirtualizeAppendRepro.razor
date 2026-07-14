@@ -8,36 +8,6 @@
    Aspire's Structured Logs grid — Blazor Server, End-anchored, async provider. Anchor and
    ItemComparer are query-configurable (?anchor, ?comparer). *@
 
-<style>
-    #repro-scroll-container {
-        height: 600px;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        width: 1100px;
-    }
-
-    table.repro-grid {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
-    }
-
-    table.repro-grid td {
-        height: 46px;
-        box-sizing: border-box;
-        padding: 0 8px;
-        border-bottom: 1px solid #eee;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    td.grid-cell-placeholder:after {
-        content: '\2026'; /* horizontal ellipsis */
-        opacity: 0.75;
-    }
-</style>
-
 <h3>Virtualize append repro</h3>
 <p id="repro-info">
     Rows: <b id="repro-rowcount">@_items.Count</b>,
@@ -47,20 +17,20 @@
 
 <label>
     Batch size (rows):
-    <input type="number" id="batch-input" min="1" step="1" style="width: 70px;"
+    <input type="number" id="batch-input" min="1" step="1"
            value="@_batchSize" @onchange="OnBatchChanged" />
 </label>
 <button id="append-btn" @onclick="AppendBatchAsync">Append @_batchSize rows</button>
 <button id="prepend-btn" @onclick="PrependBatchAsync">Prepend @_batchSize rows</button>
 <button id="auto-append-btn" @onclick="ToggleAutoAppend">@(_autoAppend ? "Stop auto-append" : "Start auto-append")</button>
-<label style="margin-left: 12px;">
+<label>
     Provider delay (ms):
-    <input type="number" id="delay-input" min="0" step="50" style="width: 70px;"
+    <input type="number" id="delay-input" min="0" step="50"
            value="@_providerDelayMs" @onchange="OnDelayChanged" />
 </label>
-<label style="margin-left: 12px;">
+<label>
     Auto interval (ms):
-    <input type="number" id="interval-input" min="50" step="50" style="width: 70px;"
+    <input type="number" id="interval-input" min="50" step="50"
            value="@_autoIntervalMs" @onchange="OnIntervalChanged" />
 </label>
 
@@ -75,21 +45,15 @@
     <span id="interactive-ready"></span>
 }
 
-<ol id="provider-call-log" style="display: none;">
+<ol id="provider-call-log" hidden>
     @foreach (var c in _providerCalls)
     {
         <li class="pcall" data-start="@c.Start" data-count="@c.Count" data-total="@c.Total"></li>
     }
 </ol>
 
-<div id="repro-scroll-container">
-    <table class="repro-grid">
-        <colgroup>
-            <col style="width: 18%" />
-            <col style="width: 12%" />
-            <col style="width: 18%" />
-            <col style="width: 52%" />
-        </colgroup>
+<div id="repro-scroll-container" style="height: 600px; overflow-y: auto;">
+    <table>
         <tbody>
             <Virtualize @ref="_virtualize"
                         TItem="(int RowIndex, LogItem Data)"
@@ -310,7 +274,6 @@
         _lastCompletedStartIndex = request.StartIndex;
 
         _providerCalls.Add(new ProviderCall(request.StartIndex, count, _items.Count));
-        StateHasChanged();
 
         return new ItemsProviderResult<(int RowIndex, LogItem Data)>(slice, _items.Count);
     }
