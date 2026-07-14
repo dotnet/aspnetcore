@@ -117,23 +117,20 @@ public class AuthorizationPolicy
 
 #if NETCOREAPP
     /// <summary>
-    /// Combines the <see cref="AuthorizationPolicy"/> represented by the authorization metadata associated with an endpoint.
+    /// Combines the authorization metadata associated with an endpoint into a single <see cref="AuthorizationPolicy"/>.
     /// </summary>
     /// <param name="policyProvider">A <see cref="IAuthorizationPolicyProvider"/> which provides the policies to combine.</param>
     /// <param name="metadata">
-    /// A collection of endpoint metadata used to build the effective policy. Metadata that implements
-    /// <see cref="IAuthorizeData"/>, <see cref="AuthorizationPolicy"/>, or <see cref="IAuthorizationRequirementData"/>
-    /// contributes to the combined policy. Metadata of other types is ignored.
+    /// The endpoint metadata. Items implementing <see cref="IAuthorizeData"/>, <see cref="AuthorizationPolicy"/>,
+    /// or <see cref="IAuthorizationRequirementData"/> contribute to the result; other items are ignored.
     /// </param>
     /// <returns>
-    /// A new <see cref="AuthorizationPolicy"/> which represents the combination of all the authorization
-    /// metadata contained in <paramref name="metadata"/>, or <see langword="null"/> if no authorization
+    /// The combined <see cref="AuthorizationPolicy"/>, or <see langword="null"/> if no authorization
     /// metadata is present and no fallback policy is configured.
     /// </returns>
     /// <remarks>
-    /// This overload evaluates all the authorization metadata associated with an endpoint at once, which is the same
-    /// logic used by the authorization middleware. This makes it possible to compute the effective policy consistently
-    /// outside of the middleware, for example in SignalR, Blazor, or MVC.
+    /// This applies the same logic as the authorization middleware, so the effective policy can be computed
+    /// consistently outside of it (for example in SignalR, Blazor, or MVC).
     /// </remarks>
     /// <example>
     /// <code>
