@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using static Microsoft.AspNetCore.Components.Endpoints.SessionCascadingValueSupplierTest;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -41,6 +43,35 @@ public class SessionSubscriptionTest
         var result = subscription.GetCurrentValue();
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetValue_LogsWarning_WhenHttpContextNotSet()
+    {
+        var sink = new TestSink();
+        var supplier = new SessionCascadingValueSupplier(
+            new TestLoggerFactory(sink, enabled: true).CreateLogger<SessionCascadingValueSupplier>());
+        var subscription = new SessionCascadingValueSupplier.SessionSubscription(
+            supplier, "key", typeof(string), () => _component.Value);
+
+        var result = subscription.GetCurrentValue();
+
+        Assert.Null(result);
+        var write = Assert.Single(sink.Writes);
+        Assert.Equal(LogLevel.Warning, write.LogLevel);
+        Assert.Equal("SessionUnavailable", write.EventId.Name);
+    }
+
+    [Fact]
+    public void GetValue_Throws_WhenSessionIsNull()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Features.Set<Microsoft.AspNetCore.Http.Features.ISessionFeature>(new TestSessionFeature(null!));
+        _supplier.SetRequestContext(httpContext);
+
+        var subscription = CreateSubscription("key", typeof(string));
+
+        Assert.Throws<InvalidOperationException>(() => subscription.GetCurrentValue());
     }
 
     [Fact]
