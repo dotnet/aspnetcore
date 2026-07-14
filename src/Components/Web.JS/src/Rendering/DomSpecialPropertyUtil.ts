@@ -29,7 +29,6 @@ function tryApplyTypeProperty(element: Element, value: string | null): boolean {
   }
 
   const inputElement = element as HTMLInputElement;
-  const hadCheckedAttr = inputElement.hasAttribute('checked');
   // If 'value' was applied before 'type' in the same render batch,
   // tryApplyValueProperty stashed it on the element. We need to re-apply it
   // because the browser will have wiped the IDL .value property.
@@ -38,11 +37,7 @@ function tryApplyTypeProperty(element: Element, value: string | null): boolean {
   inputElement.setAttribute('type', value);
 
   if (deferredValue !== undefined) {
-    (inputElement as any).value = deferredValue;
-  }
-  if (hadCheckedAttr) {
-    inputElement.setAttribute('checked', '');
-    inputElement.checked = true;
+    setDeferredElementValue(inputElement, deferredValue);
   }
   return true;
 }
@@ -187,13 +182,13 @@ function setDeferredElementValue(element: Element, value: any) {
     return;
   }
 
-  (element as any).value = value;
-
-  if (element instanceof HTMLInputElement && element.type === 'checkbox') {
-    if (value === true || value === false) {
-      element.checked = value;
-    } else if (value === '' || value === null) {
-      element.checked = value === '';
+  if (element instanceof HTMLInputElement) {
+    if (element.type === 'checkbox') {
+      element.checked = value === '' || value === true;
+    } else if (typeof value === 'string') {
+      element.value = value;
+    } else if (value === null) {
+      element.value = '';
     }
   }
 }
