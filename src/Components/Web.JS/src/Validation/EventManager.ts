@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { getElementForm } from './DomUtils';
+import { getElementForm, getFieldElements } from './DomUtils';
 import { ValidationEngine } from './ValidationEngine';
 import { ValidatableElement } from './ValidationTypes';
 
@@ -44,7 +44,7 @@ export class EventManager {
     }
 
     // In order to support radio buttons, we need to attach listeners to all radio buttons in the group.
-    const targets = getListenerTargets(element);
+    const targets = getFieldElements(element);
     const signal = state.listenerController.signal;
 
     const validate = () => {
@@ -153,14 +153,4 @@ function dispatchValidationComplete(form: HTMLFormElement, valid: boolean, error
     bubbles: true,
     detail: { valid, errors },
   }));
-}
-
-function getListenerTargets(element: ValidatableElement): ValidatableElement[] {
-  if (element instanceof HTMLInputElement && element.type === 'radio' && element.name) {
-    const form = element.closest('form');
-    if (form) {
-      return Array.from(form.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${CSS.escape(element.name)}"]`));
-    }
-  }
-  return [element];
 }

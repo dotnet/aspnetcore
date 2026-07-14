@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ErrorDisplay } from './ErrorDisplay';
-import { findMessageElements, shouldSkipElement } from './DomUtils';
+import { findMessageElements, getFieldElements, shouldSkipElement } from './DomUtils';
 import { ValidatableElement, ValidationContext, ValidationResult, ValidatorRegistry } from './ValidationTypes';
 
 /** A validation rule definition. */
@@ -236,21 +236,29 @@ export class ValidationEngine {
   private markInvalid(element: ValidatableElement, state: ElementState, errorMessage: string): void {
     state.currentError = errorMessage;
     state.hasBeenInvalid = true;
-    element.setCustomValidity(errorMessage);
+    setFieldValidity(element, errorMessage);
     this.errorDisplay.showFieldError(element, errorMessage);
   }
 
   private markValid(element: ValidatableElement, state: ElementState): void {
     state.currentError = undefined;
-    element.setCustomValidity('');
+    setFieldValidity(element, '');
     this.errorDisplay.clearFieldError(element);
   }
 
   private markPristine(element: ValidatableElement, state: ElementState): void {
     state.currentError = undefined;
     state.hasBeenInvalid = false;
-    element.setCustomValidity('');
+    setFieldValidity(element, '');
     this.errorDisplay.clearFieldToPristine(element);
+  }
+}
+
+// Sets the Constraint Validation API custom validity on every element in the field (all radios in a
+// group), so the :valid/:invalid pseudo-classes stay consistent across the whole group.
+function setFieldValidity(element: ValidatableElement, message: string): void {
+  for (const target of getFieldElements(element)) {
+    target.setCustomValidity(message);
   }
 }
 

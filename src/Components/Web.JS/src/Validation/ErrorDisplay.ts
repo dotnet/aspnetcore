@@ -1,16 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { findMessageElements } from './DomUtils';
+import { findMessageElements, getFieldElements } from './DomUtils';
 import { ValidatableElement } from './ValidationTypes';
 
-/**
- * CSS class names applied to inputs, message elements, and the validation summary.
- * The defaults match Blazor's interactive validation classes, so a single stylesheet styles both
- * SSR client-side and interactive validation. The ErrorDisplay constructor accepts overrides as an
- * internal seam for alternative adapters (e.g. an MVC / jquery-unobtrusive class set); this is not
- * exposed through Blazor.start options.
- */
 export interface CssClassNames {
   inputError: string;
   inputValid: string;
@@ -43,38 +36,39 @@ export class ErrorDisplay {
   }
 
   showFieldError(input: ValidatableElement, errorMessage: string): void {
-    addClasses(input, this.cssClasses.inputError);
-    removeClasses(input, this.cssClasses.inputValid);
-
     const messageElements = findMessageElements(input);
     this.updateMessageElements(messageElements, errorMessage);
 
-    // Update ARIA attributes.
-    input.setAttribute('aria-invalid', 'true');
     const firstMessageElement = messageElements[0];
-    if (firstMessageElement) {
-      if (!firstMessageElement.id) {
-        firstMessageElement.id = generateMessageId(input);
+    if (firstMessageElement && !firstMessageElement.id) {
+      firstMessageElement.id = generateMessageId(input);
+    }
+    const messageId = firstMessageElement?.id;
+
+    for (const target of getFieldElements(input)) {
+      addClasses(target, this.cssClasses.inputError);
+      removeClasses(target, this.cssClasses.inputValid);
+      target.setAttribute('aria-invalid', 'true');
+      // Append our message ID to aria-describedby (preserving existing tokens like help text IDs).
+      if (messageId) {
+        addAriaToken(target, 'aria-describedby', messageId);
       }
-      // Append our message ID to aria-describedby (preserving existing tokens like help text IDs)
-      addAriaToken(input, 'aria-describedby', firstMessageElement.id);
     }
   }
 
   clearFieldError(input: ValidatableElement): void {
-    removeClasses(input, this.cssClasses.inputError);
-    addClasses(input, this.cssClasses.inputValid);
-
     const messageElements = findMessageElements(input);
     this.updateMessageElements(messageElements, '');
+    const messageId = messageElements[0]?.id;
 
-    // Update ARIA attributes.
-    input.removeAttribute('aria-invalid');
-    // Remove only our message ID from aria-describedby when we know it,
-    // preserving any other developer-provided tokens.
-    const msgId = messageElements[0]?.id;
-    if (msgId) {
-      removeAriaToken(input, 'aria-describedby', msgId);
+    for (const target of getFieldElements(input)) {
+      removeClasses(target, this.cssClasses.inputError);
+      addClasses(target, this.cssClasses.inputValid);
+      target.removeAttribute('aria-invalid');
+      // Remove only our message ID, preserving any other developer-provided tokens.
+      if (messageId) {
+        removeAriaToken(target, 'aria-describedby', messageId);
+      }
     }
   }
 
@@ -82,24 +76,27 @@ export class ErrorDisplay {
   // 'modified' class Blazor's interactive validation adds. Combined with the valid/invalid class
   // this drives the template's '.valid.modified' styling. Idempotent.
   markFieldModified(input: ValidatableElement): void {
-    addClasses(input, this.cssClasses.inputModified);
+    for (const target of getFieldElements(input)) {
+      addClasses(target, this.cssClasses.inputModified);
+    }
   }
 
   clearFieldToPristine(input: ValidatableElement): void {
-    // Pristine differs from the valid state only for the input: it gets no valid class either, so
+    // Pristine differs from the valid state only in that the input gets no valid class either, so
     // the field looks untouched. The message is reset to its empty/valid state, keeping its base
     // class (which for Blazor is the always-present 'validation-message').
-    removeClasses(input, this.cssClasses.inputError);
-    removeClasses(input, this.cssClasses.inputValid);
-    removeClasses(input, this.cssClasses.inputModified);
-
     const messageElements = findMessageElements(input);
     this.updateMessageElements(messageElements, '');
+    const messageId = messageElements[0]?.id;
 
-    input.removeAttribute('aria-invalid');
-    const msgId = messageElements[0]?.id;
-    if (msgId) {
-      removeAriaToken(input, 'aria-describedby', msgId);
+    for (const target of getFieldElements(input)) {
+      removeClasses(target, this.cssClasses.inputError);
+      removeClasses(target, this.cssClasses.inputValid);
+      removeClasses(target, this.cssClasses.inputModified);
+      target.removeAttribute('aria-invalid');
+      if (messageId) {
+        removeAriaToken(target, 'aria-describedby', messageId);
+      }
     }
   }
 
