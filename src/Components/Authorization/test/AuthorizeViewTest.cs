@@ -496,7 +496,6 @@ public class AuthorizeViewTest
     [Fact]
     public void FlowsRequirementDataMetadataToAuthorizationService()
     {
-        // Arrange
         var authorizationService = new TestAuthorizationService();
         var renderer = CreateTestRenderer(authorizationService);
         var rootComponent = new TestAuthStateProviderComponent(builder =>
@@ -507,10 +506,9 @@ public class AuthorizeViewTest
         rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
         renderer.AssignRootComponentId(rootComponent);
 
-        // Act
         rootComponent.TriggerRender();
 
-        // Assert: the requirement contributed via IAuthorizationRequirementData metadata flows through
+        // The requirement contributed via IAuthorizationRequirementData metadata flows through
         Assert.Collection(authorizationService.AuthorizeCalls, call =>
         {
             Assert.Contains(call.requirements, req => req is AuthorizeViewCoreWithRequirementData.TestRequirement);
