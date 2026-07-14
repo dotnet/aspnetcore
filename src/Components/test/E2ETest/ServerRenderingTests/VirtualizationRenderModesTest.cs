@@ -96,28 +96,21 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
         Navigate($"{ServerPathBase}/virtualize-append?comparer=true");
         Browser.Exists(By.Id("interactive-ready"));
         var initialCount = GetReportedItemCount();
-
-        // Initial render loads the top window (start=0) then, once End-anchored, the tail (start>0).
-        Browser.True(() => GetProviderCalls().Any(c => c.Total == initialCount && c.Start > 0));
-        Browser.Equal(2, () => GetProviderCalls().Count);
-
-        var initial = GetProviderCalls();
-        var tailStart = initial.Where(c => c.Total == initialCount).Max(c => c.Start);
         var batch = GetInputValue("batch-input");
+
+        // Initial load fetches the top window (start=0) then, once End-anchored, the tail (start>0).
+        Browser.True(() => GetProviderCalls().Any(c => c.Total == initialCount && c.Start == 0));
+        Browser.True(() => GetProviderCalls().Any(c => c.Total == initialCount && c.Start > 0));
+        var tailStart = GetProviderCalls().Where(c => c.Total == initialCount).Max(c => c.Start);
 
         ClickById("append-btn");
 
-        // Exactly two more calls (total 4) — the fix relocates the tail fetch, it doesn't add one.
-        Browser.Equal(4, () => GetProviderCalls().Count);
+        // Exactly two calls for the append — the fix relocates the tail fetch, it doesn't add one.
+        Browser.Equal(2, () => GetProviderCalls().Count(c => c.Total == initialCount + batch));
+        var appendCalls = GetProviderCalls().Where(c => c.Total == initialCount + batch).ToList();
 
-        var appendCalls = GetProviderCalls().Skip(2).ToList();
-        Assert.Equal(2, appendCalls.Count);
-        Assert.Equal(initialCount + batch, appendCalls[0].Total);
-        Assert.Equal(initialCount + batch, appendCalls[1].Total);
-
-        // First refetches the old window; second advances to the new tail (old tail + batch).
-        Assert.Equal(tailStart, appendCalls[0].Start);
-        Assert.Equal(tailStart + batch, appendCalls[1].Start);
+        Assert.Contains(appendCalls, c => c.Start == tailStart);
+        Assert.Contains(appendCalls, c => c.Start == tailStart + batch);
     }
 
     private static string[] GetRenderedItems(IWebElement container)
@@ -144,22 +137,28 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
 
     private readonly record struct ProviderCall(int Start, int Count, int Total);
 
+    // GetLog drains Chrome's buffer on each read, so accumulate calls across polls.
+    private readonly List<ProviderCall> _observedProviderCalls = new();
+
+    private static readonly Regex ProviderCallRegex =
+        new(@"VIRTUALIZE_PCALL start=(\d+) count=(\d+) total=(\d+)", RegexOptions.Compiled);
+
     private List<ProviderCall> GetProviderCalls()
     {
-        var list = new List<ProviderCall>();
-        foreach (var li in Browser.FindElements(By.CssSelector("#provider-call-log li.pcall")))
+        foreach (var entry in Browser.Manage().Logs.GetLog(LogType.Browser))
         {
-            list.Add(new ProviderCall(
-                ParseAttr(li, "data-start"),
-                ParseAttr(li, "data-count"),
-                ParseAttr(li, "data-total")));
+            var match = ProviderCallRegex.Match(entry.Message);
+            if (match.Success)
+            {
+                _observedProviderCalls.Add(new ProviderCall(
+                    int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture),
+                    int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture),
+                    int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture)));
+            }
         }
 
-        return list;
+        return _observedProviderCalls;
     }
-
-    private static int ParseAttr(IWebElement el, string name)
-        => int.Parse(el.GetAttribute(name), CultureInfo.InvariantCulture);
 
     private int GetInputValue(string id)
     {

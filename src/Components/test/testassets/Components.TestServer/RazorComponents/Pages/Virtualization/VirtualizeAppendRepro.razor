@@ -1,8 +1,10 @@
 @page "/virtualize-append"
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
 @rendermode RenderMode.InteractiveServer
 @implements IDisposable
+@inject IJSRuntime JS
 
 @* Repro of the Aspire dashboard "append two-phase" flash: framework <Virtualize> driven like
    Aspire's Structured Logs grid — Blazor Server, End-anchored, async provider. Anchor and
@@ -44,13 +46,6 @@
 {
     <span id="interactive-ready"></span>
 }
-
-<ol id="provider-call-log" hidden>
-    @foreach (var c in _providerCalls)
-    {
-        <li class="pcall" data-start="@c.Start" data-count="@c.Count" data-total="@c.Total"></li>
-    }
-</ol>
 
 <div id="repro-scroll-container" style="height: 600px; overflow-y: auto;">
     <table>
@@ -116,9 +111,6 @@
     private Virtualize<(int RowIndex, LogItem Data)>? _virtualize;
     private bool _interactive;
     private int _seq;
-
-    // Mirrored into #provider-call-log so E2E tests can count provider round-trips per append.
-    private readonly List<ProviderCall> _providerCalls = new();
 
     private bool _gateOpen;
     private TaskCompletionSource _gateTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -273,9 +265,23 @@
 
         _lastCompletedStartIndex = request.StartIndex;
 
-        _providerCalls.Add(new ProviderCall(request.StartIndex, count, _items.Count));
+        _ = LogProviderCallAsync(request.StartIndex, count, _items.Count);
 
         return new ItemsProviderResult<(int RowIndex, LogItem Data)>(slice, _items.Count);
+    }
+
+    // Mirror each provider call to the browser console so E2E tests can observe round-trips
+    // without a StateHasChanged-driven re-render. Interop is unavailable during prerendering.
+    private async Task LogProviderCallAsync(int start, int count, int total)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("console.log",
+                $"VIRTUALIZE_PCALL start={start} count={count} total={total}");
+        }
+        catch
+        {
+        }
     }
 
     private void OpenGate()
@@ -293,8 +299,6 @@
     }
 
     public record LogItem(string Resource, string Level, string Timestamp, string Message);
-
-    public record ProviderCall(int Start, int Count, int Total);
 
     public void Dispose()
     {
