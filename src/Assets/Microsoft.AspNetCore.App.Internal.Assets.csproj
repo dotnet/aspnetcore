@@ -12,6 +12,11 @@
     <IncludeSymbols>false</IncludeSymbols>
     <ImplicitUsings>disable</ImplicitUsings>
 
+    <!-- Disable compression in this library package: the assets are consumed by root apps
+         which compress them in their own obj dirs during publish. Keeping compression enabled
+         here causes a race condition when multiple apps publish in parallel — they all invoke
+         this project's publish-compression targets targeting the same shared obj dir. -->
+    <CompressionEnabled>false</CompressionEnabled>
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
     <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
