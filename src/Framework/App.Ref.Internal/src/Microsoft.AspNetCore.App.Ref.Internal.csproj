@@ -7,7 +7,6 @@
     <PackageId>$(TargetingPackName).Internal</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
     <NoPackageAnalysis>true</NoPackageAnalysis>

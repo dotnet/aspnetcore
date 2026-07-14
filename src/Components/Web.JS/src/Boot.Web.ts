@@ -25,7 +25,7 @@ import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel } from './Platform/Logging/Logger';
-import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
+import { resolveOptions, CircuitStartOptions, ReconnectionOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
@@ -52,8 +52,8 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     }
   };
 
-  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
   const jsEventRegistry = JSEventRegistry.create(Blazor);
+  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000, jsEventRegistry);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {
@@ -123,8 +123,11 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
     // Circuit/Server options
     if (browserConfig.server) {
-      const circuitOpts = options.circuit = options.circuit || {} as any;
-      const reconnOpts = circuitOpts.reconnectionOptions = circuitOpts.reconnectionOptions || {} as any;
+      const circuitOpts: Partial<CircuitStartOptions> = options.circuit ?? {};
+      options.circuit = circuitOpts as CircuitStartOptions;
+
+      const reconnOpts: Partial<ReconnectionOptions> = circuitOpts.reconnectionOptions ?? {};
+      circuitOpts.reconnectionOptions = reconnOpts as ReconnectionOptions;
       if (browserConfig.server.reconnectionMaxRetries !== undefined) {
         reconnOpts.maxRetries = browserConfig.server.reconnectionMaxRetries;
       }
@@ -133,6 +136,13 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
       }
       if (browserConfig.server.reconnectionDialogId !== undefined) {
         reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
+      }
+
+      // Pass through library extension keys (server-side [JsonExtensionData]) to the circuit options.
+      for (const [key, value] of Object.entries(browserConfig.server)) {
+        if (value !== undefined) {
+          (circuitOpts as Record<string, unknown>)[key] = value;
+        }
       }
     }
   }

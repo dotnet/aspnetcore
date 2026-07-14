@@ -11,6 +11,7 @@ using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
@@ -52,8 +53,20 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
-        services.AddValidation();
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        services.AddValidation(options =>
+            options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
+#pragma warning restore ASP0029
         services.AddValidationLocalization();
+
+        // Increase 10 MB hub message limit (default 32 KB)
+        if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
+        {
+            services.Configure<Microsoft.AspNetCore.SignalR.HubOptions>(o =>
+            {
+                o.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+            });
+        }
 
         var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
@@ -130,6 +143,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         services.AddScoped<PauseTrackingHandler>();
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
+
+        services.AddSingleton<AutoPauseTestStreamGate>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -202,6 +217,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseExceptionHandler("/Error", createScopeForErrors: true);
         }
 
+        app.UseWebSockets();
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();
@@ -272,6 +288,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
             MapEnhancedNavigationEndpoints(endpoints);
+            endpoints.MapAutoPauseTestEndpoints();
         });
     }
 

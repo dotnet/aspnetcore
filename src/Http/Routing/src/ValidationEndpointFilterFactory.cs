@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Mime;
 using System.Reflection;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,9 +131,31 @@ internal static class ValidationEndpointFilterFactory
     }
 
     private static bool IsServiceParameter(ParameterInfo parameterInfo, IServiceProviderIsService? isService)
-        => HasFromServicesAttribute(parameterInfo) ||
-           (isService?.IsService(parameterInfo.ParameterType) == true);
+    {
+        var attributes = parameterInfo.GetCustomAttributes();
+        foreach (var attribute in attributes)
+        {
+            if (attribute is IFromRouteMetadata or
+                IFromQueryMetadata or
+                IFromHeaderMetadata or
+                IFromBodyMetadata or
+                IFromFormMetadata)
+            {
+                return false;
+            }
 
-    private static bool HasFromServicesAttribute(ParameterInfo parameterInfo)
-        => parameterInfo.CustomAttributes.OfType<IFromServiceMetadata>().Any();
+            if (attribute is IFromServiceMetadata or FromKeyedServicesAttribute)
+            {
+                return true;
+            }
+        }
+
+        var parameterType = parameterInfo.ParameterType;
+        return parameterType == typeof(HttpContext) ||
+            parameterType == typeof(HttpRequest) ||
+            parameterType == typeof(HttpResponse) ||
+            parameterType == typeof(ClaimsPrincipal) ||
+            parameterType == typeof(CancellationToken) ||
+            isService?.IsService(parameterType) == true;
+    }
 }
