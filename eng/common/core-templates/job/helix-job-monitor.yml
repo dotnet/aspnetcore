@@ -57,6 +57,14 @@ parameters:
   type: number
   default: 30
 
+# When 'true' (the default), Helix work items that exit 0 but have failed AzDO test results
+# are treated as failed: they count toward the monitor's exit code and are resubmitted by a
+# later invocation's retry pass. Set to 'false' to fall back to exit-code-only outcomes.
+# Forwarded as --fail-on-failed-tests.
+- name: failWorkItemsWithFailedTests
+  type: boolean
+  default: true
+
 # Advanced: optional pipeline artifact (produced earlier in this run) that contains the tool
 # nupkg. When set, the artifact is downloaded and the tool is installed from the nupkg into
 # a local tool-path; this bypasses the repo's .config/dotnet-tools.json manifest and is
@@ -170,7 +178,8 @@ jobs:
       toolArgs=(
         --helix-base-uri           '${{ parameters.helixBaseUri }}'
         --polling-interval-seconds '${{ parameters.pollingIntervalSeconds }}'
-        --max-wait-minutes         "$((${{ parameters.timeoutInMinutes }} - 2))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
+        --fail-on-failed-tests     '${{ parameters.failWorkItemsWithFailedTests }}'
+        --max-wait-minutes         "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
         --stage-name               '$(System.StageName)'
       )
 

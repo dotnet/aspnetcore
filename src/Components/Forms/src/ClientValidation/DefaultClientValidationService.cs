@@ -223,7 +223,7 @@ internal sealed class DefaultClientValidationService : IClientValidationService
 
         return _validationLocalizer.ResolveDisplayName(new DisplayNameLocalizationContext
         {
-            DeclaringType = metadata.DeclaringType,
+            Type = metadata.DeclaringType,
             DisplayName = literal,
             MemberName = fieldName,
         }) ?? literal;

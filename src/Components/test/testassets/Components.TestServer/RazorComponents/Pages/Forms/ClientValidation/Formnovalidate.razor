@@ -1,4 +1,4 @@
-@page "/forms/client-validation/formnovalidate"
+﻿@page "/forms/client-validation/formnovalidate"
 
 <h2 id="page-title">formnovalidate + skipped fields</h2>
 
@@ -35,10 +35,24 @@
 </form>
 
 <div id="event-log"></div>
+<div id="downstream-log"></div>
 
 <script suppress-error="BL9992">
-    document.getElementById('test-form').addEventListener('validationcomplete', function (e) {
+    const testForm = document.getElementById('test-form');
+
+    testForm.addEventListener('validationcomplete', function (e) {
         document.getElementById('event-log').textContent =
             'valid:' + e.detail.valid + ';errors:' + e.detail.errors.size;
+    });
+
+    // Mirrors the Identity template's passkey-submit custom element: a form-level
+    // submit listener that intercepts the submit to run its own logic. The validation
+    // interceptor runs first in the capture phase; when validation fails it calls
+    // stopPropagation(), which prevents this listener from running. Using a
+    // formnovalidate submit button lets the validation interceptor bail out early so
+    // this downstream handler still runs.
+    testForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        document.getElementById('downstream-log').textContent = 'downstream-ran';
     });
 </script>

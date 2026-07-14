@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Antiforgery.Internal;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -16,6 +17,23 @@ public static class AntiforgeryApplicationBuilderExtensions
     /// <summary>
     /// Adds the anti-forgery middleware to the pipeline.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The middleware validates anti-forgery tokens only for HTTP POST, PUT, and PATCH requests. Requests
+    /// using other HTTP methods are skipped.
+    /// </para>
+    /// <para>
+    /// If you need validation for other HTTP methods (for example, DELETE), resolve
+    /// <see cref="IAntiforgery"/> and call <see cref="IAntiforgery.ValidateRequestAsync(HttpContext)"/> or
+    /// <see cref="IAntiforgery.IsRequestValidAsync(HttpContext)"/> in your handler.
+    /// </para>
+    /// <para>
+    /// When using HTTP method override middleware configured to read the method from a form field before this middleware,
+    /// an incoming POST request can be overridden to another method. Anti-forgery validation still runs when the effective
+    /// method is POST, PUT, or PATCH, but does not run automatically when the override changes the request to a different
+    /// method outside that set (for example, DELETE).
+    /// </para>
+    /// </remarks>
     /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
     /// <returns>The app builder.</returns>
     public static IApplicationBuilder UseAntiforgery(this IApplicationBuilder builder)

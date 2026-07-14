@@ -818,6 +818,10 @@ public class ParameterListClassWithParameterizedContructor
     public int Value { get; set; }
 }
 
+public record ParameterListRecordWithValidationAttributes(
+    HttpContext HttpContext,
+    [FromRoute][Required][property: Required] string Id);
+
 public class ParameterListWitDefaultValue
 {
     public ParameterListWitDefaultValue(HttpContext httpContext, [FromRoute] int value = 42)

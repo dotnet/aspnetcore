@@ -15,9 +15,9 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
 
     public void Save(string filePath)
     {
-        using var reader = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        var config = JsonSerializer.Deserialize(reader, JwtSerializerContext.Default.JsonObject);
-        reader.Close();
+        var config = File.Exists(filePath)
+            ? ReadConfiguration(filePath)
+            : new JsonObject();
 
         var settingsObject = new JsonObject
         {
@@ -59,6 +59,12 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
         }
         using var writer = new FileStream(filePath, streamOptions);
         JsonSerializer.Serialize(writer, config, JwtSerializerContext.Default.JsonObject);
+
+        static JsonObject ReadConfiguration(string filePath)
+        {
+            using var reader = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            return JsonSerializer.Deserialize(reader, JwtSerializerContext.Default.JsonObject) ?? new JsonObject();
+        }
     }
 
     public static void RemoveScheme(string filePath, string name)

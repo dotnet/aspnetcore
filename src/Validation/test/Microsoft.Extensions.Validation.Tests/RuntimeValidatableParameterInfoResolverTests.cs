@@ -139,7 +139,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         var record = Assert.Single(localizer.DisplayNameCalls);
         Assert.Equal("Custom Display Name", record.DisplayName);
         Assert.Equal("value", record.MemberName);
-        Assert.Null(record.DeclaringType);
+        Assert.Null(record.Type);
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public class RuntimeValidatableParameterInfoResolverTests
                 ValidationContext = new ValidationContext(new object()),
             },
             info.Name,
-            declaringType: null);
+            type: null);
 
     private sealed class RecordingValidationLocalizer : IValidationLocalizer
     {

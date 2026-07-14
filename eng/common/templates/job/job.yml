@@ -21,11 +21,6 @@ jobs:
     - ${{ each step in parameters.steps }}:
       - ${{ step }}
 
-    # we don't run CG in public
-    - ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      - script: echo "##vso[task.setvariable variable=skipComponentGovernanceDetection]true"
-        displayName: Set skipComponentGovernanceDetection variable
-
     artifactPublishSteps:
     - ${{ if ne(parameters.artifacts.publish, '') }}:
       - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
