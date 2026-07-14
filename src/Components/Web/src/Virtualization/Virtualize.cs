@@ -985,7 +985,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             return await _jsInterop.IsFollowingBottomAsync();
         }
-        catch (JSDisconnectedException)
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
         {
             return false;
         }
