@@ -115,6 +115,7 @@ public class AuthorizationPolicy
         IEnumerable<IAuthorizeData> authorizeData,
         IEnumerable<AuthorizationPolicy> policies) => CombineAsync(policyProvider, authorizeData, policies, Array.Empty<IAuthorizationRequirementData>());
 
+#if NETCOREAPP
     /// <summary>
     /// Combines the <see cref="AuthorizationPolicy"/> represented by the authorization metadata associated with an endpoint.
     /// </summary>
@@ -175,6 +176,7 @@ public class AuthorizationPolicy
             policies ?? Enumerable.Empty<AuthorizationPolicy>(),
             requirementData ?? (IReadOnlyList<IAuthorizationRequirementData>)Array.Empty<IAuthorizationRequirementData>());
     }
+#endif
 
     private static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
         IEnumerable<IAuthorizeData> authorizeData,
