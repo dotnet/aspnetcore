@@ -519,7 +519,6 @@ public class AuthorizeViewTest
     public void RequirementDataMetadata_RendersNotAuthorized_WhenAuthorizationFails()
     {
         var authorizationService = new TestAuthorizationService();
-        // TestAuthorizationService denies by default (NextResult is AuthorizationResult.Failed()).
         var renderer = CreateTestRenderer(authorizationService);
         var rootComponent = new TestAuthStateProviderComponent(builder =>
         {
@@ -542,7 +541,6 @@ public class AuthorizeViewTest
                 "Not authorized");
         });
 
-        // The requirement contributed via IAuthorizationRequirementData metadata was still evaluated.
         Assert.Collection(authorizationService.AuthorizeCalls, call =>
             Assert.Contains(call.requirements, req => req is AuthorizeViewCoreWithRequirementData.TestRequirement));
     }
