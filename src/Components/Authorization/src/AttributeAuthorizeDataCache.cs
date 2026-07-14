@@ -17,69 +17,44 @@ internal static class AttributeAuthorizeDataCache
         }
     }
 
-    private static readonly ConcurrentDictionary<Type, IAuthorizeData[]?> _cache = new();
-    private static readonly ConcurrentDictionary<Type, IAuthorizationRequirementData[]?> _requirementDataCache = new();
+    private static readonly ConcurrentDictionary<Type, (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData)> _cache = new();
 
-    private static void ClearCache()
-    {
-        _cache.Clear();
-        _requirementDataCache.Clear();
-    }
+    private static void ClearCache() => _cache.Clear();
 
     public static IAuthorizeData[]? GetAuthorizeDataForType(Type type)
+        => GetAuthorizationDataForType(type).AuthorizeData;
+
+    public static IAuthorizationRequirementData[]? GetAuthorizationRequirementDataForType(Type type)
+        => GetAuthorizationDataForType(type).RequirementData;
+
+    private static (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData) GetAuthorizationDataForType(Type type)
     {
         if (!_cache.TryGetValue(type, out var result))
         {
-            result = ComputeAuthorizeDataForType(type);
+            result = ComputeAuthorizationDataForType(type);
             _cache[type] = result; // Safe race - doesn't matter if it overwrites
         }
 
         return result;
     }
 
-    public static IAuthorizationRequirementData[]? GetAuthorizationRequirementDataForType(Type type)
+    private static (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData) ComputeAuthorizationDataForType(Type type)
     {
-        if (!_requirementDataCache.TryGetValue(type, out var result))
-        {
-            result = ComputeAuthorizationRequirementDataForType(type);
-            _requirementDataCache[type] = result; // Safe race - doesn't matter if it overwrites
-        }
-
-        return result;
-    }
-
-    private static IAuthorizeData[]? ComputeAuthorizeDataForType(Type type)
-    {
-        // Allow Anonymous skips all authorization
         var allAttributes = type.GetCustomAttributes(inherit: true);
         List<IAuthorizeData>? authorizeDatas = null;
+        List<IAuthorizationRequirementData>? requirementDatas = null;
         for (var i = 0; i < allAttributes.Length; i++)
         {
+            // Allow Anonymous skips all authorization
             if (allAttributes[i] is IAllowAnonymous)
             {
-                return null;
+                return (null, null);
             }
 
             if (allAttributes[i] is IAuthorizeData authorizeData)
             {
                 authorizeDatas ??= new();
                 authorizeDatas.Add(authorizeData);
-            }
-        }
-
-        return authorizeDatas?.ToArray();
-    }
-
-    private static IAuthorizationRequirementData[]? ComputeAuthorizationRequirementDataForType(Type type)
-    {
-        // Allow Anonymous skips all authorization
-        var allAttributes = type.GetCustomAttributes(inherit: true);
-        List<IAuthorizationRequirementData>? requirementDatas = null;
-        for (var i = 0; i < allAttributes.Length; i++)
-        {
-            if (allAttributes[i] is IAllowAnonymous)
-            {
-                return null;
             }
 
             if (allAttributes[i] is IAuthorizationRequirementData requirementData)
@@ -89,6 +64,6 @@ internal static class AttributeAuthorizeDataCache
             }
         }
 
-        return requirementDatas?.ToArray();
+        return (authorizeDatas?.ToArray(), requirementDatas?.ToArray());
     }
 }
