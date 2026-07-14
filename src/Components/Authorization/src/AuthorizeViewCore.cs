@@ -112,7 +112,8 @@ public abstract class AuthorizeViewCore : ComponentBase
     {
         var authorizeData = GetAuthorizeData();
         var requirementData = GetAuthorizationRequirementData();
-        if (authorizeData is null && requirementData is null)
+        if ((authorizeData is null || authorizeData.Length == 0)
+            && (requirementData is null || requirementData.Length == 0))
         {
             // No authorization applies, so no need to consult the authorization service
             return true;
