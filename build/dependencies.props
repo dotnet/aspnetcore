@@ -131,8 +131,8 @@
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
-    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.7.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
-    <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.7.0</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.7.1</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
+    <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.7.1</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
     <MicrosoftNETCoreApp10PackageVersion>1.0.16</MicrosoftNETCoreApp10PackageVersion>
     <MicrosoftNETCoreApp11PackageVersion>1.1.13</MicrosoftNETCoreApp11PackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
