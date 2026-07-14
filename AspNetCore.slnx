@@ -86,6 +86,9 @@
     <Project Path="src/Components/Server/src/Microsoft.AspNetCore.Components.Server.csproj" />
     <Project Path="src/Components/Server/test/Microsoft.AspNetCore.Components.Server.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Components/Server.AutoPause/">
+    <Project Path="src/Components/Server.AutoPause/src/Microsoft.AspNetCore.Components.Server.AutoPause.csproj" />
+  </Folder>
   <Folder Name="/src/Components/test/">
     <Project Path="src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj" />
   </Folder>

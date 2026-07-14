@@ -161,10 +161,8 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
 
         Browser.Exists(By.CssSelector("#type-mismatch-error-virtualized"));
 
-        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text;
-
-        Assert.Contains("Column 'Summary' expects item type", errorMessage);
-        Assert.Contains("Employee", errorMessage);
-        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
+        Browser.Contains("Column 'Summary' expects item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+        Browser.Contains("Employee", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+        Browser.Contains("does not match the parent QuickGrid's item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
     }
 }
