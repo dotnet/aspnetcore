@@ -98,17 +98,14 @@ public abstract class AuthorizeViewCore : ComponentBase
     protected abstract IAuthorizeData[]? GetAuthorizeData();
 
     /// <summary>
-    /// Gets the <see cref="IAuthorizationRequirementData"/> used to apply authorization rules, if any.
+    /// Gets additional <see cref="IAuthorizationRequirementData"/> to apply when authorizing, or
+    /// <see langword="null"/> if none applies.
     /// </summary>
     /// <remarks>
-    /// By default this returns <see langword="null"/>. Override this method to contribute
+    /// Returns <see langword="null"/> by default. Override to contribute
     /// <see cref="IAuthorizationRequirementData"/> in addition to the <see cref="IAuthorizeData"/>
     /// returned by <see cref="GetAuthorizeData"/>.
     /// </remarks>
-    /// <returns>
-    /// The <see cref="IAuthorizationRequirementData"/> used to build the effective policy, or
-    /// <see langword="null"/> if none applies.
-    /// </returns>
     protected virtual IAuthorizationRequirementData[]? GetAuthorizationRequirementData() => null;
 
     private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
