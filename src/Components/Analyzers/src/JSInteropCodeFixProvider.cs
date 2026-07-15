@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
@@ -69,7 +70,7 @@ public sealed class JSInteropCodeFixProvider : CodeFixProvider
             diagnostic);
     }
 
-    private static Task<Document> TryCatchWrapJSInteropCallAsync(Document document, SyntaxNode root, ExpressionStatementSyntax expressionStatement, CancellationToken cancellationToken)
+    private static async Task<Document> TryCatchWrapJSInteropCallAsync(Document document, SyntaxNode root, ExpressionStatementSyntax expressionStatement, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -91,8 +92,14 @@ public sealed class JSInteropCodeFixProvider : CodeFixProvider
         var indentTrivia = leadingTrivia.Where(t => t.IsKind(SyntaxKind.WhitespaceTrivia)).LastOrDefault();
         var indent = indentTrivia == default ? "" : indentTrivia.ToFullString();
 
+        // Use the document's indentation settings for the added indent level
+        var options = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
+        var useTabs = options.GetOption(FormattingOptions.UseTabs, LanguageNames.CSharp);
+        var indentSize = options.GetOption(FormattingOptions.IndentationSize, LanguageNames.CSharp);
+        var singleIndent = useTabs ? "\t" : new string(' ', indentSize);
+
         var indentList = SyntaxFactory.TriviaList(SyntaxFactory.Whitespace(indent));
-        var innerIndent = SyntaxFactory.Whitespace(indent + "    ");
+        var innerIndent = SyntaxFactory.Whitespace(indent + singleIndent);
         var eolList = SyntaxFactory.TriviaList(eol);
 
         var tryStatement = SyntaxFactory.TryStatement(
@@ -121,9 +128,9 @@ public sealed class JSInteropCodeFixProvider : CodeFixProvider
         var newRoot = root.ReplaceNode(expressionStatement, tryStatement);
         if (newRoot is null)
         {
-            return Task.FromResult(document);
+            return document;
         }
 
-        return Task.FromResult(document.WithSyntaxRoot(newRoot));
+        return document.WithSyntaxRoot(newRoot);
     }
 }
