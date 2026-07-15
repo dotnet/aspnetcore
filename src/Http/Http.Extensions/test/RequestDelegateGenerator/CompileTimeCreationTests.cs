@@ -53,6 +53,22 @@ app.MapGet("/hello", handler);
     }
 
     [Fact]
+    public async Task MapGet_HandlerReturnedFromMethod_DoesNotGenerateStaticEndpoint()
+    {
+        // Regression test: https://github.com/dotnet/aspnetcore/issues/67122
+        // When a handler is returned from a method, the actual implementation is not known
+        // at compile time. The generator should NOT generate a static endpoint in this case,
+        // as using DelegateInvokeMethod (e.g., from Func<string,string>) would produce
+        // incorrect parameter names (e.g., "arg" instead of the actual name).
+        var (generatorRunResult, compilation) = await RunGeneratorAsync("""
+static Func<string, string> GetHandler() => name => $"Hello, {name}!";
+app.MapGet("/hello/{name}", GetHandler());
+""");
+        var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        Assert.Empty(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+    }
+
+    [Fact]
     public async Task MapAction_ExplicitRouteParamWithInvalidName_SimpleReturn()
     {
         var source = $$"""app.MapGet("/{routeValue}", ([FromRoute(Name = "invalidName" )] string parameterName) => parameterName);""";
