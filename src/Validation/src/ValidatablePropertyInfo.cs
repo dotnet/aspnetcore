@@ -157,7 +157,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
                 {
                     while (enumerator.MoveNext())
                     {
-                        var item = enumerator is IDictionaryEnumerator de ? de.Value : enumerator.Current;
+                        var (key, item) = enumerator is IDictionaryEnumerator de ? (de.Key, de.Value) : (index, enumerator.Current);
 
                         if (item is not null)
                         {
@@ -166,7 +166,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
                             {
                                 var currentContext = tracker.NextContext();
 
-                                currentContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                                currentContext.CurrentValidationPath = $"{currentPrefix}[{key}]";
                                 try
                                 {
                                     tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
@@ -264,14 +264,14 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
                 {
                     while (enumerator.MoveNext())
                     {
-                        var item = enumerator is IDictionaryEnumerator de ? de.Value : enumerator.Current;
+                        var (key, item) = enumerator is IDictionaryEnumerator de ? (de.Key, de.Value) : (index, enumerator.Current);
 
                         if (item is not null)
                         {
                             var itemType = item.GetType();
                             if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                             {
-                                context.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                                context.CurrentValidationPath = $"{currentPrefix}[{key}]";
                                 validatableType.Validate(item, context);
                             }
                         }

@@ -461,12 +461,12 @@ public class TestService
                 Assert.Collection(problemDetails.Errors,
                 kvp =>
                 {
-                    Assert.Equal("DictionaryOfSubTypes[0].RequiredProperty", kvp.Key);
+                    Assert.Equal("DictionaryOfSubTypes[first].RequiredProperty", kvp.Key);
                     Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
                 },
                 kvp =>
                 {
-                    Assert.Equal("DictionaryOfSubTypes[0].StringWithLength", kvp.Key);
+                    Assert.Equal("DictionaryOfSubTypes[first].StringWithLength", kvp.Key);
                     Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                 });
             }

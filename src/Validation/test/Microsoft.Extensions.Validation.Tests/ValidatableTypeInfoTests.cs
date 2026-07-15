@@ -345,9 +345,9 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal(2, context.ValidationErrors.Count);
         Assert.Equal("The ProductName field is required.",
-            Assert.Contains("Items[0].ProductName", context.ValidationErrors).First());
+            Assert.Contains("Items[first].ProductName", context.ValidationErrors).First());
         Assert.Equal("The field Quantity must be between 1 and 100.",
-            Assert.Contains("Items[0].Quantity", context.ValidationErrors).First());
+            Assert.Contains("Items[first].Quantity", context.ValidationErrors).First());
     }
 
     [Theory]

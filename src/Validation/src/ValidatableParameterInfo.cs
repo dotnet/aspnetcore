@@ -108,7 +108,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
             {
                 while (enumerator.MoveNext())
                 {
-                    var item = enumerator is IDictionaryEnumerator de ? de.Value : enumerator.Current;
+                    var (key, item) = enumerator is IDictionaryEnumerator de ? (de.Key, de.Value) : (index, enumerator.Current);
                     if (item != null)
                     {
                         if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
@@ -116,8 +116,8 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
                             var currentContext = tracker.NextContext();
 
                             currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                                ? $"{Name}[{index}]"
-                                : $"{currentPrefix}.{Name}[{index}]";
+                                ? $"{Name}[{key}]"
+                                : $"{currentPrefix}.{Name}[{key}]";
                             try
                             {
                                 tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
@@ -191,14 +191,14 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
             {
                 while (enumerator.MoveNext())
                 {
-                    var item = enumerator is IDictionaryEnumerator de ? de.Value : enumerator.Current;
+                    var (key, item) = enumerator is IDictionaryEnumerator de ? (de.Key, de.Value) : (index, enumerator.Current);
                     if (item != null)
                     {
                         if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                         {
                             context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                                ? $"{Name}[{index}]"
-                                : $"{currentPrefix}.{Name}[{index}]";
+                                ? $"{Name}[{key}]"
+                                : $"{currentPrefix}.{Name}[{key}]";
                             try
                             {
                                 validatableType.Validate(item, context);
