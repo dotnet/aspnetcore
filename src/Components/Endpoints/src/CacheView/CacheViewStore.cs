@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal interface ICacheBoundaryStore : IDisposable
+internal interface ICacheViewStore : IDisposable
 {
     ValueTask<SerializedRenderFragment> GetOrCreateAsync(
         string key,

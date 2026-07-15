@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class MemoryCacheBoundaryStoreTest
+public class MemoryCacheViewStoreTest
 {
     [Fact]
     public async Task GetOrCreateAsync_ConcurrentCallersForSameKey_InvokeFactoryOnce()
@@ -86,6 +86,6 @@ public class MemoryCacheBoundaryStoreTest
         Assert.Equal(2, factoryInvocations);
     }
 
-    private static MemoryCacheBoundaryStore CreateStore()
-        => new(Options.Create(new RazorComponentsServiceOptions()), NullLogger<MemoryCacheBoundaryStore>.Instance);
+    private static MemoryCacheViewStore CreateStore()
+        => new(Options.Create(new RazorComponentsServiceOptions()), NullLogger<MemoryCacheViewStore>.Instance);
 }

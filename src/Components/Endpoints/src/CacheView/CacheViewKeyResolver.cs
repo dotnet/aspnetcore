@@ -13,11 +13,11 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal static class CacheBoundaryKeyResolver
+internal static class CacheViewKeyResolver
 {
     private static readonly ConcurrentDictionary<string, string[]> _sortedNamesByRawValue = new(StringComparer.Ordinal);
 
-    static CacheBoundaryKeyResolver()
+    static CacheViewKeyResolver()
     {
         if (HotReloadManager.IsSupported)
         {
@@ -25,59 +25,59 @@ internal static class CacheBoundaryKeyResolver
         }
     }
 
-    internal static string ComputeKey(CacheBoundary cacheBoundary, HttpContext httpContext)
+    internal static string ComputeKey(CacheView cacheView, HttpContext httpContext)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
 
-        AppendLengthPrefixedString(hash, cacheBoundary.TreePositionKey ?? "");
+        AppendLengthPrefixedString(hash, cacheView.TreePositionKey ?? "");
 
-        if (cacheBoundary.CacheKey is not null)
+        if (cacheView.CacheKey is not null)
         {
             AppendString(hash, "||CacheKey||");
-            AppendLengthPrefixedString(hash, cacheBoundary.CacheKey);
+            AppendLengthPrefixedString(hash, cacheView.CacheKey);
         }
 
         var request = httpContext.Request;
-        if (cacheBoundary.VaryBy is { } varyBy)
+        if (cacheView.VaryBy is { } varyBy)
         {
             AppendString(hash, "||VaryBy||");
             AppendLengthPrefixedString(hash, varyBy);
         }
 
-        if (!string.IsNullOrEmpty(cacheBoundary.VaryByQuery))
+        if (!string.IsNullOrEmpty(cacheView.VaryByQuery))
         {
-            if (cacheBoundary.VaryByQuery.Trim() is "*")
+            if (cacheView.VaryByQuery.Trim() is "*")
             {
                 AppendAllQueryValues(hash, request);
             }
             else
             {
-                AppendDelimitedQueryValues(hash, cacheBoundary.VaryByQuery, request);
+                AppendDelimitedQueryValues(hash, cacheView.VaryByQuery, request);
             }
         }
 
-        if (!string.IsNullOrEmpty(cacheBoundary.VaryByRoute))
+        if (!string.IsNullOrEmpty(cacheView.VaryByRoute))
         {
-            AppendDelimitedRouteValues(hash, cacheBoundary.VaryByRoute, request);
+            AppendDelimitedRouteValues(hash, cacheView.VaryByRoute, request);
         }
 
-        if (!string.IsNullOrEmpty(cacheBoundary.VaryByHeader))
+        if (!string.IsNullOrEmpty(cacheView.VaryByHeader))
         {
-            AppendDelimitedHeaderValues(hash, cacheBoundary.VaryByHeader, request);
+            AppendDelimitedHeaderValues(hash, cacheView.VaryByHeader, request);
         }
 
-        if (!string.IsNullOrEmpty(cacheBoundary.VaryByCookie))
+        if (!string.IsNullOrEmpty(cacheView.VaryByCookie))
         {
-            AppendDelimitedCookieValues(hash, cacheBoundary.VaryByCookie, request);
+            AppendDelimitedCookieValues(hash, cacheView.VaryByCookie, request);
         }
 
-        if (cacheBoundary.VaryByUser is true)
+        if (cacheView.VaryByUser)
         {
             AppendString(hash, "||VaryByUser||");
             AppendUserIdentity(hash, httpContext.User);
         }
 
-        if (cacheBoundary.VaryByCulture is true)
+        if (cacheView.VaryByCulture)
         {
             AppendString(hash, "||VaryByCulture||");
             AppendLengthPrefixedString(hash, CultureInfo.CurrentCulture.Name);
