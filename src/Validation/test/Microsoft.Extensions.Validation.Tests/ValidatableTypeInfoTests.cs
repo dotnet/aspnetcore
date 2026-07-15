@@ -294,6 +294,64 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             });
     }
 
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/61953
+    // The validation walk over IEnumerable properties iterates a Dictionary<TKey, TValue> as a
+    // sequence of KeyValuePair<TKey, TValue>. Dictionary values are validated (keyed by the
+    // dictionary key in the error path); keys themselves are not validated.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_ValidatesDictionaryValues(bool useAsync)
+    {
+        // Arrange
+        var itemType = new TestValidatableTypeInfo(
+            typeof(OrderItem),
+            [
+                CreatePropertyInfo(typeof(OrderItem), typeof(string), "ProductName", "ProductName",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(OrderItem), typeof(int), "Quantity", "Quantity",
+                    [new RangeAttribute(1, 100)])
+            ]);
+
+        var catalogType = new TestValidatableTypeInfo(
+            typeof(Catalog),
+            [
+                CreatePropertyInfo(typeof(Catalog), typeof(Dictionary<string, OrderItem>), "Items", "Items",
+                    [])
+            ]);
+
+        var catalog = new Catalog
+        {
+            Items =
+            {
+                ["first"] = new OrderItem { /* Missing ProductName (required) */ Quantity = 0 /* Invalid quantity */ },
+                ["second"] = new OrderItem { ProductName = "Valid Product", Quantity = 5 }
+            }
+        };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(OrderItem), itemType },
+                { typeof(Catalog), catalogType }
+            }),
+            ValidationContext = new ValidationContext(catalog)
+        };
+
+        // Act
+        await ValidateAsync(catalogType, catalog, context, useAsync, default);
+
+        // Assert
+        // The invalid "first" dictionary value is validated and its errors are keyed by the
+        // dictionary key. The valid "second" value produces no errors.
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Equal(2, context.ValidationErrors.Count);
+        Assert.Equal("The ProductName field is required.",
+            Assert.Contains("Items[0].ProductName", context.ValidationErrors).First());
+        Assert.Equal("The field Quantity must be between 1 and 100.",
+            Assert.Contains("Items[0].Quantity", context.ValidationErrors).First());
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -1041,6 +1099,11 @@ public class ValidatableTypeInfoTests : ValidationTestBase
     {
         public string? ProductName { get; set; }
         public int Quantity { get; set; }
+    }
+
+    private class Catalog
+    {
+        public Dictionary<string, OrderItem> Items { get; set; } = [];
     }
 
     private class TreeNode

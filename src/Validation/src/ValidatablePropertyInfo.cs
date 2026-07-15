@@ -154,19 +154,29 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
                 {
                     if (item != null)
                     {
-                        var itemType = item.GetType();
-                        if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                        // Dictionaries enumerate as KeyValuePair<TKey, TValue>; validate the value
+                        // only (not the key).
+                        if (!TryGetKeyValuePairValue(item, out var itemValue))
                         {
-                            var currentContext = tracker.NextContext();
+                            itemValue = item;
+                        }
 
-                            currentContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
-                            try
+                        if (itemValue != null)
+                        {
+                            var itemType = itemValue.GetType();
+                            if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                             {
-                                tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
-                            }
-                            catch (Exception ex)
-                            {
-                                tracker.Track(Task.FromException(ex));
+                                var currentContext = tracker.NextContext();
+
+                                currentContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                                try
+                                {
+                                    tracker.Track(validatableType.ValidateAsync(itemValue, currentContext, cancellationToken));
+                                }
+                                catch (Exception ex)
+                                {
+                                    tracker.Track(Task.FromException(ex));
+                                }
                             }
                         }
                     }
@@ -251,11 +261,21 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
                 {
                     if (item != null)
                     {
-                        var itemType = item.GetType();
-                        if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                        // Dictionaries enumerate as KeyValuePair<TKey, TValue>; validate the value
+                        // only (not the key)
+                        if (!TryGetKeyValuePairValue(item, out var itemValue))
                         {
-                            context.CurrentValidationPath = $"{currentPrefix}[{index}]";
-                            validatableType.Validate(item, context);
+                            itemValue = item;
+                        }
+
+                        if (itemValue != null)
+                        {
+                            var itemType = itemValue.GetType();
+                            if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                            {
+                                context.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                                validatableType.Validate(itemValue, context);
+                            }
                         }
                     }
 
@@ -279,6 +299,22 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
         }
+    }
+
+    private static bool TryGetKeyValuePairValue(object item, out object? value)
+    {
+        var itemType = item.GetType();
+        if (itemType.IsKeyValuePair())
+        {
+            // TODO :/
+#pragma warning disable IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
+            value = itemType.GetProperty("Value")!.GetValue(item);
+#pragma warning restore IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
+            return true;
+        }
+
+        value = null;
+        return false;
     }
 
     ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()

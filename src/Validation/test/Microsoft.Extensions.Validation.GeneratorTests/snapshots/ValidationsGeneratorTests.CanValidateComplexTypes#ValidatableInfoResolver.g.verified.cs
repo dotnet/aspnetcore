@@ -153,6 +153,12 @@ namespace Microsoft.Extensions.Validation.Generated
                         ),
                         new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
+                            propertyType: typeof(global::System.Collections.Generic.Dictionary<string, global::SubType>),
+                            name: "DictionaryOfSubTypes",
+                            displayNameInfo: null
+                        ),
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexType),
                             propertyType: typeof(int),
                             name: "IntegerWithDerivedValidationAttribute",
                             displayNameInfo: null

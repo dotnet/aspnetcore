@@ -43,6 +43,14 @@ internal static class TypeExtensions
     }
 
     /// <summary>
+    /// Determines whether the specified type is a <see cref="KeyValuePair{TKey, TValue}"/>.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns><see langword="true"/> if the type is a <see cref="KeyValuePair{TKey, TValue}"/>; otherwise, <see langword="false"/>.</returns>
+    public static bool IsKeyValuePair(this Type type)
+        => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
+
+    /// <summary>
     /// Tries to get the <see cref="RequiredAttribute"/> from the specified array of validation attributes.
     /// </summary>
     /// <param name="attributes">The array of <see cref="ValidationAttribute"/> to search.</param>
