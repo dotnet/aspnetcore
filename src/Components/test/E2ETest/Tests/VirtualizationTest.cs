@@ -2041,14 +2041,16 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             TimeSpan.FromSeconds(5),
             "overflow-anchor was not restored after scrolling settled");
 
-        // Record the first visible item (identified by its stable text) and its position.
+        WaitForRenderToSettle(container, js, ".incorrect-size-item");
+
         var before = js.ExecuteScript(@"
             var container = arguments[0];
             var cRect = container.getBoundingClientRect();
+            var centerY = cRect.top + container.clientHeight / 2;
             var items = container.querySelectorAll('.incorrect-size-item');
             for (var i = 0; i < items.length; i++) {
                 var r = items[i].getBoundingClientRect();
-                if (r.bottom > cRect.top + 1 && r.top < cRect.bottom - 1) {
+                if (r.top <= centerY && r.bottom >= centerY) {
                     return { text: items[i].textContent, relTop: r.top - cRect.top };
                 }
             }
@@ -2056,7 +2058,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ", container) as Dictionary<string, object>;
 
         Assert.NotNull(before);
-        var visibleText = before["text"].ToString();
+        var centerText = before["text"].ToString();
         var relTopBefore = Convert.ToDouble(before["relTop"], CultureInfo.InvariantCulture);
 
         // Grow the item immediately ABOVE the viewport by mutating its style directly.
@@ -2078,9 +2080,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ", container, 200L) as Dictionary<string, object>;
 
         Assert.NotNull(growResult);
-        Assert.True((bool)growResult["grew"], "Expected at least one item above the viewport to grow.");
+        Assert.True((bool)growResult["grew"], "Expected at least one rendered item above the viewport to grow.");
 
-        // Poll until the visible item's position stops changing, so we measure the
+        // Poll until the center item's position stops changing, so we measure the
         // browser's settled response to the reflow (with or without scroll anchoring)
         // deterministically instead of waiting a fixed amount of time.
         var relTopAfter = relTopBefore;
@@ -2099,7 +2101,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     }
                 }
                 return null;
-            ", container, visibleText);
+            ", container, centerText);
 
             if (current == null)
             {
@@ -2114,10 +2116,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
             // Require a few consecutive stable reads to be sure the reflow has settled.
             return stableReads >= 3;
-        }, TimeSpan.FromSeconds(10), "Visible item position did not settle after the render-less resize");
+        }, TimeSpan.FromSeconds(10), "Center item position did not settle after the render-less resize");
 
         Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
-            $"Visible item '{visibleText}' should not have moved when an off-screen item grew via a " +
+            $"Center item '{centerText}' should not have moved when an off-screen item grew via a " +
             $"render-less browser reflow (overflow-anchor='{growResult["anchor"]}', grew item '{growResult["text"]}'). " +
             $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px");
     }
@@ -3903,11 +3905,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
-    /// item count, scrollTop, and first visible item index stabilize.
+    /// item count, scrollTop, and first visible item identity stabilize.
     /// Use after actions that trigger async rendering (prepend/append with ItemsProvider on Server)
     /// to ensure anchor restore has completed before making single-shot assertions.
+    /// Pass <paramref name="itemSelector"/> for containers whose rows are not <c>.item[data-index]</c>.
     /// </summary>
-    private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js)
+    private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js, string itemSelector = ".item[data-index]")
     {
         long lastScrollTop = -1;
         int lastItemCount = -1;
@@ -3918,18 +3921,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         {
             var result = js.ExecuteScript(@"
                 var c = arguments[0];
-                var items = c.querySelectorAll('.item[data-index]');
+                var selector = arguments[1];
+                var items = c.querySelectorAll(selector);
                 var cr = c.getBoundingClientRect();
                 var firstIdx = '';
                 for (var i = 0; i < items.length; i++) {
                     var r = items[i].getBoundingClientRect();
                     if (r.bottom > cr.top + 2 && r.top < cr.bottom - 2) {
-                        firstIdx = items[i].getAttribute('data-index');
+                        firstIdx = items[i].getAttribute('data-index') || items[i].textContent;
                         break;
                     }
                 }
                 return { scrollTop: Math.round(c.scrollTop), itemCount: items.length, firstIndex: firstIdx };
-            ", container) as Dictionary<string, object>;
+            ", container, itemSelector) as Dictionary<string, object>;
 
             var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
             var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
