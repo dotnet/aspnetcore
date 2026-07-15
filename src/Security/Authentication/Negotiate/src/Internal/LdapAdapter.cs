@@ -139,7 +139,7 @@ internal static partial class LdapAdapter
         catch (DirectoryOperationException ex) when (ex.Response is SearchResponse r && r.ResultCode == ResultCode.NoSuchObject)
         {
             // Stale memberOf reference: group no longer exists. Stop traversal of this branch.
-            logger.LogDebug("Stale memberOf reference: group with distinguished name '{GroupDN}' no longer exists; stopping traversal.", groupDN);;
+            logger.LogDebug("Stale memberOf reference: group with distinguished name '{GroupDN}' no longer exists; stopping traversal.", groupDN);
             return;
         }
 
