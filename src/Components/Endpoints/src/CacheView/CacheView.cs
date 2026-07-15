@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components;
 /// server-side rendering (SSR). On cache hit, child components are not
 /// instantiated or rendered.
 /// </summary>
-public sealed class CacheBoundary : IComponent, IDisposable
+public sealed class CacheView : IComponent, IDisposable
 {
     private RenderHandle _renderHandle;
 
@@ -24,7 +24,7 @@ public sealed class CacheBoundary : IComponent, IDisposable
 
     /// <summary>
     /// Gets or sets an explicit cache key for disambiguation when multiple
-    /// <see cref="CacheBoundary"/> instances share the same component ancestor.
+    /// <see cref="CacheView"/> instances share the same component ancestor.
     /// </summary>
     [Parameter]
     public string? CacheKey { get; set; }
@@ -49,7 +49,7 @@ public sealed class CacheBoundary : IComponent, IDisposable
 
     /// <summary>
     /// Gets or sets how long after last access the cache entry should be evicted.
-    /// Not supported when the cache boundary store uses <c>HybridCache</c>.
+    /// Not supported when the cache view store uses <c>HybridCache</c>.
     /// </summary>
     [Parameter]
     public TimeSpan? ExpiresSliding { get; set; }
@@ -83,13 +83,13 @@ public sealed class CacheBoundary : IComponent, IDisposable
     /// Gets or sets whether to vary the cache by the authenticated user identity.
     /// </summary>
     [Parameter]
-    public bool? VaryByUser { get; set; }
+    public bool VaryByUser { get; set; }
 
     /// <summary>
     /// Gets or sets whether to vary the cache by the current culture.
     /// </summary>
     [Parameter]
-    public bool? VaryByCulture { get; set; }
+    public bool VaryByCulture { get; set; }
 
     /// <summary>
     /// Gets or sets a custom string value to vary the cache by.
@@ -97,16 +97,16 @@ public sealed class CacheBoundary : IComponent, IDisposable
     [Parameter]
     public string? VaryBy { get; set; }
 
-    [Inject] internal CacheBoundaryService? CacheService { get; set; }
+    [Inject] internal CacheViewService? CacheService { get; set; }
     [CascadingParameter] internal HttpContext? HttpContext { get; set; }
     internal Func<string>? TreePositionKeyFactory { get; set; }
     internal string? TreePositionKey => TreePositionKeyFactory?.Invoke();
 
     internal bool IsInStreamingContext { get; set; }
 
-    // The per-render coordination state produced by CacheBoundaryService. Null when caching is inactive
+    // The per-render coordination state produced by CacheViewService. Null when caching is inactive
     // for this render; the renderer reads it to drive capture.
-    internal CacheBoundaryRenderState? RenderState { get; private set; }
+    internal CacheViewRenderState? RenderState { get; private set; }
 
     /// <inheritdoc/>
     void IComponent.Attach(RenderHandle renderHandle)
@@ -137,7 +137,7 @@ public sealed class CacheBoundary : IComponent, IDisposable
     {
         if (RenderState is { } state)
         {
-            CacheService?.OnBoundaryDisposed(state);
+            CacheService?.OnCacheViewDisposed(state);
         }
     }
 }

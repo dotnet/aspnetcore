@@ -10,9 +10,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class CacheBoundaryMemoryCacheTest : CacheBoundaryTestBase
+public class CacheViewMemoryCacheTest : CacheViewTestBase
 {
-    public CacheBoundaryMemoryCacheTest(
+    public CacheViewMemoryCacheTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
         ITestOutputHelper output)
