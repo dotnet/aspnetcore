@@ -11,53 +11,29 @@
             }
             else
             {
-                <text><strong>@State.TotalItemCount</strong> @Localizer["Items"]</text>
+                <text><strong>@State.TotalItemCount</strong> @Localize("Items")</text>
             }
         </div>
         <nav role="navigation">
             @if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
             {
-                <a class="go-first" href="@GetPageUrl(0)" title="@Localizer["GoToFirstPage"]" aria-label="@Localizer["GoToFirstPage"]" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">«</a>
-                <a class="go-previous" href="@GetPageUrl(Math.Max(0, State.CurrentPageIndex - 1))" title="@Localizer["GoToPreviousPage"]" aria-label="@Localizer["GoToPreviousPage"]" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">‹</a>
+                <a class="go-first" href="@GetPageUrl(0)" title="@Localize("GoToFirstPage")" aria-label="@Localize("GoToFirstPage")" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">«</a>
+                <a class="go-previous" href="@GetPageUrl(Math.Max(0, State.CurrentPageIndex - 1))" title="@Localize("GoToPreviousPage")" aria-label="@Localize("GoToPreviousPage")" aria-disabled="@(!CanGoBack ? "true" : "false")" tabindex="@(!CanGoBack ? "-1" : null)">‹</a>
                 <div class="pagination-text">
                     @PaginationPageStatus
                 </div>
-                <a class="go-next" href="@GetPageUrl(Math.Min(State.LastPageIndex ?? 0, State.CurrentPageIndex + 1))" title="@Localizer["GoToNextPage"]" aria-label="@Localizer["GoToNextPage"]" aria-disabled="@(!CanGoForwards ? "true" : "false")" tabindex="@(!CanGoForwards ? "-1" : null)">›</a>
-                <a class="go-last" href="@GetPageUrl(State.LastPageIndex ?? 0)" title="@Localizer["GoToLastPage"]" aria-label="@Localizer["GoToLastPage"]" aria-disabled="@(!CanGoForwards ? "true" : "false")" tabindex="@(!CanGoForwards ? "-1" : null)">»</a>
+                <a class="go-next" href="@GetPageUrl(Math.Min(State.LastPageIndex ?? 0, State.CurrentPageIndex + 1))" title="@Localize("GoToNextPage")" aria-label="@Localize("GoToNextPage")" aria-disabled="@(!CanGoForwards ? "true" : "false")" tabindex="@(!CanGoForwards ? "-1" : null)">›</a>
+                <a class="go-last" href="@GetPageUrl(State.LastPageIndex ?? 0)" title="@Localize("GoToLastPage")" aria-label="@Localize("GoToLastPage")" aria-disabled="@(!CanGoForwards ? "true" : "false")" tabindex="@(!CanGoForwards ? "-1" : null)">»</a>
             }
             else
             {
-                <button class="go-first"
-                        type="button"
-                        @onclick="GoFirstAsync"
-                        disabled="@(!CanGoBack)"
-                        title="@Localizer["GoToFirstPage"]"
-                        aria-label="@Localizer["GoToFirstPage"]"></button>
-
-                <button class="go-previous"
-                        type="button"
-                        @onclick="GoPreviousAsync"
-                        disabled="@(!CanGoBack)"
-                        title="@Localizer["GoToPreviousPage"]"
-                        aria-label="@Localizer["GoToPreviousPage"]"></button>
-
+                <button class="go-first" type="button" @onclick="GoFirstAsync" disabled="@(!CanGoBack)" title="@Localize("GoToFirstPage")" aria-label="@Localize("GoToFirstPage")"></button>
+                <button class="go-previous" type="button" @onclick="GoPreviousAsync" disabled="@(!CanGoBack)" title="@Localize("GoToPreviousPage")" aria-label="@Localize("GoToPreviousPage")"></button>
                 <div class="pagination-text">
                     @PaginationPageStatus
                 </div>
-
-                <button class="go-next"
-                        type="button"
-                        @onclick="GoNextAsync"
-                        disabled="@(!CanGoForwards)"
-                        title="@Localizer["GoToNextPage"]"
-                        aria-label="@Localizer["GoToNextPage"]"></button>
-
-                <button class="go-last"
-                        type="button"
-                        @onclick="GoLastAsync"
-                        disabled="@(!CanGoForwards)"
-                        title="@Localizer["GoToLastPage"]"
-                        aria-label="@Localizer["GoToLastPage"]"></button>
+                <button class="go-next" type="button" @onclick="GoNextAsync" disabled="@(!CanGoForwards)" title="@Localize("GoToNextPage")" aria-label="@Localize("GoToNextPage")"></button>
+                <button class="go-last" type="button" @onclick="GoLastAsync" disabled="@(!CanGoForwards)" title="@Localize("GoToLastPage")" aria-label="@Localize("GoToLastPage")"></button>
             }
         </nav>
     }

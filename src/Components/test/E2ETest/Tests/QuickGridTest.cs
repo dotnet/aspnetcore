@@ -27,7 +27,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/");
         app = Browser.MountTestComponent<SampleQuickGridComponent>();
     }
 
@@ -216,45 +216,49 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
-    public void PaginatorDisplaysLocalizedPageStatusWithoutChangingExistingUi()
+    public void PaginatorUsesEmbeddedEnglishFallbackText()
     {
         var paginator = app.FindElement(By.ClassName("paginator"));
-        var paginationText = paginator.FindElement(By.CssSelector(".pagination-text"));
-        var strongElements = paginationText.FindElements(By.TagName("strong"));
 
-        Assert.NotEmpty(NormalizeWhiteSpace(paginationText.Text));
+        Assert.Equal(
+            "43 items",
+            NormalizeWhitespace(paginator.FindElement(By.CssSelector(".summary")).Text));
 
-        Assert.Equal("1", strongElements[0].Text);
-        Assert.Equal("5", strongElements[1].Text);
+        Assert.Equal(
+            "Page 1 of 5",
+            NormalizeWhitespace(paginator.FindElement(By.CssSelector("nav > div")).Text));
+
+        AssertPaginatorControlHasEnglishFallbackText(
+            ".go-first",
+            "Go to first page");
+
+        AssertPaginatorControlHasEnglishFallbackText(
+            ".go-previous",
+            "Go to previous page");
+
+        AssertPaginatorControlHasEnglishFallbackText(
+            ".go-next",
+            "Go to next page");
+
+        AssertPaginatorControlHasEnglishFallbackText(
+            ".go-last",
+            "Go to last page");
+
+        void AssertPaginatorControlHasEnglishFallbackText(
+            string selector,
+            string expectedText)
+        {
+            var control = paginator.FindElement(By.CssSelector(selector));
+
+            Assert.Equal(expectedText, control.GetDomAttribute("title"));
+            Assert.Equal(expectedText, control.GetDomAttribute("aria-label"));
+        }
     }
 
-    [Fact]
-    public void PaginatorRendersCorrectlyUnderNonEnglishCulture()
-    {
-        var url = new Uri(_serverFixture.RootUri, $"{ServerPathBase.TrimStart('/')}?culture=fr-FR");
-        Browser.Navigate().GoToUrl(url.ToString());
-
-        app = Browser.MountTestComponent<SampleQuickGridComponent>();
-
-        var paginator = app.FindElement(By.ClassName("paginator"));
-        var paginationText = paginator.FindElement(By.CssSelector(".pagination-text"));
-        var strongElements = paginationText.FindElements(By.TagName("strong"));
-
-        Assert.Equal(2, strongElements.Count);
-        Assert.Equal("1", strongElements[0].Text);
-        Assert.Equal("5", strongElements[1].Text);
-
-        var status = NormalizeWhiteSpace(paginationText.Text);
-        Assert.DoesNotContain("{0}", status);
-        Assert.DoesNotContain("{1}", status);
-    }
-
-    private static string NormalizeWhiteSpace(string value)
-    {
-        return string.Join(
+    private static string NormalizeWhitespace(string value)
+        => string.Join(
             " ",
             value.Split(
-                new[] { ' ', '\r', '\n', '\t' },
+                new[] { ' ', '\t', '\r', '\n' },
                 System.StringSplitOptions.RemoveEmptyEntries));
-    }
 }

@@ -92,5 +92,18 @@ internal static class ClientValidationLocalizationData
                 ["RequiredKey"] = "Das Feld {0} ist erforderlich (de)",
                 ["RangeKey"] = "Das Feld {0} muss zwischen {1} und {2} liegen (de)",
             },
+            ["es"] = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["Email Address"] = "Dirección de correo electrónico",
+                ["Age"] = "Edad",
+                ["RequiredKey"] = "El campo {0} es obligatorio (es)",
+                ["RangeKey"] = "El campo {0} debe estar entre {1} y {2} (es)",
+                ["PaginationPageStatus"] = "Página {0} de {1}",
+                ["Items"] = "elementos",
+                ["GoToFirstPage"] = "Ir a la primera página",
+                ["GoToPreviousPage"] = "Ir a la página anterior",
+                ["GoToNextPage"] = "Ir a la página siguiente",
+                ["GoToLastPage"] = "Ir a la última página",
+            },
         };
 }

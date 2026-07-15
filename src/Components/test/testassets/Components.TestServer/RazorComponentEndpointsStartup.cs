@@ -11,7 +11,6 @@ using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
@@ -51,6 +50,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             services.AddControllers();
         }
+        services.AddLocalization();
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
