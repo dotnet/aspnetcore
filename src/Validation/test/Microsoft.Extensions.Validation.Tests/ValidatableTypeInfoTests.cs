@@ -296,8 +296,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
 
     // Regression test for https://github.com/dotnet/aspnetcore/issues/61953
     // The validation walk over IEnumerable properties iterates a Dictionary<TKey, TValue> as a
-    // sequence of KeyValuePair<TKey, TValue>. Dictionary values are validated (keyed by the
-    // dictionary key in the error path); keys themselves are not validated.
+    // sequence of KeyValuePair<TKey, TValue>. Dictionary values are validated; keys themselves are not validated.
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -342,8 +341,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         await ValidateAsync(catalogType, catalog, context, useAsync, default);
 
         // Assert
-        // The invalid "first" dictionary value is validated and its errors are keyed by the
-        // dictionary key. The valid "second" value produces no errors.
+        // The invalid "first" dictionary value is validated. The valid "second" value produces no errors.
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal(2, context.ValidationErrors.Count);
         Assert.Equal("The ProductName field is required.",
