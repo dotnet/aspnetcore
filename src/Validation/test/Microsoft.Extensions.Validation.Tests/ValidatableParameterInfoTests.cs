@@ -230,6 +230,53 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public async Task Validate_WithDictionaryOfValidatableType_ValidatesEachValue(bool useAsync)
+    {
+        // Arrange
+        var personTypeInfo = new TestValidatableTypeInfo(
+            typeof(Person),
+            [
+                new TestValidatablePropertyInfo(
+                    typeof(Person),
+                    typeof(string),
+                    "Name",
+                    "Name",
+                    [new RequiredAttribute()])
+            ]);
+
+        var paramInfo = CreateTestParameterInfo(
+            parameterType: typeof(Dictionary<string, Person>),
+            name: "people",
+            displayName: "People",
+            validationAttributes: []);
+
+        var typeMapping = new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(Person), personTypeInfo }
+        };
+
+        var context = CreateValidatableContext(typeMapping);
+        var people = new Dictionary<string, Person>
+        {
+            ["first"] = new() { Name = "Valid" },
+            ["second"] = new() // Name is null, should fail
+        };
+
+        // Act
+        await ValidateAsync(paramInfo, people, context, useAsync, default);
+
+        // Assert
+        var errors = context.ValidationErrors;
+        Assert.NotNull(errors);
+        var error = Assert.Single(errors);
+        Assert.Equal("people[1].Name", error.Key);
+        var errorValue = Assert.Single(error.Value);
+        Assert.Equal("The Name field is required.", errorValue);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task Validate_MultipleErrorsOnSameParameter_CollectsAllErrors(bool useAsync)
     {
         // Arrange
