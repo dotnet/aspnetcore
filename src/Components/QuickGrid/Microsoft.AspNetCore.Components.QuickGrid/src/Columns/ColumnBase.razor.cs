@@ -76,6 +76,13 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public RenderFragment<PlaceholderContext>? PlaceholderTemplate { get; set; }
 
     /// <summary>
+    /// An optional template for this column's footer cell. If not specified, no footer cell content will
+    /// be rendered for this column. When any column in the grid has a <see cref="FooterTemplate"/>, the
+    /// grid will render a footer row in which each column renders its <see cref="FooterTemplate"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>
     /// Gets a reference to the enclosing <see cref="QuickGrid{TGridItem}" />.
     /// </summary>
     public QuickGrid<TGridItem> Grid => InternalGridContext.Grid;
