@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Formatting;
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
@@ -70,28 +69,61 @@ public sealed class JSInteropCodeFixProvider : CodeFixProvider
             diagnostic);
     }
 
-    private static async Task<Document> TryCatchWrapJSInteropCallAsync(Document document, SyntaxNode root, ExpressionStatementSyntax expressionStatement, CancellationToken cancellationToken)
+    private static Task<Document> TryCatchWrapJSInteropCallAsync(Document document, SyntaxNode root, ExpressionStatementSyntax expressionStatement, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var tryStatement =
-            SyntaxFactory.TryStatement(
-                SyntaxFactory.Block(expressionStatement),
-                SyntaxFactory.SingletonList(
-                    SyntaxFactory.CatchClause()
-                        .WithDeclaration(
-                            SyntaxFactory.CatchDeclaration(
-                                SyntaxFactory.ParseTypeName("Exception")))
-                        .WithBlock(SyntaxFactory.Block())), null)
-            .WithAdditionalAnnotations(Formatter.Annotation);
+        // Derive indentation and line ending from the original statement so existing trivia is reused
+        var leadingTrivia = expressionStatement.GetLeadingTrivia();
+        var trailingTrivia = expressionStatement.GetTrailingTrivia();
+
+        // Prefer the statement's own line ending, then any in the document, then CRLF.
+        var eol = leadingTrivia.FirstOrDefault(t => t.IsKind(SyntaxKind.EndOfLineTrivia));
+        if (eol == default)
+        {
+            eol = root.DescendantTrivia().FirstOrDefault(t => t.IsKind(SyntaxKind.EndOfLineTrivia));
+            if (eol == default)
+            {
+                eol = SyntaxFactory.CarriageReturnLineFeed;
+            }
+        }
+
+        var indentTrivia = leadingTrivia.Where(t => t.IsKind(SyntaxKind.WhitespaceTrivia)).LastOrDefault();
+        var indent = indentTrivia == default ? "" : indentTrivia.ToFullString();
+
+        var indentList = SyntaxFactory.TriviaList(SyntaxFactory.Whitespace(indent));
+        var innerIndent = SyntaxFactory.Whitespace(indent + "    ");
+        var eolList = SyntaxFactory.TriviaList(eol);
+
+        var tryStatement = SyntaxFactory.TryStatement(
+            SyntaxFactory.Block(
+                SyntaxFactory.SingletonList<StatementSyntax>(
+                    expressionStatement
+                        .WithLeadingTrivia(innerIndent)
+                        .WithTrailingTrivia(eol)))
+            .WithOpenBraceToken(SyntaxFactory.Token(indentList, SyntaxKind.OpenBraceToken, eolList))
+            .WithCloseBraceToken(SyntaxFactory.Token(indentList, SyntaxKind.CloseBraceToken, eolList)),
+            SyntaxFactory.SingletonList(
+                SyntaxFactory.CatchClause()
+                    .WithCatchKeyword(SyntaxFactory.Token(indentList, SyntaxKind.CatchKeyword, SyntaxFactory.TriviaList(SyntaxFactory.Space)))
+                    .WithDeclaration(
+                        SyntaxFactory.CatchDeclaration(
+                            SyntaxFactory.ParseTypeName("Exception"))
+                            .WithCloseParenToken(SyntaxFactory.Token(SyntaxTriviaList.Empty, SyntaxKind.CloseParenToken, eolList)))
+                    .WithBlock(
+                        SyntaxFactory.Block()
+                            .WithOpenBraceToken(SyntaxFactory.Token(indentList, SyntaxKind.OpenBraceToken, eolList))
+                            .WithCloseBraceToken(SyntaxFactory.Token(indentList, SyntaxKind.CloseBraceToken, SyntaxTriviaList.Empty)))),
+            null)
+        .WithTryKeyword(SyntaxFactory.Token(leadingTrivia, SyntaxKind.TryKeyword, eolList))
+        .WithTrailingTrivia(trailingTrivia);
 
         var newRoot = root.ReplaceNode(expressionStatement, tryStatement);
         if (newRoot is null)
         {
-            return document;
+            return Task.FromResult(document);
         }
-        newRoot = Formatter.Format(newRoot, document.Project.Solution.Workspace, cancellationToken: cancellationToken);
-        var newDocument = document.WithSyntaxRoot(newRoot);
-        return newDocument;
+
+        return Task.FromResult(document.WithSyntaxRoot(newRoot));
     }
 }

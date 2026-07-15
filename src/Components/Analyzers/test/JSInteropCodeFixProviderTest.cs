@@ -111,29 +111,29 @@ namespace Microsoft.AspNetCore.Components
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         var newSource = @"
-namespace BlazorApp1.Components
-{
-    using System;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Components;
-    using Microsoft.JSInterop;
-
-    class TestComponent : ComponentBase
+    namespace BlazorApp1.Components
     {
-        private IJSRuntime JS = default!;
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        class TestComponent : ComponentBase
         {
-            try
+            private IJSRuntime JS = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
             {
-                await JS.InvokeVoidAsync(""initializeChart"");
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    await JS.InvokeVoidAsync(""initializeChart"");
+                }
+                catch (Exception)
+                {
+                }
             }
         }
-    }
-}" + BlazorComponentDeclarations + JSInteropDeclarations;
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }
@@ -161,29 +161,29 @@ namespace BlazorApp1.Components
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         var newSource = @"
-namespace BlazorApp1.Components
-{
-    using System;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Components;
-    using Microsoft.JSInterop;
-
-    class TestComponent : ComponentBase
+    namespace BlazorApp1.Components
     {
-        private IJSRuntime JS = default!;
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        class TestComponent : ComponentBase
         {
-            try
+            private IJSRuntime JS = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
             {
-                await JS.InvokeAsync<string>(""prompt"", ""Name?"");
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    await JS.InvokeAsync<string>(""prompt"", ""Name?"");
+                }
+                catch (Exception)
+                {
+                }
             }
         }
-    }
-}" + BlazorComponentDeclarations + JSInteropDeclarations;
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }
@@ -210,28 +210,28 @@ namespace BlazorApp1.Components
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         var newSource = @"
-namespace BlazorApp1.Components
-{
-    using System;
-    using Microsoft.AspNetCore.Components;
-    using Microsoft.JSInterop;
-
-    class TestComponent : ComponentBase
+    namespace BlazorApp1.Components
     {
-        private IJSRuntime JS = default!;
+        using System;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
 
-        public void DisplayCustomer()
+        class TestComponent : ComponentBase
         {
-            try
+            private IJSRuntime JS = default!;
+
+            public void DisplayCustomer()
             {
-                JS.InvokeVoidAsync(""console.log"", ""hello"");
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    JS.InvokeVoidAsync(""console.log"", ""hello"");
+                }
+                catch (Exception)
+                {
+                }
             }
         }
-    }
-}" + BlazorComponentDeclarations + JSInteropDeclarations;
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
     }
