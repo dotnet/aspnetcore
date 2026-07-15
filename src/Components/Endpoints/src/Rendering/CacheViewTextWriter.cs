@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class CacheBoundaryTextWriter : TextWriter
+internal sealed class CacheViewTextWriter : TextWriter
 {
     // Approximate per-live-cached-component footprint used only for cache size accounting; live cached components
     // are component nodes rather than strings, so they have no captured length to measure directly.
@@ -19,13 +19,13 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
     private bool _capturing;
     private bool _validateOnly;
 
-    public CacheBoundaryTextWriter(TextWriter inner, CacheBoundaryVaryBy varyBy)
+    public CacheViewTextWriter(TextWriter inner, CacheVaryBy varyBy)
     {
         _innerWriter = inner;
         VaryBy = varyBy;
     }
 
-    public CacheBoundaryVaryBy VaryBy { get; set; }
+    public CacheVaryBy VaryBy { get; set; }
 
     public bool IsCapturing => _capturing;
 
@@ -103,7 +103,7 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         if (liveCachedComponentNode is null)
         {
             throw new InvalidOperationException(
-                $"CacheBoundary could not serialize the live cached component '{componentType.FullName}' from its parent's render tree.");
+                $"CacheView could not serialize the live cached component '{componentType.FullName}' from its parent's render tree.");
         }
 
         // The serializer fills RenderModeName from an inline @rendermode frame. For components that
@@ -161,8 +161,8 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
             if (frame.FrameType is RenderTreeFrameType.Attribute && IsRenderFragmentParameter(frame.AttributeValue))
             {
                 throw new InvalidOperationException(
-                    $"The [CacheBoundaryLiveComponent] live cached component '{liveCachedComponentType.FullName}' cannot be used inside a CacheBoundary because its RenderFragment parameter '{frame.AttributeName}' would be frozen to the first render's content (a live cached component's parameters are captured once and replayed). " +
-                    "To fix this, remove the RenderFragment parameter or move the component outside the CacheBoundary.");
+                    $"The live cached component '{liveCachedComponentType.FullName}' cannot be used inside a CacheView because its RenderFragment parameter '{frame.AttributeName}' would be frozen to the first render's content (a live cached component's parameters are captured once and replayed). " +
+                    "To fix this, remove the RenderFragment parameter or move the component outside the CacheView.");
             }
         }
     }
