@@ -7,19 +7,19 @@ using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class HybridCacheBoundaryStoreTest
+public class HybridCacheViewStoreTest
 {
     [Fact]
     public void GetOrCreateAsync_WithExpiresSliding_ThrowsNotSupported()
     {
-        var store = new HybridCacheBoundaryStore(new StubHybridCache());
+        var store = new HybridCacheViewStore(new StubHybridCache());
         var options = new CacheStoreOptions { ExpiresSliding = TimeSpan.FromMinutes(1) };
 
         var ex = Assert.Throws<NotSupportedException>(() =>
         {
             store.GetOrCreateAsync("key", Factory, options, default);
         });
-        Assert.Contains(nameof(CacheBoundary.ExpiresSliding), ex.Message);
+        Assert.Contains(nameof(CacheView.ExpiresSliding), ex.Message);
     }
 
     private static ValueTask<SerializedRenderFragment> Factory(CancellationToken cancellationToken)
