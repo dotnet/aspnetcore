@@ -20,14 +20,16 @@ public sealed class SessionCredential
     public string Type { get; } = "cookie";
 
     /// <summary>
-    /// Gets or sets the cookie name.
+    /// Gets or sets the cookie name. This key is required and must be non-empty per W3C Device Bound
+    /// Session Credentials §9.9.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; } = default!;
+    public required string Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the cookie attributes string.
+    /// Gets or sets the cookie attributes string. Defaults to an empty string, matching the spec
+    /// default when the attributes are absent. See W3C Device Bound Session Credentials §9.9.
     /// </summary>
     [JsonPropertyName("attributes")]
-    public string Attributes { get; set; } = default!;
+    public string Attributes { get; set; } = string.Empty;
 }

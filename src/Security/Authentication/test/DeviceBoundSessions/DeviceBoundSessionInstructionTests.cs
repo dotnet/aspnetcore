@@ -45,11 +45,11 @@ public class DeviceBoundSessionInstructionTests
     }
 
     [Fact]
-    public void AllowedRefreshInitiators_AreOmitted_WhenNull()
+    public void AllowedRefreshInitiators_AreSerialized_AsEmptyArray_WhenEmpty()
     {
         var json = Serialize(new SessionInstruction { SessionIdentifier = "id" });
 
-        Assert.DoesNotContain("allowed_refresh_initiators", json);
+        Assert.Contains("\"allowed_refresh_initiators\":[]", json);
     }
 
     [Fact]
@@ -70,14 +70,14 @@ public class DeviceBoundSessionInstructionTests
     }
 
     [Fact]
-    public async Task Registration_OmitsAllowedRefreshInitiators_WhenNotConfigured()
+    public async Task Registration_SerializesEmptyAllowedRefreshInitiators_WhenNotConfigured()
     {
         using var host = await CreateHostAsync();
         var client = host.GetTestServer().CreateClient();
 
         var body = await SignInRegisterAndReadBodyAsync(client);
 
-        Assert.DoesNotContain("allowed_refresh_initiators", body);
+        Assert.Contains("\"allowed_refresh_initiators\":[]", body);
     }
 
     [Fact]

@@ -26,9 +26,8 @@ public sealed class SessionScope
     public bool IncludeSite { get; set; }
 
     /// <summary>
-    /// Gets or sets the scope specification rules.
+    /// Gets or sets the scope specification rules. See W3C Device Bound Session Credentials §9.7.
     /// </summary>
     [JsonPropertyName("scope_specification")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<SessionScopeRule>? ScopeSpecification { get; set; }
+    public List<SessionScopeRule> ScopeSpecification { get; set; } = [];
 }

@@ -284,16 +284,12 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
     {
         var origin = $"{Request.Scheme}://{Request.Host}";
 
-        List<SessionScopeRule>? scopeRules = null;
-        if (Options.ScopeSpecifications.Count > 0)
+        var scopeRules = Options.ScopeSpecifications.Select(r => new SessionScopeRule
         {
-            scopeRules = Options.ScopeSpecifications.Select(r => new SessionScopeRule
-            {
-                Type = r.Type,
-                Domain = r.Domain,
-                Path = r.Path,
-            }).ToList();
-        }
+            Type = r.Type,
+            Domain = r.Domain,
+            Path = r.Path,
+        }).ToList();
 
         // The credential cookie name and attributes are derived from the session scheme's cookie
         // options so the session instruction stays in lock-step with the cookie we actually emit.
@@ -303,12 +299,6 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         var sessionCookieName = sessionCookieOptions.Cookie.Name
             ?? throw new InvalidOperationException(
                 $"The session cookie scheme '{Options.SessionScheme}' has no configured cookie name; cannot build a valid DBSC session instruction.");
-
-        List<string>? allowedRefreshInitiators = null;
-        if (Options.AllowedRefreshInitiators.Count > 0)
-        {
-            allowedRefreshInitiators = [.. Options.AllowedRefreshInitiators];
-        }
 
         return new SessionInstruction
         {
@@ -328,7 +318,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
                     Attributes = BuildCredentialAttributes(sessionCookieOptions),
                 }
             },
-            AllowedRefreshInitiators = allowedRefreshInitiators,
+            AllowedRefreshInitiators = [.. Options.AllowedRefreshInitiators],
         };
     }
 

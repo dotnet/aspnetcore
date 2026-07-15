@@ -45,7 +45,7 @@ Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.Name.s
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.SessionCredential() -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.Type.get -> string!
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction
-Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.AllowedRefreshInitiators.get -> System.Collections.Generic.List<string!>?
+Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.AllowedRefreshInitiators.get -> System.Collections.Generic.List<string!>!
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.AllowedRefreshInitiators.set -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.Continue.get -> bool
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.Continue.set -> void
@@ -63,7 +63,7 @@ Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScope.IncludeSite
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScope.IncludeSite.set -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScope.Origin.get -> string?
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScope.Origin.set -> void
-Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScope.ScopeSpecification.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScopeRule!>?
+Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScope.ScopeSpecification.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScopeRule!>!
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScope.ScopeSpecification.set -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScope.SessionScope() -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScopeRule
