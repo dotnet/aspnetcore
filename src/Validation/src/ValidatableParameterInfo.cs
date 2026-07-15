@@ -103,28 +103,37 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
             var tracker = context.TrackAsyncValidations();
 
-            foreach (var item in enumerable)
+            var enumerator = enumerable.GetEnumerator();
+            try
             {
-                if (item != null)
+                while (enumerator.MoveNext())
                 {
-                    if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                    var item = enumerator is IDictionaryEnumerator de ? de.Value : enumerator.Current;
+                    if (item != null)
                     {
-                        var currentContext = tracker.NextContext();
+                        if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                        {
+                            var currentContext = tracker.NextContext();
 
-                        currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                            ? $"{Name}[{index}]"
-                            : $"{currentPrefix}.{Name}[{index}]";
-                        try
-                        {
-                            tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
-                        }
-                        catch (Exception ex)
-                        {
-                            tracker.Track(Task.FromException(ex));
+                            currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                ? $"{Name}[{index}]"
+                                : $"{currentPrefix}.{Name}[{index}]";
+                            try
+                            {
+                                tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
+                            }
+                            catch (Exception ex)
+                            {
+                                tracker.Track(Task.FromException(ex));
+                            }
                         }
                     }
+                    index++;
                 }
-                index++;
+            }
+            finally
+            {
+                (enumerator as IDisposable)?.Dispose();
             }
 
             try
@@ -177,26 +186,35 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
             var validationOptions = context.ValidationOptions;
 
-            foreach (var item in enumerable)
+            var enumerator = enumerable.GetEnumerator();
+            try
             {
-                if (item != null)
+                while (enumerator.MoveNext())
                 {
-                    if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                    var item = enumerator is IDictionaryEnumerator de ? de.Value : enumerator.Current;
+                    if (item != null)
                     {
-                        context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                            ? $"{Name}[{index}]"
-                            : $"{currentPrefix}.{Name}[{index}]";
-                        try
+                        if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                         {
-                            validatableType.Validate(item, context);
-                        }
-                        finally
-                        {
-                            context.CurrentValidationPath = currentPrefix;
+                            context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                ? $"{Name}[{index}]"
+                                : $"{currentPrefix}.{Name}[{index}]";
+                            try
+                            {
+                                validatableType.Validate(item, context);
+                            }
+                            finally
+                            {
+                                context.CurrentValidationPath = currentPrefix;
+                            }
                         }
                     }
+                    index++;
                 }
-                index++;
+            }
+            finally
+            {
+                (enumerator as IDisposable)?.Dispose();
             }
         }
         // If not enumerable, validate the single value
