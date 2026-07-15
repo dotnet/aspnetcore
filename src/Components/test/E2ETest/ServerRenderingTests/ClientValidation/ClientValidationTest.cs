@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Linq;
 using System.Text.Json;
 using Components.TestServer.RazorComponents;
@@ -56,6 +57,11 @@ public class ClientValidationTest : ClientValidationTestBase
         Assert.Contains("Email is required.", summaryMessages);
         Assert.Contains("Password is required.", summaryMessages);
 
+        // While errors are shown the summary carries the error-state class, not the valid one.
+        var summaryErrorClasses = Browser.Exists(By.CssSelector("ul[data-valmsg-summary]")).GetAttribute("class");
+        Assert.Contains("validation-summary-errors", summaryErrorClasses);
+        Assert.DoesNotContain("validation-summary-valid", summaryErrorClasses);
+
         // Fire one non-required rule to test integration end-to-end.
         Browser.Exists(By.Id("name")).SendKeys("Alice");
         Browser.Exists(By.Id("email")).SendKeys("not-an-email");
@@ -89,6 +95,11 @@ public class ClientValidationTest : ClientValidationTestBase
         // The summary is emptied and hidden again once the form is valid.
         AssertSummaryHidden();
         Browser.Equal(0, () => Browser.FindElements(By.CssSelector("ul[data-valmsg-summary] > li")).Count);
+
+        // The summary toggles back to the valid-state class.
+        var summaryValidClasses = Browser.Exists(By.CssSelector("ul[data-valmsg-summary]")).GetAttribute("class");
+        Assert.Contains("validation-summary-valid", summaryValidClasses);
+        Assert.DoesNotContain("validation-summary-errors", summaryValidClasses);
     }
 
     [Fact]
@@ -105,19 +116,25 @@ public class ClientValidationTest : ClientValidationTestBase
         using var document = JsonDocument.Parse(json);
         var fields = document.RootElement.GetProperty("fields").EnumerateArray().ToList();
 
-        var fieldNames = fields.Select(f => f.GetProperty("name").GetString()).ToList();
-        Assert.Contains("Form.Name", fieldNames);
-        Assert.Contains("Form.Email", fieldNames);
-        Assert.Contains("Form.Password", fieldNames);
+        var fieldNames = fields
+            .Select(f => f.GetProperty("name").GetString())
+            .OrderBy(n => n, StringComparer.Ordinal)
+            .ToArray();
 
-        // The Email field carries both a 'required' and an 'email' rule.
+        // The carrier must emit exactly the four validatable fields on this page,
+        // unexpected fields (or a missing one) fail the test.
+        Assert.Equal(
+            new[] { "Form.ConfirmPassword", "Form.Email", "Form.Name", "Form.Password" },
+            fieldNames);
+
+        // The Email field carries exactly a 'required' and an 'email' rule.
         var emailRules = fields
             .Single(f => f.GetProperty("name").GetString() == "Form.Email")
             .GetProperty("rules").EnumerateArray()
             .Select(r => r.GetProperty("name").GetString())
-            .ToList();
-        Assert.Contains("required", emailRules);
-        Assert.Contains("email", emailRules);
+            .OrderBy(r => r, StringComparer.Ordinal)
+            .ToArray();
+        Assert.Equal(new[] { "email", "required" }, emailRules);
     }
 
     // Tests checking that the JS adapter layer supports enhanced navigation correctly.

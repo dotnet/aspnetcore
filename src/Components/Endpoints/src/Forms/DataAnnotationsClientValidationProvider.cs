@@ -12,11 +12,6 @@ using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
-/// <summary>
-/// Iterates the inputs registered on the <see cref="EditContext"/> and builds a <see cref="RenderFragment"/>
-/// describing client-side validation rules.
-/// Emits client-side validation rules only for fields that would be validated on the server as well.
-/// </summary>
 internal sealed class DataAnnotationsClientValidationProvider : ClientValidationProvider
 {
     private readonly ClientValidationCache _clientValidationCache;

@@ -64,24 +64,13 @@ internal sealed class ClientValidationCache : IDisposable
         }
     }
 
-    /// <summary>
-    /// Determines whether the server will validate the specified field on submit, which is the
-    /// condition under which client-side rules may be safely emitted.
-    /// </summary>
-    /// <param name="fieldIdentifier">The field an input was rendered for.</param>
-    /// <param name="formModel">The form's top-level model (<see cref="EditContext.Model"/>).</param>
-    /// <param name="formHasValidatableInfo">
-    /// Whether the form model type is recognized by MEV. Computed once per form by the caller via
-    /// <see cref="HasValidatableTypeInfo"/> and threaded in so the per-field path does no extra
-    /// type-level lookup.
-    /// </param>
     private bool IsServerValidatable(in FieldIdentifier fieldIdentifier, object formModel, bool formHasValidatableInfo)
     {
         if (formHasValidatableInfo)
         {
             // MEV submit path (ValidateAsync) recurses. A field is validated iff MEV has
-            // ValidatablePropertyInfo for it on its owner type. This also naturally excludes
-            // members/types filtered by [SkipValidation], matching the server.
+            // ValidatablePropertyInfo for it on its owner type.
+            // This also excludes members/types filtered by [SkipValidation], matching the server.
             return HasValidatablePropertyInfo(fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
         }
         else
@@ -94,10 +83,6 @@ internal sealed class ClientValidationCache : IDisposable
     }
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-    /// <summary>
-    /// Returns whether MEV recognizes <paramref name="type"/> as a validatable type. Cached.
-    /// Returns <see langword="false"/> when MEV is not configured.
-    /// </summary>
     private bool HasValidatableTypeInfo(Type type) =>
         _validationOptions.Resolvers.Count > 0
             && _typeHasValidatableInfo.GetOrAdd(type,
@@ -125,9 +110,6 @@ internal sealed class ClientValidationCache : IDisposable
         }
     }
 
-    // Builds reflection metadata for a single field. Culture-independent; localized text is
-    // resolved per call by the provider. At most one of ResourceDisplayAttribute and
-    // LiteralDisplayName is non-null; both null means the property has no display attribute.
     [UnconditionalSuppressMessage("Trimming", "IL2070",
         Justification = "Model types are application code and are preserved by default.")]
     private static ClientValidationFieldMetadata? BuildFieldMetadata(Type modelType, string propertyName)

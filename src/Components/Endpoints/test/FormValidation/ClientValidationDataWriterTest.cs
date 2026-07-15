@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System.Text.Json;
+
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
 public class ClientValidationDataWriterTest
@@ -24,12 +26,30 @@ public class ClientValidationDataWriterTest
         writer.EndField();
 
         var json = writer.Complete();
-
         Assert.NotNull(json);
+
+        // The raw payload must not contain unescaped HTML-sensitive characters that could break out
+        // of the element or its attribute, and must carry the \u003C / \u003E escapes instead.
         Assert.DoesNotContain("<", json);
         Assert.DoesNotContain(">", json);
         Assert.DoesNotContain("'", json);
         Assert.DoesNotContain("</blazor-client-validation-data>", json);
+        Assert.Contains("\\u003C", json); // escaped <
+        Assert.Contains("\\u003E", json); // escaped >
+
+        // The hostile string must still round-trip intact through every position it was written to,
+        // proving the characters were escaped rather than dropped.
+        using var document = JsonDocument.Parse(json!);
+        var field = Assert.Single(document.RootElement.GetProperty("fields").EnumerateArray());
+        Assert.Equal(hostile, field.GetProperty("name").GetString());
+
+        var rule = Assert.Single(field.GetProperty("rules").EnumerateArray());
+        Assert.Equal(hostile, rule.GetProperty("name").GetString());
+        Assert.Equal(hostile, rule.GetProperty("message").GetString());
+
+        var param = Assert.Single(rule.GetProperty("params").EnumerateObject());
+        Assert.Equal(hostile, param.Name);
+        Assert.Equal(hostile, param.Value.GetString());
     }
 
     [Fact]

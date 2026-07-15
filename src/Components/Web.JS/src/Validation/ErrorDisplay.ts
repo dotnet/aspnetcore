@@ -4,7 +4,7 @@
 import { findMessageElements, getFieldElements } from './DomUtils';
 import { ValidatableElement } from './ValidationTypes';
 
-export interface CssClassNames {
+interface CssClassNames {
   inputError: string;
   inputValid: string;
   inputModified: string;
@@ -14,7 +14,7 @@ export interface CssClassNames {
   summaryValid: string;
 }
 
-export const defaultCssClassNames: CssClassNames = {
+const defaultCssClassNames: CssClassNames = {
   inputError: 'invalid',
   inputValid: 'valid',
   inputModified: 'modified',
@@ -31,8 +31,8 @@ export const defaultCssClassNames: CssClassNames = {
 export class ErrorDisplay {
   private cssClasses: CssClassNames;
 
-  constructor(cssClasses?: Partial<CssClassNames>) {
-    this.cssClasses = { ...defaultCssClassNames, ...cssClasses };
+  constructor() {
+    this.cssClasses = defaultCssClassNames;
   }
 
   showFieldError(input: ValidatableElement, errorMessage: string): void {

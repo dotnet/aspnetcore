@@ -8,12 +8,6 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
-// Streams the client-validation payload straight to JSON, avoiding the intermediate rule/field
-// descriptor allocations. Built-in rules write their name/message/params inline; user-defined
-// adapter rules are consumed directly from the ClientValidationRule instances they produce.
-//
-// The writer is forward-only, so a field object is opened lazily on its first rule and the whole
-// payload is discarded (Complete returns null) when no field produced any rule.
 internal sealed class ClientValidationDataWriter
 {
     private readonly ArrayBufferWriter<byte> _buffer;
