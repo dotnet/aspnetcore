@@ -116,7 +116,7 @@ internal sealed class GetDocumentCommandWorker
             var hostArgs = new List<string> { $"--{HostDefaults.ApplicationKey}={assemblyName}" };
             if (!string.IsNullOrEmpty(_context.Environment))
             {
-                hostArgs.Add($"--environment={_context.Environment}");
+                hostArgs.Add($"--{HostDefaults.EnvironmentKey}={_context.Environment}");
             }
 
             // Retrieve the service provider from the target host.
@@ -170,7 +170,7 @@ internal sealed class GetDocumentCommandWorker
             var hostArgs = new List<string>();
             if (!string.IsNullOrEmpty(_context.Environment))
             {
-                hostArgs.Add($"--environment={_context.Environment}");
+                hostArgs.Add($"--{HostDefaults.EnvironmentKey}={_context.Environment}");
             }
 
             var services = serviceFactory(hostArgs.ToArray());
