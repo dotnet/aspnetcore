@@ -1161,9 +1161,15 @@ internal sealed partial class HttpConnectionDispatcher
         connection.HttpContext = newHttpContext;
     }
 
+    // SignalR's default IUserIdProvider keys user identity off NameIdentifier, but an app can
+    // override it to use a different claim. This transport-layer dispatcher can't see IUserIdProvider,
+    // so mirror the standard identity-claim precedence antiforgery uses (DefaultClaimUidExtractor):
+    // sub, then NameIdentifier, then Upn. The first claim present on the principal identifies the user.
+    private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
+
     // The connection is resolved purely by its connection token, so a different authenticated and
     // endpoint-authorized user who obtained that token could otherwise act on a connection bound to
-    // another user. Reject the request (403) when the incoming user's NameIdentifier differs from
+    // another user. Reject the request (403) when the incoming user's identity claim differs from
     // the one the connection is bound to, leaving the connection intact for the original user.
     private async Task<bool> RejectIfUserChangedAsync(HttpConnectionContext connection, HttpContext context)
     {
@@ -1172,18 +1178,36 @@ internal sealed partial class HttpConnectionDispatcher
             return false;
         }
 
-        var originalName = connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var newName = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (originalName == newName)
+        var originalIdentity = GetUserIdentityKey(connection.User);
+        var newIdentity = GetUserIdentityKey(context.User);
+        if (originalIdentity == newIdentity)
         {
             return false;
         }
 
-        Log.UserNameChangedRejected(_logger, originalName, newName);
+        Log.UserNameChangedRejected(_logger, originalIdentity?.Value, newIdentity?.Value);
         context.Response.ContentType = "text/plain";
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
         await context.Response.WriteAsync("The user associated with this connection changed.");
         return true;
+    }
+
+    // Returns a comparable identity key (claim type, value, issuer) for the first standard identity
+    // claim present on the principal, or null when none is present. Two principals with the same key
+    // (e.g. a refreshed token for the same user) are treated as the same user; a null key on both
+    // sides also compares equal, preserving the prior behavior for principals without these claims.
+    private static (string Type, string Value, string Issuer)? GetUserIdentityKey(ClaimsPrincipal user)
+    {
+        foreach (var claimType in _userIdentityClaimTypes)
+        {
+            var claim = user.FindFirst(claimType);
+            if (claim is not null && !string.IsNullOrEmpty(claim.Value))
+            {
+                return (claim.Type, claim.Value, claim.Issuer);
+            }
+        }
+
+        return null;
     }
 
     private async Task<HttpConnectionContext?> GetConnectionAsync(HttpContext context)
