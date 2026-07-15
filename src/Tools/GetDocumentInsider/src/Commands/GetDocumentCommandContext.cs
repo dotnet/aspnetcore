@@ -40,7 +40,9 @@ public class GetDocumentCommandContext
 
     /// <summary>
     /// The environment name to use when executing the application.
-    /// Sets the ASPNETCORE_ENVIRONMENT environment variable.
+    /// Passed to the host as the <c>environment</c> setting, which is
+    /// equivalent to the ASPNETCORE_ENVIRONMENT / DOTNET_ENVIRONMENT
+    /// environment variable.
     /// </summary>
     public string Environment { get; set; }
 
