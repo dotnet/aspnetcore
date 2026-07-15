@@ -8,8 +8,7 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 /// SSR, mapping each <see cref="FieldIdentifier"/> to the HTML <c>name</c> it rendered with.
 /// Stored in <see cref="EditContext.Properties"/> keyed by <c>typeof(RenderedFieldRegistry)</c>.
 /// Written by <c>InputBase</c> as inputs initialize and read by <see cref="ClientValidationData"/>
-/// when it emits the client-validation payload. Lives entirely within this assembly; the SSR
-/// provider receives the field map as a plain dictionary, never this type.
+/// when it emits the client-validation payload.
 /// </summary>
 internal sealed class RenderedFieldRegistry
 {

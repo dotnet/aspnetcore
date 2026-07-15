@@ -6,6 +6,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Options;
@@ -16,13 +18,14 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Tests.FormValidation;
 // Integration tests for the SSR client-validation rule pipeline:
 // DataAnnotationsClientValidationProvider + ClientValidationCache. These exercise the real reflection,
 // rule mapping, server-validation gating, and localization, driven by the set of fields an input
-// rendered for (the renderedFields map that ClientValidationData passes in).
+// rendered for (the renderedFields map that ClientValidationData passes in). Assertions run against
+// the serialized JSON payload the provider writes, which is the actual client-validation wire format.
 public class ClientValidationProviderTests
 {
     [Fact]
     public void AllBuiltInValidators_ProduceExpectedRulesAndParameters()
     {
-        var descriptor = GetDescriptor<AllAttributesModel>(
+        var form = GetData<AllAttributesModel>(
             nameof(AllAttributesModel.Required),
             nameof(AllAttributesModel.Length),
             nameof(AllAttributesModel.MaxLen),
@@ -36,55 +39,55 @@ public class ClientValidationProviderTests
             nameof(AllAttributesModel.Card),
             nameof(AllAttributesModel.Upload));
 
-        Assert.NotNull(descriptor);
+        Assert.NotNull(form);
 
-        Assert.Equal("required", SingleRule(descriptor!, nameof(AllAttributesModel.Required)).Name);
+        Assert.Equal("required", SingleRule(form!, nameof(AllAttributesModel.Required)).Name);
 
-        var length = SingleRule(descriptor!, nameof(AllAttributesModel.Length));
+        var length = SingleRule(form!, nameof(AllAttributesModel.Length));
         Assert.Equal("length", length.Name);
-        Assert.Equal("8", length.Parameters!["min"]);
-        Assert.Equal("100", length.Parameters!["max"]);
+        Assert.Equal("8", length.Params!["min"]);
+        Assert.Equal("100", length.Params!["max"]);
 
-        var maxlen = SingleRule(descriptor!, nameof(AllAttributesModel.MaxLen));
+        var maxlen = SingleRule(form!, nameof(AllAttributesModel.MaxLen));
         Assert.Equal("maxlength", maxlen.Name);
-        Assert.Equal("50", maxlen.Parameters!["max"]);
+        Assert.Equal("50", maxlen.Params!["max"]);
 
-        var minlen = SingleRule(descriptor!, nameof(AllAttributesModel.MinLen));
+        var minlen = SingleRule(form!, nameof(AllAttributesModel.MinLen));
         Assert.Equal("minlength", minlen.Name);
-        Assert.Equal("5", minlen.Parameters!["min"]);
+        Assert.Equal("5", minlen.Params!["min"]);
 
-        var range = SingleRule(descriptor!, nameof(AllAttributesModel.NumericRange));
+        var range = SingleRule(form!, nameof(AllAttributesModel.NumericRange));
         Assert.Equal("range", range.Name);
-        Assert.Equal("1", range.Parameters!["min"]);
-        Assert.Equal("10", range.Parameters!["max"]);
+        Assert.Equal("1", range.Params!["min"]);
+        Assert.Equal("10", range.Params!["max"]);
 
-        var regex = SingleRule(descriptor!, nameof(AllAttributesModel.Pattern));
+        var regex = SingleRule(form!, nameof(AllAttributesModel.Pattern));
         Assert.Equal("regex", regex.Name);
-        Assert.Equal("[a-z]+", regex.Parameters!["pattern"]);
+        Assert.Equal("[a-z]+", regex.Params!["pattern"]);
 
-        var equalto = SingleRule(descriptor!, nameof(AllAttributesModel.Compared));
+        var equalto = SingleRule(form!, nameof(AllAttributesModel.Compared));
         Assert.Equal("equalto", equalto.Name);
-        Assert.Equal("*." + nameof(AllAttributesModel.Required), equalto.Parameters!["other"]);
+        Assert.Equal("*." + nameof(AllAttributesModel.Required), equalto.Params!["other"]);
 
-        Assert.Equal("email", SingleRule(descriptor!, nameof(AllAttributesModel.Email)).Name);
-        Assert.Equal("url", SingleRule(descriptor!, nameof(AllAttributesModel.Website)).Name);
-        Assert.Equal("phone", SingleRule(descriptor!, nameof(AllAttributesModel.PhoneNumber)).Name);
-        Assert.Equal("creditcard", SingleRule(descriptor!, nameof(AllAttributesModel.Card)).Name);
+        Assert.Equal("email", SingleRule(form!, nameof(AllAttributesModel.Email)).Name);
+        Assert.Equal("url", SingleRule(form!, nameof(AllAttributesModel.Website)).Name);
+        Assert.Equal("phone", SingleRule(form!, nameof(AllAttributesModel.PhoneNumber)).Name);
+        Assert.Equal("creditcard", SingleRule(form!, nameof(AllAttributesModel.Card)).Name);
 
-        var file = SingleRule(descriptor!, nameof(AllAttributesModel.Upload));
+        var file = SingleRule(form!, nameof(AllAttributesModel.Upload));
         Assert.Equal("fileextensions", file.Name);
-        Assert.Equal(".png,.jpg", file.Parameters!["extensions"]);
+        Assert.Equal(".png,.jpg", file.Params!["extensions"]);
 
         // Every rule carries a non-empty formatted error message.
-        Assert.All(descriptor!.Fields, f => Assert.All(f.Rules, r => Assert.False(string.IsNullOrEmpty(r.ErrorMessage))));
+        Assert.All(form!.Fields, f => Assert.All(f.Rules, r => Assert.False(string.IsNullOrEmpty(r.Message))));
     }
 
     [Fact]
     public void MultipleAttributesOnOneProperty_ProduceRulesInDeclarationOrder()
     {
-        var descriptor = GetDescriptor<MultiAttributeModel>(nameof(MultiAttributeModel.Email));
+        var form = GetData<MultiAttributeModel>(nameof(MultiAttributeModel.Email));
 
-        var field = Assert.Single(descriptor!.Fields);
+        var field = Assert.Single(form!.Fields);
         Assert.Collection(field.Rules,
             r => Assert.Equal("required", r.Name),
             r => Assert.Equal("email", r.Name));
@@ -95,18 +98,18 @@ public class ClientValidationProviderTests
     {
         // The model has two validated properties; only one input rendered, so only that field
         // appears. This is the core behavior of render-driven generation.
-        var descriptor = GetDescriptor<TwoFieldModel>(nameof(TwoFieldModel.First));
+        var form = GetData<TwoFieldModel>(nameof(TwoFieldModel.First));
 
-        var field = Assert.Single(descriptor!.Fields);
+        var field = Assert.Single(form!.Fields);
         Assert.Equal(nameof(TwoFieldModel.First), field.Name);
     }
 
     [Fact]
     public void PropertyWithoutValidationAttributes_IsOmitted()
     {
-        var descriptor = GetDescriptor<TwoFieldModel>(nameof(TwoFieldModel.Unvalidated));
+        var form = GetData<TwoFieldModel>(nameof(TwoFieldModel.Unvalidated));
 
-        Assert.Null(descriptor);
+        Assert.Null(form);
     }
 
     [Fact]
@@ -115,23 +118,23 @@ public class ClientValidationProviderTests
         var provider = CreateProvider();
         var model = new TwoFieldModel();
 
-        var descriptor = provider.BuildFormDescriptor(new EditContext(model), new Dictionary<FieldIdentifier, string>());
+        var form = Serialize(provider, new EditContext(model), new Dictionary<FieldIdentifier, string>());
 
-        Assert.Null(descriptor);
+        Assert.Null(form);
     }
 
     [Fact]
     public void StringLength_OmitsSentinelBounds()
     {
-        var maxOnly = SingleRule(GetDescriptor<StringLengthModel>(nameof(StringLengthModel.MaxOnly))!, nameof(StringLengthModel.MaxOnly));
+        var maxOnly = SingleRule(GetData<StringLengthModel>(nameof(StringLengthModel.MaxOnly))!, nameof(StringLengthModel.MaxOnly));
         Assert.Equal("length", maxOnly.Name);
-        Assert.True(maxOnly.Parameters!.ContainsKey("max"));
-        Assert.False(maxOnly.Parameters!.ContainsKey("min"));
+        Assert.True(maxOnly.Params!.ContainsKey("max"));
+        Assert.False(maxOnly.Params!.ContainsKey("min"));
 
-        var minOnly = SingleRule(GetDescriptor<StringLengthModel>(nameof(StringLengthModel.MinOnly))!, nameof(StringLengthModel.MinOnly));
+        var minOnly = SingleRule(GetData<StringLengthModel>(nameof(StringLengthModel.MinOnly))!, nameof(StringLengthModel.MinOnly));
         Assert.Equal("length", minOnly.Name);
-        Assert.True(minOnly.Parameters!.ContainsKey("min"));
-        Assert.False(minOnly.Parameters!.ContainsKey("max"));
+        Assert.True(minOnly.Params!.ContainsKey("min"));
+        Assert.False(minOnly.Params!.ContainsKey("max"));
     }
 
     [Fact]
@@ -139,27 +142,27 @@ public class ClientValidationProviderTests
     {
         // The JS range validator is numeric-only; a DateTime range must not emit a rule, and
         // because it is the only attribute, the field is omitted entirely.
-        var descriptor = GetDescriptor<DateRangeModel>(nameof(DateRangeModel.Date));
+        var form = GetData<DateRangeModel>(nameof(DateRangeModel.Date));
 
-        Assert.Null(descriptor);
+        Assert.Null(form);
     }
 
     [Fact]
     public void CustomAdapterAttribute_ContributesItsRules()
     {
-        var rule = SingleRule(GetDescriptor<CustomAdapterModel>(nameof(CustomAdapterModel.Value))!, nameof(CustomAdapterModel.Value));
+        var rule = SingleRule(GetData<CustomAdapterModel>(nameof(CustomAdapterModel.Value))!, nameof(CustomAdapterModel.Value));
 
         Assert.Equal("custom", rule.Name);
-        Assert.Equal("custom message", rule.ErrorMessage);
-        Assert.Equal("bar", rule.Parameters!["foo"]);
+        Assert.Equal("custom message", rule.Message);
+        Assert.Equal("bar", rule.Params!["foo"]);
     }
 
     [Fact]
     public void DisplayNameAttribute_IsUsedInErrorMessage()
     {
-        var rule = SingleRule(GetDescriptor<DisplayNameModel>(nameof(DisplayNameModel.Field))!, nameof(DisplayNameModel.Field));
+        var rule = SingleRule(GetData<DisplayNameModel>(nameof(DisplayNameModel.Field))!, nameof(DisplayNameModel.Field));
 
-        Assert.Contains("Custom Label", rule.ErrorMessage);
+        Assert.Contains("Custom Label", rule.Message);
     }
 
     [Fact]
@@ -168,10 +171,10 @@ public class ClientValidationProviderTests
         var localizer = new RecordingLocalizer();
         var options = new ValidationOptions { Localizer = localizer };
 
-        var rule = SingleRule(GetDescriptor<DisplayNameModel>(options, nameof(DisplayNameModel.Field))!, nameof(DisplayNameModel.Field));
+        var rule = SingleRule(GetData<DisplayNameModel>(options, nameof(DisplayNameModel.Field))!, nameof(DisplayNameModel.Field));
 
         // The rule message is the localizer's output.
-        Assert.Equal("localized-error", rule.ErrorMessage);
+        Assert.Equal("localized-error", rule.Message);
 
         // The display-name context carries the literal display name as the lookup key.
         Assert.Equal("Custom Label", localizer.LastDisplayContext!.Value.DisplayName);
@@ -189,10 +192,10 @@ public class ClientValidationProviderTests
     {
         // No MEV configured: the DataAnnotations submit path validates top-level properties, so a
         // top-level field is emitted.
-        var descriptor = GetDescriptor<TwoFieldModel>(nameof(TwoFieldModel.First));
+        var form = GetData<TwoFieldModel>(nameof(TwoFieldModel.First));
 
-        Assert.NotNull(descriptor);
-        Assert.Equal(nameof(TwoFieldModel.First), Assert.Single(descriptor!.Fields).Name);
+        Assert.NotNull(form);
+        Assert.Equal(nameof(TwoFieldModel.First), Assert.Single(form!.Fields).Name);
     }
 
     [Fact]
@@ -208,9 +211,9 @@ public class ClientValidationProviderTests
             [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
         };
 
-        var descriptor = provider.BuildFormDescriptor(new EditContext(model), fields);
+        var form = Serialize(provider, new EditContext(model), fields);
 
-        Assert.Null(descriptor);
+        Assert.Null(form);
     }
 
     [Fact]
@@ -224,9 +227,9 @@ public class ClientValidationProviderTests
             [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
         };
 
-        var descriptor = provider.BuildFormDescriptor(new EditContext(model), fields);
+        var form = Serialize(provider, new EditContext(model), fields);
 
-        var field = Assert.Single(descriptor!.Fields);
+        var field = Assert.Single(form!.Fields);
         Assert.Equal("Child.Street", field.Name);
         Assert.Equal("required", Assert.Single(field.Rules).Name);
     }
@@ -245,12 +248,14 @@ public class ClientValidationProviderTests
             [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
         };
 
-        var descriptor = provider.BuildFormDescriptor(new EditContext(model), fields);
+        var form = Serialize(provider, new EditContext(model), fields);
 
-        Assert.Null(descriptor);
+        Assert.Null(form);
     }
 
     // ---- Helpers ----
+
+    private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
 
     private static DataAnnotationsClientValidationProvider CreateProvider(ValidationOptions? options = null)
     {
@@ -259,11 +264,11 @@ public class ClientValidationProviderTests
         return new DataAnnotationsClientValidationProvider(cache, opts);
     }
 
-    private static ClientValidationFormDescriptor? GetDescriptor<TModel>(params string[] fieldNames)
+    private static FormData? GetData<TModel>(params string[] fieldNames)
         where TModel : new()
-        => GetDescriptor<TModel>(options: null, fieldNames);
+        => GetData<TModel>(options: null, fieldNames);
 
-    private static ClientValidationFormDescriptor? GetDescriptor<TModel>(ValidationOptions? options, params string[] fieldNames)
+    private static FormData? GetData<TModel>(ValidationOptions? options, params string[] fieldNames)
         where TModel : new()
     {
         var provider = CreateProvider(options);
@@ -273,14 +278,37 @@ public class ClientValidationProviderTests
         {
             fields[new FieldIdentifier(model, name)] = name;
         }
-        return provider.BuildFormDescriptor(new EditContext(model), fields);
+        return Serialize(provider, new EditContext(model), fields);
     }
 
-    private static ClientValidationRuleDescriptor SingleRule(ClientValidationFormDescriptor descriptor, string fieldName)
+    // Serializes via the provider and parses the JSON payload back into the wire shape, or null
+    // when the provider emits nothing.
+    private static FormData? Serialize(
+        DataAnnotationsClientValidationProvider provider,
+        EditContext editContext,
+        Dictionary<FieldIdentifier, string> fields)
     {
-        var field = Assert.Single(descriptor.Fields, f => f.Name == fieldName);
+        var json = provider.SerializeClientValidationData(editContext, fields);
+        return json is null ? null : JsonSerializer.Deserialize<FormData>(json, s_jsonOptions);
+    }
+
+    private static RuleData SingleRule(FormData form, string fieldName)
+    {
+        var field = Assert.Single(form.Fields, f => f.Name == fieldName);
         return Assert.Single(field.Rules);
     }
+
+    // Mirrors the JSON wire shape produced by the provider.
+    private sealed record FormData([property: JsonPropertyName("fields")] List<FieldData> Fields);
+
+    private sealed record FieldData(
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("rules")] List<RuleData> Rules);
+
+    private sealed record RuleData(
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("message")] string Message,
+        [property: JsonPropertyName("params")] Dictionary<string, string>? Params);
 
 #pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
     private static ValidationOptions CreateMevOptions(Type formModelType, params (Type Type, string Member)[] nestedMembers)

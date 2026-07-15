@@ -32,13 +32,11 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
 
     public override RenderFragment? RenderClientValidationRules(EditContext editContext, IReadOnlyDictionary<FieldIdentifier, string> renderedFields)
     {
-        var formDescriptor = BuildFormDescriptor(editContext, renderedFields);
-        if (formDescriptor is null)
+        var json = SerializeClientValidationData(editContext, renderedFields);
+        if (json is null)
         {
             return null;
         }
-
-        var json = ClientValidationDataSerializer.Serialize(formDescriptor);
 
         return builder =>
         {
@@ -50,11 +48,9 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
         };
     }
 
-    // Builds the typed descriptor of the client-side rules for the rendered fields, or null when
-    // there is nothing to emit. Separated from RenderClientValidationRules so the rule-building
-    // (the reflection/attribute-mapping logic) can be unit-tested without going through the wire
-    // format and the carrier RenderFragment.
-    internal ClientValidationFormDescriptor? BuildFormDescriptor(EditContext editContext, IReadOnlyDictionary<FieldIdentifier, string> renderedFields)
+    // Returns JSON string with the client-validation payload for the rendered fields directly, or null when
+    // there is nothing to emit.
+    internal string? SerializeClientValidationData(EditContext editContext, IReadOnlyDictionary<FieldIdentifier, string> renderedFields)
     {
         ArgumentNullException.ThrowIfNull(editContext);
 
@@ -63,126 +59,140 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
             return null;
         }
 
-        List<ClientValidationFieldDescriptor>? fieldDescriptors = null;
+        var writer = new ClientValidationDataWriter();
         var validatableFields = _clientValidationCache.GetValidatableFieldMetadata(renderedFields, editContext.Model);
 
         foreach (var (renderedName, fieldMetadata) in validatableFields)
         {
-            if (BuildFieldDescriptor(renderedName, fieldMetadata) is { } fieldDescriptor)
-            {
-                (fieldDescriptors ??= []).Add(fieldDescriptor);
-            }
+            WriteFieldRules(writer, renderedName, fieldMetadata);
         }
 
-        return fieldDescriptors is null ? null : new ClientValidationFormDescriptor(fieldDescriptors);
+        return writer.Complete();
     }
 
-    private ClientValidationFieldDescriptor? BuildFieldDescriptor(string renderedName, ClientValidationFieldMetadata fieldMetadata)
+    private void WriteFieldRules(ClientValidationDataWriter writer, string renderedName, ClientValidationFieldMetadata fieldMetadata)
     {
         var displayName = ResolveDisplayName(fieldMetadata);
-        var rules = new List<ClientValidationRuleDescriptor>();
+        writer.BeginField(renderedName);
 
         foreach (var attribute in fieldMetadata.ValidationAttributes)
         {
             var errorMessage = ResolveErrorMessage(attribute, fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType);
 
-            if (GetBuiltInValidationRule(attribute, errorMessage) is { } rule)
+            if (TryWriteBuiltInRule(writer, attribute, errorMessage))
             {
-                rules.Add(rule);
+                continue;
             }
-            else if (attribute is IClientValidationAdapter adapter)
+
+            if (attribute is IClientValidationAdapter adapter)
             {
                 foreach (var customRule in adapter.GetClientValidationRules())
                 {
-                    var ruleDescriptor = new ClientValidationRuleDescriptor(customRule.Name, errorMessage, customRule.Parameters);
-                    rules.Add(ruleDescriptor);
+                    writer.BeginRule(customRule.Name, errorMessage);
+                    if (customRule.Parameters is { Count: > 0 } parameters)
+                    {
+                        foreach (var kvp in parameters)
+                        {
+                            writer.Param(kvp.Key, kvp.Value);
+                        }
+                    }
+                    writer.EndRule();
                 }
             }
         }
 
-        return rules.Count > 0
-            ? new ClientValidationFieldDescriptor(renderedName, rules)
-            : null;
+        writer.EndField();
     }
 
-    // Maps each built-in ValidationAttribute to its single rule descriptor. Custom
-    // attributes that implement IClientValidationAdapter contribute their own rules elsewhere.
-    private static ClientValidationRuleDescriptor? GetBuiltInValidationRule(ValidationAttribute validationAttribute, string errorMessage)
+    // Writes the rule for each built-in ValidationAttribute directly to JSON and returns true, or
+    // returns false when the attribute is not a built-in (custom adapters handle those elsewhere).
+    private static bool TryWriteBuiltInRule(ClientValidationDataWriter writer, ValidationAttribute validationAttribute, string errorMessage)
     {
-        return validationAttribute switch
+        switch (validationAttribute)
         {
-            RequiredAttribute => new ClientValidationRuleDescriptor("required", errorMessage),
-            StringLengthAttribute sla => new ClientValidationRuleDescriptor("length", errorMessage, GetStringLengthParameters(sla)),
-            MaxLengthAttribute maxla => new ClientValidationRuleDescriptor("maxlength", errorMessage,
-                new Dictionary<string, string>
+            case RequiredAttribute:
+                writer.BeginRule("required"u8, errorMessage);
+                writer.EndRule();
+                return true;
+
+            case StringLengthAttribute sla:
+                writer.BeginRule("length"u8, errorMessage);
+                if (sla.MaximumLength != int.MaxValue)
                 {
-                    ["max"] = maxla.Length.ToString(CultureInfo.InvariantCulture),
-                }),
-            MinLengthAttribute minla => new ClientValidationRuleDescriptor("minlength", errorMessage,
-                new Dictionary<string, string>
+                    writer.Param("max"u8, sla.MaximumLength);
+                }
+                if (sla.MinimumLength != 0)
                 {
-                    ["min"] = minla.Length.ToString(CultureInfo.InvariantCulture),
-                }),
+                    writer.Param("min"u8, sla.MinimumLength);
+                }
+                writer.EndRule();
+                return true;
+
+            case MaxLengthAttribute maxla:
+                writer.BeginRule("maxlength"u8, errorMessage);
+                writer.Param("max"u8, maxla.Length);
+                writer.EndRule();
+                return true;
+
+            case MinLengthAttribute minla:
+                writer.BeginRule("minlength"u8, errorMessage);
+                writer.Param("min"u8, minla.Length);
+                writer.EndRule();
+                return true;
+
             // The JS range validator is numeric-only (uses Number()); skip non-numeric operands.
-            RangeAttribute ra when IsNumericRangeOperand(ra.OperandType) => GetRangeRule(ra, errorMessage),
-            RegularExpressionAttribute rea => new ClientValidationRuleDescriptor("regex", errorMessage,
-                new Dictionary<string, string>
-                {
-                    ["pattern"] = rea.Pattern,
-                }),
-            CompareAttribute ca => new ClientValidationRuleDescriptor("equalto", errorMessage,
-                new Dictionary<string, string>
-                {
-                    // "*." prefix tells the JS equalto validator to resolve the other field
-                    // relative to the current field's name prefix.
-                    ["other"] = "*." + ca.OtherProperty,
-                }),
-            EmailAddressAttribute => new ClientValidationRuleDescriptor("email", errorMessage),
-            UrlAttribute => new ClientValidationRuleDescriptor("url", errorMessage),
-            PhoneAttribute => new ClientValidationRuleDescriptor("phone", errorMessage),
-            CreditCardAttribute => new ClientValidationRuleDescriptor("creditcard", errorMessage),
-            FileExtensionsAttribute fea => new ClientValidationRuleDescriptor("fileextensions", errorMessage,
-                new Dictionary<string, string>
-                {
-                    ["extensions"] = GetNormalizedExtensions(fea),
-                }),
-            _ => null,
-        };
-    }
+            case RangeAttribute ra when IsNumericRangeOperand(ra.OperandType):
+                // Triggers RangeAttribute.SetupConversion() to convert string Min/Max to OperandType.
+                ra.IsValid(3);
+                writer.BeginRule("range"u8, errorMessage);
+                writer.Param("min"u8, Convert.ToString(ra.Minimum, CultureInfo.InvariantCulture)!);
+                writer.Param("max"u8, Convert.ToString(ra.Maximum, CultureInfo.InvariantCulture)!);
+                writer.EndRule();
+                return true;
 
-    private static Dictionary<string, string>? GetStringLengthParameters(StringLengthAttribute sla)
-    {
-        var hasMax = sla.MaximumLength != int.MaxValue;
-        var hasMin = sla.MinimumLength != 0;
-        return (hasMax, hasMin) switch
-        {
-            (true, true) => new Dictionary<string, string>
-            {
-                ["max"] = sla.MaximumLength.ToString(CultureInfo.InvariantCulture),
-                ["min"] = sla.MinimumLength.ToString(CultureInfo.InvariantCulture),
-            },
-            (true, false) => new Dictionary<string, string>
-            {
-                ["max"] = sla.MaximumLength.ToString(CultureInfo.InvariantCulture),
-            },
-            (false, true) => new Dictionary<string, string>
-            {
-                ["min"] = sla.MinimumLength.ToString(CultureInfo.InvariantCulture),
-            },
-            _ => null,
-        };
-    }
+            case RegularExpressionAttribute rea:
+                writer.BeginRule("regex"u8, errorMessage);
+                writer.Param("pattern"u8, rea.Pattern);
+                writer.EndRule();
+                return true;
 
-    private static ClientValidationRuleDescriptor GetRangeRule(RangeAttribute ra, string errorMessage)
-    {
-        // Triggers RangeAttribute.SetupConversion() to convert string Min/Max to OperandType.
-        ra.IsValid(3);
-        return new ClientValidationRuleDescriptor("range", errorMessage,
-            new Dictionary<string, string>
-            {
-                ["min"] = Convert.ToString(ra.Minimum, CultureInfo.InvariantCulture)!,
-                ["max"] = Convert.ToString(ra.Maximum, CultureInfo.InvariantCulture)!,
-            });
+            case CompareAttribute ca:
+                writer.BeginRule("equalto"u8, errorMessage);
+                // "*." prefix tells the JS equalto validator to resolve the other field relative to
+                // the current field's name prefix.
+                writer.Param("other"u8, "*." + ca.OtherProperty);
+                writer.EndRule();
+                return true;
+
+            case EmailAddressAttribute:
+                writer.BeginRule("email"u8, errorMessage);
+                writer.EndRule();
+                return true;
+
+            case UrlAttribute:
+                writer.BeginRule("url"u8, errorMessage);
+                writer.EndRule();
+                return true;
+
+            case PhoneAttribute:
+                writer.BeginRule("phone"u8, errorMessage);
+                writer.EndRule();
+                return true;
+
+            case CreditCardAttribute:
+                writer.BeginRule("creditcard"u8, errorMessage);
+                writer.EndRule();
+                return true;
+
+            case FileExtensionsAttribute fea:
+                writer.BeginRule("fileextensions"u8, errorMessage);
+                writer.Param("extensions"u8, GetNormalizedExtensions(fea));
+                writer.EndRule();
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     private static string GetNormalizedExtensions(FileExtensionsAttribute fea)
