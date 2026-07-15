@@ -98,7 +98,7 @@ internal static class InvocationOperationExtensions
         ILocalFunctionOperation local => local.Symbol,
         IMethodReferenceOperation method => method.Method,
         IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel),
-        _ => null
+        _ => (operation.Type as INamedTypeSymbol)?.DelegateInvokeMethod,
     };
 
     private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
