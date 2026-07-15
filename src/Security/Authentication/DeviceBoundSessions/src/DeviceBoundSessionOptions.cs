@@ -55,8 +55,13 @@ public class DeviceBoundSessionOptions : AuthenticationSchemeOptions
     public TimeSpan ChallengeMaxAge { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
-    /// Gets or sets whether to include the entire site in the session scope.
-    /// Defaults to <c>false</c> (origin-only scope).
+    /// Gets or sets whether the browser session is scoped to the registration site rather than the registration origin.
+    /// <see langword="false"/> creates an origin-scoped browser session. <see langword="true"/> creates a
+    /// site-scoped browser session and allows same-site request origins to initiate DBSC refresh by default.
+    /// With the current implementation, <see langword="true"/> requires the registration endpoint to be served
+    /// from the registrable-domain host because the scope origin is derived from the registration request origin.
+    /// Cookie <c>Domain</c> and applicability remain independently configured on the source cookie scheme.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
     public bool IncludeSite { get; set; }
 

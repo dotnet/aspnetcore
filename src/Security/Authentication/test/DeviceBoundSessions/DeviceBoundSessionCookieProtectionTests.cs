@@ -127,10 +127,43 @@ public class DeviceBoundSessionCookieProtectionTests
         Assert.False(options.SlidingExpiration);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData(".example.com")]
+    public void PostConfigure_RefreshScheme_InheritsCookieAttributes_FromSource(string? sourceDomain)
+    {
+        var sut = CreateDerivedPostConfigure(refreshScheme: RefreshScheme, sourceDomain: sourceDomain);
+        var options = new CookieAuthenticationOptions();
+        options.Cookie.Name = ".AspNetCore." + RefreshScheme;
+
+        sut.PostConfigure(RefreshScheme, options);
+
+        Assert.Equal(SameSiteMode.None, options.Cookie.SameSite);
+        Assert.Equal(CookieSecurePolicy.Always, options.Cookie.SecurePolicy);
+        Assert.Equal(sourceDomain, options.Cookie.Domain);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(".example.com")]
+    public void PostConfigure_SessionScheme_InheritsCookieAttributes_FromSource(string? sourceDomain)
+    {
+        var sut = CreateDerivedPostConfigure(sessionScheme: SessionScheme, sourceDomain: sourceDomain);
+        var options = new CookieAuthenticationOptions();
+        options.Cookie.Name = ".AspNetCore." + SessionScheme;
+
+        sut.PostConfigure(SessionScheme, options);
+
+        Assert.Equal(SameSiteMode.None, options.Cookie.SameSite);
+        Assert.Equal(CookieSecurePolicy.Always, options.Cookie.SecurePolicy);
+        Assert.Equal(sourceDomain, options.Cookie.Domain);
+    }
+
     private static PostConfigureDeviceBoundSessionDerivedCookieOptions CreateDerivedPostConfigure(
         string? refreshScheme = null,
         string? sessionScheme = null,
-        bool sourceSlidingExpiration = true)
+        bool sourceSlidingExpiration = true,
+        string? sourceDomain = null)
     {
         var sourceSchemes = new DeviceBoundSessionSourceSchemes();
         if (refreshScheme is not null)
@@ -147,6 +180,9 @@ public class DeviceBoundSessionCookieProtectionTests
         services.Configure<CookieAuthenticationOptions>(SourceScheme, o =>
         {
             o.Cookie.HttpOnly = true;
+            o.Cookie.SameSite = SameSiteMode.None;
+            o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            o.Cookie.Domain = sourceDomain;
             o.ExpireTimeSpan = TimeSpan.FromHours(3);
             o.SlidingExpiration = sourceSlidingExpiration;
         });
