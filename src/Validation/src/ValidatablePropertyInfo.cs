@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -144,26 +145,23 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         try
         {
             // Handle enumerable values
-            if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
+            if (PropertyType.IsEnumerable() && propertyValue is IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
 
                 var tracker = context.TrackAsyncValidations();
-                foreach (var item in enumerable)
-                {
-                    if (item != null)
-                    {
-                        // Dictionaries enumerate as KeyValuePair<TKey, TValue>; validate the value
-                        // only (not the key).
-                        if (!TryGetKeyValuePairValue(item, out var itemValue))
-                        {
-                            itemValue = item;
-                        }
 
-                        if (itemValue != null)
+                var enumerator = enumerable.GetEnumerator();
+                try
+                {
+                    while (enumerator.MoveNext())
+                    {
+                        var item = enumerator is IDictionaryEnumerator de ? de.Value : enumerator.Current;
+
+                        if (item is not null)
                         {
-                            var itemType = itemValue.GetType();
+                            var itemType = item.GetType();
                             if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                             {
                                 var currentContext = tracker.NextContext();
@@ -171,7 +169,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
                                 currentContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
                                 try
                                 {
-                                    tracker.Track(validatableType.ValidateAsync(itemValue, currentContext, cancellationToken));
+                                    tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                                 }
                                 catch (Exception ex)
                                 {
@@ -179,9 +177,13 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
                                 }
                             }
                         }
-                    }
 
-                    index++;
+                        index++;
+                    }
+                }
+                finally
+                {
+                    (enumerator as IDisposable)?.Dispose();
                 }
 
                 await tracker.CompleteAsync();
@@ -252,34 +254,34 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         try
         {
             // Handle enumerable values
-            if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
+            if (PropertyType.IsEnumerable() && propertyValue is IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
 
-                foreach (var item in enumerable)
+                var enumerator = enumerable.GetEnumerator();
+                try
                 {
-                    if (item != null)
+                    while (enumerator.MoveNext())
                     {
-                        // Dictionaries enumerate as KeyValuePair<TKey, TValue>; validate the value
-                        // only (not the key)
-                        if (!TryGetKeyValuePairValue(item, out var itemValue))
-                        {
-                            itemValue = item;
-                        }
+                        var item = enumerator is IDictionaryEnumerator de ? de.Value : enumerator.Current;
 
-                        if (itemValue != null)
+                        if (item is not null)
                         {
-                            var itemType = itemValue.GetType();
+                            var itemType = item.GetType();
                             if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                             {
                                 context.CurrentValidationPath = $"{currentPrefix}[{index}]";
-                                validatableType.Validate(itemValue, context);
+                                validatableType.Validate(item, context);
                             }
                         }
-                    }
 
-                    index++;
+                        index++;
+                    }
+                }
+                finally
+                {
+                    (enumerator as IDisposable)?.Dispose();
                 }
 
                 context.CurrentValidationPath = currentPrefix;
@@ -299,22 +301,6 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
         }
-    }
-
-    private static bool TryGetKeyValuePairValue(object item, out object? value)
-    {
-        var itemType = item.GetType();
-        if (itemType.IsKeyValuePair())
-        {
-            // TODO :/
-#pragma warning disable IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
-            value = itemType.GetProperty("Value")!.GetValue(item);
-#pragma warning restore IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
-            return true;
-        }
-
-        value = null;
-        return false;
     }
 
     ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
