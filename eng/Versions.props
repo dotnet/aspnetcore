@@ -133,7 +133,7 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version>9.0.0-rtm-24529-3</MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version>10.0.0</MicrosoftAspNetCoreAspNetCoreAzureAppServicesSiteExtension100Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version>10.0.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>
     <!-- 3rd party dependencies -->
