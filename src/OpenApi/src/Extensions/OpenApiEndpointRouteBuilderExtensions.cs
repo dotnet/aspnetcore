@@ -77,7 +77,7 @@ public static class OpenApiEndpointRouteBuilderExtensions
                     context.Response.ContentType = contentType;
 
                     await context.Response.StartAsync();
-                    await OpenApiDocumentService.SerializeAsync(document, openApiWriter, documentOptions.OpenApiVersion, context.RequestAborted);
+                    await document.SerializeAsync(openApiWriter, documentOptions.OpenApiVersion, context.RequestAborted);
                     await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
                 }
             }).ExcludeFromDescription();

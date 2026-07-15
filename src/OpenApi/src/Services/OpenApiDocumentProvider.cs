@@ -51,7 +51,7 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
         using var scopedService = serviceProvider.CreateScope();
         var document = await targetDocumentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
         var jsonWriter = new OpenApiJsonWriter(writer);
-        await OpenApiDocumentService.SerializeAsync(document, jsonWriter, openApiSpecVersion);
+        await document.SerializeAsync(jsonWriter, openApiSpecVersion);
     }
 
     /// <summary>

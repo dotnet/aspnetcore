@@ -139,11 +139,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         var scopedServiceProvider = fixture.Services.CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
 
-        var writer = new StringWriter();
-        var openApiWriter = new OpenApiJsonWriter(writer);
-        await OpenApiDocumentService.SerializeAsync(document, openApiWriter, version);
-
-        return writer.ToString();
+        return await document.SerializeAsJsonAsync(version);
     }
 
     private sealed class OpenApiSchemaReferenceVisitor(
