@@ -124,8 +124,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
             builder.AddAttribute(1, "class", "validation-message");
             builder.AddAttribute(2, "data-valmsg-for", fieldName);
             builder.AddAttribute(3, "data-valmsg-replace", "true");
-            // Use the hidden attribute rather than an inline style="display:none" so the placeholder
-            // stays hidden under a strict Content-Security-Policy that forbids inline styles.
+            // Use the hidden attribute rather than an inline style="display:none" for CSP compliance.
             builder.AddAttribute(4, "hidden", true);
             builder.AddMultipleAttributes(5, AdditionalAttributes);
             builder.CloseElement();

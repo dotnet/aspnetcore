@@ -37,12 +37,24 @@ public class ClientValidationTest : ClientValidationTestBase
             AssertMessagePlaceholderHidden(field);
         }
 
+        // The validation summary starts hidden (no server errors) so it takes up no layout space.
+        AssertSummaryHidden();
+
         // Empty submit: the three [Required] fields report errors. [Compare]/[EmailAddress]/
         // [StringLength] do not fire on empty values.
         Browser.Exists(By.Id("submit")).Click();
         Browser.Equal("Name is required.", () => FieldMessage("Form.Name"));
         Browser.Equal("Email is required.", () => FieldMessage("Form.Email"));
         Browser.Equal("Password is required.", () => FieldMessage("Form.Password"));
+
+        // The summary is revealed and lists the same errors as <li> items.
+        Browser.Equal("block", () => Browser.Exists(By.CssSelector("ul[data-valmsg-summary]")).GetCssValue("display"));
+        Browser.Equal(3, () => Browser.FindElements(By.CssSelector("ul[data-valmsg-summary] > li.validation-message")).Count);
+        var summaryMessages = Browser.FindElements(By.CssSelector("ul[data-valmsg-summary] > li.validation-message"))
+            .Select(li => li.Text).ToList();
+        Assert.Contains("Name is required.", summaryMessages);
+        Assert.Contains("Email is required.", summaryMessages);
+        Assert.Contains("Password is required.", summaryMessages);
 
         // Fire one non-required rule to test integration end-to-end.
         Browser.Exists(By.Id("name")).SendKeys("Alice");
@@ -73,6 +85,10 @@ public class ClientValidationTest : ClientValidationTestBase
         {
             AssertMessagePlaceholderHidden(field);
         }
+
+        // The summary is emptied and hidden again once the form is valid.
+        AssertSummaryHidden();
+        Browser.Equal(0, () => Browser.FindElements(By.CssSelector("ul[data-valmsg-summary] > li")).Count);
     }
 
     [Fact]
@@ -265,6 +281,9 @@ public class ClientValidationTest : ClientValidationTestBase
 
     private void AssertMessagePlaceholderHidden(string fieldName)
         => Browser.Equal("none", () => Browser.Exists(By.CssSelector($"[data-valmsg-for='{fieldName}']")).GetCssValue("display"));
+
+    private void AssertSummaryHidden()
+        => Browser.Equal("none", () => Browser.Exists(By.CssSelector("ul[data-valmsg-summary]")).GetCssValue("display"));
 
     private void ReplaceText(By selector, string text)
     {

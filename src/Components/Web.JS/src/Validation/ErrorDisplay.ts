@@ -138,29 +138,24 @@ export class ErrorDisplay {
   updateSummary(form: HTMLFormElement, errors?: Map<string, string>): void {
     // TODO: Support multiple summary elements?
     // TODO: Support summary elements outside the form?
+    // The summary element is the <ul> itself (ValidationSummary renders data-valmsg-summary on it).
     const summaryElement = form.querySelector<HTMLElement>('[data-valmsg-summary]');
     if (!summaryElement) {
       return;
     }
 
-    let ul = summaryElement.querySelector('ul');
-
     // Clear existing summary messages.
-    while (ul?.firstChild) {
-      ul.removeChild(ul.firstChild);
+    while (summaryElement.firstChild) {
+      summaryElement.removeChild(summaryElement.firstChild);
     }
 
     if (!errors || errors.size === 0) {
-      // Set summary to valid state if there are no errors.
+      // Set summary to valid state if there are no errors and hide it so the empty list stays
+      // out of the layout. Toggle the hidden attribute (not inline style) to stay CSP-safe.
       removeClasses(summaryElement, this.cssClasses.summaryError);
       addClasses(summaryElement, this.cssClasses.summaryValid);
+      summaryElement.hidden = true;
     } else {
-      if (!ul) {
-        ul = document.createElement('ul');
-        ul.className = 'validation-errors';
-        summaryElement.appendChild(ul);
-      }
-
       // Add non-duplicate error messages to the summary. Mirror the server-rendered
       // ValidationSummary markup (<li class="validation-message">) so client- and
       // server-produced summaries are styled identically.
@@ -169,11 +164,12 @@ export class ErrorDisplay {
         const li = document.createElement('li');
         li.className = 'validation-message';
         li.textContent = errorMessage;
-        ul.appendChild(li);
+        summaryElement.appendChild(li);
       }
 
       removeClasses(summaryElement, this.cssClasses.summaryValid);
       addClasses(summaryElement, this.cssClasses.summaryError);
+      summaryElement.hidden = false;
     }
   }
 }

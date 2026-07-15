@@ -76,3 +76,54 @@ describe('ValidationEngine.validateForm', () => {
     expect(document.activeElement).toBe(first);
   });
 });
+
+describe('ValidationEngine validation summary', () => {
+  // Builds a form whose <ul data-valmsg-summary> is the summary carrier (matching the static-SSR
+  // markup ValidationSummary renders), plus a single required field registered with the engine.
+  function makeSummaryHarness(): { engine: ValidationEngine; form: HTMLFormElement; summary: HTMLUListElement; input: HTMLInputElement } {
+    const engine = makeEngine();
+    const form = document.createElement('form');
+
+    const summary = document.createElement('ul');
+    summary.setAttribute('data-valmsg-summary', 'true');
+    summary.className = 'validation-errors validation-summary-valid';
+    summary.hidden = true;
+    form.appendChild(summary);
+
+    document.body.appendChild(form);
+    const input = addRequiredField(engine, form, 'Name');
+    return { engine, form, summary, input };
+  }
+
+  test('populates the <ul> carrier with <li> messages and reveals it when there are errors', () => {
+    const { engine, form, summary, input } = makeSummaryHarness();
+
+    engine.validateElement(input); // empty -> invalid
+    engine.updateValidationSummary(form);
+
+    const items = summary.querySelectorAll('li.validation-message');
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toBe('Name is required.');
+    expect(summary.classList.contains('validation-summary-errors')).toBe(true);
+    expect(summary.classList.contains('validation-summary-valid')).toBe(false);
+    expect(summary.hidden).toBe(false);
+  });
+
+  test('clears the messages and hides the <ul> carrier when there are no errors', () => {
+    const { engine, form, summary, input } = makeSummaryHarness();
+
+    engine.validateElement(input);
+    engine.updateValidationSummary(form);
+    expect(summary.querySelectorAll('li')).toHaveLength(1);
+
+    // Provide a value so the field becomes valid, then rebuild the summary.
+    input.value = 'Ada';
+    engine.validateElement(input);
+    engine.updateValidationSummary(form);
+
+    expect(summary.querySelectorAll('li')).toHaveLength(0);
+    expect(summary.classList.contains('validation-summary-valid')).toBe(true);
+    expect(summary.classList.contains('validation-summary-errors')).toBe(false);
+    expect(summary.hidden).toBe(true);
+  });
+});
