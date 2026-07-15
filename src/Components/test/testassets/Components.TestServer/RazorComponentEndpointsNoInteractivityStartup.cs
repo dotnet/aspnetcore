@@ -11,9 +11,7 @@ using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 
 namespace TestServer;
 
@@ -38,20 +36,17 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
             ?.SetValue(null, true);
 
-        var builder = services.AddRazorComponents(options =>
+        services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         });
 
-        if (Configuration.GetValue<bool>("EnableCultureTesting"))
+        if (Configuration.GetValue<bool>("UseHybridCacheViewStore"))
         {
-            services.AddControllers();
+            services.AddHybridCache();
         }
-        services.AddLocalization();
-        services.AddSingleton<IStringLocalizerFactory>(
-            new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
 
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
@@ -159,26 +154,6 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
 
     private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        if (Configuration.GetValue<bool>("EnableCultureTesting"))
-        {
-            app.UseRequestLocalization(options =>
-            {
-                options.AddSupportedCultures("en-US", "fr-FR", "es-ES");
-                options.AddSupportedUICultures("en-US", "fr-FR", "es-ES");
-                options.RequestCultureProviders.Clear();
-                options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
-                options.SetDefaultCulture("en-US");
-            });
-        }
-        else
-        {
-            app.UseRequestLocalization(options =>
-            {
-                options.RequestCultureProviders.Clear();
-                options.SetDefaultCulture("en-US");
-            });
-        }
-
         if (!env.IsDevelopment())
         {
             app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -190,11 +165,6 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         app.UseAntiforgery();
         app.UseEndpoints(endpoints =>
         {
-            if (Configuration.GetValue<bool>("EnableCultureTesting"))
-            {
-                endpoints.MapControllers();
-            }
-
             endpoints.MapRazorComponents<TRootComponent>()
                 .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
         });

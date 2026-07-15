@@ -10,9 +10,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class CacheBoundaryHybridCacheTest : CacheBoundaryTestBase
+public class CacheViewHybridCacheTest : CacheViewTestBase
 {
-    public CacheBoundaryHybridCacheTest(
+    public CacheViewHybridCacheTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
         ITestOutputHelper output)
@@ -21,5 +21,5 @@ public class CacheBoundaryHybridCacheTest : CacheBoundaryTestBase
     }
 
     protected override void ConfigureServerArguments()
-        => _serverFixture.AdditionalArguments.Add("--UseHybridCacheBoundaryStore=true");
+        => _serverFixture.AdditionalArguments.Add("--UseHybridCacheViewStore=true");
 }

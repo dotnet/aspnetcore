@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class CacheBoundaryRenderTest
+public class CacheViewRenderTest
 {
     [Fact]
     public async Task EmptyCachedFragment_FallsBackToChildContent()
@@ -17,9 +17,9 @@ public class CacheBoundaryRenderTest
         var httpContext = CreateHttpContext();
 
         var store = new TestCacheStore { ReturnForAnyKey = new SerializedRenderFragment() };
-        var service = new CacheBoundaryService(store, new TestLoggerFactory(testLogger));
+        var service = new CacheViewService(store, new TestLoggerFactory(testLogger));
 
-        var component = new CacheBoundary
+        var component = new CacheView
         {
             ChildContent = builder => builder.AddContent(0, "fallback"),
             CacheService = service,
@@ -36,15 +36,15 @@ public class CacheBoundaryRenderTest
     {
         var httpContext = CreateHttpContext();
         var store = new TestCacheStore();
-        var service = new CacheBoundaryService(store, new TestLoggerFactory(new TestLogger()));
+        var service = new CacheViewService(store, new TestLoggerFactory(new TestLogger()));
 
-        var first = new CacheBoundary
+        var first = new CacheView
         {
             ChildContent = builder => builder.AddContent(0, "first"),
             CacheService = service,
             HttpContext = httpContext,
         };
-        var second = new CacheBoundary
+        var second = new CacheView
         {
             ChildContent = builder => builder.AddContent(0, "second"),
             CacheService = service,
@@ -58,7 +58,7 @@ public class CacheBoundaryRenderTest
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => service.PrepareAsync(second, httpContext));
 
-        Assert.Contains(nameof(CacheBoundary.CacheKey), exception.Message);
+        Assert.Contains(nameof(CacheView.CacheKey), exception.Message);
         Assert.Contains("distinct cache key", exception.Message);
     }
 
@@ -67,9 +67,9 @@ public class CacheBoundaryRenderTest
     {
         var httpContext = CreateHttpContext();
         var store = new TestCacheStore();
-        var service = new CacheBoundaryService(store, new TestLoggerFactory(new TestLogger()));
+        var service = new CacheViewService(store, new TestLoggerFactory(new TestLogger()));
 
-        var boundary = new CacheBoundary
+        var boundary = new CacheView
         {
             ChildContent = builder => builder.AddContent(0, "content"),
             CacheService = service,
@@ -94,10 +94,10 @@ public class CacheBoundaryRenderTest
             Nodes = [new RenderTreeNode { Type = "markup", Content = "<p>from-cache</p>" }],
         };
         var store = new TestCacheStore { ReturnForAnyKey = precomputed };
-        var service = new CacheBoundaryService(store, new TestLoggerFactory(new TestLogger()));
+        var service = new CacheViewService(store, new TestLoggerFactory(new TestLogger()));
 
         var childContentInvocations = 0;
-        var component = new CacheBoundary
+        var component = new CacheView
         {
             ChildContent = builder =>
             {
@@ -142,7 +142,7 @@ public class CacheBoundaryRenderTest
         Assert.Fail($"Expected to find text frame '{expectedText}' but it was not present.");
     }
 
-    private sealed class TestCacheStore : ICacheBoundaryStore
+    private sealed class TestCacheStore : ICacheViewStore
     {
         public Dictionary<string, SerializedRenderFragment> Data { get; } = new();
         public SerializedRenderFragment ReturnForAnyKey { get; set; }
@@ -183,7 +183,7 @@ public class CacheBoundaryRenderTest
         return context;
     }
 
-    private static async Task<ArrayRange<RenderTreeFrame>> RenderComponent(CacheBoundary component)
+    private static async Task<ArrayRange<RenderTreeFrame>> RenderComponent(CacheView component)
     {
         var renderer = new TestRenderer();
         var id = renderer.AssignRootComponentId(component);

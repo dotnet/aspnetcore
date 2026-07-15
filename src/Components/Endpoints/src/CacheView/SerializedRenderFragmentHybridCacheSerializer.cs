@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-// Serializer used by HybridCache when a CacheBoundary payload is stored as a SerializedRenderFragment
+// Serializer used by HybridCache when a CacheView payload is stored as a SerializedRenderFragment
 // object instead of a pre-serialized byte[]. Reuses the same JSON options as the rest of the component
 // serialization pipeline so the cached shape matches what RenderFragmentSerializer expects on read.
 internal sealed class SerializedRenderFragmentHybridCacheSerializer : IHybridCacheSerializer<SerializedRenderFragment>
