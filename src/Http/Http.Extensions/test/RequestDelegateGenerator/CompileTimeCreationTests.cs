@@ -35,6 +35,24 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     }
 
     [Fact]
+    public async Task MapGet_HandlerFromDelegateVariable_GeneratesStaticEndpoint()
+    {
+        var (generatorRunResult, compilation) = await RunGeneratorAsync("""
+Func<string> handler = () => "Hello world!";
+app.MapGet("/hello", handler);
+""");
+        var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+        Assert.DoesNotContain(results.Diagnostics, diagnostic => diagnostic.Id == DiagnosticDescriptors.UnableToResolveMethod.Id);
+
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    }
+
+    [Fact]
     public async Task MapAction_ExplicitRouteParamWithInvalidName_SimpleReturn()
     {
         var source = $$"""app.MapGet("/{routeValue}", ([FromRoute(Name = "invalidName" )] string parameterName) => parameterName);""";
