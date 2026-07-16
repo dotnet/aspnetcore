@@ -42,10 +42,11 @@ public abstract class DisplayNameInfo
     /// <param name="memberName">The CLR member name (property name, parameter name, or
     /// type name) being validated. Implementations may use this as a fallback display name
     /// or as a localization lookup key.</param>
-    /// <param name="declaringType">The type that declares the member, or <see langword="null"/>
-    /// for top-level parameter validation where no declaring type is available.</param>
+    /// <param name="type">The type that declares the member for property-level validation,
+    /// the validated type itself for type-level validation, or <see langword="null"/>
+    /// for parameter validation.</param>
     /// <returns>The display name for the member, or <see langword="null"/> when no value can
     /// be produced. The validation pipeline falls back to <paramref name="memberName"/> in
     /// the <see langword="null"/> case.</returns>
-    public abstract string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType);
+    public abstract string? GetDisplayName(ValidateContext context, string memberName, Type? type);
 }

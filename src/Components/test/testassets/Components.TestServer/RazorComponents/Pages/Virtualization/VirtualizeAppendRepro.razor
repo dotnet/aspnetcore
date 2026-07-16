@@ -1,0 +1,316 @@
+@page "/virtualize-append"
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@rendermode RenderMode.InteractiveServer
+@implements IDisposable
+@inject IJSRuntime JS
+
+@* Repro of the Aspire dashboard "append two-phase" flash: framework <Virtualize> driven like
+   Aspire's Structured Logs grid — Blazor Server, End-anchored, async provider. Anchor and
+   ItemComparer are query-configurable (?anchor, ?comparer). *@
+
+<h3>Virtualize append repro</h3>
+<p id="repro-info">
+    Rows: <b id="repro-rowcount">@_items.Count</b>,
+    ItemSize=46, OverscanCount=100, SpacerElement=tr, AnchorMode=@_anchorMode,
+    ItemComparer=@(Comparer ? "explicit" : "none") (async provider)
+</p>
+
+<label>
+    Batch size (rows):
+    <input type="number" id="batch-input" min="1" step="1"
+           value="@_batchSize" @onchange="OnBatchChanged" />
+</label>
+<button id="append-btn" @onclick="AppendBatchAsync">Append @_batchSize rows</button>
+<button id="prepend-btn" @onclick="PrependBatchAsync">Prepend @_batchSize rows</button>
+<button id="auto-append-btn" @onclick="ToggleAutoAppend">@(_autoAppend ? "Stop auto-append" : "Start auto-append")</button>
+<label>
+    Provider delay (ms):
+    <input type="number" id="delay-input" min="0" step="50"
+           value="@_providerDelayMs" @onchange="OnDelayChanged" />
+</label>
+<label>
+    Auto interval (ms):
+    <input type="number" id="interval-input" min="50" step="50"
+           value="@_autoIntervalMs" @onchange="OnIntervalChanged" />
+</label>
+
+@if (Gate)
+{
+    @* open-gate lets provider calls through; close-gate blocks the next tail-advancing fetch. *@
+    <button id="open-gate" @onclick="OpenGate">Open gate (load data)</button>
+    <button id="close-gate" @onclick="CloseGate">Close gate (block tail fetch)</button>
+}
+@if (_interactive)
+{
+    <span id="interactive-ready"></span>
+}
+
+<div id="repro-scroll-container" style="height: 600px; overflow-y: auto;">
+    <table>
+        <tbody>
+            <Virtualize @ref="_virtualize"
+                        TItem="(int RowIndex, LogItem Data)"
+                        ItemSize="46"
+                        OverscanCount="100"
+                        ItemsProvider="ProvideItemsAsync"
+                        AnchorMode="_anchorMode"
+                        @attributes="_virtualizeAttributes"
+                        SpacerElement="tr">
+                <ItemContent>
+                    <tr class="repro-row" aria-rowindex="@(context.RowIndex + 1)">
+                        <td>@context.Data.Resource</td>
+                        <td>@context.Data.Level</td>
+                        <td>@context.Data.Timestamp</td>
+                        <td>@context.Data.Message</td>
+                    </tr>
+                </ItemContent>
+                <Placeholder>
+                    <tr class="repro-row placeholder-row" aria-rowindex="@(context.Index + 1)">
+                        <td class="grid-cell-placeholder"></td>
+                        <td class="grid-cell-placeholder"></td>
+                        <td class="grid-cell-placeholder"></td>
+                        <td class="grid-cell-placeholder"></td>
+                    </tr>
+                </Placeholder>
+            </Virtualize>
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private const int InitialItemCount = 600;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "batch")]
+    public int? BatchQuery { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "gate")]
+    public bool Gate { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "anchor")]
+    public string? AnchorQuery { get; set; }
+
+    // Passes an explicit ItemComparer, routing appends through the comparer-set branch.
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "comparer")]
+    public bool Comparer { get; set; }
+
+    private readonly Dictionary<string, object> _virtualizeAttributes = new();
+
+    private int _batchSize;
+    private int _providerDelayMs;
+    private int _autoIntervalMs = 200;
+    private bool _autoAppend;
+    private CancellationTokenSource? _autoCts;
+    private VirtualizeAnchorMode _anchorMode;
+
+    private Virtualize<(int RowIndex, LogItem Data)>? _virtualize;
+    private bool _interactive;
+    private int _seq;
+
+    private bool _gateOpen;
+    private TaskCompletionSource _gateTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    // Tail StartIndex loaded at gate-close; fetches beyond it are blocked while the gate is closed.
+    private int _gateThresholdStartIndex = -1;
+    // Item count at gate-close; in Start mode, fetches that reflect a grown list (a prepend) are blocked.
+    private int _gateThresholdCount = -1;
+    private int _lastCompletedStartIndex = -1;
+
+    private readonly List<LogItem> _items = new();
+
+    protected override void OnInitialized()
+    {
+        _batchSize = BatchQuery ?? 30;
+        _anchorMode = string.Equals(AnchorQuery, "beginning", StringComparison.OrdinalIgnoreCase)
+            ? VirtualizeAnchorMode.Start
+            : VirtualizeAnchorMode.End;
+
+        if (Comparer)
+        {
+            _virtualizeAttributes["ItemComparer"] = EqualityComparer<(int RowIndex, LogItem Data)>.Default;
+        }
+
+        for (var i = 0; i < InitialItemCount; i++)
+        {
+            _items.Add(MakeItem());
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
+
+    private void OnBatchChanged(ChangeEventArgs e) => _batchSize = Math.Max(1, ParseInt(e, _batchSize));
+
+    private void OnDelayChanged(ChangeEventArgs e) => _providerDelayMs = Math.Max(0, ParseInt(e, _providerDelayMs));
+
+    private void OnIntervalChanged(ChangeEventArgs e) => _autoIntervalMs = Math.Max(50, ParseInt(e, _autoIntervalMs));
+
+    private static int ParseInt(ChangeEventArgs e, int fallback)
+        => int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)
+            ? v
+            : fallback;
+
+    // For manual testing, non-deterministic checks
+    private void ToggleAutoAppend()
+    {
+        if (_autoAppend)
+        {
+            _autoAppend = false;
+            _autoCts?.Cancel();
+            _autoCts = null;
+            return;
+        }
+
+        _autoAppend = true;
+        _autoCts = new CancellationTokenSource();
+        var token = _autoCts.Token;
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await InvokeAsync(AppendBatchAsync);
+                try
+                {
+                    await Task.Delay(_autoIntervalMs, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+        });
+    }
+
+    private LogItem MakeItem()
+    {
+        var i = _seq++;
+        return new LogItem(
+            Resource: "Stress.ApiService",
+            Level: "Information",
+            Timestamp: DateTime.UnixEpoch.AddSeconds(i).ToString("hh:mm:ss.fff tt", CultureInfo.InvariantCulture),
+            Message: $"Log entry {i}: {Guid.NewGuid():N}");
+    }
+
+    private Task AppendBatchAsync() => GrowAsync(atFront: false);
+
+    private Task PrependBatchAsync() => GrowAsync(atFront: true);
+
+    private async Task GrowAsync(bool atFront)
+    {
+        for (var i = 0; i < _batchSize; i++)
+        {
+            if (atFront)
+            {
+                _items.Insert(0, MakeItem());
+            }
+            else
+            {
+                _items.Add(MakeItem());
+            }
+        }
+
+        if (_virtualize is not null)
+        {
+            await _virtualize.RefreshDataAsync();
+        }
+
+        // Sync the rowcount label, which lives outside the Virtualize region.
+        StateHasChanged();
+    }
+
+    private async ValueTask<ItemsProviderResult<(int RowIndex, LogItem Data)>> ProvideItemsAsync(ItemsProviderRequest request)
+    {
+        if (Gate)
+        {
+            // Block tail-advancing fetches so the test can observe the pending phase deterministically.
+            try
+            {
+                while (!_gateOpen && IsGatedFetch(request.StartIndex))
+                {
+                    var tcs = _gateTcs;
+                    using var registration = request.CancellationToken.Register(
+                        static state => ((TaskCompletionSource)state!).TrySetCanceled(), tcs);
+                    await tcs.Task;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return new ItemsProviderResult<(int RowIndex, LogItem Data)>(
+                    Array.Empty<(int, LogItem)>(), _items.Count);
+            }
+        }
+        else
+        {
+            if (_providerDelayMs > 0)
+            {
+                await Task.Delay(_providerDelayMs);
+            }
+            else
+            {
+                await Task.Yield();
+            }
+        }
+
+        var count = Math.Max(0, Math.Min(request.Count, _items.Count - request.StartIndex));
+        var slice = Enumerable.Range(request.StartIndex, count)
+            .Select(i => (RowIndex: i, Data: _items[i]));
+
+        _lastCompletedStartIndex = request.StartIndex;
+
+        _ = LogProviderCallAsync(request.StartIndex, count, _items.Count);
+
+        return new ItemsProviderResult<(int RowIndex, LogItem Data)>(slice, _items.Count);
+    }
+
+    // Mirror each provider call to the browser console so E2E tests can observe round-trips
+    // without a StateHasChanged-driven re-render. Interop is unavailable during prerendering.
+    private async Task LogProviderCallAsync(int start, int count, int total)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("console.log",
+                $"VIRTUALIZE_PCALL start={start} count={count} total={total}");
+        }
+        catch
+        {
+        }
+    }
+
+    private bool IsGatedFetch(int startIndex)
+        => _anchorMode == VirtualizeAnchorMode.Start
+            ? _items.Count > _gateThresholdCount
+            : startIndex > _gateThresholdStartIndex;
+
+    private void OpenGate()
+    {
+        _gateOpen = true;
+        _gateTcs.TrySetResult();
+    }
+
+    private void CloseGate()
+    {
+        // Arm the gate at the current tail/count; later growth-driven fetches block.
+        _gateOpen = false;
+        _gateThresholdStartIndex = _lastCompletedStartIndex;
+        _gateThresholdCount = _items.Count;
+        _gateTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    public record LogItem(string Resource, string Level, string Timestamp, string Message);
+
+    public void Dispose()
+    {
+        _autoCts?.Cancel();
+        _autoCts?.Dispose();
+    }
+}

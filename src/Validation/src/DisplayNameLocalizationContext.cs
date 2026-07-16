@@ -12,10 +12,11 @@ namespace Microsoft.Extensions.Validation;
 public readonly struct DisplayNameLocalizationContext
 {
     /// <summary>
-    /// Gets the type that declares the member being validated.
-    /// <see langword="null"/> for top-level parameter validation.
+    /// Gets the type that declares the member being validated for property-level validation,
+    /// the validated type itself for type-level validation,
+    /// or <see langword="null"/> for parameter validation.
     /// </summary>
-    public Type? DeclaringType { get; init; }
+    public Type? Type { get; init; }
 
     /// <summary>
     /// Gets the display name from <see cref="DisplayAttribute.Name"/> to use as a localization lookup key.

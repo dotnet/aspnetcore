@@ -102,8 +102,10 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.CustomElements" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Media" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Server.AutoPause" />
     <TrimmableProject Include="Microsoft.Authentication.WebAssembly.Msal" />
     <TrimmableProject Include="Microsoft.JSInterop.WebAssembly" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />

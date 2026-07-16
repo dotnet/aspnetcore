@@ -433,27 +433,6 @@ configuration:
           reply: Thanks for your PR, ${issueAuthor}. Someone from the team will get assigned to your PR shortly and we'll get it reviewed.
       description: Label community PRs with `community contribution` label
     - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: main
-      then:
-      - addMilestone:
-          milestone: 11.0-preview5
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: release/11.0-preview4
-      then:
-      - removeMilestone
-      - addMilestone:
-          milestone: 11.0-preview4
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0-preview4 branch'
-    - if:
       - payloadType: Issues
       - isAction:
           action: Labeled
@@ -632,7 +611,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.9
+          milestone: 10.0.10
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -643,7 +622,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.17
+          milestone: 9.0.18
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -654,7 +633,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.28
+          milestone: 8.0.29
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues

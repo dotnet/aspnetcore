@@ -75,7 +75,7 @@ public static class HeaderUtilities
             throw new ArgumentException("An empty string is not allowed.", parameterName);
         }
 
-        if (HttpRuleParser.GetTokenLength(value, 0) != value.Length)
+        if (!HttpRuleParser.IsToken(value))
         {
             throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}'.", value));
         }
@@ -690,7 +690,8 @@ public static class HeaderUtilities
     public static StringSegment EscapeAsQuotedString(StringSegment input)
     {
         // By calling this, we know that the string requires quotes around it to be a valid token.
-        var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
+        var inputSpan = input.AsSpan();
+        var backSlashCount = inputSpan.Count('\\') + inputSpan.Count('"');
 
         // 2 for quotes
         return string.Create(input.Length + backSlashCount + 2, input, (span, segment) =>
@@ -714,19 +715,6 @@ public static class HeaderUtilities
                 span[spanIndex++] = segment[i];
             }
         });
-    }
-
-    private static int CountAndCheckCharactersNeedingBackslashesWhenEncoding(StringSegment input)
-    {
-        var numberOfCharactersNeedingEscaping = 0;
-        for (var i = 0; i < input.Length; i++)
-        {
-            if (input[i] == '\\' || input[i] == '\"')
-            {
-                numberOfCharactersNeedingEscaping++;
-            }
-        }
-        return numberOfCharactersNeedingEscaping;
     }
 
     internal static void ThrowIfReadOnly(bool isReadOnly)

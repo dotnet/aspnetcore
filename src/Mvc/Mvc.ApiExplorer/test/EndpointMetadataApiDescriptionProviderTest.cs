@@ -25,7 +25,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-public class EndpointMetadataApiDescriptionProviderTest
+public partial class EndpointMetadataApiDescriptionProviderTest
 {
     [Fact]
     public void MultipleApiDescriptionsCreatedForMultipleHttpMethods()

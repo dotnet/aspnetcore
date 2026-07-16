@@ -5,6 +5,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -33,7 +34,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("direction=asc", Browser.Url);
 
         // Click again to sort descending
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
@@ -44,7 +45,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("Karttunen", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("1981-06-04", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
         Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+        Assert.Contains("direction=desc", Browser.Url);
     }
 
     [Fact]
@@ -57,7 +58,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title"));
         Browser.Equal("12372", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Assert.Contains("sort=FirstName", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("direction=asc", Browser.Url);
 
         // Click again to sort descending
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title"));
@@ -68,7 +69,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("Piestrzeniewicz", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("1981-04-02", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
         Assert.Contains("sort=FirstName", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+        Assert.Contains("direction=desc", Browser.Url);
     }
 
     [Fact]
@@ -81,7 +82,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a"));
         Browser.Equal("11205", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Assert.Contains("sort=BirthDate", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("direction=asc", Browser.Url);
 
         // Click again to sort descending
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a"));
@@ -92,10 +93,11 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("Accorti", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("2018-05-18", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
         Assert.Contains("sort=BirthDate", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+        Assert.Contains("direction=desc", Browser.Url);
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67350")]
     public void PaginatorCorrectItemsPerPage()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
@@ -138,7 +140,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
-        // Sort second grid by FirstName ascending (uses QueryParameterNamePrefix="people" prefix)
+        // Sort second grid by FirstName ascending (uses QueryParameterNameOptions with "people_" prefix)
         Browser.Click(By.CssSelector("#grid2 > table thead > tr > th:nth-child(2) > div > a.col-title"));
         Browser.Equal("12372", () => Browser.FindElement(By.CssSelector("#grid2 > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
@@ -147,8 +149,20 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
 
         // Verify URL contains both unprefixed and prefixed sort parameters
         Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("direction=asc", Browser.Url);
         Assert.Contains("people_sort=FirstName", Browser.Url);
-        Assert.Contains("people_order=asc", Browser.Url);
+        Assert.Contains("people_direction=asc", Browser.Url);
+    }
+
+    [Fact]
+    public void SortByTypeMismatchVirtualizedShowsClearError()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        Browser.Exists(By.CssSelector("#type-mismatch-error-virtualized"));
+
+        Browser.Contains("Column 'Summary' expects item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+        Browser.Contains("Employee", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+        Browser.Contains("does not match the parent QuickGrid's item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
     }
 }
