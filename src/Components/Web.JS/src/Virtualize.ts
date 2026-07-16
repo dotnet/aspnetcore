@@ -554,13 +554,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  function applyAnchorMode(mode: number): void {
-    anchorMode = mode;
-    const isEndMode = (mode & 2) !== 0;
-    bottomTracking.following = isEndMode;
-    bottomTracking.reached = isEndMode && isViewportAtBottom();
-  }
-
   observersByDotNetObjectId[id] = {
     intersectionObserver,
     resizeObserver,
@@ -569,7 +562,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     startConvergenceObserving,
     setConvergingToBottom: () => { convergingToBottom = true; },
     isFollowingBottom: () => bottomTracking.following,
-    setAnchorMode: applyAnchorMode,
+    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScrollSuppression,
