@@ -9,21 +9,21 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 internal static class DragEventArgsReader
 {
-    private static readonly JsonEncodedText DataTransfer = JsonEncodedText.Encode("dataTransfer");
-    private static readonly JsonEncodedText DropEffect = JsonEncodedText.Encode("dropEffect");
-    private static readonly JsonEncodedText EffectAllowed = JsonEncodedText.Encode("effectAllowed");
-    private static readonly JsonEncodedText Files = JsonEncodedText.Encode("files");
-    private static readonly JsonEncodedText Items = JsonEncodedText.Encode("items");
-    private static readonly JsonEncodedText Types = JsonEncodedText.Encode("types");
-    private static readonly JsonEncodedText Kind = JsonEncodedText.Encode("kind");
-    private static readonly JsonEncodedText Type = JsonEncodedText.Encode("type");
+    private static readonly JsonEncodedText s_dataTransfer = JsonEncodedText.Encode("dataTransfer");
+    private static readonly JsonEncodedText s_dropEffect = JsonEncodedText.Encode("dropEffect");
+    private static readonly JsonEncodedText s_effectAllowed = JsonEncodedText.Encode("effectAllowed");
+    private static readonly JsonEncodedText s_files = JsonEncodedText.Encode("files");
+    private static readonly JsonEncodedText s_items = JsonEncodedText.Encode("items");
+    private static readonly JsonEncodedText s_types = JsonEncodedText.Encode("types");
+    private static readonly JsonEncodedText s_kind = JsonEncodedText.Encode("kind");
+    private static readonly JsonEncodedText s_type = JsonEncodedText.Encode("type");
 
     internal static DragEventArgs Read(JsonElement jsonElement)
     {
         var eventArgs = new DragEventArgs();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(DataTransfer.EncodedUtf8Bytes))
+            if (property.NameEquals(s_dataTransfer.EncodedUtf8Bytes))
             {
                 eventArgs.DataTransfer = ReadDataTransfer(property.Value);
             }
@@ -41,19 +41,19 @@ internal static class DragEventArgsReader
         var dataTransfer = new DataTransfer();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(DropEffect.EncodedUtf8Bytes))
+            if (property.NameEquals(s_dropEffect.EncodedUtf8Bytes))
             {
                 dataTransfer.DropEffect = property.Value.GetString()!;
             }
-            else if (property.NameEquals(EffectAllowed.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_effectAllowed.EncodedUtf8Bytes))
             {
                 dataTransfer.EffectAllowed = property.Value.GetString();
             }
-            else if (property.NameEquals(Files.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_files.EncodedUtf8Bytes))
             {
                 dataTransfer.Files = ReadStringArray(property.Value);
             }
-            else if (property.NameEquals(Items.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_items.EncodedUtf8Bytes))
             {
                 var value = property.Value;
                 var items = new DataTransferItem[value.GetArrayLength()];
@@ -64,7 +64,7 @@ internal static class DragEventArgsReader
                 }
                 dataTransfer.Items = items;
             }
-            else if (property.NameEquals(Types.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_types.EncodedUtf8Bytes))
             {
                 dataTransfer.Types = ReadStringArray(property.Value);
             }
@@ -82,11 +82,11 @@ internal static class DragEventArgsReader
         var item = new DataTransferItem();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(Kind.EncodedUtf8Bytes))
+            if (property.NameEquals(s_kind.EncodedUtf8Bytes))
             {
                 item.Kind = property.Value.GetString()!;
             }
-            else if (property.NameEquals(Type.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_type.EncodedUtf8Bytes))
             {
                 item.Type = property.Value.GetString()!;
             }

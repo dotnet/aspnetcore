@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.Components;
 public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
-    private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
+    private static readonly ConcurrentDictionary<Type, Type?> s_layoutAttributeCache = new();
 
     static RouteView()
     {
         if (HotReloadManager.IsSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += _layoutAttributeCache.Clear;
+            HotReloadManager.Default.OnDeltaApplied += s_layoutAttributeCache.Clear;
         }
     }
 
@@ -73,7 +73,7 @@ public class RouteView : IComponent
     [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
-        var pageLayoutType = _layoutAttributeCache
+        var pageLayoutType = s_layoutAttributeCache
             .GetOrAdd(RouteData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
             ?? DefaultLayout;
 

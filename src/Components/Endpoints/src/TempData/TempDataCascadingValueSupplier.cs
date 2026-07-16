@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class TempDataCascadingValueSupplier
 {
-    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
+    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> s_propertyGetterCache = new();
     private HttpContext? _httpContext;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<TempDataCascadingValueSupplier> _logger;
@@ -35,7 +35,7 @@ internal partial class TempDataCascadingValueSupplier
     {
         var tempDataKey = attribute.Name ?? parameterInfo.PropertyName;
         var componentType = componentState.Component.GetType();
-        var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
+        var getter = s_propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
         Func<object?> valueGetter = () => getter.GetValue(componentState.Component);
         RegisterValueCallback(tempDataKey, valueGetter);
         return new TempDataSubscription(this, tempDataKey, parameterInfo.PropertyType, valueGetter);

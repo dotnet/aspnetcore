@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 internal static class WheelEventArgsReader
 {
-    private static readonly JsonEncodedText DeltaX = JsonEncodedText.Encode("deltaX");
-    private static readonly JsonEncodedText DeltaY = JsonEncodedText.Encode("deltaY");
-    private static readonly JsonEncodedText DeltaZ = JsonEncodedText.Encode("deltaZ");
-    private static readonly JsonEncodedText DeltaMode = JsonEncodedText.Encode("deltaMode");
+    private static readonly JsonEncodedText s_deltaX = JsonEncodedText.Encode("deltaX");
+    private static readonly JsonEncodedText s_deltaY = JsonEncodedText.Encode("deltaY");
+    private static readonly JsonEncodedText s_deltaZ = JsonEncodedText.Encode("deltaZ");
+    private static readonly JsonEncodedText s_deltaMode = JsonEncodedText.Encode("deltaMode");
 
     internal static WheelEventArgs Read(JsonElement jsonElement)
     {
@@ -20,19 +20,19 @@ internal static class WheelEventArgsReader
 
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(DeltaX.EncodedUtf8Bytes))
+            if (property.NameEquals(s_deltaX.EncodedUtf8Bytes))
             {
                 eventArgs.DeltaX = property.Value.GetDouble();
             }
-            else if (property.NameEquals(DeltaY.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_deltaY.EncodedUtf8Bytes))
             {
                 eventArgs.DeltaY = property.Value.GetDouble();
             }
-            else if (property.NameEquals(DeltaZ.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_deltaZ.EncodedUtf8Bytes))
             {
                 eventArgs.DeltaZ = property.Value.GetDouble();
             }
-            else if (property.NameEquals(DeltaMode.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_deltaMode.EncodedUtf8Bytes))
             {
                 eventArgs.DeltaMode = property.Value.GetInt64();
             }

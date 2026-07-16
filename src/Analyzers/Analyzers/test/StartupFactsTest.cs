@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
         }
     }
 }";
-    private static readonly Dictionary<string, string> TestSources = new Dictionary<string, string>
+    private static readonly Dictionary<string, string> s_testSources = new Dictionary<string, string>
     {
         [nameof(BasicStartup)] = BasicStartup,
         [nameof(EnvironmentStartup)] = EnvironmentStartup,
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
     public void IsConfigureServices_FindsConfigureServicesMethod(string source, string methodName)
     {
         // Arrange
-        var compilation = TestCompilation.Create(TestSources[source]);
+        var compilation = TestCompilation.Create(s_testSources[source]);
         var symbols = new StartupSymbols(compilation);
 
         var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
     public void IsConfigureServices_RejectsNonConfigureServicesMethod(string source, string methodName)
     {
         // Arrange
-        var compilation = TestCompilation.Create(TestSources[source]);
+        var compilation = TestCompilation.Create(s_testSources[source]);
         var symbols = new StartupSymbols(compilation);
 
         var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
     public void IsConfigure_FindsConfigureMethod(string source, string methodName)
     {
         // Arrange
-        var compilation = TestCompilation.Create(TestSources[source]);
+        var compilation = TestCompilation.Create(s_testSources[source]);
         var symbols = new StartupSymbols(compilation);
 
         var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
     public void IsConfigure_RejectsNonConfigureMethod(string source, string methodName)
     {
         // Arrange
-        var compilation = TestCompilation.Create(TestSources[source]);
+        var compilation = TestCompilation.Create(s_testSources[source]);
         var symbols = new StartupSymbols(compilation);
 
         var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
     public void IsStartupClass_FindsStartupClass(string source)
     {
         // Arrange
-        var compilation = TestCompilation.Create(TestSources[source]);
+        var compilation = TestCompilation.Create(s_testSources[source]);
         var symbols = new StartupSymbols(compilation);
 
         var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
     public void IsStartupClass_RejectsNotStartupClass(string source)
     {
         // Arrange
-        var compilation = TestCompilation.Create(TestSources[source]);
+        var compilation = TestCompilation.Create(s_testSources[source]);
         var symbols = new StartupSymbols(compilation);
 
         var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();

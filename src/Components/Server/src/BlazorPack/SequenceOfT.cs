@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
 internal sealed class Sequence<T> : IBufferWriter<T>, IDisposable
 {
-    private static readonly int DefaultLengthFromArrayPool = 1 + (4095 / Marshal.SizeOf<T>());
+    private static readonly int s_defaultLengthFromArrayPool = 1 + (4095 / Marshal.SizeOf<T>());
 
     private readonly Stack<SequenceSegment> segmentPool = new Stack<SequenceSegment>();
 
@@ -232,7 +232,7 @@ internal sealed class Sequence<T> : IBufferWriter<T>, IDisposable
             var segment = this.segmentPool.Count > 0 ? this.segmentPool.Pop() : new SequenceSegment();
             if (this.arrayPool != null)
             {
-                segment.Assign(this.arrayPool.Rent(minBufferSize.Value == -1 ? DefaultLengthFromArrayPool : minBufferSize.Value));
+                segment.Assign(this.arrayPool.Rent(minBufferSize.Value == -1 ? s_defaultLengthFromArrayPool : minBufferSize.Value));
             }
             else
             {
@@ -296,7 +296,7 @@ internal sealed class Sequence<T> : IBufferWriter<T>, IDisposable
         /// <summary>
         /// A value indicating whether the element is a value type.
         /// </summary>
-        private static readonly bool IsValueTypeElement = typeof(T).IsValueType;
+        private static readonly bool s_isValueTypeElement = typeof(T).IsValueType;
 
         /// <summary>
         /// Gets the backing array, when using an <see cref="ArrayPool{T}"/> instead of a <see cref="MemoryPool{T}"/>.
@@ -438,7 +438,7 @@ internal sealed class Sequence<T> : IBufferWriter<T>, IDisposable
         private void ClearReferences(int startIndex, int length)
         {
             // If we store references, clear them to allow the objects to be GC'd.
-            if (!IsValueTypeElement)
+            if (!s_isValueTypeElement)
             {
                 this.AvailableMemory.Span.Slice(startIndex, length).Clear();
             }

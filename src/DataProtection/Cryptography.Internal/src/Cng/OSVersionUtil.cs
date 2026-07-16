@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Cryptography.Cng;
 
 internal static class OSVersionUtil
 {
-    private static readonly OSVersion _osVersion = GetOSVersion();
+    private static readonly OSVersion s_osVersion = GetOSVersion();
 
     private static OSVersion GetOSVersion()
     {
@@ -43,12 +43,12 @@ internal static class OSVersionUtil
 
     public static bool IsWindows()
     {
-        return (_osVersion >= OSVersion.Win7OrLater);
+        return (s_osVersion >= OSVersion.Win7OrLater);
     }
 
     public static bool IsWindows8OrLater()
     {
-        return (_osVersion >= OSVersion.Win8OrLater);
+        return (s_osVersion >= OSVersion.Win8OrLater);
     }
 
     private enum OSVersion

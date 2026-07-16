@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Reflection;
 
 internal sealed class PropertySetter
 {
-    private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
+    private static readonly MethodInfo s_callPropertySetterOpenGenericMethod =
         typeof(PropertySetter).GetMethod(nameof(CallPropertySetter), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private readonly Action<object, object> _setterDelegate;
@@ -34,7 +34,7 @@ internal sealed class PropertySetter
             var propertySetterAsAction =
                 setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(targetType, property.PropertyType));
             var callPropertySetterClosedGenericMethod =
-                CallPropertySetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
+                s_callPropertySetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
             _setterDelegate = (Action<object, object>)
                 callPropertySetterClosedGenericMethod.CreateDelegate(typeof(Action<object, object>), propertySetterAsAction);
         }

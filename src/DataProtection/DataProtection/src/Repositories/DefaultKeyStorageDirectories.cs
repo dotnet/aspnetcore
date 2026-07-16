@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 
 internal sealed class DefaultKeyStorageDirectories : IDefaultKeyStorageDirectories
 {
-    private static readonly Lazy<DirectoryInfo?> _defaultDirectoryLazy = new Lazy<DirectoryInfo?>(GetKeyStorageDirectoryImpl);
+    private static readonly Lazy<DirectoryInfo?> s_defaultDirectoryLazy = new Lazy<DirectoryInfo?>(GetKeyStorageDirectoryImpl);
 
     private DefaultKeyStorageDirectories()
     {
@@ -27,7 +27,7 @@ internal sealed class DefaultKeyStorageDirectories : IDefaultKeyStorageDirectori
     /// This property can return null if no suitable default key storage directory can
     /// be found, such as the case when the user profile is unavailable.
     /// </remarks>
-    public DirectoryInfo? GetKeyStorageDirectory() => _defaultDirectoryLazy.Value;
+    public DirectoryInfo? GetKeyStorageDirectory() => s_defaultDirectoryLazy.Value;
 
     private static DirectoryInfo? GetKeyStorageDirectoryImpl()
     {

@@ -41,7 +41,7 @@ public class EndpointHtmlRendererTest
     private const string BrowserConfigurationPattern = "^<!--Blazor-Configuration:(.*?)-->";
     private const string ComponentPattern = "^<!--Blazor:(.*?)-->$";
 
-    private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
+    private static readonly IDataProtectionProvider s_dataprotectorProvider = new EphemeralDataProtectionProvider();
 
     private readonly IServiceProvider _services = CreateDefaultServiceCollection().BuildServiceProvider();
     private readonly TestEndpointHtmlRenderer renderer;
@@ -394,7 +394,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -427,7 +427,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -489,7 +489,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -547,7 +547,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -587,7 +587,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -627,7 +627,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -679,7 +679,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -748,7 +748,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -788,7 +788,7 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -897,7 +897,7 @@ public class EndpointHtmlRendererTest
         collection.TryAddSingleton(HtmlEncoder.Default);
         collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         collection.TryAddSingleton<ServerComponentSerializer>();
-        collection.TryAddSingleton(_dataprotectorProvider);
+        collection.TryAddSingleton(s_dataprotectorProvider);
         collection.TryAddSingleton<WebAssemblyComponentSerializer>();
 
         var provider = collection.BuildServiceProvider();
@@ -1341,7 +1341,7 @@ public class EndpointHtmlRendererTest
         // Arrange
         var httpContext = GetHttpContext();
         var writer = new StringWriter();
-        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+        var protector = s_dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
         // Act
@@ -1991,7 +1991,7 @@ public class EndpointHtmlRendererTest
     private static ServiceCollection CreateDefaultServiceCollection()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(_dataprotectorProvider);
+        services.AddSingleton(s_dataprotectorProvider);
         services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
         services.AddSingleton<NavigationManager, HttpNavigationManager>();
         services.AddSingleton<ILoggerFactory, NullLoggerFactory>();

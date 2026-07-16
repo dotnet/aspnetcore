@@ -9,61 +9,61 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 internal static class TouchEventArgsReader
 {
-    private static readonly JsonEncodedText Detail = JsonEncodedText.Encode("detail");
-    private static readonly JsonEncodedText ClientX = JsonEncodedText.Encode("clientX");
-    private static readonly JsonEncodedText ClientY = JsonEncodedText.Encode("clientY");
-    private static readonly JsonEncodedText PageX = JsonEncodedText.Encode("pageX");
-    private static readonly JsonEncodedText PageY = JsonEncodedText.Encode("pageY");
-    private static readonly JsonEncodedText ScreenX = JsonEncodedText.Encode("screenX");
-    private static readonly JsonEncodedText ScreenY = JsonEncodedText.Encode("screenY");
-    private static readonly JsonEncodedText CtrlKey = JsonEncodedText.Encode("ctrlKey");
-    private static readonly JsonEncodedText ShiftKey = JsonEncodedText.Encode("shiftKey");
-    private static readonly JsonEncodedText AltKey = JsonEncodedText.Encode("altKey");
-    private static readonly JsonEncodedText MetaKey = JsonEncodedText.Encode("metaKey");
-    private static readonly JsonEncodedText Type = JsonEncodedText.Encode("type");
-    private static readonly JsonEncodedText Identifier = JsonEncodedText.Encode("identifier");
-    private static readonly JsonEncodedText ChangedTouches = JsonEncodedText.Encode("changedTouches");
-    private static readonly JsonEncodedText TargetTouches = JsonEncodedText.Encode("targetTouches");
-    private static readonly JsonEncodedText Touches = JsonEncodedText.Encode("touches");
+    private static readonly JsonEncodedText s_detail = JsonEncodedText.Encode("detail");
+    private static readonly JsonEncodedText s_clientX = JsonEncodedText.Encode("clientX");
+    private static readonly JsonEncodedText s_clientY = JsonEncodedText.Encode("clientY");
+    private static readonly JsonEncodedText s_pageX = JsonEncodedText.Encode("pageX");
+    private static readonly JsonEncodedText s_pageY = JsonEncodedText.Encode("pageY");
+    private static readonly JsonEncodedText s_screenX = JsonEncodedText.Encode("screenX");
+    private static readonly JsonEncodedText s_screenY = JsonEncodedText.Encode("screenY");
+    private static readonly JsonEncodedText s_ctrlKey = JsonEncodedText.Encode("ctrlKey");
+    private static readonly JsonEncodedText s_shiftKey = JsonEncodedText.Encode("shiftKey");
+    private static readonly JsonEncodedText s_altKey = JsonEncodedText.Encode("altKey");
+    private static readonly JsonEncodedText s_metaKey = JsonEncodedText.Encode("metaKey");
+    private static readonly JsonEncodedText s_type = JsonEncodedText.Encode("type");
+    private static readonly JsonEncodedText s_identifier = JsonEncodedText.Encode("identifier");
+    private static readonly JsonEncodedText s_changedTouches = JsonEncodedText.Encode("changedTouches");
+    private static readonly JsonEncodedText s_targetTouches = JsonEncodedText.Encode("targetTouches");
+    private static readonly JsonEncodedText s_touches = JsonEncodedText.Encode("touches");
 
     internal static TouchEventArgs Read(JsonElement jsonElement)
     {
         var eventArgs = new TouchEventArgs();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(Detail.EncodedUtf8Bytes))
+            if (property.NameEquals(s_detail.EncodedUtf8Bytes))
             {
                 eventArgs.Detail = property.Value.GetInt64();
             }
-            else if (property.NameEquals(ChangedTouches.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_changedTouches.EncodedUtf8Bytes))
             {
                 eventArgs.ChangedTouches = ReadTouchPointArray(property.Value);
             }
-            else if (property.NameEquals(TargetTouches.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_targetTouches.EncodedUtf8Bytes))
             {
                 eventArgs.TargetTouches = ReadTouchPointArray(property.Value);
             }
-            else if (property.NameEquals(Touches.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_touches.EncodedUtf8Bytes))
             {
                 eventArgs.Touches = ReadTouchPointArray(property.Value);
             }
-            else if (property.NameEquals(CtrlKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_ctrlKey.EncodedUtf8Bytes))
             {
                 eventArgs.CtrlKey = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(ShiftKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_shiftKey.EncodedUtf8Bytes))
             {
                 eventArgs.ShiftKey = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(AltKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_altKey.EncodedUtf8Bytes))
             {
                 eventArgs.AltKey = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(MetaKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_metaKey.EncodedUtf8Bytes))
             {
                 eventArgs.MetaKey = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(Type.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_type.EncodedUtf8Bytes))
             {
                 eventArgs.Type = property.Value.GetString()!;
             }
@@ -93,31 +93,31 @@ internal static class TouchEventArgsReader
         var touchPoint = new TouchPoint();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(ClientX.EncodedUtf8Bytes))
+            if (property.NameEquals(s_clientX.EncodedUtf8Bytes))
             {
                 touchPoint.ClientX = property.Value.GetDouble();
             }
-            else if (property.NameEquals(ClientY.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_clientY.EncodedUtf8Bytes))
             {
                 touchPoint.ClientY = property.Value.GetDouble();
             }
-            else if (property.NameEquals(Identifier.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_identifier.EncodedUtf8Bytes))
             {
                 touchPoint.Identifier = property.Value.GetInt64();
             }
-            else if (property.NameEquals(PageX.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_pageX.EncodedUtf8Bytes))
             {
                 touchPoint.PageX = property.Value.GetDouble();
             }
-            else if (property.NameEquals(PageY.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_pageY.EncodedUtf8Bytes))
             {
                 touchPoint.PageY = property.Value.GetDouble();
             }
-            else if (property.NameEquals(ScreenX.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_screenX.EncodedUtf8Bytes))
             {
                 touchPoint.ScreenX = property.Value.GetDouble();
             }
-            else if (property.NameEquals(ScreenY.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_screenY.EncodedUtf8Bytes))
             {
                 touchPoint.ScreenY = property.Value.GetDouble();
             }

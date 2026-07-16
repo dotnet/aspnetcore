@@ -231,7 +231,7 @@ static void PrintUsage()
 /// </summary>
 sealed class MockAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
 {
-    private static readonly XElement serializedDescriptor = XElement.Parse(@"
+    private static readonly XElement s_serializedDescriptor = XElement.Parse(@"
         <theElement>
             <secret enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
             <![CDATA[This is a secret value.]]>
@@ -239,7 +239,7 @@ sealed class MockAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescr
         </theElement>");
 
     XmlSerializedDescriptorInfo IAuthenticatedEncryptorDescriptor.ExportToXml() =>
-        new(serializedDescriptor, typeof(IAuthenticatedEncryptorDescriptorDeserializer)); // This shouldn't be an interface, but we control the activator
+        new(s_serializedDescriptor, typeof(IAuthenticatedEncryptorDescriptorDeserializer)); // This shouldn't be an interface, but we control the activator
 }
 
 /// <summary>

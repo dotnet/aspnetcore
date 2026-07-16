@@ -16,7 +16,7 @@ internal sealed class DefaultComponentPropertyActivator : IComponentPropertyActi
     private const BindingFlags InjectablePropertyBindingFlags
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private static readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedPropertyActivators = new();
+    private static readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> s_cachedPropertyActivators = new();
 
     static DefaultComponentPropertyActivator()
     {
@@ -26,7 +26,7 @@ internal sealed class DefaultComponentPropertyActivator : IComponentPropertyActi
         }
     }
 
-    public static void ClearCache() => _cachedPropertyActivators.Clear();
+    public static void ClearCache() => s_cachedPropertyActivators.Clear();
 
     /// <inheritdoc />
     public Action<IServiceProvider, IComponent> GetActivator(
@@ -35,10 +35,10 @@ internal sealed class DefaultComponentPropertyActivator : IComponentPropertyActi
         // Unfortunately we can't use 'GetOrAdd' here because the DynamicallyAccessedMembers annotation doesn't flow through to the
         // callback, so it becomes an IL2111 warning. The following is equivalent and thread-safe because it's a ConcurrentDictionary
         // and it doesn't matter if we build a cache entry more than once.
-        if (!_cachedPropertyActivators.TryGetValue(componentType, out var activator))
+        if (!s_cachedPropertyActivators.TryGetValue(componentType, out var activator))
         {
             activator = CreatePropertyActivator(componentType);
-            _cachedPropertyActivators.TryAdd(componentType, activator);
+            s_cachedPropertyActivators.TryAdd(componentType, activator);
         }
 
         return activator;

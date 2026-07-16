@@ -9,59 +9,59 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 internal static class KeyboardEventArgsReader
 {
-    private static readonly JsonEncodedText Key = JsonEncodedText.Encode("key");
-    private static readonly JsonEncodedText Code = JsonEncodedText.Encode("code");
-    private static readonly JsonEncodedText Location = JsonEncodedText.Encode("location");
-    private static readonly JsonEncodedText Repeat = JsonEncodedText.Encode("repeat");
-    private static readonly JsonEncodedText CtrlKey = JsonEncodedText.Encode("ctrlKey");
-    private static readonly JsonEncodedText ShiftKey = JsonEncodedText.Encode("shiftKey");
-    private static readonly JsonEncodedText AltKey = JsonEncodedText.Encode("altKey");
-    private static readonly JsonEncodedText MetaKey = JsonEncodedText.Encode("metaKey");
-    private static readonly JsonEncodedText Type = JsonEncodedText.Encode("type");
-    private static readonly JsonEncodedText IsComposing = JsonEncodedText.Encode("isComposing");
+    private static readonly JsonEncodedText s_key = JsonEncodedText.Encode("key");
+    private static readonly JsonEncodedText s_code = JsonEncodedText.Encode("code");
+    private static readonly JsonEncodedText s_location = JsonEncodedText.Encode("location");
+    private static readonly JsonEncodedText s_repeat = JsonEncodedText.Encode("repeat");
+    private static readonly JsonEncodedText s_ctrlKey = JsonEncodedText.Encode("ctrlKey");
+    private static readonly JsonEncodedText s_shiftKey = JsonEncodedText.Encode("shiftKey");
+    private static readonly JsonEncodedText s_altKey = JsonEncodedText.Encode("altKey");
+    private static readonly JsonEncodedText s_metaKey = JsonEncodedText.Encode("metaKey");
+    private static readonly JsonEncodedText s_type = JsonEncodedText.Encode("type");
+    private static readonly JsonEncodedText s_isComposing = JsonEncodedText.Encode("isComposing");
 
     internal static KeyboardEventArgs Read(JsonElement jsonElement)
     {
         var eventArgs = new KeyboardEventArgs();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(Key.EncodedUtf8Bytes))
+            if (property.NameEquals(s_key.EncodedUtf8Bytes))
             {
                 eventArgs.Key = property.Value.GetString()!;
             }
-            else if (property.NameEquals(Code.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_code.EncodedUtf8Bytes))
             {
                 eventArgs.Code = property.Value.GetString()!;
             }
-            else if (property.NameEquals(Location.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_location.EncodedUtf8Bytes))
             {
                 eventArgs.Location = property.Value.GetSingle()!;
             }
-            else if (property.NameEquals(Repeat.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_repeat.EncodedUtf8Bytes))
             {
                 eventArgs.Repeat = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(CtrlKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_ctrlKey.EncodedUtf8Bytes))
             {
                 eventArgs.CtrlKey = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(AltKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_altKey.EncodedUtf8Bytes))
             {
                 eventArgs.AltKey = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(ShiftKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_shiftKey.EncodedUtf8Bytes))
             {
                 eventArgs.ShiftKey = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(MetaKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_metaKey.EncodedUtf8Bytes))
             {
                 eventArgs.MetaKey = property.Value.GetBoolean();
             }
-            else if (property.NameEquals(Type.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_type.EncodedUtf8Bytes))
             {
                 eventArgs.Type = property.Value.GetString()!;
             }
-            else if (property.NameEquals(IsComposing.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_isComposing.EncodedUtf8Bytes))
             {
                 eventArgs.IsComposing = property.Value.GetBoolean();
             }

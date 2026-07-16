@@ -14,7 +14,7 @@ public class NavigationManagerTest
 {
     // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
     // failures.
-    private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan s_timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
     [Theory]
     [InlineData("scheme://host/", "scheme://host/")]
@@ -358,7 +358,7 @@ public class NavigationManagerTest
         }
 
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
-        var navigation1Result = await navigation1.WaitAsync(Timeout);
+        var navigation1Result = await navigation1.WaitAsync(s_timeout);
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
@@ -531,7 +531,7 @@ public class NavigationManagerTest
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
-        var navigation1Result = await navigation1.WaitAsync(Timeout);
+        var navigation1Result = await navigation1.WaitAsync(s_timeout);
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
@@ -563,9 +563,9 @@ public class NavigationManagerTest
 
         // Act
         var navigation1 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir1", null, false);
-        var navigation1Result = await navigation1.WaitAsync(Timeout);
+        var navigation1Result = await navigation1.WaitAsync(s_timeout);
 
-        await tcs.Task.WaitAsync(Timeout);
+        await tcs.Task.WaitAsync(s_timeout);
 
         // Assert
         Assert.True(navigation1.IsCompletedSuccessfully);
@@ -621,7 +621,7 @@ public class NavigationManagerTest
         locationChangingRegistration.Dispose();
         var navigation2 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir2", null, false);
 
-        await tcs.Task.WaitAsync(Timeout);
+        await tcs.Task.WaitAsync(s_timeout);
 
         // Assert
 #pragma warning disable xUnit1031 // Do not use blocking task operations in test method
@@ -682,7 +682,7 @@ public class NavigationManagerTest
         // This navigation continues without getting canceled
         var navigation3 = navigationManager.RunNotifyLocationChangingAsync($"{baseUri}/subdir3", null, false);
 
-        await tcs.Task.WaitAsync(Timeout);
+        await tcs.Task.WaitAsync(s_timeout);
 
         // Assert
 #pragma warning disable xUnit1031 // Do not use blocking task operations in test method
@@ -891,7 +891,7 @@ public class NavigationManagerTest
         blockPreventNavigationTcs.SetResult();
 
         // Wait for the navigation to be prevented asynchronously
-        await navigationPreventedTcs.Task.WaitAsync(Timeout);
+        await navigationPreventedTcs.Task.WaitAsync(s_timeout);
 
         // Assert that we have prevented the navigation but the cancellation token has not requested cancellation
         Assert.True(currentContext.DidPreventNavigation);

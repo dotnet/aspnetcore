@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Cryptography.Cng;
 // Output of the encryption and key derivatoin functions are tested by other projects.
 public unsafe class CachedAlgorithmHandlesTests
 {
-    private static readonly byte[] _dataToHash = Encoding.UTF8.GetBytes("Sample input data.");
-    private static readonly byte[] _hmacKey = Encoding.UTF8.GetBytes("Secret key material.");
+    private static readonly byte[] s_dataToHash = Encoding.UTF8.GetBytes("Sample input data.");
+    private static readonly byte[] s_hmacKey = Encoding.UTF8.GetBytes("Secret key material.");
 
     [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
@@ -142,11 +142,11 @@ public unsafe class CachedAlgorithmHandlesTests
         // Perform the digest calculation and validate against our expectation
         var hashHandle = algorithmHandle.CreateHash();
         byte[] outputHash = new byte[expectedDigestSizeInBytes];
-        fixed (byte* pInput = _dataToHash)
+        fixed (byte* pInput = s_dataToHash)
         {
             fixed (byte* pOutput = outputHash)
             {
-                hashHandle.HashData(pInput, (uint)_dataToHash.Length, pOutput, (uint)outputHash.Length);
+                hashHandle.HashData(pInput, (uint)s_dataToHash.Length, pOutput, (uint)outputHash.Length);
             }
         }
         Assert.Equal(expectedDigest, Convert.ToBase64String(outputHash));
@@ -171,15 +171,15 @@ public unsafe class CachedAlgorithmHandlesTests
         Assert.Equal(expectedDigestSizeInBytes, algorithmHandle.GetHashDigestLength());
 
         // Perform the digest calculation and validate against our expectation
-        fixed (byte* pKey = _hmacKey)
+        fixed (byte* pKey = s_hmacKey)
         {
-            var hashHandle = algorithmHandle.CreateHmac(pKey, (uint)_hmacKey.Length);
+            var hashHandle = algorithmHandle.CreateHmac(pKey, (uint)s_hmacKey.Length);
             byte[] outputHash = new byte[expectedDigestSizeInBytes];
-            fixed (byte* pInput = _dataToHash)
+            fixed (byte* pInput = s_dataToHash)
             {
                 fixed (byte* pOutput = outputHash)
                 {
-                    hashHandle.HashData(pInput, (uint)_dataToHash.Length, pOutput, (uint)outputHash.Length);
+                    hashHandle.HashData(pInput, (uint)s_dataToHash.Length, pOutput, (uint)outputHash.Length);
                 }
             }
             Assert.Equal(expectedDigest, Convert.ToBase64String(outputHash));

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 [CacheBehavior(CacheBehavior.Rerender)]
 internal class SSRRenderModeBoundary : IComponent
 {
-    private static readonly ConcurrentDictionary<Type, string> _componentTypeNameHashCache = new();
+    private static readonly ConcurrentDictionary<Type, string> s_componentTypeNameHashCache = new();
 
     [DynamicallyAccessedMembers(Component)]
     private readonly Type _componentType;
@@ -272,7 +272,7 @@ internal class SSRRenderModeBoundary : IComponent
 
     private ComponentMarkerKey GenerateMarkerKey(int sequence, object? componentKey)
     {
-        var componentTypeNameHash = _componentTypeNameHashCache.GetOrAdd(_componentType, TypeNameHash.Compute);
+        var componentTypeNameHash = s_componentTypeNameHashCache.GetOrAdd(_componentType, TypeNameHash.Compute);
         var sequenceString = sequence.ToString(CultureInfo.InvariantCulture);
 
         var locationHash = $"{componentTypeNameHash}:{sequenceString}";

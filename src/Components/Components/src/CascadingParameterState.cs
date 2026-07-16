@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components;
 internal readonly struct CascadingParameterState
     (in CascadingParameterInfo parameterInfo, ICascadingValueSupplier valueSupplier, object? key)
 {
-    private static readonly ConcurrentDictionary<Type, CascadingParameterInfo[]> _cachedInfos = new();
+    private static readonly ConcurrentDictionary<Type, CascadingParameterInfo[]> s_cachedInfos = new();
 
     public CascadingParameterInfo ParameterInfo { get; } = parameterInfo;
     public ICascadingValueSupplier ValueSupplier { get; } = valueSupplier;
@@ -103,10 +103,10 @@ internal readonly struct CascadingParameterState
     private static CascadingParameterInfo[] GetCascadingParameterInfos(
         [DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        if (!_cachedInfos.TryGetValue(componentType, out var infos))
+        if (!s_cachedInfos.TryGetValue(componentType, out var infos))
         {
             infos = CreateCascadingParameterInfos(componentType);
-            _cachedInfos[componentType] = infos;
+            s_cachedInfos[componentType] = infos;
         }
 
         return infos;

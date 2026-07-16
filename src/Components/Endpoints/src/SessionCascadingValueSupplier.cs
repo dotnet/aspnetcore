@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class SessionCascadingValueSupplier
 {
-    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> s_propertyGetterCache = new();
+    private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
@@ -43,7 +43,7 @@ internal partial class SessionCascadingValueSupplier
 
         var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
         var componentType = componentState.Component.GetType();
-        var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
+        var getter = s_propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
         Func<object?> valueGetter = () => getter.GetValue(componentState.Component);
         RegisterValueCallback(sessionKey, valueGetter);
         return new SessionSubscription(this, sessionKey, parameterInfo.PropertyType, valueGetter);
@@ -96,7 +96,7 @@ internal partial class SessionCascadingValueSupplier
                 var value = valueGetter();
                 if (value is not null)
                 {
-                    var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
+                    var json = JsonSerializer.Serialize(value, value.GetType(), s_jsonOptions);
                     session.SetString(sessionKey, json);
                 }
                 else
@@ -171,7 +171,7 @@ internal partial class SessionCascadingValueSupplier
                 {
                     return null;
                 }
-                return JsonSerializer.Deserialize(json, _propertyType, _jsonOptions);
+                return JsonSerializer.Deserialize(json, _propertyType, s_jsonOptions);
             }
             catch (Exception ex)
             {

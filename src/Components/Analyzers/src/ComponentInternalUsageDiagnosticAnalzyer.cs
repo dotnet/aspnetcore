@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Internal;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class ComponentInternalUsageDiagnosticAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly string[] NamespaceParts = new[] { "RenderTree", "Components", "AspNetCore", "Microsoft", };
+    private static readonly string[] s_namespaceParts = new[] { "RenderTree", "Components", "AspNetCore", "Microsoft", };
 
     private readonly InternalUsageAnalyzer _inner;
 
@@ -39,9 +39,9 @@ public class ComponentInternalUsageDiagnosticAnalyzer : DiagnosticAnalyzer
     private static bool IsInInternalNamespace(ISymbol symbol)
     {
         var @namespace = symbol?.ContainingNamespace;
-        for (var i = 0; i < NamespaceParts.Length; i++)
+        for (var i = 0; i < s_namespaceParts.Length; i++)
         {
-            if (@namespace == null || !string.Equals(NamespaceParts[i], @namespace.Name, StringComparison.Ordinal))
+            if (@namespace == null || !string.Equals(s_namespaceParts[i], @namespace.Name, StringComparison.Ordinal))
             {
                 return false;
             }

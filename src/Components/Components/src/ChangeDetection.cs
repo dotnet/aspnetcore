@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Components;
 
 internal sealed class ChangeDetection
 {
-    private static readonly ConcurrentDictionary<Type, bool> _immutableObjectTypesCache = new();
+    private static readonly ConcurrentDictionary<Type, bool> s_immutableObjectTypesCache = new();
 
     static ChangeDetection()
     {
         if (HotReloadManager.IsSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += _immutableObjectTypesCache.Clear;
+            HotReloadManager.Default.OnDeltaApplied += s_immutableObjectTypesCache.Clear;
         }
     }
 
@@ -50,7 +50,7 @@ internal sealed class ChangeDetection
     // For performance reasons, the following immutable types are not supported: IntPtr, UIntPtr, Type.
     private static bool IsKnownImmutableType(Type type)
         => Type.GetTypeCode(type) != TypeCode.Object
-        || _immutableObjectTypesCache.GetOrAdd(type, IsImmutableObjectTypeCore);
+        || s_immutableObjectTypesCache.GetOrAdd(type, IsImmutableObjectTypeCore);
 
     private static bool IsImmutableObjectTypeCore(Type type)
         => type == typeof(Guid)

@@ -23,13 +23,13 @@ public class JSComponentInterop
 {
     private const string JSFunctionPropertyName = "invoke";
 
-    private static readonly ConcurrentDictionary<Type, ParameterTypeCache> ParameterTypeCaches = new();
+    private static readonly ConcurrentDictionary<Type, ParameterTypeCache> s_parameterTypeCaches = new();
 
     static JSComponentInterop()
     {
         if (HotReloadManager.IsSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += ParameterTypeCaches.Clear;
+            HotReloadManager.Default.OnDeltaApplied += s_parameterTypeCaches.Clear;
         }
     }
 
@@ -156,7 +156,7 @@ public class JSComponentInterop
         => Renderer.RemoveRootComponent(componentId);
 
     internal static ParameterTypeCache GetComponentParameters(Type componentType)
-        => ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
+        => s_parameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
 
     internal static bool IsEventCallbackType(Type type)
         => GetParameterKind(type)

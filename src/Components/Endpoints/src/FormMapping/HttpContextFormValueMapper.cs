@@ -18,7 +18,7 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
 {
     private readonly HttpContextFormDataProvider _formData;
     private readonly FormDataMapperOptions _options;
-    private static readonly ConcurrentDictionary<Type, FormValueSupplier> _cache = new();
+    private static readonly ConcurrentDictionary<Type, FormValueSupplier> s_cache = new();
 
     public HttpContextFormValueMapper(
         HttpContextFormDataProvider formData,
@@ -84,7 +84,7 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
             context.SetResult(null);
         }
 
-        var deserializer = _cache.GetOrAdd(context.ValueType, CreateDeserializer);
+        var deserializer = s_cache.GetOrAdd(context.ValueType, CreateDeserializer);
         Debug.Assert(deserializer != null);
         deserializer.Deserialize(context, _options, _formData.Entries, _formData.FormFiles);
     }

@@ -833,9 +833,9 @@ public class RemoteAuthenticatorCoreTests
 
         public int Attach(IComponent component) => AssignRootComponentId(component);
 
-        private static readonly Dispatcher _dispatcher = Dispatcher.CreateDefault();
+        private static readonly Dispatcher s_dispatcher = Dispatcher.CreateDefault();
 
-        public override Dispatcher Dispatcher => _dispatcher;
+        public override Dispatcher Dispatcher => s_dispatcher;
 
         protected override void HandleException(Exception exception)
             => ExceptionDispatchInfo.Capture(exception).Throw();

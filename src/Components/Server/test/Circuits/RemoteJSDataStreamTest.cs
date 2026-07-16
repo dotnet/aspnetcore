@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 public class RemoteJSDataStreamTest
 {
-    private static readonly TestRemoteJSRuntime _jsRuntime = new(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+    private static readonly TestRemoteJSRuntime s_jsRuntime = new(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
 
     [Fact]
     public async Task CreateRemoteJSDataStreamAsync_CreatesStream()
@@ -21,7 +21,7 @@ public class RemoteJSDataStreamTest
         var jsStreamReference = Mock.Of<IJSStreamReference>();
 
         // Act
-        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None).DefaultTimeout();
+        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(s_jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None).DefaultTimeout();
 
         // Assert
         Assert.NotNull(remoteJSDataStream);
@@ -35,7 +35,7 @@ public class RemoteJSDataStreamTest
         var unrecognizedGuid = 10;
 
         // Act
-        var success = await RemoteJSDataStream.ReceiveData(_jsRuntime, streamId: unrecognizedGuid, chunkId: 0, chunk, error: null).DefaultTimeout();
+        var success = await RemoteJSDataStream.ReceiveData(s_jsRuntime, streamId: unrecognizedGuid, chunkId: 0, chunk, error: null).DefaultTimeout();
 
         // Assert
         Assert.False(success);
@@ -345,7 +345,7 @@ public class RemoteJSDataStreamTest
     private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)
     {
         var jsStreamReference = Mock.Of<IJSStreamReference>();
-        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime ?? _jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None);
+        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime ?? s_jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None);
         return remoteJSDataStream;
     }
 

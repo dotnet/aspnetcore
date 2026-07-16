@@ -29,7 +29,7 @@ public class RemoteAuthenticationService<
     where TProviderOptions : new()
     where TAccount : RemoteUserAccount
 {
-    private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan s_userCacheRefreshInterval = TimeSpan.FromSeconds(60);
     private bool _initialized;
     private readonly RemoteAuthenticationServiceJavaScriptLoggingOptions _loggingOptions;
 
@@ -181,7 +181,7 @@ public class RemoteAuthenticationService<
     private async Task<ClaimsPrincipal> GetUser(bool useCache = false)
     {
         var now = DateTimeOffset.Now;
-        if (useCache && now < _userLastCheck + _userCacheRefreshInterval)
+        if (useCache && now < _userLastCheck + s_userCacheRefreshInterval)
         {
             return _cachedUser;
         }

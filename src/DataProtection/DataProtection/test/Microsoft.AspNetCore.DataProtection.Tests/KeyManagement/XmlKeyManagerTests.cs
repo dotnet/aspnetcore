@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 public class XmlKeyManagerTests
 {
-    private static readonly XElement serializedDescriptor = XElement.Parse(@"
+    private static readonly XElement s_serializedDescriptor = XElement.Parse(@"
             <theElement>
               <secret enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                 <![CDATA[This is a secret value.]]>
@@ -90,7 +90,7 @@ public class XmlKeyManagerTests
         string friendlyNameStoredInRepository = null;
         var expectedAuthenticatedEncryptor = new Mock<IAuthenticatedEncryptor>().Object;
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
-        mockDescriptor.Setup(o => o.ExportToXml()).Returns(new XmlSerializedDescriptorInfo(serializedDescriptor, typeof(MyDeserializer)));
+        mockDescriptor.Setup(o => o.ExportToXml()).Returns(new XmlSerializedDescriptorInfo(s_serializedDescriptor, typeof(MyDeserializer)));
         var expectedDescriptor = mockDescriptor.Object;
         var testEncryptorFactory = new TestEncryptorFactory(expectedDescriptor, expectedAuthenticatedEncryptor);
         var mockConfiguration = new Mock<AlgorithmConfiguration>();
@@ -179,7 +179,7 @@ public class XmlKeyManagerTests
         string friendlyNameStoredInRepository = null;
         var expectedAuthenticatedEncryptor = new Mock<IAuthenticatedEncryptor>().Object;
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
-        mockDescriptor.Setup(o => o.ExportToXml()).Returns(new XmlSerializedDescriptorInfo(serializedDescriptor, typeof(MyDeserializer)));
+        mockDescriptor.Setup(o => o.ExportToXml()).Returns(new XmlSerializedDescriptorInfo(s_serializedDescriptor, typeof(MyDeserializer)));
         var expectedDescriptor = mockDescriptor.Object;
         var testEncryptorFactory = new TestEncryptorFactory(expectedDescriptor, expectedAuthenticatedEncryptor);
         var mockConfiguration = new Mock<AlgorithmConfiguration>();
@@ -759,7 +759,7 @@ public class XmlKeyManagerTests
         descriptor
             .Setup(o => o.ExportToXml())
             // Shouldn't be an interface, but we control the activator and will return a mock
-            .Returns(new XmlSerializedDescriptorInfo(serializedDescriptor, typeof(IAuthenticatedEncryptorDescriptorDeserializer)));
+            .Returns(new XmlSerializedDescriptorInfo(s_serializedDescriptor, typeof(IAuthenticatedEncryptorDescriptorDeserializer)));
 
         // The factory always returns the only descriptor
         var authenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>(MockBehavior.Strict);

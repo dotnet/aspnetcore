@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 internal partial class RemoteRenderer : WebRenderer
 #pragma warning restore CA1852 // Seal internal types
 {
-    private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
-    private static readonly RendererInfo _componentPlatform = new("Server", isInteractive: true);
+    private static readonly Task s_canceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
+    private static readonly RendererInfo s_componentPlatform = new("Server", isInteractive: true);
 
     private readonly CircuitClientProxy _client;
     private readonly CircuitOptions _options;
@@ -63,7 +63,7 @@ internal partial class RemoteRenderer : WebRenderer
 
     protected override ResourceAssetCollection Assets => _resourceCollection ?? base.Assets;
 
-    protected override RendererInfo RendererInfo => _componentPlatform;
+    protected override RendererInfo RendererInfo => s_componentPlatform;
 
     protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveServer;
 
@@ -148,7 +148,7 @@ internal partial class RemoteRenderer : WebRenderer
         if (_disposing)
         {
             // We are being disposed, so do no work.
-            return CanceledTask;
+            return s_canceledTask;
         }
 
         // Note that we have to capture the data as a byte[] synchronously here, because

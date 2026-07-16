@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ComponentParametersShouldBePublicCodeFixProvider)), Shared]
 public class ComponentParametersShouldBePublicCodeFixProvider : CodeFixProvider
 {
-    private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBePublic_FixTitle), Resources.ResourceManager, typeof(Resources));
+    private static readonly LocalizableString s_title = new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBePublic_FixTitle), Resources.ResourceManager, typeof(Resources));
 
     public override ImmutableArray<string> FixableDiagnosticIds
         => ImmutableArray.Create(DiagnosticDescriptors.ComponentParametersShouldBePublic.Id);
@@ -38,7 +38,7 @@ public class ComponentParametersShouldBePublicCodeFixProvider : CodeFixProvider
         var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<PropertyDeclarationSyntax>().First();
 
         // Register a code action that will invoke the fix.
-        var title = Title.ToString(CultureInfo.InvariantCulture);
+        var title = s_title.ToString(CultureInfo.InvariantCulture);
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: title,

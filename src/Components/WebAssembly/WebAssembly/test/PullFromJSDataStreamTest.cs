@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Components;
 
 public class PullFromJSDataStreamTest
 {
-    private static readonly TestJSRuntime _jsRuntime = new();
-    private static readonly byte[] Data = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    private static readonly TestJSRuntime s_jsRuntime = new();
+    private static readonly byte[] s_data = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
     [Fact]
     public void CreateJSDataStream_CreatesStream()
@@ -20,7 +20,7 @@ public class PullFromJSDataStreamTest
         var jsStreamReference = Mock.Of<IJSStreamReference>();
 
         // Act
-        var pullFromJSDataStream = PullFromJSDataStream.CreateJSDataStream(_jsRuntime, jsStreamReference, totalLength: 100, cancellationToken: CancellationToken.None);
+        var pullFromJSDataStream = PullFromJSDataStream.CreateJSDataStream(s_jsRuntime, jsStreamReference, totalLength: 100, cancellationToken: CancellationToken.None);
 
         // Assert
         Assert.NotNull(pullFromJSDataStream);
@@ -36,7 +36,7 @@ public class PullFromJSDataStreamTest
                 new byte[] { 4, 5, 6 },
                 new byte[] { 7, 8, 9 },
         };
-        var pullFromJSDataStream = CreateJSDataStream(Data);
+        var pullFromJSDataStream = CreateJSDataStream(s_data);
 
         // Act & Assert
         for (byte i = 0; i < 3; i++)
@@ -45,27 +45,27 @@ public class PullFromJSDataStreamTest
             Assert.Equal(3, await pullFromJSDataStream.ReadAsync(buffer));
             Assert.Equal(expectedChunks[i], buffer);
         }
-        Assert.Equal(pullFromJSDataStream.Position, Data.Length);
+        Assert.Equal(pullFromJSDataStream.Position, s_data.Length);
     }
 
     [Fact]
     public async Task ReceiveData_SuccessReadsBackStream_UsingMemoryBuffer()
     {
         // Arrange
-        var pullFromJSDataStream = CreateJSDataStream(Data);
+        var pullFromJSDataStream = CreateJSDataStream(s_data);
 
         // Act & Assert
         using var mem = new MemoryStream();
         await pullFromJSDataStream.CopyToAsync(mem).DefaultTimeout();
-        Assert.Equal(Data, mem.ToArray());
+        Assert.Equal(s_data, mem.ToArray());
     }
 
     [Fact]
     public async Task ReceiveData_JSProvidesInsufficientData_Throws()
     {
         // Arrange
-        var insufficientDataJSRuntime = new TestJSRuntime_ProvidesInsufficientData(Data);
-        var pullFromJSDataStream = CreateJSDataStream(Data, insufficientDataJSRuntime);
+        var insufficientDataJSRuntime = new TestJSRuntime_ProvidesInsufficientData(s_data);
+        var pullFromJSDataStream = CreateJSDataStream(s_data, insufficientDataJSRuntime);
 
         // Act & Assert
         using var mem = new MemoryStream();
@@ -79,7 +79,7 @@ public class PullFromJSDataStreamTest
         // Arrange
         var data = new byte[50000];
         var excessDataJSRuntime = new TestJSRuntime_ProvidesExcessData(data);
-        var pullFromJSDataStream = CreateJSDataStream(Data, excessDataJSRuntime);
+        var pullFromJSDataStream = CreateJSDataStream(s_data, excessDataJSRuntime);
 
         // Act & Assert
         using var mem = new MemoryStream();
@@ -93,7 +93,7 @@ public class PullFromJSDataStreamTest
         // Arrange
         var data = new byte[50000];
         var excessDataJSRuntime = new TestJSRuntime_ProvidesExcessData(data);
-        var pullFromJSDataStream = CreateJSDataStream(Data, excessDataJSRuntime);
+        var pullFromJSDataStream = CreateJSDataStream(s_data, excessDataJSRuntime);
 
         // Act & Assert
         using var mem = new MemoryStream();

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.Test;
 public class ContainerUtilsTests
 {
     // example of content from /proc/self/mounts
-    private static readonly string[] fstab = new[]
+    private static readonly string[] s_fstab = new[]
     {
             "none / aufs rw,relatime,si=f9bfcf896de3f6c2,dio,dirperm1 0 0",
             "# comments",
@@ -37,7 +37,7 @@ public class ContainerUtilsTests
     [InlineData("../dir")]
     public void DeterminesFolderIsNotMounted(string directory)
     {
-        Assert.False(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
+        Assert.False(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), s_fstab));
     }
 
     [ConditionalTheory]
@@ -50,6 +50,6 @@ public class ContainerUtilsTests
     [InlineData("/app/subdir/two/")]
     public void DeterminesFolderIsMounted(string directory)
     {
-        Assert.True(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
+        Assert.True(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), s_fstab));
     }
 }

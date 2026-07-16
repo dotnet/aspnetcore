@@ -17,19 +17,19 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 internal sealed class PersistentServicesRegistry
 {
-    private static readonly string _registryKey = typeof(PersistentServicesRegistry).FullName!;
-    private static readonly RootTypeCache _persistentServiceTypeCache = new();
+    private static readonly string s_registryKey = typeof(PersistentServicesRegistry).FullName!;
+    private static readonly RootTypeCache s_persistentServiceTypeCache = new();
 
     private readonly IServiceProvider _serviceProvider;
     private IPersistentServiceRegistration[] _registrations;
     private List<(PersistingComponentStateSubscription, RestoringComponentStateSubscription)> _subscriptions = [];
-    private static readonly ConcurrentDictionary<Type, PropertiesAccessor> _cachedAccessorsByType = new();
+    private static readonly ConcurrentDictionary<Type, PropertiesAccessor> s_cachedAccessorsByType = new();
 
     static PersistentServicesRegistry()
     {
         if (HotReloadManager.IsSupported)
         {
-            HotReloadManager.Default.OnDeltaApplied += _cachedAccessorsByType.Clear;
+            HotReloadManager.Default.OnDeltaApplied += s_cachedAccessorsByType.Clear;
         }
     }
 
@@ -88,7 +88,7 @@ internal sealed class PersistentServicesRegistry
             subscriptions.Add((
                 state.RegisterOnPersisting(() =>
                 {
-                    state.PersistAsJson(_registryKey, _registrations);
+                    state.PersistAsJson(s_registryKey, _registrations);
                     return Task.CompletedTask;
                 }, RenderMode),
                 default));
@@ -100,7 +100,7 @@ internal sealed class PersistentServicesRegistry
     [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson(String, Object, Type)")]
     private static void PersistInstanceState(object instance, Type type, PersistentComponentState state)
     {
-        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
+        var accessors = s_cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
         foreach (var (key, propertyType) in accessors.KeyTypePairs)
         {
             var (setter, getter, options) = accessors.GetAccessor(key);
@@ -118,7 +118,7 @@ internal sealed class PersistentServicesRegistry
     [DynamicDependency(LinkerFlags.JsonSerialized, typeof(PersistentServiceRegistration))]
     private void UpdateRegistrations(PersistentComponentState state)
     {
-        if (state.TryTakeFromJson<PersistentServiceRegistration[]>(_registryKey, out var registry) && registry != null)
+        if (state.TryTakeFromJson<PersistentServiceRegistration[]>(s_registryKey, out var registry) && registry != null)
         {
             _registrations = ResolveRegistrations(_registrations.Concat(registry));
         }
@@ -127,7 +127,7 @@ internal sealed class PersistentServicesRegistry
     [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson(String, Type, out Object)")]
     private static void RestoreInstanceState(object instance, Type type, PersistentComponentState state)
     {
-        var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
+        var accessors = s_cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
         foreach (var (key, propertyType) in accessors.KeyTypePairs)
         {
             var (setter, getter, options) = accessors.GetAccessor(key);
@@ -152,7 +152,7 @@ internal sealed class PersistentServicesRegistry
         }
         var assembly = registration.Assembly;
         var fullTypeName = registration.FullTypeName;
-        return _persistentServiceTypeCache.GetRootType(assembly, fullTypeName);
+        return s_persistentServiceTypeCache.GetRootType(assembly, fullTypeName);
     }
 
     private sealed class PropertiesAccessor

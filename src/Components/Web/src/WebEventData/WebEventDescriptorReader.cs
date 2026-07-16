@@ -10,26 +10,26 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 internal static class WebEventDescriptorReader
 {
-    private static readonly JsonEncodedText EventHandlerIdKey = JsonEncodedText.Encode("eventHandlerId");
-    private static readonly JsonEncodedText EventNameKey = JsonEncodedText.Encode("eventName");
-    private static readonly JsonEncodedText EventFieldInfoKey = JsonEncodedText.Encode("eventFieldInfo");
-    private static readonly JsonEncodedText ComponentIdKey = JsonEncodedText.Encode("componentId");
-    private static readonly JsonEncodedText FieldValueKey = JsonEncodedText.Encode("fieldValue");
+    private static readonly JsonEncodedText s_eventHandlerIdKey = JsonEncodedText.Encode("eventHandlerId");
+    private static readonly JsonEncodedText s_eventNameKey = JsonEncodedText.Encode("eventName");
+    private static readonly JsonEncodedText s_eventFieldInfoKey = JsonEncodedText.Encode("eventFieldInfo");
+    private static readonly JsonEncodedText s_componentIdKey = JsonEncodedText.Encode("componentId");
+    private static readonly JsonEncodedText s_fieldValueKey = JsonEncodedText.Encode("fieldValue");
 
     internal static WebEventDescriptor Read(JsonElement jsonElement)
     {
         var descriptor = new WebEventDescriptor();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(EventHandlerIdKey.EncodedUtf8Bytes))
+            if (property.NameEquals(s_eventHandlerIdKey.EncodedUtf8Bytes))
             {
                 descriptor.EventHandlerId = property.Value.GetUInt64();
             }
-            else if (property.NameEquals(EventNameKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_eventNameKey.EncodedUtf8Bytes))
             {
                 descriptor.EventName = property.Value.GetString()!;
             }
-            else if (property.NameEquals(EventFieldInfoKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_eventFieldInfoKey.EncodedUtf8Bytes))
             {
                 descriptor.EventFieldInfo = ReadEventFieldInfo(property.Value);
             }
@@ -52,11 +52,11 @@ internal static class WebEventDescriptorReader
         var eventFieldInfo = new EventFieldInfo();
         foreach (var property in jsonElement.EnumerateObject())
         {
-            if (property.NameEquals(ComponentIdKey.EncodedUtf8Bytes))
+            if (property.NameEquals(s_componentIdKey.EncodedUtf8Bytes))
             {
                 eventFieldInfo.ComponentId = property.Value.GetInt32();
             }
-            else if (property.NameEquals(FieldValueKey.EncodedUtf8Bytes))
+            else if (property.NameEquals(s_fieldValueKey.EncodedUtf8Bytes))
             {
                 if (property.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
                 {

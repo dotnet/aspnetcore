@@ -14,7 +14,7 @@ public static class XmlExtensions
 {
     internal static bool IsMarkedAsRequiringEncryption(this XElement element)
     {
-        return ((bool?)element.Attribute(XmlConstants.RequiresEncryptionAttributeName)).GetValueOrDefault();
+        return ((bool?)element.Attribute(XmlConstants.s_requiresEncryptionAttributeName)).GetValueOrDefault();
     }
 
     /// <summary>
@@ -25,6 +25,6 @@ public static class XmlExtensions
     {
         ArgumentNullThrowHelper.ThrowIfNull(element);
 
-        element.SetAttributeValue(XmlConstants.RequiresEncryptionAttributeName, true);
+        element.SetAttributeValue(XmlConstants.s_requiresEncryptionAttributeName, true);
     }
 }

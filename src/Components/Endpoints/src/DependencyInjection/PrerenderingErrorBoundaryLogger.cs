@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class PrerenderingErrorBoundaryLogger : IErrorBoundaryLogger
 {
-    private static readonly Action<ILogger, string, Exception> _exceptionCaughtByErrorBoundary = LoggerMessage.Define<string>(
+    private static readonly Action<ILogger, string, Exception> s_exceptionCaughtByErrorBoundary = LoggerMessage.Define<string>(
         LogLevel.Warning,
         100,
         "Unhandled exception rendering component: {Message}");
@@ -22,7 +22,7 @@ internal sealed class PrerenderingErrorBoundaryLogger : IErrorBoundaryLogger
 
     public ValueTask LogErrorAsync(Exception exception)
     {
-        _exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
+        s_exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
         return ValueTask.CompletedTask;
     }
 }

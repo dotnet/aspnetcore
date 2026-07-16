@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Web.Virtualization
+﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
 @using System.Linq
 @using System.Threading
 
@@ -19,7 +19,7 @@
     {
         @if (useItemsProvider)
         {
-            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialItemIndex="@initialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" ItemComparer="@s_itemComparer" InitialItemIndex="@initialItemIndex" Context="item">
                 <ItemContent>
                     <div class="item"
                          data-index="@item.Index"
@@ -124,7 +124,7 @@
     private int scrollTargetIndex = 200;
     private string scrollStatus = "Idle";
     private CancellationTokenSource _userScrollCts;
-    private static readonly IEqualityComparer<DynamicItem> _itemComparer =
+    private static readonly IEqualityComparer<DynamicItem> s_itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
 
     // Pending mutations applied inside the provider (simulates DB-backed data).

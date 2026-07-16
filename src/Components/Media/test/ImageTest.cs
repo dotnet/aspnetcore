@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Media.Tests;
 /// </summary>
 public class ImageTest
 {
-    private static readonly byte[] PngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
+    private static readonly byte[] s_pngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
 
     [Fact]
     public async Task LoadsImage_InvokesSetContentAsync_WhenSourceProvided()
@@ -37,7 +37,7 @@ public class ImageTest
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
 
-        var source = new MediaSource(PngBytes, "image/png", cacheKey: "png-1");
+        var source = new MediaSource(s_pngBytes, "image/png", cacheKey: "png-1");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = source,

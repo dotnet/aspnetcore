@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
 internal static class ManagedAlgorithmHelpers
 {
-    private static readonly List<Type> KnownAlgorithmTypes = new List<Type>
+    private static readonly List<Type> s_knownAlgorithmTypes = new List<Type>
     {
         typeof(Aes),
         typeof(HMACSHA1),
@@ -23,7 +23,7 @@ internal static class ManagedAlgorithmHelpers
     // Any changes to this method should also be be reflected in FriendlyNameToType.
     public static string TypeToFriendlyName(Type type)
     {
-        if (KnownAlgorithmTypes.Contains(type))
+        if (s_knownAlgorithmTypes.Contains(type))
         {
             return type.Name;
         }
@@ -39,7 +39,7 @@ internal static class ManagedAlgorithmHelpers
     [UnconditionalSuppressMessage("Trimmer", "IL2073", Justification = "Unknown type is checked for whether it has a public parameterless constructor. Handle trimmed types by providing a useful error message.")]
     public static Type FriendlyNameToType(string typeName)
     {
-        foreach (var knownType in KnownAlgorithmTypes)
+        foreach (var knownType in s_knownAlgorithmTypes)
         {
             if (knownType.Name == typeName)
             {
@@ -50,7 +50,7 @@ internal static class ManagedAlgorithmHelpers
         var type = TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(typeName);
 
         // Type name could be full or assembly qualified name of known type.
-        if (KnownAlgorithmTypes.Contains(type))
+        if (s_knownAlgorithmTypes.Contains(type))
         {
             return type;
         }

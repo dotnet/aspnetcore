@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 // Implementation of ICircuitPersistenceProvider that uses HybridCache for distributed caching
 internal sealed partial class HybridCacheCircuitPersistenceProvider : ICircuitPersistenceProvider
 {
-    private static readonly Func<CancellationToken, ValueTask<PersistedCircuitState>> _failOnCreate =
+    private static readonly Func<CancellationToken, ValueTask<PersistedCircuitState>> s_failOnCreate =
         static ct => throw new InvalidOperationException();
 
-    private static readonly string[] _tags = ["Microsoft.AspNetCore.Components.Server.PersistedCircuitState"];
+    private static readonly string[] s_tags = ["Microsoft.AspNetCore.Components.Server.PersistedCircuitState"];
 
     private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly HybridCache _hybridCache;
@@ -48,7 +48,7 @@ internal sealed partial class HybridCacheCircuitPersistenceProvider : ICircuitPe
         try
         {
             await _lock.WaitAsync(cancellation);
-            await _hybridCache.SetAsync(circuitId.Secret, persistedCircuitState, _cacheWriteOptions, _tags, cancellation);
+            await _hybridCache.SetAsync(circuitId.Secret, persistedCircuitState, _cacheWriteOptions, s_tags, cancellation);
         }
         catch (Exception ex)
         {
@@ -69,9 +69,9 @@ internal sealed partial class HybridCacheCircuitPersistenceProvider : ICircuitPe
             await _lock.WaitAsync(cancellation);
             var state = await _hybridCache.GetOrCreateAsync(
                 circuitId.Secret,
-                factory: _failOnCreate,
+                factory: s_failOnCreate,
                 options: _cacheReadOptions,
-                _tags,
+                s_tags,
                 cancellation);
 
             if (state == null)

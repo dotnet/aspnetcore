@@ -400,14 +400,14 @@ public class RazorComponentResultTest
     }
 
     // We don't want these tests to be hardcoded for specific component ID numbers, so replace them all with X for assertions
-    private static readonly Regex TemplateElementComponentIdRegex = new Regex("blazor-component-id=\"\\d+\"");
-    private static readonly Regex OpenBoundaryMarkerRegex = new Regex("<!--bl:\\d+-->");
-    private static readonly Regex CloseBoundaryMarkerRegex = new Regex("<!--/bl:\\d+-->");
+    private static readonly Regex s_templateElementComponentIdRegex = new Regex("blazor-component-id=\"\\d+\"");
+    private static readonly Regex s_openBoundaryMarkerRegex = new Regex("<!--bl:\\d+-->");
+    private static readonly Regex s_closeBoundaryMarkerRegex = new Regex("<!--/bl:\\d+-->");
     private static string MaskComponentIds(string html)
     {
-        html = TemplateElementComponentIdRegex.Replace(html, "blazor-component-id=\"X\"");
-        html = OpenBoundaryMarkerRegex.Replace(html, "<!--bl:X-->");
-        html = CloseBoundaryMarkerRegex.Replace(html, "<!--/bl:X-->");
+        html = s_templateElementComponentIdRegex.Replace(html, "blazor-component-id=\"X\"");
+        html = s_openBoundaryMarkerRegex.Replace(html, "<!--bl:X-->");
+        html = s_closeBoundaryMarkerRegex.Replace(html, "<!--/bl:X-->");
         return html;
     }
 

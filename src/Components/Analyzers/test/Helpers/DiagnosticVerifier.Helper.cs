@@ -17,15 +17,15 @@ namespace TestHelper;
 /// </summary>
 public abstract partial class DiagnosticVerifier
 {
-    private static readonly MetadataReference CorlibReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-    private static readonly MetadataReference SystemCoreReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
-    private static readonly MetadataReference CSharpSymbolsReference = MetadataReference.CreateFromFile(typeof(CSharpCompilation).Assembly.Location);
-    private static readonly MetadataReference CodeAnalysisReference = MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
+    private static readonly MetadataReference s_corlibReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+    private static readonly MetadataReference s_systemCoreReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
+    private static readonly MetadataReference s_cSharpSymbolsReference = MetadataReference.CreateFromFile(typeof(CSharpCompilation).Assembly.Location);
+    private static readonly MetadataReference s_codeAnalysisReference = MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
 
-    internal static string DefaultFilePathPrefix = "Test";
-    internal static string CSharpDefaultFileExt = "cs";
-    internal static string VisualBasicDefaultExt = "vb";
-    internal static string TestProjectName = "TestProject";
+    internal static string s_defaultFilePathPrefix = "Test";
+    internal static string s_cSharpDefaultFileExt = "cs";
+    internal static string s_visualBasicDefaultExt = "vb";
+    internal static string s_testProjectName = "TestProject";
 
     #region  Get Diagnostics
 
@@ -143,18 +143,18 @@ public abstract partial class DiagnosticVerifier
     /// <returns>A Project created out of the Documents created from the source strings</returns>
     private static Project CreateProject(string[] sources, string language = LanguageNames.CSharp)
     {
-        string fileNamePrefix = DefaultFilePathPrefix;
-        string fileExt = language == LanguageNames.CSharp ? CSharpDefaultFileExt : VisualBasicDefaultExt;
+        string fileNamePrefix = s_defaultFilePathPrefix;
+        string fileExt = language == LanguageNames.CSharp ? s_cSharpDefaultFileExt : s_visualBasicDefaultExt;
 
-        var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
+        var projectId = ProjectId.CreateNewId(debugName: s_testProjectName);
 
         var solution = new AdhocWorkspace()
             .CurrentSolution
-            .AddProject(projectId, TestProjectName, TestProjectName, language)
-            .AddMetadataReference(projectId, CorlibReference)
-            .AddMetadataReference(projectId, SystemCoreReference)
-            .AddMetadataReference(projectId, CSharpSymbolsReference)
-            .AddMetadataReference(projectId, CodeAnalysisReference);
+            .AddProject(projectId, s_testProjectName, s_testProjectName, language)
+            .AddMetadataReference(projectId, s_corlibReference)
+            .AddMetadataReference(projectId, s_systemCoreReference)
+            .AddMetadataReference(projectId, s_cSharpSymbolsReference)
+            .AddMetadataReference(projectId, s_codeAnalysisReference);
 
         int count = 0;
         foreach (var source in sources)

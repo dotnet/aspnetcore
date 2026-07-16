@@ -11,7 +11,7 @@ internal sealed class StaticContentProvider
     private readonly IFileProvider _fileProvider;
     private readonly Uri _appBaseUri;
     private readonly string _hostPageRelativePath;
-    private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
+    private static readonly FileExtensionContentTypeProvider s_contentTypeProvider = new();
 
     public StaticContentProvider(IFileProvider fileProvider, Uri appBaseUri, string hostPageRelativePath)
     {
@@ -81,7 +81,7 @@ internal sealed class StaticContentProvider
     }
 
     private static string GetResponseContentTypeOrDefault(string path)
-        => ContentTypeProvider.TryGetContentType(path, out var matchedContentType)
+        => s_contentTypeProvider.TryGetContentType(path, out var matchedContentType)
         ? matchedContentType
         : "application/octet-stream";
 

@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 public class EditContextDataAnnotationsExtensionsTest
 {
-    private static readonly IServiceProvider _serviceProvider = new TestServiceProvider();
+    private static readonly IServiceProvider s_serviceProvider = new TestServiceProvider();
 
     [Fact]
     public void CannotUseNullEditContext()
     {
         var editContext = (EditContext)null;
-        var ex = Assert.Throws<ArgumentNullException>(() => editContext.EnableDataAnnotationsValidation(_serviceProvider));
+        var ex = Assert.Throws<ArgumentNullException>(() => editContext.EnableDataAnnotationsValidation(s_serviceProvider));
         Assert.Equal("editContext", ex.ParamName);
     }
 
@@ -27,7 +27,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         // Act
         var isValid = editContext.Validate();
@@ -57,7 +57,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         // Act/Assert 1: Initially invalid
         Assert.False(editContext.Validate());
@@ -74,7 +74,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
         var onValidationStateChangedCount = 0;
         editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
 
@@ -102,7 +102,7 @@ public class EditContextDataAnnotationsExtensionsTest
         var model = new TestModel { IntFrom1To100 = 101 };
         var independentTopLevelModel = new object(); // To show we can validate things on any model, not just the top-level one
         var editContext = new EditContext(independentTopLevelModel);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
         var onValidationStateChangedCount = 0;
         var requiredStringIdentifier = new FieldIdentifier(model, nameof(TestModel.RequiredString));
         var intFrom1To100Identifier = new FieldIdentifier(model, nameof(TestModel.IntFrom1To100));
@@ -142,7 +142,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         // Arrange
         var editContext = new EditContext(new TestModel());
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
         var onValidationStateChangedCount = 0;
         editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
 
@@ -161,7 +161,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
-        var subscription = editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var subscription = editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         // Act/Assert 1: when we're attached
         Assert.False(editContext.Validate());
@@ -178,7 +178,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         Assert.False(editContext.Validate());
         Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
@@ -195,7 +195,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
         var orderIdIdentifier = new FieldIdentifier(model, nameof(DerivedModelWithHiddenProperty.OrderID));
 
         var sequence = new[] { 150, 50, 200, 75, 99, 101, 1 };
@@ -214,7 +214,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         var field = new FieldIdentifier(model, "OrderID");
         editContext.NotifyFieldChanged(field);
@@ -226,7 +226,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new DerivedModelWithInheritedOnly { Description = "x" };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         var field = new FieldIdentifier(model, nameof(DerivedModelWithInheritedOnly.BaseName));
         editContext.NotifyFieldChanged(field);
@@ -242,7 +242,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new DeepDerivedModel { Tag = 150 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         var field = new FieldIdentifier(model, nameof(DeepDerivedModel.Tag));
         editContext.NotifyFieldChanged(field);
@@ -258,7 +258,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new DerivedModelWithUnattributedHiddenProperty { Name = null };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         var field = new FieldIdentifier(model, nameof(DerivedModelWithUnattributedHiddenProperty.Name));
         editContext.NotifyFieldChanged(field);
@@ -270,7 +270,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new ModelWithStaticProperty { Value = 0 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         var field = new FieldIdentifier(model, nameof(ModelWithStaticProperty.StaticValue));
         editContext.NotifyFieldChanged(field);
@@ -282,7 +282,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new AsyncTestModel();
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         var isValid = await editContext.ValidateAsync();
 
@@ -298,7 +298,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // fallback is not supported, so the exception it throws propagates out of Validate().
         var model = new AsyncTestModel();
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
 
         var ex = Assert.Throws<NotSupportedException>(() => editContext.Validate());
         Assert.Contains("only supports asynchronous validation", ex.Message);
@@ -309,7 +309,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new AsyncTestModel();
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
         var field = editContext.Field(nameof(AsyncTestModel.AsyncString));
 
         editContext.NotifyFieldChanged(field);
@@ -326,7 +326,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         var model = new AsyncThrowingModel();
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        editContext.EnableDataAnnotationsValidation(s_serviceProvider);
         var field = editContext.Field(nameof(AsyncThrowingModel.ThrowingString));
 
         editContext.NotifyFieldChanged(field);

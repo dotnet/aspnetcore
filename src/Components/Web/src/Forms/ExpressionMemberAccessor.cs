@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 internal static class ExpressionMemberAccessor
 {
-    private static readonly ConcurrentDictionary<Expression, MemberInfo> _memberInfoCache = new();
-    private static readonly ConcurrentDictionary<MemberInfo, string> _displayNameCache = new();
+    private static readonly ConcurrentDictionary<Expression, MemberInfo> s_memberInfoCache = new();
+    private static readonly ConcurrentDictionary<MemberInfo, string> s_displayNameCache = new();
 
     static ExpressionMemberAccessor()
     {
@@ -27,7 +27,7 @@ internal static class ExpressionMemberAccessor
     {
         ArgumentNullException.ThrowIfNull(accessor);
 
-        return _memberInfoCache.GetOrAdd(accessor, static expr =>
+        return s_memberInfoCache.GetOrAdd(accessor, static expr =>
         {
             var lambdaExpression = (LambdaExpression)expr;
             var accessorBody = lambdaExpression.Body;
@@ -54,7 +54,7 @@ internal static class ExpressionMemberAccessor
     {
         ArgumentNullException.ThrowIfNull(member);
 
-        return _displayNameCache.GetOrAdd(member, static m =>
+        return s_displayNameCache.GetOrAdd(member, static m =>
         {
             var displayAttribute = m.GetCustomAttribute<DisplayAttribute>();
             if (displayAttribute is not null)
@@ -85,7 +85,7 @@ internal static class ExpressionMemberAccessor
 
     private static void ClearCache()
     {
-        _memberInfoCache.Clear();
-        _displayNameCache.Clear();
+        s_memberInfoCache.Clear();
+        s_displayNameCache.Clear();
     }
 }

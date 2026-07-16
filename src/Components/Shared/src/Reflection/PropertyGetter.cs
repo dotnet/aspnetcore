@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Reflection;
 
 internal sealed class PropertyGetter
 {
-    private static readonly MethodInfo CallPropertyGetterOpenGenericMethod =
+    private static readonly MethodInfo s_callPropertyGetterOpenGenericMethod =
         typeof(PropertyGetter).GetMethod(nameof(CallPropertyGetter), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     private readonly Func<object, object?> _GetterDelegate;
@@ -39,7 +39,7 @@ internal sealed class PropertyGetter
                 getMethod.CreateDelegate(typeof(Func<,>).MakeGenericType(targetType, property.PropertyType));
 
             var callPropertyGetterClosedGenericMethod =
-                CallPropertyGetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
+                s_callPropertyGetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
 
             _GetterDelegate = (Func<object, object>)
                 callPropertyGetterClosedGenericMethod.CreateDelegate(typeof(Func<object, object>), propertyGetterAsFunc);

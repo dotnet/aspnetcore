@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Web.Virtualization
+﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
 
 <style>
     html, body {
@@ -39,7 +39,7 @@
     @* No scroll container — uses window/document as the scroll root *@
     @if (useItemsProvider)
     {
-        <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" Context="item">
+        <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@s_itemComparer" Context="item">
             <div class="item"
                  data-index="@item.Index"
                  data-anchor-mode="@((int)anchorMode)"
@@ -70,7 +70,7 @@
     private Virtualize<DynamicItem> virtualizeRef;
     private int scrollTargetIndex = 100;
     private string scrollStatus = "Idle";
-    private static readonly IEqualityComparer<DynamicItem> _itemComparer =
+    private static readonly IEqualityComparer<DynamicItem> s_itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
 
     protected override void OnInitialized()

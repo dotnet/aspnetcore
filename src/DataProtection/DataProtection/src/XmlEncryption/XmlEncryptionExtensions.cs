@@ -36,7 +36,7 @@ internal static unsafe class XmlEncryptionExtensions
 
         while (true)
         {
-            var elementWhichRequiresDecryption = doc.Descendants(XmlConstants.EncryptedSecretElementName).FirstOrDefault();
+            var elementWhichRequiresDecryption = doc.Descendants(XmlConstants.s_encryptedSecretElementName).FirstOrDefault();
             if (elementWhichRequiresDecryption == null)
             {
                 // All encryption is finished.
@@ -47,7 +47,7 @@ internal static unsafe class XmlEncryptionExtensions
             // the original document or other data structures. The element we pass to
             // the decryptor should be the child of the 'encryptedSecret' element.
             var clonedElementWhichRequiresDecryption = new XElement(elementWhichRequiresDecryption);
-            string decryptorTypeName = (string)clonedElementWhichRequiresDecryption.Attribute(XmlConstants.DecryptorTypeAttributeName)!;
+            string decryptorTypeName = (string)clonedElementWhichRequiresDecryption.Attribute(XmlConstants.s_decryptorTypeAttributeName)!;
             var decryptorInstance = CreateDecryptor(activator, decryptorTypeName);
             var decryptedElement = decryptorInstance.Decrypt(clonedElementWhichRequiresDecryption.Elements().Single());
 
@@ -147,8 +147,8 @@ internal static unsafe class XmlEncryptionExtensions
             //   <element />
             // </enc:encryptedSecret>
             entry.Key.ReplaceWith(
-                new XElement(XmlConstants.EncryptedSecretElementName,
-                    new XAttribute(XmlConstants.DecryptorTypeAttributeName, entry.Value.DecryptorType.AssemblyQualifiedName!),
+                new XElement(XmlConstants.s_encryptedSecretElementName,
+                    new XAttribute(XmlConstants.s_decryptorTypeAttributeName, entry.Value.DecryptorType.AssemblyQualifiedName!),
                     entry.Value.EncryptedElement));
         }
         return doc.Root;
@@ -201,7 +201,7 @@ internal static unsafe class XmlEncryptionExtensions
 
     private static bool DoesElementOrDescendentRequireDecryption(XElement element)
     {
-        return element.DescendantsAndSelf(XmlConstants.EncryptedSecretElementName).Any();
+        return element.DescendantsAndSelf(XmlConstants.s_encryptedSecretElementName).Any();
     }
 
     private static bool DoesElementOrDescendentRequireEncryption(XElement element)

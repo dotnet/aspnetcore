@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 /// </summary>
 public class TargetPickerUi
 {
-    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions s_jsonOptions = new JsonSerializerOptions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
@@ -445,7 +445,7 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
     {
         using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
         var jsonResponse = await httpClient.GetStringAsync($"{_browserHost}/json");
-        return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions)!;
+        return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, s_jsonOptions)!;
     }
 
     private sealed class BrowserTab

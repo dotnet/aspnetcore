@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 internal static class WebAssemblyCallQueue
 {
-    private static bool _isCallInProgress;
-    private static readonly Queue<Action> _pendingWork = new();
+    private static bool s_isCallInProgress;
+    private static readonly Queue<Action> s_pendingWork = new();
 
-    public static bool IsInProgress => _isCallInProgress;
-    public static bool HasUnstartedWork => _pendingWork.Count > 0;
+    public static bool IsInProgress => s_isCallInProgress;
+    public static bool HasUnstartedWork => s_pendingWork.Count > 0;
 
     /// <summary>
     /// Runs the supplied callback when possible. If the call queue is empty, the callback is executed
@@ -45,22 +45,22 @@ internal static class WebAssemblyCallQueue
     /// </remarks>
     public static void Schedule<T>(T state, Action<T> callback)
     {
-        if (_isCallInProgress)
+        if (s_isCallInProgress)
         {
-            _pendingWork.Enqueue(() => callback(state));
+            s_pendingWork.Enqueue(() => callback(state));
         }
         else
         {
-            _isCallInProgress = true;
+            s_isCallInProgress = true;
             callback(state);
 
             // Now run any queued work items
-            while (_pendingWork.TryDequeue(out var nextWorkItem))
+            while (s_pendingWork.TryDequeue(out var nextWorkItem))
             {
                 nextWorkItem();
             }
 
-            _isCallInProgress = false;
+            s_isCallInProgress = false;
         }
     }
 }

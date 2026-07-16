@@ -29,7 +29,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly IInternalJSImportMethods _jsMethods;
     private readonly ComponentStatePersistenceManager _componentStatePersistenceManager;
     private readonly bool _useOutOfProcessRendering;
-    private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
+    private static readonly RendererInfo s_componentPlatform = new("WebAssembly", isInteractive: true);
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop, bool useOutOfProcessRendering = false)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
@@ -113,7 +113,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
     protected override ResourceAssetCollection Assets => _resourceCollection;
 
-    protected override RendererInfo RendererInfo => _componentPlatform;
+    protected override RendererInfo RendererInfo => s_componentPlatform;
 
     public override Dispatcher Dispatcher => _dispatcher;
 

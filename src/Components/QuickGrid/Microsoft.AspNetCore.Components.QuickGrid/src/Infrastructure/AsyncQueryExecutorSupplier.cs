@@ -21,7 +21,7 @@ internal static class AsyncQueryExecutorSupplier
     // mechanism for resolving async queries from other data sources than EF. It's not really a major goal to make this
     // adapter generally useful beyond EF, but fine if people do have their own uses for it.
 
-    private static readonly ConcurrentDictionary<Type, bool> IsEntityFrameworkProviderTypeCache = new();
+    private static readonly ConcurrentDictionary<Type, bool> s_isEntityFrameworkProviderTypeCache = new();
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111",
                Justification = "The reflection is a best effort to warn developers about sync-over-async behavior which can cause thread pool starvation.")]
@@ -36,7 +36,7 @@ internal static class AsyncQueryExecutorSupplier
                 // It's useful to detect if the developer is unaware that they should be using the EF adapter, otherwise
                 // they will likely never notice and simply deploy an inefficient app that blocks threads on each query.
                 var providerType = queryable.Provider?.GetType();
-                if (providerType is not null && IsEntityFrameworkProviderTypeCache.GetOrAdd(providerType, IsEntityFrameworkProviderType))
+                if (providerType is not null && s_isEntityFrameworkProviderTypeCache.GetOrAdd(providerType, IsEntityFrameworkProviderType))
                 {
                     throw new InvalidOperationException($"The supplied {nameof(IQueryable)} is provided by Entity Framework. To query it efficiently, you must reference the package Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter and call AddQuickGridEntityFrameworkAdapter on your service collection.");
                 }

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 internal static class PersistentStateValueProviderKeyResolver
 {
-    private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
+    private static readonly ConcurrentDictionary<(string, string, string), byte[]> s_keyCache = new();
 
     static PersistentStateValueProviderKeyResolver()
     {
@@ -26,7 +26,7 @@ internal static class PersistentStateValueProviderKeyResolver
 
     private static void ClearCaches()
     {
-        _keyCache.Clear();
+        s_keyCache.Clear();
     }
 
     // Internal for testing only
@@ -50,7 +50,7 @@ internal static class PersistentStateValueProviderKeyResolver
         var parentComponentType = GetParentComponentType(componentState);
         var componentType = GetComponentType(componentState);
 
-        var preKey = _keyCache.GetOrAdd((parentComponentType, componentType, propertyName), KeyFactory);
+        var preKey = s_keyCache.GetOrAdd((parentComponentType, componentType, propertyName), KeyFactory);
         var finalKey = ComputeFinalKey(preKey, componentState);
 
         return finalKey;

@@ -1094,11 +1094,11 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     // The framework emits no deterministic "pause deferred" signal, so deferral is proven by
     // observing that the reconnect modal (shown only once the circuit pauses) stays hidden for a
     // window comfortably longer than the configured pause delay while the blocking condition holds.
-    private static readonly TimeSpan DeferralObservationWindow = TimeSpan.FromMilliseconds(PauseDelayMs * 5);
+    private static readonly TimeSpan s_deferralObservationWindow = TimeSpan.FromMilliseconds(PauseDelayMs * 5);
 
     private void AssertPauseStaysDeferred()
     {
-        var deadline = DateTime.UtcNow + DeferralObservationWindow;
+        var deadline = DateTime.UtcNow + s_deferralObservationWindow;
         while (DateTime.UtcNow < deadline)
         {
             Assert.False(IsReconnectModalShown(),
@@ -1217,7 +1217,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         ");
     }
 
-    private static readonly TimeSpan LogWaitTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan s_logWaitTimeout = TimeSpan.FromSeconds(10);
 
     private void WaitForBlazorPause()
     {
@@ -1232,7 +1232,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
 
     private void WaitForBlazorLog(string substring)
     {
-        var deadline = DateTime.UtcNow + LogWaitTimeout;
+        var deadline = DateTime.UtcNow + s_logWaitTimeout;
         while (DateTime.UtcNow < deadline)
         {
             var found = (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
@@ -1244,7 +1244,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             }
             Thread.Sleep(25);
         }
-        throw new TimeoutException($"Timed out after {LogWaitTimeout.TotalSeconds}s waiting for Blazor log line containing: \"{substring}\".");
+        throw new TimeoutException($"Timed out after {s_logWaitTimeout.TotalSeconds}s waiting for Blazor log line containing: \"{substring}\".");
     }
 
     private void WaitForPausedUI()

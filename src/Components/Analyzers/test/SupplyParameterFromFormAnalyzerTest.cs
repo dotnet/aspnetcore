@@ -11,7 +11,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new SupplyParameterFromFormAnalyzer();
 
-    private static readonly string TestDeclarations = $@"
+    private static readonly string s_testDeclarations = $@"
     namespace {typeof(ParameterAttribute).Namespace}
     {{
         public class {typeof(ParameterAttribute).Name} : System.Attribute
@@ -50,7 +50,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -66,7 +66,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             [SupplyParameterFromForm] public string MyProperty {{ get; set; }}
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -82,7 +82,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -98,7 +98,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -130,7 +130,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             public string Value {{ get; set; }} = """";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -157,7 +157,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = null;
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -173,7 +173,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = null!;
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -189,7 +189,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = default;
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -205,7 +205,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = default!;
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -225,7 +225,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         {{
             [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
-    }}" + TestDeclarations;
+    }}" + s_testDeclarations;
 
         var expected = new DiagnosticResult
         {

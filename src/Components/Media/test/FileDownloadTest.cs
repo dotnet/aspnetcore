@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Media.Tests;
 /// </summary>
 public class FileDownloadTest
 {
-    private static readonly byte[] SampleBytes = new byte[] { 1, 2, 3, 4, 5 };
+    private static readonly byte[] s_sampleBytes = new byte[] { 1, 2, 3, 4, 5 };
 
     [Fact]
     public async Task InitialRender_DoesNotInvokeJs()
@@ -32,7 +32,7 @@ public class FileDownloadTest
 
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(FileDownload.Source)] = new MediaSource(SampleBytes, "application/octet-stream", "file-init"),
+            [nameof(FileDownload.Source)] = new MediaSource(s_sampleBytes, "application/octet-stream", "file-init"),
             [nameof(FileDownload.FileName)] = "first.bin"
         }));
 
@@ -127,7 +127,7 @@ public class FileDownloadTest
         var attrs = new Dictionary<string, object?> { ["href"] = "https://example.org/real", ["class"] = "btn" };
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(FileDownload.Source)] = new MediaSource(SampleBytes, "application/octet-stream", "file-href"),
+            [nameof(FileDownload.Source)] = new MediaSource(s_sampleBytes, "application/octet-stream", "file-href"),
             [nameof(FileDownload.FileName)] = "href.bin",
             [nameof(FileDownload.AdditionalAttributes)] = attrs
         }));
@@ -144,7 +144,7 @@ public class FileDownloadTest
     // Helpers
     private static ParameterView Params(string key, string fileName) => ParameterView.FromDictionary(new Dictionary<string, object?>
     {
-        [nameof(FileDownload.Source)] = new MediaSource(SampleBytes, "application/octet-stream", key),
+        [nameof(FileDownload.Source)] = new MediaSource(s_sampleBytes, "application/octet-stream", key),
         [nameof(FileDownload.FileName)] = fileName
     });
 

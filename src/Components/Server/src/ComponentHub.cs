@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server;
 // in error cases.
 internal sealed partial class ComponentHub : Hub
 {
-    private static readonly object CircuitKey = new();
+    private static readonly object s_circuitKey = new();
     private readonly IServerComponentDeserializer _serverComponentSerializer;
     private readonly IDataProtectionProvider _dataProtectionProvider;
     private readonly ICircuitFactory _circuitFactory;
@@ -76,7 +76,7 @@ internal sealed partial class ComponentHub : Hub
     {
         // If the CircuitHost is gone now this isn't an error. This could happen if the disconnect
         // if the result of well behaving client hanging up after an unhandled exception.
-        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, s_circuitKey);
         if (circuitHost == null)
         {
             return Task.CompletedTask;
@@ -87,7 +87,7 @@ internal sealed partial class ComponentHub : Hub
 
     public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
     {
-        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, s_circuitKey);
         if (circuitHost != null)
         {
             // This is an error condition and an attempt to bind multiple circuits to a single connection.
@@ -148,7 +148,7 @@ internal sealed partial class ComponentHub : Hub
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.
             _circuitRegistry.Register(circuitHost);
-            _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
+            _circuitHandleRegistry.SetCircuit(Context.Items, s_circuitKey, circuitHost);
 
             // Returning the secret here so the client can reconnect.
             //
@@ -237,7 +237,7 @@ internal sealed partial class ComponentHub : Hub
             Context.ConnectionAborted);
         if (circuitHost != null)
         {
-            _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
+            _circuitHandleRegistry.SetCircuit(Context.Items, s_circuitKey, circuitHost);
             circuitHost.SetCircuitUser(Context.User);
             circuitHost.SendPendingBatches();
             return true;
@@ -294,7 +294,7 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
-        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, s_circuitKey);
         if (circuitHost != null)
         {
             // This is an error condition and an attempt to bind multiple circuits to a single connection.
@@ -403,7 +403,7 @@ internal sealed partial class ComponentHub : Hub
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.
             _circuitRegistry.Register(circuitHost);
-            _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
+            _circuitHandleRegistry.SetCircuit(Context.Items, s_circuitKey, circuitHost);
 
             // Returning the secret here so the client can reconnect.
             //
@@ -585,7 +585,7 @@ internal sealed partial class ComponentHub : Hub
     // See comment on error handling on the class definition.
     private async ValueTask<CircuitHost> GetActiveCircuitAsync([CallerMemberName] string callSite = "")
     {
-        var handle = _circuitHandleRegistry.GetCircuitHandle(Context.Items, CircuitKey);
+        var handle = _circuitHandleRegistry.GetCircuitHandle(Context.Items, s_circuitKey);
         var circuitHost = handle?.CircuitHost;
         if (handle != null && circuitHost == null)
         {

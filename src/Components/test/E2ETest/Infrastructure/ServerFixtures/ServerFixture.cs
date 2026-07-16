@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
 public abstract class ServerFixture : IDisposable
 {
-    private static readonly Lazy<Dictionary<string, string>> _projects = new Lazy<Dictionary<string, string>>(FindProjects);
+    private static readonly Lazy<Dictionary<string, string>> s_projects = new Lazy<Dictionary<string, string>>(FindProjects);
 
     public Uri RootUri => _rootUriInitializer.Value;
 
@@ -44,7 +44,7 @@ public abstract class ServerFixture : IDisposable
 
     public static string FindSampleOrTestSitePath(string projectName)
     {
-        var projects = _projects.Value;
+        var projects = s_projects.Value;
         if (projects.TryGetValue(projectName, out var dir))
         {
             return dir;

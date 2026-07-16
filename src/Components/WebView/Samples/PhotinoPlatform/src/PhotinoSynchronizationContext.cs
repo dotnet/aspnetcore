@@ -21,13 +21,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino;
 
 internal class PhotinoSynchronizationContext : SynchronizationContext
 {
-    private static readonly ContextCallback ExecutionContextThunk = (object state) =>
+    private static readonly ContextCallback s_executionContextThunk = (object state) =>
     {
         var item = (WorkItem)state;
         item.SynchronizationContext.ExecuteSynchronously(null, item.Callback, item.State);
     };
 
-    private static readonly Action<Task, object> BackgroundWorkThunk = (Task task, object state) =>
+    private static readonly Action<Task, object> s_backgroundWorkThunk = (Task task, object state) =>
     {
         var item = (WorkItem)state;
         item.SynchronizationContext.ExecuteBackground(item);
@@ -231,7 +231,7 @@ internal class PhotinoSynchronizationContext : SynchronizationContext
         }
 
         var flags = forceAsync ? TaskContinuationOptions.RunContinuationsAsynchronously : TaskContinuationOptions.None;
-        return antecedent.ContinueWith(BackgroundWorkThunk, new WorkItem()
+        return antecedent.ContinueWith(s_backgroundWorkThunk, new WorkItem()
         {
             SynchronizationContext = this,
             ExecutionContext = executionContext,
@@ -285,7 +285,7 @@ internal class PhotinoSynchronizationContext : SynchronizationContext
         // Perf - using a static thunk here to avoid a delegate allocation.
         try
         {
-            ExecutionContext.Run(item.ExecutionContext, ExecutionContextThunk, item);
+            ExecutionContext.Run(item.ExecutionContext, s_executionContextThunk, item);
         }
         catch (Exception ex)
         {

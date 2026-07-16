@@ -47,7 +47,7 @@ public static class XmlAssert
 
     private static class Core
     {
-        private static readonly IEqualityComparer<XAttribute> AttributeEqualityComparer = new CallbackBasedEqualityComparer<XAttribute>(AreEqual);
+        private static readonly IEqualityComparer<XAttribute> s_attributeEqualityComparer = new CallbackBasedEqualityComparer<XAttribute>(AreEqual);
 
         private static bool AreEqual(XElement expected, XElement actual)
         {
@@ -96,7 +96,7 @@ public static class XmlAssert
                 .OrderBy(attr => attr.Name.ToString())
                 .ToList();
 
-            return orderedExpected.SequenceEqual(orderedActual, AttributeEqualityComparer);
+            return orderedExpected.SequenceEqual(orderedActual, s_attributeEqualityComparer);
         }
 
         private static bool AreEqual(XAttribute expected, XAttribute actual)

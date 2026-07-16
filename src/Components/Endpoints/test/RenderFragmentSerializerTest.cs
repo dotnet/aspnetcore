@@ -13,16 +13,16 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class RenderFragmentSerializerTest
 {
-    private static readonly NullLogger _logger = NullLogger.Instance;
-    private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
-    private static readonly ComponentParametersTypeCache _typeCache = new();
+    private static readonly NullLogger s_logger = NullLogger.Instance;
+    private static readonly JsonSerializerOptions s_jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
+    private static readonly ComponentParametersTypeCache s_typeCache = new();
 
     private static List<RenderTreeNode> SerializeFragment(RenderFragment fragment)
     {
         var capture = new RenderFragmentCapture(fragment);
         using var builder = new RenderTreeBuilder();
         capture.Invoke(builder);
-        return RenderFragmentSerializer.SerializeFrames(capture, _logger);
+        return RenderFragmentSerializer.SerializeFrames(capture, s_logger);
     }
 
     [Fact]
@@ -275,7 +275,7 @@ public class RenderFragmentSerializerTest
     {
         var nodes = new List<RenderTreeNode>();
 
-        var fragment = RenderFragmentSerializer.Deserialize(nodes, _jsonOptions, _typeCache);
+        var fragment = RenderFragmentSerializer.Deserialize(nodes, s_jsonOptions, s_typeCache);
 
         var builder = new RenderTreeBuilder();
         fragment(builder);
@@ -291,7 +291,7 @@ public class RenderFragmentSerializerTest
             new() { Type = "text", Content = "Hello" }
         };
 
-        var fragment = RenderFragmentSerializer.Deserialize(nodes, _jsonOptions, _typeCache);
+        var fragment = RenderFragmentSerializer.Deserialize(nodes, s_jsonOptions, s_typeCache);
 
         var builder = new RenderTreeBuilder();
         fragment(builder);
@@ -321,7 +321,7 @@ public class RenderFragmentSerializerTest
             }
         };
 
-        var fragment = RenderFragmentSerializer.Deserialize(nodes, _jsonOptions, _typeCache);
+        var fragment = RenderFragmentSerializer.Deserialize(nodes, s_jsonOptions, s_typeCache);
 
         var builder = new RenderTreeBuilder();
         fragment(builder);
@@ -364,7 +364,7 @@ public class RenderFragmentSerializerTest
             }
         };
 
-        var fragment = RenderFragmentSerializer.Deserialize(nodes, _jsonOptions, _typeCache);
+        var fragment = RenderFragmentSerializer.Deserialize(nodes, s_jsonOptions, s_typeCache);
 
         var builder = new RenderTreeBuilder();
         fragment(builder);
@@ -400,7 +400,7 @@ public class RenderFragmentSerializerTest
         };
 
         var serialized = SerializeFragment(original);
-        var deserialized = RenderFragmentSerializer.Deserialize(serialized, _jsonOptions, _typeCache);
+        var deserialized = RenderFragmentSerializer.Deserialize(serialized, s_jsonOptions, s_typeCache);
 
         var roundtripBuilder = new RenderTreeBuilder();
         deserialized(roundtripBuilder);
@@ -442,9 +442,9 @@ public class RenderFragmentSerializerTest
 
         Assert.Equal(key, serialized[0].Key);
 
-        var json = JsonSerializer.Serialize(serialized, _jsonOptions);
-        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, _jsonOptions)!;
-        var fragment = RenderFragmentSerializer.Deserialize(deserialized, _jsonOptions, _typeCache);
+        var json = JsonSerializer.Serialize(serialized, s_jsonOptions);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, s_jsonOptions)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized, s_jsonOptions, s_typeCache);
 
         using var builder2 = new RenderTreeBuilder();
         fragment(builder2);
@@ -468,9 +468,9 @@ public class RenderFragmentSerializerTest
 
         var serialized = SerializeFragment(original);
 
-        var json = JsonSerializer.Serialize(serialized, _jsonOptions);
-        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, _jsonOptions)!;
-        var fragment = RenderFragmentSerializer.Deserialize(deserialized, _jsonOptions, _typeCache);
+        var json = JsonSerializer.Serialize(serialized, s_jsonOptions);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, s_jsonOptions)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized, s_jsonOptions, s_typeCache);
 
         using var builder2 = new RenderTreeBuilder();
         fragment(builder2);
@@ -564,7 +564,7 @@ public class RenderFragmentSerializerTest
         Assert.Equal(200, result.Count);
         Assert.All(result, n => Assert.Equal("element", n.Type));
 
-        var deserialized = RenderFragmentSerializer.Deserialize(result, _jsonOptions, _typeCache);
+        var deserialized = RenderFragmentSerializer.Deserialize(result, s_jsonOptions, s_typeCache);
         var builder2 = new RenderTreeBuilder();
         deserialized(builder2);
         var frames = builder2.GetFrames();

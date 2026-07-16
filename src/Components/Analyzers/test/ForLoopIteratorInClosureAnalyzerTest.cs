@@ -11,7 +11,7 @@ public class ForLoopIteratorInClosureAnalyzerTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new ForLoopIteratorInClosureAnalyzer();
 
-    private static readonly string BaseComponentDeclarations = @"
+    private static readonly string s_baseComponentDeclarations = @"
 namespace Microsoft.AspNetCore.Components
 {
     using System;
@@ -170,7 +170,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -262,7 +262,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -315,7 +315,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -346,7 +346,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -388,7 +388,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -446,7 +446,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -505,7 +505,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -546,7 +546,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -581,7 +581,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -626,7 +626,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -667,7 +667,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -705,7 +705,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -759,7 +759,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -792,7 +792,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -871,7 +871,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -930,7 +930,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -1007,7 +1007,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -1064,7 +1064,7 @@ namespace ConsoleApplication1
             __builder.CloseElement();
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -1113,7 +1113,7 @@ namespace ConsoleApplication1
             }
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
@@ -1152,7 +1152,7 @@ namespace ConsoleApplication1
                 System.Console.WriteLine(i);
         }
     }
-}" + BaseComponentDeclarations;
+}" + s_baseComponentDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }

@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 public class TemplateColumn<TGridItem> : ColumnBase<TGridItem>
 {
-    private static readonly RenderFragment<TGridItem> EmptyChildContent = _ => builder => { };
+    private static readonly RenderFragment<TGridItem> s_emptyChildContent = _ => builder => { };
 
     /// <summary>
     /// Specifies the content to be rendered for each row in the table.
     /// </summary>
-    [Parameter] public RenderFragment<TGridItem> ChildContent { get; set; } = EmptyChildContent;
+    [Parameter] public RenderFragment<TGridItem> ChildContent { get; set; } = s_emptyChildContent;
 
     /// <inheritdoc/>
     [Parameter] public override GridSort<TGridItem>? SortBy { get; set; }

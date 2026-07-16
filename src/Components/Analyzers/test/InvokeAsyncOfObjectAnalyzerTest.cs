@@ -11,7 +11,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new InvokeAsyncOfObjectAnalyzer();
 
-    private static readonly string JSInteropDeclarations = @"
+    private static readonly string s_jsInteropDeclarations = @"
     namespace Microsoft.JSInterop
     {
         using System.Threading;
@@ -83,7 +83,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await _jsRuntime.InvokeVoidAsync(""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -106,7 +106,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 return await _jsRuntime.InvokeAsync<string>(""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -129,7 +129,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await _jsRuntime.InvokeAsync<object>(""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -163,7 +163,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await JSRuntimeExtensions.InvokeAsync<object>(_jsRuntime, ""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -197,7 +197,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await _jsObjectReference.InvokeAsync<object>(""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -232,7 +232,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await _jsRuntime.InvokeAsync<object>(""myFunction"", ct, null);
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -289,7 +289,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 return await _jsRuntime.InvokeAsync<int>(""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -314,7 +314,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 return await _jsRuntime.InvokeAsync<MyResult>(""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         VerifyCSharpDiagnostic(test);
     }
@@ -337,7 +337,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await _jsRuntime.InvokeAsync<object>(""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -371,7 +371,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await _jsObjectRef.InvokeAsync<object>(""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -406,7 +406,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await _jsRuntime.InvokeAsync<object>(""myFunction2"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected1 = new DiagnosticResult
         {
@@ -451,7 +451,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 await JSObjectReferenceExtensions.InvokeAsync<object>(_jsObjectRef, ""myFunction"");
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected = new DiagnosticResult
         {
@@ -489,7 +489,7 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
                 System.Console.WriteLine(result);
             }
         }
-    }" + JSInteropDeclarations;
+    }" + s_jsInteropDeclarations;
 
         var expected = new DiagnosticResult
         {

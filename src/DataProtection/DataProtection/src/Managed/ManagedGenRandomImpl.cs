@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed;
 internal sealed unsafe class ManagedGenRandomImpl : IManagedGenRandom
 {
 #if NETSTANDARD2_0 || NETFRAMEWORK
-    private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+    private static readonly RandomNumberGenerator s_rng = RandomNumberGenerator.Create();
 #endif
     public static readonly ManagedGenRandomImpl Instance = new ManagedGenRandomImpl();
 
@@ -25,7 +25,7 @@ internal sealed unsafe class ManagedGenRandomImpl : IManagedGenRandom
     {
         var bytes = new byte[numBytes];
 #if NETSTANDARD2_0 || NETFRAMEWORK
-        _rng.GetBytes(bytes);
+        s_rng.GetBytes(bytes);
 #else
         RandomNumberGenerator.Fill(bytes);
 #endif

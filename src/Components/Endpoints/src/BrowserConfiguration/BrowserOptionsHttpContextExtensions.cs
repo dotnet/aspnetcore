@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public static class BrowserOptionsHttpContextExtensions
 {
-    private static readonly object Key = new();
+    private static readonly object s_key = new();
 
     /// <summary>
     /// Gets the <see cref="BrowserOptions"/> for the current request.
@@ -22,12 +22,12 @@ public static class BrowserOptionsHttpContextExtensions
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        if (!context.Items.TryGetValue(Key, out var result))
+        if (!context.Items.TryGetValue(s_key, out var result))
         {
             // Seed from endpoint metadata if available
             var metadataConfig = context.GetEndpoint()?.Metadata.GetMetadata<BrowserOptions>();
             var config = metadataConfig ?? new BrowserOptions();
-            context.Items[Key] = config;
+            context.Items[s_key] = config;
             return config;
         }
 

@@ -25,23 +25,23 @@ internal static class ComponentProperties
     // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
     // the same name. We don't give you a way to express this in code (would create duplicate properties),
     // and we don't have the ability to represent it in our data structures.
-    private static readonly ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
+    private static readonly ConcurrentDictionary<Type, WritersForType> s_cachedWritersByType
         = new ConcurrentDictionary<Type, WritersForType>();
 
-    public static void ClearCache() => _cachedWritersByType.Clear();
+    public static void ClearCache() => s_cachedWritersByType.Clear();
 
     public static void SetProperties(in ParameterView parameters, object target)
     {
         ArgumentNullException.ThrowIfNull(target);
 
         var targetType = target.GetType();
-        if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
+        if (!s_cachedWritersByType.TryGetValue(targetType, out var writers))
         {
             // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
             #pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.WritersForType.WritersForType(Type)'.
             writers = new WritersForType(targetType);
             #pragma warning restore IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.WritersForType.WritersForType(Type)'.
-            _cachedWritersByType[targetType] = writers;
+            s_cachedWritersByType[targetType] = writers;
         }
 
         // The logic is split up for simplicity now that we have CaptureUnmatchedValues parameters.
