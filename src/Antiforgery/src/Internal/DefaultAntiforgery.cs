@@ -94,7 +94,6 @@ internal sealed class DefaultAntiforgery : IAntiforgery
         var method = httpContext.Request.Method;
         if (SafeHttpMethods.IsSafe(method))
         {
-            // Validation not needed for safe request types.
             return true;
         }
 
