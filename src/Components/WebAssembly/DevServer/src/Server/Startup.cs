@@ -29,7 +29,9 @@ internal sealed class Startup
         app.UseDeveloperExceptionPage();
         EnableConfiguredPathbase(app, configuration);
 
+#pragma warning disable ASPDEPR011 // UseWebAssemblyDebugging is obsolete; the DevServer still hosts the legacy in-browser debug proxy endpoint.
         app.UseWebAssemblyDebugging();
+#pragma warning restore ASPDEPR011
 
         var webHostEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
         var applyCopHeaders = configuration.GetValue<bool>("ApplyCopHeaders");
