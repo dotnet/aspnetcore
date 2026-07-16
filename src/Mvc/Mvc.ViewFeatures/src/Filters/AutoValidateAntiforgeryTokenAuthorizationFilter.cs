@@ -23,7 +23,8 @@ internal sealed class AutoValidateAntiforgeryTokenAuthorizationFilter : Validate
         if (HttpMethods.IsGet(method) ||
             HttpMethods.IsHead(method) ||
             HttpMethods.IsTrace(method) ||
-            HttpMethods.IsOptions(method))
+            HttpMethods.IsOptions(method) ||
+            HttpMethods.IsQuery(method))
         {
             return false;
         }
