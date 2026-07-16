@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Net;
 using System.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -16,6 +18,7 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
     /// Adds middleware needed for debugging Blazor WebAssembly applications
     /// inside Chromium dev tools.
     /// </summary>
+    [Obsolete("UseWebAssemblyDebugging is obsolete and should be removed along with any inspectUri configurations. Blazor WebAssembly debugging is now launched directly by Visual Studio and Visual Studio Code.", DiagnosticId = "ASPDEPR011", UrlFormat = Obsoletions.AspNetCoreDeprecate011Url)]
     public static void UseWebAssemblyDebugging(this IApplicationBuilder app)
     {
         app.Map("/_framework/debug", app =>

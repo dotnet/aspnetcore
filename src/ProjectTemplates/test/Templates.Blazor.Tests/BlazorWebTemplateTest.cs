@@ -113,3 +113,37 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
 }
 
+public class BlazorWebTemplateSourceTest
+{
+    [Theory]
+    [InlineData("WebAssembly")]
+    [InlineData("Auto")]
+    public async Task BlazorWebTemplate_DoesNotEmitUseWebAssemblyDebugging(string interactivityOption)
+    {
+        var templateRoot = FindTemplateRoot();
+        var programPath = Path.Combine(templateRoot, "Program.cs");
+        var programMainPath = Path.Combine(templateRoot, "Program.Main.cs");
+
+        Assert.True(interactivityOption is "WebAssembly" or "Auto");
+        Assert.DoesNotContain("UseWebAssemblyDebugging", await File.ReadAllTextAsync(programPath));
+        Assert.DoesNotContain("UseWebAssemblyDebugging", await File.ReadAllTextAsync(programMainPath));
+    }
+
+    private static string FindTemplateRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidatePath = Path.Combine(directory.FullName, "src", "ProjectTemplates", "Web.ProjectTemplates", "content", "BlazorWeb-CSharp", "BlazorWebCSharp.1");
+            if (Directory.Exists(candidatePath))
+            {
+                return candidatePath;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Unable to find the Blazor Web template root.");
+    }
+}
+
