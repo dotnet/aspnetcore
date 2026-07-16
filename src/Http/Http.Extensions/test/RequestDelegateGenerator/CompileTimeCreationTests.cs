@@ -35,7 +35,7 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     }
 
     [Fact]
-    public async Task MapGet_HandlerFromDelegateVariable_GeneratesStaticEndpoint()
+    public async Task MapGet_HandlerWithoutParameters_GeneratesStaticEndpoint()
     {
         var (generatorRunResult, compilation) = await RunGeneratorAsync("""
 Func<string> handler = () => "Hello world!";
@@ -53,34 +53,18 @@ app.MapGet("/hello", handler);
     }
 
     [Fact]
-    public async Task MapGet_HandlerReturnedFromMethod_IncorrectlyGeneratesStaticEndpointWithWrongParameterName()
+    public async Task MapGet_HandlerReturnedFromMethod_ShouldNotGenerateStaticEndpoint()
     {
-        // Bug demonstration: https://github.com/dotnet/aspnetcore/issues/67122
-        // When a handler is returned from a method, the actual implementation is not known
-        // at compile time. The generator should NOT generate a static endpoint in this case.
-        // However, due to the overly broad fallback in ResolveMethodFromOperation, it incorrectly
-        // generates a static endpoint using DelegateInvokeMethod (e.g., Func<string,string>.Invoke),
-        // whose parameter is named "arg" instead of the actual route parameter name "name".
-        // This causes the route value "name" to not be recognized, resulting in a 400 response
-        // because the generated code treats "arg" as a missing required parameter.
         var (generatorRunResult, compilation) = await RunGeneratorAsync("""
-static Func<string, string> GetHandler() => name => $"Hello, {name}!";
-app.MapGet("/hello/{name}", GetHandler());
+static Func<string, string> GetHandler() => id => $"Hello, {id}!";
+app.MapGet("/hello/{id}", GetHandler());
 """);
+
+        // From the "GetHandler()" invocation operation, we cannot determine the parameter name "id" at compile-time.
+        // So we fallback to RequestDelegateFactory.
         var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
 
-        // Bug: incorrectly generates a static endpoint (should be empty)
-        Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
-
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.RouteValues["name"] = "World";
-        await endpoint.RequestDelegate(httpContext);
-
-        // Bug: the route value "name" is not bound because the generated code uses "arg"
-        // (from Func<string,string>.Invoke), so the handler fails with 400 (required param missing).
-        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.Empty(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
     }
 
     [Fact]
