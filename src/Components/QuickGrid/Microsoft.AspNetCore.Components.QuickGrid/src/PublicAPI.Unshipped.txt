@@ -1,6 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.get -> string!
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ColumnResize.get -> bool
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ColumnResize.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions
