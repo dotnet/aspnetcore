@@ -92,12 +92,9 @@ internal sealed class DefaultAntiforgery : IAntiforgery
         CheckSSLConfig(httpContext);
 
         var method = httpContext.Request.Method;
-        if (HttpMethods.IsGet(method) ||
-            HttpMethods.IsHead(method) ||
-            HttpMethods.IsOptions(method) ||
-            HttpMethods.IsTrace(method) ||
-            HttpMethods.IsQuery(method))
+        if (SafeHttpMethods.IsSafe(method))
         {
+            // Validation not needed for safe request types.
             return true;
         }
 
