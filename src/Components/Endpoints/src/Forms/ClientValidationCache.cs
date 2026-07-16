@@ -20,7 +20,7 @@ internal sealed class ClientValidationCache : IDisposable
 {
     private readonly ConcurrentDictionary<FieldKey, ClientValidationFieldMetadata?> _metadataCache = new();
     private readonly ConcurrentDictionary<Type, bool> _typeHasValidatableInfo = new();
-    private readonly ConcurrentDictionary<FieldKey, bool> _propertyHasValidatableInfo = new();
+    private readonly ConcurrentDictionary<(Type FormType, string RenderedName), bool> _fieldReachabilityCache = new();
     private readonly ValidationOptions _validationOptions;
 
     [UnconditionalSuppressMessage("Trimming", "IL2066",
@@ -40,14 +40,16 @@ internal sealed class ClientValidationCache : IDisposable
         IReadOnlyDictionary<FieldIdentifier, string> fields,
         object formModel)
     {
+        var formType = formModel.GetType();
+
         // The form model type determines which validation pipeline (DataAnnotations.Validator vs MEV) the server uses.
-        var formHasValidatableInfo = HasValidatableTypeInfo(formModel.GetType());
+        var formHasValidatableInfo = HasValidatableTypeInfo(formType);
 
         foreach (var (fieldIdentifier, renderedName) in fields)
         {
             // Don't enable client-side validation for fields that would not get server-side validation
             // to help developers avoid security mistakes.
-            if (!IsServerValidatable(fieldIdentifier, formModel, formHasValidatableInfo))
+            if (!IsServerValidatable(fieldIdentifier, renderedName, formType, formModel, formHasValidatableInfo))
             {
                 continue;
             }
@@ -64,42 +66,142 @@ internal sealed class ClientValidationCache : IDisposable
         }
     }
 
-    private bool IsServerValidatable(in FieldIdentifier fieldIdentifier, object formModel, bool formHasValidatableInfo)
+    private bool IsServerValidatable(
+        in FieldIdentifier fieldIdentifier,
+        string renderedName,
+        Type formType,
+        object formModel,
+        bool formHasValidatableInfo)
     {
         if (formHasValidatableInfo)
         {
-            // MEV submit path (ValidateAsync) recurses. A field is validated iff MEV has
-            // ValidatablePropertyInfo for it on its owner type.
-            // This also excludes members/types filtered by [SkipValidation], matching the server.
-            return HasValidatablePropertyInfo(fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
+            // MEV submit path (ValidateAsync) validates a field only if it recurses to it from th form model.
+            // The result depends only on the form type + rendered name, so it is cached across requests.
+            return _fieldReachabilityCache.GetOrAdd(
+                (formType, renderedName),
+                static (key, self) => self.IsFieldValidatedByMev(key.FormType, key.RenderedName),
+                this);
         }
         else
         {
             // DataAnnotations submit path (Validator.TryValidateObject) validates only the form
-            // model's top-level properties and does not recurse. A field is top-level iff its owner
-            // is the form model instance.
+            // model's top-level properties and does not recurse.
+            // A field is top-level iff its owner is the form model instance.
             return ReferenceEquals(fieldIdentifier.Model, formModel);
         }
     }
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+    private bool IsFieldValidatedByMev(Type formType, string renderedName)
+    {
+        var path = GetModelRelativePath(renderedName);
+        if (path.Count == 0)
+        {
+            return false;
+        }
+
+        var currentType = formType;
+        for (var i = 0; i < path.Count - 1; i++)
+        {
+            if (!_validationOptions.TryGetValidatableTypeInfo(currentType, out var typeInfo)
+                || !typeInfo.TryFindProperty(path[i], _validationOptions, out _))
+            {
+                return false;
+            }
+
+            var memberType = GetRecursableMemberType(currentType, path[i]);
+            if (memberType is null || !_validationOptions.TryGetValidatableTypeInfo(memberType, out _))
+            {
+                // MEV only recurses into a member whose type is itself validatable.
+                return false;
+            }
+
+            currentType = memberType;
+        }
+
+        // The leaf must be a member MEV validates on the owner type.
+        return _validationOptions.TryGetValidatableTypeInfo(currentType, out var ownerInfo)
+            && ownerInfo.TryFindProperty(path[^1], _validationOptions, out _);
+    }
+
     private bool HasValidatableTypeInfo(Type type) =>
         _validationOptions.Resolvers.Count > 0
             && _typeHasValidatableInfo.GetOrAdd(type,
                 key => _validationOptions.TryGetValidatableTypeInfo(key, out _));
-
-    private bool HasValidatablePropertyInfo(Type ownerType, string fieldName) =>
-        _validationOptions.Resolvers.Count > 0
-            && _propertyHasValidatableInfo.GetOrAdd((ownerType, fieldName),
-                key => _validationOptions.TryGetValidatableTypeInfo(key.ModelType, out var typeInfo)
-                    && typeInfo.TryFindProperty(key.FieldName, _validationOptions, out _));
 #pragma warning restore ASP0029
+
+    // Derives the field's property-name path relative to the form model from the rendered HTML name.
+    // The rendered name is the binder key "{modelPrefix}.{path}" (e.g. "Person.Address.Street"):
+    // the single leading prefix segment maps to the form model, and collection indices ("Items[0]")
+    // do not affect type reachability, so both are dropped.
+    private static List<string> GetModelRelativePath(string renderedName)
+    {
+        var segments = new List<string>();
+
+        var start = renderedName.IndexOf('.') + 1; // skip the leading model-prefix segment
+        if (start <= 0)
+        {
+            return segments; // no '.', so there is nothing below the model root
+        }
+
+        foreach (var rawSegment in renderedName.Substring(start).Split('.'))
+        {
+            var bracketIndex = rawSegment.IndexOf('[');
+            var name = bracketIndex >= 0 ? rawSegment[..bracketIndex] : rawSegment;
+            if (name.Length > 0)
+            {
+                segments.Add(name);
+            }
+        }
+
+        return segments;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Model types are application code and are preserved by default.")]
+    private static Type? GetRecursableMemberType(Type ownerType, string propertyName)
+    {
+        var propertyType = ownerType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)?.PropertyType;
+        if (propertyType is null)
+        {
+            return null;
+        }
+
+        propertyType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+
+        if (propertyType != typeof(string) && GetEnumerableElementType(propertyType) is { } elementType)
+        {
+            return elementType;
+        }
+
+        return propertyType;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Model types are application code and are preserved by default.")]
+    private static Type? GetEnumerableElementType(Type type)
+    {
+        if (type.IsArray)
+        {
+            return type.GetElementType();
+        }
+
+        foreach (var interfaceType in type.GetInterfaces())
+        {
+            if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                return interfaceType.GetGenericArguments()[0];
+            }
+        }
+
+        return null;
+    }
 
     private void ClearCache()
     {
         _metadataCache.Clear();
         _typeHasValidatableInfo.Clear();
-        _propertyHasValidatableInfo.Clear();
+        _fieldReachabilityCache.Clear();
     }
 
     public void Dispose()

@@ -202,13 +202,13 @@ public class ClientValidationProviderTests
     public void NestedField_IsSkipped_WithoutMev()
     {
         // No MEV configured: the DataAnnotations submit path does not recurse into nested
-        // sub-models, so a client rule must NOT be emitted for a nested field (it would reject a
+        // sub-models, so a client rule must not be emitted for a nested field (it would reject a
         // value the server silently accepts).
         var provider = CreateProvider();
-        var model = new ParentModel { Child = new ChildModel() };
+        var model = new OrderModel();
         var fields = new Dictionary<FieldIdentifier, string>
         {
-            [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
+            [new FieldIdentifier(model.ShippingAddress, nameof(AddressModel.Street))] = "Order.ShippingAddress.Street",
         };
 
         var form = Serialize(provider, new EditContext(model), fields);
@@ -217,40 +217,75 @@ public class ClientValidationProviderTests
     }
 
     [Fact]
-    public void NestedField_IsEmitted_WhenMevRecognizesOwningType()
+    public void NestedField_IsEmitted_WhenReachableThroughValidatableTypes()
     {
-        var options = CreateMevOptions(typeof(ParentModel), (typeof(ChildModel), nameof(ChildModel.Street)));
+        // ShippingAddress is a validatable-typed member of the form model, so the MEV submit walk
+        // recurses into it and validates Street. The client rule is emitted to match.
+        var options = CreateMevOptions(typeof(OrderModel), typeof(AddressModel));
         var provider = CreateProvider(options);
-        var model = new ParentModel { Child = new ChildModel() };
+        var model = new OrderModel();
         var fields = new Dictionary<FieldIdentifier, string>
         {
-            [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
+            [new FieldIdentifier(model.ShippingAddress, nameof(AddressModel.Street))] = "Order.ShippingAddress.Street",
         };
 
         var form = Serialize(provider, new EditContext(model), fields);
 
         var field = Assert.Single(form!.Fields);
-        Assert.Equal("Child.Street", field.Name);
+        Assert.Equal("Order.ShippingAddress.Street", field.Name);
         Assert.Equal("required", Assert.Single(field.Rules).Name);
     }
 
     [Fact]
-    public void NestedField_IsSuppressed_WhenMevDoesNotRecognizeOwningType()
+    public void NestedField_IsSuppressed_WhenReachableOnlyThroughNonValidatableType()
     {
-        // MEV is configured and recognizes the form model, but NOT the nested child type. The
-        // submit-time MEV walk would not reach the nested property, so the client rule must be
-        // suppressed to preserve client/server parity.
-        var options = CreateMevOptions(typeof(ParentModel) /* ChildModel deliberately not registered */);
+        // Wrapper is not validatable, so the MEV submit walk never recurses into it - even though the
+        // field's owner type (AddressModel) is validatable and reachable elsewhere (via ShippingAddress).
+        var options = CreateMevOptions(typeof(OrderModel), typeof(AddressModel) /* WrapperModel deliberately not registered */);
         var provider = CreateProvider(options);
-        var model = new ParentModel { Child = new ChildModel() };
+        var model = new OrderModel();
         var fields = new Dictionary<FieldIdentifier, string>
         {
-            [new FieldIdentifier(model.Child, nameof(ChildModel.Street))] = "Child.Street",
+            [new FieldIdentifier(model.Wrapper.Nested, nameof(AddressModel.Street))] = "Order.Wrapper.Nested.Street",
         };
 
         var form = Serialize(provider, new EditContext(model), fields);
 
         Assert.Null(form);
+    }
+
+    [Fact]
+    public void EmittedFields_MatchTheFieldsMevValidatesOnSubmit()
+    {
+        // End-to-end reachability check: the client must emit rules for exactly the set of fields
+        // MEV actually validates when the form is submitted. AddressModel is reachable via
+        // ShippingAddress (validated) but the same type reached via the non-validatable Wrapper is
+        // not, so this exercises the path-sensitive distinction against real MEV validation.
+        var options = CreateMevOptions(typeof(OrderModel), typeof(AddressModel) /* WrapperModel not validatable */);
+        var model = new OrderModel(); // all [Required] strings empty -> everything reachable is invalid
+
+        var fields = new Dictionary<FieldIdentifier, string>
+        {
+            [new FieldIdentifier(model, nameof(OrderModel.OrderName))] = "Order.OrderName",
+            [new FieldIdentifier(model.ShippingAddress, nameof(AddressModel.Street))] = "Order.ShippingAddress.Street",
+            [new FieldIdentifier(model.Wrapper.Nested, nameof(AddressModel.Street))] = "Order.Wrapper.Nested.Street",
+        };
+
+        // The fields the client emits rules for, as model-relative paths (drop the "Order" prefix).
+        var provider = CreateProvider(options);
+        var form = Serialize(provider, new EditContext(model), fields);
+        var clientPaths = form!.Fields
+            .Select(f => f.Name[(f.Name.IndexOf('.') + 1)..])
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+
+        // The fields MEV actually validates on submit (error keys are model-relative paths).
+        var mevPaths = GetMevValidatedPaths(options, model)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(mevPaths, clientPaths);
+        Assert.Equal(new[] { "OrderName", "ShippingAddress.Street" }, clientPaths);
     }
 
     // ---- Helpers ----
@@ -311,20 +346,38 @@ public class ClientValidationProviderTests
         [property: JsonPropertyName("params")] Dictionary<string, string>? Params);
 
 #pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
-    private static ValidationOptions CreateMevOptions(Type formModelType, params (Type Type, string Member)[] nestedMembers)
+    private static ValidationOptions CreateMevOptions(params Type[] validatableTypes)
     {
-        var map = new Dictionary<Type, IValidatableTypeInfo>
+        var map = new Dictionary<Type, IValidatableTypeInfo>();
+        foreach (var type in validatableTypes)
         {
-            [formModelType] = new TestTypeInfo(formModelType, Array.Empty<TestPropertyInfo>()),
-        };
-        foreach (var (type, member) in nestedMembers)
-        {
-            map[type] = new TestTypeInfo(type, new[] { new TestPropertyInfo(type, typeof(string), member) });
+            var members = GetDeclaredProperties(type)
+                .Select(property => (ValidatablePropertyInfo)new ReflectedPropertyInfo(type, property))
+                .ToArray();
+            map[type] = new ReflectedTypeInfo(type, members);
         }
 
         var options = new ValidationOptions();
         options.Resolvers.Add(new TestResolver(map));
         return options;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Test models are preserved.")]
+    private static PropertyInfo[] GetDeclaredProperties(Type type)
+        => type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+    // Runs MEV validation the way the submit path does and returns the set of field paths that were
+    // validated (surfaced as error keys) - used to assert the client emits rules for exactly those.
+    private static string[] GetMevValidatedPaths(ValidationOptions options, object model)
+    {
+        Assert.True(options.TryGetValidatableTypeInfo(model.GetType(), out var typeInfo));
+        var validateContext = new ValidateContext
+        {
+            ValidationOptions = options,
+            ValidationContext = new ValidationContext(model, serviceProvider: null, items: null),
+        };
+        typeInfo!.Validate(model, validateContext);
+        return validateContext.ValidationErrors?.Keys.ToArray() ?? Array.Empty<string>();
     }
 
     private sealed class TestResolver(Dictionary<Type, IValidatableTypeInfo> map) : IValidatableInfoResolver
@@ -339,15 +392,24 @@ public class ClientValidationProviderTests
         }
     }
 
-    private sealed class TestTypeInfo(Type type, IReadOnlyList<TestPropertyInfo> members) : ValidatableTypeInfo(type, members)
+    private sealed class ReflectedTypeInfo : ValidatableTypeInfo
     {
-        protected override ValidationAttribute[] GetValidationAttributes() => Array.Empty<ValidationAttribute>();
+        private readonly Type _type;
+
+        public ReflectedTypeInfo(Type type, IReadOnlyList<ValidatablePropertyInfo> members)
+            : base(type, members)
+            => _type = type;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Test models are preserved.")]
+        protected override ValidationAttribute[] GetValidationAttributes()
+            => _type.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
     }
 
-    private sealed class TestPropertyInfo(Type declaringType, Type propertyType, string name)
-        : ValidatablePropertyInfo(declaringType, propertyType, name)
+    private sealed class ReflectedPropertyInfo(Type declaringType, PropertyInfo property)
+        : ValidatablePropertyInfo(declaringType, property.PropertyType, property.Name)
     {
-        protected override ValidationAttribute[] GetValidationAttributes() => Array.Empty<ValidationAttribute>();
+        protected override ValidationAttribute[] GetValidationAttributes()
+            => property.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
     }
 #pragma warning restore ASP0029
 
@@ -435,13 +497,25 @@ public class ClientValidationProviderTests
         }
     }
 
-    private sealed class ParentModel
+    private sealed class OrderModel
     {
-        public ChildModel Child { get; set; } = new();
+        [Required] public string OrderName { get; set; } = "";
+
+        // Validatable-typed member -> the MEV submit walk recurses into it.
+        public AddressModel ShippingAddress { get; set; } = new();
+
+        // Non-validatable-typed member -> the MEV submit walk does NOT recurse into it, so anything
+        // reachable only through it is not validated on submit.
+        public WrapperModel Wrapper { get; set; } = new();
     }
 
-    private sealed class ChildModel
+    private sealed class AddressModel
     {
         [Required] public string Street { get; set; } = "";
+    }
+
+    private sealed class WrapperModel
+    {
+        public AddressModel Nested { get; set; } = new();
     }
 }
