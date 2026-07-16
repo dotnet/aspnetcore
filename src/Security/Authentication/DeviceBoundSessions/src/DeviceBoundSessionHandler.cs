@@ -132,33 +132,25 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         // Generate a session ID
         var sessionId = GenerateSessionId();
 
-        // Store public key and session info in properties for the refresh cookie
-        var refreshProperties = new AuthenticationProperties();
-        foreach (var item in properties.Items)
-        {
-            refreshProperties.Items[item.Key] = item.Value;
-        }
+        // The refresh cookie replaces the deleted source cookie and preserves its remaining
+        // lifetime, persistence, and refresh policy. Only an already-issued short session cookie
+        // can extend ordinary authenticated access beyond the refresh cookie's final expiry.
+        var refreshProperties = properties.Clone();
+        refreshProperties.RedirectUri = null;
         refreshProperties.Items["DbscPublicKeyJwk"] = jwtResult.PublicKeyJwk;
         refreshProperties.Items["DbscSessionId"] = sessionId;
         refreshProperties.Items["DbscAlgorithm"] = jwtResult.Algorithm;
-        // Mirror the source sign-in's persistence so enabling DBSC does not change session/persistence
-        // semantics: a session-only sign-in stays session-only, a persistent one stays persistent.
-        refreshProperties.IsPersistent = properties.IsPersistent;
-
-        // Leave IssuedUtc/ExpiresUtc unset so the refresh cookie scheme starts a fresh ExpireTimeSpan
-        // window at registration (exactly like a normal sign-in) and then slides on each refresh when
-        // the source scheme uses sliding expiration. This mirrors the auth cookie the session replaces,
-        // so enabling DBSC does not regress an active user's session lifetime.
 
         // 1. Stamp the refresh cookie (path-scoped stash with ticket + public key)
         await Context.SignInAsync(Options.RefreshScheme, principal, refreshProperties);
 
         // 2. Stamp the short-lived session cookie
+        var now = TimeProvider.GetUtcNow();
         var sessionProperties = new AuthenticationProperties
         {
             IsPersistent = true,
-            ExpiresUtc = DateTimeOffset.UtcNow.Add(Options.ShortLivedCookieExpiration),
-            IssuedUtc = DateTimeOffset.UtcNow,
+            ExpiresUtc = now.Add(Options.ShortLivedCookieExpiration),
+            IssuedUtc = now,
         };
         await Context.SignInAsync(Options.SessionScheme, principal, sessionProperties);
 
@@ -258,11 +250,12 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         }
 
         // Success — stamp a fresh short-lived session cookie
+        var now = TimeProvider.GetUtcNow();
         var sessionProperties = new AuthenticationProperties
         {
             IsPersistent = true,
-            ExpiresUtc = DateTimeOffset.UtcNow.Add(Options.ShortLivedCookieExpiration),
-            IssuedUtc = DateTimeOffset.UtcNow,
+            ExpiresUtc = now.Add(Options.ShortLivedCookieExpiration),
+            IssuedUtc = now,
         };
         await Context.SignInAsync(Options.SessionScheme, authResult.Principal, sessionProperties);
 
