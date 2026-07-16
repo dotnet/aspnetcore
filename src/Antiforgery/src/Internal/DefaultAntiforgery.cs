@@ -98,8 +98,6 @@ internal sealed class DefaultAntiforgery : IAntiforgery
             HttpMethods.IsTrace(method) ||
             HttpMethods.IsQuery(method))
         {
-            // Validation not needed for these request types.
-            // QUERY is a safe, idempotent method per RFC 10008.
             return true;
         }
 
