@@ -31,6 +31,7 @@ public static class SchemasEndpointsExtensions
         schemas.MapPost("/shape", (Shape shape) => { });
         schemas.MapPost("/weatherforecastbase", (WeatherForecastBase forecast) => { });
         schemas.MapPost("/person", (Person person) => { });
+        schemas.MapPost("/pet", (Pet pet) => { });
         schemas.MapPost("/category", (Category category) => { });
         schemas.MapPost("/container", (ContainerType container) => { });
         schemas.MapPost("/root", (Root root) => { });
