@@ -493,86 +493,6 @@ public class AuthorizeViewTest
         Assert.Equal("The authorization data specifies an authentication scheme with value 'test scheme'. Authentication schemes cannot be specified for components.", ex.Message);
     }
 
-    [Fact]
-    public void FlowsRequirementDataMetadataToAuthorizationService()
-    {
-        var authorizationService = new TestAuthorizationService();
-        var renderer = CreateTestRenderer(authorizationService);
-        var rootComponent = new TestAuthStateProviderComponent(builder =>
-        {
-            builder.OpenComponent<AuthorizeViewCoreWithRequirementData>(0);
-            builder.CloseComponent();
-        });
-        rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
-        renderer.AssignRootComponentId(rootComponent);
-
-        rootComponent.TriggerRender();
-
-        // The requirement contributed via IAuthorizationRequirementData metadata flows through
-        Assert.Collection(authorizationService.AuthorizeCalls, call =>
-        {
-            Assert.Contains(call.requirements, req => req is AuthorizeViewCoreWithRequirementData.TestRequirement);
-        });
-    }
-
-    [Fact]
-    public void RequirementDataMetadata_RendersNotAuthorized_WhenAuthorizationFails()
-    {
-        var authorizationService = new TestAuthorizationService();
-        var renderer = CreateTestRenderer(authorizationService);
-        var rootComponent = new TestAuthStateProviderComponent(builder =>
-        {
-            builder.OpenComponent<AuthorizeViewCoreWithRequirementData>(0);
-            builder.AddComponentParameter(1, nameof(AuthorizeViewCore.NotAuthorized),
-                (RenderFragment<AuthenticationState>)(context => childBuilder => childBuilder.AddContent(0, "Not authorized")));
-            builder.CloseComponent();
-        });
-        rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
-        renderer.AssignRootComponentId(rootComponent);
-
-        rootComponent.TriggerRender();
-
-        var diff = renderer.Batches.Single().GetComponentDiffs<AuthorizeViewCoreWithRequirementData>().Single();
-        Assert.Collection(diff.Edits, edit =>
-        {
-            Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-            AssertFrame.Text(
-                renderer.Batches.Single().ReferenceFrames[edit.ReferenceFrameIndex],
-                "Not authorized");
-        });
-
-        Assert.Collection(authorizationService.AuthorizeCalls, call =>
-            Assert.Contains(call.requirements, req => req is AuthorizeViewCoreWithRequirementData.TestRequirement));
-    }
-
-    [Fact]
-    public void RequirementDataMetadata_RendersAuthorized_WhenAuthorizationSucceeds()
-    {
-        var authorizationService = new TestAuthorizationService();
-        authorizationService.NextResult = AuthorizationResult.Success();
-        var renderer = CreateTestRenderer(authorizationService);
-        var rootComponent = new TestAuthStateProviderComponent(builder =>
-        {
-            builder.OpenComponent<AuthorizeViewCoreWithRequirementData>(0);
-            builder.AddComponentParameter(1, nameof(AuthorizeViewCore.Authorized),
-                (RenderFragment<AuthenticationState>)(context => childBuilder => childBuilder.AddContent(0, "Authorized")));
-            builder.CloseComponent();
-        });
-        rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
-        renderer.AssignRootComponentId(rootComponent);
-
-        rootComponent.TriggerRender();
-
-        var diff = renderer.Batches.Single().GetComponentDiffs<AuthorizeViewCoreWithRequirementData>().Single();
-        Assert.Collection(diff.Edits, edit =>
-        {
-            Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-            AssertFrame.Text(
-                renderer.Batches.Single().ReferenceFrames[edit.ReferenceFrameIndex],
-                "Authorized");
-        });
-    }
-
     private static TestAuthStateProviderComponent WrapInAuthorizeView(
         RenderFragment<AuthenticationState> childContent = null,
         RenderFragment<AuthenticationState> authorized = null,
@@ -653,25 +573,5 @@ public class AuthorizeViewTest
     {
         protected override IAuthorizeData[] GetAuthorizeData()
             => new[] { new AuthorizeAttribute { AuthenticationSchemes = "test scheme" } };
-    }
-
-    public class AuthorizeViewCoreWithRequirementData : AuthorizeViewCore
-    {
-        protected override IAuthorizeData[] GetAuthorizeData() => null;
-
-        protected override IAuthorizationRequirementData[] GetAuthorizationRequirementData()
-            => new IAuthorizationRequirementData[] { new RequirementDataAttribute() };
-
-        public sealed class TestRequirement : IAuthorizationRequirement
-        {
-        }
-
-        private sealed class RequirementDataAttribute : Attribute, IAuthorizationRequirementData
-        {
-            public IEnumerable<IAuthorizationRequirement> GetRequirements()
-            {
-                yield return new TestRequirement();
-            }
-        }
     }
 }

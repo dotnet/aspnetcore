@@ -1,2 +1,2 @@
 #nullable enable
-virtual Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.GetAuthorizationRequirementData() -> Microsoft.AspNetCore.Authorization.IAuthorizationRequirementData![]?
+
