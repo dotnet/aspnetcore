@@ -26,9 +26,8 @@ internal sealed class DeviceBoundSessionJwtValidator
     /// </summary>
     /// <param name="jwt">The raw JWT string.</param>
     /// <param name="publicKeyJwk">The JWK JSON of the public key to validate against. If null, extracts from JWT header.</param>
-    /// <param name="expectedChallenge">The expected challenge value (jti claim).</param>
     /// <returns>The parsed result, or null if validation fails.</returns>
-    public async Task<DeviceBoundSessionJwtResult?> ValidateAsync(string jwt, string? publicKeyJwk, string? expectedChallenge)
+    public async Task<DeviceBoundSessionJwtResult?> ValidateAsync(string jwt, string? publicKeyJwk)
     {
         JsonWebToken token;
         try
@@ -89,12 +88,6 @@ internal sealed class DeviceBoundSessionJwtValidator
         }
 
         token.TryGetPayloadValue("jti", out string? challenge);
-        if (expectedChallenge is not null && !string.Equals(challenge, expectedChallenge, StringComparison.Ordinal))
-        {
-            _logger.ProofChallengeMismatch();
-            return null;
-        }
-
         token.TryGetPayloadValue("authorization", out string? authorization);
 
         return new DeviceBoundSessionJwtResult

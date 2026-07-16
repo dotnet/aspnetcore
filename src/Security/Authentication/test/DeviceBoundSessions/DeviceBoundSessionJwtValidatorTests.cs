@@ -18,7 +18,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var proof = key.CreateProof("challenge-1");
 
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null);
 
         Assert.NotNull(result);
         Assert.Equal("ES256", result.Algorithm);
@@ -31,7 +31,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateRs256();
         var proof = key.CreateProof("challenge-2");
 
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null);
 
         Assert.NotNull(result);
         Assert.Equal("RS256", result.Algorithm);
@@ -44,7 +44,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var proof = key.CreateProof("challenge-3", includeJwkHeader: false);
 
-        var result = await Validator.ValidateAsync(proof, key.PublicJwkJson, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, key.PublicJwkJson);
 
         Assert.NotNull(result);
         Assert.Equal("challenge-3", result.Challenge);
@@ -56,7 +56,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var proof = DbscProofKey.TamperSignature(key.CreateProof("challenge-4"));
 
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null);
 
         Assert.Null(result);
     }
@@ -68,7 +68,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var otherKey = DbscProofKey.CreateEs256();
         var proof = signingKey.CreateProof("challenge-5", includeJwkHeader: false);
 
-        var result = await Validator.ValidateAsync(proof, otherKey.PublicJwkJson, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, otherKey.PublicJwkJson);
 
         Assert.Null(result);
     }
@@ -79,7 +79,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var proof = key.CreateProof("challenge-6", includeJwkHeader: false);
 
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null);
 
         Assert.Null(result);
     }
@@ -87,18 +87,7 @@ public class DeviceBoundSessionJwtValidatorTests
     [Fact]
     public async Task ValidateAsync_MalformedToken_ReturnsNull()
     {
-        var result = await Validator.ValidateAsync("not-a-jwt", publicKeyJwk: null, expectedChallenge: null);
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task ValidateAsync_ChallengeMismatch_WhenExpectedChallengeProvided_ReturnsNull()
-    {
-        var key = DbscProofKey.CreateEs256();
-        var proof = key.CreateProof("actual-challenge");
-
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null, expectedChallenge: "different-challenge");
+        var result = await Validator.ValidateAsync("not-a-jwt", publicKeyJwk: null);
 
         Assert.Null(result);
     }
@@ -109,7 +98,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var token = DbscProofKey.CreateUnsignedToken(typ: "JWT", alg: "ES256", jwkJson: key.PublicJwkJson, jti: "c");
 
-        var result = await Validator.ValidateAsync(token, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(token, publicKeyJwk: null);
 
         Assert.Null(result);
     }
@@ -120,7 +109,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var token = DbscProofKey.CreateUnsignedToken(typ: "dbsc+jwt", alg: null, jwkJson: key.PublicJwkJson, jti: "c");
 
-        var result = await Validator.ValidateAsync(token, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(token, publicKeyJwk: null);
 
         Assert.Null(result);
     }
@@ -135,7 +124,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var token = DbscProofKey.CreateUnsignedToken(typ: "dbsc+jwt", alg: alg, jwkJson: key.PublicJwkJson, jti: "c");
 
-        var result = await Validator.ValidateAsync(token, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(token, publicKeyJwk: null);
 
         Assert.Null(result);
     }
@@ -149,7 +138,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var rsaKey = DbscProofKey.CreateRs256();
         var proof = ecKey.CreateProof("c", includeJwkHeader: false);
 
-        var result = await Validator.ValidateAsync(proof, rsaKey.PublicJwkJson, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, rsaKey.PublicJwkJson);
 
         Assert.Null(result);
     }
@@ -160,21 +149,9 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var proof = key.CreateProof("c", includeJwkHeader: false);
 
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: "{ not valid json", expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, publicKeyJwk: "{ not valid json");
 
         Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task ValidateAsync_ExpectedChallengeMatches_Succeeds()
-    {
-        var key = DbscProofKey.CreateEs256();
-        var proof = key.CreateProof("the-challenge");
-
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null, expectedChallenge: "the-challenge");
-
-        Assert.NotNull(result);
-        Assert.Equal("the-challenge", result.Challenge);
     }
 
     [Fact]
@@ -183,7 +160,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var proof = key.CreateProof("c", authorization: "auth-token-value");
 
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null);
 
         Assert.NotNull(result);
         Assert.Equal("auth-token-value", result.Authorization);
@@ -195,7 +172,7 @@ public class DeviceBoundSessionJwtValidatorTests
         var key = DbscProofKey.CreateEs256();
         var proof = key.CreateProof("c", expires: DateTimeOffset.UtcNow.AddMinutes(-10));
 
-        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null, expectedChallenge: null);
+        var result = await Validator.ValidateAsync(proof, publicKeyJwk: null);
 
         Assert.NotNull(result);
     }

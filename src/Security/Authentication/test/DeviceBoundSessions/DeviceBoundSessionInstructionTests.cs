@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
@@ -24,6 +25,7 @@ public class DeviceBoundSessionInstructionTests
     private const string SourceScheme = "Source";
     private const string SourceCookieName = ".AspNetCore.Source";
     private const string RefreshCookieName = ".AspNetCore.Source.Dbsc.Refresh";
+    private const string SessionCookieName = ".AspNetCore.Source.Dbsc.Session";
     private const string RegistrationPath = "/.well-known/dbsc/registration";
     private const string RefreshPath = "/.well-known/dbsc/refresh";
     private const string RootHostOrigin = "https://example.com";
@@ -131,6 +133,65 @@ public class DeviceBoundSessionInstructionTests
         var refreshBody = await refreshResponse.Content.ReadAsStringAsync();
 
         AssertScope(refreshBody, expectedOrigin: RootHostOrigin, expectedIncludeSite: true);
+    }
+
+    [Fact]
+    public async Task Refresh_AcceptsOlderRecentChallenge_AndAllowsProofReuseWhileUnexpired()
+    {
+        using var host = await CreateHostAsync();
+        var client = host.GetTestServer().CreateClient();
+        var proofKey = DbscProofKey.CreateEs256();
+
+        var registration = await SignInAndRegisterAsync(client, proofKey);
+        var registrationBody = await registration.Content.ReadAsStringAsync();
+        var refreshCookie = Assert.Single(registration.Headers.GetValues("Set-Cookie"),
+            v => v.StartsWith(RefreshCookieName + "=", StringComparison.Ordinal));
+        var sessionId = ParseSessionIdentifier(registrationBody);
+
+        var challengeResponseA = await SendRefreshAsync(client, CookiePair(refreshCookie), sessionId);
+        Assert.Equal(HttpStatusCode.Forbidden, challengeResponseA.StatusCode);
+        var challengeA = ParseChallenge(challengeResponseA, DeviceBoundSessionConstants.Headers.Challenge);
+
+        var challengeResponseB = await SendRefreshAsync(client, CookiePair(refreshCookie), sessionId);
+        Assert.Equal(HttpStatusCode.Forbidden, challengeResponseB.StatusCode);
+        var challengeB = ParseChallenge(challengeResponseB, DeviceBoundSessionConstants.Headers.Challenge);
+        Assert.False(string.Equals(challengeA, challengeB, StringComparison.Ordinal), "Refresh challenges should be distinct.");
+
+        var proof = proofKey.CreateProof(challengeA, includeJwkHeader: false);
+        var refreshResponse = await SendRefreshAsync(client, CookiePair(refreshCookie), sessionId, proof);
+        Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
+        AssertSessionCookieIssued(refreshResponse);
+
+        var replayResponse = await SendRefreshAsync(client, CookiePair(refreshCookie), sessionId, proof);
+        Assert.Equal(HttpStatusCode.OK, replayResponse.StatusCode);
+        AssertSessionCookieIssued(replayResponse);
+    }
+
+    [Fact]
+    public async Task Refresh_RejectsAlreadyExpiredChallenge_AndIssuesReplacementChallenge()
+    {
+        using var host = await CreateHostAsync();
+        var client = host.GetTestServer().CreateClient();
+        var proofKey = DbscProofKey.CreateEs256();
+
+        var registration = await SignInAndRegisterAsync(client, proofKey);
+        var registrationBody = await registration.Content.ReadAsStringAsync();
+        var refreshCookie = Assert.Single(registration.Headers.GetValues("Set-Cookie"),
+            v => v.StartsWith(RefreshCookieName + "=", StringComparison.Ordinal));
+        var sessionId = ParseSessionIdentifier(registrationBody);
+
+        var options = host.Services.GetRequiredService<IOptionsMonitor<DeviceBoundSessionOptions>>()
+            .Get(DeviceBoundSessionDefaults.AuthenticationScheme);
+        options.ChallengeMaxAge = TimeSpan.FromSeconds(-1);
+
+        var challengeResponse = await SendRefreshAsync(client, CookiePair(refreshCookie), sessionId);
+        Assert.Equal(HttpStatusCode.Forbidden, challengeResponse.StatusCode);
+        var challenge = ParseChallenge(challengeResponse, DeviceBoundSessionConstants.Headers.Challenge);
+        var proof = proofKey.CreateProof(challenge, includeJwkHeader: false);
+
+        var refreshResponse = await SendRefreshAsync(client, CookiePair(refreshCookie), sessionId, proof);
+        Assert.Equal(HttpStatusCode.Forbidden, refreshResponse.StatusCode);
+        _ = ParseChallenge(refreshResponse, DeviceBoundSessionConstants.Headers.Challenge);
     }
 
     [Fact]
@@ -278,8 +339,14 @@ public class DeviceBoundSessionInstructionTests
             ? "^\"([^\"]+)\";id="
             : "challenge=\"([^\"]+)\"";
         var match = Regex.Match(header, pattern);
-        Assert.True(match.Success, $"No challenge found in {headerName} header: {header}");
+        Assert.True(match.Success, $"No challenge found in {headerName} header.");
         return match.Groups[1].Value;
+    }
+
+    private static void AssertSessionCookieIssued(HttpResponseMessage response)
+    {
+        Assert.Single(response.Headers.GetValues("Set-Cookie"),
+            value => value.StartsWith(SessionCookieName + "=", StringComparison.Ordinal));
     }
 
     private static string ParseSessionIdentifier(string body)

@@ -66,7 +66,4 @@ internal static partial class DeviceBoundSessionsLoggingExtensions
 
     [LoggerMessage(18, LogLevel.Debug, "DBSC proof rejected: signature validation failed.", EventName = "ProofSignatureInvalid")]
     public static partial void ProofSignatureInvalid(this ILogger logger);
-
-    [LoggerMessage(19, LogLevel.Debug, "DBSC proof rejected: the challenge (jti) did not match the expected value.", EventName = "ProofChallengeMismatch")]
-    public static partial void ProofChallengeMismatch(this ILogger logger);
 }

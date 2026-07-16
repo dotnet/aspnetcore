@@ -95,7 +95,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         proofHeader = proofHeader.Trim('"');
 
         // Validate the JWT and extract the public key (registration: no existing key to check against)
-        var jwtResult = await _jwtValidator.ValidateAsync(proofHeader, publicKeyJwk: null, expectedChallenge: null);
+        var jwtResult = await _jwtValidator.ValidateAsync(proofHeader, publicKeyJwk: null);
         if (jwtResult is null)
         {
             // The validator logs the specific reason (malformed / wrong typ / unsupported alg / bad signature).
@@ -230,7 +230,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         proofHeader = proofHeader.Trim('"');
 
         // Validate the JWT proof against the public key from the refresh cookie
-        var jwtResult = await _jwtValidator.ValidateAsync(proofHeader, publicKeyJwk, expectedChallenge: null);
+        var jwtResult = await _jwtValidator.ValidateAsync(proofHeader, publicKeyJwk);
         if (jwtResult is null)
         {
             // The validator logs the specific reason (malformed / wrong typ / unsupported alg / bad signature).
