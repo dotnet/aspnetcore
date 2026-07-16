@@ -386,6 +386,11 @@ public class BufferedReadStream : Stream
     private void ProcessLineChar(MemoryStream builder, int lengthLimit,  ref bool foundCR, ref bool foundCRLF)
     {
         var writeCount = 0;
+        // builder.Length holds the bytes accumulated by previous invocations of this method
+        // (one per buffer refill). It does not change during this loop since we only flush to
+        // the builder when we return on CRLF or after draining the buffer, so cache it here to
+        // avoid the property access on every byte in this hot path.
+        var previousLength = builder.Length;
         while (_bufferCount > 0)
         {
             var b = _buffer[_bufferOffset];
@@ -400,12 +405,11 @@ public class BufferedReadStream : Stream
             }
             foundCR = b == CR;
 
-            // builder.Length holds the bytes accumulated by previous invocations of this
-            // method (one per buffer refill), while writeCount holds the bytes consumed from
-            // the current buffer that have not been flushed yet. Comparing the cumulative
-            // total against the limit ensures the limit is enforced even when a single line
-            // spans multiple buffers.
-            if (builder.Length + writeCount > lengthLimit)
+            // writeCount holds the bytes consumed from the current buffer that have not been
+            // flushed yet. Comparing the cumulative total (previousLength + writeCount) against
+            // the limit ensures the limit is enforced even when a single line spans multiple
+            // buffers.
+            if (previousLength + writeCount > lengthLimit)
             {
                 throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
             }
