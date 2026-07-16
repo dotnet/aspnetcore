@@ -9,13 +9,15 @@ namespace Microsoft.AspNetCore.Antiforgery;
 
 internal sealed class DefaultCsrfProtection : ICsrfProtection
 {
-    // Safe HTTP methods that do not require cross-origin validation (RFC 7231).
+    // Safe HTTP methods that do not require cross-origin validation. GET, HEAD, OPTIONS,
+    // and TRACE are safe per RFC 9110; QUERY is defined as a safe, idempotent method by RFC 10008.
     private static readonly HashSet<string> SafeMethods = new(StringComparer.OrdinalIgnoreCase)
     {
         HttpMethods.Get,
         HttpMethods.Head,
         HttpMethods.Options,
         HttpMethods.Trace,
+        HttpMethods.Query,
     };
 
     /// <inheritdoc />
