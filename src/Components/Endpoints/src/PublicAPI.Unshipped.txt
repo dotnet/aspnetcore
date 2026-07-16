@@ -1,6 +1,39 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Endpoints.BasePath
 Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewSizeLimit.get -> long
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewSizeLimit.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewHybridCache.get -> Microsoft.Extensions.Caching.Hybrid.HybridCache?
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewHybridCache.set -> void
+Microsoft.AspNetCore.Components.CacheView
+Microsoft.AspNetCore.Components.CacheView.CacheView() -> void
+Microsoft.AspNetCore.Components.CacheView.CacheKey.get -> string?
+Microsoft.AspNetCore.Components.CacheView.CacheKey.set -> void
+Microsoft.AspNetCore.Components.CacheView.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.CacheView.ChildContent.set -> void
+Microsoft.AspNetCore.Components.CacheView.Enabled.get -> bool
+Microsoft.AspNetCore.Components.CacheView.Enabled.set -> void
+Microsoft.AspNetCore.Components.CacheView.ExpiresAfter.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.CacheView.ExpiresAfter.set -> void
+Microsoft.AspNetCore.Components.CacheView.ExpiresOn.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.Components.CacheView.ExpiresOn.set -> void
+Microsoft.AspNetCore.Components.CacheView.ExpiresSliding.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.CacheView.ExpiresSliding.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryBy.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryBy.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByCookie.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryByCookie.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByCulture.get -> bool
+Microsoft.AspNetCore.Components.CacheView.VaryByCulture.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByHeader.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryByHeader.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByQuery.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryByQuery.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByRoute.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryByRoute.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByUser.get -> bool
+Microsoft.AspNetCore.Components.CacheView.VaryByUser.set -> void
+Microsoft.AspNetCore.Components.CacheView.Dispose() -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
@@ -37,6 +70,7 @@ Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionMaxR
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionMaxRetries.set -> void
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionRetryInterval.get -> System.TimeSpan?
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionRetryInterval.set -> void
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.Extensions.get -> System.Collections.Generic.IDictionary<string!, System.Text.Json.JsonElement>!
 Microsoft.AspNetCore.Components.SsrBrowserOptions
 Microsoft.AspNetCore.Components.SsrBrowserOptions.SsrBrowserOptions() -> void
 Microsoft.AspNetCore.Components.SsrBrowserOptions.CircuitInactivityTimeout.get -> System.TimeSpan?
