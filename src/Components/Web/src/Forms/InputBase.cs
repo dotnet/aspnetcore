@@ -268,6 +268,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
                 _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+
+                EditContext.OnReset += HandleReset;
             }
             else
             {
@@ -294,6 +296,17 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    private void HandleReset(object? sender, EventArgs e)
+    {
+        CurrentValue = default!;
+
+        if (_parsingValidationMessages is not null)
+        {
+            _parsingValidationMessages.Clear();
+            EditContext?.NotifyValidationStateChanged();
+        }
     }
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
@@ -427,6 +440,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     {
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
         EditContext?.OnValidationStateChanged -= _validationStateChangedHandler;
+        EditContext?.OnReset -= HandleReset;
 
         // Clear parsing validation messages store owned by the input when the input is disposed.
         if (_parsingValidationMessages != null)
