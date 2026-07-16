@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
-/// produce an HTTP response with the No Unauthorized (401) status code.
+/// produce an HTTP response with the Unauthorized (401) status code.
 /// </summary>
-public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult, IEndpointMetadataProvider
+public sealed class UnauthorizedHttpResult : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UnauthorizedHttpResult"/> class.
