@@ -7,6 +7,8 @@ Microsoft.AspNetCore.Components.Web.EnvironmentView.Exclude.get -> string?
 Microsoft.AspNetCore.Components.Web.EnvironmentView.Exclude.set -> void
 Microsoft.AspNetCore.Components.Web.EnvironmentView.Include.get -> string?
 Microsoft.AspNetCore.Components.Web.EnvironmentView.Include.set -> void
+Microsoft.AspNetCore.Components.Routing.NavLink.InactiveClass.get -> string?
+Microsoft.AspNetCore.Components.Routing.NavLink.InactiveClass.set -> void
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions

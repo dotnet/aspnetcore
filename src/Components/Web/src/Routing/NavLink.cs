@@ -30,6 +30,14 @@ public class NavLink : ComponentBase, IDisposable
     public string? ActiveClass { get; set; }
 
     /// <summary>
+    /// Gets or sets the CSS class name applied to the NavLink when the
+    /// current route does not match the NavLink href. When <c>null</c>
+    /// (the default), no extra class is added in the inactive state.
+    /// </summary>
+    [Parameter]
+    public string? InactiveClass { get; set; }
+
+    /// <summary>
     /// Gets or sets a collection of additional attributes that will be added to the generated
     /// <c>a</c> element.
     /// </summary>
@@ -110,7 +118,8 @@ public class NavLink : ComponentBase, IDisposable
 
     private void UpdateCssClass()
     {
-        CssClass = _isActive ? CombineWithSpace(_class, ActiveClass ?? DefaultActiveClass) : _class;
+        var stateClass = _isActive ? (ActiveClass ?? DefaultActiveClass) : InactiveClass;
+        CssClass = stateClass is null ? _class : CombineWithSpace(_class, stateClass);
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
