@@ -225,7 +225,10 @@ public class DeviceBoundSessionInstructionTests
         var sessionSetCookie = Assert.Single(response.Headers.GetValues("Set-Cookie"),
             v => v.StartsWith(".AspNetCore.Source.Dbsc.Session=", StringComparison.Ordinal));
         Assert.Contains("path=/foo", sessionSetCookie);
-        Assert.Contains("Path=/foo\"", body);
+        using var document = JsonDocument.Parse(body);
+        var attributes = document.RootElement.GetProperty("credentials")[0].GetProperty("attributes").GetString();
+        var advertisedCookie = SetCookieHeaderValue.Parse($"credential=value; {attributes}");
+        Assert.Equal("/foo", advertisedCookie.Path.Value);
     }
 
     [Fact]

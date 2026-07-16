@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
+using NetSameSiteMode = Microsoft.Net.Http.Headers.SameSiteMode;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
@@ -331,38 +333,22 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         // Build the cookie exactly as the session cookie handler will, so the advertised attributes —
         // including the path, which the request path base is applied to — match the cookie we emit.
         var cookie = cookieOptions.Cookie.Build(Context);
+        var header = new SetCookieHeaderValue(string.Empty, string.Empty)
+        {
+            Domain = cookie.Domain,
+            Path = string.IsNullOrEmpty(cookie.Path) ? "/" : cookie.Path,
+            Secure = cookie.Secure,
+            HttpOnly = cookie.HttpOnly,
+            SameSite = (NetSameSiteMode)cookie.SameSite,
+        };
 
-        var attributes = new List<string>();
-        if (cookie.Secure)
+        var value = header.ToString();
+        if (!value.StartsWith("=; ", StringComparison.Ordinal))
         {
-            attributes.Add("Secure");
-        }
-        if (cookie.HttpOnly)
-        {
-            attributes.Add("HttpOnly");
-        }
-
-        switch (cookie.SameSite)
-        {
-            case SameSiteMode.None:
-                attributes.Add("SameSite=None");
-                break;
-            case SameSiteMode.Strict:
-                attributes.Add("SameSite=Strict");
-                break;
-            case SameSiteMode.Lax:
-                attributes.Add("SameSite=Lax");
-                break;
+            throw new InvalidOperationException("Set-Cookie credential serialization did not produce the expected empty cookie prefix.");
         }
 
-        attributes.Add($"Path={(string.IsNullOrEmpty(cookie.Path) ? "/" : cookie.Path)}");
-
-        if (!string.IsNullOrEmpty(cookie.Domain))
-        {
-            attributes.Add($"Domain={cookie.Domain}");
-        }
-
-        return string.Join("; ", attributes);
+        return value[3..];
     }
 
     private string GenerateRegistrationChallenge(ClaimsPrincipal principal)
