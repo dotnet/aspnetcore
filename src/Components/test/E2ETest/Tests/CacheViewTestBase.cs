@@ -11,14 +11,14 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
+public abstract class CacheViewTestBase : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
-    // A unique id per test instance. Every CacheBoundary on the test pages varies by the "testId" query
+    // A unique id per test instance. Every CacheView on the test pages varies by the "testId" query
     // parameter, so each test's cache entries are isolated. This lets the suite run without relying on a
     // shared, globally-cleared cache and keeps tests independent when executed concurrently.
     private readonly string _testId = Guid.NewGuid().ToString("N");
 
-    protected CacheBoundaryTestBase(
+    protected CacheViewTestBase(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
         ITestOutputHelper output)
@@ -50,7 +50,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void CacheBoundaryCachesData()
+    public void CacheViewCachesData()
     {
         Navigate(TestUrl("cache-component"));
         var testElement = Browser.FindElement(By.Id("test-1"));
@@ -63,7 +63,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void CacheBoundaryDoesNotCacheDataWhenNotEnabled()
+    public void CacheViewDoesNotCacheDataWhenNotEnabled()
     {
         Navigate(TestUrl("cache-component"));
         var testElement = Browser.FindElement(By.Id("test-2"));
@@ -76,7 +76,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void CacheBoundaryCorrectlyCreatesLiveCachedComponents()
+    public void CacheViewCorrectlyCreatesLiveCachedComponents()
     {
         Navigate(TestUrl("cache-component"));
         var testElement = Browser.FindElement(By.Id("test-3"));
@@ -114,7 +114,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void CacheBoundaryInLoopUsesVaryByForDistinctEntries()
+    public void CacheViewInLoopUsesVaryByForDistinctEntries()
     {
         Navigate(TestUrl("cache-component"));
         var loopItems = Browser.FindElement(By.Id("test-4")).FindElements(By.CssSelector(".loop-item"));
@@ -141,7 +141,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void CacheBoundaryMultipleLiveCachedComponentsOfSameType_PreserveCorrectOrder()
+    public void CacheViewMultipleLiveCachedComponentsOfSameType_PreserveCorrectOrder()
     {
         Navigate(TestUrl("cache-component"));
         Browser.Equal("first", () => Browser.FindElement(By.Id("test-5")).FindElement(By.CssSelector(".live-cached-0")).Text);
@@ -156,7 +156,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void CacheBoundaryCachesHardcodedLiveCachedComponent()
+    public void CacheViewCachesHardcodedLiveCachedComponent()
     {
         Navigate(TestUrl("cache-component"));
         var panel = Browser.FindElement(By.Id("test-7"));
@@ -172,7 +172,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void CacheBoundaryTreatsStreamingChildAsLiveCachedComponent()
+    public void CacheViewTreatsStreamingChildAsLiveCachedComponent()
     {
         Navigate(TestUrl("cache-component"));
         // The streaming component is rendered via a streaming batch, so wait for it to arrive.

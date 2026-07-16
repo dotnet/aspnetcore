@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class CacheBoundaryTextWriterTest
+public class CacheViewTextWriterTest
 {
     [Fact]
     public void CreateLiveCachedComponent_LiveCachedComponentWithRenderFragmentParameter_Throws()
@@ -24,7 +24,7 @@ public class CacheBoundaryTextWriterTest
             builder.CloseComponent();
         }));
 
-        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        var writer = new CacheViewTextWriter(new StringWriter(), CacheVaryBy.None);
         writer.StartCapture();
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -42,7 +42,7 @@ public class CacheBoundaryTextWriterTest
             builder.CloseComponent();
         }));
 
-        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        var writer = new CacheViewTextWriter(new StringWriter(), CacheVaryBy.None);
         writer.StartCapture();
 
         var ex = Assert.Throws<InvalidOperationException>(() => writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), renderMode: null, capture, NullLogger.Instance));
@@ -59,7 +59,7 @@ public class CacheBoundaryTextWriterTest
             builder.CloseComponent();
         }));
 
-        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        var writer = new CacheViewTextWriter(new StringWriter(), CacheVaryBy.None);
         writer.StartCapture();
         writer.CreateLiveCachedComponent(typeof(TestRenderFragmentLiveCachedComponent), renderMode: null, capture, NullLogger.Instance);
         writer.StopCapture();
@@ -80,7 +80,7 @@ public class CacheBoundaryTextWriterTest
             builder.CloseComponent();
         }));
 
-        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        var writer = new CacheViewTextWriter(new StringWriter(), CacheVaryBy.None);
         writer.StartCapture();
         writer.Write("<p>before</p>");
         writer.PauseCapture();
@@ -98,30 +98,30 @@ public class CacheBoundaryTextWriterTest
     }
 
     [Fact]
-    public void ThrowIfNestedInsideCapturingBoundary_CapturingWriter_Throws()
+    public void ThrowIfNestedInsideCapturingCacheView_CapturingWriter_Throws()
     {
-        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        var writer = new CacheViewTextWriter(new StringWriter(), CacheVaryBy.None);
         writer.StartCapture();
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(writer));
-        Assert.Contains("cannot be nested inside another CacheBoundary", ex.Message);
+            CacheViewService.ThrowIfNestedInsideCapturingCacheView(writer));
+        Assert.Contains("cannot be nested inside another CacheView", ex.Message);
     }
 
     [Fact]
-    public void ThrowIfNestedInsideCapturingBoundary_NonCapturingWriter_DoesNotThrow()
+    public void ThrowIfNestedInsideCapturingCacheView_NonCapturingWriter_DoesNotThrow()
     {
-        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        var writer = new CacheViewTextWriter(new StringWriter(), CacheVaryBy.None);
         writer.StartCapture();
         writer.StopCapture();
 
-        CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(writer);
+        CacheViewService.ThrowIfNestedInsideCapturingCacheView(writer);
     }
 
     [Fact]
-    public void ThrowIfNestedInsideCapturingBoundary_PlainTextWriter_DoesNotThrow()
+    public void ThrowIfNestedInsideCapturingCacheView_PlainTextWriter_DoesNotThrow()
     {
-        CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(new StringWriter());
+        CacheViewService.ThrowIfNestedInsideCapturingCacheView(new StringWriter());
     }
 
     private static RenderTreeFrame[] CaptureFramesFor(RenderFragment fragment)
@@ -134,7 +134,7 @@ public class CacheBoundaryTextWriterTest
         return slice;
     }
 
-    [CacheBoundaryLiveComponent]
+    [CacheBehavior(CacheBehavior.Rerender)]
     private sealed class TestRenderFragmentLiveCachedComponent : IComponent
     {
         [Parameter] public string? Title { get; set; }
