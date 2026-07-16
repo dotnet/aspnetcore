@@ -274,7 +274,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
             history.pushState(null, '', response.url);
           }
         }
-        internalDestinationHref = response.url;
+         if (internalDestinationHref !== response.url) {
+          internalDestinationHref = response.url;
+          notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
+        }
       }
 
       // For enhanced nav redirecting to an external URL, we'll get a special Blazor-specific redirection command

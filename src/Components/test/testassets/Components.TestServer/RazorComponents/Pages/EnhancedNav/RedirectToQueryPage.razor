@@ -1,0 +1,15 @@
+﻿@page "/nav/redirect-to-query/{Mode}"
+@inject NavigationManager Nav
+
+<h1>Redirecting to a page with a query string</h1>
+
+@code {
+    [Parameter] public string Mode { get; set; }
+
+    // Regression coverage for https://github.com/dotnet/aspnetcore/issues/60836.
+    // When this page is reached via enhanced navigation while an interactive circuit is active,
+    // it redirects (during SSR) to an existing interactive page with a query string. The redirected-to
+    // query string must be visible to [SupplyParameterFromQuery] in that page's interactive render.
+    protected override void OnInitialized()
+        => Nav.NavigateTo($"nav/location-changed/{Mode}?query=42");
+}
