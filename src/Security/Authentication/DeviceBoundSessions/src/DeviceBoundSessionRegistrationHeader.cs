@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
@@ -52,6 +53,16 @@ internal static class DeviceBoundSessionRegistrationHeader
         httpContext.Response.Headers.Append(DeviceBoundSessionConstants.Headers.Registration, headerValue);
     }
 
-    private static string SerializeSfString(string value)
-        => $"\"{value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
+    internal static string SerializeSfString(string value)
+    {
+        foreach (var character in value)
+        {
+            if (character is < '\u0020' or > '\u007E')
+            {
+                throw new FormatException("Structured Field strings must contain only printable ASCII characters.");
+            }
+        }
+
+        return HeaderUtilities.EscapeAsQuotedString(value).ToString();
+    }
 }
