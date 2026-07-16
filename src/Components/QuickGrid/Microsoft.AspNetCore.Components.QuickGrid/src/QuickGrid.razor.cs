@@ -118,10 +118,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public EventCallback<TGridItem> OnRowClick { get; set; }
 
     /// <summary>
-    /// The parameter from which the page and sorting URL parameters are derived. The default value is an empty string, which results in query parameters named "page", "sort", and "order". If you provide a non-empty value, for example "products",
-    /// then the query parameters will be "products_page", "products_sort", and "products_order". This allows you to use multiple <see cref="QuickGrid{TGridItem}"/> components on the same page without their URL parameters conflicting with each other.
+    /// Specifies the <see cref="QueryParameterNameOptions"/> used to persist the page, sort column, and sort direction
+    /// in the URL. Defaults to an instance whose query parameters are named "page", "sort", and "direction".
     /// </summary>
-    [Parameter] public string QueryParameterNamePrefix { get; set; } = "";
+    [Parameter] public QueryParameterNameOptions QueryParameterNameOptions { get; set; } = new();
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -176,9 +176,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     private (string ColumnTitle, bool Ascending)? _cachedSortFromQuery;
 
-    private string SortQueryParameterNameBy => QueryParameterNamePrefix == "" ? "sort" : $"{QueryParameterNamePrefix}_sort";
-    private string SortQueryParameterNameOrder => QueryParameterNamePrefix == "" ? "order" : $"{QueryParameterNamePrefix}_order";
-    private string PageQueryParameterName => QueryParameterNamePrefix == "" ? "page" : $"{QueryParameterNamePrefix}_page";
+    private string SortQueryParameterNameBy => QueryParameterNameOptions.Sort;
+    private string SortQueryParameterNameDirection => QueryParameterNameOptions.Direction;
+    private string PageQueryParameterName => QueryParameterNameOptions.Page;
     private readonly QueryParameterValueSupplier _queryParameterValueSupplier;
 
     /// <summary>
@@ -336,17 +336,17 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         return NavigationManager.GetUriWithQueryParameters(new Dictionary<string, object?>
         {
             [SortQueryParameterNameBy] = column?.Title,
-            [SortQueryParameterNameOrder] = ascending ? "asc" : "desc",
+            [SortQueryParameterNameDirection] = ascending ? "asc" : "desc",
         });
     }
 
     private (string ColumnTitle, bool Ascending)? ReadSortFromQueryString()
     {
         var column = _queryParameterValueSupplier.GetQueryParameterValue(typeof(string), SortQueryParameterNameBy) as string;
-        var order = _queryParameterValueSupplier.GetQueryParameterValue(typeof(string), SortQueryParameterNameOrder) as string;
-        if (column is not null && order is not null)
+        var direction = _queryParameterValueSupplier.GetQueryParameterValue(typeof(string), SortQueryParameterNameDirection) as string;
+        if (column is not null && direction is not null)
         {
-            return order switch
+            return direction switch
             {
                 var d when d.Equals("asc", StringComparison.OrdinalIgnoreCase) => (column, true),
                 var d when d.Equals("desc", StringComparison.OrdinalIgnoreCase) => (column, false),
