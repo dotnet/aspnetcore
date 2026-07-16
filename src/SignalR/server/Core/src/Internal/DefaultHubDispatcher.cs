@@ -773,13 +773,16 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
     private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IReadOnlyList<object> authorizationMetadata, HubInvocationContext resource)
     {
-        var authService = provider.GetRequiredService<IAuthorizationService>();
         var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
         var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, authorizationMetadata);
-        // AuthorizationPolicy.CombineAsync only returns null if there is no authorization metadata and we check that above
-        Debug.Assert(authorizePolicy != null);
+        if (authorizePolicy is null)
+        {
+            // The method had attributes, but none of them contributed authorization metadata 
+            return true;
+        }
 
+        var authService = provider.GetRequiredService<IAuthorizationService>();
         var authorizationResult = await authService.AuthorizeAsync(principal, resource, authorizePolicy);
         // Only check authorization success, challenge or forbid wouldn't make sense from a hub method invocation
         return authorizationResult.Succeeded;
@@ -893,10 +896,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 ? CreateObjectMethodExecutor(methodInfo, hubTypeInfo)
                 : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
 
-            // Gather all authorization metadata (IAuthorizeData such as [Authorize], as well as
-            // IAuthorizationRequirementData) so it can be combined into a single effective policy.
-            var authorizationMetadata = methodInfo.GetCustomAttributes(inherit: true)
-                .Where(static a => a is IAuthorizeData or IAuthorizationRequirementData);
+            var authorizationMetadata = methodInfo.GetCustomAttributes(inherit: true);
             _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizationMetadata);
             _cachedMethodNames.Add(methodName);
 
