@@ -17,7 +17,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal static ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
-        var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
+        var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, mustPreserveParameterNames: false, out var method)
             ? method.Parameters
             : [];
 

@@ -39,12 +39,12 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
-    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, [NotNullWhen(true)] out IMethodSymbol? method)
+    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, bool mustPreserveParameterNames, [NotNullWhen(true)] out IMethodSymbol? method)
     {
         method = null;
         if (invocation.TryGetRouteHandlerArgument(out var argument))
         {
-            method = ResolveMethodFromOperation(argument, semanticModel);
+            method = ResolveMethodFromOperation(argument, semanticModel, mustPreserveParameterNames);
             return method is not null;
         }
         return false;
@@ -87,19 +87,43 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
-    private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation, SemanticModel semanticModel) => operation switch
+    private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation, SemanticModel semanticModel, bool mustPreserveParameterNames) => operation switch
     {
-        IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel),
-        IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel),
-        IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel),
+        IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel, mustPreserveParameterNames),
+        IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel, mustPreserveParameterNames),
+        IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel, mustPreserveParameterNames),
         IFieldReferenceOperation { Field.IsReadOnly: true } f when ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op =>
-            ResolveMethodFromOperation(op, semanticModel),
+            ResolveMethodFromOperation(op, semanticModel, mustPreserveParameterNames),
         IAnonymousFunctionOperation anon => anon.Symbol,
         ILocalFunctionOperation local => local.Symbol,
         IMethodReferenceOperation method => method.Method,
-        IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel),
-        _ => (operation.Type as INamedTypeSymbol)?.DelegateInvokeMethod,
+        IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel, mustPreserveParameterNames),
+        _ => ResolveMethodFromType(operation.Type, mustPreserveParameterNames),
     };
+
+    private static IMethodSymbol? ResolveMethodFromType(ITypeSymbol? type, bool mustPreserveParameterNames)
+    {
+        if (type is not INamedTypeSymbol { DelegateInvokeMethod: { } delegateInvokeMethod })
+        {
+            return null;
+        }
+
+        // If we have the following code:
+        // static Func<string, string> GetHandler() => id => $"Hello, {id}!";
+        // app.MapGet("/hello/{id}", GetHandler());
+        // Then getting the DelegateInvokeMethod from GetHandler isn't going to preserve the "id" parameter name.
+        // We mostly just have the Func<string, string> **type** which doesn't carry that name.
+        // If the caller cares about getting the correct parameter name of the method (e.g, RDG), we return null in this case.
+        // If the caller doesn't care, and cares only about getting the parameter type (e.g, validation), we return the delegate invoke method.
+        // However, if we have just a Func<string> (delegate that returns a string but doesn't accept any parameters),
+        // then we can return the invoke method both in RDG and validations.
+        if (!mustPreserveParameterNames || delegateInvokeMethod.Parameters.Length == 0)
+        {
+            return delegateInvokeMethod;
+        }
+
+        return null;
+    }
 
     private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
     {
