@@ -514,6 +514,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 || source == BindingSource.Form
                 || source == BindingSource.FormFile;
 
+        [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Properties are looked up on the container type from ModelMetadata.ContainerType, which is not statically annotated for trimming. If the property has been trimmed, GetProperty returns null and the XML documentation is simply not applied.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Properties are looked up on the container type from ModelMetadata.ContainerType, which is not statically annotated for trimming. If the property has been trimmed, GetProperty returns null and the XML documentation is simply not applied.")]
         private static PropertyInfo? GetPropertyInfo(Type containerType, string propertyName)
         {
             // Walk the type hierarchy explicitly with `DeclaredOnly` so that a property shadowing a
