@@ -47,8 +47,11 @@ internal static class DeviceBoundSessionRegistrationHeader
         // Advertise the registration endpoint relative to the application's path base so an app mounted
         // under a non-root path base (e.g. "/foo") tells the browser to POST to "/foo/.well-known/dbsc/..."
         // rather than the origin root.
-        var registrationPath = httpContext.Request.PathBase.Add(dbscOptions.RegistrationPath);
-        var headerValue = $"{DeviceBoundSessionConstants.AdvertisedAlgorithms};path=\"{registrationPath.Value}\";challenge=\"{challenge}\"";
+        var registrationPath = httpContext.Request.PathBase.Add(dbscOptions.RegistrationPath).ToUriComponent();
+        var headerValue = $"{DeviceBoundSessionConstants.AdvertisedAlgorithms};path={SerializeSfString(registrationPath)};challenge={SerializeSfString(challenge)}";
         httpContext.Response.Headers.Append(DeviceBoundSessionConstants.Headers.Registration, headerValue);
     }
+
+    private static string SerializeSfString(string value)
+        => $"\"{value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
 }

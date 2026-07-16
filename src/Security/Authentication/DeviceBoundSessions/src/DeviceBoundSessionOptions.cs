@@ -31,16 +31,43 @@ public class DeviceBoundSessionOptions : AuthenticationSchemeOptions
     public string? SessionScheme { get; set; }
 
     /// <summary>
-    /// Gets or sets the path for the registration endpoint.
+    /// Gets or sets the nonempty application-local, root-relative request path for the registration endpoint.
+    /// The path must begin with <c>/</c> and is relative to the application's base path. Full URLs,
+    /// current-directory-relative URL references, network-path references, query strings, and fragments are unsupported.
+    /// The effective <see cref="HttpRequest.PathBase"/> is prepended when the path is advertised to the browser.
+    /// Although the DBSC protocol permits absolute and cross-origin same-site endpoint references, they are outside
+    /// this component's local request-handler model.
     /// Defaults to <c>/.well-known/dbsc/registration</c>.
     /// </summary>
     public PathString RegistrationPath { get; set; } = DeviceBoundSessionDefaults.RegistrationPath;
 
     /// <summary>
-    /// Gets or sets the path for the refresh endpoint.
+    /// Gets or sets the nonempty application-local, root-relative request path for the refresh endpoint.
+    /// The path must begin with <c>/</c> and is relative to the application's base path. Full URLs,
+    /// current-directory-relative URL references, network-path references, query strings, and fragments are unsupported.
+    /// The effective <see cref="HttpRequest.PathBase"/> is prepended when the path is advertised to the browser.
+    /// Although the DBSC protocol permits absolute and cross-origin same-site endpoint references, they are outside
+    /// this component's local request-handler model.
     /// Defaults to <c>/.well-known/dbsc/refresh</c>.
     /// </summary>
     public PathString RefreshPath { get; set; } = DeviceBoundSessionDefaults.RefreshPath;
+
+    /// <summary>
+    /// Checks that the options are valid for a specific scheme.
+    /// </summary>
+    /// <param name="scheme">The scheme being validated.</param>
+    public override void Validate(string scheme)
+    {
+        base.Validate(scheme);
+
+        ValidatePath(RegistrationPath, nameof(RegistrationPath), scheme);
+        ValidatePath(RefreshPath, nameof(RefreshPath), scheme);
+
+        if (RegistrationPath.Equals(RefreshPath))
+        {
+            throw CreatePathCollisionException(nameof(RefreshPath), scheme);
+        }
+    }
 
     /// <summary>
     /// Gets or sets the expiration for the short-lived session cookie.
@@ -74,4 +101,41 @@ public class DeviceBoundSessionOptions : AuthenticationSchemeOptions
     /// Gets the list of allowed refresh initiator host patterns.
     /// </summary>
     public IList<string> AllowedRefreshInitiators { get; } = new List<string>();
+
+    private static ArgumentException CreatePathCollisionException(string parameterName, string scheme)
+        => new(
+            $"The {nameof(RefreshPath)} for scheme '{scheme}' must differ from {nameof(RegistrationPath)}.",
+            parameterName);
+
+    private static void ValidatePath(PathString path, string parameterName, string scheme)
+    {
+        if (!path.HasValue)
+        {
+            throw new ArgumentException(
+                $"The {parameterName} for scheme '{scheme}' must be nonempty.",
+                parameterName);
+        }
+
+        var value = path.Value;
+        if (value.StartsWith("//", StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"The {parameterName} for scheme '{scheme}' must not be a network-path reference beginning with '//'.",
+                parameterName);
+        }
+
+        if (value.Contains('?', StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"The {parameterName} for scheme '{scheme}' must not contain a query string ('?').",
+                parameterName);
+        }
+
+        if (value.Contains('#', StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"The {parameterName} for scheme '{scheme}' must not contain a fragment ('#').",
+                parameterName);
+        }
+    }
 }

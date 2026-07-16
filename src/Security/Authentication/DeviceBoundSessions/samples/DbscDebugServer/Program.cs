@@ -53,6 +53,10 @@ public class Startup
     {
         services.AddSingleton(_debug);
 
+        // Production deployments behind a proxy must apply trusted forwarded scheme, host, and prefix
+        // before authentication. Configure PathBase or the forwarded prefix exactly once, restrict accepted
+        // Host and forwarded-host values, and keep these path-only DBSC endpoints on the application origin.
+        // Do not enable permissive credentialed CORS on the refresh endpoint.
         // The app makes the source cookie its default scheme; AddDeviceBoundSession detects that and
         // redirects the default authenticate scheme to its policy scheme, so the app never has to know
         // (or wire) the derived DBSC scheme names.
@@ -95,6 +99,8 @@ public class Startup
         // Capture decoded exchanges for the live dashboard
         app.UseMiddleware<DebugCaptureMiddleware>();
 
+        // In production, trusted forwarding and the single PathBase/prefix configuration described above
+        // must run before authentication so DBSC advertises the same public paths that the handler receives.
         app.UseRouting();
         app.UseAuthentication();
 

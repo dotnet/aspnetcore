@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
@@ -28,6 +29,8 @@ public class DeviceBoundSessionInstructionTests
     private const string SessionCookieName = ".AspNetCore.Source.Dbsc.Session";
     private const string RegistrationPath = "/.well-known/dbsc/registration";
     private const string RefreshPath = "/.well-known/dbsc/refresh";
+    private const string CustomRegistrationPath = "/custom/dbsc/register";
+    private const string CustomRefreshPath = "/custom/dbsc/refresh";
     private const string RootHostOrigin = "https://example.com";
 
     [Fact]
@@ -225,35 +228,247 @@ public class DeviceBoundSessionInstructionTests
         Assert.Contains("Path=/foo\"", body);
     }
 
+    [Fact]
+    public async Task CustomPaths_AdvertiseDispatchAndScopeRefreshCookie_WithoutHandlingDefaults()
+    {
+        using var host = await CreateHostAsync(
+            registrationPath: CustomRegistrationPath,
+            refreshPath: CustomRefreshPath);
+        var client = host.GetTestServer().CreateClient();
+        var proofKey = DbscProofKey.CreateEs256();
+
+        var signIn = await client.GetAsync("/signin");
+        signIn.EnsureSuccessStatusCode();
+        var registrationHeader = Assert.Single(
+            signIn.Headers.GetValues(DeviceBoundSessionConstants.Headers.Registration));
+        Assert.Contains($"path=\"{CustomRegistrationPath}\"", registrationHeader);
+
+        var registration = await RegisterAsync(
+            client,
+            signIn,
+            proofKey,
+            registrationPath: CustomRegistrationPath);
+        var body = await registration.Content.ReadAsStringAsync();
+        Assert.Contains($"\"refresh_url\":\"{CustomRefreshPath}\"", body);
+
+        var refreshCookie = Assert.Single(registration.Headers.GetValues("Set-Cookie"),
+            value => value.StartsWith(RefreshCookieName + "=", StringComparison.Ordinal));
+        Assert.Equal("/custom/dbsc", ParseCookiePath(refreshCookie));
+        var sessionId = ParseSessionIdentifier(body);
+
+        var refresh = await SendRefreshAsync(
+            client,
+            CookiePair(refreshCookie),
+            sessionId,
+            refreshPath: CustomRefreshPath);
+        Assert.Equal(HttpStatusCode.Forbidden, refresh.StatusCode);
+        _ = ParseChallenge(refresh, DeviceBoundSessionConstants.Headers.Challenge);
+
+        var defaultRegistration = await client.PostAsync(RegistrationPath, content: null);
+        var defaultRefresh = await client.PostAsync(RefreshPath, content: null);
+        Assert.Equal(HttpStatusCode.NotFound, defaultRegistration.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, defaultRefresh.StatusCode);
+    }
+
+    [Fact]
+    public async Task CustomPaths_AdvertiseDispatchAndScopeRefreshCookie_WithPathBase()
+    {
+        const string pathBase = "/foo";
+        using var host = await CreateHostAsync(
+            pathBase: pathBase,
+            registrationPath: CustomRegistrationPath,
+            refreshPath: CustomRefreshPath);
+        var client = host.GetTestServer().CreateClient();
+        var proofKey = DbscProofKey.CreateEs256();
+
+        var signIn = await client.GetAsync(GetRequestTarget(pathBase, "/signin"));
+        signIn.EnsureSuccessStatusCode();
+        var registrationHeader = Assert.Single(
+            signIn.Headers.GetValues(DeviceBoundSessionConstants.Headers.Registration));
+        Assert.Contains("path=\"/foo/custom/dbsc/register\"", registrationHeader);
+        Assert.DoesNotContain("/foo/foo/", registrationHeader);
+
+        var registration = await RegisterAsync(
+            client,
+            signIn,
+            proofKey,
+            pathBase,
+            CustomRegistrationPath);
+        var body = await registration.Content.ReadAsStringAsync();
+        Assert.Contains("\"refresh_url\":\"/foo/custom/dbsc/refresh\"", body);
+        Assert.DoesNotContain("/foo/foo/", body);
+
+        var refreshCookie = Assert.Single(registration.Headers.GetValues("Set-Cookie"),
+            value => value.StartsWith(RefreshCookieName + "=", StringComparison.Ordinal));
+        Assert.Equal("/foo/custom/dbsc", ParseCookiePath(refreshCookie));
+        var sessionId = ParseSessionIdentifier(body);
+
+        var refresh = await SendRefreshAsync(
+            client,
+            CookiePair(refreshCookie),
+            sessionId,
+            pathBase: pathBase,
+            refreshPath: CustomRefreshPath);
+        Assert.Equal(HttpStatusCode.Forbidden, refresh.StatusCode);
+        _ = ParseChallenge(refresh, DeviceBoundSessionConstants.Headers.Challenge);
+    }
+
+    [Theory]
+    [InlineData(null, "/")]
+    [InlineData("/foo", "/foo/")]
+    public async Task RootRefreshPath_DispatchesAndScopesCookieToApplicationRoot(
+        string? pathBase,
+        string expectedCookiePath)
+    {
+        using var host = await CreateHostAsync(
+            pathBase: pathBase,
+            registrationPath: CustomRegistrationPath,
+            refreshPath: "/");
+        var client = host.GetTestServer().CreateClient();
+        var proofKey = DbscProofKey.CreateEs256();
+
+        var registration = await SignInAndRegisterAsync(
+            client,
+            proofKey,
+            pathBase ?? string.Empty,
+            CustomRegistrationPath);
+        var body = await registration.Content.ReadAsStringAsync();
+        Assert.Contains($"\"refresh_url\":\"{expectedCookiePath}\"", body);
+
+        var refreshCookie = Assert.Single(registration.Headers.GetValues("Set-Cookie"),
+            value => value.StartsWith(RefreshCookieName + "=", StringComparison.Ordinal));
+        Assert.Equal(expectedCookiePath, ParseCookiePath(refreshCookie));
+
+        var refresh = await SendRefreshAsync(
+            client,
+            CookiePair(refreshCookie),
+            ParseSessionIdentifier(body),
+            pathBase: pathBase ?? string.Empty,
+            refreshPath: "/");
+        Assert.Equal(HttpStatusCode.Forbidden, refresh.StatusCode);
+        _ = ParseChallenge(refresh, DeviceBoundSessionConstants.Headers.Challenge);
+    }
+
+    [Fact]
+    public async Task SpaceAndUnicodePaths_AreEncodedWhenAdvertisedAndDispatchFromEncodedTargets()
+    {
+        const string registrationPath = "/custom path/café/注册";
+        const string refreshPath = "/custom path/café/刷新";
+        const string encodedRegistrationPath = "/custom%20path/caf%C3%A9/%E6%B3%A8%E5%86%8C";
+        const string encodedRefreshPath = "/custom%20path/caf%C3%A9/%E5%88%B7%E6%96%B0";
+        using var host = await CreateHostAsync(
+            registrationPath: registrationPath,
+            refreshPath: refreshPath);
+        var client = host.GetTestServer().CreateClient();
+        var proofKey = DbscProofKey.CreateEs256();
+
+        var signIn = await client.GetAsync("/signin");
+        signIn.EnsureSuccessStatusCode();
+        var registrationHeader = Assert.Single(
+            signIn.Headers.GetValues(DeviceBoundSessionConstants.Headers.Registration));
+        Assert.Contains($"path=\"{encodedRegistrationPath}\"", registrationHeader);
+
+        var registration = await RegisterAsync(
+            client,
+            signIn,
+            proofKey,
+            registrationPath: registrationPath);
+        var body = await registration.Content.ReadAsStringAsync();
+        Assert.Contains($"\"refresh_url\":\"{encodedRefreshPath}\"", body);
+
+        var refreshCookie = Assert.Single(registration.Headers.GetValues("Set-Cookie"),
+            value => value.StartsWith(RefreshCookieName + "=", StringComparison.Ordinal));
+        var refresh = await SendRefreshAsync(
+            client,
+            CookiePair(refreshCookie),
+            ParseSessionIdentifier(body),
+            refreshPath: refreshPath);
+        Assert.Equal(HttpStatusCode.Forbidden, refresh.StatusCode);
+        _ = ParseChallenge(refresh, DeviceBoundSessionConstants.Headers.Challenge);
+    }
+
+    [Fact]
+    public async Task QuoteAndBackslashRegistrationPath_ProducesParseableStructuredField()
+    {
+        const string registrationPath = "/custom/register\";injected=1\\tail";
+        const string encodedRegistrationPath = "/custom/register%22;injected=1%5Ctail";
+        using var host = await CreateHostAsync(
+            registrationPath: registrationPath,
+            refreshPath: CustomRefreshPath);
+        var client = host.GetTestServer().CreateClient();
+
+        var signIn = await client.GetAsync("/signin");
+        signIn.EnsureSuccessStatusCode();
+        var registrationHeader = Assert.Single(
+            signIn.Headers.GetValues(DeviceBoundSessionConstants.Headers.Registration));
+        Assert.Single(Regex.Matches(registrationHeader, ";path="));
+        Assert.Single(Regex.Matches(registrationHeader, ";challenge="));
+        Assert.Matches(
+            $"^{Regex.Escape(DeviceBoundSessionConstants.AdvertisedAlgorithms)};path=\"{Regex.Escape(encodedRegistrationPath)}\";challenge=\"[A-Za-z0-9_-]+\"$",
+            registrationHeader);
+        Assert.DoesNotContain("path=\"/custom/register\";injected", registrationHeader);
+        _ = ParseChallenge(signIn, DeviceBoundSessionConstants.Headers.Registration);
+
+        var registration = await RegisterAsync(
+            client,
+            signIn,
+            DbscProofKey.CreateEs256(),
+            registrationPath: registrationPath);
+        registration.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task EndpointMatching_IsCaseInsensitive_ButTrailingSlashIsSignificant()
+    {
+        using var host = await CreateHostAsync(
+            registrationPath: CustomRegistrationPath,
+            refreshPath: CustomRefreshPath);
+        var client = host.GetTestServer().CreateClient();
+
+        var caseVariant = await client.PostAsync("/CUSTOM/DBSC/REGISTER", content: null);
+        var trailingSlashVariant = await client.PostAsync(CustomRegistrationPath + "/", content: null);
+
+        Assert.Equal(HttpStatusCode.BadRequest, caseVariant.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, trailingSlashVariant.StatusCode);
+    }
+
     private static string Serialize(SessionInstruction instruction)
         => JsonSerializer.Serialize(instruction, DeviceBoundSessionJsonContext.Default.SessionInstruction);
 
-    private static async Task<string> SignInRegisterAndReadBodyAsync(HttpClient client)
+    private static async Task<string> SignInRegisterAndReadBodyAsync(
+        HttpClient client,
+        string pathBase = "",
+        string registrationPath = RegistrationPath)
     {
-        var response = await SignInAndRegisterAsync(client, DbscProofKey.CreateEs256());
+        var response = await SignInAndRegisterAsync(client, DbscProofKey.CreateEs256(), pathBase, registrationPath);
         return await response.Content.ReadAsStringAsync();
     }
 
-    private static async Task<HttpResponseMessage> SignInAndRegisterAsync(HttpClient client, DbscProofKey proofKey)
+    private static async Task<HttpResponseMessage> SignInAndRegisterAsync(
+        HttpClient client,
+        DbscProofKey proofKey,
+        string pathBase = "",
+        string registrationPath = RegistrationPath)
     {
-        var signIn = await client.GetAsync("/signin");
+        var signIn = await client.GetAsync(GetRequestTarget(pathBase, "/signin"));
         signIn.EnsureSuccessStatusCode();
 
-        return await RegisterAsync(client, signIn, proofKey);
+        return await RegisterAsync(client, signIn, proofKey, pathBase, registrationPath);
     }
 
     private static async Task<HttpResponseMessage> RegisterAsync(
         HttpClient client,
         HttpResponseMessage signIn,
         DbscProofKey proofKey,
-        string pathBase = "")
+        string pathBase = "",
+        string registrationPath = RegistrationPath)
     {
         var sourceCookie = Assert.Single(signIn.Headers.GetValues("Set-Cookie"),
             v => v.StartsWith(SourceCookieName + "=", StringComparison.Ordinal));
         var challenge = ParseChallenge(signIn, DeviceBoundSessionConstants.Headers.Registration);
 
         var proof = proofKey.CreateProof(challenge);
-        var register = new HttpRequestMessage(HttpMethod.Post, pathBase + RegistrationPath);
+        var register = new HttpRequestMessage(HttpMethod.Post, GetRequestTarget(pathBase, registrationPath));
         register.Headers.TryAddWithoutValidation("Cookie", CookiePair(sourceCookie));
         register.Headers.TryAddWithoutValidation(DeviceBoundSessionConstants.Headers.Proof, proof);
         var response = await client.SendAsync(register);
@@ -265,9 +480,11 @@ public class DeviceBoundSessionInstructionTests
         HttpClient client,
         string refreshCookie,
         string sessionId,
-        string? proof = null)
+        string? proof = null,
+        string pathBase = "",
+        string refreshPath = RefreshPath)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, RefreshPath);
+        var request = new HttpRequestMessage(HttpMethod.Post, GetRequestTarget(pathBase, refreshPath));
         request.Headers.TryAddWithoutValidation("Cookie", refreshCookie);
         request.Headers.TryAddWithoutValidation(DeviceBoundSessionConstants.Headers.SessionId, sessionId);
         if (proof is not null)
@@ -278,7 +495,11 @@ public class DeviceBoundSessionInstructionTests
         return await client.SendAsync(request);
     }
 
-    private static async Task<IHost> CreateHostAsync(Action<DeviceBoundSessionOptions>? configureDbsc = null, string? pathBase = null)
+    private static async Task<IHost> CreateHostAsync(
+        Action<DeviceBoundSessionOptions>? configureDbsc = null,
+        string? pathBase = null,
+        string registrationPath = RegistrationPath,
+        string refreshPath = RefreshPath)
     {
         var host = new HostBuilder()
             .ConfigureWebHost(webBuilder =>
@@ -291,14 +512,12 @@ public class DeviceBoundSessionInstructionTests
                         services.AddDataProtection();
                         var builder = services.AddAuthentication(SourceScheme)
                             .AddCookie(SourceScheme, o => o.Cookie.Name = SourceCookieName);
-                        if (configureDbsc is null)
+                        builder.AddDeviceBoundSession(SourceScheme, options =>
                         {
-                            builder.AddDeviceBoundSession(SourceScheme);
-                        }
-                        else
-                        {
-                            builder.AddDeviceBoundSession(SourceScheme, configureDbsc);
-                        }
+                            options.RegistrationPath = new PathString(registrationPath);
+                            options.RefreshPath = new PathString(refreshPath);
+                            configureDbsc?.Invoke(options);
+                        });
                     })
                     .Configure(app =>
                     {
@@ -326,11 +545,17 @@ public class DeviceBoundSessionInstructionTests
         return host;
     }
 
+    private static string GetRequestTarget(string pathBase, string path)
+        => new PathString(pathBase).Add(new PathString(path)).ToUriComponent();
+
     private static string CookiePair(string setCookie)
     {
         var semicolon = setCookie.IndexOf(';');
         return semicolon < 0 ? setCookie : setCookie[..semicolon];
     }
+
+    private static string ParseCookiePath(string setCookie)
+        => SetCookieHeaderValue.Parse(setCookie).Path.Value!;
 
     private static string ParseChallenge(HttpResponseMessage response, string headerName)
     {

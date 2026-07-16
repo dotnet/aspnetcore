@@ -29,6 +29,7 @@ Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOption
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions.SessionScheme.set -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions.ShortLivedCookieExpiration.get -> System.TimeSpan
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions.ShortLivedCookieExpiration.set -> void
+override Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions.Validate(string! scheme) -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionScopeRule
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionScopeRule.DeviceBoundSessionScopeRule() -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionScopeRule.Domain.get -> string!

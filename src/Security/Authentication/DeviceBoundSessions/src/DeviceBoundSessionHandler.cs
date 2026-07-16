@@ -303,7 +303,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         return new SessionInstruction
         {
             SessionIdentifier = sessionId,
-            RefreshUrl = Request.PathBase.Add(Options.RefreshPath).Value,
+            RefreshUrl = Request.PathBase.Add(Options.RefreshPath).ToUriComponent(),
             Scope = new SessionScope
             {
                 Origin = origin,
