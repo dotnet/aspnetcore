@@ -17,7 +17,7 @@ internal static class AttributeAuthorizeDataCache
         }
     }
 
-    private static readonly ConcurrentDictionary<Type, (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData)> _cache = new();
+    private static readonly ConcurrentDictionary<Type, (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData, object[]? Metadata)> _cache = new();
 
     private static void ClearCache() => _cache.Clear();
 
@@ -27,7 +27,10 @@ internal static class AttributeAuthorizeDataCache
     public static IAuthorizationRequirementData[]? GetAuthorizationRequirementDataForType(Type type)
         => GetAuthorizationDataForType(type).RequirementData;
 
-    private static (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData) GetAuthorizationDataForType(Type type)
+    public static object[]? GetAuthorizationMetadataForType(Type type)
+        => GetAuthorizationDataForType(type).Metadata;
+
+    private static (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData, object[]? Metadata) GetAuthorizationDataForType(Type type)
     {
         if (!_cache.TryGetValue(type, out var result))
         {
@@ -38,9 +41,8 @@ internal static class AttributeAuthorizeDataCache
         return result;
     }
 
-    private static (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData) ComputeAuthorizationDataForType(Type type)
+    private static (IAuthorizeData[]? AuthorizeData, IAuthorizationRequirementData[]? RequirementData, object[]? Metadata) ComputeAuthorizationDataForType(Type type)
     {
-        // Allow Anonymous skips all authorization
         var allAttributes = type.GetCustomAttributes(inherit: true);
         List<IAuthorizeData>? authorizeDatas = null;
         List<IAuthorizationRequirementData>? requirementDatas = null;
@@ -48,7 +50,7 @@ internal static class AttributeAuthorizeDataCache
         {
             if (allAttributes[i] is IAllowAnonymous)
             {
-                return (null, null);
+                return (null, null, null);
             }
 
             if (allAttributes[i] is IAuthorizeData authorizeData)
@@ -64,6 +66,6 @@ internal static class AttributeAuthorizeDataCache
             }
         }
 
-        return (authorizeDatas?.ToArray(), requirementDatas?.ToArray());
+        return (authorizeDatas?.ToArray(), requirementDatas?.ToArray(), allAttributes);
     }
 }
