@@ -400,7 +400,12 @@ public class BufferedReadStream : Stream
             }
             foundCR = b == CR;
 
-            if (writeCount > lengthLimit)
+            // builder.Length holds the bytes accumulated by previous invocations of this
+            // method (one per buffer refill), while writeCount holds the bytes consumed from
+            // the current buffer that have not been flushed yet. Comparing the cumulative
+            // total against the limit ensures the limit is enforced even when a single line
+            // spans multiple buffers.
+            if (builder.Length + writeCount > lengthLimit)
             {
                 throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
             }
