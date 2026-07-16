@@ -47,19 +47,23 @@ function addRequiredField(engine: ValidationEngine, form: HTMLFormElement, name:
 }
 
 describe('ValidationEngine.validateForm', () => {
-  test('validates fields, skips hidden fields, focuses the first invalid, and returns the error map', () => {
+  test('validates fields, skips hidden and disabled fields, focuses the first invalid, and returns the error map', () => {
     const engine = makeEngine();
     const form = document.createElement('form');
     document.body.appendChild(form);
 
     const first = addRequiredField(engine, form, 'First'); // visible, empty -> invalid
     const hidden = addRequiredField(engine, form, 'Hidden'); // will be hidden -> skipped
+    const disabled = addRequiredField(engine, form, 'Disabled'); // will be disabled -> skipped
     addRequiredField(engine, form, 'Last'); // visible, empty -> invalid
 
-    // Seed a stale error on the field before hiding it, so the skip path is proven to clear it.
+    // Seed stale errors on the skipped fields, so the skip path is proven to clear them.
     engine.validateElement(hidden);
+    engine.validateElement(disabled);
     expect(hidden.validationMessage).toBe('Hidden is required.');
+    expect(disabled.validationMessage).toBe('Disabled is required.');
     hidden.hidden = true;
+    disabled.disabled = true;
 
     const errors = engine.validateForm(form);
 
@@ -68,9 +72,11 @@ describe('ValidationEngine.validateForm', () => {
     expect(errors.get('First')).toBe('First is required.');
     expect(errors.get('Last')).toBe('Last is required.');
 
-    // The skipped hidden field was marked valid: its prior error is cleared.
+    // The skipped hidden and disabled fields were marked valid: their prior errors are cleared.
     expect(hidden.validationMessage).toBe('');
     expect(engine.getElementState(hidden)?.currentError).toBeUndefined();
+    expect(disabled.validationMessage).toBe('');
+    expect(engine.getElementState(disabled)?.currentError).toBeUndefined();
 
     // The first invalid field receives focus.
     expect(document.activeElement).toBe(first);
@@ -125,5 +131,83 @@ describe('ValidationEngine validation summary', () => {
     expect(summary.classList.contains('validation-summary-valid')).toBe(true);
     expect(summary.classList.contains('validation-summary-errors')).toBe(false);
     expect(summary.hidden).toBe(true);
+  });
+});
+
+describe('ValidationEngine field ARIA state', () => {
+  // Adds a message element linked to the field so aria-describedby can point at it.
+  function addMessageElement(form: HTMLFormElement, fieldName: string): HTMLElement {
+    const message = document.createElement('div');
+    message.setAttribute('data-valmsg-for', fieldName);
+    form.appendChild(message);
+    return message;
+  }
+
+  test('sets aria-invalid and aria-describedby on error and removes them when valid, preserving foreign tokens', () => {
+    const engine = makeEngine();
+    const form = document.createElement('form');
+    document.body.appendChild(form);
+
+    const input = addRequiredField(engine, form, 'Name');
+    // A developer-provided token that must survive the validation lifecycle.
+    input.setAttribute('aria-describedby', 'help-text');
+    const message = addMessageElement(form, 'Name');
+
+    // Invalid: aria-invalid is set and our message id is appended to aria-describedby.
+    expect(engine.validateElement(input)).toBe(false);
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(message.id).not.toBe('');
+    expect(input.getAttribute('aria-describedby')).toBe(`help-text ${message.id}`);
+
+    // Valid: aria-invalid is removed and only our token is stripped, keeping the developer's.
+    input.value = 'Ada';
+    expect(engine.validateElement(input)).toBe(true);
+    expect(input.hasAttribute('aria-invalid')).toBe(false);
+    expect(input.getAttribute('aria-describedby')).toBe('help-text');
+  });
+});
+
+describe('ValidationEngine radio group state fan-out', () => {
+  // Interactive Blazor styles every radio in a group consistently. The engine tracks only the first
+  // radio, so its state (CSS classes + aria) must fan out to every radio in the group.
+  test('applies invalid/valid classes and aria-invalid to every radio in the group', () => {
+    const engine = makeEngine();
+    const form = document.createElement('form');
+    const radios = ['Red', 'Green', 'Blue'].map(value => {
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'Color';
+      radio.value = value;
+      form.appendChild(radio);
+      return radio;
+    });
+    document.body.appendChild(form);
+
+    const [first, , third] = radios;
+    const state: ElementState = {
+      rules: [{ ruleName: 'required', errorMessage: 'Pick a color.', params: {} }],
+      form,
+      triggerEvents: 'default',
+      listenerController: new AbortController(),
+      hasBeenInvalid: false,
+    };
+    engine.registerElement(first, form, state);
+
+    // Invalid (nothing selected): every radio gets the invalid class and aria-invalid.
+    expect(engine.validateElement(first)).toBe(false);
+    for (const radio of radios) {
+      expect(radio.classList.contains('invalid')).toBe(true);
+      expect(radio.classList.contains('valid')).toBe(false);
+      expect(radio.getAttribute('aria-invalid')).toBe('true');
+    }
+
+    // Selecting any radio makes the group valid: every radio flips to the valid class, aria cleared.
+    third.checked = true;
+    expect(engine.validateElement(first)).toBe(true);
+    for (const radio of radios) {
+      expect(radio.classList.contains('valid')).toBe(true);
+      expect(radio.classList.contains('invalid')).toBe(false);
+      expect(radio.hasAttribute('aria-invalid')).toBe(false);
+    }
   });
 });
