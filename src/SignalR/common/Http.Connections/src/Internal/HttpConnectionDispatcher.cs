@@ -82,7 +82,7 @@ internal sealed partial class HttpConnectionDispatcher
             if (HttpMethods.IsPost(context.Request.Method))
             {
                 // POST /{path}
-                await ProcessSend(context, options);
+                await ProcessSend(context);
             }
             else if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsConnect(context.Request.Method))
             {
@@ -92,7 +92,7 @@ internal sealed partial class HttpConnectionDispatcher
             else if (HttpMethods.IsDelete(context.Request.Method))
             {
                 // DELETE /{path}
-                await ProcessDeleteAsync(context, options);
+                await ProcessDeleteAsync(context);
             }
             else
             {
@@ -687,7 +687,7 @@ internal sealed partial class HttpConnectionDispatcher
 
     private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
 
-    private async Task ProcessSend(HttpContext context, HttpConnectionDispatcherOptions options)
+    private async Task ProcessSend(HttpContext context)
     {
         var connection = await GetConnectionAsync(context);
         if (connection == null)
@@ -706,7 +706,7 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        if (!options.EnableAuthenticationRefresh && await RejectIfUserChangedAsync(connection, context))
+        if (await RejectIfUserChangedAsync(connection, context))
         {
             return;
         }
@@ -785,7 +785,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task ProcessDeleteAsync(HttpContext context, HttpConnectionDispatcherOptions options)
+    private async Task ProcessDeleteAsync(HttpContext context)
     {
         var connection = await GetConnectionAsync(context);
         if (connection == null)
@@ -804,7 +804,7 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        if (!options.EnableAuthenticationRefresh && await RejectIfUserChangedAsync(connection, context))
+        if (await RejectIfUserChangedAsync(connection, context))
         {
             return;
         }
