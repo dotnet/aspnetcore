@@ -115,6 +115,22 @@ namespace Microsoft.Extensions.Validation.Generated
                 );
                 return true;
             }
+            if (type == typeof(global::ComplexArrayClass))
+            {
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
+                    type: typeof(global::ComplexArrayClass),
+                    members: [
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexArrayClass),
+                            propertyType: typeof(global::NestedClass[]),
+                            name: "NestedArray",
+                            displayNameInfo: null
+                        ),
+                    ],
+                    displayNameInfo: null
+                );
+                return true;
+            }
 
             return false;
         }

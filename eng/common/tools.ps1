@@ -432,11 +432,31 @@ function InitializeVisualStudioMSBuild([object]$vsRequirements = $null) {
   $msbuildVersionDir = if ([int]$vsMajorVersion -lt 16) { "$vsMajorVersion.0" } else { "Current" }
 
   $local:BinFolder = Join-Path $vsInstallDir "MSBuild\$msbuildVersionDir\Bin"
-  $local:Prefer64bit = if (Get-Member -InputObject $vsRequirements -Name 'Prefer64bit') { $vsRequirements.Prefer64bit } else { $false }
-  if ($local:Prefer64bit -and (Test-Path(Join-Path $local:BinFolder "amd64"))) {
-    $global:_MSBuildExe = Join-Path $local:BinFolder "amd64\msbuild.exe"
-  } else {
-    $global:_MSBuildExe = Join-Path $local:BinFolder "msbuild.exe"
+
+  # Use the MSBuild matching the host's process architecture (e.g. amd64 or arm64),
+  # falling back to the 32-bit MSBuild in the root Bin folder when no matching subfolder exists.
+
+  # Determine the architecture of the current process, accounting for a 32-bit process
+  # running on a 64-bit OS (PROCESSOR_ARCHITEW6432 holds the real machine architecture).
+  $local:ProcessArchitecture = $env:PROCESSOR_ARCHITECTURE
+  if (($local:ProcessArchitecture -eq 'x86') -and ($env:PROCESSOR_ARCHITEW6432)) {
+    $local:ProcessArchitecture = $env:PROCESSOR_ARCHITEW6432
+  }
+
+  # Map the architecture to the corresponding MSBuild subfolder. The 32-bit MSBuild lives in the
+  # root Bin folder, so x86 maps to an empty subfolder.
+  $local:MSBuildArchSubFolder = switch ($local:ProcessArchitecture) {
+    'AMD64' { 'amd64' }
+    'ARM64' { 'arm64' }
+    default { '' }
+  }
+
+  $global:_MSBuildExe = Join-Path $local:BinFolder "msbuild.exe"
+  if ($local:MSBuildArchSubFolder) {
+    $local:ArchMSBuildExe = Join-Path $local:BinFolder (Join-Path $local:MSBuildArchSubFolder "msbuild.exe")
+    if (Test-Path $local:ArchMSBuildExe) {
+      $global:_MSBuildExe = $local:ArchMSBuildExe
+    }
   }
 
   return $global:_MSBuildExe
@@ -531,6 +551,16 @@ function LocateVisualStudio([object]$vsRequirements = $null){
 }
 
 function InitializeBuildTool() {
+  # Allow a caller (e.g. a bootstrap script running out-of-proc) to inject the build tool via
+  # environment variables instead of the in-proc $global:_BuildTool variable. Only Path and
+  # Command are consumed by the MSBuild function below, so those are all that's needed.
+  if ($env:_BuildToolPath) {
+    return $global:_BuildTool = @{
+      Path    = $env:_BuildToolPath
+      Command = $env:_BuildToolCommand
+    }
+  }
+
   if (Test-Path variable:global:_BuildTool) {
     # If the requested msbuild parameters do not match, clear the cached variables.
     if($global:_BuildTool.Contains('ExcludePrereleaseVS') -and $global:_BuildTool.ExcludePrereleaseVS -ne $excludePrereleaseVS) {
@@ -558,7 +588,7 @@ function InitializeBuildTool() {
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
 
-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net' }
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild' }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild
@@ -567,7 +597,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
 
-    $buildTool = @{ Path = $msbuildPath; Command = ""; Tool = "vs"; Framework = "netframework"; ExcludePrereleaseVS = $excludePrereleaseVS }
+    $buildTool = @{ Path = $msbuildPath; Command = ""; ExcludePrereleaseVS = $excludePrereleaseVS }
   } else {
     Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Unexpected value of -msbuildEngine: '$msbuildEngine'."
     ExitWithExitCode 1
@@ -706,7 +736,7 @@ function InitializeToolset() {
 }
 
 function ExitWithExitCode([int] $exitCode) {
-  if ($ci -and $prepareMachine) {
+  if ($prepareMachine) {
     Stop-Processes
   }
   exit $exitCode
@@ -739,13 +769,6 @@ function MSBuild() {
   if ($ci) {
     if (!$binaryLog -and !$excludeCIBinarylog) {
       Write-PipelineTelemetryError -Category 'Build' -Message 'Binary log must be enabled in CI build, or explicitly opted-out from with the -excludeCIBinarylog switch.'
-      ExitWithExitCode 1
-    }
-
-    # Node reuse must be disabled in CI builds unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
-    # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
-    if ($nodeReuse -and $env:MSBUILD_NODEREUSE_ENABLED -ne "1") {
-      Write-PipelineTelemetryError -Category 'Build' -Message 'Node reuse must be disabled in CI build.'
       ExitWithExitCode 1
     }
   }
@@ -788,11 +811,6 @@ function MSBuild() {
     # We should not Write-PipelineTaskError here because that message shows up in the build summary
     # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
     Write-Host "Build failed with exit code $exitCode. Check errors above." -ForegroundColor Red
-
-    $buildLog = GetMSBuildBinaryLogCommandLineArgument $args
-    if ($null -ne $buildLog) {
-      Write-Host "See log: $buildLog" -ForegroundColor DarkGray
-    }
 
     # When running on Azure Pipelines, override the returned exit code to avoid double logging.
     # Skip this when the build is a child of the VMR build.
@@ -839,23 +857,6 @@ function DotNet() {
       ExitWithExitCode $exitCode
     }
   }
-}
-
-function GetMSBuildBinaryLogCommandLineArgument($arguments) {
-  foreach ($argument in $arguments) {
-    if ($argument -ne $null) {
-      $arg = $argument.Trim()
-      if ($arg.StartsWith('/bl:', "OrdinalIgnoreCase")) {
-        return $arg.Substring('/bl:'.Length)
-      }
-
-      if ($arg.StartsWith('/binaryLogger:', 'OrdinalIgnoreCase')) {
-        return $arg.Substring('/binaryLogger:'.Length)
-      }
-    }
-  }
-
-  return $null
 }
 
 function GetExecutableFileName($baseName) {
