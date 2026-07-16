@@ -32,8 +32,7 @@ public class BufferedReadStreamTests
     public async Task ReadLineAsync_LineSpanningMultipleBuffersExceedingLimit_Throws()
     {
         // The line is larger than both the buffer size and the length limit, so it spans
-        // several internal buffers before the limit is reached. This regressed when the
-        // limit check moved to a per-buffer counter instead of the cumulative length.
+        // several internal buffers before the limit is reached.
         var stream = MakeStream(new string('a', 100) + "\r\n", bufferSize: 16);
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(
