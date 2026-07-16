@@ -18,7 +18,10 @@ usage()
     echo "--skipsigcheck - optional, will skip package signature checks (allowing untrusted packages)."
     echo "--skipemulation - optional, will skip qemu and debootstrap requirement when building environment for debian based systems."
     echo "--use-mirror - optional, use mirror URL to fetch resources, when available."
-    echo "--jobs N - optional, restrict to N jobs."
+    echo "--ubuntu-repo <url> - optional, override the Ubuntu apt repository base URL."
+    echo "--debian-repo <url> - optional, override the Debian apt repository base URL."
+    echo "--alpine-repo <url> - optional, override the Alpine Linux repository base URL."
+    echo "--jobs N (or --use-jobs N) - optional, restrict to N jobs."
     exit 1
 }
 
@@ -144,6 +147,9 @@ __KeyringFile="/usr/share/keyrings/ubuntu-archive-keyring.gpg"
 __SkipSigCheck=0
 __SkipEmulation=0
 __UseMirror=0
+__UbuntuRepoOverride=
+__DebianRepoOverride=
+__AlpineRepoOverride=
 
 __UnprocessedBuildArgs=
 while :; do
@@ -397,6 +403,31 @@ while :; do
         --use-mirror)
             __UseMirror=1
             ;;
+        --ubuntu-repo|-ubuntu-repo)
+            shift
+            if [[ "$#" -le 0 ]]; then
+                echo "ERROR: --ubuntu-repo requires a URL argument."
+                usage
+            fi
+            __UbuntuRepoOverride="$1"
+            ;;
+        --debian-repo|-debian-repo)
+            shift
+            if [[ "$#" -le 0 ]]; then
+                echo "ERROR: --debian-repo requires a URL argument."
+                usage
+            fi
+            __DebianRepoOverride="$1"
+            ;;
+        --alpine-repo|-alpine-repo)
+            shift
+            if [[ "$#" -le 0 ]]; then
+                echo "ERROR: --alpine-repo requires a URL argument."
+                usage
+            fi
+            __AlpineRepoOverride="$1"
+            ;;
+        # Removed duplicate/invalid option handling block (was breaking case statement parsing).
         --use-jobs)
             shift
             MAXJOBS=$1
@@ -446,6 +477,12 @@ if [[ -z "$__UbuntuRepo" ]]; then
     __UbuntuRepo="https://ports.ubuntu.com/"
 fi
 
+if [[ -n "$__UbuntuRepoOverride" && "$__KeyringFile" == *ubuntu* ]]; then
+    __UbuntuRepo="$__UbuntuRepoOverride"
+elif [[ -n "$__DebianRepoOverride" && "$__KeyringFile" == *debian* ]]; then
+    __UbuntuRepo="$__DebianRepoOverride"
+fi
+
 if [[ -n "$__LLVM_MajorVersion" ]]; then
     __UbuntuPackages+=" libclang-common-${__LLVM_MajorVersion}${__LLVM_MinorVersion:+.$__LLVM_MinorVersion}-dev"
 fi
@@ -486,6 +523,7 @@ if [[ "$__CodeName" == "alpine" ]]; then
     __ApkToolsDir="$(mktemp -d)"
     __ApkKeysDir="$(mktemp -d)"
     arch="$(uname -m)"
+    __AlpineRepo="${__AlpineRepoOverride:-https://dl-cdn.alpinelinux.org/alpine}"
 
     ensureDownloadTool
 
@@ -530,15 +568,15 @@ if [[ "$__CodeName" == "alpine" ]]; then
     # initialize DB
     # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
-        -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
-        -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
+        -X "$__AlpineRepo/$version/main" \
+        -X "$__AlpineRepo/$version/community" \
         -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" --initdb add
 
     if [[ "$__AlpineLlvmLibsLookup" == 1 ]]; then
         # shellcheck disable=SC2086
         __AlpinePackages+=" $("$__ApkToolsDir/apk.static" \
-            -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
-            -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
+            -X "$__AlpineRepo/$version/main" \
+            -X "$__AlpineRepo/$version/community" \
             -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" \
             search 'llvm*-libs' | grep -E '^llvm' | sort | tail -1 | sed 's/-[^-]*//2g')"
     fi
@@ -546,8 +584,8 @@ if [[ "$__CodeName" == "alpine" ]]; then
     # install all packages in one go
     # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
-        -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
-        -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
+        -X "$__AlpineRepo/$version/main" \
+        -X "$__AlpineRepo/$version/community" \
         -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" $__NoEmulationArg \
         add $__AlpinePackages
 
