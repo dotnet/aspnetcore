@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
+namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// Renders the per-form client-side validation carrier when client-side validation is activated

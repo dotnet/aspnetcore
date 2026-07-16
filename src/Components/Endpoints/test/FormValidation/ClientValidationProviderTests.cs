@@ -148,9 +148,9 @@ public class ClientValidationProviderTests
     }
 
     [Fact]
-    public void CustomAdapterAttribute_ContributesItsRules()
+    public void CustomRuleProviderAttribute_ContributesItsRules()
     {
-        var rule = SingleRule(GetData<CustomAdapterModel>(nameof(CustomAdapterModel.Value))!, nameof(CustomAdapterModel.Value));
+        var rule = SingleRule(GetData<CustomRuleProviderModel>(nameof(CustomRuleProviderModel.Value))!, nameof(CustomRuleProviderModel.Value));
 
         Assert.Equal("custom", rule.Name);
         Assert.Equal("custom message", rule.Message);
@@ -288,15 +288,34 @@ public class ClientValidationProviderTests
         Assert.Equal(new[] { "OrderName", "ShippingAddress.Street" }, clientPaths);
     }
 
+    [Fact]
+    public void GlobalDisableClientValidation_EmitsNoCarrier()
+    {
+        var model = new TwoFieldModel();
+        var editContext = new EditContext(model);
+        var fields = new Dictionary<FieldIdentifier, string>
+        {
+            [new FieldIdentifier(model, nameof(TwoFieldModel.First))] = "First",
+        };
+
+        // Sanity: with client validation enabled, the provider produces a carrier fragment.
+        Assert.NotNull(CreateProvider().RenderClientValidationRules(editContext, fields));
+
+        // With the global opt-out (RazorComponentsServiceOptions.DisableClientValidation), the
+        // provider emits nothing so the JS engine never activates for any form.
+        Assert.Null(CreateProvider(disableClientValidation: true).RenderClientValidationRules(editContext, fields));
+    }
+
     // ---- Helpers ----
 
     private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
 
-    private static DataAnnotationsClientValidationProvider CreateProvider(ValidationOptions? options = null)
+    private static DataAnnotationsClientValidationProvider CreateProvider(ValidationOptions? options = null, bool disableClientValidation = false)
     {
         var opts = Options.Create(options ?? new ValidationOptions());
         var cache = new ClientValidationCache(opts);
-        return new DataAnnotationsClientValidationProvider(cache, opts);
+        var razorOptions = Options.Create(new RazorComponentsServiceOptions { DisableClientValidation = disableClientValidation });
+        return new DataAnnotationsClientValidationProvider(cache, opts, razorOptions);
     }
 
     private static FormData? GetData<TModel>(params string[] fieldNames)
@@ -482,13 +501,13 @@ public class ClientValidationProviderTests
         public string Field { get; set; } = "";
     }
 
-    private sealed class CustomAdapterModel
+    private sealed class CustomRuleProviderModel
     {
-        [CustomAdapter(ErrorMessage = "custom message")]
+        [CustomRuleProvider(ErrorMessage = "custom message")]
         public string Value { get; set; } = "";
     }
 
-    private sealed class CustomAdapterAttribute : ValidationAttribute, IClientValidationAdapter
+    private sealed class CustomRuleProviderAttribute : ValidationAttribute, IClientValidationRuleProvider
     {
         public IEnumerable<ClientValidationRule> GetClientValidationRules()
         {

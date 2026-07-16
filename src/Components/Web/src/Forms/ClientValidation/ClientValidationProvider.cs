@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
+namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// Provides client-side validation metadata for a form's model.

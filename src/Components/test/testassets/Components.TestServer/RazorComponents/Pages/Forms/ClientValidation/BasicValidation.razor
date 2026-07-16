@@ -13,7 +13,7 @@
 </style>
 
 <EditForm Model="Form" FormName="basic-validation" method="post">
-    <DataAnnotationsValidator EnableClientValidation="@(!DisableClientValidation)" />
+    <DataAnnotationsValidator DisableClientValidation="@DisableClientValidation" />
     <ValidationSummary />
 
     <div>

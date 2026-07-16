@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
+namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// Per-form registry of the inputs that rendered under an <see cref="EditContext"/> in static

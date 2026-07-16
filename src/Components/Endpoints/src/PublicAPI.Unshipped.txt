@@ -3,6 +3,8 @@ Microsoft.AspNetCore.Components.Endpoints.BasePath
 Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewSizeLimit.get -> long
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewSizeLimit.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.DisableClientValidation.get -> bool
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.DisableClientValidation.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewHybridCache.get -> Microsoft.Extensions.Caching.Hybrid.HybridCache?
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewHybridCache.set -> void
 Microsoft.AspNetCore.Components.CacheView
@@ -86,7 +88,7 @@ Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.set ->
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentVariables.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.Components.Forms.ClientValidationRule
 Microsoft.AspNetCore.Components.Forms.ClientValidationRule.Name.get -> string!
-Microsoft.AspNetCore.Components.Forms.ClientValidationRule.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Microsoft.AspNetCore.Components.Forms.ClientValidationRule.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
 Microsoft.AspNetCore.Components.Forms.ClientValidationRule.ClientValidationRule(string! name, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? parameters = null) -> void
-Microsoft.AspNetCore.Components.Forms.IClientValidationAdapter
-Microsoft.AspNetCore.Components.Forms.IClientValidationAdapter.GetClientValidationRules() -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Forms.ClientValidationRule!>!
+Microsoft.AspNetCore.Components.Forms.IClientValidationRuleProvider
+Microsoft.AspNetCore.Components.Forms.IClientValidationRuleProvider.GetClientValidationRules() -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Forms.ClientValidationRule!>!

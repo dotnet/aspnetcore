@@ -16,12 +16,12 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets whether client-side validation rules are emitted to the browser for this form.
-    /// When <see langword="true"/> (the default), the framework includes the validation rules for
+    /// Gets or sets whether client-side validation rules are suppressed for this form.
+    /// When <see langword="false"/> (the default), the framework includes the validation rules for
     /// the form's model in the rendered HTML so user errors can be reported without a round trip
-    /// to the server. When <see langword="false"/>, only server-side validation runs.
+    /// to the server. When <see langword="true"/>, only server-side validation runs.
     /// </summary>
-    [Parameter] public bool EnableClientValidation { get; set; } = true;
+    [Parameter] public bool DisableClientValidation { get; set; }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -36,7 +36,7 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
         _subscriptions = CurrentEditContext.EnableDataAnnotationsValidation(ServiceProvider);
         _originalEditContext = CurrentEditContext;
 
-        if (EnableClientValidation)
+        if (!DisableClientValidation)
         {
             CurrentEditContext.Properties[typeof(DataAnnotationsValidator)] = true;
         }

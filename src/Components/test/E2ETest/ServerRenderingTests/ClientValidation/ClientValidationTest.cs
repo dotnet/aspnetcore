@@ -272,7 +272,7 @@ public class ClientValidationTest : ClientValidationTestBase
     }
 
     [Fact]
-    public void EnableClientValidationFalse_EmitsNoCarrier()
+    public void DisableClientValidationTrue_EmitsNoCarrier()
     {
         // The page is reachable but emits no carrier: the JS engine never activates.
         NavigateToClientValidationPage(

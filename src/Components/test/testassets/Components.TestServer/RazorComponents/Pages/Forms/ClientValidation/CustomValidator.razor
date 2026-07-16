@@ -53,9 +53,9 @@
     }
 
     // A custom ValidationAttribute that also contributes a client-side rule by implementing
-    // IClientValidationAdapter. The framework emits its rule into the carrier payload; the
+    // IClientValidationRuleProvider. The framework emits its rule into the carrier payload; the
     // matching JS validator is registered above via Blazor.formValidation.addValidator.
-    private sealed class StartsWithAttribute : ValidationAttribute, IClientValidationAdapter
+    private sealed class StartsWithAttribute : ValidationAttribute, IClientValidationRuleProvider
     {
         private readonly string _prefix;
 

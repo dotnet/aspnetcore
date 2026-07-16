@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// for forms rendered server-side. Rule names must match a validator registered on the JS side via
 /// <c>Blazor.formValidation.addValidator(name, ...)</c>.
 /// </remarks>
-public interface IClientValidationAdapter
+public interface IClientValidationRuleProvider
 {
     /// <summary>
     /// Produces the client-side validation rules for this attribute.

@@ -2,8 +2,8 @@
 Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.AddAsyncValidator(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task!>! validator) -> void
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> System.IDisposable!
-Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.EnableClientValidation.get -> bool
-Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.EnableClientValidation.set -> void
+Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.DisableClientValidation.get -> bool
+Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.DisableClientValidation.set -> void
 Microsoft.AspNetCore.Components.Forms.EditContext.ValidateAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Components.Forms.EditContext.RegisterAsyncFieldValidator(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task!>! validator) -> void
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool

@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
@@ -16,17 +15,27 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
 {
     private readonly ClientValidationCache _clientValidationCache;
     private readonly IValidationLocalizer? _validationLocalizer;
+    private readonly bool _clientValidationDisabled;
 
     [UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "Preserves ValidationOptions's parameterless constructor used by Microsoft.Extensions.Options to materialize IOptions<ValidationOptions>.")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ValidationOptions))]
-    public DataAnnotationsClientValidationProvider(ClientValidationCache clientValidationCache, IOptions<ValidationOptions> validationOptions)
+    public DataAnnotationsClientValidationProvider(
+        ClientValidationCache clientValidationCache,
+        IOptions<ValidationOptions> validationOptions,
+        IOptions<RazorComponentsServiceOptions> razorComponentsOptions)
     {
         _clientValidationCache = clientValidationCache;
         _validationLocalizer = validationOptions.Value.Localizer;
+        _clientValidationDisabled = razorComponentsOptions.Value.DisableClientValidation;
     }
 
     public override RenderFragment? RenderClientValidationRules(EditContext editContext, IReadOnlyDictionary<FieldIdentifier, string> renderedFields)
     {
+        if (_clientValidationDisabled)
+        {
+            return null;
+        }
+
         var json = SerializeClientValidationData(editContext, renderedFields);
         if (json is null)
         {
@@ -79,9 +88,9 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
                 continue;
             }
 
-            if (attribute is IClientValidationAdapter adapter)
+            if (attribute is IClientValidationRuleProvider ruleProvider)
             {
-                foreach (var customRule in adapter.GetClientValidationRules())
+                foreach (var customRule in ruleProvider.GetClientValidationRules())
                 {
                     writer.BeginRule(customRule.Name, errorMessage);
                     if (customRule.Parameters is { Count: > 0 } parameters)
