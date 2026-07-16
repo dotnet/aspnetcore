@@ -2974,16 +2974,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("append-many-items")).Click();
         Browser.Contains("Appended 100 items", () => Browser.Exists(By.Id("status")).Text);
 
-        // DIAGNOSTIC: poll the viewport and log a time-series so CI shows how the auto-follow
-        // converges (or strands). Captures scrollTop/scrollHeight/clientHeight and the highest
-        // rendered real-item index, then folds the final values into the assertion messages.
         const string maxIndexScript =
             "var els = arguments[0].querySelectorAll('.item[data-index]');" +
             " var m = -1; for (var i = 0; i < els.length; i++) {" +
             " var v = parseInt(els[i].getAttribute('data-index'), 10); if (v > m) { m = v; } } return m;";
 
         long st = 0, sh = 0, ch = 0, maxIndex = -1;
-        var followed = false;
+        var pinnedToBottom = false;
+        var tailMaterialized = false;
         var sw = System.Diagnostics.Stopwatch.StartNew();
         while (sw.Elapsed < TimeSpan.FromSeconds(30))
         {
@@ -2992,28 +2990,24 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
             maxIndex = (long)js.ExecuteScript(maxIndexScript, container);
 
-            Console.WriteLine(
-                $"[LargeAppend diag] variableHeight={variableHeight}, useItemsProvider={useItemsProvider}, " +
-                $"t={sw.ElapsedMilliseconds}ms, scrollTop={st}, scrollHeight={sh}, clientHeight={ch}, " +
-                $"gap={sh - st - ch} (want <2), maxRenderedIndex={maxIndex} (want 1099)");
-
-            if (sh - st - ch < 2)
+            pinnedToBottom = sh - st - ch < 2;
+            tailMaterialized = maxIndex >= 1099;
+            if (pinnedToBottom && tailMaterialized)
             {
-                followed = true;
                 break;
             }
 
             System.Threading.Thread.Sleep(500);
         }
 
-        Assert.True(followed,
+        Assert.True(pinnedToBottom,
             $"End mode: large append should auto-follow to the new bottom without manual scrolling. " +
             $"Final: scrollTop={st}, scrollHeight={sh}, clientHeight={ch}, gap={sh - st - ch} (want <2), " +
             $"maxRenderedIndex={maxIndex} (want 1099). variableHeight={variableHeight}, useItemsProvider={useItemsProvider}. " +
             $"A gap far above 0 with scrollTop near the OLD bottom means the viewport was stranded (auto-follow pin skipped).");
 
         // The rows at the new bottom must materialize as real items (not async placeholders)
-        Assert.True(maxIndex >= 1099,
+        Assert.True(tailMaterialized,
             $"End mode: the last real row (index 1099) must be visible at the bottom. " +
             $"maxRenderedIndex={maxIndex}, scrollTop={st}, scrollHeight={sh}, clientHeight={ch}, gap={sh - st - ch}.");
     }
