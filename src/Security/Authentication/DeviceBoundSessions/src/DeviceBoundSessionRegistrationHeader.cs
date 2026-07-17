@@ -49,20 +49,7 @@ internal static class DeviceBoundSessionRegistrationHeader
         // under a non-root path base (e.g. "/foo") tells the browser to POST to "/foo/.well-known/dbsc/..."
         // rather than the origin root.
         var registrationPath = httpContext.Request.PathBase.Add(dbscOptions.RegistrationPath).ToUriComponent();
-        var headerValue = $"{DeviceBoundSessionConstants.AdvertisedAlgorithms};path={SerializeSfString(registrationPath)};challenge={SerializeSfString(challenge)}";
+        var headerValue = $"{DeviceBoundSessionConstants.AdvertisedAlgorithms};path={HeaderUtilities.EscapeAsQuotedString(registrationPath)};challenge={HeaderUtilities.EscapeAsQuotedString(challenge)}";
         httpContext.Response.Headers.Append(DeviceBoundSessionConstants.Headers.Registration, headerValue);
-    }
-
-    internal static string SerializeSfString(string value)
-    {
-        foreach (var character in value)
-        {
-            if (character is < '\u0020' or > '\u007E')
-            {
-                throw new FormatException("Structured Field strings must contain only printable ASCII characters.");
-            }
-        }
-
-        return HeaderUtilities.EscapeAsQuotedString(value).ToString();
     }
 }

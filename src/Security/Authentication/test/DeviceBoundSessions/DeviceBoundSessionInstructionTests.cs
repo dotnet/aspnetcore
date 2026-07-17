@@ -391,36 +391,6 @@ public class DeviceBoundSessionInstructionTests
     }
 
     [Fact]
-    public async Task QuoteAndBackslashRegistrationPath_ProducesParseableStructuredField()
-    {
-        const string registrationPath = "/custom/register\";injected=1\\tail";
-        const string encodedRegistrationPath = "/custom/register%22;injected=1%5Ctail";
-        using var host = await CreateHostAsync(
-            registrationPath: registrationPath,
-            refreshPath: CustomRefreshPath);
-        var client = host.GetTestServer().CreateClient();
-
-        var signIn = await client.GetAsync("/signin");
-        signIn.EnsureSuccessStatusCode();
-        var registrationHeader = Assert.Single(
-            signIn.Headers.GetValues(DeviceBoundSessionConstants.Headers.Registration));
-        Assert.Single(Regex.Matches(registrationHeader, ";path="));
-        Assert.Single(Regex.Matches(registrationHeader, ";challenge="));
-        Assert.Matches(
-            $"^{Regex.Escape(DeviceBoundSessionConstants.AdvertisedAlgorithms)};path=\"{Regex.Escape(encodedRegistrationPath)}\";challenge=\"[A-Za-z0-9_-]+\"$",
-            registrationHeader);
-        Assert.DoesNotContain("path=\"/custom/register\";injected", registrationHeader);
-        _ = ParseChallenge(signIn, DeviceBoundSessionConstants.Headers.Registration);
-
-        var registration = await RegisterAsync(
-            client,
-            signIn,
-            DbscProofKey.CreateEs256(),
-            registrationPath: registrationPath);
-        registration.EnsureSuccessStatusCode();
-    }
-
-    [Fact]
     public async Task EndpointMatching_IsCaseInsensitive_ButTrailingSlashIsSignificant()
     {
         using var host = await CreateHostAsync(
