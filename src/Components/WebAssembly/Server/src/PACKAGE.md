@@ -5,6 +5,7 @@
 ## Key Features
 
 * Provides the ability to statically render components that utilize WebAssembly interactivity
+* Enables debugging functionality for code running in WebAssembly
 * Allows serialization and transmission of server-side authentication state for use during WebAssembly interactivity
 
 ## How to Use
@@ -26,6 +27,11 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
 
 app.UseAntiforgery();
 app.MapStaticAssets();
