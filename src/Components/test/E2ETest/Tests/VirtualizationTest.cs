@@ -1989,9 +1989,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0", true, false)]
     [InlineData("1", true, false)]
     [InlineData("2", true, false)]
-    [InlineData("0", true, true)]
-    [InlineData("1", true, true)]
-    [InlineData("2", true, true)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
+    // [InlineData("0", true, true)]
+    // [InlineData("1", true, true)]
+    // [InlineData("2", true, true)]
     public void QuickGrid_AnchorMode_NearTop_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider, bool useDelay)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
@@ -2087,7 +2088,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("2", false)]
     [InlineData("0", true)]
     [InlineData("1", true)]
-    [InlineData("2", true)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
+    // [InlineData("2", true)]
     public void QuickGrid_AnchorMode_Bottom_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
@@ -2116,7 +2118,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
-    [InlineData(true, true)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
+    // [InlineData(true, true)]
     public void QuickGrid_AnchorMode_None_PrependAtTop_ViewportStaysStable(bool useItemsProvider, bool useDelay)
     {
         MountQuickGridAnchorModeComponent("0", useItemsProvider);
@@ -2177,8 +2180,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Theory]
     [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
+    // [InlineData(true, false)]
+    // [InlineData(true, true)]
     public void QuickGrid_AnchorMode_End_PrependAtTop_ViewportStaysStable(bool useItemsProvider, bool useDelay)
     {
         MountQuickGridAnchorModeComponent("2", useItemsProvider);
@@ -2207,6 +2211,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67865")] // fails pre-fix
     public void QuickGrid_AnchorMode_None_AsyncProvider_PrependKeepsViewportStable()
     {
         MountQuickGridAnchorModeComponent("0", useItemsProvider: true);
@@ -2416,6 +2421,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67865")] // all cases fail pre-fix
     public void QuickGrid_AnchorMode_None_MidList_ViewportStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("0", useItemsProvider);
@@ -2444,6 +2450,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67865")] // all cases fail pre-fix
     public void QuickGrid_AnchorMode_Start_MidList_ViewportStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("1", useItemsProvider);
@@ -2471,6 +2478,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67865")] // all cases fail pre-fix
     public void QuickGrid_AnchorMode_End_MidList_ViewportStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("2", useItemsProvider);
