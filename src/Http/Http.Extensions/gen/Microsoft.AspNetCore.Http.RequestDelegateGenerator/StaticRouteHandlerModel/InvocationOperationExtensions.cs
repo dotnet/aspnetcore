@@ -103,23 +103,18 @@ internal static class InvocationOperationExtensions
 
     private static IMethodSymbol? ResolveMethodFromType(ITypeSymbol? type, bool needsAccurateSignature)
     {
-        if (type is not INamedTypeSymbol { DelegateInvokeMethod: { } delegateInvokeMethod })
-        {
-            return null;
-        }
-
         // When we can only resolve the method from the operation's type (e.g., a handler returned from a method,
         // or a delegate variable), the DelegateInvokeMethod won't carry accurate parameter names or attributes.
+        // in addition, it might not be castable to `Action` or `Func<T>` (and the generated code attempts to do this cast)
         // For RDG (needsAccurateSignature=true), we return null so the generator emits UnableToResolveMethod
-        // and falls back to RequestDelegateFactory. This also prevents invalid casts for custom delegate types
-        // since EmitHandlerDelegateType() reconstructs a Func<T>/Action which can't be cast from a custom delegate.
+        // and falls back to RequestDelegateFactory.
         // For validation (needsAccurateSignature=false), parameter types are sufficient, so we return the invoke method.
         if (needsAccurateSignature)
         {
             return null;
         }
 
-        return delegateInvokeMethod;
+        return (type as INamedTypeSymbol)?.DelegateInvokeMethod;
     }
 
     private static IOperation? ResolveDeclarationOperation(ISymbol symbol, SemanticModel? semanticModel)
