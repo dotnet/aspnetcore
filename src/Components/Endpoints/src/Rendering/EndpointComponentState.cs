@@ -18,7 +18,7 @@ internal sealed class EndpointComponentState : ComponentState
 {
     private static readonly ConcurrentDictionary<Type, StreamRenderingAttribute?> _streamRenderingAttributeByComponentType = new();
 
-    private static readonly string _cacheBoundaryTypeName = typeof(CacheBoundary).FullName!;
+    private static readonly string _cacheViewTypeName = typeof(CacheView).FullName!;
 
     static EndpointComponentState()
     {
@@ -48,15 +48,15 @@ internal sealed class EndpointComponentState : ComponentState
             StreamRendering = parentEndpointComponentState?.StreamRendering ?? false;
         }
 
-        if (component is CacheBoundary cacheBoundary && parentComponentState is not null)
+        if (component is CacheView cacheView && parentComponentState is not null)
         {
             // Output caching inside a streaming render context is not yet supported.
-            cacheBoundary.IsInStreamingContext = StreamRendering;
+            cacheView.IsInStreamingContext = StreamRendering;
 
             var ancestorTypeName = parentComponentState.Component?.GetType().FullName ?? "";
-            cacheBoundary.TreePositionKeyFactory = () =>
+            cacheView.TreePositionKeyFactory = () =>
             {
-                var sequence = FindSequenceInParent(parentComponentState, cacheBoundary);
+                var sequence = FindSequenceInParent(parentComponentState, cacheView);
                 var componentKey = GetComponentKey();
                 var keyString = ComponentKeyHelper.FormatSerializableKey(componentKey);
                 return ComputeTreePositionKey(ancestorTypeName, sequence, keyString);
@@ -91,15 +91,15 @@ internal sealed class EndpointComponentState : ComponentState
     {
         return string.Concat(
             ancestorTypeName, ".",
-            _cacheBoundaryTypeName, "#",
+            _cacheViewTypeName, "#",
             sequence.ToString(CultureInfo.InvariantCulture),
             keyString is not null ? "." : "",
             keyString);
     }
 
-    // We need this calculation because otherwise multiple CacheBoundary components under the same parent would have
+    // We need this calculation because otherwise multiple CacheView components under the same parent would have
     // the same key and would point to the same cache entry, which is incorrect.
-    private int FindSequenceInParent(ComponentState parentState, CacheBoundary target)
+    private int FindSequenceInParent(ComponentState parentState, CacheView target)
     {
         var frames = _renderer.GetRenderTreeFrames(parentState.ComponentId);
         for (var i = 0; i < frames.Count; i++)
@@ -112,6 +112,6 @@ internal sealed class EndpointComponentState : ComponentState
         }
 
         throw new InvalidOperationException(
-            $"Could not locate the CacheBoundary in the render tree of its parent component '{parentState.Component?.GetType().FullName}' while computing its cache key.");
+            $"Could not locate the CacheView in the render tree of its parent component '{parentState.Component?.GetType().FullName}' while computing its cache key.");
     }
 }
