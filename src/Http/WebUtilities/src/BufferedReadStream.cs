@@ -349,10 +349,11 @@ public class BufferedReadStream : Stream
         using (var builder = new MemoryStream(200))
         {
             bool foundCR = false, foundCRLF = false;
+            var lineLength = 0;
 
             while (!foundCRLF && EnsureBuffered())
             {
-                ProcessLineChar(builder, lengthLimit, ref foundCR, ref foundCRLF);
+                ProcessLineChar(builder, ref lineLength, lengthLimit, ref foundCR, ref foundCRLF);
             }
 
             return DecodeLine(builder, foundCRLF);
@@ -373,24 +374,20 @@ public class BufferedReadStream : Stream
         using (var builder = new MemoryStream(200))
         {
             bool foundCR = false, foundCRLF = false;
+            var lineLength = 0;
 
             while (!foundCRLF && await EnsureBufferedAsync(cancellationToken))
             {
-                ProcessLineChar(builder, lengthLimit, ref foundCR, ref foundCRLF);
+                ProcessLineChar(builder, ref lineLength, lengthLimit, ref foundCR, ref foundCRLF);
             }
 
             return DecodeLine(builder, foundCRLF);
         }
     }
 
-    private void ProcessLineChar(MemoryStream builder, int lengthLimit,  ref bool foundCR, ref bool foundCRLF)
+    private void ProcessLineChar(MemoryStream builder, ref int lineLength, int lengthLimit, ref bool foundCR, ref bool foundCRLF)
     {
         var writeCount = 0;
-        // builder.Length holds the bytes accumulated by previous invocations of this method
-        // (one per buffer refill). It does not change during this loop since we only flush to
-        // the builder when we return on CRLF or after draining the buffer, so cache it here to
-        // avoid the property access on every byte in this hot path.
-        var previousLength = builder.Length;
         while (_bufferCount > 0)
         {
             var b = _buffer[_bufferOffset];
@@ -400,22 +397,25 @@ public class BufferedReadStream : Stream
             if (b == LF && foundCR)
             {
                 builder.Write(_buffer.AsSpan(_bufferOffset - writeCount, writeCount));
+                lineLength += writeCount;
                 foundCRLF = true;
                 return;
             }
             foundCR = b == CR;
 
-            // writeCount holds the bytes consumed from the current buffer that have not been
-            // flushed yet. Comparing the cumulative total (previousLength + writeCount) against
-            // the limit ensures the limit is enforced even when a single line spans multiple
-            // buffers.
-            if (previousLength + writeCount > lengthLimit)
+            // lineLength is the cumulative length of the line accumulated by previous
+            // invocations of this method (one per buffer refill), and writeCount holds the
+            // bytes consumed from the current buffer that have not been flushed yet. Comparing
+            // the cumulative total against the limit ensures the limit is enforced even when a
+            // single line spans multiple buffers.
+            if (lineLength + writeCount > lengthLimit)
             {
                 throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
             }
         }
 
         builder.Write(_buffer.AsSpan(_bufferOffset - writeCount, writeCount));
+        lineLength += writeCount;
     }
 
     private static string DecodeLine(MemoryStream builder, bool foundCRLF)
