@@ -57,7 +57,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0016`)
+### BL  (`BL0001-BL0014`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -75,7 +75,6 @@
 |  __`BL0012`__ | Unnecessary StateHasChanged call |
 |  __`BL0013`__ | AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged |
 |  __`BL0014`__ | For loop iterator used inside a closure. |
-|  __`BL0016`__ | Unguarded JS interop call |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 

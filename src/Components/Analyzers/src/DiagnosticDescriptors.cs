@@ -139,17 +139,8 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Description)));
 
-    public static readonly DiagnosticDescriptor UnguardedJSInteropCall = new(
-        "BL0015",
-        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Title)),
-        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Format)),
-        Usage,
-        DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
-        description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
-
     public static readonly DiagnosticDescriptor JSInvokableMethodShouldBePublic = new(
-        "BL0016",
+        "BL0015",
         CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Title)),
         CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Format)),
         Usage,
