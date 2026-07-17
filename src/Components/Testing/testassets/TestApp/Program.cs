@@ -13,6 +13,13 @@ builder.Services.AddSingleton<IWeatherService, DefaultWeatherService>();
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+#pragma warning disable ASPDEPR011 // UseWebAssemblyDebugging is obsolete
+    app.UseWebAssemblyDebugging();
+#pragma warning restore ASPDEPR011
+}
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();
