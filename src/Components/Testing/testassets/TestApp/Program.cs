@@ -13,11 +13,6 @@ builder.Services.AddSingleton<IWeatherService, DefaultWeatherService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-
 app.UseAntiforgery();
 
 app.MapStaticAssets();
