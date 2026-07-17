@@ -8,17 +8,17 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
+internal sealed partial class MemoryCacheViewStore : ICacheViewStore
 {
     private readonly MemoryCache _cache;
-    private readonly ILogger<MemoryCacheBoundaryStore> _logger;
+    private readonly ILogger<MemoryCacheViewStore> _logger;
     private readonly ConcurrentDictionary<string, Task<SerializedRenderFragment>> _pending = new(StringComparer.Ordinal);
 
-    public MemoryCacheBoundaryStore(IOptions<RazorComponentsServiceOptions> options, ILogger<MemoryCacheBoundaryStore> logger)
+    public MemoryCacheViewStore(IOptions<RazorComponentsServiceOptions> options, ILogger<MemoryCacheViewStore> logger)
     {
         _cache = new MemoryCache(new MemoryCacheOptions
         {
-            SizeLimit = options.Value.CacheBoundarySizeLimit,
+            SizeLimit = options.Value.CacheViewSizeLimit,
         });
         _logger = logger;
     }
@@ -86,7 +86,7 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
             }
             else
             {
-                entryOptions.AbsoluteExpirationRelativeToNow = options.ExpiresAfter ?? RazorComponentsServiceOptions.DefaultCacheBoundaryExpiration;
+                entryOptions.AbsoluteExpirationRelativeToNow = options.ExpiresAfter ?? RazorComponentsServiceOptions.DefaultCacheViewExpiration;
             }
 
             _cache.Set(key, payload, entryOptions);
@@ -115,7 +115,7 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
 
     private static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Warning, "Failed to store CacheBoundary entry for key '{Key}'.", EventName = "StoreEntryFailed")]
+        [LoggerMessage(1, LogLevel.Warning, "Failed to store CacheView entry for key '{Key}'.", EventName = "StoreEntryFailed")]
         public static partial void StoreEntryFailed(ILogger logger, string key, Exception exception);
     }
 }

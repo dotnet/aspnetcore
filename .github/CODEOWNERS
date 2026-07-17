@@ -26,7 +26,9 @@
 /src/Mvc/                                                                         @dotnet/minimal-apis
 /src/Mvc/Mvc.ApiExplorer                                                          @halter73
 /src/OpenApi                                                                      @dotnet/minimal-apis
-/src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
+/src/ProjectTemplates/Web.ProjectTemplates/content/BlazorWasmServiceDefaults-CSharp/ @dotnet/aspnet-blazor-eng
+/src/ProjectTemplates/Web.ProjectTemplates/content/BlazorWeb-CSharp/              @dotnet/aspnet-blazor-eng
+/src/ProjectTemplates/Web.ProjectTemplates/content/BlazorWebWorker-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                                                                    @halter73
 /src/Servers/                                                                     @halter73 @BrennanConroy @mgravell

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class CacheBoundaryKeyResolverTest
+public class CacheViewKeyResolverTest
 {
     [Fact]
     public void ComputeKey_IsDeterministic()
@@ -17,8 +17,8 @@ public class CacheBoundaryKeyResolverTest
         var component = CreateComponent();
         var httpContext = CreateHttpContext();
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, httpContext);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, httpContext);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, httpContext);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, httpContext);
 
         Assert.Equal(key1, key2);
     }
@@ -27,11 +27,11 @@ public class CacheBoundaryKeyResolverTest
     public void ComputeKey_DifferentTreePosition_ProducesDifferentKeys()
     {
         var httpContext = CreateHttpContext();
-        var component1 = CreateComponent(treePositionKey: "ParentA.CacheBoundary");
-        var component2 = CreateComponent(treePositionKey: "ParentB.CacheBoundary");
+        var component1 = CreateComponent(treePositionKey: "ParentA.CacheView");
+        var component2 = CreateComponent(treePositionKey: "ParentB.CacheView");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component1, httpContext);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component2, httpContext);
+        var key1 = CacheViewKeyResolver.ComputeKey(component1, httpContext);
+        var key2 = CacheViewKeyResolver.ComputeKey(component2, httpContext);
 
         Assert.NotEqual(key1, key2);
     }
@@ -43,8 +43,8 @@ public class CacheBoundaryKeyResolverTest
         var component1 = CreateComponent(cacheKey: "v1");
         var component2 = CreateComponent(cacheKey: "v2");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component1, httpContext);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component2, httpContext);
+        var key1 = CacheViewKeyResolver.ComputeKey(component1, httpContext);
+        var key2 = CacheViewKeyResolver.ComputeKey(component2, httpContext);
 
         Assert.NotEqual(key1, key2);
     }
@@ -56,8 +56,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?page=1");
         var ctx2 = CreateHttpContext(queryString: "?page=2");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -69,8 +69,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(routeValues: new RouteValueDictionary { ["id"] = "1" });
         var ctx2 = CreateHttpContext(routeValues: new RouteValueDictionary { ["id"] = "2" });
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -82,8 +82,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(headers: new Dictionary<string, string> { ["Accept-Language"] = "en-US" });
         var ctx2 = CreateHttpContext(headers: new Dictionary<string, string> { ["Accept-Language"] = "fr-FR" });
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -95,8 +95,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(cookieHeader: "session=abc");
         var ctx2 = CreateHttpContext(cookieHeader: "session=xyz");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -108,8 +108,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(userName: "alice");
         var ctx2 = CreateHttpContext(userName: "bob");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -126,11 +126,11 @@ public class CacheBoundaryKeyResolverTest
         {
             CultureInfo.CurrentCulture = new CultureInfo("en-US");
             CultureInfo.CurrentUICulture = new CultureInfo("en-US");
-            var key1 = CacheBoundaryKeyResolver.ComputeKey(component, httpContext);
+            var key1 = CacheViewKeyResolver.ComputeKey(component, httpContext);
 
             CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
             CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
-            var key2 = CacheBoundaryKeyResolver.ComputeKey(component, httpContext);
+            var key2 = CacheViewKeyResolver.ComputeKey(component, httpContext);
 
             Assert.NotEqual(key1, key2);
         }
@@ -148,8 +148,8 @@ public class CacheBoundaryKeyResolverTest
         var component1 = CreateComponent(varyBy: "dark-theme");
         var component2 = CreateComponent(varyBy: "light-theme");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component1, httpContext);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component2, httpContext);
+        var key1 = CacheViewKeyResolver.ComputeKey(component1, httpContext);
+        var key2 = CacheViewKeyResolver.ComputeKey(component2, httpContext);
 
         Assert.NotEqual(key1, key2);
     }
@@ -161,8 +161,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?page=1");
         var ctx2 = CreateHttpContext(queryString: "?page=2");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.Equal(key1, key2);
     }
@@ -174,8 +174,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?page=1", headers: new Dictionary<string, string> { ["Accept"] = "text/html" });
         var ctx2 = CreateHttpContext(queryString: "?page=1", headers: new Dictionary<string, string> { ["Accept"] = "application/json" });
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -191,8 +191,8 @@ public class CacheBoundaryKeyResolverTest
         var componentWithUser = CreateComponent(varyByUser: true);
         var ctxWithAuthUser = CreateHttpContext(userName: "alice");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentWithQuery, ctxWithQueryUser);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentWithUser, ctxWithAuthUser);
+        var key1 = CacheViewKeyResolver.ComputeKey(componentWithQuery, ctxWithQueryUser);
+        var key2 = CacheViewKeyResolver.ComputeKey(componentWithUser, ctxWithAuthUser);
 
         Assert.NotEqual(key1, key2);
     }
@@ -208,8 +208,8 @@ public class CacheBoundaryKeyResolverTest
         var componentWithHeader = CreateComponent(varyByHeader: "lang");
         var ctxWithHeader = CreateHttpContext(headers: new Dictionary<string, string> { ["lang"] = "en" });
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentWithCookie, ctxWithCookie);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentWithHeader, ctxWithHeader);
+        var key1 = CacheViewKeyResolver.ComputeKey(componentWithCookie, ctxWithCookie);
+        var key2 = CacheViewKeyResolver.ComputeKey(componentWithHeader, ctxWithHeader);
 
         Assert.NotEqual(key1, key2);
     }
@@ -225,8 +225,8 @@ public class CacheBoundaryKeyResolverTest
         var componentMulti = CreateComponent(varyByQuery: "a,b");
         var ctxMulti = CreateHttpContext(queryString: "?a=x&b=y");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentSingle, ctxSingle);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentMulti, ctxMulti);
+        var key1 = CacheViewKeyResolver.ComputeKey(componentSingle, ctxSingle);
+        var key2 = CacheViewKeyResolver.ComputeKey(componentMulti, ctxMulti);
 
         Assert.NotEqual(key1, key2);
     }
@@ -238,8 +238,8 @@ public class CacheBoundaryKeyResolverTest
         var componentWithoutVaryByUser = CreateComponent(varyByUser: false);
         var ctx = CreateHttpContext(); // anonymous — no user set
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentWithVaryByUser, ctx);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentWithoutVaryByUser, ctx);
+        var key1 = CacheViewKeyResolver.ComputeKey(componentWithVaryByUser, ctx);
+        var key2 = CacheViewKeyResolver.ComputeKey(componentWithoutVaryByUser, ctx);
 
         Assert.NotEqual(key1, key2);
     }
@@ -251,8 +251,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?other=1");
         var ctx2 = CreateHttpContext(queryString: "?another=2");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.Equal(key1, key2);
     }
@@ -264,8 +264,8 @@ public class CacheBoundaryKeyResolverTest
         var ctxA = CreateHttpContext(nameIdentifier: "user-a", authType: "Bearer");
         var ctxB = CreateHttpContext(nameIdentifier: "user-b", authType: "Bearer");
 
-        var keyA = CacheBoundaryKeyResolver.ComputeKey(component, ctxA);
-        var keyB = CacheBoundaryKeyResolver.ComputeKey(component, ctxB);
+        var keyA = CacheViewKeyResolver.ComputeKey(component, ctxA);
+        var keyB = CacheViewKeyResolver.ComputeKey(component, ctxB);
 
         Assert.NotEqual(keyA, keyB);
     }
@@ -277,8 +277,8 @@ public class CacheBoundaryKeyResolverTest
         var ctxCookie = CreateHttpContext(nameIdentifier: "shared-id", authType: "Cookies");
         var ctxBearer = CreateHttpContext(nameIdentifier: "shared-id", authType: "Bearer");
 
-        var keyCookie = CacheBoundaryKeyResolver.ComputeKey(component, ctxCookie);
-        var keyBearer = CacheBoundaryKeyResolver.ComputeKey(component, ctxBearer);
+        var keyCookie = CacheViewKeyResolver.ComputeKey(component, ctxCookie);
+        var keyBearer = CacheViewKeyResolver.ComputeKey(component, ctxBearer);
 
         Assert.NotEqual(keyCookie, keyBearer);
     }
@@ -290,8 +290,8 @@ public class CacheBoundaryKeyResolverTest
         var anonymousCtx = CreateHttpContext();
         var emptyNameAuthCtx = CreateHttpContext(userName: "", authType: "test");
 
-        var keyAnon = CacheBoundaryKeyResolver.ComputeKey(component, anonymousCtx);
-        var keyAuth = CacheBoundaryKeyResolver.ComputeKey(component, emptyNameAuthCtx);
+        var keyAnon = CacheViewKeyResolver.ComputeKey(component, anonymousCtx);
+        var keyAuth = CacheViewKeyResolver.ComputeKey(component, emptyNameAuthCtx);
 
         Assert.NotEqual(keyAnon, keyAuth);
     }
@@ -303,8 +303,8 @@ public class CacheBoundaryKeyResolverTest
         var componentReversed = CreateComponent(varyByQuery: "sort,page");
         var ctx = CreateHttpContext(queryString: "?page=1&sort=name");
 
-        var keyForward = CacheBoundaryKeyResolver.ComputeKey(componentForward, ctx);
-        var keyReversed = CacheBoundaryKeyResolver.ComputeKey(componentReversed, ctx);
+        var keyForward = CacheViewKeyResolver.ComputeKey(componentForward, ctx);
+        var keyReversed = CacheViewKeyResolver.ComputeKey(componentReversed, ctx);
 
         Assert.Equal(keyForward, keyReversed);
     }
@@ -316,8 +316,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?sort=name");
         var ctx2 = CreateHttpContext(queryString: "?sort=date");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -330,8 +330,8 @@ public class CacheBoundaryKeyResolverTest
         var ctxForward = CreateHttpContext(queryString: "?a=1&b=2");
         var ctxReversed = CreateHttpContext(queryString: "?b=2&a=1");
 
-        var keyForward = CacheBoundaryKeyResolver.ComputeKey(component, ctxForward);
-        var keyReversed = CacheBoundaryKeyResolver.ComputeKey(component, ctxReversed);
+        var keyForward = CacheViewKeyResolver.ComputeKey(component, ctxForward);
+        var keyReversed = CacheViewKeyResolver.ComputeKey(component, ctxReversed);
 
         Assert.Equal(keyForward, keyReversed);
     }
@@ -343,8 +343,8 @@ public class CacheBoundaryKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?page=1&extra=a");
         var ctx2 = CreateHttpContext(queryString: "?page=1&extra=b");
 
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheViewKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheViewKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -356,8 +356,8 @@ public class CacheBoundaryKeyResolverTest
         var forged = CreateComponent(treePositionKey: "P||CacheKey||\u0000\u0000\u0000\u0006secret");
         var ctx = CreateHttpContext();
 
-        var keyLegit = CacheBoundaryKeyResolver.ComputeKey(legit, ctx);
-        var keyForged = CacheBoundaryKeyResolver.ComputeKey(forged, ctx);
+        var keyLegit = CacheViewKeyResolver.ComputeKey(legit, ctx);
+        var keyForged = CacheViewKeyResolver.ComputeKey(forged, ctx);
 
         Assert.NotEqual(keyLegit, keyForged);
     }
@@ -369,8 +369,8 @@ public class CacheBoundaryKeyResolverTest
         var ctxMulti = CreateHttpContext(queryString: "?a=1&a=2");
         var ctxJoined = CreateHttpContext(queryString: "?a=1%2C2");
 
-        var keyMulti = CacheBoundaryKeyResolver.ComputeKey(component, ctxMulti);
-        var keyJoined = CacheBoundaryKeyResolver.ComputeKey(component, ctxJoined);
+        var keyMulti = CacheViewKeyResolver.ComputeKey(component, ctxMulti);
+        var keyJoined = CacheViewKeyResolver.ComputeKey(component, ctxJoined);
 
         Assert.NotEqual(keyMulti, keyJoined);
     }
@@ -382,8 +382,8 @@ public class CacheBoundaryKeyResolverTest
         var ctxEmpty = CreateHttpContext(queryString: "?a=");
         var ctxAbsent = CreateHttpContext(queryString: "?other=1");
 
-        var keyEmpty = CacheBoundaryKeyResolver.ComputeKey(component, ctxEmpty);
-        var keyAbsent = CacheBoundaryKeyResolver.ComputeKey(component, ctxAbsent);
+        var keyEmpty = CacheViewKeyResolver.ComputeKey(component, ctxEmpty);
+        var keyAbsent = CacheViewKeyResolver.ComputeKey(component, ctxAbsent);
 
         Assert.NotEqual(keyEmpty, keyAbsent);
     }
@@ -399,8 +399,8 @@ public class CacheBoundaryKeyResolverTest
         var ctxJoined = CreateHttpContext();
         ctxJoined.Request.Headers["X-Test"] = "1,2";
 
-        var keyMulti = CacheBoundaryKeyResolver.ComputeKey(component, ctxMulti);
-        var keyJoined = CacheBoundaryKeyResolver.ComputeKey(component, ctxJoined);
+        var keyMulti = CacheViewKeyResolver.ComputeKey(component, ctxMulti);
+        var keyJoined = CacheViewKeyResolver.ComputeKey(component, ctxJoined);
 
         Assert.NotEqual(keyMulti, keyJoined);
     }
@@ -412,8 +412,8 @@ public class CacheBoundaryKeyResolverTest
         var ctxA = CreateHttpContext(nameIdentifier: "shared", authType: "Bearer", nameIdentifierIssuer: "https://idp-a");
         var ctxB = CreateHttpContext(nameIdentifier: "shared", authType: "Bearer", nameIdentifierIssuer: "https://idp-b");
 
-        var keyA = CacheBoundaryKeyResolver.ComputeKey(component, ctxA);
-        var keyB = CacheBoundaryKeyResolver.ComputeKey(component, ctxB);
+        var keyA = CacheViewKeyResolver.ComputeKey(component, ctxA);
+        var keyB = CacheViewKeyResolver.ComputeKey(component, ctxB);
 
         Assert.NotEqual(keyA, keyB);
     }
@@ -425,27 +425,27 @@ public class CacheBoundaryKeyResolverTest
         var ctxAlice = CreateHttpContext(userName: "alice", nameIdentifier: "");
         var ctxBob = CreateHttpContext(userName: "bob", nameIdentifier: "");
 
-        var keyAlice = CacheBoundaryKeyResolver.ComputeKey(component, ctxAlice);
-        var keyBob = CacheBoundaryKeyResolver.ComputeKey(component, ctxBob);
+        var keyAlice = CacheViewKeyResolver.ComputeKey(component, ctxAlice);
+        var keyBob = CacheViewKeyResolver.ComputeKey(component, ctxBob);
 
         Assert.NotEqual(keyAlice, keyBob);
     }
 
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
 
-    private static CacheBoundary CreateComponent(
+    private static CacheView CreateComponent(
         RenderFragment childContent = null,
         string cacheKey = null,
         string varyByQuery = null,
         string varyByRoute = null,
         string varyByHeader = null,
         string varyByCookie = null,
-        bool? varyByUser = null,
-        bool? varyByCulture = null,
+        bool varyByUser = false,
+        bool varyByCulture = false,
         string varyBy = null,
-        string treePositionKey = "DefaultParent.CacheBoundary")
+        string treePositionKey = "DefaultParent.CacheView")
     {
-        var component = new CacheBoundary
+        var component = new CacheView
         {
             ChildContent = childContent ?? DefaultChildContent,
             CacheKey = cacheKey,
