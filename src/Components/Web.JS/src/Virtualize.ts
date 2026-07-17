@@ -391,8 +391,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       pendingScrollCorrection = true;
     }
 
-    // End mode: preserve wasAtBottom only if the viewport is actually at the bottom right now.
-    // Don't rely on the cached wasAtBottom — it may be stale if the user scrolled away.
+    // End mode: only carry the at-bottom state forward if the viewport is actually at the bottom right now.
+    // Don't rely on the cached wasAtBottomLastRender — it may be stale if the user scrolled away.
     const preserveWasAtBottom = (anchorMode & 2) !== 0 && isViewportAtBottom();
 
     if (Math.abs(delta) > 1) {
@@ -562,7 +562,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     startConvergenceObserving,
     setConvergingToBottom: () => { convergingToBottom = true; },
     isFollowingBottom: () => bottomTracking.following,
-    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; },
+    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; bottomTracking.reached = isViewportAtBottom(); },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScrollSuppression,
