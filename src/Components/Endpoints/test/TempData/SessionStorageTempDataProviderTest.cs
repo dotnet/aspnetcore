@@ -34,7 +34,7 @@ public class SessionStorageTempDataProviderTest
     }
 
     [Fact]
-    public void Save_RemovesSessionKey_WhenNoDataToSave()
+    public void Save_RemovesSessionEntry_WhenNoDataToSave()
     {
         var httpContext = CreateHttpContext();
         var session = (TestSession)httpContext.Session;
@@ -44,6 +44,7 @@ public class SessionStorageTempDataProviderTest
         _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save());
 
         Assert.DoesNotContain(SessionStorageTempDataProvider.TempDataSessionStateKey, session.Keys);
+        Assert.Empty(_sessionStateTempDataProvider.LoadTempData(httpContext));
     }
 
     [Fact]
@@ -70,13 +71,30 @@ public class SessionStorageTempDataProviderTest
     }
 
     [Fact]
-    public void Load_ReturnsEmptyTempData_WhenSessionThrows()
+    public void Load_Throws_WhenSessionNotConfigured()
     {
         var httpContext = CreateHttpContext(throwOnSessionAccess: true);
-        var tempData = _sessionStateTempDataProvider.LoadTempData(httpContext);
 
-        Assert.NotNull(tempData);
-        Assert.Empty(tempData);
+        Assert.Throws<InvalidOperationException>(() => _sessionStateTempDataProvider.LoadTempData(httpContext));
+    }
+
+    [Fact]
+    public void Load_Throws_WhenSessionIsNull()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Features.Set<ISessionFeature>(new TestSessionFeature { Session = null });
+
+        Assert.Throws<InvalidOperationException>(() => _sessionStateTempDataProvider.LoadTempData(httpContext));
+    }
+
+    [Fact]
+    public void Save_Throws_WhenSessionNotConfigured()
+    {
+        var httpContext = CreateHttpContext(throwOnSessionAccess: true);
+        var tempData = CreateTempData();
+        tempData["Key1"] = "Value1";
+
+        Assert.Throws<InvalidOperationException>(() => _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save()));
     }
 
     [Fact]

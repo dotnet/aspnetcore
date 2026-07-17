@@ -58,6 +58,12 @@ internal static class ITypeSymbolExtensions
             type = namedType.TypeArguments[0];
         }
 
+        if (type is IArrayTypeSymbol arrayType)
+        {
+            // Extract the T from an array type T[]
+            type = arrayType.ElementType;
+        }
+
         return type;
     }
 

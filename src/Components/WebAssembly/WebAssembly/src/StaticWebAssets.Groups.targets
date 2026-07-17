@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <StaticWebAssetGroup Include="BlazorWebAssembly"
+      Value="enabled"
+      SourceId="Microsoft.AspNetCore.Components.WebAssembly" />
+  </ItemGroup>
+</Project>

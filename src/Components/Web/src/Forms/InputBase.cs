@@ -267,6 +267,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
                 _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+
+                if (AssignedRenderMode is null)
+                {
+                    // Register the input for client-side validation if rendered in static SSR mode.
+                    RenderedFieldRegistry.GetOrCreate(EditContext).Register(FieldIdentifier, NameAttributeValue);
+                }
             }
             else
             {

@@ -17,7 +17,7 @@
   "symbols/Domain/description": "目錄租用戶的網域 (搭配 SingleOrg 或 IndividualB2C 驗證使用)。",
   "symbols/AppIDUri/description": "要呼叫的伺服器 API App ID URI (搭配 SingleOrg 或 IndividualB2C 驗證使用)。",
   "symbols/APIClientId/description": "伺服器裝載之 API 的用戶端識別碼 (搭配 IndividualB2C、SingleOrg 使用)。",
-  "symbols/DefaultScope/description": "用戶端佈建存取權杖所需的 API 範圍。(搭配 IndividualB2C、SingleOrg 使用)。",
+  "symbols/DefaultScope/description": "用戶端佈建存取 Token 所需的 API 範圍。(搭配 IndividualB2C、SingleOrg 使用)。",
   "symbols/TenantId/description": "要連線到目錄的 TenantId 識別碼 (搭配 SingleOrg 驗證使用)。",
   "symbols/OrgReadAccess/description": "是否要允許此應用程式讀取存取目錄 (只適用於 SingleOrg)。",
   "symbols/UserSecretsId/description": "用於祕密的識別碼 (搭配 OrgReadAccess 或個別驗證使用)。",

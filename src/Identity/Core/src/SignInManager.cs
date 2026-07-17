@@ -26,6 +26,9 @@ public class SignInManager<TUser> where TUser : class
     private const string PasskeyOperationKey = "PasskeyOperation";
     private const string PasskeyStateKey = "PasskeyState";
 
+    private static readonly bool AlwaysResetLockoutOnSuccess =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
+
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IAuthenticationSchemeProvider _schemes;
     private readonly IUserConfirmation<TUser> _confirmation;
@@ -475,7 +478,7 @@ public class SignInManager<TUser> where TUser : class
 
         if (await UserManager.CheckPasswordAsync(user, password))
         {
-            var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
+            var alwaysLockout = AlwaysResetLockoutOnSuccess;
             // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
             if (alwaysLockout || !await IsTwoFactorEnabledAsync(user) || await IsTwoFactorClientRememberedAsync(user))
             {
@@ -552,7 +555,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAttestationResult"/>.
     /// </returns>
-    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync(string credentialJson)
+    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
@@ -596,7 +599,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAssertionResult{TUser}"/>.
     /// </returns>
-    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync(string credentialJson)
+    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
@@ -639,7 +642,7 @@ public class SignInManager<TUser> where TUser : class
     /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.
     /// </returns>
-    public virtual async Task<SignInResult> PasskeySignInAsync(string credentialJson)
+    public virtual async Task<SignInResult> PasskeySignInAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         var startTimestamp = Stopwatch.GetTimestamp();
         try

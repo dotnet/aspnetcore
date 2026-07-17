@@ -10,6 +10,9 @@ export const Virtualize = {
   refreshObservers,
   setAnchorMode,
   restoreAnchor,
+  alignToItem,
+  beginProgrammaticScroll,
+  isFollowingBottom,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
@@ -70,6 +73,46 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     spacerAfter.style.display = 'table-row';
   }
 
+  // Applies one-time base style (flex-shrink) on first sight of an element.
+  const baseStylesAppliedProp = Symbol();
+  function ensureBaseStyles(el: HTMLElement): void {
+    if ((el as any)[baseStylesAppliedProp]) {
+      return;
+    }
+    (el as any)[baseStylesAppliedProp] = true;
+    el.style.flexShrink = '0';
+  }
+
+  const layoutAttrs = [
+    ['data-blazor-virtualize-reserved-height', 'height', (n: number) => `${n}px`],
+    ['data-blazor-virtualize-loop-breaker-transform', 'transform', (n: number) => `translateY(${n}px)`],
+  ] as const;
+  const layoutAttrNames = layoutAttrs.map(([a]) => a);
+  function applyLayoutAttrs(el: HTMLElement): void {
+    ensureBaseStyles(el);
+    for (const [attr, styleProp, format] of layoutAttrs) {
+      const raw = el.getAttribute(attr);
+      const n = raw ? Number(raw) : NaN;
+      if (Number.isFinite(n)) {
+        el.style.setProperty(styleProp, format(n));
+      } else {
+        el.style.removeProperty(styleProp);
+      }
+    }
+  }
+
+  // Apply layout attributes before the MutationObserver starts catching changes.
+  function applyLayoutAttrsBetweenSpacers(): void {
+    for (let el: Element | null = spacerBefore;
+         el && el !== spacerAfter.nextElementSibling;
+         el = el.nextElementSibling) {
+      if (layoutAttrNames.some(a => el!.hasAttribute(a))) {
+        applyLayoutAttrs(el as HTMLElement);
+      }
+    }
+  }
+  applyLayoutAttrsBetweenSpacers();
+
   if (useNativeAnchoring) {
     // Prevent spacers from being used as scroll anchors — only rendered items should anchor.
     spacerBefore.style.overflowAnchor = 'none';
@@ -78,6 +121,22 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // Manual compensation path for tables and browsers without native anchoring.
     scrollElement.style.overflowAnchor = 'none';
   }
+
+  // Observe only the two spacers we already hold references to. Placeholders are siblings between them,
+  // so on each spacer mutation we walk the sibling chain to reapply styles.
+  const mutationObserver = new MutationObserver(applyLayoutAttrsBetweenSpacers);
+
+  function flushPendingStyleMutations(): void {
+    if (mutationObserver.takeRecords().length > 0) {
+      applyLayoutAttrsBetweenSpacers();
+    }
+  }
+  const spacerObserverOptions: MutationObserverInit = {
+    attributes: true,
+    attributeFilter: layoutAttrNames,
+  };
+  mutationObserver.observe(spacerBefore, spacerObserverOptions);
+  mutationObserver.observe(spacerAfter, spacerObserverOptions);
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
@@ -96,8 +155,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // After anchor restore, suppress spacer IO callbacks until the next user scroll.
   let suppressSpacerCallbacks = false;
   let ignoreAnchorScroll = false;
-  // Whether the viewport was at the bottom before the last render (for End-mode follow).
+  const isViewportAtBottom = (): boolean =>
+    scrollElement.scrollHeight <= scrollElement.clientHeight
+    || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
+  // Live measurement: was the viewport at the bottom as of the last render? Drives the JS append-pin.
   let wasAtBottom = false;
+  // Are we following the bottom? Starts true in End mode; a user scrolling up turns it off.
+  let followingBottom = (anchorMode & 2) !== 0;
   // Pending scroll correction after redistribution changes spacer→item heights.
   let pendingScrollCorrection = false;
   let scrollCorrectionItemIndex = 0;
@@ -108,6 +172,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     intersectionObserver.observe(spacerBefore);
     intersectionObserver.unobserve(spacerAfter);
     intersectionObserver.observe(spacerAfter);
+  }
+
+  // Called by C# at the start of a programmatic ScrollToIndex. Suppresses spacer-IO
+  // callbacks (which would otherwise be misinterpreted as a "user scroll") until
+  // either alignToItemAt completes or a real user scroll fires.
+  function beginProgrammaticScrollSuppression(): void {
+    suppressSpacerCallbacks = true;
+    pendingCallbacks.delete(spacerBefore);
+    pendingCallbacks.delete(spacerAfter);
   }
 
   function getObservedHeight(entry: ResizeObserverEntry): number {
@@ -185,17 +258,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(): void {
-    // C# style updates overwrite the entire style attribute. Re-apply what we need.
-    if (isTable) {
-      spacerBefore.style.display = 'table-row';
-      spacerAfter.style.display = 'table-row';
-    }
-
-    if (useNativeAnchoring) {
-      spacerBefore.style.overflowAnchor = 'none';
-      spacerAfter.style.overflowAnchor = 'none';
-    }
-
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
@@ -243,7 +305,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     scrollTriggeredRender = false;
 
-    // End mode: scroll to bottom when items were appended while viewport was at bottom.
+    // End mode: live measurement says the viewport was at the bottom, so pin the new items into view.
     if ((anchorMode & 2) && wasAtBottom) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
       ignoreAnchorScroll = true;
@@ -282,6 +344,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // Corrects scrollTop after a render that shifted content, using the snapshot
   // saved by updateAnchorSnapshot() during the previous render cycle.
   function restoreAnchorForShift(): void {
+    // Apply styles before we read layout
+    flushPendingStyleMutations();
+
     const snapshot = observersByDotNetObjectId[id].anchorSnapshot;
     if (!snapshot) {
       return;
@@ -289,6 +354,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     observersByDotNetObjectId[id].anchorSnapshot = null;
 
     if (convergingToTop || convergingToBottom) {
+      return;
+    }
+
+    // Retry a pending programmatic alignment now that items may be in DOM.
+    if (pendingAlignLocalIndex !== null) {
+      const pending = pendingAlignLocalIndex;
+      pendingAlignLocalIndex = null;
+      alignToItemAt(pending);
       return;
     }
 
@@ -300,19 +373,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    let current = spacerBefore.nextElementSibling;
-    for (let i = 0; i < snapshot.anchorItemIndex && current && current !== spacerAfter; i++) {
-      current = current.nextElementSibling;
-    }
-
-    if (!current || current === spacerAfter) {
+    const newOffset = measureLocalChildOffset(snapshot.anchorItemIndex);
+    if (Number.isNaN(newOffset)) {
       return;
     }
-
-    const containerTop = scrollContainer
-      ? scrollContainer.getBoundingClientRect().top
-      : 0;
-    const newOffset = current.getBoundingClientRect().top - containerTop;
     const delta = newOffset - snapshot.anchorOffset;
 
     // Suppress spacer IO until next user scroll. Save anchor for drift correction.
@@ -325,9 +389,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     // End mode: preserve wasAtBottom only if the viewport is actually at the bottom right now.
     // Don't rely on the cached wasAtBottom — it may be stale if the user scrolled away.
-    const atBottom = scrollElement.scrollHeight <= scrollElement.clientHeight
-      || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
-    const preserveWasAtBottom = (anchorMode & 2) && atBottom;
+    const preserveWasAtBottom = (anchorMode & 2) !== 0 && isViewportAtBottom();
 
     if (Math.abs(delta) > 1) {
       scrollElement.scrollTop += delta;
@@ -335,8 +397,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     // Save anchor offset AFTER scrollTop adjustment for drift correction.
     if (pendingScrollCorrection) {
-      const containerTop = scrollContainer ? scrollContainer.getBoundingClientRect().top : 0;
-      scrollCorrectionOffset = current.getBoundingClientRect().top - containerTop;
+      const correctedOffset = measureLocalChildOffset(snapshot.anchorItemIndex);
+      if (!Number.isNaN(correctedOffset)) {
+        scrollCorrectionOffset = correctedOffset;
+      }
     }
 
     if (preserveWasAtBottom) {
@@ -419,6 +483,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       reobserveSpacers();
     }
 
+    // A user scroll is the only thing that (re)sets follow intent (programmatic scrolls early-return above).
+    if (anchorMode & 2) {
+      followingBottom = isViewportAtBottom();
+    }
+
     updateAnchorSnapshot();
   }
   scrollEventTarget.addEventListener('scroll', handleScroll, { passive: true });
@@ -426,6 +495,58 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
+  let pendingAlignLocalIndex: number | null = null;
+
+  // Walks `localIndex` siblings forward from spacerBefore to find the rendered child,
+  // returning its viewport-relative top measured against the scroll container (or 0 for
+  // the window-scroll case). Returns NaN when the slot is missing — e.g., the row hasn't
+  // rendered yet, or the local index falls outside the currently rendered window.
+  function measureLocalChildOffset(localIndex: number): number {
+    let el: Element | null = spacerBefore.nextElementSibling;
+    for (let i = 0; i < localIndex && el && el !== spacerAfter; i++) {
+      el = el.nextElementSibling;
+    }
+    if (!el || el === spacerAfter) {
+      return Number.NaN;
+    }
+    const containerTop = scrollElement === document.documentElement
+      ? 0
+      : scrollElement.getBoundingClientRect().top;
+    return el.getBoundingClientRect().top - containerTop;
+  }
+
+  // Measures the target's viewport-relative top and aligns it to containerTop.
+  function alignToItemAt(localIndex: number): void {
+    const delta = measureLocalChildOffset(localIndex);
+    if (Number.isNaN(delta)) {
+      // Items aren't in DOM yet. Retry after the next render commit.
+      pendingAlignLocalIndex = localIndex;
+      ignoreAnchorScroll = true;
+      suppressSpacerCallbacks = true;
+      observersByDotNetObjectId[id].anchorSnapshot = null;
+      if (convergingToTop || convergingToBottom) {
+        convergingToTop = false;
+        convergingToBottom = false;
+        stopConvergenceObserving();
+      }
+      return;
+    }
+    pendingAlignLocalIndex = null;
+    if (Math.abs(delta) > 0.5) {
+      ignoreAnchorScroll = true;
+      suppressSpacerCallbacks = true;
+      // Programmatic scroll establishes a new explicit position — invalidate any pending anchor snapshot and cancel in-progress convergence.
+      observersByDotNetObjectId[id].anchorSnapshot = null;
+      if (convergingToTop || convergingToBottom) {
+        convergingToTop = false;
+        convergingToBottom = false;
+        stopConvergenceObserving();
+      }
+      pendingJumpToStart = false;
+      pendingJumpToEnd = false;
+      scrollElement.scrollTo({ top: scrollElement.scrollTop + delta, behavior: 'instant' });
+    }
+  }
 
   observersByDotNetObjectId[id] = {
     intersectionObserver,
@@ -434,10 +555,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     setConvergingToBottom: () => { convergingToBottom = true; },
-    setAnchorMode: (mode: number) => { anchorMode = mode; },
+    isFollowingBottom: () => followingBottom,
+    setAnchorMode: (mode: number) => { anchorMode = mode; followingBottom = (mode & 2) !== 0; },
     restoreAnchor: restoreAnchorForShift,
+    alignToItem: alignToItemAt,
+    beginProgrammaticScroll: beginProgrammaticScrollSuppression,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
+      mutationObserver.disconnect();
       stopConvergenceObserving();
       anchoredItems.clear();
       resizeObserver.disconnect();
@@ -531,8 +656,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Saves the first visible item's child index and viewport-relative position.
   function updateAnchorSnapshot(): void {
-    wasAtBottom = scrollElement.scrollHeight <= scrollElement.clientHeight
-      || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
+    wasAtBottom = isViewportAtBottom();
 
     const containerTop = scrollContainer
       ? scrollContainer.getBoundingClientRect().top
@@ -634,7 +758,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
-  if (entry) {
+  if (entry && entry.isFollowingBottom?.()) {
     entry.setConvergingToBottom?.();
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
     entry.startConvergenceObserving?.();
@@ -657,6 +781,21 @@ function restoreAnchor(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   entry?.restoreAnchor?.();
+}
+
+function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  observersByDotNetObjectId[id]?.alignToItem?.(localIndex);
+}
+
+function beginProgrammaticScroll(dotNetHelper: DotNet.DotNetObject): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  observersByDotNetObjectId[id]?.beginProgrammaticScroll?.();
+}
+
+function isFollowingBottom(dotNetHelper: DotNet.DotNetObject): boolean {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  return observersByDotNetObjectId[id]?.isFollowingBottom?.() ?? false;
 }
 
 function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {

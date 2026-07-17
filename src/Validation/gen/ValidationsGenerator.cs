@@ -18,21 +18,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         );
 
         // Extract types that have been marked with framework [ValidatableType].
-        var frameworkValidatableTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
+        var validatableTypesWithAttribute = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Microsoft.Extensions.Validation.ValidatableTypeAttribute",
             predicate: ShouldTransformSymbolWithAttribute,
             transform: TransformValidatableTypeWithAttribute
         );
-
-        // Extract types that have been marked with generated [ValidatableType].
-        var generatedValidatableTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "Microsoft.Extensions.Validation.Embedded.ValidatableTypeAttribute",
-            predicate: ShouldTransformSymbolWithAttribute,
-            transform: TransformValidatableTypeWithAttribute
-        );
-
-        // Combine both sources of validatable types
-        var validatableTypesWithAttribute = frameworkValidatableTypes.Concat(generatedValidatableTypes);
 
         // Extract all minimal API endpoints in the application.
         // Extract validatable types from all endpoints.
@@ -50,7 +40,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             .Distinct(ValidatableTypeComparer.Instance)
             .Collect();
 
-        var emitInputs = addValidation
+        // Collect all AddValidation call sites to avoid emitting duplicate hint names
+        // when AddValidation() is called multiple times in the same project.
+        var addValidationLocations = addValidation.Collect();
+
+        var emitInputs = addValidationLocations
             .Combine(validatableTypes);
 
         // Emit the IValidatableInfo resolver injection and

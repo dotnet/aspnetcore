@@ -1,5 +1,8 @@
 ---
+if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
+
 on:
+  permissions: {}
   schedule: every 1mo
   workflow_dispatch:
 
@@ -17,14 +20,23 @@ network:
     - defaults
     - dotnet
     - containers
+    - github
 
 tools:
   github:
   edit:
-  bash: ["curl", "grep", "sed", "jq", "git", "cat", "ls", "find", "bash", "head", "tail", "dotnet", "source", "chmod"]
+  bash: ["grep", "sed", "jq", "git", "cat", "ls", "find", "bash", "head", "tail", "dotnet", "source", "chmod"]
   web-fetch:
 
+mcp-servers:
+  nuget:
+    container: "mcr.microsoft.com/dotnet/sdk:10.0"
+    entrypoint: "dnx"
+    entrypointArgs: ["NuGet.Mcp.Server", "--source", "https://api.nuget.org/v3/index.json", "--yes"]
+    allowed: ["get-latest-package-version"]
+
 safe-outputs:
+  report-failure-as-issue: false
   create-pull-request:
     title-prefix: "[package] "
     labels: [area-networking]
@@ -35,6 +47,38 @@ safe-outputs:
     target: "*"
 
 timeout-minutes: 90
+
+# ###############################################################
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
+# ###############################################################
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+
+environment: copilot-pat-pool
+
+engine:
+  id: copilot
+  env:
+    COPILOT_GITHUB_TOKEN: |
+      ${{ case(
+        needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
+        needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
+        needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2,
+        needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3,
+        needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4,
+        needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5,
+        needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6,
+        needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
+        needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
+        needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
+        'NO COPILOT PAT AVAILABLE')
+      }}
 ---
 
 # Update CsWin32 Package
@@ -82,14 +126,11 @@ Perform these checks and apply changes:
 
 ### Step 1: Check for a newer CsWin32 version
 
-Fetch the latest stable version of Microsoft.Windows.CsWin32 from NuGet:
+Use the NuGet MCP server's `get-latest-package-version` tool to look up the latest stable version
+of `Microsoft.Windows.CsWin32`.
 
-```bash
-PACKAGE_ID_LOWER=$(echo "Microsoft.Windows.CsWin32" | tr '[:upper:]' '[:lower:]')
-VERSIONS=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID_LOWER}/index.json")
-LATEST=$(echo "$VERSIONS" | jq -r '.versions[]' | grep -v '-' | tail -1)
-echo "Latest stable version: $LATEST"
-```
+Do NOT use `curl`, `web-fetch`, or any direct HTTP requests to the NuGet API — they are blocked
+by the network firewall.
 
 Compare with the current version in `eng/Versions.props` under `<MicrosoftWindowsCsWin32Version>`.
 
@@ -127,6 +168,10 @@ If the build fails on Linux due to platform-specific runtime dependencies, that'
 is that the source generator runs and produces files in `obj/`. Check if the source generation step completes
 even if later compilation steps have errors.
 
+**Important:** `NETSDK1127` (missing targeting pack), missing SDK, or restore/feed failures are **not**
+acceptable platform-specific build issues — they indicate a broken restore/toolset. If encountered, rerun
+`bash -c 'source activate.sh && ./restore.sh'`, inspect the restore output for errors, and do not proceed to `noop`.
+
 After building, inspect CsWin32's generated output:
 
 ```bash
@@ -138,7 +183,12 @@ find src/Servers/IIS/obj -name "*.g.cs" | head -20
 
 ### Step 3: Research what changed in CsWin32
 
-Use `web_fetch` to check CsWin32's release notes and changelog:
+Use the `github` tool to check CsWin32's releases and referenced issues:
+
+- Use `list_releases` or `get_release` on `microsoft/CsWin32` for release notes and changelog.
+- Use `get_issue` on `microsoft/CsWin32` to check the status of referenced issues (e.g., issue #1086).
+
+If the `github` tool output lacks detail (e.g., release body is truncated), fall back to `web_fetch`:
 
 ```
 https://github.com/microsoft/CsWin32/releases
@@ -152,8 +202,8 @@ Look for:
 - Issues referenced in this codebase's workaround comments
 
 Also check the status of referenced GitHub issues. For example, if a workaround comment
-references `https://github.com/microsoft/CsWin32/issues/1086`, use `web_fetch` to check
-if the issue is closed/resolved.
+references `https://github.com/microsoft/CsWin32/issues/1086`, use the `github` tool's
+`get_issue` on `microsoft/CsWin32` to check if the issue is closed/resolved.
 
 ---
 
@@ -318,6 +368,10 @@ After the PR is created, use the `add-comment` safe output to post a comment on 
 - The CsWin32 version is already the latest stable release
 - No workarounds were found that can be fixed (verified by checking `obj/` generated code and CsWin32 issue status)
 - You searched for ALL patterns above and found nothing actionable
+- All required checks completed successfully (NuGet version lookup, GitHub issue research, restore, build, and generated-source inspection)
+
+Do **not** call `noop` if any required check failed or was skipped. If a check could not be completed
+(e.g., restore failed, build failed, NuGet lookup failed), report the failure details instead of calling `noop`.
 
 The `noop` message must list what was checked (version, patterns searched, issues checked).
 
