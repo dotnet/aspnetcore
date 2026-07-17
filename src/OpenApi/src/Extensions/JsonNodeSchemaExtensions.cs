@@ -25,28 +25,30 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal static class JsonNodeSchemaExtensions
 {
-    private static readonly Dictionary<Type, OpenApiSchema> _simpleTypeToOpenApiSchema = new()
+    private static readonly Dictionary<Type, string> _simpleTypeToFormat = new()
     {
-        [typeof(bool)] = new() { Type = JsonSchemaType.Boolean },
-        [typeof(byte)] = new() { Type = JsonSchemaType.Integer, Format = "uint8" },
-        [typeof(byte[])] = new() { Type = JsonSchemaType.String, Format = "byte" },
-        [typeof(int)] = new() { Type = JsonSchemaType.Integer, Format = "int32" },
-        [typeof(uint)] = new() { Type = JsonSchemaType.Integer, Format = "uint32" },
-        [typeof(long)] = new() { Type = JsonSchemaType.Integer, Format = "int64" },
-        [typeof(ulong)] = new() { Type = JsonSchemaType.Integer, Format = "uint64" },
-        [typeof(short)] = new() { Type = JsonSchemaType.Integer, Format = "int16" },
-        [typeof(ushort)] = new() { Type = JsonSchemaType.Integer, Format = "uint16" },
-        [typeof(float)] = new() { Type = JsonSchemaType.Number, Format = "float" },
-        [typeof(double)] = new() { Type = JsonSchemaType.Number, Format = "double" },
-        [typeof(decimal)] = new() { Type = JsonSchemaType.Number, Format = "double" },
-        [typeof(DateTime)] = new() { Type = JsonSchemaType.String, Format = "date-time" },
-        [typeof(DateTimeOffset)] = new() { Type = JsonSchemaType.String, Format = "date-time" },
-        [typeof(Guid)] = new() { Type = JsonSchemaType.String, Format = "uuid" },
-        [typeof(char)] = new() { Type = JsonSchemaType.String, Format = "char" },
-        [typeof(Uri)] = new() { Type = JsonSchemaType.String, Format = "uri" },
-        [typeof(string)] = new() { Type = JsonSchemaType.String },
-        [typeof(TimeOnly)] = new() { Type = JsonSchemaType.String, Format = "time" },
-        [typeof(DateOnly)] = new() { Type = JsonSchemaType.String, Format = "date" },
+        [typeof(byte)] = "uint8",
+        // Note: byte format is deprecated per https://spec.openapis.org/registry/format/
+        // We should follow the >= 3.1 approach stated in https://spec.openapis.org/oas/v3.2.0.html#migrating-binary-descriptions-from-oas-3-0
+        // In addition, we should ensure that Microsoft.OpenApi will be able to serialize the >= 3.1 representation correctly when
+        // it's asked to serialize as < 3.1 document.
+        [typeof(byte[])] = "byte",
+        [typeof(int)] = "int32",
+        [typeof(uint)] = "uint32",
+        [typeof(long)] = "int64",
+        [typeof(ulong)] = "uint64",
+        [typeof(short)] = "int16",
+        [typeof(ushort)] = "uint16",
+        [typeof(float)] = "float",
+        [typeof(double)] = "double",
+        [typeof(decimal)] = "double",
+        [typeof(DateTime)] = "date-time",
+        [typeof(DateTimeOffset)] = "date-time",
+        [typeof(Guid)] = "uuid",
+        [typeof(char)] = "char",
+        [typeof(Uri)] = "uri",
+        [typeof(TimeOnly)] = "time",
+        [typeof(DateOnly)] = "date",
     };
 
     /// <summary>
@@ -191,12 +193,12 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
-    /// Applies the primitive types and formats to the schema based on the type.
+    /// Applies the format of known types to the schema.
     /// </summary>
     /// <remarks>
-    /// OpenAPI v3 requires support for the format keyword in generated types. Because the
-    /// underlying schema generator does not support this, we need to manually apply the
-    /// supported formats to the schemas associated with the generated type.
+    /// OpenAPI hosts a format registry in https://spec.openapis.org/registry/format/.
+    /// See also https://json-schema.org/draft/2020-12/json-schema-validation#name-vocabularies-for-semantic-c
+    /// 
     ///
     /// Note that this method targets <see cref="JsonNode"/> and not <see cref="OpenApiSchema"/> because
     /// it is is designed to be invoked via the `OnGenerated` callback in the underlying schema generator as
@@ -204,20 +206,13 @@ internal static class JsonNodeSchemaExtensions
     /// </remarks>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
-    /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
-    internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
+    internal static void ApplyPrimitiveFormats(this JsonNode schema, JsonSchemaExporterContext context)
     {
         var type = context.TypeInfo.Type;
         var underlyingType = Nullable.GetUnderlyingType(type);
-        if (_simpleTypeToOpenApiSchema.TryGetValue(underlyingType ?? type, out var openApiSchema))
+        if (_simpleTypeToFormat.TryGetValue(underlyingType ?? type, out var format))
         {
-            if (underlyingType != null && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
-                !schemaTypes.HasFlag(JsonSchemaType.Null))
-            {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
-            }
-            schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
-            schema[OpenApiConstants.SchemaId] = createSchemaReferenceId(context.TypeInfo);
+            schema[OpenApiSchemaKeywords.FormatKeyword] = format;
         }
     }
 
@@ -547,54 +542,6 @@ internal static class JsonNodeSchemaExtensions
         return !context.TypeInfo.Type.IsAbstract
             && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
             && polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type && type.TypeDiscriminator is not null);
-    }
-
-    /// <summary>
-    /// Support applying nullability status for reference types provided as a property or field.
-    /// </summary>
-    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
-    internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
-    {
-        // Avoid setting explicit nullability annotations for `object` types so they continue to match on the catch
-        // all schema (no type, no format, no constraints).
-        if (propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable))
-        {
-            if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
-                !schemaTypes.HasFlag(JsonSchemaType.Null))
-            {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
-            }
-        }
-        if (schema.WillBeComponentized() &&
-            propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
-        {
-            schema[OpenApiConstants.NullableProperty] = true;
-        }
-    }
-
-    /// <summary>
-    /// Prunes the "null" type from the schema for types that are componentized. These
-    /// types should represent their nullability using oneOf with null instead.
-    /// </summary>
-    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
-    {
-        if (schema.WillBeComponentized() &&
-                schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
-        {
-            for (var i = typeArray.Count - 1; i >= 0; i--)
-            {
-                if (typeArray[i]?.GetValue<string>() == "null")
-                {
-                    typeArray.RemoveAt(i);
-                }
-            }
-            if (typeArray.Count == 1)
-            {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
-            }
-        }
     }
 
     private static JsonSchemaType? MapJsonNodeToSchemaType(JsonNode? jsonNode)

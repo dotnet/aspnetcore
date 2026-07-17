@@ -99,13 +99,10 @@ internal sealed class OpenApiSchemaService(
                 schema = new JsonObject();
             }
             var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
-            schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
+            schema.ApplyPrimitiveFormats(context);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
             schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
-            if (context.PropertyInfo is { } jsonPropertyInfo)
-            {
-                schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
-            }
+
             var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
             if (underlyingType.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
             {
@@ -138,7 +135,7 @@ internal sealed class OpenApiSchemaService(
                     }
                 }
             }
-            schema.PruneNullTypeForComponentizedTypes();
+
             return schema;
         }
     };
