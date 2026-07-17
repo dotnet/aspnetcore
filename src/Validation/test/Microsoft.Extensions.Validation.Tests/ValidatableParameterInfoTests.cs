@@ -269,7 +269,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         var errors = context.ValidationErrors;
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
-        Assert.Equal("people[1].Name", error.Key);
+        Assert.Equal("people[second].Name", error.Key);
         var errorValue = Assert.Single(error.Value);
         Assert.Equal("The Name field is required.", errorValue);
     }
