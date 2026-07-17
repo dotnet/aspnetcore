@@ -376,6 +376,28 @@
         }
       }
     },
+    "/schemas-by-ref/pet": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/schemas-by-ref/category": {
       "post": {
         "tags": [
@@ -667,13 +689,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
                   "oneOf": [
+                    {
+                      "enum": [
+                        null
+                      ]
+                    },
                     {
                       "$ref": "#/components/schemas/NullableResponseModel"
                     }
-                  ],
-                  "nullable": true
+                  ]
                 }
               }
             }
@@ -690,13 +715,16 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
                 "oneOf": [
+                  {
+                    "enum": [
+                      null
+                    ]
+                  },
                   {
                     "$ref": "#/components/schemas/NullableRequestModel"
                   }
-                ],
-                "nullable": true
+                ]
               }
             }
           }
@@ -871,13 +899,16 @@
             "type": "string"
           },
           "optionalNested": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/NestedModel"
               }
-            ],
-            "nullable": true
+            ]
           },
           "requiredNested": {
             "$ref": "#/components/schemas/NestedModel"
@@ -995,13 +1026,16 @@
             "$ref": "#/components/schemas/TestEnum"
           },
           "nullableEnum": {
-            "type": "integer",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/TestEnum"
               }
-            ],
-            "nullable": true
+            ]
           },
           "listOfNullableEnums": {
             "type": "array",
@@ -1155,13 +1189,16 @@
             "nullable": true
           },
           "deepNested": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/ComplexType"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1233,13 +1270,16 @@
             "nullable": true
           },
           "nullableComplexProperty": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/ComplexType"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1307,6 +1347,89 @@
             "type": "string"
           },
           "subject": {
+            "type": "string"
+          }
+        }
+      },
+      "Pet": {
+        "required": [
+          "$type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PetCat"
+          },
+          {
+            "$ref": "#/components/schemas/PetDog"
+          },
+          {
+            "$ref": "#/components/schemas/PetPet"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "cat": "#/components/schemas/PetCat",
+            "dog": "#/components/schemas/PetDog",
+            "pet": "#/components/schemas/PetPet"
+          }
+        }
+      },
+      "PetCat": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "cat"
+            ],
+            "type": "string"
+          },
+          "isKitten": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "PetDog": {
+        "required": [
+          "breed",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "dog"
+            ],
+            "type": "string"
+          },
+          "breed": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "PetPet": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "pet"
+            ],
+            "type": "string"
+          },
+          "name": {
             "type": "string"
           }
         }
@@ -1472,13 +1595,16 @@
             "$ref": "#/components/schemas/RefProfile"
           },
           "secondaryUser": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/RefProfile"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
