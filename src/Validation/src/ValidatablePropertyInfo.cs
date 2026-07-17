@@ -279,8 +279,6 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
     }
 
-    string? IValidationErrorReporter.MemberName => Name;
-
     ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
     {
         return GetValidationAttributes();

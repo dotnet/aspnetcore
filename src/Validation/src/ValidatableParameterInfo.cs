@@ -55,11 +55,11 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
-    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context, ValidationContext? validationContext, string displayName)
+    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context, ValidationContext validationContext, string displayName)
     {
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = ValidateContext.GetValidationResultWithPossiblyNullContext(_requiredAttribute, value, validationContext, Name, displayName);
+            var result = _requiredAttribute.GetValidationResult(value, validationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
@@ -78,6 +78,17 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
+        if (value is null)
+        {
+            // TODO: The blocker here to support this is that ValidationContext requires a non-null ObjectInstance.
+            // We have multiple options to fix this.
+            // 1. Don't create a ValidationContext at all, and use the old IsValid API.
+            // 2. Create a ValidationContext with a dummy object instance, not really matching ValidationContext API contract/expectation.
+            // 3. Special case handling of RequiredAttribute here. If RequiredAttribute specifically is present, we validate it and move forward. Otherwise, we skip validation.
+            //    If we go with '3', we might as well ship an analyzer to warn if minimal API parameter is nullable and has validation attributes.
+            return;
+        }
+
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
         var validationContext = context.CreateValidationContext(value, displayName, Name);
 
@@ -152,6 +163,12 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// </remarks>
     public virtual void Validate(object? value, ValidateContext context)
     {
+        if (value is null)
+        {
+            // See comment in ValidateAsync.
+            return;
+        }
+
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
         var validationContext = context.CreateValidationContext(value, displayName, Name);
 
@@ -205,8 +222,6 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
             }
         }
     }
-
-    string? IValidationErrorReporter.MemberName => Name;
 
     ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
     {

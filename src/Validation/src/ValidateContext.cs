@@ -180,7 +180,7 @@ public sealed class ValidateContext
         object? value,
         object? container,
         IValidationErrorReporter reporter,
-        ValidationContext? validationContext,
+        ValidationContext validationContext,
         string displayName,
         CancellationToken cancellationToken)
     {
@@ -201,7 +201,7 @@ public sealed class ValidateContext
         object? value,
         object? container,
         IValidationErrorReporter reporter,
-        ValidationContext? validationContext,
+        ValidationContext validationContext,
         string displayName)
     {
         var validationAttributes = reporter.GetValidationAttributes();
@@ -209,7 +209,7 @@ public sealed class ValidateContext
         {
             var attribute = validationAttributes[i];
 
-            var result = GetValidationResultWithPossiblyNullContext(attribute, value, validationContext, reporter.MemberName, displayName);
+            var result = attribute.GetValidationResult(value, validationContext);
             if (result is not null && result != ValidationResult.Success)
             {
                 reporter.ReportError(this, displayName, container, attribute, result);
@@ -217,36 +217,12 @@ public sealed class ValidateContext
         }
     }
 
-    internal static ValidationResult? GetValidationResultWithPossiblyNullContext(
-        ValidationAttribute attribute,
-        object? value,
-        ValidationContext? validationContext,
-        string? memberName,
-        string displayName)
-    {
-        if (validationContext is not null)
-        {
-            return attribute.GetValidationResult(value, validationContext);
-        }
-
-        if (attribute.IsValid(value))
-        {
-            return ValidationResult.Success;
-        }
-
-        var memberNames = memberName is not null
-            ? new[] { memberName }
-            : null;
-
-        return new ValidationResult(attribute.FormatErrorMessage(displayName), memberNames);
-    }
-
     private bool ValidateSynchronousOnly(
         ValidationAttribute[] validationAttributes,
         object? value,
         object? container,
         IValidationErrorReporter reporter,
-        ValidationContext? validationContext,
+        ValidationContext validationContext,
         string displayName)
     {
         bool hasErrors = false;
@@ -259,7 +235,7 @@ public sealed class ValidateContext
                 continue;
             }
 
-            var result = GetValidationResultWithPossiblyNullContext(attribute, value, validationContext, reporter.MemberName, displayName);
+            var result = attribute.GetValidationResult(value, validationContext);
             if (result is not null && result != ValidationResult.Success)
             {
                 hasErrors = true;
@@ -275,7 +251,7 @@ public sealed class ValidateContext
         object? value,
         object? container,
         IValidationErrorReporter reporter,
-        ValidationContext? validationContext,
+        ValidationContext validationContext,
         string displayName,
         CancellationToken cancellationToken)
     {
@@ -311,7 +287,7 @@ public sealed class ValidateContext
         object? container,
         IValidationErrorReporter reporter,
         ValidateContext context,
-        ValidationContext? validationContext,
+        ValidationContext validationContext,
         string displayName,
         CancellationToken originalCancellationToken,
         CancellationTokenSource linkedCancellationTokenSource)
@@ -322,10 +298,7 @@ public sealed class ValidateContext
         // 2. cancellation when we want to short-circuit on first error.
         try
         {
-            var result = validationContext is not null
-                ? await attribute.GetValidationResultAsync(value, validationContext, linkedCancellationTokenSource.Token)
-                : GetValidationResultWithPossiblyNullContext(attribute, value, validationContext, reporter.MemberName, displayName);
-
+            var result = await attribute.GetValidationResultAsync(value, validationContext, linkedCancellationTokenSource.Token);
             if (result is not null && result != ValidationResult.Success)
             {
                 reporter.ReportError(context, displayName, container, attribute, result);
@@ -339,14 +312,11 @@ public sealed class ValidateContext
         }
     }
 
-    [return: NotNullIfNotNull(nameof(objectInstance))]
-    internal ValidationContext? CreateValidationContext(object? objectInstance, string displayName, string? memberName)
-        => objectInstance is null
-            ? null
-            : new ValidationContext(objectInstance, displayName, ServiceProvider, null)
-            {
-                MemberName = memberName,
-            };
+    internal ValidationContext CreateValidationContext(object objectInstance, string displayName, string? memberName)
+        => new ValidationContext(objectInstance, displayName, ServiceProvider, null)
+        {
+            MemberName = memberName,
+        };
 
     internal AsyncValidationTracker TrackAsyncValidations()
         => new AsyncValidationTracker(this);

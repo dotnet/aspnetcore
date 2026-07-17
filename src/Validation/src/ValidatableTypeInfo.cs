@@ -145,11 +145,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
 
         if (value is null)
         {
-            // If we have null, there are no properties to validate.
-            // We cannot also execute IValidatableObject validation because it requires non-null instance.
-            // The only thing we can validate is to run validaiton attributes on the type itself.
-            var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
-            await context.ValidateAttributesAsync(value, value, this, null, display, cancellationToken);
+            // If we have null value here, the only thing we can validate is the type-level attributes.
+            // However, we also skip that for now. See similar early-return null check in ValidatableParameterInfo for reasons.
             return;
         }
 
@@ -202,8 +199,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
 
         if (value == null)
         {
-            var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
-            context.ValidateAllAttributesSynchronously(value, value, this, null, display);
+            // See comment in ValidateAsync.
             return;
         }
 
@@ -377,8 +373,6 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
             return null;
         }
     }
-
-    string? IValidationErrorReporter.MemberName => null;
 
     ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
     {
