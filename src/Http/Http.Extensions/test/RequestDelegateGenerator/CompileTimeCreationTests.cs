@@ -35,21 +35,38 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     }
 
     [Fact]
-    public async Task MapGet_HandlerWithoutParameters_GeneratesStaticEndpoint()
+    public async Task MapGet_HandlerFromDelegateVariable_ShouldNotGenerateStaticEndpoint()
     {
         var (generatorRunResult, compilation) = await RunGeneratorAsync("""
 Func<string> handler = () => "Hello world!";
 app.MapGet("/hello", handler);
 """);
+
+        // When a handler is stored in a delegate variable, we can only resolve the method from
+        // the variable's type. For RDG, that's insufficient (needsAccurateSignature=true), so
+        // the generator emits an UnableToResolveMethod diagnostic and falls back to RequestDelegateFactory.
         var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
-        Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
-        Assert.DoesNotContain(results.Diagnostics, diagnostic => diagnostic.Id == DiagnosticDescriptors.UnableToResolveMethod.Id);
 
-        var endpoint = GetEndpointFromCompilation(compilation);
+        var endpoint = Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+        Assert.Contains(endpoint.Diagnostics, d => d.Id == DiagnosticDescriptors.UnableToResolveMethod.Id);
+    }
 
-        var httpContext = CreateHttpContext();
-        await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    [Fact]
+    public async Task MapGet_HandlerFromCustomDelegateVariable_ShouldNotGenerateStaticEndpoint()
+    {
+        var (generatorRunResult, compilation) = await RunGeneratorAsync("""
+delegate string MyHandler();
+MyHandler handler = () => "Hello world!";
+app.MapGet("/hello", handler);
+""");
+
+        // Custom delegate types cannot be cast to Func<T>/Action in the generated code, so the
+        // generator must not produce a static endpoint. The UnableToResolveMethod diagnostic
+        // ensures fallback to RequestDelegateFactory.
+        var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+
+        var endpoint = Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+        Assert.Contains(endpoint.Diagnostics, d => d.Id == DiagnosticDescriptors.UnableToResolveMethod.Id);
     }
 
     [Fact]
