@@ -61,10 +61,11 @@ app.MapGet("/hello/{id}", GetHandler());
 """);
 
         // From the "GetHandler()" invocation operation, we cannot determine the parameter name "id" at compile-time.
-        // So we fallback to RequestDelegateFactory.
+        // So we fallback to RequestDelegateFactory. The generator emits an UnableToResolveMethod diagnostic.
         var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
 
-        Assert.Empty(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+        var endpoint = Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+        Assert.Contains(endpoint.Diagnostics, d => d.Id == DiagnosticDescriptors.UnableToResolveMethod.Id);
     }
 
     [Fact]
