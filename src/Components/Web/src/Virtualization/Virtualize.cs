@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization;
 /// Provides functionality for rendering a virtualized list of items.
 /// </summary>
 /// <typeparam name="TItem">The <c>context</c> type for the items being rendered.</typeparam>
-[CacheBoundaryLiveComponent(Disallow = true)]
+[CacheBehavior(CacheBehavior.Throw)]
 public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, IAsyncDisposable
 {
     private VirtualizeJsInterop? _jsInterop;
