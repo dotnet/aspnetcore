@@ -1,0 +1,33 @@
+﻿<div id="render-fragment-container-@IdSuffix">
+    <p>Interactive: <span id="is-interactive-@IdSuffix">@_isInteractive</span></p>
+    <div id="child-content-@IdSuffix">
+        @ChildContent
+    </div>
+    <button id="increment-@IdSuffix" @onclick="IncrementCount">Click me</button>
+    <p>Count: <span id="count-@IdSuffix">@_currentCount</span></p>
+</div>
+
+@code {
+    private int _currentCount = 0;
+    private bool _isInteractive = false;
+
+    [Parameter, EditorRequired]
+    public string IdSuffix { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    private void IncrementCount()
+    {
+        _currentCount++;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInteractive = true;
+            StateHasChanged();
+        }
+    }
+}

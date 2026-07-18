@@ -7,14 +7,11 @@ SETLOCAL
 SET DOTNET_ROOT=%~dp0.dotnet
 SET DOTNET_ROOT(x86)=%~dp0.dotnet\x86
 
-:: This tells .NET not to go looking for .NET in other places
-SET DOTNET_MULTILEVEL_LOOKUP=0
-
 :: Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
 SET PATH=%DOTNET_ROOT%;%PATH%
 
 :: Sets TFW for Visual Studio Code usage
-SET TARGET=net10.0
+SET TARGET=net11.0
 
 SET folder=%~1
 

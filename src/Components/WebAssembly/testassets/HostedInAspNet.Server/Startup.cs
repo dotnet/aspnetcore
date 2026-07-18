@@ -41,7 +41,9 @@ public class Startup
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
+#pragma warning disable ASPDEPR011 // UseWebAssemblyDebugging is obsolete
             app.UseWebAssemblyDebugging();
+#pragma warning restore ASPDEPR011
         }
 
         if (mapAllApps || mapAlternativePathApp)

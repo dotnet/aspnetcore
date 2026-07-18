@@ -1,0 +1,9 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Рабочая роль Blazor",
+  "description": "Проект по созданию библиотеки классов, которая запускает код .NET в рабочей роли из Blazor WebAssembly или веб-приложения Blazor.",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
+  "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
+  "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
+}

@@ -180,8 +180,22 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   }
 
   const newSiblings = getLogicalChildrenArray(parent);
+
+  // Remove any orphaned nodes (disconnected from DOM) from the siblings array
+  // and adjust the insertion index accordingly. These can occur when metadata
+  // comments are stripped from the DOM but remain in the logical children array.
+  for (let i = newSiblings.length - 1; i >= 0; i--) {
+    const sibling = newSiblings[i] as any as Node;
+    if (!sibling.parentNode) {
+      newSiblings.splice(i, 1);
+      if (i < childIndex) {
+        childIndex--;
+      }
+    }
+  }
+
   if (childIndex < newSiblings.length) {
-    // Insert
+    // Insert - nextSibling is guaranteed to be connected after orphan cleanup
     const nextSibling = newSiblings[childIndex] as any as Node;
     nextSibling.parentNode!.insertBefore(nodeToInsert, nextSibling);
     newSiblings.splice(childIndex, 0, childAsLogicalElement);
@@ -240,6 +254,14 @@ export function isSvgElement(element: LogicalElement): boolean {
   // to appear as a child of an SVG element and SVGs are case-sensitive.
   const closestElement = getClosestDomElement(element) as any;
   return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
+}
+
+// MathML elements need to be created with the MathML namespace to render correctly.
+// Similar to SVG, MathML has its own namespace (http://www.w3.org/1998/Math/MathML)
+// and elements created without this namespace will not render properly in browsers.
+export function isMathMLElement(element: LogicalElement): boolean {
+  const closestElement = getClosestDomElement(element) as any;
+  return closestElement.namespaceURI === 'http://www.w3.org/1998/Math/MathML';
 }
 
 export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {

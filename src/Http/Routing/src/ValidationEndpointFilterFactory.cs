@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Mime;
 using System.Reflection;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 internal static class ValidationEndpointFilterFactory
 {
     // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
-    private readonly record struct ValidatableParameterEntry(int Index, IValidatableInfo Parameter, string DisplayName);
+    private readonly record struct ValidatableParameterEntry(int Index, IValidatableParameterInfo Parameter, string Name);
 
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
@@ -28,7 +29,6 @@ internal static class ValidationEndpointFilterFactory
         {
             return next;
         }
-
         var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
 
         // Use a list to only store validatable parameters instead of arrays for all parameters
@@ -48,7 +48,7 @@ internal static class ValidationEndpointFilterFactory
                 validatableParameters.Add(new ValidatableParameterEntry(
                     i,
                     validatableParameter,
-                    GetDisplayName(parameters[i])));
+                    parameters[i].Name!));
             }
         }
 
@@ -74,14 +74,16 @@ internal static class ValidationEndpointFilterFactory
                     continue;
                 }
 
-                var validationContext = new ValidationContext(argument, entry.DisplayName, context.HttpContext.RequestServices, items: null);
+                // ValidationContext.DisplayName is overwritten by ValidatableParameterInfo.ValidateAsync
+                // once the localized display name is resolved; the parameter name acts as a placeholder.
+                var validationContext = new ValidationContext(argument, entry.Name, context.HttpContext.RequestServices, items: null);
 
                 if (validateContext == null)
                 {
                     validateContext = new ValidateContext
                     {
                         ValidationOptions = options,
-                        ValidationContext = validationContext
+                        ValidationContext = validationContext,
                     };
                 }
                 else
@@ -96,7 +98,13 @@ internal static class ValidationEndpointFilterFactory
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                var problemDetails = new HttpValidationProblemDetails(validateContext.ValidationErrors);
+                var validationErrors = validateContext.ValidationErrors.ToDictionary(
+                    keySelector: kvp => kvp.Key,
+                    elementSelector: kvp => kvp.Value.ToArray());
+                var problemDetails = new HttpValidationProblemDetails(validationErrors)
+                {
+                    Status = StatusCodes.Status400BadRequest
+                };
 
                 var problemDetailsService = context.HttpContext.RequestServices.GetService<IProblemDetailsService>();
                 if (problemDetailsService is not null)
@@ -123,20 +131,31 @@ internal static class ValidationEndpointFilterFactory
     }
 
     private static bool IsServiceParameter(ParameterInfo parameterInfo, IServiceProviderIsService? isService)
-        => HasFromServicesAttribute(parameterInfo) ||
-           (isService?.IsService(parameterInfo.ParameterType) == true);
-
-    private static bool HasFromServicesAttribute(ParameterInfo parameterInfo)
-        => parameterInfo.CustomAttributes.OfType<IFromServiceMetadata>().Any();
-
-    private static string GetDisplayName(ParameterInfo parameterInfo)
     {
-        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttribute != null)
+        var attributes = parameterInfo.GetCustomAttributes();
+        foreach (var attribute in attributes)
         {
-            return displayAttribute.Name ?? parameterInfo.Name!;
+            if (attribute is IFromRouteMetadata or
+                IFromQueryMetadata or
+                IFromHeaderMetadata or
+                IFromBodyMetadata or
+                IFromFormMetadata)
+            {
+                return false;
+            }
+
+            if (attribute is IFromServiceMetadata or FromKeyedServicesAttribute)
+            {
+                return true;
+            }
         }
 
-        return parameterInfo.Name!;
+        var parameterType = parameterInfo.ParameterType;
+        return parameterType == typeof(HttpContext) ||
+            parameterType == typeof(HttpRequest) ||
+            parameterType == typeof(HttpResponse) ||
+            parameterType == typeof(ClaimsPrincipal) ||
+            parameterType == typeof(CancellationToken) ||
+            isService?.IsService(parameterType) == true;
     }
 }

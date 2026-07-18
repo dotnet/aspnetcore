@@ -12,7 +12,7 @@ internal sealed class ChangeDetection
 
     static ChangeDetection()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _immutableObjectTypesCache.Clear;
         }

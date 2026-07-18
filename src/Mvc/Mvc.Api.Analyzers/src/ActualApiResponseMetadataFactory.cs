@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
 public static class ActualApiResponseMetadataFactory
 {
     /// <summary>
-    /// This method looks at individual return statments and attempts to parse the status code and the return type.
+    /// This method looks at individual return statements and attempts to parse the status code and the return type.
     /// Given an <see cref="IMethodBodyBaseOperation"/> for an action, this method inspects return statements in the body.
     /// If the returned type is not assignable from IActionResult, it assumes that an "object" value is being returned. e.g. return new Person();
     /// For return statements returning an action result, it attempts to infer the status code and return type. Helper methods in controller,

@@ -12,6 +12,33 @@
         StringAttributeAfter="other-text" />
 </div>
 
+<div id="bool-toggle-section">
+    <h2>Bool attribute toggle</h2>
+    <div id="bool-toggle-target" @attributes="toggleBoolValues">Content</div>
+    <button id="bool-toggle-button" @onclick="ToggleBoolAttribute">Toggle</button>
+    <span id="bool-toggle-state">@isBoolEnabled</span>
+</div>
+
+<div id="select-with-bool-attrs-section">
+    <h2>Select with bool attributes</h2>
+    <select id="select-with-bool-attrs" @attributes="selectBoolAttributes" @bind="selectedValue">
+        <option value="">Empty value</option>
+        <option value="First">First choice</option>
+        <option value="Second">Second choice</option>
+        <option value="Third">Third choice</option>
+    </select>
+    <span id="select-with-bool-attrs-value">@selectedValue</span>
+    <button id="select-toggle-disabled" @onclick="ToggleSelectDisabled">Toggle disabled</button>
+    <span id="select-disabled-state">@isSelectDisabled</span>
+</div>
+
+<div id="mixed-bool-string-attrs-section">
+    <h2>Mixed bool and string splatted attributes</h2>
+    <input id="mixed-attrs-input" type="text" @attributes="mixedAttributes" />
+    <button id="mixed-attrs-toggle" @onclick="ToggleMixedAttributes">Toggle</button>
+    <span id="mixed-attrs-state">@isMixedReadonly</span>
+</div>
+
 @functions {
     Dictionary<string, object> elementValues = new Dictionary<string, object>()
     {
@@ -19,4 +46,42 @@
         { "string", "middle-value" },
         { "unmatched", "unmatched-value" },
     };
+
+    bool isBoolEnabled = true;
+    Dictionary<string, object> toggleBoolValues => new Dictionary<string, object>()
+    {
+        { "data-enabled", isBoolEnabled },
+        { "hidden", !isBoolEnabled },
+    };
+
+    void ToggleBoolAttribute()
+    {
+        isBoolEnabled = !isBoolEnabled;
+    }
+
+    string selectedValue = "Second";
+    bool isSelectDisabled = false;
+    Dictionary<string, object> selectBoolAttributes => new Dictionary<string, object>()
+    {
+        { "disabled", isSelectDisabled },
+        { "data-custom", "custom-value" },
+    };
+
+    void ToggleSelectDisabled()
+    {
+        isSelectDisabled = !isSelectDisabled;
+    }
+
+    bool isMixedReadonly = false;
+    Dictionary<string, object> mixedAttributes => new Dictionary<string, object>()
+    {
+        { "readonly", isMixedReadonly },
+        { "placeholder", "type here" },
+        { "data-active", !isMixedReadonly },
+    };
+
+    void ToggleMixedAttributes()
+    {
+        isMixedReadonly = !isMixedReadonly;
+    }
 }

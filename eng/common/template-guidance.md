@@ -71,7 +71,6 @@ eng\common\
             source-build.yml                 (shim)
             source-index-stage1.yml          (shim)
         jobs\
-            codeql-build.yml                 (shim)
             jobs.yml                         (shim)
             source-build.yml                 (shim)
         post-build\
@@ -82,14 +81,12 @@ eng\common\
             publish-build-artifacts.yml      (logic)
             publish-pipeline-artifacts.yml   (logic)
             component-governance.yml         (shim)
-            generate-sbom.yml                (shim)
             publish-logs.yml                 (shim)
             retain-build.yml                 (shim)
             send-to-helix.yml                (shim)
             source-build.yml                 (shim)
         variables\
             pool-providers.yml               (logic + redirect) # templates/variables/pool-providers.yml will redirect to templates-official/variables/pool-providers.yml if you are running in the internal project
-            sdl-variables.yml                (logic)
     core-templates\
         job\
             job.yml                          (logic)
@@ -98,7 +95,6 @@ eng\common\
             source-build.yml                 (logic)
             source-index-stage1.yml          (logic)
         jobs\
-            codeql-build.yml                 (logic)
             jobs.yml                         (logic)
             source-build.yml                 (logic)
         post-build\
@@ -107,7 +103,6 @@ eng\common\
             setup-maestro-vars.yml           (logic)
         steps\
             component-governance.yml         (logic)
-            generate-sbom.yml                (logic)
             publish-build-artifacts.yml      (redirect)
             publish-logs.yml                 (logic)
             publish-pipeline-artifacts.yml   (redirect)

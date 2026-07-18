@@ -32,6 +32,8 @@ public abstract class WebViewManager : IAsyncDisposable
     private PageContext _currentPageContext;
     private bool _disposed;
 
+    internal PageContext CurrentPageContext => _currentPageContext;
+
     /// <summary>
     /// Constructs an instance of <see cref="WebViewManager"/>.
     /// </summary>

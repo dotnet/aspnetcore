@@ -3,7 +3,7 @@
 <h3>Sample QuickGrid Component</h3>
 
 <div id="grid">
-    <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" custom-attrib="somevalue" class="custom-class-attrib">
+    <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" OnRowClick="@((Person p) => HandleRowClick(p))" custom-attrib="somevalue" class="custom-class-attrib">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.FirstName)" Sortable="true">
             <ColumnOptions>
@@ -20,11 +20,32 @@
 </div>
 <Paginator State="@pagination" />
 
+<div id="clicked-row-info">
+    @if (clickedPerson is not null)
+    {
+        <p id="clicked-person-id">PersonId: @clickedPerson.PersonId</p>
+        <p id="clicked-person-name">Name: @clickedPerson.FirstName @clickedPerson.LastName</p>
+        <p id="click-count">Click count: @clickCount</p>
+    }
+    else
+    {
+        <p id="no-click">No row clicked yet</p>
+    }
+</div>
+
 @code {
     record Person(int PersonId, string FirstName, string LastName, DateOnly BirthDate);
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
     string firstNameFilter;
     QuickGrid<Person> quickGridRef;
+    Person clickedPerson;
+    int clickCount;
+
+    void HandleRowClick(Person person)
+    {
+        clickedPerson = person;
+        clickCount++;
+    }
 
     int ComputeAge(DateOnly birthDate)
         => DateTime.Now.Year - birthDate.Year - (birthDate.DayOfYear < DateTime.Now.DayOfYear ? 0 : 1);

@@ -35,7 +35,7 @@ To get started, fork this repo and then clone it locally. This workflow assumes 
     > To modify an existing Visual Studio installation, [follow the instructions for installing from a configuration file](https://learn.microsoft.com/visualstudio/install/import-export-installation-configurations#import-a-configuration) and use the `.vsconfig` file located in the root of the repository:
 
     ```powershell
-    ./eng/scripts/InstallVisualStudio.ps1 Enterprise Preview
+    ./eng/scripts/InstallVisualStudio.ps1 -Edition Enterprise -Channel Preview
     ```
 
     Replace `Enterprise` with `Professional` or `Community` if that is your preferred Visual Studio edition.

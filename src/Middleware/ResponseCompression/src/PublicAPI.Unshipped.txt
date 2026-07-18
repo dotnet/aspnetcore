@@ -1,1 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.CreateStream(System.IO.Stream! outputStream) -> System.IO.Stream!
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.EncodingName.get -> string!
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.SupportsFlush.get -> bool
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.ZstandardCompressionProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions!>! options) -> void
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.CompressionOptions.get -> System.IO.Compression.ZstandardCompressionOptions!
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.CompressionOptions.set -> void
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.ZstandardCompressionProviderOptions() -> void

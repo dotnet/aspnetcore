@@ -153,6 +153,7 @@ public class HostStringTests
     [InlineData(":", "localhost")]
     [InlineData("example.com:443", "*.example.com")]
     [InlineData(".example.com:443", "*.example.com")]
+    [InlineData("..example.com:443", "*.example.com")]
     [InlineData("foo.com:443", "*.example.com")]
     [InlineData("foo.example.com.bar:443", "*.example.com")]
     [InlineData(".com:443", "*.com")]

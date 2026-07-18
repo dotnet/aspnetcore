@@ -72,6 +72,7 @@ public class ComplexTypeWithParsableProperties
               "Email": "invalid-email",
               "Url": "invalid-url",
               "DateOnlyWithRange": "2026-05-01",
+              "DateTimeWithRange": "2026-05-01T10:00:00",
               "DecimalWithRange": "150.75",
               "TimeSpanWithHourRange": "22:00:00",
               "VersionWithRegex": "1.0",
@@ -90,6 +91,11 @@ public class ComplexTypeWithParsableProperties
                 {
                     Assert.Equal("DateOnlyWithRange", error.Key);
                     Assert.Contains("Date must be between 2023-01-01 and 2025-12-31", error.Value);
+                },
+                error =>
+                {
+                    Assert.Equal("DateTimeWithRange", error.Key);
+                    Assert.Contains("DateTime must be between 2023-01-01 and 2025-12-31", error.Value);
                 },
                 error =>
                 {

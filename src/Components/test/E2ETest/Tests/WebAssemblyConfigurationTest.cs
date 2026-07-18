@@ -37,7 +37,7 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
         // Verify values from the default 'appsettings.json' are read.
         Browser.Equal("Default key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
 
-        if (_serverFixture.TestTrimmedOrMultithreadingApps)
+        if (_serverFixture.TestTrimmedApps)
         {
             // Verify that the environment gets detected as 'Production'.
             Browser.Equal("Production", () => _appElement.FindElement(By.Id("environment")).Text);

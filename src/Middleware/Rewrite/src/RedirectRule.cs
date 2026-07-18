@@ -43,6 +43,7 @@ internal sealed class RedirectRule : IRule
         if (initMatchResults.Success)
         {
             var newPath = initMatchResults.Result(Replacement);
+            newPath = UrlNormalizer.CollapseLeadingSlashes(newPath);
             var response = context.HttpContext.Response;
 
             response.StatusCode = StatusCode;

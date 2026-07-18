@@ -1,1 +1,8 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.AccessTokenResult(Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus status, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken! token, string! redirectUrl) -> void
+*REMOVED*Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.RedirectUrl.get -> string?
+*REMOVED*Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.RemoteAuthenticationService(Microsoft.JSInterop.IJSRuntime! jsRuntime, Microsoft.Extensions.Options.IOptionsSnapshot<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>!>! options, Microsoft.AspNetCore.Components.NavigationManager! navigation, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccountClaimsPrincipalFactory<TAccount!>! accountClaimsPrincipalFactory) -> void
+*REMOVED*Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager
+*REMOVED*Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager.SignOutSessionStateManager(Microsoft.JSInterop.IJSRuntime! jsRuntime) -> void
+*REMOVED*virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager.SetSignOutState() -> System.Threading.Tasks.ValueTask
+*REMOVED*virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager.ValidateSignOutState() -> System.Threading.Tasks.Task<bool>!
