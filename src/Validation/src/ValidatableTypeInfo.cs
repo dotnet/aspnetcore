@@ -141,14 +141,14 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        ValidateDepth(context);
-
         if (value is null)
         {
             // If we have null value here, the only thing we can validate is the type-level attributes.
             // However, we also skip that for now. See similar early-return null check in ValidatableParameterInfo for reasons.
             return;
         }
+
+        ValidateDepth(context);
 
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
@@ -195,13 +195,13 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
     /// <inheritdoc />
     public virtual void Validate(object? value, ValidateContext context)
     {
-        ValidateDepth(context);
-
         if (value == null)
         {
             // See comment in ValidateAsync.
             return;
         }
+
+        ValidateDepth(context);
 
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
