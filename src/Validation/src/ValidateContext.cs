@@ -312,11 +312,14 @@ public sealed class ValidateContext
         }
     }
 
-    internal ValidationContext CreateValidationContext(object objectInstance, string displayName, string? memberName)
-        => new ValidationContext(objectInstance, displayName, ServiceProvider, null)
-        {
-            MemberName = memberName,
-        };
+    [return: NotNullIfNotNull(nameof(objectInstance))]
+    internal ValidationContext? CreateValidationContext(object? objectInstance, string displayName, string? memberName)
+        => objectInstance is null
+            ? null
+            : new ValidationContext(objectInstance, displayName, ServiceProvider, null)
+            {
+                MemberName = memberName,
+            };
 
     internal AsyncValidationTracker TrackAsyncValidations()
         => new AsyncValidationTracker(this);
