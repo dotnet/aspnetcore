@@ -838,17 +838,17 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     property =>
                     {
                         Assert.Equal("name", property.Key);
-                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("description", property.Key);
-                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("resume", property.Key);
-                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
                         Assert.Equal("binary", property.Value.Format);
                     });
             }

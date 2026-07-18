@@ -245,7 +245,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("stream", property.Key);
                     var targetSchema = property.Value;
-                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, targetSchema.Type);
+                    Assert.Equal(JsonSchemaType.String, targetSchema.Type);
                     Assert.Equal("binary", targetSchema.Format);
                 });
         });

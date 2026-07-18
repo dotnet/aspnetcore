@@ -41,16 +41,7 @@
         "type": "object",
         "properties": {
           "status": {
-            "oneOf": [
-              {
-                "enum": [
-                  null
-                ]
-              },
-              {
-                "$ref": "#/components/schemas/PascalCaseStatus"
-              }
-            ]
+            "$ref": "#/components/schemas/PascalCaseStatus"
           }
         }
       },

@@ -899,16 +899,7 @@
             "type": "string"
           },
           "optionalNested": {
-            "oneOf": [
-              {
-                "enum": [
-                  null
-                ]
-              },
-              {
-                "$ref": "#/components/schemas/NestedModel"
-              }
-            ]
+            "$ref": "#/components/schemas/NestedModel"
           },
           "requiredNested": {
             "$ref": "#/components/schemas/NestedModel"
@@ -934,7 +925,8 @@
             "format": "date-time",
             "nullable": true
           }
-        }
+        },
+        "nullable": true
       },
       "Config": {
         "type": "object",
@@ -1026,16 +1018,7 @@
             "$ref": "#/components/schemas/TestEnum"
           },
           "nullableEnum": {
-            "oneOf": [
-              {
-                "enum": [
-                  null
-                ]
-              },
-              {
-                "$ref": "#/components/schemas/TestEnum"
-              }
-            ]
+            "$ref": "#/components/schemas/TestEnum"
           },
           "listOfNullableEnums": {
             "type": "array",
@@ -1189,18 +1172,10 @@
             "nullable": true
           },
           "deepNested": {
-            "oneOf": [
-              {
-                "enum": [
-                  null
-                ]
-              },
-              {
-                "$ref": "#/components/schemas/ComplexType"
-              }
-            ]
+            "$ref": "#/components/schemas/ComplexType"
           }
-        }
+        },
+        "nullable": true
       },
       "NullableArrayModel": {
         "type": "object",
@@ -1270,16 +1245,7 @@
             "nullable": true
           },
           "nullableComplexProperty": {
-            "oneOf": [
-              {
-                "enum": [
-                  null
-                ]
-              },
-              {
-                "$ref": "#/components/schemas/ComplexType"
-              }
-            ]
+            "$ref": "#/components/schemas/ComplexType"
           }
         }
       },
@@ -1595,16 +1561,7 @@
             "$ref": "#/components/schemas/RefProfile"
           },
           "secondaryUser": {
-            "oneOf": [
-              {
-                "enum": [
-                  null
-                ]
-              },
-              {
-                "$ref": "#/components/schemas/RefProfile"
-              }
-            ]
+            "$ref": "#/components/schemas/RefProfile"
           }
         }
       },

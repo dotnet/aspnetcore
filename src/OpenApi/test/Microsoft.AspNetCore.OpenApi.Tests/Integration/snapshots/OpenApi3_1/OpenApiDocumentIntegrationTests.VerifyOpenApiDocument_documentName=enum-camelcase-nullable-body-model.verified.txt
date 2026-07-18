@@ -41,14 +41,7 @@
         "type": "object",
         "properties": {
           "status": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/CamelCaseStatus"
-              }
-            ]
+            "$ref": "#/components/schemas/CamelCaseStatus"
           }
         }
       },

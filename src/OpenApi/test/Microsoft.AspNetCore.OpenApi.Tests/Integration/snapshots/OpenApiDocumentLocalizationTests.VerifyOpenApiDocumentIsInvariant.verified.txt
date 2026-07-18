@@ -2657,14 +2657,7 @@
         "type": "object",
         "properties": {
           "status": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/CamelCaseStatus"
-              }
-            ]
+            "$ref": "#/components/schemas/CamelCaseStatus"
           }
         }
       },
@@ -2745,14 +2738,7 @@
             "type": "string"
           },
           "optionalNested": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/NestedModel"
-              }
-            ]
+            "$ref": "#/components/schemas/NestedModel"
           },
           "requiredNested": {
             "$ref": "#/components/schemas/NestedModel"
@@ -2769,7 +2755,10 @@
         }
       },
       "ComplexType": {
-        "type": "object",
+        "type": [
+          "null",
+          "object"
+        ],
         "properties": {
           "description": {
             "type": [
@@ -2898,14 +2887,7 @@
             "$ref": "#/components/schemas/TestEnum"
           },
           "nullableEnum": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/TestEnum"
-              }
-            ]
+            "$ref": "#/components/schemas/TestEnum"
           },
           "listOfNullableEnums": {
             "type": "array",
@@ -3095,7 +3077,10 @@
         "required": [
           "name"
         ],
-        "type": "object",
+        "type": [
+          "null",
+          "object"
+        ],
         "properties": {
           "name": {
             "type": "string"
@@ -3108,14 +3093,7 @@
             "format": "int32"
           },
           "deepNested": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/ComplexType"
-              }
-            ]
+            "$ref": "#/components/schemas/ComplexType"
           }
         }
       },
@@ -3199,14 +3177,7 @@
             ]
           },
           "nullableComplexProperty": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/ComplexType"
-              }
-            ]
+            "$ref": "#/components/schemas/ComplexType"
           }
         }
       },
@@ -3240,14 +3211,7 @@
         "type": "object",
         "properties": {
           "status": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/PascalCaseStatus"
-              }
-            ]
+            "$ref": "#/components/schemas/PascalCaseStatus"
           }
         }
       },
@@ -3605,14 +3569,7 @@
             "$ref": "#/components/schemas/RefProfile"
           },
           "secondaryUser": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/RefProfile"
-              }
-            ]
+            "$ref": "#/components/schemas/RefProfile"
           }
         }
       },
