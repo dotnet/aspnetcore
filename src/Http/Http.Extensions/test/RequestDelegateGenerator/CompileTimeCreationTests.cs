@@ -55,9 +55,10 @@ app.MapGet("/hello", handler);
     public async Task MapGet_HandlerFromCustomDelegateVariable_ShouldNotGenerateStaticEndpoint()
     {
         var (generatorRunResult, compilation) = await RunGeneratorAsync("""
-delegate string MyHandler();
 MyHandler handler = () => "Hello world!";
 app.MapGet("/hello", handler);
+
+delegate string MyHandler();
 """);
 
         // Custom delegate types cannot be cast to Func<T>/Action in the generated code, so the
