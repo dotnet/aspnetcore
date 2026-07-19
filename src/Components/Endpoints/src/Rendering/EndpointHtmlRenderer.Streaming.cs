@@ -273,20 +273,20 @@ internal partial class EndpointHtmlRenderer
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
 
-        if (componentState.Component is CacheBoundary cacheBoundary)
+        if (componentState.Component is CacheView cacheView)
         {
-            CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(output);
+            CacheViewService.ThrowIfNestedInsideCapturingCacheView(output);
 
-            var renderState = cacheBoundary.RenderState;
+            var renderState = cacheView.RenderState;
 
             if (renderState?.IsCacheHit == true)
             {
-                // Cache hit: the boundary's render tree already holds the cached content.
+                // Cache hit: the CacheView's render tree already holds the cached content.
                 base.WriteComponentHtml(componentId, output);
                 return;
             }
 
-            if (CacheBoundaryService.TryBeginWrite(renderState, cacheBoundary, output, out var wrappedOutput))
+            if (CacheViewService.TryBeginWrite(renderState, cacheView, output, out var wrappedOutput))
             {
                 var captureCompletedSuccessfully = false;
                 try
@@ -296,16 +296,16 @@ internal partial class EndpointHtmlRenderer
                 }
                 finally
                 {
-                    GetCacheBoundaryService().EndCapture(renderState, captureCompletedSuccessfully);
+                    GetCacheViewService().EndCapture(renderState, captureCompletedSuccessfully);
                 }
                 return;
             }
         }
 
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
-        var captureWriter = output as CacheBoundaryTextWriter;
+        var captureWriter = output as CacheViewTextWriter;
         var pausedCapture = false;
-        if (captureWriter is not null && captureWriter.IsCapturing && (!CacheBoundaryService.IsCacheableComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
+        if (captureWriter is not null && captureWriter.IsCapturing && (!CacheViewService.IsCacheableComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
         {
             pausedCapture = true;
             captureWriter.PauseCapture();
@@ -315,14 +315,14 @@ internal partial class EndpointHtmlRenderer
             if (!captureWriter.IsValidationOnly)
             {
                 // An interactive live cached component is wrapped in an SSRRenderModeBoundary that owns the inner
-                // component type and render mode; a plain [CacheBoundaryLiveComponent] live cached component is the component
+                // component type and render mode; a plain live cached component is the component
                 // itself with no render mode.
                 var liveCachedComponentBoundary = componentState.Component as SSRRenderModeBoundary;
                 var liveCachedComponentType = liveCachedComponentBoundary?.ComponentType ?? componentState.Component.GetType();
 
                 var liveCachedComponentCapture = TryCaptureLiveCachedComponentParameterFrames(componentState)
                     ?? throw new InvalidOperationException(
-                        $"CacheBoundary could not locate the live cached component '{liveCachedComponentType.FullName}' in its parent's render tree.");
+                        $"CacheView could not locate the live cached component '{liveCachedComponentType.FullName}' in its parent's render tree.");
 
                 captureWriter.CreateLiveCachedComponent(liveCachedComponentType, liveCachedComponentBoundary?.RenderMode, liveCachedComponentCapture, GetRenderFragmentSerializationLogger());
             }
@@ -416,10 +416,10 @@ internal partial class EndpointHtmlRenderer
             .CreateLogger(typeof(RenderFragmentSerializer).FullName!);
     }
 
-    private CacheBoundaryService? _cacheBoundaryService;
+    private CacheViewService? _CacheViewService;
 
-    private CacheBoundaryService GetCacheBoundaryService()
-        => _cacheBoundaryService ??= _httpContext.RequestServices.GetRequiredService<CacheBoundaryService>();
+    private CacheViewService GetCacheViewService()
+        => _CacheViewService ??= _httpContext.RequestServices.GetRequiredService<CacheViewService>();
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
     {
