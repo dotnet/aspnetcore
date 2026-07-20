@@ -22,8 +22,13 @@ internal sealed class Obsoletions
     internal const string AspNetCoreDeprecate008Url = "https://aka.ms/aspnet/deprecate/008";
     internal const string AspNetCoreDeprecate009Url = "https://aka.ms/aspnet/deprecate/009";
     internal const string AspNetCoreDeprecate010Url = "https://aka.ms/aspnet/deprecate/010";
+    internal const string AspNetCoreDeprecate011Url = "https://aka.ms/aspnet/deprecate/011";
 
     // ITlsTokenBindingFeature (RFC 8471 TLS Token Binding) has been abandoned by browsers (Chrome/Edge) and IETF work has stalled.
     internal const string TlsTokenBindingFeatureMessage = "ITlsTokenBindingFeature is deprecated. TLS Token Binding (RFC 8471) has not been adopted by browsers.";
     internal const string TlsTokenBindingFeatureDiagId = "ASPDEPR010";
+
+    // UseWebAssemblyDebugging is deprecated. Blazor WebAssembly debugging is now launched directly by Visual Studio and Visual Studio Code.
+    internal const string UseWebAssemblyDebuggingMessage = "UseWebAssemblyDebugging is obsolete and should be removed along with any inspectUri configurations. Blazor WebAssembly debugging is now launched directly by Visual Studio and Visual Studio Code.";
+    internal const string UseWebAssemblyDebuggingDiagId = "ASPDEPR011";
 }
