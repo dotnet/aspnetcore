@@ -29,7 +29,9 @@ internal sealed class Startup
         app.UseDeveloperExceptionPage();
         EnableConfiguredPathbase(app, configuration);
 
+#pragma warning disable ASPDEPR011 // The dev-server still uses the legacy middleware-based debugging endpoint for its internal testing and compatibility scenarios.
         app.UseWebAssemblyDebugging();
+#pragma warning restore ASPDEPR011
 
         var webHostEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
         var applyCopHeaders = configuration.GetValue<bool>("ApplyCopHeaders");
