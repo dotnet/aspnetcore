@@ -233,20 +233,12 @@
         if (Gate)
         {
             // Block tail-advancing fetches so the test can observe the pending phase deterministically.
-            try
+            while (!_gateOpen && IsGatedFetch(request.StartIndex))
             {
-                while (!_gateOpen && IsGatedFetch(request.StartIndex))
-                {
-                    var tcs = _gateTcs;
-                    using var registration = request.CancellationToken.Register(
-                        static state => ((TaskCompletionSource)state!).TrySetCanceled(), tcs);
-                    await tcs.Task;
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                return new ItemsProviderResult<(int RowIndex, LogItem Data)>(
-                    Array.Empty<(int, LogItem)>(), _items.Count);
+                var tcs = _gateTcs;
+                using var registration = request.CancellationToken.Register(
+                    static state => ((TaskCompletionSource)state!).TrySetCanceled(), tcs);
+                await tcs.Task;
             }
         }
         else
