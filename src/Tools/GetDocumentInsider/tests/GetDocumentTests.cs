@@ -262,7 +262,7 @@ public class GetDocumentTests(ITestOutputHelper output)
         // Assert
         using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
         var result = OpenApiDocument.Load(stream, "json");
-        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_2, result.Diagnostic.SpecificationVersion);
 
         // Verify environment appears in summary - this proves --environment parameter is used
         Assert.Equal($"Running in '{environment}' environment", result.Document.Info.Summary);
