@@ -98,10 +98,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// Gets or sets the anchor mode that controls how the viewport behaves at the edges of the list
     /// when new items arrive during virtualization. The default is <see cref="VirtualizeAnchorMode.Start"/>.
     ///
-    /// This only has an effect when <see cref="Virtualize"/> is <see langword="true"/>. For anchoring to
-    /// engage when using <see cref="ItemsProvider"/> (or when using <see cref="Items"/> with types that do
-    /// not have value-equality semantics), you must also supply an <see cref="ItemComparer"/> so the grid can
-    /// detect whether items were prepended or appended.
+    /// This only has an effect when <see cref="Virtualize"/> is <see langword="true"/>. For reliable anchoring
+    /// with reference types that do not have value-equality semantics, supply an <see cref="ItemComparer"/> so
+    /// the grid can detect whether items were prepended or appended.
     /// </summary>
     [Parameter]
     [Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
@@ -113,8 +112,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// indicates items were inserted above the current viewport, so the grid can keep the viewport anchored.
     ///
     /// Provide a comparer that compares items by a stable unique identifier (for example, a primary key).
-    /// When not set, viewport anchoring across prepends/appends is disabled and the viewport keeps its raw
-    /// scroll position when the data changes.
+    /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
+    /// <see cref="IEquatable{T}"/>, the default works automatically (value equality). For reference types
+    /// without value-equality semantics, the default falls back to reference equality, which produces
+    /// false-positive prepend detection when the data source returns fresh instances between loads.
     ///
     /// This only has an effect when <see cref="Virtualize"/> is <see langword="true"/>.
     /// </summary>
@@ -123,11 +124,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     public IEqualityComparer<TGridItem>? ItemComparer
     {
         get => _itemComparer;
-        set
-        {
-            _itemComparer = value;
-            _itemComparerExplicitlySet = true;
-        }
+        set => _itemComparer = value;
     }
 
     /// <summary>
@@ -170,7 +167,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private ICollection<TGridItem> _currentNonVirtualizedViewItems = Array.Empty<TGridItem>();
 
     private IEqualityComparer<TGridItem>? _itemComparer;
-    private bool _itemComparerExplicitlySet;
 
     // Adapts the user's ItemComparer to Virtualize's (RowIndex, Data) tuple, comparing only the data.
     private readonly IEqualityComparer<(int, TGridItem)> _virtualizeItemComparer;
@@ -299,12 +295,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         var attributes = new Dictionary<string, object>
         {
             ["AnchorMode"] = AnchorMode,
+            ["ItemComparer"] = _virtualizeItemComparer,
         };
-
-        if (_itemComparerExplicitlySet)
-        {
-            attributes["ItemComparer"] = _virtualizeItemComparer;
-        }
 
         _virtualizeAttributes = attributes;
     }
