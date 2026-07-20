@@ -1948,6 +1948,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Contains("Provider delay on", () => Browser.Exists(By.Id("qg-status")).Text);
     }
 
+    private void EnableQuickGridDefaultComparer()
+    {
+        Browser.Exists(By.Id("qg-toggle-comparer")).Click();
+        Browser.Contains("Comparer: Default", () => Browser.Exists(By.Id("qg-status")).Text);
+    }
+
     private void QuickGridMutate(IJavaScriptExecutor js, string mutationButtonId, string statusText, bool useItemsProvider)
     {
         if (useItemsProvider)
@@ -2014,6 +2020,37 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             indexBefore,
             relTopBefore,
             $"QuickGrid AnchorMode {anchorMode} near top: viewport should stay stable after prepend",
+            driftTolerance: 2);
+    }
+
+    // When ItemComparer is not set, QuickGrid falls back to EqualityComparer<T>.Default. In Items mode the
+    // backing list keeps stable instances between renders, so reference-equality default detection correctly
+    // recognizes a prepend and keeps the viewport anchored without the user supplying a custom comparer.
+    [Fact]
+    public void QuickGrid_AnchorMode_DefaultComparer_Items_PrependKeepsViewportStable()
+    {
+        MountQuickGridAnchorModeComponent("1", useItemsProvider: false);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridDefaultComparer();
+
+        ScrollNearTopAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "QuickGrid default comparer (Items): viewport should stay stable after prepend",
             driftTolerance: 2);
     }
 

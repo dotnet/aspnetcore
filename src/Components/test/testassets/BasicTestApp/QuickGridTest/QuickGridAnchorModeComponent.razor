@@ -24,6 +24,7 @@
 <p>
     <button id="qg-toggle-provider" @onclick="ToggleProvider">Source: @(useItemsProvider ? "ItemsProvider" : "Items")</button>
     <button id="qg-toggle-delay" @onclick="ToggleDelay">Provider delay: @(slowProvider ? "150ms" : "off")</button>
+    <button id="qg-toggle-comparer" @onclick="ToggleComparer">Comparer: @(useDefaultComparer ? "Default" : "Custom")</button>
     <button id="qg-prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
     <button id="qg-append-items" @onclick="AppendItems">Append 10 Items</button>
     <button id="qg-append-many-items" @onclick="AppendManyItems">Append 100 Items</button>
@@ -38,7 +39,7 @@
 <div id="qg-anchor-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
     @if (useItemsProvider)
     {
-        <QuickGrid @ref="providerGrid" ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer">
+        <QuickGrid @ref="providerGrid" ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@(useDefaultComparer ? null : _itemComparer)">
             <TemplateColumn Title="Item" Class="qg-anchor-cell">
                 <div class="item" data-index="@context.Index">Item @context.Index</div>
             </TemplateColumn>
@@ -46,7 +47,7 @@
     }
     else
     {
-        <QuickGrid Items="@items.AsQueryable()" Virtualize="true" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer">
+        <QuickGrid Items="@items.AsQueryable()" Virtualize="true" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@(useDefaultComparer ? null : _itemComparer)">
             <TemplateColumn Title="Item" Class="qg-anchor-cell">
                 <div class="item" data-index="@context.Index">Item @context.Index</div>
             </TemplateColumn>
@@ -69,6 +70,7 @@
     private string statusMessage = "Ready";
     private bool useItemsProvider;
     private bool slowProvider;
+    private bool useDefaultComparer;
     private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
     private QuickGrid<AnchorItem> providerGrid = default!;
     private GridItemsProvider<AnchorItem> itemsProvider = default!;
@@ -107,6 +109,12 @@
     {
         slowProvider = !slowProvider;
         statusMessage = slowProvider ? "Provider delay on (150ms)" : "Provider delay off";
+    }
+
+    private void ToggleComparer()
+    {
+        useDefaultComparer = !useDefaultComparer;
+        statusMessage = useDefaultComparer ? "Comparer: Default" : "Comparer: Custom";
     }
 
     private void ToggleProviderGate()
