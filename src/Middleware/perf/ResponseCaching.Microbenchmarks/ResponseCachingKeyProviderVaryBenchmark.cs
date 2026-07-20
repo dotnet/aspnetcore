@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Microbenchmarks;
 
@@ -14,8 +15,15 @@ namespace Microsoft.AspNetCore.ResponseCaching.Microbenchmarks;
 /// <see cref="IResponseCachingKeyProvider.CreateLookupVaryByKeys"/> and enumerates the result
 /// to probe the store for a cached vary-by response. The <c>Lookup</c> benchmark exercises that
 /// enumerated path; the <c>StorageKeyControl</c> benchmark builds the same underlying storage key
-/// without the enumeration wrapper, so the per-call difference is exactly the wrapper cost that
-/// this change removes.
+/// without the enumeration wrapper.
+/// <para>
+/// Run the same benchmark at both product revisions to see the effect: at the pre-change revision
+/// (where the provider returned a one-element <c>string[]</c> as <c>IEnumerable&lt;string&gt;</c>)
+/// <c>Lookup</c> allocates a fixed amount more than <c>StorageKeyControl</c> — the array plus the
+/// heap enumerator. After the change (the provider returns a <see cref="StringValues"/> struct)
+/// <c>Lookup</c> allocates exactly what <c>StorageKeyControl</c> does, so the per-call difference
+/// collapses to zero. That before/after delta is the wrapper cost this change removes.
+/// </para>
 /// </summary>
 [MemoryDiagnoser]
 public class ResponseCachingKeyProviderVaryBenchmark
