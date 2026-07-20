@@ -32,7 +32,6 @@
 </p>
 
 <style>
-    .qg-anchor-cell { padding: 0; }
     .qg-anchor-cell .item { height: 50px; line-height: 50px; box-sizing: border-box; }
 </style>
 
@@ -81,8 +80,10 @@
     private int nextAppendIndex = 1000;
 
     // Pending mutations applied inside the provider (simulates DB-backed data).
+#nullable enable
     private List<AnchorItem>? _pendingPrepend;
     private List<AnchorItem>? _pendingAppend;
+#nullable restore
 
     // Deterministic gate: when armed, the provider blocks until the test releases it.
     private bool useProviderGate;
