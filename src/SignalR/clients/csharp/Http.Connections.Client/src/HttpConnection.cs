@@ -459,7 +459,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             }
             urlBuilder.Path += "negotiate";
             Uri uri;
-            if (urlBuilder.Query.Contains("negotiateVersion"))
+            if (Utils.HasQueryStringParameter(urlBuilder.Query, "negotiateVersion"))
             {
                 uri = urlBuilder.Uri;
             }
