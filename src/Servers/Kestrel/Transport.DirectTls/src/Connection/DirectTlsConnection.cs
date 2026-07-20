@@ -1,0 +1,391 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Buffers;
+using System.IO.Pipelines;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
+
+/// <summary>
+/// Connection context for an established DirectTls connection.
+///
+/// After the handshake completes:
+/// - Owns the <see cref="ConnectionIoState"/> (which drives the connection's <see cref="System.Net.Security.TlsSocketSession"/>)
+/// - Uses the assigned <see cref="TlsEventPump"/> for all I/O (read/write via epoll)
+/// - Backend operations happen on the pump's dedicated thread
+/// - Completions are dispatched to the ThreadPool where pipelines run
+/// </summary>
+internal sealed partial class DirectTlsConnection : TransportConnection
+{
+    private readonly ConnectionIoState _connectionState;
+    private readonly TlsEventPump _pump;
+    private readonly ILogger _logger;
+    private readonly MemoryPool<byte> _memoryPool;
+    private readonly CancellationTokenSource _connectionClosedTokenSource = new();
+
+    private Task? _receiveTask;
+    private Task? _sendTask;
+    private volatile bool _aborted;
+    private int _disposed; // 0 = not disposed, 1 = disposed (for thread-safe Compare-And-Swap)
+
+    public DirectTlsConnection(
+        ConnectionIoState connectionState,
+        TlsEventPump pump,
+        EndPoint? localEndPoint,
+        EndPoint? remoteEndPoint,
+        MemoryPool<byte> memoryPool,
+        ILogger logger,
+        SslApplicationProtocol negotiatedApplicationProtocol = default,
+        X509Certificate2? clientCertificate = null)
+    {
+        _connectionState = connectionState;
+        _pump = pump;
+        _memoryPool = memoryPool;
+        _logger = logger;
+
+        LocalEndPoint = localEndPoint;
+        RemoteEndPoint = remoteEndPoint;
+        ConnectionClosed = _connectionClosedTokenSource.Token;
+
+        // A managed Socket over the raw fd (non-owning) is offered, matching the standard sockets
+        // transport's IConnectionSocketFeature.
+        Features.Set<IConnectionSocketFeature>(this);
+
+        // Mark the connection as TLS-secured. The TLS feature interfaces are implemented directly on this
+        // connection (see DirectTlsConnection.FeatureCollection.cs), mirroring how SocketConnection exposes
+        // IConnectionSocketFeature and how the SslStream path's TlsConnectionFeature backs every TLS feature
+        // off a single object. Their presence makes the UseHttps middleware no-op (it sees an existing
+        // ITlsConnectionFeature instead of wrapping the transport in a second SslStream) and makes Kestrel
+        // resolve the request scheme as https. The handshake is already complete here. When the endpoint
+        // requested a client certificate (mTLS) and the peer presented one that passed validation, it is
+        // stored in ClientCertificate so HttpContext.Connection.ClientCertificate resolves.
+        ClientCertificate = clientCertificate;
+        Features.Set<ITlsConnectionFeature>(this);
+        Features.Set<ITlsHandshakeFeature>(this);
+
+        // Publish the ALPN protocol negotiated during the handshake. This transport references Kestrel.Core,
+        // so ITlsApplicationProtocolFeature is set directly (read live from _negotiatedApplicationProtocol),
+        // and HttpConnection.SelectProtocol can pick HTTP/2 without the UseHttps middleware on the path. The
+        // value is refreshed at CompleteHandshake for connections allocated early (at NeedsTlsContext).
+        _negotiatedApplicationProtocol = negotiatedApplicationProtocol;
+        Features.Set<ITlsApplicationProtocolFeature>(this);
+
+        // Subscribe to fatal errors from the connection I/O state
+        // This ensures we get notified even if no read/write is pending when peer disconnects
+        _connectionState.OnFatalError = OnTlsFatalError;
+
+        // Create duplex pipe pair for Kestrel
+        var inputOptions = new PipeOptions(
+            pool: memoryPool,
+            readerScheduler: PipeScheduler.ThreadPool,
+            writerScheduler: PipeScheduler.Inline,
+            useSynchronizationContext: false);
+
+        var outputOptions = new PipeOptions(
+            pool: memoryPool,
+            readerScheduler: PipeScheduler.Inline,
+            writerScheduler: PipeScheduler.ThreadPool,
+            useSynchronizationContext: false);
+
+        var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+        Transport = pair.Transport;
+        Application = pair.Application;
+    }
+
+    public override MemoryPool<byte> MemoryPool => _memoryPool;
+
+    /// <summary>
+    /// The underlying per-connection TLS state. Exposed so the pump can promote a connection that was
+    /// allocated early (at NeedsTlsContext, for the ClientHello listener) to an established connection.
+    /// </summary>
+    internal ConnectionIoState ConnectionState => _connectionState;
+
+    /// <summary>
+    /// Promotes a connection that was allocated early (at NeedsTlsContext, so the ClientHello listener
+    /// had a stable <see cref="ConnectionContext"/>) to a fully-established connection by publishing the
+    /// values that were unknown at allocation time: the negotiated ALPN protocol and any validated client
+    /// certificate. The TLS feature interfaces were already wired in the constructor and read the
+    /// remaining negotiated values live from the session, so nothing else needs updating.
+    /// </summary>
+    internal void CompleteHandshake(SslApplicationProtocol negotiatedApplicationProtocol, X509Certificate2? clientCertificate)
+    {
+        ClientCertificate = clientCertificate;
+        _negotiatedApplicationProtocol = negotiatedApplicationProtocol;
+    }
+
+    /// <summary>
+    /// Tears down a connection that was allocated early (at NeedsTlsContext) but whose handshake never
+    /// completed - for example the ClientHello listener fired and then a later handshake step failed.
+    /// The receive/send loops were never <see cref="Start"/>ed, so this just completes the (idle) pipes
+    /// and closes the socket fd directly. It deliberately does NOT go through
+    /// <see cref="ConnectionIoState.Dispose"/>, which would attempt a graceful close_notify
+    /// (<c>Shutdown()</c>) that a half-open session cannot perform cleanly.
+    /// </summary>
+    internal void AbortBeforeStart()
+    {
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+        {
+            return;
+        }
+        _aborted = true;
+
+        Application.Input.Complete();
+        Application.Output.Complete();
+        Transport.Input.Complete();
+        Transport.Output.Complete();
+
+        try
+        {
+            // Close the socket fd of the half-open handshake without the graceful close_notify.
+            _connectionState.Session.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to dispose half-open connection backend for fd={Fd}", _connectionState.Fd);
+        }
+
+        try
+        {
+            _connectionClosedTokenSource.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Already disposed, ignore
+        }
+        _connectionClosedTokenSource.Dispose();
+    }
+
+    /// <summary>
+    /// Start the receive and send loops.
+    /// </summary>
+    public void Start()
+    {
+        _receiveTask = ReceiveLoopAsync();
+        _sendTask = SendLoopAsync();
+    }
+
+    /// <summary>
+    /// Receive loop: SSL_read -> write to Application.Output (Kestrel reads from Transport.Input)
+    /// Uses the pump's epoll-based async SSL_read.
+    /// </summary>
+    private async Task ReceiveLoopAsync()
+    {
+        Exception? error = null;
+
+        try
+        {
+            while (!_aborted)
+            {
+                var memory = Application.Output.GetMemory();
+
+                // Use pump's async SSL_read (waits for epoll event, does SSL_read on pump thread)
+                int bytesRead = await _connectionState.ReadAsync(memory);
+
+                if (bytesRead > 0)
+                {
+                    Application.Output.Advance(bytesRead);
+                    var flushResult = await Application.Output.FlushAsync();
+                    if (flushResult.IsCompleted || flushResult.IsCanceled)
+                    {
+                        break;
+                    }
+                }
+                else if (bytesRead == 0)
+                {
+                    // Connection closed (EOF)
+                    break;
+                }
+                else
+                {
+                    // Negative = error (shouldn't happen with async API, but handle it)
+                    error = new IOException($"SSL_read failed with {bytesRead}");
+                    break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during shutdown
+        }
+        catch (Exception ex)
+        {
+            error = ex;
+        }
+        finally
+        {
+            Application.Output.Complete(error);
+        }
+    }
+
+    /// <summary>
+    /// Send loop: read from Application.Input (Kestrel writes to Transport.Output) -> SSL_write
+    /// Uses the pump's epoll-based async SSL_write.
+    /// </summary>
+    private async Task SendLoopAsync()
+    {
+        Exception? error = null;
+
+        try
+        {
+            while (!_aborted)
+            {
+                var result = await Application.Input.ReadAsync();
+
+                // Check for cancellation first
+                if (result.IsCanceled)
+                {
+                    break;
+                }
+
+                var buffer = result.Buffer;
+
+                // Process buffer data BEFORE checking IsCompleted
+                // This ensures the final chunk (e.g., "0\\r\\n\\r\\n" terminator) is sent
+                if (!buffer.IsEmpty)
+                {
+                    foreach (var segment in buffer)
+                    {
+                        if (segment.Length > 0)
+                        {
+                            // Use pump's async SSL_write (waits for epoll event if needed)
+                            // Pump handles the SSL_write on its dedicated thread
+                            var written = await _connectionState.WriteAsync(segment);
+                            if (written == 0)
+                            {
+                                // Peer closed connection
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                Application.Input.AdvanceTo(buffer.End);
+
+                // Check completion AFTER processing and advancing (matches Kestrel's DoSend pattern)
+                if (result.IsCompleted)
+                {
+                    break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during shutdown
+        }
+        catch (Exception ex)
+        {
+            error = ex;
+        }
+        finally
+        {
+            Application.Input.Complete(error);
+        }
+    }
+
+    public override void Abort(ConnectionAbortedException abortReason)
+    {
+        if (_aborted)
+        {
+            return;
+        }
+        _aborted = true;
+
+        // CTS may already be disposed if DisposeAsync completed first
+        try
+        {
+            _connectionClosedTokenSource.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Already disposed, ignore
+        }
+
+        // Only cancel Application.Input to unblock SendLoop (matches Kestrel's Abort pattern)
+        // Don't cancel Application.Output - let ReceiveLoop exit naturally
+        Application.Input.CancelPendingRead();
+    }
+
+    /// <summary>
+    /// Called when the TLS connection encounters a fatal error (e.g., peer disconnect via EPOLLRDHUP).
+    /// This just aborts the connection - disposal will happen when Kestrel calls DisposeAsync.
+    /// </summary>
+    private void OnTlsFatalError(Exception ex)
+    {
+        // Check if already disposed or aborted - connection may have been cleaned up already
+        if (_aborted || Volatile.Read(ref _disposed) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            _logger.LogDebug(ex, "TLS fatal error for fd={Fd}, aborting connection", _connectionState.Fd);
+
+            // Just abort to cancel pending operations - don't trigger disposal here
+            // Kestrel will call DisposeAsync when it's done with the connection
+            // This prevents premature disposal while SendLoop is still writing
+            Abort(new ConnectionAbortedException("TLS connection error", ex));
+        }
+        catch (ObjectDisposedException)
+        {
+            // Race with DisposeAsync - connection is already being torn down
+        }
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        // Thread-safe check: only one call to DisposeAsync proceeds
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+        {
+            return;
+        }
+
+        // 1. Cancel pending TLS operations (unblocks ReadAsync/WriteAsync TCS)
+        _connectionState.Cancel();
+
+        // 2. Unregister from pump (removes from epoll, prevents new events)
+        _pump.Unregister(_connectionState.Fd);
+
+        // 3. Cancel pending pipeline operations to unblock our loops
+        Application.Input.CancelPendingRead();
+        Application.Output.CancelPendingFlush();
+
+        // 4. Wait for loops to finish (they should complete quickly now)
+        if (_receiveTask != null)
+        {
+            await _receiveTask.ConfigureAwait(false);
+        }
+        if (_sendTask != null)
+        {
+            await _sendTask.ConfigureAwait(false);
+        }
+
+        // 5. Complete the transport pipes (signals to Kestrel)
+        Transport.Input.Complete();
+        Transport.Output.Complete();
+
+        // 6. Graceful TLS and socket shutdown. Disposing the connection state sends
+        //    close_notify via the TLS session and closes the underlying socket fd
+        //    (the session owns the SafeSocketHandle), so no manual shutdown/close here.
+        try
+        {
+            _connectionState.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "TLS shutdown failed for fd={Fd}", _connectionState.Fd);
+        }
+
+        // 7. Signal connection closed
+        _connectionClosedTokenSource.Cancel();
+        _connectionClosedTokenSource.Dispose();
+    }
+}
