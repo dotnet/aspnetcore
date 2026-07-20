@@ -75,6 +75,7 @@
 |  __`BL0012`__ | Unnecessary StateHasChanged call |
 |  __`BL0013`__ | AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged |
 |  __`BL0014`__ | For loop iterator used inside a closure. |
+|  __`BL0015`__ | [JSInvokable] methods should be public |
 |  __`BL0016`__ | Unguarded JS interop call |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
