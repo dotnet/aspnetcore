@@ -71,7 +71,7 @@
         Heights: @(useVariableHeight ? "Variable (10-200px)" : "Fixed (50px)")
     </button>
     <button id="toggle-delay" @onclick="ToggleDelay">
-        Provider Delay: @(useProviderDelay ? "500ms" : "None")
+        Provider Delay: @(useProviderDelay ? "150ms" : "None")
     </button>
 </div>
 
@@ -135,7 +135,7 @@
     private void ToggleDelay()
     {
         useProviderDelay = !useProviderDelay;
-        statusMessage = useProviderDelay ? "Provider delay: 500ms" : "Provider delay: None";
+        statusMessage = useProviderDelay ? "Provider delay: 150ms" : "Provider delay: None";
     }
 
     private async ValueTask<GridItemsProviderResult<Row>> GetItemsAsync(GridItemsProviderRequest<Row> request)
@@ -143,7 +143,7 @@
         await Task.Yield();
         if (useProviderDelay)
         {
-            await Task.Delay(500);
+            await Task.Delay(150);
         }
 
         var count = request.Count ?? rows.Count;

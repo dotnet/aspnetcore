@@ -4644,31 +4644,32 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "), "Item 100 must be visible in window viewport.");
     }
 
-    private void MountQuickGridForScrollToItem(bool variableHeight = false, bool delay = false)
+    private void MountQuickGridForScrollToItem(bool useItemsProvider = true, bool variableHeight = false)
     {
         Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridScrollComponent>();
         var container = Browser.Exists(By.Id("scroll-container"));
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
-        Browser.Exists(By.Id("toggle-provider")).Click();
-        Browser.True(() => GetElementCount(container, ".item") > 0);
+        if (useItemsProvider)
+        {
+            Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+            Browser.Exists(By.Id("toggle-delay")).Click();
+        }
 
         if (variableHeight)
         {
             Browser.Exists(By.Id("toggle-height")).Click();
             Browser.True(() => GetElementCount(container, ".item") > 0);
         }
-
-        if (delay)
-        {
-            Browser.Exists(By.Id("toggle-delay")).Click();
-        }
     }
 
-    [Fact]
-    public void QuickGrid_ScrollToItem_FixedHeight_LandsAtTop()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_FixedHeight_LandsAtTop(bool useItemsProvider)
     {
-        MountQuickGridForScrollToItem();
+        MountQuickGridForScrollToItem(useItemsProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -4680,10 +4681,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
     }
 
-    [Fact]
-    public void QuickGrid_ScrollToItem_VariableHeight_LandsAtTop()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_VariableHeight_LandsAtTop(bool useItemsProvider)
     {
-        MountQuickGridForScrollToItem(variableHeight: true);
+        MountQuickGridForScrollToItem(useItemsProvider, variableHeight: true);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -4695,10 +4698,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Variable-height: top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
     }
 
-    [Fact]
-    public void QuickGrid_ScrollToItem_NegativeIndex_ScrollsToTop()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_NegativeIndex_ScrollsToTop(bool useItemsProvider)
     {
-        MountQuickGridForScrollToItem();
+        MountQuickGridForScrollToItem(useItemsProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -4714,10 +4719,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Negative index should clamp to the first row; topRendered={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
     }
 
-    [Fact]
-    public void QuickGrid_ScrollToItem_MaxIntIndex_ScrollsToLast()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_MaxIntIndex_ScrollsToLast(bool useItemsProvider)
     {
-        MountQuickGridForScrollToItem();
+        MountQuickGridForScrollToItem(useItemsProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -4743,10 +4750,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "));
     }
 
-    [Fact]
-    public void QuickGrid_ScrollToItem_ForwardThenBackward()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_ForwardThenBackward(bool useItemsProvider)
     {
-        MountQuickGridForScrollToItem();
+        MountQuickGridForScrollToItem(useItemsProvider);
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(300);
@@ -4764,7 +4773,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void QuickGrid_ScrollToItem_WithProviderDelay_LandsAtTargetWithRealContent()
     {
-        MountQuickGridForScrollToItem(delay: true);
+        MountQuickGridForScrollToItem();
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(300);
@@ -4785,9 +4794,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(500, true, false)]
     [InlineData(1, true, true)]
     [InlineData(500, true, true)]
-    public void QuickGrid_InitialIndex_OpensAtTargetWithRealContent(int initialIndex, bool variableHeight, bool delay)
+    public void QuickGrid_InitialIndex_OpensAtTargetWithRealContent(int initialIndex, bool variableHeight, bool useItemsProvider)
     {
-        MountQuickGridForScrollToItem(variableHeight: variableHeight, delay: delay);
+        MountQuickGridForScrollToItem(useItemsProvider: useItemsProvider, variableHeight: variableHeight);
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.Exists(By.Id("unload-list")).Click();
@@ -4802,9 +4811,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void QuickGrid_InitialIndex_BeyondCount_ClampsToEnd(bool delay)
+    public void QuickGrid_InitialIndex_BeyondCount_ClampsToEnd(bool useItemsProvider)
     {
-        MountQuickGridForScrollToItem(delay: delay);
+        MountQuickGridForScrollToItem(useItemsProvider);
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.Exists(By.Id("unload-list")).Click();
@@ -4826,7 +4835,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(300)]
     public void QuickGrid_ScrollToItem_AsyncProvider_VariableHeight_WithDelay_ReachesTarget(int target)
     {
-        MountQuickGridForScrollToItem(variableHeight: true, delay: true);
+        MountQuickGridForScrollToItem(variableHeight: true);
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(target);
@@ -4840,7 +4849,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void QuickGrid_ScrollToItem_RapidCalls_OnlyLastTargetReached()
     {
-        MountQuickGridForScrollToItem(delay: true);
+        MountQuickGridForScrollToItem();
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.Exists(By.Id("scroll-to-item-rapid")).Click();
@@ -4853,7 +4862,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void QuickGrid_ScrollToItem_ExternalCancellation_TaskCancels()
     {
-        MountQuickGridForScrollToItem(delay: true);
+        MountQuickGridForScrollToItem();
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(450);
@@ -4867,10 +4876,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetTopRenderedIndex(js) == 120);
     }
 
-    [Fact]
-    public void QuickGrid_ScrollToItem_AnchorStart_AtTop_LandsAtTarget()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_AnchorStart_AtTop_LandsAtTarget(bool useItemsProvider)
     {
-        MountQuickGridForScrollToItem();
+        MountQuickGridForScrollToItem(useItemsProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
