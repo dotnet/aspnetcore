@@ -1983,24 +1983,21 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData("0", false, false)]
-    [InlineData("1", false, false)]
-    [InlineData("2", false, false)]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
     // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
-    // [InlineData("0", true, false)]
-    // [InlineData("1", true, false)]
-    // [InlineData("2", true, false)]
-    // [InlineData("0", true, true)]
-    // [InlineData("1", true, true)]
-    // [InlineData("2", true, true)]
-    public void QuickGrid_AnchorMode_NearTop_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider, bool useDelay)
+    // [InlineData("0", true)]
+    // [InlineData("1", true)]
+    // [InlineData("2", true)]
+    public void QuickGrid_AnchorMode_NearTop_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        EnableQuickGridProviderDelay(useDelay);
+        EnableQuickGridProviderDelay(useItemsProvider);
 
         ScrollNearTopAndWaitForRender(container, js);
 
@@ -2097,6 +2094,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
+        EnableQuickGridProviderDelay(useItemsProvider);
+
         ScrollToBottomAndWait(container, js);
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
@@ -2116,18 +2115,17 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(false, false)]
+    [InlineData(false)]
     // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
-    // [InlineData(true, false)]
-    // [InlineData(true, true)]
-    public void QuickGrid_AnchorMode_None_PrependAtTop_ViewportStaysStable(bool useItemsProvider, bool useDelay)
+    // [InlineData(true)]
+    public void QuickGrid_AnchorMode_None_PrependAtTop_ViewportStaysStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("0", useItemsProvider);
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        EnableQuickGridProviderDelay(useDelay);
+        EnableQuickGridProviderDelay(useItemsProvider);
 
         AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
 
@@ -2153,17 +2151,16 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public void QuickGrid_AnchorMode_Start_PrependAtTop_NewItemsVisible(bool useItemsProvider, bool useDelay)
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_AnchorMode_Start_PrependAtTop_NewItemsVisible(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("1", useItemsProvider);
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        EnableQuickGridProviderDelay(useDelay);
+        EnableQuickGridProviderDelay(useItemsProvider);
 
         AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
 
@@ -2179,18 +2176,17 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(false, false)]
+    [InlineData(false)]
     // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race; Items false is 0/5 across runs):
-    // [InlineData(true, false)]
-    // [InlineData(true, true)]
-    public void QuickGrid_AnchorMode_End_PrependAtTop_ViewportStaysStable(bool useItemsProvider, bool useDelay)
+    // [InlineData(true)]
+    public void QuickGrid_AnchorMode_End_PrependAtTop_ViewportStaysStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("2", useItemsProvider);
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        EnableQuickGridProviderDelay(useDelay);
+        EnableQuickGridProviderDelay(useItemsProvider);
 
         AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
 
@@ -2251,6 +2247,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
 
         AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
 
@@ -2429,6 +2427,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
+        EnableQuickGridProviderDelay(useItemsProvider);
+
         ScrollMidListAndWaitForRender(container, js);
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
@@ -2458,6 +2458,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
 
+        EnableQuickGridProviderDelay(useItemsProvider);
+
         ScrollMidListAndWaitForRender(container, js);
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
@@ -2486,6 +2488,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
 
         ScrollMidListAndWaitForRender(container, js);
 
@@ -2678,6 +2682,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         var container = Browser.Exists(By.Id("qg-anchor-container"));
         var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
 
         ScrollToBottomAndWait(container, js);
 
