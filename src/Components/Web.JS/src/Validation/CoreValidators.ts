@@ -13,7 +13,7 @@ import { creditCardValidator } from './Validators/CreditCard';
 import { equalToValidator } from './Validators/EqualTo';
 import { fileExtensionsValidator } from './Validators/FileExtensions';
 
-/** Registers all built-in validators for standard data-val-* rules. */
+/** Registers built-in validators for supported DataAnnotations attributes. */
 export function registerCoreValidators(registry: ValidatorRegistry): void {
   registry.set('required', requiredValidator);
   registry.set('length', stringLengthValidator);

@@ -357,6 +357,8 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
+        ResolveDiscriminatorReferences(document, schema);
+
         if (schema.Properties is not null)
         {
             // Materialize the collection first because IDictionary<TKey, TValue> implementations
@@ -414,6 +416,43 @@ internal sealed class OpenApiSchemaService(
         }
 
         return schema;
+    }
+
+    private static void ResolveDiscriminatorReferences(OpenApiDocument document, OpenApiSchema schema)
+    {
+        if (schema.Discriminator is not { } discriminator)
+        {
+            return;
+        }
+
+        if (discriminator.DefaultMapping is { } defaultMapping)
+        {
+            discriminator.DefaultMapping = ResolveSchemaReference(document, defaultMapping);
+        }
+
+        if (discriminator.Mapping is not null)
+        {
+            foreach (var mapping in discriminator.Mapping.ToArray())
+            {
+                discriminator.Mapping[mapping.Key] = ResolveSchemaReference(document, mapping.Value);
+            }
+        }
+    }
+
+    private static OpenApiSchemaReference ResolveSchemaReference(OpenApiDocument document, OpenApiSchemaReference schemaReference)
+    {
+        if (schemaReference.Reference.Id is not { } referenceId)
+        {
+            return schemaReference;
+        }
+
+        const string componentsSchemasReferencePrefix = "#/components/schemas/";
+        if (referenceId.StartsWith(componentsSchemasReferencePrefix, StringComparison.Ordinal))
+        {
+            referenceId = referenceId[componentsSchemasReferencePrefix.Length..];
+        }
+
+        return new OpenApiSchemaReference(referenceId, document);
     }
 
     private static OpenApiSchema UnwrapOpenApiSchema(IOpenApiSchema sourceSchema)
@@ -520,7 +559,10 @@ internal sealed class OpenApiSchemaService(
 
     private JsonNode CreateSchema(Type type)
     {
-        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, type, _configuration);
+        // We always create a oneOf nullable wrapper ourselves manually.
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, underlyingType, _configuration);
         return ResolveReferences(schema, schema);
     }
 
