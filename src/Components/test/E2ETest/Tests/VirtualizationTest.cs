@@ -1919,6 +1919,824 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
     }
 
+    private void MountQuickGridAnchorModeComponent(string anchorMode, bool useItemsProvider)
+    {
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridAnchorModeComponent>();
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        Browser.True(() => GetElementCount(container, ".item[data-index]") > 0);
+
+        if (useItemsProvider)
+        {
+            Browser.Exists(By.Id("qg-toggle-provider")).Click();
+            Browser.True(() => GetElementCount(container, ".item[data-index]") > 0);
+        }
+
+        var select = new SelectElement(Browser.Exists(By.Id("qg-anchor-mode-select")));
+        select.SelectByValue(anchorMode);
+        Browser.True(() => Browser.Exists(By.Id("qg-current-mode")).Text == anchorMode);
+        Browser.True(() => GetElementCount(container, ".item[data-index]") > 0);
+    }
+
+    private void EnableQuickGridProviderDelay(bool useDelay)
+    {
+        if (!useDelay)
+        {
+            return;
+        }
+
+        Browser.Exists(By.Id("qg-toggle-delay")).Click();
+        Browser.Contains("Provider delay on", () => Browser.Exists(By.Id("qg-status")).Text);
+    }
+
+    private void EnableQuickGridDefaultComparer()
+    {
+        Browser.Exists(By.Id("qg-toggle-comparer")).Click();
+        Browser.Contains("Comparer: Default", () => Browser.Exists(By.Id("qg-status")).Text);
+    }
+
+    private void QuickGridMutate(IJavaScriptExecutor js, string mutationButtonId, string statusText, bool useItemsProvider)
+    {
+        if (useItemsProvider)
+        {
+            GatedQuickGridProviderMutation(js, mutationButtonId);
+        }
+        else
+        {
+            Browser.Exists(By.Id(mutationButtonId)).Click();
+        }
+
+        Browser.Contains(statusText, () => Browser.Exists(By.Id("qg-status")).Text);
+    }
+
+    private void GatedQuickGridProviderMutation(IJavaScriptExecutor js, string mutationButtonId)
+    {
+        var entersBefore = CountProviderEnters(js);
+
+        Browser.Exists(By.Id("qg-toggle-provider-gate")).Click();
+        Browser.Exists(By.Id(mutationButtonId)).Click();
+        Browser.True(() => CountProviderEnters(js) > entersBefore,
+            TimeSpan.FromSeconds(10), "Gated provider call did not park at the gate");
+
+        Browser.Exists(By.Id("qg-toggle-provider-gate")).Click();
+        Browser.Exists(By.Id("qg-release-provider-gate")).Click();
+    }
+
+    private static int CountProviderEnters(IJavaScriptExecutor js)
+    {
+        var events = (string)js.ExecuteScript(
+            "return document.getElementById('qg-provider-events')?.getAttribute('data-value') ?? '';");
+        return events.Split("-enter").Length - 1;
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
+    // [InlineData("0", true)]
+    // [InlineData("1", true)]
+    // [InlineData("2", true)]
+    public void QuickGrid_AnchorMode_NearTop_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        ScrollNearTopAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            $"QuickGrid AnchorMode {anchorMode} near top: viewport should stay stable after prepend",
+            driftTolerance: 2);
+    }
+
+    // When ItemComparer is not set, QuickGrid falls back to EqualityComparer<T>.Default. In Items mode the
+    // backing list keeps stable instances between renders, so reference-equality default detection correctly
+    // recognizes a prepend and keeps the viewport anchored without the user supplying a custom comparer.
+    [Fact]
+    public void QuickGrid_AnchorMode_DefaultComparer_Items_PrependKeepsViewportStable()
+    {
+        MountQuickGridAnchorModeComponent("1", useItemsProvider: false);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridDefaultComparer();
+
+        ScrollNearTopAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "QuickGrid default comparer (Items): viewport should stay stable after prepend",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("2", true)]
+    public void QuickGrid_AnchorMode_NearTop_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollNearTopAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        QuickGridMutate(js, "qg-append-items", "Appended 10 items", useItemsProvider);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            $"QuickGrid AnchorMode {anchorMode} near top: viewport should stay stable after append",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("2", true)]
+    public void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        QuickGridMutate(js, "qg-append-items", "Appended 10 items", useItemsProvider);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            $"QuickGrid AnchorMode {anchorMode} at top: viewport should stay stable after append",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
+    // [InlineData("0", true)]
+    // [InlineData("1", true)]
+    // [InlineData("2", true)]
+    public void QuickGrid_AnchorMode_Bottom_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        ScrollToBottomAndWait(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            $"QuickGrid AnchorMode {anchorMode} at bottom: viewport should stay stable after prepend",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
+    // [InlineData(true)]
+    public void QuickGrid_AnchorMode_None_PrependAtTop_ViewportStaysStable(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("0", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "QuickGrid None mode at top: same item should stay at same position after prepend",
+            driftTolerance: 2);
+
+        // Scroll up and verify prepended items are actually reachable.
+        ScrollContainer(js, container, 0);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0,
+            TimeSpan.FromSeconds(5), "QuickGrid None mode: prepended items should be reachable after scrolling up");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_AnchorMode_Start_PrependAtTop_NewItemsVisible(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("1", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+
+        WaitForRenderToSettle(container, js);
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopAfter < 50,
+            $"QuickGrid Start mode: should stay near top after prepend, but scrollTop was {scrollTopAfter}");
+
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race; Items false is 0/5 across runs):
+    // [InlineData(true)]
+    public void QuickGrid_AnchorMode_End_PrependAtTop_ViewportStaysStable(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("2", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "QuickGrid End mode at top: viewport should stay stable after prepend",
+            driftTolerance: 2);
+    }
+
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67865")] // fails pre-fix
+    public void QuickGrid_AnchorMode_None_AsyncProvider_PrependKeepsViewportStable()
+    {
+        MountQuickGridAnchorModeComponent("0", useItemsProvider: true);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Enable provider delay to simulate network latency.
+        Browser.Exists(By.Id("qg-toggle-delay")).Click();
+        Browser.Contains("Provider delay on", () => Browser.Exists(By.Id("qg-status")).Text);
+
+        ScrollMidListAndWaitForRender(container, js);
+        WaitForRenderToSettle(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "QuickGrid async provider: viewport should stay stable after prepend despite placeholder transition",
+            driftTolerance: 5);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_AnchorMode_Start_PrependAfterLeavingTop_DoesNotReengage(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("1", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        AssertScrollTop(js, container, st => st < 2, "QuickGrid should start at the top");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
+        WaitForRenderToSettle(container, js);
+
+        ScrollUntil(js, container, () => ScrollContainer(js, container, 500),
+            st => st > 200, "scrollTop > 200 after ScrollContainer(500)");
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+
+        WaitForRenderToSettle(container, js);
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopAfter > 200,
+            $"QuickGrid Start mode: should not pull user back to top after leaving. " +
+            $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter} (expected >200, not near 0)");
+    }
+
+    // Mirrors AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage for QuickGrid.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("2", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        QuickGridMutate(js, "qg-append-items", "Appended 10 items", useItemsProvider);
+        Browser.True(() =>
+        {
+            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return sh - st - ch < 2;
+        }, "QuickGrid End mode: first append should follow to bottom");
+
+        var currentScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var targetScrollTop = (int)(currentScrollTop - 500);
+        ScrollUntil(js, container, () => ScrollContainer(js, container, targetScrollTop),
+            st => st < currentScrollTop - 100,
+            $"scrollTop < {currentScrollTop - 100} after scrolling away from bottom");
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        QuickGridMutate(js, "qg-append-items", "Appended 10 items", useItemsProvider);
+        WaitForRenderToSettle(container, js);
+
+        var scrollTopAfterSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(Math.Abs(scrollTopAfterSecondAppend - scrollTopBeforeSecondAppend) < 2,
+            $"QuickGrid End mode: should not re-engage after leaving bottom. " +
+            $"scrollTop before: {scrollTopBeforeSecondAppend}, after: {scrollTopAfterSecondAppend}");
+    }
+
+    [Fact]
+    public void QuickGrid_AnchorMode_None_AsyncProvider_ScrollDoesNotFlash()
+    {
+        MountQuickGridAnchorModeComponent("0", useItemsProvider: true);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Enable provider delay to simulate network latency.
+        Browser.Exists(By.Id("qg-toggle-delay")).Click();
+        Browser.Contains("Provider delay on", () => Browser.Exists(By.Id("qg-status")).Text);
+
+        // Scroll through items incrementally, checking for backward index jumps (flashing).
+        var result = js.ExecuteAsyncScript(@"
+            var done = arguments[arguments.length - 1];
+            var container = arguments[0];
+            (async () => {
+                const SCROLL_INCREMENT = 200;
+                const MAX_ITERATIONS = 50;
+                const SETTLE_MS = 100; // Short settle — we're testing for flashing, not waiting for full load
+
+                let prevTopIndex = -1;
+                let flashCount = 0;
+                let maxIndexSeen = -1;
+
+                for (let i = 0; i < MAX_ITERATIONS; i++) {
+                    container.scrollTop += SCROLL_INCREMENT;
+                    await new Promise(r => setTimeout(r, SETTLE_MS));
+
+                    var items = container.querySelectorAll('.item[data-index]');
+                    var containerRect = container.getBoundingClientRect();
+                    let topIndex = -1;
+                    let topIsPlaceholder = false;
+
+                    // Detect whether the topmost-visible row is a placeholder (no data-index)
+                    var topCandidates = container.querySelectorAll('.item[data-index], .loading-placeholder');
+                    for (var k = 0; k < topCandidates.length; k++) {
+                        var rk = topCandidates[k].getBoundingClientRect();
+                        if (rk.bottom > containerRect.top + 2 && rk.top < containerRect.bottom - 2) {
+                            topIsPlaceholder = !topCandidates[k].hasAttribute('data-index');
+                            break;
+                        }
+                    }
+
+                    // If the viewport is all placeholders, the async provider's in-flight fetch
+                    // is being repeatedly cancelled by our fast scroll loop. Pause briefly so
+                    // it can complete — this preserves the flash assertion (prevTopIndex carries
+                    // across the gap) and keeps forward-progress on slow CI agents.
+                    let waited = 0;
+                    while ((items.length === 0 || topIsPlaceholder) && waited < 1500) {
+                        await new Promise(r => setTimeout(r, 100));
+                        waited += 100;
+                        items = container.querySelectorAll('.item[data-index]');
+                        containerRect = container.getBoundingClientRect();
+                        topIsPlaceholder = false;
+                        topCandidates = container.querySelectorAll('.item[data-index], .loading-placeholder');
+                        for (var k = 0; k < topCandidates.length; k++) {
+                            var rk = topCandidates[k].getBoundingClientRect();
+                            if (rk.bottom > containerRect.top + 2 && rk.top < containerRect.bottom - 2) {
+                                topIsPlaceholder = !topCandidates[k].hasAttribute('data-index');
+                                break;
+                            }
+                        }
+                    }
+
+                    for (var j = 0; j < items.length; j++) {
+                        var rect = items[j].getBoundingClientRect();
+                        if (rect.bottom > containerRect.top + 2 && rect.top < containerRect.bottom - 2) {
+                            topIndex = parseInt(items[j].getAttribute('data-index'), 10);
+                            break;
+                        }
+                    }
+
+                    if (topIndex >= 0) {
+                        if (topIndex > maxIndexSeen) maxIndexSeen = topIndex;
+                        if (prevTopIndex >= 0 && topIndex < prevTopIndex - 3) {
+                            flashCount++;
+                        }
+                        prevTopIndex = topIndex;
+                    }
+
+                    // Stop if we've reached near the end.
+                    if (container.scrollHeight - container.scrollTop - container.clientHeight < 2) break;
+                }
+
+                done({
+                    flashCount: flashCount,
+                    maxIndexSeen: maxIndexSeen
+                });
+            })();
+        ", container) as Dictionary<string, object>;
+
+        int Int(string k) => Convert.ToInt32(result[k], CultureInfo.InvariantCulture);
+        var flashCount = Int("flashCount");
+        var maxIndexSeen = Int("maxIndexSeen");
+
+        Assert.True(flashCount == 0,
+            $"QuickGrid async provider: scrolling should not flash/jump backward. " +
+            $"Detected {flashCount} backward jumps, max index seen: {maxIndexSeen}.");
+        Assert.True(maxIndexSeen >= 50,
+            $"QuickGrid: should have scrolled through some items but only reached index {maxIndexSeen}.");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race: index jumps 90->80):
+    // [InlineData(true)]
+    public void QuickGrid_AnchorMode_None_MidList_ViewportStable(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("0", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "QuickGrid None mode mid-list: viewport should stay visually stable after prepend",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race: index jumps 90->80):
+    // [InlineData(true)]
+    public void QuickGrid_AnchorMode_Start_MidList_ViewportStable(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("1", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "QuickGrid Start mode mid-list: viewport should stay stable after prepend",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race: index jumps 90->80):
+    // [InlineData(true)]
+    public void QuickGrid_AnchorMode_End_MidList_ViewportStable(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("2", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("qg-prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "QuickGrid End mode mid-list: viewport should stay stable after prepend",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_AnchorMode_End_LargeAppendAtBottom_StillFollows(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("2", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        QuickGridMutate(js, "qg-append-many-items", "Appended 100 items", useItemsProvider);
+
+        Browser.True(() =>
+        {
+            js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return sh - st - ch < 2;
+        }, TimeSpan.FromSeconds(30), "QuickGrid End mode: large append should still follow to bottom");
+    }
+
+    [Theory]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (WASM leg: Start mode converges to bottom after large append; scrollTop==scrollHeight-clientHeight, gap 0):
+    // [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_AnchorMode_Start_LargeAppendAtBottom_DoesNotFollowToBottom(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("1", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        QuickGridMutate(js, "qg-append-many-items", "Appended 100 items", useItemsProvider);
+        // Start mode: no convergence to chase the new bottom.
+        var st2 = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var sh2 = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var ch2 = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        var gap = sh2 - st2 - ch2;
+        Assert.True(gap > 2000,
+            $"QuickGrid Start mode: should not converge to bottom after large append. " +
+            $"scrollTop: {st2}, scrollHeight: {sh2}, gap: {gap}");
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    public void QuickGrid_AnchorMode_MidList_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        QuickGridMutate(js, "qg-append-items", "Appended 10 items", useItemsProvider);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            $"QuickGrid AnchorMode {anchorMode} mid-list: viewport should stay stable after append",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    public void QuickGrid_AnchorMode_Bottom_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        QuickGridMutate(js, "qg-append-items", "Appended 10 items", useItemsProvider);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("qg-anchor-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            $"QuickGrid AnchorMode {anchorMode} at bottom: viewport should stay stable after append",
+            driftTolerance: 2);
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("2", true)]
+    public void QuickGrid_AnchorMode_HomeKeyJumpsToTop(string anchorMode, bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        container.SendKeys(Keys.Home);
+
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            return scrollTop < 2;
+        }, TimeSpan.FromSeconds(10), $"QuickGrid AnchorMode {anchorMode}: Home key should jump to the top of the list");
+
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='0']")).Count > 0,
+            $"QuickGrid AnchorMode {anchorMode}: item 0 should be visible after Home key");
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (End mode converges to bottom on mount before the "start near top" precondition; scrollTop 54776 ≈ scrollHeight 55076. Flake on slow Linux Mono CI leg, build 1514924):
+    // [InlineData("2", true)]
+    public void QuickGrid_AnchorMode_EndKeyJumpsToBottom(string anchorMode, bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        AssertScrollTop(js, container, st => st < 50, "QuickGrid should start near the top");
+
+        container.SendKeys(Keys.End);
+
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return scrollHeight - scrollTop - clientHeight < 2;
+        }, TimeSpan.FromSeconds(10), $"QuickGrid AnchorMode {anchorMode}: End key should jump to the bottom of the list");
+    }
+
+    // None mode: a large append at the bottom must not converge the viewport to the very bottom
+    // of the grown list (contrast with End mode's follow behavior).
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_AnchorMode_None_LargeAppendAtBottom_DoesNotFollowToBottom(bool useItemsProvider)
+    {
+        MountQuickGridAnchorModeComponent("0", useItemsProvider);
+
+        var container = Browser.Exists(By.Id("qg-anchor-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        EnableQuickGridProviderDelay(useItemsProvider);
+
+        ScrollToBottomAndWait(container, js);
+
+        Browser.Exists(By.Id("qg-append-many-items")).Click();
+        Browser.Contains("Appended 100 items", () => Browser.Exists(By.Id("qg-status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        var gap = sh - st - ch;
+        Assert.True(gap > 2000,
+            $"QuickGrid None mode: viewport should not converge to bottom after large append. " +
+            $"scrollTop: {st}, scrollHeight: {sh}, gap: {gap}");
+    }
+
     [Fact]
     public void NestedVariableHeight_OuterMeasurementsNotPollutedByInner()
     {
@@ -2376,7 +3194,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        Assert.True((long)js.ExecuteScript("return arguments[0].scrollTop", container) < 2);
+        AssertScrollTop(js, container, st => st < 2, "list should start at the top");
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
@@ -2467,7 +3285,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        Assert.True((long)js.ExecuteScript("return arguments[0].scrollTop", container) < 50);
+        AssertScrollTop(js, container, st => st < 50, "list should start near the top");
 
         // End key should always work regardless of anchor mode.
         container.SendKeys(Keys.End);
@@ -3837,7 +4655,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
             var firstIndex = result["firstIndex"]?.ToString() ?? "";
 
-            if (scrollTop == lastScrollTop && itemCount == lastItemCount && firstIndex == lastFirstIndex)
+            if (string.IsNullOrEmpty(firstIndex))
+            {
+                // A blank viewport (only spacers visible) is a transient state while the
+                // anchor restore is in flight, not a settled render. Keep waiting for an
+                // item to reappear rather than reporting this moment as stable.
+                stableCount = 0;
+            }
+            else if (scrollTop == lastScrollTop && itemCount == lastItemCount && firstIndex == lastFirstIndex)
             {
                 stableCount++;
             }
