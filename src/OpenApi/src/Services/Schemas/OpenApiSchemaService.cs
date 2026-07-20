@@ -559,7 +559,10 @@ internal sealed class OpenApiSchemaService(
 
     private JsonNode CreateSchema(Type type)
     {
-        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, type, _configuration);
+        // We always create a oneOf nullable wrapper ourselves manually.
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, underlyingType, _configuration);
         return ResolveReferences(schema, schema);
     }
 
