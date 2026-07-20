@@ -9,17 +9,24 @@ internal static class UrlNormalizer
     // scheme-relative authority. Mirrors the rejection predicate in SharedUrlHelper.IsLocalUrl.
     public static string CollapseLeadingSlashes(string url)
     {
-        if (url.Length < 2 || url[0] != '/' || (url[1] != '/' && url[1] != '\\'))
+        if (string.IsNullOrEmpty(url))
         {
             return url;
         }
 
-        var i = 1;
-        while (i < url.Length && (url[i] == '/' || url[i] == '\\'))
+        if ((url[0] != '/' && url[0] != '\\') ||
+            (url[0] == '/' && (url.Length == 1 || (url[1] != '/' && url[1] != '\\'))))
         {
-            i++;
+            return url;
         }
 
-        return i == url.Length ? "/" : string.Concat("/", url.AsSpan(i));
+        var firstNonSlash = url.AsSpan().IndexOfAnyExcept('/', '\\');
+
+        if (firstNonSlash < 0)
+        {
+            return "/";
+        }
+
+        return string.Concat("/", url.AsSpan(firstNonSlash));
     }
 }
