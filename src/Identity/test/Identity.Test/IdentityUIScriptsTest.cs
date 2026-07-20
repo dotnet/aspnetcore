@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using AngleSharp.Html.Dom;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
@@ -128,7 +128,7 @@ public class IdentityUIScriptsTest : IDisposable
         var htmlParser = new HtmlParser();
         using (var stream = File.OpenRead(cshtmlFile))
         {
-            htmlDocument = htmlParser.Parse(stream);
+            htmlDocument = htmlParser.ParseDocument(stream);
         }
 
         var scriptTags = new List<ScriptTag>();
