@@ -37,7 +37,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
-<ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.QuickGrid.Tests" />
   </ItemGroup>
 
