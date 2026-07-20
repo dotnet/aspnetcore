@@ -294,8 +294,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         var attributes = new Dictionary<string, object>
         {
-            ["AnchorMode"] = AnchorMode,
-            ["ItemComparer"] = _virtualizeItemComparer,
+            [nameof(_virtualizeComponent.AnchorMode)] = AnchorMode,
+            [nameof(_virtualizeComponent.ItemComparer)] = _virtualizeItemComparer,
         };
 
         _virtualizeAttributes = attributes;

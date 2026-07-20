@@ -81,8 +81,8 @@
     private int nextAppendIndex = 1000;
 
     // Pending mutations applied inside the provider (simulates DB-backed data).
-    private List<AnchorItem> _pendingPrepend;
-    private List<AnchorItem> _pendingAppend;
+    private List<AnchorItem>? _pendingPrepend;
+    private List<AnchorItem>? _pendingAppend;
 
     // Deterministic gate: when armed, the provider blocks until the test releases it.
     private bool useProviderGate;
@@ -211,12 +211,12 @@
             }
         }
 
-        if (_pendingPrepend != null)
+        if (_pendingPrepend is not null)
         {
             items.InsertRange(0, _pendingPrepend);
             _pendingPrepend = null;
         }
-        if (_pendingAppend != null)
+        if (_pendingAppend is not null)
         {
             items.AddRange(_pendingAppend);
             _pendingAppend = null;

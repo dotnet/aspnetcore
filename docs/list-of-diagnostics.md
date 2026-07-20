@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP  (`ASP0000-ASP0030`)
+### ASP (`ASP0000-ASP0030`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
