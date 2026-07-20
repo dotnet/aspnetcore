@@ -176,6 +176,8 @@ public abstract class HostMatcherPolicyIntegrationTestBase
     [InlineData(".contoso.com:8080")]
     [InlineData(".test.contoso.com:8080")]
     [InlineData("..contoso.com:8080")]
+    [InlineData("foo..contoso.com:8080")]
+    [InlineData("foo..bar.contoso.com:8080")]
     public async Task Match_HostWithWildcard_InvalidSubdomain(string host)
     {
         // Arrange

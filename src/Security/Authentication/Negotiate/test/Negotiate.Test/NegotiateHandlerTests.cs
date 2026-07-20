@@ -215,7 +215,7 @@ public class NegotiateHandlerTests
     public async Task RBACClaimsRetrievedFromCacheAfterKerberosCompleted()
     {
         var claimsCache = new MemoryCache(new MemoryCacheOptions());
-        claimsCache.Set("name", new string[] { "CN=Domain Admins,CN=Users,DC=domain,DC=net" });
+        claimsCache.Set("name@domain.NET", new string[] { "CN=Domain Admins,CN=Users,DC=domain,DC=net" });
         NegotiateOptions negotiateOptions = null;
         using var host = await CreateHostAsync(options =>
             {
@@ -554,7 +554,7 @@ public class NegotiateHandlerTests
             {
                 throw new InvalidOperationException("Authentication is not complete.");
             }
-            return new GenericIdentity("name", _protocol);
+            return new GenericIdentity("name@domain.NET", _protocol);
         }
 
         public string GetOutgoingBlob(string incomingBlob, out BlobErrorType errorType, out Exception ex)
