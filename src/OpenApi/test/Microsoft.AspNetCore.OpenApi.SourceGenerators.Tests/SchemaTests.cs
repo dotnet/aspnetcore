@@ -138,6 +138,7 @@ public class TypeWithExamples
     /// <example>2022-01-01</example>
     public DateOnly DateOnlyType { get; set; }
     /// <example>Hello, World!</example>
+    /// <example>Goodbye, World!</example>
     public string StringType { get; set; }
     /// <example>2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d</example>
     public Guid GuidType { get; set; }
@@ -240,6 +241,8 @@ internal class User : IUser
 
             var stringTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["stringType"].Examples[0]);
             Assert.Equal("Hello, World!", stringTypeExample.GetValue<string>());
+            var secondStringTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["stringType"].Examples[1]);
+            Assert.Equal("Goodbye, World!", secondStringTypeExample.GetValue<string>());
 
             var guidTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["guidType"].Examples[0]);
             Assert.Equal("2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d", guidTypeExample.GetValue<string>());
@@ -292,6 +295,9 @@ app.Run();
 /// </summary>
 /// <example>
 /// { "street": "ModelWithSummaryClass" }
+/// </example>
+/// <example>
+/// { "street": "ModelWithSummaryClass2" }
 /// </example>
 public class ModelWithSummary
 {
@@ -387,6 +393,7 @@ public class RootModel
             var modelWithSummary = document.Components.Schemas["ModelWithSummary"];
             Assert.Equal("Comment on class ModelWithSummary.", modelWithSummary.Description);
             Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass" }"""), modelWithSummary.Examples[0]));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass2" }"""), modelWithSummary.Examples[1]));
 
             var modelWithoutSummary = document.Components.Schemas["ModelWithoutSummary"];
             Assert.Null(modelWithoutSummary.Description);
