@@ -2974,14 +2974,42 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("append-many-items")).Click();
         Browser.Contains("Appended 100 items", () => Browser.Exists(By.Id("status")).Text);
 
-        Browser.True(() =>
+        const string maxIndexScript =
+            "var els = arguments[0].querySelectorAll('.item[data-index]');" +
+            " var m = -1; for (var i = 0; i < els.length; i++) {" +
+            " var v = parseInt(els[i].getAttribute('data-index'), 10); if (v > m) { m = v; } } return m;";
+
+        long st = 0, sh = 0, ch = 0, maxIndex = -1;
+        var pinnedToBottom = false;
+        var tailMaterialized = false;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (sw.Elapsed < TimeSpan.FromSeconds(30))
         {
-            js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
-            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
-            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
-            return sh - st - ch < 2;
-        }, TimeSpan.FromSeconds(30), "End mode: large append should still follow to bottom");
+            st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            maxIndex = (long)js.ExecuteScript(maxIndexScript, container);
+
+            pinnedToBottom = sh - st - ch < 2;
+            tailMaterialized = maxIndex >= 1099;
+            if (pinnedToBottom && tailMaterialized)
+            {
+                break;
+            }
+
+            System.Threading.Thread.Sleep(500);
+        }
+
+        Assert.True(pinnedToBottom,
+            $"End mode: large append should auto-follow to the new bottom without manual scrolling. " +
+            $"Final: scrollTop={st}, scrollHeight={sh}, clientHeight={ch}, gap={sh - st - ch} (want <2), " +
+            $"maxRenderedIndex={maxIndex} (want 1099). variableHeight={variableHeight}, useItemsProvider={useItemsProvider}. " +
+            $"A gap far above 0 with scrollTop near the OLD bottom means the viewport was stranded (auto-follow pin skipped).");
+
+        // The rows at the new bottom must materialize as real items (not async placeholders)
+        Assert.True(tailMaterialized,
+            $"End mode: the last real row (index 1099) must be visible at the bottom. " +
+            $"maxRenderedIndex={maxIndex}, scrollTop={st}, scrollHeight={sh}, clientHeight={ch}, gap={sh - st - ch}.");
     }
 
     [Fact]

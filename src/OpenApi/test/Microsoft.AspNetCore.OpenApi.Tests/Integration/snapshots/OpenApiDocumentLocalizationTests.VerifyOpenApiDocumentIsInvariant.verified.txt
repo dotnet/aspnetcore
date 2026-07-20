@@ -60,7 +60,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PascalCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PascalCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -125,7 +132,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CamelCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CamelCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -305,7 +319,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PascalCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PascalCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -369,7 +390,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CamelCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CamelCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -1777,6 +1805,28 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/favorite-shape": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shape"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
