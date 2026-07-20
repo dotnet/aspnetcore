@@ -14,6 +14,9 @@
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 
+    <!-- QuickGridAnchorModeComponent intentionally consumes QuickGrid's experimental AnchorMode/ItemComparer APIs. -->
+    <NoWarn>$(NoWarn);ASP0030</NoWarn>
+
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
