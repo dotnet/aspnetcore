@@ -1,0 +1,7 @@
+﻿@page "/weather"
+@layout Components.TestServer.RazorComponents.Shared.MenuLayout
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<h1>Weather Page</h1>
+<p>This secured page requires the user to be logged in.</p>

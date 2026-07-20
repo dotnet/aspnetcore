@@ -1,0 +1,13 @@
+﻿@inherits LayoutComponentBase
+<div class="page" style="display: flex; min-height: 100vh; font-family: sans-serif;">
+    <div class="sidebar" style="width: 220px; background: #2b0b3a; color: #fff; padding: 1rem; box-sizing: border-box;">
+        <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem;">Menu</div>
+        <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <NavLink href="customer-home" style="color: #fff;" ActiveClass="active">Home</NavLink>
+            <NavLink href="weather" style="color: #fff;" ActiveClass="active">Weather</NavLink>
+        </nav>
+    </div>
+    <main style="flex: 1; padding: 1.5rem; box-sizing: border-box;">
+        @Body
+    </main>
+</div>

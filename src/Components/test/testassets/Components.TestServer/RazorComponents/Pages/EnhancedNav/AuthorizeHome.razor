@@ -1,0 +1,10 @@
+﻿@page "/customer-home"
+@layout Components.TestServer.RazorComponents.Shared.MenuLayout
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveServer
+
+<h1>Home Page</h1>
+@if (RendererInfo.IsInteractive)
+{
+    <p id="interactive-ready">Interactive</p>
+}

@@ -332,6 +332,21 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Contains($"/nav/location-changed/{renderMode}?query=42", () => Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
     }
 
+    [Fact]
+    public void ReturnUrlIsPreservedWhenNavigatingToSecuredPageViaMenuDuringEnhancedNavigation()
+    {
+        Navigate($"{ServerPathBase}/customer-home?username=");
+        Browser.Equal("Home Page", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Exists(By.Id("interactive-ready"));
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Weather")).Click();
+
+        Browser.Equal("Login Page", () => Browser.Exists(By.TagName("h1")).Text);
+        var expectedReturnUrl = $"{ServerPathBase}/weather";
+        Browser.Equal(expectedReturnUrl, () => Browser.Exists(By.Id("login-returnurl")).Text);
+        Browser.Contains($"ReturnUrl={Uri.EscapeDataString(expectedReturnUrl)}", () => Browser.Exists(By.Id("login-nav-uri")).Text);
+    }
+
     [Theory]
     [InlineData("server")]
     [InlineData("webassembly")]
