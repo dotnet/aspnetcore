@@ -8,6 +8,12 @@ parameters:
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
+  # Service connection for WIF-based Entra authentication to ceapex feeds (replaces CeapexPat).
+  # When set, dnceng/internal builds acquire a federated Entra token instead of using a PAT.
+  # All other projects (e.g. DevDiv, public), where this dnceng-scoped service connection does not
+  # exist, and any pipeline that sets this to '' fall back to PAT-based auth via the CeapexPat parameter.
+  CeapexServiceConnection: 'dnceng-onelocbuild-ceapex'
+
   SourcesDirectory: $(System.DefaultWorkingDirectory)
   CreatePr: true
   AutoCompletePr: false
@@ -73,6 +79,16 @@ jobs:
         displayName: Generate LocProject.json
         condition: ${{ parameters.condition }}
 
+    # Acquire an Entra token for ceapex feed access via WIF (dnceng/internal only).
+    # All other projects use PAT-based auth, since the ceapex service connection is scoped to dnceng/internal.
+    - ${{ if and(ne(parameters.CeapexServiceConnection, ''), eq(variables['System.TeamProject'], 'internal')) }}:
+      - template: /eng/common/core-templates/steps/get-federated-access-token.yml
+        parameters:
+          is1ESPipeline: ${{ parameters.is1ESPipeline }}
+          federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
+          outputVariableName: 'CeapexEntraToken'
+          condition: ${{ parameters.condition }}
+
     - task: OneLocBuild@2
       displayName: OneLocBuild
       env:
@@ -89,7 +105,10 @@ jobs:
           ${{ if eq(parameters.RepoType, 'gitHub') }}:
             isShouldReusePrSelected: ${{ parameters.ReusePr }}
         packageSourceAuth: patAuth
-        patVariable: ${{ parameters.CeapexPat }}
+        ${{ if and(ne(parameters.CeapexServiceConnection, ''), eq(variables['System.TeamProject'], 'internal')) }}:
+          patVariable: $(CeapexEntraToken)
+        ${{ if or(eq(parameters.CeapexServiceConnection, ''), ne(variables['System.TeamProject'], 'internal')) }}:
+          patVariable: ${{ parameters.CeapexPat }}
         ${{ if eq(parameters.RepoType, 'gitHub') }}:
           repoType: ${{ parameters.RepoType }}
           gitHubPatVariable: "${{ parameters.GithubPat }}"
