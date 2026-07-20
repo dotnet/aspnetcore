@@ -709,6 +709,8 @@ public class DefaultAntiforgeryTest
     [InlineData("HEAD")]
     [InlineData("options")]
     [InlineData("TrAcE")]
+    [InlineData("QUERY")]
+    [InlineData("query")]
     public async Task IsRequestValidAsync_SkipsAntiforgery_ForSafeHttpMethods(string httpMethod)
     {
         // Arrange
