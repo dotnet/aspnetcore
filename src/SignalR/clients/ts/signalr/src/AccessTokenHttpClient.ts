@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { HeaderNames } from "./HeaderNames";
+import { HttpError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 
 /** @private */
@@ -25,7 +26,18 @@ export class AccessTokenHttpClient extends HttpClient {
             this._accessToken = await this._accessTokenFactory();
         }
         this._setAuthorizationHeader(request);
-        const response = await this._innerClient.send(request);
+        let response: HttpResponse;
+        try {
+            response = await this._innerClient.send(request);
+        } catch (e) {
+            if (allowRetry && e instanceof HttpError && e.statusCode === 401 && this._accessTokenFactory) {
+                this._accessToken = await this._accessTokenFactory();
+                this._setAuthorizationHeader(request);
+                return await this._innerClient.send(request);
+            }
+
+            throw e;
+        }
 
         if (allowRetry && response.statusCode === 401 && this._accessTokenFactory) {
             this._accessToken = await this._accessTokenFactory();
