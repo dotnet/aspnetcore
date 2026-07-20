@@ -122,9 +122,6 @@ jobs:
 
     # Populate internal runtime variables.
     - template: /eng/common/templates/steps/enable-internal-sources.yml
-      ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-        parameters:
-            legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
 
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 

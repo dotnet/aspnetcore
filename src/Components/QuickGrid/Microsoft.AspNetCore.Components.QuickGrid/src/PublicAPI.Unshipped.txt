@@ -1,6 +1,14 @@
 #nullable enable
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.get -> string!
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Direction.get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Direction.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Page.get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Page.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.QueryParameterNameOptions(string! prefix = "") -> void
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Sort.get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions.Sort.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNameOptions.get -> Microsoft.AspNetCore.Components.QuickGrid.QueryParameterNameOptions!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNameOptions.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.set -> void
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> void
