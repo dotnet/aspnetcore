@@ -54,17 +54,33 @@ app.MapGet("/hello", handler);
     [Fact]
     public async Task MapGet_HandlerFromCustomDelegateVariable_ShouldNotGenerateStaticEndpoint()
     {
-        var (generatorRunResult, compilation) = await RunGeneratorAsync("""
+        // CustomFuncOfString must live in a separate document because GetMapActionString wraps
+        // sources inside a method body, so a delegate declaration there would be a syntax error.
+        var project = CreateProject();
+        var source = GetMapActionString("""
 CustomFuncOfString handler = () => "Hello world!";
 app.MapGet("/hello", handler);
 """);
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        project = project.AddDocument("CustomDelegate.cs", SourceText.From("delegate string CustomFuncOfString();", Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            generators: new[] { generator },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var _);
+
+        var diagnostics = updatedCompilation.GetDiagnostics();
+        Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Error));
+
+        var generatorRunResult = Assert.Single(driver.GetRunResult().Results);
 
         // Custom delegate types cannot be cast to Func<T>/Action in the generated code, so the
         // generator must not produce a static endpoint. The UnableToResolveMethod diagnostic
         // ensures fallback to RequestDelegateFactory.
-        var results = Assert.IsType<GeneratorRunResult>(generatorRunResult);
-
-        var endpoint = Assert.Single(GetStaticEndpoints(results, GeneratorSteps.EndpointModelStep));
+        var endpoint = Assert.Single(GetStaticEndpoints(generatorRunResult, GeneratorSteps.EndpointModelStep));
         Assert.Contains(endpoint.Diagnostics, d => d.Id == DiagnosticDescriptors.UnableToResolveMethod.Id);
     }
 
