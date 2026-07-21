@@ -308,7 +308,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
             var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
             {
-                { "HostApplicationBuilderConstructed", hostApplicationBuilder =>
+                { "WebApplicationBuilderConstructed", hostApplicationBuilder =>
                     {
                         receivedBuilderConstructed = true;
                         ConfigureWebApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!);
