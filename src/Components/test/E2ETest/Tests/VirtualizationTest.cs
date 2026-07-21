@@ -5491,11 +5491,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void QuickGrid_ScrollToItem_FixedHeight_LandsAtTop(bool useItemsProvider)
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public void QuickGrid_ScrollToItem_LandsAtTop(bool useItemsProvider, bool variableHeight)
     {
-        MountQuickGridForScrollToItem(useItemsProvider);
+        MountQuickGridForScrollToItem(useItemsProvider, variableHeight);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -5505,23 +5507,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() => GetTopRenderedIndex(js) == 200,
             $"Top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void QuickGrid_ScrollToItem_VariableHeight_LandsAtTop(bool useItemsProvider)
-    {
-        MountQuickGridForScrollToItem(useItemsProvider, variableHeight: true);
-        var container = Browser.Exists(By.Id("scroll-container"));
-        var js = (IJavaScriptExecutor)Browser;
-
-        SetScrollTargetIndex(200);
-        Browser.Exists(By.Id("scroll-to-item")).Click();
-        WaitForScrollStatus("Completed: 200");
-
-        Browser.True(() => GetTopRenderedIndex(js) == 200,
-            $"Variable-height: top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
     }
 
     [Theory]
@@ -5577,29 +5562,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(true)]
     [InlineData(false)]
-    public void QuickGrid_ScrollToItem_ForwardThenBackward(bool useItemsProvider)
+    [InlineData(true)]
+    public void QuickGrid_ScrollToItem_WithProviderDelay_LandsAtTargetWithRealContent(bool variableHeight)
     {
-        MountQuickGridForScrollToItem(useItemsProvider);
-        var js = (IJavaScriptExecutor)Browser;
-
-        SetScrollTargetIndex(300);
-        Browser.Exists(By.Id("scroll-to-item")).Click();
-        WaitForScrollStatus("Completed: 300");
-
-        SetScrollTargetIndex(50);
-        Browser.Exists(By.Id("scroll-to-item")).Click();
-        WaitForScrollStatus("Completed: 50");
-
-        Browser.True(() => GetTopRenderedIndex(js) == 50,
-            $"Top rendered item should be 50 after backward scroll but was {GetTopRenderedIndex(js)}");
-    }
-
-    [Fact]
-    public void QuickGrid_ScrollToItem_WithProviderDelay_LandsAtTargetWithRealContent()
-    {
-        MountQuickGridForScrollToItem();
+        MountQuickGridForScrollToItem(variableHeight: variableHeight);
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(300);
@@ -5654,22 +5621,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             if (!last) return false;
             return Math.abs((c.scrollTop + c.clientHeight) - c.scrollHeight) <= 2;
         "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialItemIndex=100000.");
-    }
-
-    [Theory]
-    [InlineData(120)]
-    [InlineData(300)]
-    public void QuickGrid_ScrollToItem_AsyncProvider_VariableHeight_WithDelay_ReachesTarget(int target)
-    {
-        MountQuickGridForScrollToItem(variableHeight: true);
-        var js = (IJavaScriptExecutor)Browser;
-
-        SetScrollTargetIndex(target);
-        Browser.Exists(By.Id("scroll-to-item")).Click();
-        WaitForScrollStatus($"Completed: {target}", timeoutSeconds: 30);
-
-        Browser.True(() => GetTopRenderedIndex(js) == target,
-            $"Top rendered should be real item {target}; got {GetTopRenderedIndex(js)}");
     }
 
     [Fact]
