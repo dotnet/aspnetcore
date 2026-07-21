@@ -107,6 +107,27 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task TransformerRegisteredAsOperationTransformer_DoesNotRunAsDocumentTransformer()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { });
+
+        var transformer = new OperationAndDocumentTransformer();
+        var options = new OpenApiOptions();
+        options.AddOperationTransformer(transformer);
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Null(document.Info.Description);
+            Assert.Equal("Operation transformer ran.", document.Paths["/todo"].Operations[HttpMethod.Get].Description);
+        });
+
+        Assert.Equal(0, transformer.DocumentTransformCount);
+        Assert.Equal(1, transformer.OperationTransformCount);
+    }
+
+    [Fact]
     public async Task DocumentTransformer_SupportsActivatedTransformers()
     {
         var builder = CreateBuilder();
@@ -391,6 +412,27 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         await documentTask;
 
         Assert.Equal([1, 2, 3], transformerOrder);
+    }
+
+    private sealed class OperationAndDocumentTransformer : IOpenApiOperationTransformer, IOpenApiDocumentTransformer
+    {
+        public int OperationTransformCount { get; private set; }
+
+        public int DocumentTransformCount { get; private set; }
+
+        public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+        {
+            OperationTransformCount++;
+            operation.Description = "Operation transformer ran.";
+            return Task.CompletedTask;
+        }
+
+        public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+        {
+            DocumentTransformCount++;
+            document.Info.Description = "Document transformer ran.";
+            return Task.CompletedTask;
+        }
     }
 
     private class ActivatedTransformer : IOpenApiDocumentTransformer

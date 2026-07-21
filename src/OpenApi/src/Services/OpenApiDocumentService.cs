@@ -116,7 +116,16 @@ internal sealed class OpenApiDocumentService(
             SchemaTransformers = schemaTransformers
         };
         var pathsGenerated = false;
-        var hasGenerationTransformers = _options.Transformers.Any(static transformer => transformer is not IOpenApiDocumentTransformer);
+        var hasGenerationTransformers = false;
+        for (var i = 0; i < _options.Transformers.Count; i++)
+        {
+            if (_options.Transformers[i].Kind is not OpenApiTransformerKind.Document)
+            {
+                hasGenerationTransformers = true;
+                break;
+            }
+        }
+
         if (!hasGenerationTransformers)
         {
             document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
@@ -126,9 +135,10 @@ internal sealed class OpenApiDocumentService(
         // Use index-based for loop to avoid allocating an enumerator with a foreach.
         for (var i = 0; i < _options.Transformers.Count; i++)
         {
-            var transformer = _options.Transformers[i];
-            if (transformer is IOpenApiDocumentTransformer documentTransformer)
+            var transformerRegistration = _options.Transformers[i];
+            if (transformerRegistration.Kind is OpenApiTransformerKind.Document)
             {
+                var documentTransformer = (IOpenApiDocumentTransformer)transformerRegistration.Transformer;
                 await documentTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
             }
             else if (!pathsGenerated)

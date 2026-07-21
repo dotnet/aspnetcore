@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 public sealed class OpenApiOptions
 {
-    internal readonly List<object> Transformers = [];
+    internal readonly List<OpenApiTransformerRegistration> Transformers = [];
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
     internal readonly List<IOpenApiOperationTransformer> OperationTransformers = [];
     internal readonly List<IOpenApiSchemaTransformer> SchemaTransformers = [];
@@ -67,7 +67,7 @@ public sealed class OpenApiOptions
     {
         var transformer = new TypeBasedOpenApiDocumentTransformer(typeof(TTransformerType));
         DocumentTransformers.Add(transformer);
-        Transformers.Add(transformer);
+        Transformers.Add(new(OpenApiTransformerKind.Document, transformer));
         return this;
     }
 
@@ -81,7 +81,7 @@ public sealed class OpenApiOptions
         ArgumentNullException.ThrowIfNull(transformer);
 
         DocumentTransformers.Add(transformer);
-        Transformers.Add(transformer);
+        Transformers.Add(new(OpenApiTransformerKind.Document, transformer));
         return this;
     }
 
@@ -96,7 +96,7 @@ public sealed class OpenApiOptions
 
         var transformerInstance = new DelegateOpenApiDocumentTransformer(transformer);
         DocumentTransformers.Add(transformerInstance);
-        Transformers.Add(transformerInstance);
+        Transformers.Add(new(OpenApiTransformerKind.Document, transformerInstance));
         return this;
     }
 
@@ -110,7 +110,7 @@ public sealed class OpenApiOptions
     {
         var transformer = new TypeBasedOpenApiOperationTransformer(typeof(TTransformerType));
         OperationTransformers.Add(transformer);
-        Transformers.Add(transformer);
+        Transformers.Add(new(OpenApiTransformerKind.Operation, transformer));
         return this;
     }
 
@@ -124,7 +124,7 @@ public sealed class OpenApiOptions
         ArgumentNullException.ThrowIfNull(transformer);
 
         OperationTransformers.Add(transformer);
-        Transformers.Add(transformer);
+        Transformers.Add(new(OpenApiTransformerKind.Operation, transformer));
         return this;
     }
 
@@ -139,7 +139,7 @@ public sealed class OpenApiOptions
 
         var transformerInstance = new DelegateOpenApiOperationTransformer(transformer);
         OperationTransformers.Add(transformerInstance);
-        Transformers.Add(transformerInstance);
+        Transformers.Add(new(OpenApiTransformerKind.Operation, transformerInstance));
         return this;
     }
 
@@ -153,7 +153,7 @@ public sealed class OpenApiOptions
     {
         var transformer = new TypeBasedOpenApiSchemaTransformer(typeof(TTransformerType));
         SchemaTransformers.Add(transformer);
-        Transformers.Add(transformer);
+        Transformers.Add(new(OpenApiTransformerKind.Schema, transformer));
         return this;
     }
 
@@ -167,7 +167,7 @@ public sealed class OpenApiOptions
         ArgumentNullException.ThrowIfNull(transformer);
 
         SchemaTransformers.Add(transformer);
-        Transformers.Add(transformer);
+        Transformers.Add(new(OpenApiTransformerKind.Schema, transformer));
         return this;
     }
 
@@ -182,7 +182,16 @@ public sealed class OpenApiOptions
 
         var transformerInstance = new DelegateOpenApiSchemaTransformer(transformer);
         SchemaTransformers.Add(transformerInstance);
-        Transformers.Add(transformerInstance);
+        Transformers.Add(new(OpenApiTransformerKind.Schema, transformerInstance));
         return this;
     }
+}
+
+internal readonly record struct OpenApiTransformerRegistration(OpenApiTransformerKind Kind, object Transformer);
+
+internal enum OpenApiTransformerKind
+{
+    Document,
+    Operation,
+    Schema
 }
