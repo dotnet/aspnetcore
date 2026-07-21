@@ -14,4 +14,8 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.set ->
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnInitialized() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AnchorMode.get -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AnchorMode.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TGridItem>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemComparer.set -> void
 *REMOVED*override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSet() -> void
