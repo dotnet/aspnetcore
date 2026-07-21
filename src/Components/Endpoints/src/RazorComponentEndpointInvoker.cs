@@ -182,7 +182,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         context.RequestServices.GetRequiredService<TempDataService>().Persist(context);
 
         // Emit comment containing state.
-        if (!isErrorHandlerOrReExecuted)
+        // Skip only for the error handler (errors are static); re-executed pages can be interactive and need both PersistentState and auth state restored.
+        if (!isErrorHandler)
         {
             var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
             componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
