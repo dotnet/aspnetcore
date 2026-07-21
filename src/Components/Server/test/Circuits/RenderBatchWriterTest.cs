@@ -270,6 +270,99 @@ public class RenderBatchWriterTest
             }, ReadStringTable(bytes));
     }
 
+    [Fact]
+    public void WritingReferenceFramesDoesNotMutateSourceFrames()
+    {
+        var sourceFrames = new RenderTreeFrame[]
+        {
+                RenderTreeFrame.Attribute(123, "Attribute with string value", "String value"),
+                RenderTreeFrame.Attribute(124, "Attribute with nonstring value", 1),
+                RenderTreeFrame.ChildComponent(126, typeof(object))
+                    .WithComponentSubtreeLength(5678)
+                    .WithComponent(new ComponentState(new FakeRenderer(), 2000, new FakeComponent(), null)),
+                RenderTreeFrame.Element(128, "Some element")
+                    .WithElementSubtreeLength(1234),
+                RenderTreeFrame.ElementReferenceCapture(129, value => { })
+                    .WithElementReferenceCaptureId("my unique ID"),
+                RenderTreeFrame.Region(130)
+                    .WithRegionSubtreeLength(1234),
+                RenderTreeFrame.Text(131, "Some text"),
+                RenderTreeFrame.Markup(132, "Some markup"),
+                RenderTreeFrame.NamedEvent(135, "SomeEventType", "Some assigned name"),
+                RenderTreeFrame.ComponentRenderModeFrame(136, RenderMode.InteractiveAuto),
+        };
+        var renderBatch = new RenderBatch(
+            default,
+            new ArrayRange<RenderTreeFrame>(sourceFrames, sourceFrames.Length),
+            default,
+            default,
+            default);
+        var expectedBytes = SnapshotRenderBatch(renderBatch);
+
+        var actualBytes = SnapshotRenderBatch(renderBatch);
+
+        // serializing twice produces identical output, which can only
+        // happen if the writer did not mutate the source frame array.
+        Assert.Equal(expectedBytes, actualBytes);
+    }
+.
+    [Fact]
+    public void RoundTripsEveryFrameType()
+    {
+        var renderer = new FakeRenderer();
+        var frames = new RenderTreeFrame[]
+        {
+                RenderTreeFrame.Attribute(123, "Attribute with string value", "String value"),
+                RenderTreeFrame.Attribute(124, "Attribute with nonstring value", 1),
+                RenderTreeFrame.Attribute(125, "Attribute with delegate value", new Action(() => { }))
+                    .WithAttributeEventHandlerId(((ulong)uint.MaxValue) + 1),
+                RenderTreeFrame.ChildComponent(126, typeof(object))
+                    .WithComponentSubtreeLength(5678)
+                    .WithComponent(new ComponentState(renderer, 2000, new FakeComponent(), null)),
+                RenderTreeFrame.ComponentReferenceCapture(127, value => { }, 1001),
+                RenderTreeFrame.Element(128, "Some element")
+                    .WithElementSubtreeLength(1234),
+                RenderTreeFrame.ElementReferenceCapture(129, value => { })
+                    .WithElementReferenceCaptureId("my unique ID"),
+                RenderTreeFrame.Region(130)
+                    .WithRegionSubtreeLength(1234),
+                RenderTreeFrame.Text(131, "Some text"),
+                RenderTreeFrame.Markup(132, "Some markup"),
+                RenderTreeFrame.Text(133, "\n\t  "),
+                RenderTreeFrame.NamedEvent(135, "SomeEventType", "Some assigned name"),
+                RenderTreeFrame.ComponentRenderModeFrame(136, RenderMode.InteractiveAuto),
+        };
+
+        var bytes = Serialize(new RenderBatch(
+            default,
+            new ArrayRange<RenderTreeFrame>(frames, frames.Length),
+            default,
+            default,
+            default));
+
+        // locate the reference-frames section and verify the entire contents
+        var referenceFramesStartIndex = ReadInt(bytes, bytes.Length - 16);
+        AssertBinaryContents(bytes, referenceFramesStartIndex,
+            frames.Length,
+            RenderTreeFrameType.Attribute, "Attribute with string value", "String value", 0, 0,
+            RenderTreeFrameType.Attribute, "Attribute with nonstring value", NullStringMarker, 0, 0,
+            RenderTreeFrameType.Attribute, "Attribute with delegate value", NullStringMarker, ((ulong)uint.MaxValue) + 1,
+            RenderTreeFrameType.Component, 5678, 2000, 0, 0,
+            RenderTreeFrameType.ComponentReferenceCapture, 0, 0, 0, 0,
+            RenderTreeFrameType.Element, 1234, "Some element", 0, 0,
+            RenderTreeFrameType.ElementReferenceCapture, "my unique ID", 0, 0, 0,
+            RenderTreeFrameType.Region, 1234, 0, 0, 0,
+            RenderTreeFrameType.Text, "Some text", 0, 0, 0,
+            RenderTreeFrameType.Markup, "Some markup", 0, 0, 0,
+            RenderTreeFrameType.Text, "\n\t  ", 0, 0, 0,
+            RenderTreeFrameType.NamedEvent, 0, 0, 0, 0,
+            RenderTreeFrameType.ComponentRenderMode, 0, 0, 0, 0
+        );
+    }
+
+    static byte[] SnapshotRenderBatch(RenderBatch renderBatch)
+        => Serialize(renderBatch).ToArray();
+
     private Span<byte> Serialize(RenderBatch renderBatch)
     {
         using (var ms = new MemoryStream())
