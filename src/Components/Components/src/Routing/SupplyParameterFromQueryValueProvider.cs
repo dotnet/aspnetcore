@@ -15,6 +15,7 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
     private HashSet<ComponentState>? _pendingSubscribers;
 
     private string? _lastUri;
+    private string? _lastPath;
     private bool _isSubscribedToLocationChanges;
     private bool _queryChanged;
     private bool _isProcessingLocationChange;
@@ -82,8 +83,43 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
            _queryParameterValueSupplier.ReadParametersFromQuery(query);
         }
 
+        var newPath = GetPath(navigationManager.Uri);
+        _pathChangedForLastUpdate = !newPath.Span.SequenceEqual(_lastPath.AsSpan());
+        _lastPath = newPath.IsEmpty ? null : newPath.ToString();
         _lastUri = navigationManager.Uri;
         return true;
+    }
+
+    private bool _pathChangedForLastUpdate;
+
+    private static ReadOnlyMemory<char> GetPath(string? url)
+    {
+        if (string.IsNullOrEmpty(url))
+        {
+            return default;
+        }
+
+        var pathStartPos = 0;
+
+        var schemeEnd = url.IndexOf("://", StringComparison.Ordinal);
+        if (schemeEnd >= 0)
+        {
+            pathStartPos = schemeEnd + 3;
+        }
+
+        var pathStart = url.IndexOf('/', pathStartPos);
+        if (pathStart < 0)
+        {
+            return default;
+        }
+
+        var pathEnd = url.IndexOfAny(new[] { '?', '#' }, pathStart);
+        if (pathEnd < 0)
+        {
+            pathEnd = url.Length;
+        }
+
+        return url.AsMemory(pathStart..pathEnd);
     }
 
     private void SubscribeToLocationChanges()
@@ -119,13 +155,17 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
 
             if (_queryChanged)
             {
-                foreach (var subscriber in _subscribers)
+                if (!_pathChangedForLastUpdate)
                 {
-                    subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+                    foreach (var subscriber in _subscribers)
+                    {
+                        subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+                    }
                 }
-
-                _queryChanged = false;
             }
+
+            _queryChanged = false;
+            _pathChangedForLastUpdate = false;
 
             if (_pendingSubscribers is not null)
             {
