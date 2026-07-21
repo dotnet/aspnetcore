@@ -393,7 +393,6 @@ public class ClientValidationProviderTests
         var validateContext = new ValidateContext
         {
             ValidationOptions = options,
-            ValidationContext = new ValidationContext(model, serviceProvider: null, items: null),
         };
         typeInfo!.Validate(model, validateContext);
         return validateContext.ValidationErrors?.Keys.ToArray() ?? Array.Empty<string>();

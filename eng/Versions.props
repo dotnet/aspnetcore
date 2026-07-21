@@ -138,7 +138,7 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension100Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension100x86Version>
     <!-- 3rd party dependencies -->
     <AzureIdentityVersion>1.11.4</AzureIdentityVersion>
-    <AngleSharpVersion>0.9.9</AngleSharpVersion>
+    <AngleSharpVersion>1.5.2</AngleSharpVersion>
     <BenchmarkDotNetVersion>0.13.0</BenchmarkDotNetVersion>
     <CastleCoreVersion>5.2.1</CastleCoreVersion>
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
