@@ -192,7 +192,7 @@ public class DisplayNameInfoTests : ValidationTestBase
         return new ValidateContext
         {
             ValidationOptions = new ValidationOptions(),
-            ValidationContext = new ValidationContext(model),
+            ServiceProvider = null,
         };
     }
 

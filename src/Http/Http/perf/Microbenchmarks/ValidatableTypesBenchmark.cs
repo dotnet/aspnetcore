@@ -45,7 +45,7 @@ public class ValidatableTypeInfoBenchmark
         _context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationContext = new ValidationContext(new object(), serviceProvider, null),
+            ServiceProvider = serviceProvider,
         };
 
         // Create the model instances

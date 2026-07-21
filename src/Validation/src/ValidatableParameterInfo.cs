@@ -55,21 +55,28 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
-    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context)
+    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context, ValidationContext? validationContext, string displayName)
     {
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
+            var result = validationContext is not null
+                ? _requiredAttribute.GetValidationResult(value, validationContext)
+                : CreateValidationResult(_requiredAttribute.IsValid(value), _requiredAttribute, displayName);
 
             if (result is not null && result != ValidationResult.Success)
             {
-                ((IValidationErrorReporter)this).ReportError(context, container: null, _requiredAttribute, result);
+                ((IValidationErrorReporter)this).ReportError(context, displayName, container: null, _requiredAttribute, result);
                 return false;
             }
         }
 
         return true;
     }
+
+    private static ValidationResult? CreateValidationResult(bool isValid, ValidationAttribute attribute, string displayName)
+        => isValid
+            ? ValidationResult.Success
+            : new ValidationResult(attribute.FormatErrorMessage(displayName), null);
 
     /// <inheritdoc />
     /// <remarks>
@@ -78,20 +85,32 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-
-        context.ValidationContext.DisplayName = displayName;
-        context.ValidationContext.MemberName = Name;
-
         var validationAttributes = GetValidationAttributes();
 
-        if (!ValidateRequiredAttribute(validationAttributes, value, context))
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+        var validationContext = context.CreateValidationContext(value, displayName, Name);
+
+        if (!ValidateRequiredAttribute(validationAttributes, value, context, validationContext, displayName))
         {
             return;
         }
 
+        if (value is null)
+        {
+            // TODO: The blocker here to support this is that ValidationContext requires a non-null ObjectInstance.
+            // We have multiple options to fix this.
+            // 1. Don't create a ValidationContext at all, and use the old IsValid API.
+            // 2. Create a ValidationContext with a dummy object instance, not really matching ValidationContext API contract/expectation.
+            //
+            // For now, we only validate RequiredAttribute if present (which we know for sure doesn't need the ValidationContext)
+            // We could as well only validate RequiredAttribute, and decide to ship an analyzer
+            // to warn if minimal API parameter is nullable and has validation attributes.
+            return;
+        }
+
         // Validate against validation attributes
-        await context.ValidateAttributesAsync(value, null, this, cancellationToken);
+        // Null suppression here is safe. ValidationContext is always non-null when value is not null.
+        await context.ValidateAttributesAsync(value, null, this, validationContext!, displayName, cancellationToken);
 
         // If the parameter is a collection, validate each item
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
@@ -154,20 +173,24 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// </remarks>
     public virtual void Validate(object? value, ValidateContext context)
     {
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-
-        context.ValidationContext.DisplayName = displayName;
-        context.ValidationContext.MemberName = Name;
-
         var validationAttributes = GetValidationAttributes();
 
-        if (!ValidateRequiredAttribute(validationAttributes, value, context))
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+        var validationContext = context.CreateValidationContext(value, displayName, Name);
+
+        if (!ValidateRequiredAttribute(validationAttributes, value, context, validationContext, displayName))
         {
             return;
         }
 
+        if (value is null)
+        {
+            // See comment in ValidateAsync.
+            return;
+        }
+
         // Validate against validation attributes
-        context.ValidateAllAttributesSynchronously(value, null, this);
+        context.ValidateAllAttributesSynchronously(value, null, this, validationContext!, displayName);
 
         // If the parameter is a collection, validate each item
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
@@ -215,11 +238,11 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
         return GetValidationAttributes();
     }
 
-    void IValidationErrorReporter.ReportError(ValidateContext context, object? container, ValidationAttribute attribute, ValidationResult result)
+    void IValidationErrorReporter.ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
     {
         var errorMessage = context.ResolveAttributeErrorMessage(
             memberName: Name,
-            context.ValidationContext.DisplayName,
+            displayName,
             declaringType: null,
             attribute,
             result);
