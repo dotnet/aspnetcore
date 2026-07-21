@@ -64,16 +64,7 @@ namespace Microsoft.Extensions.Validation.Generated
             string name,
             global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
         {
-            ContainingType = containingType;
-            Name = name;
         }
-
-        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
-        internal global::System.Type ContainingType { get; }
-        internal string Name { get; }
-
-        protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
-            => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
     }
 
     {{GeneratedCodeAttribute}}
@@ -85,24 +76,24 @@ namespace Microsoft.Extensions.Validation.Generated
             ValidatablePropertyInfo[] members,
             global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(type, members, displayNameInfo)
         {
-            Type = type;
         }
-
-        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
-        internal global::System.Type Type { get; }
-
-        protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
-            => ValidationAttributeCache.GetTypeValidationAttributes(Type);
     }
 
     {{GeneratedCodeAttribute}}
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
+        private readonly global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::Microsoft.Extensions.Validation.IValidatableTypeInfo?> _typeInfoCache = new();
+
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
-            validatableTypeInfo = null;
+            validatableTypeInfo = _typeInfoCache.GetOrAdd(type, TryGetValidatableTypeInfo);
+            return validatableTypeInfo is not null;
+        }
+
+        private static global::Microsoft.Extensions.Validation.IValidatableTypeInfo? TryGetValidatableTypeInfo(global::System.Type type)
+        {
 {{EmitTypeChecks(validatableTypes)}}
-            return false;
+            return null;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
@@ -127,79 +118,6 @@ namespace Microsoft.Extensions.Validation.Generated
                 {
                     configureOptions(options);
                 }
-            });
-        }
-    }
-
-    {{GeneratedCodeAttribute}}
-    file static class ValidationAttributeCache
-    {
-        private sealed record CacheKey(
-            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
-            [property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
-            global::System.Type ContainingType,
-            string PropertyName);
-        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> _propertyCache = new();
-        private static readonly global::System.Lazy<global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]>> _lazyTypeCache = new (() => new ());
-        private static global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> TypeCache => _lazyTypeCache.Value;
-
-        public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetPropertyValidationAttributes(
-            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
-            global::System.Type containingType,
-            string propertyName)
-        {
-            var key = new CacheKey(containingType, propertyName);
-            return _propertyCache.GetOrAdd(key, static k =>
-            {
-                var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
-
-                // Get attributes from the property
-                var property = k.ContainingType.GetProperty(
-                    k.PropertyName,
-                    global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly);
-                if (property != null)
-                {
-                    var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
-                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true);
-
-                    results.AddRange(propertyAttributes);
-                }
-
-                // Check constructors for parameters that match the property name
-                // to handle record scenarios
-                foreach (var constructor in k.ContainingType.GetConstructors())
-                {
-                    // Look for parameter with matching name (case insensitive)
-                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
-                        constructor.GetParameters(),
-                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
-
-                    if (parameter != null)
-                    {
-                        var paramAttributes = global::System.Reflection.CustomAttributeExtensions
-                            .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameter, inherit: true);
-
-                        results.AddRange(paramAttributes);
-
-                        break;
-                    }
-                }
-
-                return results.ToArray();
-            });
-        }
-
-
-        public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetTypeValidationAttributes(
-            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
-            global::System.Type type
-        )
-        {
-            return TypeCache.GetOrAdd(type, static t =>
-            {
-                var typeAttributes = global::System.Reflection.CustomAttributeExtensions
-                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(t, inherit: true);
-                return global::System.Linq.Enumerable.ToArray(typeAttributes);
             });
         }
     }
@@ -233,99 +151,71 @@ namespace Microsoft.Extensions.Validation.Generated
     {{GeneratedCodeAttribute}}
     file sealed class PropertyResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
     {
-        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
-        private readonly global::System.Type _containingType;
-        private readonly string _propertyName;
+        private readonly global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
 
         public PropertyResourceDisplayName(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
             string propertyName)
         {
-            _containingType = containingType;
-            _propertyName = propertyName;
+            _displayAttribute = GetDisplayAttribute(containingType, propertyName);
+        }
+
+        private static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetDisplayAttribute(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type containingType,
+            string propertyName
+        )
+        {
+            // Check primary-constructor parameters first to handle record scenarios where
+            // [Display(ResourceType = ..., Name = ...)] is on the parameter rather than the property.
+            foreach (var constructor in containingType.GetConstructors())
+            {
+                var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                    constructor.GetParameters(),
+                    p => string.Equals(p.Name, propertyName, global::System.StringComparison.Ordinal));
+
+                if (parameter != null)
+                {
+                    var paramDisplayAttr = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter);
+                    if (paramDisplayAttr is not null)
+                    {
+                        return paramDisplayAttr;
+                    }
+
+                    break;
+                }
+            }
+
+            var property = containingType.GetProperty(
+                propertyName,
+                global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly);
+            return property is null
+                ? null
+                : global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
         }
 
         public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
-            => DisplayAttributeCache.GetPropertyDisplayAttribute(_containingType, _propertyName)?.GetName();
+            => _displayAttribute?.GetName();
     }
 
     {{GeneratedCodeAttribute}}
     file sealed class TypeResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
     {
-        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
-        private readonly global::System.Type _type;
+        private readonly global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
 
         public TypeResourceDisplayName(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type)
         {
-            _type = type;
+            _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(type, inherit: true);
         }
 
         public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
-            => DisplayAttributeCache.GetTypeDisplayAttribute(_type)?.GetName();
-    }
-
-    {{GeneratedCodeAttribute}}
-    file static class DisplayAttributeCache
-    {
-        private sealed record CacheKey(
-            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
-            [property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
-            global::System.Type ContainingType,
-            string PropertyName);
-
-        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.DisplayAttribute?> _propertyCache = new();
-        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.DisplayAttribute?> _typeCache = new();
-
-        public static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetPropertyDisplayAttribute(
-            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
-            global::System.Type containingType,
-            string propertyName)
-        {
-            var key = new CacheKey(containingType, propertyName);
-            return _propertyCache.GetOrAdd(key, static k =>
-            {
-                // Check primary-constructor parameters first to handle record scenarios where
-                // [Display(ResourceType = ..., Name = ...)] is on the parameter rather than the property.
-                foreach (var constructor in k.ContainingType.GetConstructors())
-                {
-                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
-                        constructor.GetParameters(),
-                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.Ordinal));
-
-                    if (parameter != null)
-                    {
-                        var paramDisplayAttr = global::System.Reflection.CustomAttributeExtensions
-                            .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter);
-                        if (paramDisplayAttr is not null)
-                        {
-                            return paramDisplayAttr;
-                        }
-
-                        break;
-                    }
-                }
-
-                var property = k.ContainingType.GetProperty(
-                    k.PropertyName,
-                    global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly);
-                return property is null
-                    ? null
-                    : global::System.Reflection.CustomAttributeExtensions
-                        .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
-            });
-        }
-
-        public static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetTypeDisplayAttribute(
-            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
-            global::System.Type type)
-        {
-            return _typeCache.GetOrAdd(type, static t =>
-                global::System.Reflection.CustomAttributeExtensions
-                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t, inherit: true));
-        }
+            => _displayAttribute?.GetName();
     }
 }
 """;
@@ -359,7 +249,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var typeName = validatableType.TypeFQN;
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
-            cw.WriteLine($"validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(");
+            cw.WriteLine($"return new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(");
             cw.Indent++;
             cw.WriteLine($"type: typeof({typeName}),");
             if (validatableType.Members.IsDefaultOrEmpty)
@@ -380,7 +270,6 @@ namespace Microsoft.Extensions.Validation.Generated
             cw.WriteLine($"displayNameInfo: {FormatTypeDisplayNameInfo(validatableType)}");
             cw.Indent--;
             cw.WriteLine(");");
-            cw.WriteLine("return true;");
             cw.EndBlock();
         }
         return sw.ToString();

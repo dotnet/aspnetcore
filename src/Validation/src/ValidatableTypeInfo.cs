@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -15,6 +16,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
 {
     private readonly int _membersCount;
     private readonly Type[] _implementedInterfaces;
+
+    private ValidationAttribute[]? _validationAttributes;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -41,7 +44,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
     /// Gets the validation attributes applied to this type.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this type.</returns>
-    protected abstract ValidationAttribute[] GetValidationAttributes();
+    protected virtual ValidationAttribute[] GetValidationAttributes()
+        => _validationAttributes ??= Type.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
 
     /// <summary>
     /// The type being validated.

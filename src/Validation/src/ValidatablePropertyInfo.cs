@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Extensions.Validation;
@@ -14,6 +15,7 @@ namespace Microsoft.Extensions.Validation;
 public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValidationErrorReporter
 {
     private RequiredAttribute? _requiredAttribute;
+    private ValidationAttribute[]? _validationAttributes;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
@@ -25,7 +27,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     /// display name for the property at validation time. When <see langword="null"/>, the
     /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatablePropertyInfo(
-        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)]
         Type declaringType,
         Type propertyType,
         string name,
@@ -40,7 +42,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     /// <summary>
     /// Gets the type that declares the property.
     /// </summary>
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)]
     internal Type DeclaringType { get; }
 
     /// <summary>
@@ -66,7 +68,39 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     /// Gets the validation attributes for this property.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this property.</returns>
-    protected abstract ValidationAttribute[] GetValidationAttributes();
+    protected virtual ValidationAttribute[] GetValidationAttributes()
+        => _validationAttributes ??= GetValidationAttributesCore();
+
+    private ValidationAttribute[] GetValidationAttributesCore()
+    {
+        var results = new List<ValidationAttribute>();
+
+        // Get attributes from the property
+        var property = Property;
+        var propertyAttributes = property.GetCustomAttributes<ValidationAttribute>(inherit: true);
+
+        results.AddRange(propertyAttributes);
+
+        // Check constructors for parameters that match the property name
+        // to handle record scenarios
+        foreach (var constructor in DeclaringType.GetConstructors())
+        {
+            // Look for parameter with matching name (case insensitive)
+            var parameter = constructor.GetParameters().FirstOrDefault(
+                p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase));
+
+            if (parameter != null)
+            {
+                var paramAttributes = parameter.GetCustomAttributes<ValidationAttribute>(inherit: true);
+                results.AddRange(paramAttributes);
+
+                break;
+            }
+        }
+
+        return results.ToArray();
+
+    }
 
     private void ValidateDepth(ValidateContext context)
     {
