@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a member of a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValidationErrorReporter
+public abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePropertyInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
@@ -82,13 +82,13 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
     private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, ValidateContext context, object? propertyValue, object containingObject, ValidationContext validationContext)
     {
-        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
         {
             var result = _requiredAttribute.GetValidationResult(propertyValue, validationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
-                ((IValidationErrorReporter)this).ReportError(context, validationContext.DisplayName, containingObject, _requiredAttribute, result);
+                ReportError(context, validationContext.DisplayName, containingObject, _requiredAttribute, result);
 
                 return false;
             }
@@ -119,7 +119,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-        var validationContext = AttributeValidator.CreateValidationContext(context, containingObject, displayName, Name);
+        var validationContext = CreateValidationContext(context, containingObject, displayName, Name);
 
         // Check required attribute first
         if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
@@ -131,7 +131,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
 
         // Validate any other attributes
-        await AttributeValidator.ValidateAttributesAsync(context, propertyValue, containingObject, this, validationContext, displayName, cancellationToken);
+        await ValidateAttributesAsync(context, validationAttributes, propertyValue, containingObject, validationContext, displayName, cancellationToken);
 
         var validationOptions = context.ValidationOptions;
 
@@ -143,7 +143,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         try
         {
             // Handle enumerable values
-            if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
+            if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
@@ -216,7 +216,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-        var validationContext = AttributeValidator.CreateValidationContext(context, containingObject, displayName, Name);
+        var validationContext = CreateValidationContext(context, containingObject, displayName, Name);
 
         // Check required attribute first
         if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
@@ -228,7 +228,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
 
         // Validate any other attributes
-        AttributeValidator.ValidateAllAttributesSynchronously(context, propertyValue, containingObject, this, validationContext, displayName);
+        ValidateAllAttributesSynchronously(context, validationAttributes, propertyValue, containingObject, validationContext, displayName);
 
         var validationOptions = context.ValidationOptions;
 
@@ -240,7 +240,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         try
         {
             // Handle enumerable values
-            if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
+            if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
@@ -279,14 +279,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
     }
 
-    ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
+    private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
     {
-        return GetValidationAttributes();
-    }
-
-    void IValidationErrorReporter.ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
-    {
-        var errorMessage = AttributeValidator.ResolveAttributeErrorMessage(
+        var errorMessage = ResolveAttributeErrorMessage(
             context,
             memberName: Name,
             displayName,

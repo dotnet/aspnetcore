@@ -20,12 +20,6 @@ public sealed class ValidateContext
     {
     }
 
-    internal ValidateContext(ValidateContextMutableState state)
-    {
-        CurrentDepth = state.Depth;
-        CurrentValidationPath = state.Path;
-    }
-
     /// <summary>
     /// Gets or sets the service provider. This will also be made available on the <see cref="System.ComponentModel.DataAnnotations.ValidationContext"/> instances.
     /// </summary>
@@ -63,22 +57,6 @@ public sealed class ValidateContext
     /// </remarks>
     public int CurrentDepth { get; set; }
 
-    internal ValidateContext CopyWithState(ValidateContextMutableState state)
-    {
-        return new ValidateContext(state)
-        {
-            ValidationOptions = this.ValidationOptions,
-            ServiceProvider = this.ServiceProvider,
-        };
-    }
-
-    internal ValidateContextMutableState CaptureMutableState()
-        => new ValidateContextMutableState()
-        {
-            Depth = CurrentDepth,
-            Path = CurrentValidationPath,
-        };
-
     /// <summary>
     /// Adds a validation error to <see cref="ValidationErrors"/>.
     /// </summary>
@@ -95,34 +73,5 @@ public sealed class ValidateContext
         {
             ((List<ValidationErrorContext>)existingErrors).Add(validationErrorContext);
         }
-    }
-
-    internal bool MergeErrorsFromClonedContexts(List<ValidateContext>? clonedContexts)
-    {
-        if (clonedContexts is null)
-        {
-            return false;
-        }
-
-        bool hasErrors = false;
-        foreach (var clonedContext in clonedContexts)
-        {
-            if (clonedContext.ValidationErrors is null)
-            {
-                continue;
-            }
-
-            foreach (var validationError in clonedContext.ValidationErrors)
-            {
-                hasErrors = true;
-
-                foreach (var errorContext in validationError.Value)
-                {
-                    AddValidationError(errorContext);
-                }
-            }
-        }
-
-        return hasErrors;
     }
 }

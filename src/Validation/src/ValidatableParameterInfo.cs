@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a parameter.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IValidationErrorReporter
+public abstract class ValidatableParameterInfo : ValidatableInfo, IValidatableParameterInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
@@ -57,7 +57,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
     private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context, ValidationContext? validationContext, string displayName)
     {
-        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
         {
             var result = validationContext is not null
                 ? _requiredAttribute.GetValidationResult(value, validationContext)
@@ -65,7 +65,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
             if (result is not null && result != ValidationResult.Success)
             {
-                ((IValidationErrorReporter)this).ReportError(context, displayName, container: null, _requiredAttribute, result);
+                ReportError(context, displayName, container: null, _requiredAttribute, result);
                 return false;
             }
         }
@@ -88,7 +88,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
         var validationAttributes = GetValidationAttributes();
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-        var validationContext = AttributeValidator.CreateValidationContext(context, value, displayName, Name);
+        var validationContext = CreateValidationContext(context, value, displayName, Name);
 
         if (!ValidateRequiredAttribute(validationAttributes, value, context, validationContext, displayName))
         {
@@ -110,10 +110,10 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
         // Validate against validation attributes
         // Null suppression here is safe. ValidationContext is always non-null when value is not null.
-        await AttributeValidator.ValidateAttributesAsync(context, value, null, this, validationContext!, displayName, cancellationToken);
+        await ValidateAttributesAsync(context, validationAttributes, value, null, validationContext!, displayName, cancellationToken);
 
         // If the parameter is a collection, validate each item
-        if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
+        if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
         {
             var index = 0;
             var currentPrefix = context.CurrentValidationPath;
@@ -176,7 +176,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
         var validationAttributes = GetValidationAttributes();
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-        var validationContext = AttributeValidator.CreateValidationContext(context, value, displayName, Name);
+        var validationContext = CreateValidationContext(context, value, displayName, Name);
 
         if (!ValidateRequiredAttribute(validationAttributes, value, context, validationContext, displayName))
         {
@@ -190,10 +190,10 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
         }
 
         // Validate against validation attributes
-        AttributeValidator.ValidateAllAttributesSynchronously(context, value, null, this, validationContext!, displayName);
+        ValidateAllAttributesSynchronously(context, validationAttributes, value, null, validationContext!, displayName);
 
         // If the parameter is a collection, validate each item
-        if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
+        if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
         {
             var index = 0;
             var currentPrefix = context.CurrentValidationPath;
@@ -233,14 +233,9 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
         }
     }
 
-    ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
+    private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
     {
-        return GetValidationAttributes();
-    }
-
-    void IValidationErrorReporter.ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
-    {
-        var errorMessage = AttributeValidator.ResolveAttributeErrorMessage(
+        var errorMessage = ResolveAttributeErrorMessage(
             context,
             memberName: Name,
             displayName,

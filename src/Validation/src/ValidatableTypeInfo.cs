@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErrorReporter
+public abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
 {
     private readonly int _membersCount;
     private readonly Type[] _implementedInterfaces;
@@ -177,9 +177,9 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var validationContext = AttributeValidator.CreateValidationContext(context, value, displayName, null);
+        var validationContext = CreateValidationContext(context, value, displayName, null);
 
-        await AttributeValidator.ValidateAttributesAsync(context, value, value, this, validationContext, displayName, cancellationToken);
+        await ValidateAttributesAsync(context, GetValidationAttributes(), value, value, validationContext, displayName, cancellationToken);
 
         // If any type-level attribute errors were found, return early
         currentCount = context.ValidationErrors?.Count ?? 0;
@@ -226,9 +226,9 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var validationContext = AttributeValidator.CreateValidationContext(context, value, displayName, null);
+        var validationContext = CreateValidationContext(context, value, displayName, null);
 
-        AttributeValidator.ValidateAllAttributesSynchronously(context, value, value, this, validationContext, displayName);
+        ValidateAllAttributesSynchronously(context, GetValidationAttributes(), value, value, validationContext, displayName);
 
         // If any type-level attribute errors were found, return early
         currentCount = context.ValidationErrors?.Count ?? 0;
@@ -273,7 +273,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
 
     private async Task ValidateValidatableObjectInterfaceAsync(object? value, ValidateContext context, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
+        if (ImplementsInterface(Type, typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
             var errorPrefix = context.CurrentValidationPath;
             if (value is IAsyncValidatableObject asyncValidatable)
@@ -329,7 +329,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
 
     private void ValidateValidatableObjectInterface(object? value, ValidateContext context, ValidationContext validationContext)
     {
-        if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
+        if (ImplementsInterface(Type, typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
             var errorPrefix = context.CurrentValidationPath;
 
@@ -374,17 +374,12 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         }
     }
 
-    ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
-    {
-        return GetValidationAttributes();
-    }
-
-    void IValidationErrorReporter.ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
+    private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
     {
         foreach (var memberName in result.MemberNames)
         {
             // Create a validation error for each member name that is provided
-            var errorMessage = AttributeValidator.ResolveAttributeErrorMessage(
+            var errorMessage = ResolveAttributeErrorMessage(
                 context,
                 memberName,
                 displayName,
@@ -409,7 +404,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         if (!result.MemberNames.Any())
         {
             // If no member names are specified, then treat this as a top-level error
-            var errorMessage = AttributeValidator.ResolveAttributeErrorMessage(
+            var errorMessage = ResolveAttributeErrorMessage(
                 context,
                 memberName: Type.Name,
                 displayName,
