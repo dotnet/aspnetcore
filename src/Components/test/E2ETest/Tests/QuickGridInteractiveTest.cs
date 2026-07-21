@@ -153,7 +153,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Assert.Contains("people_sort=FirstName", Browser.Url);
         Assert.Contains("people_direction=asc", Browser.Url);
     }
-
+    
     [Fact]
     public void SortByTypeMismatchVirtualizedShowsClearError()
     {
@@ -164,5 +164,43 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Contains("Column 'Summary' expects item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
         Browser.Contains("Employee", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
         Browser.Contains("does not match the parent QuickGrid's item type", () => Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text);
+    }
+
+    [Fact]
+    public void CellClassAppliedToPropertyColumn()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.CssSelector("#grid > table"));
+        var firstNameCell = Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)"));
+        Assert.Contains("highlight-cell", firstNameCell.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void CellClassAppliedToTemplateColumn()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.CssSelector("#grid > table"));
+        // The 6th column in the grid is a template column with a CellClass that highlights cells where the person's last name starts with "M".
+        var templateColumnCell = Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(4) > td:nth-child(6)"));
+        Assert.Contains("highlight-cell", templateColumnCell.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void CellClassWithClassPropertyCombination()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.CssSelector("#grid > table"));
+        var firstNameCell = Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)"));
+        Assert.Equal("col-justify-start CustomClass highlight-cell", firstNameCell.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void CellClassWithAlignPropertyCombination()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.CssSelector("#grid > table"));
+        // The 6th column in the grid is a template column with a CellClass that highlights cells where the person's last name starts with "M".
+        var templateColumnCell = Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(4) > td:nth-child(6)"));
+        Assert.Equal("col-justify-center highlight-cell", templateColumnCell.GetDomAttribute("class"));
     }
 }
