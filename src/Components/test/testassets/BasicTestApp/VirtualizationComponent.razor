@@ -36,7 +36,7 @@
 <p>
     Empty Content:<br />
 <div id="empty-container" style="background-color: #eee; height: 100px; overflow-y: auto">
-    <Virtualize Items="@emptyCollection" ItemSize="itemSize">
+    <Virtualize Items="@emptyCollection" ItemSize="itemSize" OverscanCount="3">
         <ItemContent>
             <div @key="context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">
                 Item @context</div>
