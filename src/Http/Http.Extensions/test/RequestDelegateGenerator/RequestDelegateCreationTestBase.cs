@@ -339,6 +339,8 @@ public static class {{className}}
 
     public static IResult TestResult(this IResultExtensions _) => TypedResults.Text("Hello World!");
 }
+
+delegate string CustomFuncOfString();
 """;
     private static Task<Compilation> CreateCompilationAsync(string sources)
     {
