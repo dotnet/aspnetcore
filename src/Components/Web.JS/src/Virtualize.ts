@@ -158,10 +158,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const isViewportAtBottom = (): boolean =>
     scrollElement.scrollHeight <= scrollElement.clientHeight
     || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
-  // Live measurement: was the viewport at the bottom as of the last render? Drives the JS append-pin.
-  let wasAtBottom = false;
-  // Are we following the bottom? Starts true in End mode; a user scrolling up turns it off.
-  let followingBottom = (anchorMode & 2) !== 0;
+  const bottomTracking = {
+    // Was the viewport at the bottom as of the last render? Drives the append re-pin.
+    wasAtBottomLastRender: false,
+    // Has the viewport actually reached the bottom? Not set at mount, stays sticky across appends.
+    reached: false,
+    // Follow intent: true in End mode until the user scrolls up. Drives the C# scroll-to-bottom path.
+    following: (anchorMode & 2) !== 0,
+  };
   // Pending scroll correction after redistribution changes spacer→item heights.
   let pendingScrollCorrection = false;
   let scrollCorrectionItemIndex = 0;
@@ -305,8 +309,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     scrollTriggeredRender = false;
 
-    // End mode: live measurement says the viewport was at the bottom, so pin the new items into view.
-    if ((anchorMode & 2) && wasAtBottom) {
+    // End mode: pin new items into view if we're at the bottom now, or were and are still following.
+    if ((anchorMode & 2) && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached)) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
       ignoreAnchorScroll = true;
       // Start convergence only when there are more items to load (spacerAfter > 0).
@@ -387,8 +391,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       pendingScrollCorrection = true;
     }
 
-    // End mode: preserve wasAtBottom only if the viewport is actually at the bottom right now.
-    // Don't rely on the cached wasAtBottom — it may be stale if the user scrolled away.
+    // End mode: only carry the at-bottom state forward if the viewport is actually at the bottom right now.
+    // Don't rely on the cached wasAtBottomLastRender — it may be stale if the user scrolled away.
     const preserveWasAtBottom = (anchorMode & 2) !== 0 && isViewportAtBottom();
 
     if (Math.abs(delta) > 1) {
@@ -404,7 +408,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     if (preserveWasAtBottom) {
-      wasAtBottom = true;
+      bottomTracking.wasAtBottomLastRender = true;
     }
   }
 
@@ -483,9 +487,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       reobserveSpacers();
     }
 
-    // A user scroll is the only thing that (re)sets follow intent (programmatic scrolls early-return above).
+    // A user scroll is the only thing that (re)sets follow state (programmatic scrolls early-return above).
     if (anchorMode & 2) {
-      followingBottom = isViewportAtBottom();
+      const atBottom = isViewportAtBottom();
+      bottomTracking.following = atBottom;
+      bottomTracking.reached = atBottom;
     }
 
     updateAnchorSnapshot();
@@ -555,8 +561,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     setConvergingToBottom: () => { convergingToBottom = true; },
-    isFollowingBottom: () => followingBottom,
-    setAnchorMode: (mode: number) => { anchorMode = mode; followingBottom = (mode & 2) !== 0; },
+    isFollowingBottom: () => bottomTracking.following,
+    setAnchorMode: (mode: number) => { anchorMode = mode; bottomTracking.following = (mode & 2) !== 0; bottomTracking.reached = isViewportAtBottom(); },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScrollSuppression,
@@ -656,7 +662,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Saves the first visible item's child index and viewport-relative position.
   function updateAnchorSnapshot(): void {
-    wasAtBottom = isViewportAtBottom();
+    bottomTracking.wasAtBottomLastRender = isViewportAtBottom();
 
     const containerTop = scrollContainer
       ? scrollContainer.getBoundingClientRect().top
