@@ -247,11 +247,10 @@ public static partial class EditContextDataAnnotationsExtensions
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private ValidateContext CreateFormValidateContext()
         {
-            var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
             return new ValidateContext
             {
                 ValidationOptions = _validationOptions!,
-                ValidationContext = validationContext,
+                ServiceProvider = _serviceProvider,
             };
         }
 
@@ -308,11 +307,10 @@ public static partial class EditContextDataAnnotationsExtensions
             IValidatablePropertyInfo validatableInfo,
             CancellationToken cancellationToken)
         {
-            var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, items: null);
             var validateContext = new ValidateContext
             {
                 ValidationOptions = _validationOptions!,
-                ValidationContext = validationContext,
+                ServiceProvider = _serviceProvider,
             };
 
             // Clear stale messages so the field shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.

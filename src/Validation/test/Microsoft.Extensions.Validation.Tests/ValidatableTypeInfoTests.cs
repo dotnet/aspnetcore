@@ -53,7 +53,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationContext = new ValidationContext(personWithMissingRequiredFields)
+            ServiceProvider = null,
         };
 
         context.OnValidationError += validationErrors.Add;
@@ -146,7 +146,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             {
                 { typeof(Employee), employeeType }
             }),
-            ValidationContext = new ValidationContext(employee)
+            ServiceProvider = null,
         };
 
         context.OnValidationError += validationErrors.Add;
@@ -201,7 +201,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
                 { typeof(Vehicle), baseType },
                 { typeof(Car), derivedType }
             }),
-            ValidationContext = new ValidationContext(car)
+            ServiceProvider = null,
         };
 
         // Act
@@ -268,7 +268,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
                 { typeof(OrderItem), itemType },
                 { typeof(Order), orderType }
             }),
-            ValidationContext = new ValidationContext(order)
+            ServiceProvider = null,
         };
 
         // Act
@@ -320,7 +320,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             {
                 { typeof(Person), personType }
             }),
-            ValidationContext = new ValidationContext(person)
+            ServiceProvider = null,
         };
 
         // Act
@@ -375,7 +375,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationContext = new ValidationContext(rootNode)
+            ServiceProvider = null,
         };
 
         // Act + Assert
@@ -406,7 +406,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             {
                 { typeof(Product), productType }
             }),
-            ValidationContext = new ValidationContext(product)
+            ServiceProvider = null,
         };
 
         // Act
@@ -443,7 +443,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             {
                 { typeof(User), userType }
             }),
-            ValidationContext = new ValidationContext(user)
+            ServiceProvider = null,
         };
 
         // Act
@@ -495,7 +495,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
                 { typeof(IntermediateEntity), intermediateType },
                 { typeof(DerivedEntity), derivedType }
             }),
-            ValidationContext = new ValidationContext(entity)
+            ServiceProvider = null,
         };
 
         // Act
@@ -536,7 +536,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             {
                 { typeof(User), userType }
             }),
-            ValidationContext = new ValidationContext(user) // Invalid: required
+            ServiceProvider = null, // Invalid: required
         };
 
         // Act
@@ -566,7 +566,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             {
                 { typeof(GlobalErrorObject), globalType }
             }),
-            ValidationContext = new ValidationContext(globalErrorInstance)
+            ServiceProvider = null,
         };
 
         await ValidateAsync(globalType, globalErrorInstance, context, useAsync, default);
@@ -591,7 +591,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             {
                 { typeof(MultiMemberErrorObject), multiType }
             }),
-            ValidationContext = new ValidationContext(multiErrorInstance),
+            ServiceProvider = null,
         };
 
         await ValidateAsync(multiType, multiErrorInstance, context, useAsync, default);
@@ -639,7 +639,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             {
                 { typeof(PropertyAndTypeLevelErrorObject), testTypeInfo }
             }),
-            ValidationContext = new ValidationContext(testTypeInstance)
+            ServiceProvider = null,
         };
 
         await ValidateAsync(testTypeInfo, testTypeInstance, context, useAsync, default);
@@ -653,7 +653,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         testTypeInstance.Value = 5;
         context = new ValidateContext()
         {
-            ValidationContext = new ValidationContext(testTypeInstance),
+            ServiceProvider = null,
             ValidationOptions = context.ValidationOptions,
         };
 
@@ -668,7 +668,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         testTypeInstance.Value = -5;
         context = new ValidateContext()
         {
-            ValidationContext = new ValidationContext(testTypeInstance),
+            ServiceProvider = null,
             ValidationOptions = context.ValidationOptions
         };
 
@@ -843,7 +843,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions([]),
-            ValidationContext = new ValidationContext(queryOptions),
+            ServiceProvider = null,
         };
 
         await ValidateAsync(propertyInfo, queryOptions, context, useAsync, default);
@@ -865,7 +865,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions([]),
-            ValidationContext = new ValidationContext(queryOptions),
+            ServiceProvider = null,
         };
 
         await ValidateAsync(propertyInfo, queryOptions, context, useAsync, default);

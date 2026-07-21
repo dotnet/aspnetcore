@@ -5369,9 +5369,15 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
-        await InitializeConnectionAsync(_echoApplication);
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await InitializeConnectionAsync(context =>
+        {
+            requestStarted.TrySetResult();
+            return _echoApplication(context);
+        });
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+        await requestStarted.Task.DefaultTimeout();
 
         _connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdownTimeout);
         await _closingStateReached.Task.DefaultTimeout();
@@ -5402,9 +5408,15 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task AcceptNewStreamsDuringClosingConnection()
     {
-        await InitializeConnectionAsync(_echoApplication);
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await InitializeConnectionAsync(context =>
+        {
+            requestStarted.TrySetResult();
+            return _echoApplication(context);
+        });
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+        await requestStarted.Task.DefaultTimeout();
 
         _connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdownTimeout);
         VerifyGoAway(await ReceiveFrameAsync(), Int32.MaxValue, Http2ErrorCode.NO_ERROR);
@@ -5453,9 +5465,15 @@ public class Http2ConnectionTests : Http2TestBase
         // Remove callback that completes _pair.Application.Output on abort.
         _mockConnectionContext.Reset();
 
-        await InitializeConnectionAsync(_echoApplication);
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await InitializeConnectionAsync(context =>
+        {
+            requestStarted.TrySetResult();
+            return _echoApplication(context);
+        });
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+        await requestStarted.Task.DefaultTimeout();
 
         _connection.OnInputOrOutputCompleted();
         await _closedStateReached.Task.DefaultTimeout();
