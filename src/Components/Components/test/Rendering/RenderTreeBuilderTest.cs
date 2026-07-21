@@ -937,6 +937,58 @@ public class RenderTreeBuilderTest
     }
 
     [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public void AddAttribute_Element_DraggableBool_AddsFrameWithExplicitStringValue(bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "draggable", value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, "draggable", expected, 1));
+    }
+
+    [Theory]
+    [InlineData("draggable", "true")]
+    [InlineData("DRAGGABLE", "false")]
+    [InlineData("Draggable", "true")]
+    public void AddAttribute_Element_DraggableAttributeName_IsMatchedCaseInsensitively(string attributeName, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, attributeName, bool.Parse(expected));
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, attributeName, expected, 1));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AddAttribute_Component_DraggableBool_SetsAttributeValue(bool value)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddAttribute(1, "draggable", value);
+        builder.CloseComponent();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
+            frame => AssertFrame.Attribute(frame, "draggable", value, 1));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void AddAttribute_Component_Bool_SetsAttributeValue(bool value)
@@ -1396,6 +1448,23 @@ public class RenderTreeBuilderTest
         Assert.Collection(
             builder.GetFrames().AsEnumerable(),
             frame => AssertFrame.Element(frame, "elem", 1, 0));
+    }
+
+    [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public void AddAttribute_Element_ObjectDraggableBool_AddsFrameWithExplicitStringValue(bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "draggable", (object)value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, "draggable", expected, 1));
     }
 
     [Theory]

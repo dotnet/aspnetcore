@@ -24,6 +24,11 @@ public sealed class RenderTreeBuilder : IDisposable
     // On WebAssembly, bool element attributes must be stored as strings because the JS
     // shared memory render batch reader cannot distinguish boxed bools from strings.
     private static readonly object ElementBoolTrueValue = OperatingSystem.IsBrowser() ? string.Empty : BoxedTrue;
+
+    // The HTML 'draggable' attribute is an enumerated attribute, not a true boolean attribute.
+    // It must be rendered as 'draggable="true"' or 'draggable="false"' to be honored consistently by browsers.
+    private const string DraggableAttributeName = "draggable";
+
     private static readonly string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
     private readonly RenderTreeFrameArrayBuilder _entries = new RenderTreeFrameArrayBuilder();
@@ -195,6 +200,12 @@ public sealed class RenderTreeBuilder : IDisposable
         if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             _entries.AppendAttribute(sequence, name, value ? BoxedTrue : BoxedFalse);
+        }
+        else if (IsDraggableAttribute(name))
+        {
+            // 'draggable' is an enumerated attribute and must be rendered with the explicit
+            // string value 'true' or 'false' to be honored by browsers.
+            _entries.AppendAttribute(sequence, name, value ? "true" : "false");
         }
         else if (value)
         {
@@ -368,7 +379,13 @@ public sealed class RenderTreeBuilder : IDisposable
             }
             else if (value is bool boolValue)
             {
-                if (boolValue)
+                if (IsDraggableAttribute(name))
+                {
+                    // 'draggable' is an enumerated attribute and must be rendered with the explicit
+                    // string value 'true' or 'false' to be honored by browsers.
+                    _entries.AppendAttribute(sequence, name, boolValue ? "true" : "false");
+                }
+                else if (boolValue)
                 {
                     _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
                 }
@@ -912,6 +929,15 @@ public sealed class RenderTreeBuilder : IDisposable
 
         var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
         seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
+    }
+
+    private static bool IsDraggableAttribute(string name)
+    {
+        // The 'draggable' attribute is an enumerated attribute and is not subject to the standard
+        // HTML boolean attribute rules. Match the attribute name case-insensitively because HTML
+        // attribute names are case-insensitive.
+        return name.Length == DraggableAttributeName.Length
+            && string.Equals(name, DraggableAttributeName, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
