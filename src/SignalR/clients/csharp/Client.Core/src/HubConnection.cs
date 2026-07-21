@@ -2607,7 +2607,9 @@ public partial class HubConnection : IAsyncDisposable
             if (!_hubConnection._handlers.TryGetValue(methodName, out var invocationHandlerList))
             {
                 Log.MissingHandler(_logger, methodName);
-                return Type.EmptyTypes;
+                // Throwing (rather than returning an empty list) matches the server's DefaultHubDispatcher and lets
+                // hub protocols report "method does not exist" instead of a misleading argument-count mismatch.
+                throw new HubException($"Method '{methodName}' does not exist.");
             }
 
             // We use the parameter types of the first handler

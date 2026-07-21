@@ -848,12 +848,47 @@ public partial class HubConnectionTests
 
                 var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
 
-                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client didn't provide a result.\"}", invokeMessage);
+                // Binding fails before dispatch because no handler is registered for 'Result'.
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client failed to parse argument(s).\"}", invokeMessage);
             }
             finally
             {
                 await hubConnection.DisposeAsync().DefaultTimeout();
                 await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Theory]
+        [InlineData(new object[] { new object[0] })]
+        [InlineData(new object[] { new object[] { 42 } })]
+        public async Task InvocationOfNonexistentMethodLogsMissingMethodBindingFailure(object[] arguments)
+        {
+            using (StartVerifiableLog(expectedErrorsFilter: w => w.EventId.Name == "ArgumentBindingFailure"))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    await connection.ReceiveJsonMessage(new { type = 1, target = "NonexistentMethod", arguments }).DefaultTimeout();
+
+                    // A follow-up invocation proves the connection survived and, since messages are processed in order,
+                    // guarantees the previous message was fully handled before we inspect the log.
+                    var handlerCalled = new TaskCompletionSource();
+                    hubConnection.On("Bar", () => handlerCalled.TrySetResult());
+                    await connection.ReceiveJsonMessage(new { type = 1, target = "Bar", arguments = new object[0] }).DefaultTimeout();
+                    await handlerCalled.Task.DefaultTimeout();
+
+                    var write = Assert.Single(TestSink.Writes.Where(w => w.EventId.Name == "ArgumentBindingFailure"));
+                    var exception = Assert.IsType<HubException>(write.Exception);
+                    Assert.Equal("Method 'NonexistentMethod' does not exist.", exception.Message);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
             }
         }
 
