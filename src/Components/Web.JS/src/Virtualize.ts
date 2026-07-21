@@ -523,10 +523,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Measures the target's viewport-relative top and aligns it to containerTop.
   function alignToItemAt(localIndex: number): void {
-    // The spacer reserved-height styles are applied by the MutationObserver, which may still be
-    // pending when C# invokes align right after committing the render (e.g. an async ItemsProvider
-    // that renders placeholders first). Flush them so the spacer heights — and therefore the target
-    // row's measured offset — reflect the committed window before we compute the scroll delta.
+    // Target row should be measured against the committed window, not a stale spacer height.
     flushPendingStyleMutations();
     const delta = measureLocalChildOffset(localIndex);
     if (Number.isNaN(delta)) {
