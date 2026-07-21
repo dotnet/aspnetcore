@@ -34,7 +34,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The Test Parameter field is required.", error.Value.Single());
+        Assert.Equal("The Test Parameter field is required.", error.Value.SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -61,7 +61,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The Test Parameter field is required.", error.Value.Single());
+        Assert.Equal("The Test Parameter field is required.", error.Value.SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -108,7 +108,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.First());
+        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Theory]
@@ -134,7 +134,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         var error = Assert.Single(errors);
         Assert.Equal("testParam", error.Key);
         // The error message should use the display name
-        Assert.Equal("The Custom Display Name field is required.", error.Value.First());
+        Assert.Equal("The Custom Display Name field is required.", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Theory]
@@ -177,7 +177,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         var error = Assert.Single(errors);
         Assert.Equal("Name", error.Key);
         var errorValue = Assert.Single(error.Value);
-        Assert.Equal("The Name field is required.", errorValue);
+        Assert.Equal("The Name field is required.", errorValue.Errors.Single());
     }
 
     [Theory]
@@ -224,7 +224,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         var error = Assert.Single(errors);
         Assert.Equal("people[1].Name", error.Key);
         var errorValue = Assert.Single(error.Value);
-        Assert.Equal("The Name field is required.", errorValue);
+        Assert.Equal("The Name field is required.", errorValue.Errors.Single());
     }
 
     [Theory]
@@ -254,8 +254,8 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         var error = Assert.Single(errors);
         Assert.Equal("testParam", error.Key);
         Assert.Collection(error.Value,
-            e => Assert.Equal("Range error", e),
-            e => Assert.Equal("Custom error", e));
+            e => Assert.Equal("Range error", e.Errors.Single()),
+            e => Assert.Equal("Custom error", e.Errors.Single()));
     }
 
     [Theory]
@@ -281,7 +281,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
         Assert.Equal("parent.testParam", error.Key);
-        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.First());
+        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Theory]

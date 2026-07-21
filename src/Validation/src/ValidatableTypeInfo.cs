@@ -153,7 +153,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
         // First validate direct members
-        var tracker = context.TrackAsyncValidations();
+        var tracker = new AsyncValidationTracker(context);
         tracker = ValidateMembers(value, tracker, cancellationToken);
 
         var actualType = value.GetType();
@@ -177,9 +177,9 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var validationContext = context.CreateValidationContext(value, displayName, null);
+        var validationContext = AttributeValidator.CreateValidationContext(context, value, displayName, null);
 
-        await context.ValidateAttributesAsync(value, value, this, validationContext, displayName, cancellationToken);
+        await AttributeValidator.ValidateAttributesAsync(context, value, value, this, validationContext, displayName, cancellationToken);
 
         // If any type-level attribute errors were found, return early
         currentCount = context.ValidationErrors?.Count ?? 0;
@@ -226,9 +226,9 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var validationContext = context.CreateValidationContext(value, displayName, null);
+        var validationContext = AttributeValidator.CreateValidationContext(context, value, displayName, null);
 
-        context.ValidateAllAttributesSynchronously(value, value, this, validationContext, displayName);
+        AttributeValidator.ValidateAllAttributesSynchronously(context, value, value, this, validationContext, displayName);
 
         // If any type-level attribute errors were found, return early
         currentCount = context.ValidationErrors?.Count ?? 0;
@@ -241,9 +241,9 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         ValidateValidatableObjectInterface(value, context, validationContext);
     }
 
-    private ValidateContext.AsyncValidationTracker ValidateMembers(
+    private AsyncValidationTracker ValidateMembers(
         object value,
-        ValidateContext.AsyncValidationTracker tracker,
+        AsyncValidationTracker tracker,
         CancellationToken cancellationToken)
     {
         for (var i = 0; i < _membersCount; i++)
@@ -384,7 +384,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         foreach (var memberName in result.MemberNames)
         {
             // Create a validation error for each member name that is provided
-            var errorMessage = context.ResolveAttributeErrorMessage(
+            var errorMessage = AttributeValidator.ResolveAttributeErrorMessage(
+                context,
                 memberName,
                 displayName,
                 declaringType: Type,
@@ -408,7 +409,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         if (!result.MemberNames.Any())
         {
             // If no member names are specified, then treat this as a top-level error
-            var errorMessage = context.ResolveAttributeErrorMessage(
+            var errorMessage = AttributeValidator.ResolveAttributeErrorMessage(
+                context,
                 memberName: Type.Name,
                 displayName,
                 declaringType: Type,

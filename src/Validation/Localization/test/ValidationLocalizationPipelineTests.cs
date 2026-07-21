@@ -40,7 +40,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(customerTypeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Le champ Nom du client est obligatoire.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("Le champ Nom du client est obligatoire.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -63,7 +63,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Age: valeur entre 18 et 120 attendue.", context.ValidationErrors["Age"].Single());
+        Assert.Equal("Age: valeur entre 18 et 120 attendue.", context.ValidationErrors["Age"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -92,7 +92,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal(IntegrationResources.RequiredError, context.ValidationErrors["Name"].Single());
+        Assert.Equal(IntegrationResources.RequiredError, context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -119,7 +119,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Field Name is required (convention).", context.ValidationErrors["Name"].Single());
+        Assert.Equal("Field Name is required (convention).", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -147,7 +147,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        var errors = context.ValidationErrors.Values.SelectMany(v => v).ToList();
+        var errors = context.ValidationErrors.Values.SelectMany(v => v).SelectMany(c => c.Errors).ToList();
         Assert.Contains("Le début doit être inférieur à la fin.", errors);
     }
 
@@ -169,7 +169,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("RequiredKey", context.ValidationErrors["Name"].Single());
+        Assert.Equal("RequiredKey", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -195,7 +195,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Nom du client field is required.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("The Nom du client field is required.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -222,7 +222,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Param Paramètre requis.", context.ValidationErrors["myParam"].Single());
+        Assert.Equal("Param Paramètre requis.", context.ValidationErrors["myParam"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -247,7 +247,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Name doit avoir au plus 10 caractères.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("Name doit avoir au plus 10 caractères.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -272,7 +272,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Name doit avoir entre 3 et 10 caractères.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("Name doit avoir entre 3 et 10 caractères.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -296,13 +296,13 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new CustomerModel { Name = null }, context, useAsync, default);
 
-        Assert.Equal("FROM-OVERRIDE-1", context.ValidationErrors!["Name"].Single());
+        Assert.Equal("FROM-OVERRIDE-1", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
 
         context.ValidationOptions.Localizer = override2;
 
         await ValidateAsync(typeInfo, new CustomerModel { Name = null }, context, useAsync, default);
 
-        Assert.Equal("FROM-OVERRIDE-2", context.ValidationErrors!["Name"].Last());
+        Assert.Equal("FROM-OVERRIDE-2", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Last());
     }
 
     [Theory]
@@ -340,7 +340,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Name is required (from base resource).", context.ValidationErrors["Name"].Single());
+        Assert.Equal("Name is required (from base resource).", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
         Assert.Contains(typeof(BaseInheritedModel), seenTypes);
         Assert.DoesNotContain(typeof(DerivedInheritedModel), seenTypes);
     }

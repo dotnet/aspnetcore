@@ -56,10 +56,9 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             ServiceProvider = null,
         };
 
-        context.OnValidationError += validationErrors.Add;
-
         // Act
         await ValidateAsync(personType, personWithMissingRequiredFields, context, useAsync, default);
+        validationErrors.AddRange(context.ValidationErrors?.SelectMany(kvp => kvp.Value) ?? []);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -67,22 +66,22 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             kvp =>
             {
                 Assert.Equal("Name", kvp.Key);
-                Assert.Equal("The Name field is required.", kvp.Value.First());
+                Assert.Equal("The Name field is required.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("Age", kvp.Key);
-                Assert.Equal("The field Age must be between 0 and 120.", kvp.Value.First());
+                Assert.Equal("The field Age must be between 0 and 120.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("Address.Street", kvp.Key);
-                Assert.Equal("The Street field is required.", kvp.Value.First());
+                Assert.Equal("The Street field is required.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("Address.City", kvp.Key);
-                Assert.Equal("The City field is required.", kvp.Value.First());
+                Assert.Equal("The City field is required.", kvp.Value.SelectMany(e => e.Errors).First());
             });
 
         Assert.Collection(validationErrors,
@@ -149,16 +148,15 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             ServiceProvider = null,
         };
 
-        context.OnValidationError += validationErrors.Add;
-
         // Act
         await ValidateAsync(employeeType, employee, context, useAsync, default);
+        validationErrors.AddRange(context.ValidationErrors?.SelectMany(kvp => kvp.Value) ?? []);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Salary", error.Key);
-        Assert.Equal("Salary must be a positive value.", error.Value.First());
+        Assert.Equal("Salary must be a positive value.", error.Value.SelectMany(e => e.Errors).First());
 
         var errorContext = Assert.Single(validationErrors);
         Assert.Equal("Salary", errorContext.Name);
@@ -213,17 +211,17 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             kvp =>
             {
                 Assert.Equal("Doors", kvp.Key);
-                Assert.Equal("The field Doors must be between 2 and 5.", kvp.Value.First());
+                Assert.Equal("The field Doors must be between 2 and 5.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("Make", kvp.Key);
-                Assert.Equal("The Make field is required.", kvp.Value.First());
+                Assert.Equal("The Make field is required.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("Model", kvp.Key);
-                Assert.Equal("The Model field is required.", kvp.Value.First());
+                Assert.Equal("The Model field is required.", kvp.Value.SelectMany(e => e.Errors).First());
             });
     }
 
@@ -280,17 +278,17 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             kvp =>
             {
                 Assert.Equal("Items[1].ProductName", kvp.Key);
-                Assert.Equal("The ProductName field is required.", kvp.Value.First());
+                Assert.Equal("The ProductName field is required.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("Items[1].Quantity", kvp.Key);
-                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
+                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("Items[2].Quantity", kvp.Key);
-                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
+                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.SelectMany(e => e.Errors).First());
             });
     }
 
@@ -416,7 +414,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("SKU", error.Key);
-        Assert.Equal("SKU must start with 'PROD-'.", error.Value.First());
+        Assert.Equal("SKU must start with 'PROD-'.", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Theory]
@@ -452,7 +450,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         // Assert
         Assert.NotNull(context.ValidationErrors);
         Assert.Single(context.ValidationErrors.Keys); // Only the "Password" key
-        var passwordErrors = context.ValidationErrors["Password"].ToArray();
+        var passwordErrors = context.ValidationErrors["Password"].SelectMany(e => e.Errors).ToArray();
         Assert.Equal(2, passwordErrors.Length); // But with 2 errors
         Assert.Contains("Password must be at least 8 characters.", passwordErrors);
         Assert.Contains("Password must contain at least one number and one special character.", passwordErrors);
@@ -507,12 +505,12 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             kvp =>
             {
                 Assert.Equal("Name", kvp.Key);
-                Assert.Equal("The Name field is required.", kvp.Value.First());
+                Assert.Equal("The Name field is required.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("CreatedAt", kvp.Key);
-                Assert.Equal("Date must be in the past.", kvp.Value.First());
+                Assert.Equal("Date must be in the past.", kvp.Value.SelectMany(e => e.Errors).First());
             });
     }
 
@@ -547,7 +545,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         Assert.Single(context.ValidationErrors.Keys);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Password", error.Key);
-        Assert.Equal("The Password field is required.", error.Value.Single());
+        Assert.Equal("The Password field is required.", error.Value.SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -574,7 +572,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         Assert.NotNull(context.ValidationErrors);
         var globalError = Assert.Single(context.ValidationErrors);
         Assert.Equal(string.Empty, globalError.Key);
-        Assert.Equal("Data must be positive.", globalError.Value.Single());
+        Assert.Equal("Data must be positive.", globalError.Value.SelectMany(e => e.Errors).Single());
 
         var multiType = new TestValidatableTypeInfo(
             typeof(MultiMemberErrorObject),
@@ -601,12 +599,12 @@ public class ValidatableTypeInfoTests : ValidationTestBase
             kvp =>
             {
                 Assert.Equal("FirstName", kvp.Key);
-                Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
+                Assert.Equal("FirstName and LastName are required.", kvp.Value.SelectMany(e => e.Errors).First());
             },
             kvp =>
             {
                 Assert.Equal("LastName", kvp.Key);
-                Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
+                Assert.Equal("FirstName and LastName are required.", kvp.Value.SelectMany(e => e.Errors).First());
             });
     }
 
@@ -647,7 +645,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         Assert.NotNull(context.ValidationErrors);
         var interfaceError = Assert.Single(context.ValidationErrors);
         Assert.Equal(string.Empty, interfaceError.Key);
-        Assert.Equal("IValidatableObject error", interfaceError.Value.Single());
+        Assert.Equal("IValidatableObject error", interfaceError.Value.SelectMany(e => e.Errors).Single());
 
         // Second case:
         testTypeInstance.Value = 5;
@@ -662,7 +660,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         Assert.NotNull(context.ValidationErrors);
         var classAttributeError = Assert.Single(context.ValidationErrors);
         Assert.Equal(string.Empty, classAttributeError.Key);
-        Assert.Equal("Class attribute error", classAttributeError.Value.Single());
+        Assert.Equal("Class attribute error", classAttributeError.Value.SelectMany(e => e.Errors).Single());
 
         // Third case:
         testTypeInstance.Value = -5;
@@ -677,7 +675,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         Assert.NotNull(context.ValidationErrors);
         var propertyAttributeError = Assert.Single(context.ValidationErrors);
         Assert.Equal("Value", propertyAttributeError.Key);
-        Assert.Equal("Property attribute error", propertyAttributeError.Value.Single());
+        Assert.Equal("Property attribute error", propertyAttributeError.Value.SelectMany(e => e.Errors).Single());
     }
 
     [Fact]

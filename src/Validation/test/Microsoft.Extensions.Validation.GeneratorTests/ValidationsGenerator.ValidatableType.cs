@@ -114,7 +114,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -133,7 +133,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithRangeAndDisplayName", kvp.Key);
-                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -152,7 +152,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("PropertyWithMemberAttributes", kvp.Key);
-                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.Single());
+                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -175,12 +175,12 @@ public class SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("PropertyWithMemberAttributes.RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithMemberAttributes.StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.SelectMany(e => e.Errors).Single());
                     });
             }
 
@@ -204,17 +204,17 @@ public class SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
-                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
+                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.SelectMany(e => e.Errors).Single());
                     });
             }
 
@@ -256,17 +256,17 @@ public class SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[0].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.SelectMany(e => e.Errors).Single());
                     });
             }
 
@@ -285,7 +285,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
-                    Assert.Equal("Value must be an even number", kvp.Value.Single());
+                    Assert.Equal("Value must be an even number", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -307,11 +307,11 @@ public class SubTypeWithInheritance : SubType
                     Assert.Collection(kvp.Value,
                         error =>
                         {
-                            Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error);
+                            Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error.Errors.Single());
                         },
                         error =>
                         {
-                            Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error);
+                            Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error.Errors.Single());
                         });
                 });
             }
@@ -331,7 +331,7 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
-                    Assert.Equal("Value must be an even number", kvp.Value.Single());
+                    Assert.Equal("Value must be an even number", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -485,7 +485,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -504,7 +504,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithRangeAndDisplayName", kvp.Key);
-                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -523,7 +523,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("PropertyWithMemberAttributes", kvp.Key);
-                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.Single());
+                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -546,12 +546,12 @@ public record SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("PropertyWithMemberAttributes.RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithMemberAttributes.StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.SelectMany(e => e.Errors).Single());
                     });
             }
 
@@ -575,17 +575,17 @@ public record SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
-                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
+                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("PropertyWithInheritance.StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.SelectMany(e => e.Errors).Single());
                     });
             }
 
@@ -627,17 +627,17 @@ public record SubTypeWithInheritance : SubType
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[0].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.SelectMany(e => e.Errors).Single());
                     });
             }
 
@@ -656,7 +656,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
-                    Assert.Equal("Value must be an even number", kvp.Value.Single());
+                    Assert.Equal("Value must be an even number", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -678,11 +678,11 @@ public record SubTypeWithInheritance : SubType
                     Assert.Collection(kvp.Value,
                         error =>
                         {
-                            Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error);
+                            Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error.Errors.Single());
                         },
                         error =>
                         {
-                            Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error);
+                            Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error.Errors.Single());
                         });
                 });
             }
@@ -702,7 +702,7 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("IntegerWithCustomValidationAttribute", kvp.Key);
-                    Assert.Equal("Value must be an even number", kvp.Value.Single());
+                    Assert.Equal("Value must be an even number", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 

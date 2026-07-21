@@ -93,7 +93,7 @@ public class DisplayNameInfoTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -111,7 +111,7 @@ public class DisplayNameInfoTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -130,7 +130,7 @@ public class DisplayNameInfoTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Custom Resolved Name field is required.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("The Custom Resolved Name field is required.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]

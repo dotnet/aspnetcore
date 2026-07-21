@@ -152,7 +152,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("ObjectProperty.IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -198,7 +198,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("ListOfNestedTypes[0].IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 
@@ -248,12 +248,12 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     kvp =>
                     {
                         Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange2", kvp.Key);
-                        Assert.Equal("The field IntegerWithRange2 must be between 10 and 100.", kvp.Value.Single());
+                        Assert.Equal("The field IntegerWithRange2 must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange1", kvp.Key);
-                        Assert.Equal("The field IntegerWithRange1 must be between 10 and 100.", kvp.Value.Single());
+                        Assert.Equal("The field IntegerWithRange1 must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                     });
             }
 
@@ -354,7 +354,7 @@ public record AlwaysSkippedType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("ObjectProperty.IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.SelectMany(e => e.Errors).Single());
                 });
             }
 

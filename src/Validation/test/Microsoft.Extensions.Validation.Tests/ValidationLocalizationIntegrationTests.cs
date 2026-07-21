@@ -33,7 +33,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -53,7 +53,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Customer Name field is required.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("The Customer Name field is required.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     // --- Localizer is invoked ---
@@ -95,7 +95,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
         // The localizer's ErrorMessage result is used as the validation error
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Localized error: Localized Display", context.ValidationErrors["Name"].Single());
+        Assert.Equal("Localized error: Localized Display", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     [Theory]
@@ -123,7 +123,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         // returns the literal as the fallback display name (it acts as both lookup key and
         // default value). The error message uses that literal.
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Customer Name field is required.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("The Customer Name field is required.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     // --- ErrorMessageResourceType bypass ---
@@ -159,7 +159,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         Assert.Empty(localizer.ErrorMessageCalls);
         // The attribute's resource-resolved message is used
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal(TestResources.RequiredError, context.ValidationErrors["Name"].Single());
+        Assert.Equal(TestResources.RequiredError, context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     // --- Resource-attribute strategy bypasses the IStringLocalizer path ---
@@ -257,7 +257,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Custom IValidatableObject error", context.ValidationErrors["Name"].Single());
+        Assert.Equal("Custom IValidatableObject error", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
     }
 
     // --- Type-level validation attributes use type display name ---
@@ -288,7 +288,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         Assert.Equal(typeof(RangeModel), errorCall.DeclaringType);
         Assert.IsType<StartLessThanEndAttribute>(errorCall.Attribute);
         Assert.NotNull(context.ValidationErrors);
-        Assert.Contains("Localized type-level error", context.ValidationErrors.Values.SelectMany(v => v));
+        Assert.Contains("Localized type-level error", context.ValidationErrors.Values.SelectMany(v => v).SelectMany(c => c.Errors));
     }
 
     // --- Parameter-level validation passes declaringType: null ---

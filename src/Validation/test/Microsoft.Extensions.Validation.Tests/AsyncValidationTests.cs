@@ -41,7 +41,7 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Email", error.Key);
-        Assert.Equal("Email already exists", error.Value.First());
+        Assert.Equal("Email already exists", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -109,8 +109,8 @@ public class AsyncValidationTests
         Assert.Equal(2, context.ValidationErrors.Count);
         Assert.Contains("Name", context.ValidationErrors.Keys);
         Assert.Contains("SKU", context.ValidationErrors.Keys);
-        Assert.Equal("Name is required", context.ValidationErrors["Name"].First());
-        Assert.Equal("SKU already exists", context.ValidationErrors["SKU"].First());
+        Assert.Equal("Name is required", context.ValidationErrors["Name"].SelectMany(e => e.Errors).First());
+        Assert.Equal("SKU already exists", context.ValidationErrors["SKU"].SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -267,7 +267,7 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Address.ZipCode", error.Key);
-        Assert.Equal("Invalid zip code", error.Value.First());
+        Assert.Equal("Invalid zip code", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -306,7 +306,7 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Profile.Bio", error.Key);
-        Assert.Equal("Bio must be at least 10 characters", error.Value.First());
+        Assert.Equal("Bio must be at least 10 characters", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -410,7 +410,7 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Second", error.Key);
-        Assert.Equal("Second is too long", error.Value.First());
+        Assert.Equal("Second is too long", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -461,7 +461,7 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Title", error.Key);
-        Assert.Equal("Title is too long", error.Value.First());
+        Assert.Equal("Title is too long", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -559,7 +559,7 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Username", error.Key);
-        Assert.Equal("Username taken", error.Value.First());
+        Assert.Equal("Username taken", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -595,7 +595,7 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Bio", error.Key);
-        Assert.Equal("Bio must be at least 10 characters", error.Value.First());
+        Assert.Equal("Bio must be at least 10 characters", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -633,7 +633,7 @@ public class AsyncValidationTests
         // Assert
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
-        Assert.Contains("Total", error.Value.First());
+        Assert.Contains("Total", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -685,7 +685,7 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Items[1].Code", error.Key);
-        Assert.Equal("Item code exists", error.Value.First());
+        Assert.Equal("Item code exists", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
@@ -809,17 +809,17 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Value", error.Key);
-        Assert.Equal("Delayed validation failed", error.Value.First());
+        Assert.Equal("Delayed validation failed", error.Value.SelectMany(e => e.Errors).First());
     }
 
     [Fact]
     public async Task AsyncValidation_MultipleAttributesOnSameProperty_ShortCircuitsAfterFirstError()
     {
         // Arrange
-        // The second DelayedAsyncValidationAttribute waits on a signal that is only set when the
-        // first validation error is reached, allowing the second validation to proceed. By then the
-        // first error has short-circuited validation and cancelled the sibling's (linked)
-        // cancellation token, so the second attribute is cancelled and its error is NOT collected.
+        // The second DelayedAsyncValidationAttribute waits on a signal (never set by this test) or the
+        // cancellation token. The first attribute fails, short-circuits validation and cancels the
+        // sibling's (linked) cancellation token, so the second attribute is cancelled while waiting and
+        // its error is NOT collected.
         var signal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var recordType = new TestValidatableTypeInfo(
             typeof(Record),
@@ -841,14 +841,6 @@ public class AsyncValidationTests
             ServiceProvider = null,
         };
 
-        context.OnValidationError += context =>
-        {
-            if (context.Errors.Count == 1 && context.Errors[0] == "First async error")
-            {
-                signal.TrySetResult();
-            }
-        };
-
         // Act
         await recordType.ValidateAsync(record, context, default);
 
@@ -856,8 +848,8 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Value", error.Key);
-        var message = Assert.Single(error.Value);
-        Assert.Equal("First async error", message);
+        var errorContext = Assert.Single(error.Value);
+        Assert.Equal("First async error", errorContext.Errors.Single());
     }
 
     [Fact]
@@ -935,7 +927,7 @@ public class AsyncValidationTests
 
             Assert.NotNull(context.ValidationErrors);
             Assert.True(context.ValidationErrors.ContainsKey("Value"));
-            Assert.Equal(attributeCount, context.ValidationErrors["Value"].Count());
+            Assert.Equal(attributeCount, context.ValidationErrors["Value"].SelectMany(e => e.Errors).Count());
         }
     }
 
@@ -1010,8 +1002,8 @@ public class AsyncValidationTests
             context.ValidationErrors is null || context.ValidationErrors.Count == 0,
             "Deep validators did not run in parallel: " + string.Join(
                 "; ",
-                (context.ValidationErrors ?? (IReadOnlyDictionary<string, IReadOnlyList<string>>)new Dictionary<string, IReadOnlyList<string>>())
-                    .SelectMany(e => e.Value.Select(v => $"{e.Key}: {v}"))));
+                (context.ValidationErrors ?? (IReadOnlyDictionary<string, IReadOnlyList<ValidationErrorContext>>)new Dictionary<string, IReadOnlyList<ValidationErrorContext>>())
+                    .SelectMany(e => e.Value.SelectMany(c => c.Errors).Select(v => $"{e.Key}: {v}"))));
     }
 
     [Fact]
@@ -1221,15 +1213,6 @@ public class AsyncValidationTests
             ServiceProvider = null,
         };
 
-        var firstErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        context.OnValidationError += errorContext =>
-        {
-            if (errorContext.Path == "First.Value")
-            {
-                firstErrorRecorded.TrySetResult();
-            }
-        };
-
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
         // Act
@@ -1239,9 +1222,10 @@ public class AsyncValidationTests
         await firstEntered.Task.WaitAsync(cts.Token);
         await secondEntered.Task.WaitAsync(cts.Token);
 
-        // Let the first sibling fail and record its error into the shared dictionary.
+        // Let the first sibling fail; its error is recorded into the shared dictionary right after it
+        // captures the context (signalled by firstReadDone).
         releaseFirst.SetResult();
-        await firstErrorRecorded.Task.WaitAsync(cts.Token);
+        await firstReadDone.Task.WaitAsync(cts.Token);
 
         // Now let the second sibling finish. Its own members produced no errors, so its
         // IValidatableObject validation must still run.
@@ -1265,9 +1249,10 @@ public class AsyncValidationTests
         var releaseFailing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var passingEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var releasePassing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var failingItemErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var itemMember = new CollectionItemGatedAsyncAttribute(
-            failingEntered, releaseFailing.Task, passingEntered, releasePassing.Task);
+            failingEntered, releaseFailing.Task, passingEntered, releasePassing.Task, failingItemErrorRecorded);
 
         var itemType = new TestValidatableTypeInfo(
             typeof(CrossTalkItem),
@@ -1294,15 +1279,6 @@ public class AsyncValidationTests
                 { typeof(CrossTalkItem), itemType }
             }),
             ServiceProvider = null,
-        };
-
-        var failingItemErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        context.OnValidationError += errorContext =>
-        {
-            if (errorContext.Path == "Items[0].Value")
-            {
-                failingItemErrorRecorded.TrySetResult();
-            }
         };
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -1382,15 +1358,6 @@ public class AsyncValidationTests
             ServiceProvider = null,
         };
 
-        var badErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        context.OnValidationError += errorContext =>
-        {
-            if (errorContext.Path == "Bad.Value")
-            {
-                badErrorRecorded.TrySetResult();
-            }
-        };
-
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
         // Act
@@ -1399,9 +1366,10 @@ public class AsyncValidationTests
         await victimEntered.Task.WaitAsync(cts.Token);
         await badEntered.Task.WaitAsync(cts.Token);
 
-        // Let the later sibling fail first and record its error (which propagates up the parent chain).
+        // Let the later sibling fail first; its error (which propagates up the parent chain) is recorded
+        // right after it captures the context (signalled by badReadDone).
         releaseBad.SetResult();
-        await badErrorRecorded.Task.WaitAsync(cts.Token);
+        await badReadDone.Task.WaitAsync(cts.Token);
 
         // Now let the first member finish; its own members produced no errors, so its
         // IValidatableObject must still run.
@@ -2362,17 +2330,20 @@ public class AsyncValidationTests
         private readonly Task _releaseFailing;
         private readonly TaskCompletionSource _passingEntered;
         private readonly Task _releasePassing;
+        private readonly TaskCompletionSource _failingReported;
 
         public CollectionItemGatedAsyncAttribute(
             TaskCompletionSource failingEntered,
             Task releaseFailing,
             TaskCompletionSource passingEntered,
-            Task releasePassing)
+            Task releasePassing,
+            TaskCompletionSource failingReported)
         {
             _failingEntered = failingEntered;
             _releaseFailing = releaseFailing;
             _passingEntered = passingEntered;
             _releasePassing = releasePassing;
+            _failingReported = failingReported;
         }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
@@ -2385,6 +2356,9 @@ public class AsyncValidationTests
             {
                 _failingEntered.SetResult();
                 await _releaseFailing.WaitAsync(cancellationToken);
+                // Signal just before returning the failing result; the framework records the error
+                // into the shared dictionary on the continuation immediately after this returns.
+                _failingReported.TrySetResult();
                 return new ValidationResult("item failed", [validationContext.MemberName ?? string.Empty]);
             }
 

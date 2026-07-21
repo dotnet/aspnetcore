@@ -111,7 +111,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.NotNull(context.ValidationErrors);
                 var propertyAttributeError = Assert.Single(context.ValidationErrors);
                 Assert.Equal("X", propertyAttributeError.Key);
-                Assert.Equal("The field X must be between 0 and 15.", propertyAttributeError.Value.Single());
+                Assert.Equal("The field X must be between 0 and 15.", propertyAttributeError.Value.SelectMany(e => e.Errors).Single());
             }
 
             async Task ValidClassAttributeCheck_DoesNotProduceError(IValidatableTypeInfo validatableInfo)
@@ -146,7 +146,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.NotNull(context.ValidationErrors);
                 var classAttributeError = Assert.Single(context.ValidationErrors);
                 Assert.Equal(string.Empty, classAttributeError.Key);
-                Assert.Equal("Sum is too high", classAttributeError.Value.Single());
+                Assert.Equal("Sum is too high", classAttributeError.Value.SelectMany(e => e.Errors).Single());
             }
 
             async Task InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(IValidatableTypeInfo validatableInfo)
@@ -167,7 +167,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.NotNull(context.ValidationErrors);
                 var classAttributeError = Assert.Single(context.ValidationErrors);
                 Assert.Equal("ObjectProperty", classAttributeError.Key);
-                Assert.Equal("Sum is too high", classAttributeError.Value.Single());
+                Assert.Equal("Sum is too high", classAttributeError.Value.SelectMany(e => e.Errors).Single());
             }
         });
     }
