@@ -480,7 +480,9 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
     private string? GetTlsTokenBinding()
     {
+#pragma warning disable ASPDEPR010 // ITlsTokenBindingFeature is obsolete; kept for back-compat inside cookie auth handler.
         var binding = Context.Features.Get<ITlsTokenBindingFeature>()?.GetProvidedTokenBindingId();
+#pragma warning restore ASPDEPR010
         return binding == null ? null : Convert.ToBase64String(binding);
     }
 }

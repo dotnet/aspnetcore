@@ -40,8 +40,11 @@ internal static class TypeExtensions
 
     public static bool ShouldApplyNullableResponseSchema(this ApiResponseType apiResponseType, ApiDescription apiDescription)
     {
-        // Get the MethodInfo from the ActionDescriptor
-        var responseType = apiResponseType.Type;
+        if (apiResponseType.ModelMetadata?.IsNullableValueType == true)
+        {
+            return true;
+        }
+
         var methodInfo = apiDescription.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor
             ? controllerActionDescriptor.MethodInfo
             : apiDescription.ActionDescriptor.EndpointMetadata.OfType<MethodInfo>().SingleOrDefault();
@@ -51,24 +54,16 @@ internal static class TypeExtensions
             return false;
         }
 
+        var nullabilityInfoContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityInfoContext.Create(methodInfo.ReturnParameter);
+
         var returnType = methodInfo.ReturnType;
         if (returnType.IsGenericType &&
             (returnType.GetGenericTypeDefinition() == typeof(Task<>) || returnType.GetGenericTypeDefinition() == typeof(ValueTask<>)))
         {
-            returnType = returnType.GetGenericArguments()[0];
-        }
-        if (returnType != responseType)
-        {
-            return false;
+            nullabilityInfo = nullabilityInfo.GenericTypeArguments[0];
         }
 
-        if (returnType.IsValueType)
-        {
-            return apiResponseType.ModelMetadata?.IsNullableValueType ?? false;
-        }
-
-        var nullabilityInfoContext = new NullabilityInfoContext();
-        var nullabilityInfo = nullabilityInfoContext.Create(methodInfo.ReturnParameter);
         return nullabilityInfo.WriteState == NullabilityState.Nullable;
     }
 
