@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
@@ -94,6 +95,39 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public Func<TGridItem, object> ItemKey { get; set; } = x => x!;
 
     /// <summary>
+    /// Gets or sets the anchor mode that controls how the viewport behaves at the edges of the list
+    /// when new items arrive during virtualization. The default is <see cref="VirtualizeAnchorMode.Start"/>.
+    ///
+    /// This only has an effect when <see cref="Virtualize"/> is <see langword="true"/>. For reliable anchoring
+    /// with reference types that do not have value-equality semantics, supply an <see cref="ItemComparer"/> so
+    /// the grid can detect whether items were prepended or appended.
+    /// </summary>
+    [Parameter]
+    [Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
+
+    /// <summary>
+    /// Gets or sets a comparer used during virtualization to detect whether items were prepended or appended
+    /// between data loads. The comparer determines whether the first loaded item changed between loads, which
+    /// indicates items were inserted above the current viewport, so the grid can keep the viewport anchored.
+    ///
+    /// Provide a comparer that compares items by a stable unique identifier (for example, a primary key).
+    /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
+    /// <see cref="IEquatable{T}"/>, the default works automatically (value equality). For reference types
+    /// without value-equality semantics, the default falls back to reference equality, which produces
+    /// false-positive prepend detection when the data source returns fresh instances between loads.
+    ///
+    /// This only has an effect when <see cref="Virtualize"/> is <see langword="true"/>.
+    /// </summary>
+    [Parameter]
+    [Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public IEqualityComparer<TGridItem>? ItemComparer
+    {
+        get => _itemComparer;
+        set => _itemComparer = value;
+    }
+
+    /// <summary>
     /// Optionally links this <see cref="QuickGrid{TGridItem}"/> instance with a <see cref="PaginationState"/> model,
     /// causing the grid to fetch and render only the current page of data.
     ///
@@ -131,6 +165,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private Virtualize<(int, TGridItem)>? _virtualizeComponent;
     private int _ariaBodyRowCount;
     private ICollection<TGridItem> _currentNonVirtualizedViewItems = Array.Empty<TGridItem>();
+
+    private IEqualityComparer<TGridItem>? _itemComparer;
+
+    // Adapts the user's ItemComparer to Virtualize's (RowIndex, Data) tuple, comparing only the data.
+    private readonly IEqualityComparer<(int, TGridItem)> _virtualizeItemComparer;
+    private Dictionary<string, object>? _virtualizeAttributes;
 
     // IQueryable only exposes synchronous query APIs. IAsyncQueryExecutor is an adapter that lets us invoke any
     // async query APIs that might be available. We have built-in support for using EF Core's async query APIs.
@@ -193,6 +233,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         _renderNonVirtualizedRows = RenderNonVirtualizedRows;
         _queryParameterValueSupplier = new();
 
+        _virtualizeItemComparer = EqualityComparer<(int, TGridItem)>.Create(
+            (a, b) => (_itemComparer ?? EqualityComparer<TGridItem>.Default).Equals(a.Item2, b.Item2),
+            obj => obj.Item2 is null ? 0 : (_itemComparer ?? EqualityComparer<TGridItem>.Default).GetHashCode(obj.Item2));
+
         // As a special case, we don't issue the first data load request until we've collected the initial set of columns
         // This is so we can apply default sort order (or any future per-column options) before loading data
         // We use EventCallbackSubscriber to safely hook this async operation into the synchronous rendering flow
@@ -213,6 +257,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         // The associated pagination state may have been added/removed/replaced
         _currentPageItemsChanged.SubscribeOrMove(Pagination?.CurrentPageItemsChanged);
+
+        BuildVirtualizeAttributes();
 
         if (Pagination is { } pagination)
         {
@@ -241,6 +287,20 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         // to have to re-query immediately
         return (_columns.Count > 0 && mustRefreshData) ? RefreshDataCoreAsync() : Task.CompletedTask;
     }
+
+    // Splats the experimental members onto Virtualize from one place, keeping the pragma out of the .razor markup.
+#pragma warning disable ASP0030
+    private void BuildVirtualizeAttributes()
+    {
+        var attributes = new Dictionary<string, object>
+        {
+            [nameof(_virtualizeComponent.AnchorMode)] = AnchorMode,
+            [nameof(_virtualizeComponent.ItemComparer)] = _virtualizeItemComparer,
+        };
+
+        _virtualizeAttributes = attributes;
+    }
+#pragma warning restore ASP0030
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
