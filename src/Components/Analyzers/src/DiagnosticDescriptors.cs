@@ -147,4 +147,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.JSInvokableMethodShouldBePublic_Description)));
+
+    public static readonly DiagnosticDescriptor RazorComponentResultParameterDoesNotExist = new(
+        "BL0016",
+        CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Title)),
+        CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.RazorComponentResultParameterDoesNotExist_Description)));
 }
