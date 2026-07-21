@@ -717,7 +717,8 @@ public partial class HubConnectionTests : FunctionalTestBase
     public async Task InvokeNonExistantClientMethodFromServer(string protocolName, HttpTransportType transportType, string path)
     {
         var protocol = HubProtocols[protocolName];
-        await using (var server = await StartServer<Startup>())
+        // The binder now throws for unknown methods, so the invocation fails to bind before dispatch.
+        await using (var server = await StartServer<Startup>(w => w.EventId.Name == "ArgumentBindingFailure"))
         {
             var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
             var closeTcs = new TaskCompletionSource();
