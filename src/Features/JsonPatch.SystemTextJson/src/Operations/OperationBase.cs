@@ -43,10 +43,8 @@ public class OperationBase
         }
     }
 
-#nullable enable
     [JsonPropertyName(nameof(from)), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? from { get; set; }
-#nullable restore
+    public string from { get; set; }
 
     public OperationBase()
     {
@@ -60,5 +58,11 @@ public class OperationBase
         this.op = op;
         this.path = path;
         this.from = from;
+    }
+
+    public bool ShouldSerializeFrom()
+    {
+        return (OperationType == OperationType.Move
+            || OperationType == OperationType.Copy);
     }
 }
