@@ -42,6 +42,12 @@ internal sealed partial class HttpConnectionDispatcher
             TransferFormats = new List<string> { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
         };
 
+    // SignalR's default IUserIdProvider keys user identity off NameIdentifier, but an app can
+    // override it to use a different claim. This transport-layer dispatcher can't see IUserIdProvider,
+    // so mirror the standard identity-claim precedence antiforgery uses (DefaultClaimUidExtractor):
+    // sub, then NameIdentifier, then Upn. The first claim present on the principal identifies the user.
+    private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
+
     private readonly HttpConnectionManager _manager;
     private readonly ILoggerFactory _loggerFactory;
     private readonly HttpConnectionsMetrics _metrics;
@@ -1160,12 +1166,6 @@ internal sealed partial class HttpConnectionDispatcher
 
         connection.HttpContext = newHttpContext;
     }
-
-    // SignalR's default IUserIdProvider keys user identity off NameIdentifier, but an app can
-    // override it to use a different claim. This transport-layer dispatcher can't see IUserIdProvider,
-    // so mirror the standard identity-claim precedence antiforgery uses (DefaultClaimUidExtractor):
-    // sub, then NameIdentifier, then Upn. The first claim present on the principal identifies the user.
-    private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
 
     // The connection is resolved purely by its connection token, so a different authenticated and
     // endpoint-authorized user who obtained that token could otherwise act on a connection bound to
