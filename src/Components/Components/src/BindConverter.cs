@@ -981,7 +981,7 @@ public static class BindConverter
             return false;
         }
 
-        if (!float.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+        if (!float.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, culture ?? CultureInfo.CurrentCulture, out var converted))
         {
             value = default;
             return false;
@@ -1006,7 +1006,7 @@ public static class BindConverter
             return true;
         }
 
-        if (!float.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+        if (!float.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, culture ?? CultureInfo.CurrentCulture, out var converted))
         {
             value = default;
             return false;
@@ -1058,7 +1058,7 @@ public static class BindConverter
             return false;
         }
 
-        if (!double.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+        if (!double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, culture ?? CultureInfo.CurrentCulture, out var converted))
         {
             value = default;
             return false;
@@ -1083,7 +1083,7 @@ public static class BindConverter
             return true;
         }
 
-        if (!double.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+        if (!double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, culture ?? CultureInfo.CurrentCulture, out var converted))
         {
             value = default;
             return false;
