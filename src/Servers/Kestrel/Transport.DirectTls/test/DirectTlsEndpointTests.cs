@@ -71,11 +71,13 @@ public class DirectTlsEndpointTests
     }
 
     [Fact]
-    public void TransportOptions_WorkerCount_DefaultsToFour()
+    public void TransportOptions_WorkerCount_DefaultsToProcessorBasedHeuristic()
     {
         var options = new DirectTlsTransportOptions();
 
-        Assert.Equal(4, options.WorkerCount);
+        var expected = Environment.ProcessorCount <= 32 ? Math.Min(Environment.ProcessorCount, 16) : Environment.ProcessorCount / 2;
+        Assert.Equal(expected, DirectTlsTransportOptions.DefaultWorkerCount);
+        Assert.Equal(DirectTlsTransportOptions.DefaultWorkerCount, options.WorkerCount);
 
         options.WorkerCount = 2;
         Assert.Equal(2, options.WorkerCount);

@@ -12,6 +12,7 @@
          FrameworkReference to Microsoft.AspNetCore.App in the produced package. -->
     <IsPackable>true</IsPackable>
     <IsTrimmable>true</IsTrimmable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- DirectTls consumes the experimental low-level TLS API (TlsContext/TlsSocketSession).
          ASPNETCORE_DIRECTTLS_001 is this transport's own [Experimental] id; suppress it inside the
          defining assembly so the factory/extensions can use the endpoint API without warnings.
@@ -27,6 +28,10 @@
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.FeatureCollection.cs" Link="Internal\TransportConnection.FeatureCollection.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <ItemGroup>

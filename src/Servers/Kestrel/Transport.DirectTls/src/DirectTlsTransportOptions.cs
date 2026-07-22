@@ -21,9 +21,33 @@ public sealed class DirectTlsTransportOptions
     /// The number of TLS worker threads that accept connections and drive TLS handshakes and I/O.
     /// </summary>
     /// <remarks>
-    /// Defaults to 4.
+    /// Defaults to a value derived from <see cref="Environment.ProcessorCount"/> (see <see cref="DefaultWorkerCount"/>).
     /// </remarks>
-    public int WorkerCount { get; set; } = 4;
+    public int WorkerCount { get; set; } = DefaultWorkerCount;
+
+    /// <summary>
+    /// The default <see cref="WorkerCount"/>, derived from <see cref="Environment.ProcessorCount"/>.
+    /// </summary>
+    /// <remarks>
+    /// Each worker drives accept, TLS handshakes and I/O for its share of connections, so the worker count bounds
+    /// the transport's parallelism. The heuristic mirrors the sockets transport's <c>IOQueue</c> default: capped at
+    /// 16 for up to 32 processors, and half the processor count beyond that.
+    /// </remarks>
+    internal static int DefaultWorkerCount { get; } = DetermineDefaultWorkerCount();
+
+    private static int DetermineDefaultWorkerCount()
+    {
+        // Each worker schedules the epoll/TLS pump for its connections, so the number of workers determines the
+        // maximum parallelism of TLS I/O processing. Mirror the sockets transport IOQueue heuristic: use a
+        // high-enough number to not be a significant limiting factor for throughput, without oversubscribing.
+        var processorCount = Environment.ProcessorCount;
+        if (processorCount <= 32)
+        {
+            return Math.Min(processorCount, 16);
+        }
+
+        return processorCount / 2;
+    }
 
     /// <summary>
     /// Set to false to enable Nagle's algorithm for all connections.
