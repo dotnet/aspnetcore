@@ -28,7 +28,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     private readonly TlsContext _tlsContext;
     private readonly Func<ConnectionContext?, string?, (TlsContext Context, RemoteCertificateValidationCallback? ClientCertificateValidation)>? _contextResolver;
     private readonly TlsEventPumpPool _pumpPool;
-    private readonly ReadOnlySpanAction<byte, ConnectionContext>? _clientHelloCallback;
+    private readonly Action<ConnectionContext, ReadOnlySequence<byte>>? _clientHelloCallback;
 
     private Socket? _listenSocket;
 
@@ -45,7 +45,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         EndPoint endpoint,
         DirectTlsTransportOptions options,
         MemoryPool<byte> memoryPool,
-        ReadOnlySpanAction<byte, ConnectionContext>? clientHelloCallback = null)
+        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null)
     {
         ArgumentNullException.ThrowIfNull(tlsContext);
 

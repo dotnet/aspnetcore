@@ -70,11 +70,11 @@ public sealed class DirectTlsEndpointOptions
     /// alter or reject the handshake.
     /// </summary>
     /// <remarks>
-    /// The <see cref="ReadOnlySpan{T}"/> is valid only for the duration of the callback; copy the bytes if
-    /// they must outlive the call. The second argument is the <see cref="ConnectionContext"/> for the
-    /// connection being negotiated.
+    /// The <see cref="ReadOnlySequence{T}"/> is only valid for the duration of the callback; copy the bytes
+    /// (for example with <c>ToArray()</c>) if they must outlive the call. The first argument is the
+    /// <see cref="ConnectionContext"/> for the connection being negotiated.
     /// </remarks>
-    public ReadOnlySpanAction<byte, ConnectionContext>? TlsClientHelloBytesCallback { get; set; }
+    public Action<ConnectionContext, ReadOnlySequence<byte>>? TlsClientHelloBytesCallback { get; set; }
 
     /// <summary>
     /// The HTTP protocols (ALPN) advertised for this endpoint, sourced from <see cref="ListenOptions.Protocols"/>

@@ -58,9 +58,9 @@ var hostBuilder = new HostBuilder()
                 // Raw ClientHello inspection at handshake time. The callback receives the 5-byte TLS record
                 // header + ClientHello handshake message: bytes[0] == 0x16 (handshake), bytes[5] == 0x01
                 // (ClientHello). Inspect SNI / ALPN / cipher list here - do not block or throw.
-                demoEndpoint.Options.TlsClientHelloBytesCallback = (clientHelloBytes, connection) =>
+                demoEndpoint.Options.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
                 {
-                    var recordType = clientHelloBytes.IsEmpty ? (byte)0 : clientHelloBytes[0];
+                    var recordType = clientHelloBytes.IsEmpty ? (byte)0 : clientHelloBytes.FirstSpan[0];
                     Console.WriteLine(
                         $"[ClientHello] connection {connection.ConnectionId}: {clientHelloBytes.Length} bytes, " +
                         $"record type 0x{recordType:x2}");

@@ -17,7 +17,7 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificateSelector.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.SslProtocols.get -> System.Security.Authentication.SslProtocols
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.SslProtocols.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.get -> System.Buffers.ReadOnlySpanAction<byte, Microsoft.AspNetCore.Connections.ConnectionContext!>?
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.get -> System.Action<Microsoft.AspNetCore.Connections.ConnectionContext!, System.Buffers.ReadOnlySequence<byte>>?
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions.DirectTlsTransportOptions() -> void

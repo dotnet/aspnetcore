@@ -125,7 +125,7 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
                 return (context, clientCertificateValidation);
             };
 
-        ReadOnlySpanAction<byte, ConnectionContext>? clientHelloCallback = endpointOptions.TlsClientHelloBytesCallback;
+        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = endpointOptions.TlsClientHelloBytesCallback;
 
         // Each listener owns its own pump pool bound to its own listen socket. This keeps endpoints fully
         // isolated so per-endpoint certificate selection (e.g. two ports with different certs) works
