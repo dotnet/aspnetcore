@@ -283,12 +283,7 @@ export class HttpConnection implements IConnection {
                     if (negotiateResponse.accessToken) {
                         // Replace the current access token factory with one that uses
                         // the returned access token
-                        const accessToken = negotiateResponse.accessToken;
-                        this._httpClient.updateCachedToken(accessToken);
-                        this._transportAccessTokenFromServer = true;
-                        this._accessTokenFactory = () => this._httpClient._accessToken!;
-                        // set the factory to undefined so the AccessTokenHttpClient won't retry with the same token, since we know it won't change until a connection restart
-                        this._httpClient._accessTokenFactory = undefined;
+                        this._setTransportAccessToken(negotiateResponse.accessToken);
                     }
 
                     redirects++;
@@ -438,11 +433,7 @@ export class HttpConnection implements IConnection {
 
         const refreshResponse = JSON.parse(response.content) as { accessToken?: unknown, tokenLifetimeSeconds?: number };
         if (typeof refreshResponse.accessToken === "string" && refreshResponse.accessToken) {
-            const accessToken = refreshResponse.accessToken;
-            this._httpClient.updateCachedToken(accessToken);
-            this._transportAccessTokenFromServer = true;
-            this._accessTokenFactory = () => this._httpClient._accessToken!;
-            this._httpClient._accessTokenFactory = undefined;
+            this._setTransportAccessToken(refreshResponse.accessToken);
         } else if (!this._transportAccessTokenFromServer) {
             const refreshRequestToken = this._httpClient.getRefreshRequestToken(response);
             if (refreshRequestToken) {
@@ -451,6 +442,14 @@ export class HttpConnection implements IConnection {
         }
 
         return getAuthenticationTokenLifetimeInSeconds(refreshResponse.tokenLifetimeSeconds);
+    }
+
+    private _setTransportAccessToken(accessToken: string): void {
+        this._httpClient.updateCachedToken(accessToken);
+        this._transportAccessTokenFromServer = true;
+        this._accessTokenFactory = () => this._httpClient._accessToken!;
+        // set the factory to undefined so the AccessTokenHttpClient won't retry with the same token, since we know it won't change until a connection restart
+        this._httpClient._accessTokenFactory = undefined;
     }
 
     private async _createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<INegotiateResponse> {
