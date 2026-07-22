@@ -24,11 +24,13 @@ public sealed partial class ValidationsGenerator
     private static readonly Lazy<string> s_infoClasses = new(BuildInfoClasses);
 
     /// <summary>
-    /// Emits the <c>ValidatableInfo</c> family (and the runtime parameter resolver) as file-local
-    /// classes so they no longer need to ship from the Microsoft.Extensions.Validation assembly.
-    /// The classes live in the <c>Microsoft.Extensions.Validation.Generated</c> namespace alongside the
-    /// generated resolver, and rely on enclosing-namespace resolution to reference the public
-    /// Microsoft.Extensions.Validation surface (ValidateContext, ValidationOptions, DisplayNameInfo, ...).
+    /// Emits the <c>DisplayNameInfo</c> and <c>ValidatableInfo</c> family (and the runtime parameter
+    /// resolver) as file-local class bodies so they no longer need to ship from the
+    /// Microsoft.Extensions.Validation assembly. The bodies are emitted directly inside the existing
+    /// <c>Microsoft.Extensions.Validation.Generated</c> namespace block (which declares the required
+    /// <c>System.*</c> usings), alongside the generated resolver, and rely on enclosing-namespace
+    /// resolution to reference the public Microsoft.Extensions.Validation surface (ValidateContext,
+    /// ValidationOptions, ...).
     /// </summary>
     internal static string EmitInfoClasses() => s_infoClasses.Value;
 
@@ -38,23 +40,6 @@ public sealed partial class ValidationsGenerator
         var resourceNames = assembly.GetManifestResourceNames();
 
         var sb = new StringBuilder();
-        sb.AppendLine();
-        sb.AppendLine("namespace Microsoft.Extensions.Validation.Generated");
-        sb.AppendLine("{");
-        sb.AppendLine("    using System;");
-        sb.AppendLine("    using System.Collections;");
-        sb.AppendLine("    using System.Collections.Generic;");
-        sb.AppendLine("    using System.ComponentModel;");
-        sb.AppendLine("    using System.ComponentModel.DataAnnotations;");
-        sb.AppendLine("    using System.Diagnostics.CodeAnalysis;");
-        sb.AppendLine("    using System.IO;");
-        sb.AppendLine("    using System.IO.Pipelines;");
-        sb.AppendLine("    using System.Linq;");
-        sb.AppendLine("    using System.Reflection;");
-        sb.AppendLine("    using System.Security.Claims;");
-        sb.AppendLine("    using System.Threading;");
-        sb.AppendLine("    using System.Threading.Tasks;");
-        sb.AppendLine();
 
         foreach (var template in s_infoClassTemplates)
         {
@@ -80,7 +65,8 @@ public sealed partial class ValidationsGenerator
             sb.AppendLine();
         }
 
-        sb.AppendLine("}");
-        return sb.ToString();
+        // Trim the trailing newline so the emitted classes sit flush before the enclosing
+        // namespace's closing brace in the main template.
+        return sb.ToString().TrimEnd('\r', '\n');
     }
 }

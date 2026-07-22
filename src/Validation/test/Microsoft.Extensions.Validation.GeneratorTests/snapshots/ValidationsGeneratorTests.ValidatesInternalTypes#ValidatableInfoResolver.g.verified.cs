@@ -25,6 +25,20 @@ namespace System.Runtime.CompilerServices
 
 namespace Microsoft.Extensions.Validation.Generated
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.ComponentModel.DataAnnotations;
+    using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using System.IO.Pipelines;
+    using System.Linq;
+    using System.Reflection;
+    using System.Security.Claims;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.Generated.ValidatablePropertyInfo
     {
@@ -333,23 +347,6 @@ namespace Microsoft.Extensions.Validation.Generated
                     .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t, inherit: true));
         }
     }
-}
-
-namespace Microsoft.Extensions.Validation.Generated
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.ComponentModel.DataAnnotations;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.IO.Pipelines;
-    using System.Linq;
-    using System.Reflection;
-    using System.Security.Claims;
-    using System.Threading;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// Resolves the display name of a validated member (property, parameter, or type).
@@ -1878,5 +1875,4 @@ namespace Microsoft.Extensions.Validation.Generated
             return type.IsClass || type.IsValueType;
         }
     }
-
 }
