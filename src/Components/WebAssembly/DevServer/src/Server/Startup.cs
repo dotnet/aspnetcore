@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server;
@@ -24,10 +25,12 @@ internal sealed class Startup
         services.AddRouting();
     }
 
-    public static void Configure(IApplicationBuilder app, IConfiguration configuration)
+    public static void Configure(IApplicationBuilder app, IConfiguration configuration, ILogger<Startup> logger)
     {
         app.UseDeveloperExceptionPage();
         EnableConfiguredPathbase(app, configuration);
+
+        logger.LogWarning("Microsoft.AspNetCore.Components.WebAssembly.DevServer is deprecated and will be removed in a future release. Use Microsoft.AspNetCore.Components.Gateway instead.");
 
 #pragma warning disable ASPDEPR011 // The dev-server still uses the legacy middleware-based debugging endpoint for its internal testing and compatibility scenarios.
         app.UseWebAssemblyDebugging();

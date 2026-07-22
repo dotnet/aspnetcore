@@ -188,7 +188,7 @@ public class RuntimeValidatableParameterInfoResolverTests
             new ValidateContext
             {
                 ValidationOptions = new ValidationOptions { Localizer = localizer },
-                ValidationContext = new ValidationContext(new object()),
+                ServiceProvider = null,
             },
             info.Name,
             type: null);

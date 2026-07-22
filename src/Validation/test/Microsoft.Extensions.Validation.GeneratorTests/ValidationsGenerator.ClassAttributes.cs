@@ -103,7 +103,7 @@ public class SumLimitAttribute : ValidationAttribute
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -121,7 +121,7 @@ public class SumLimitAttribute : ValidationAttribute
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -138,7 +138,7 @@ public class SumLimitAttribute : ValidationAttribute
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -159,7 +159,7 @@ public class SumLimitAttribute : ValidationAttribute
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
