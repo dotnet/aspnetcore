@@ -1,0 +1,240 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using System.Linq
+@using System.Threading
+
+<h3>QuickGrid Virtualize anchoring test</h3>
+
+<p>
+    Exercises QuickGrid's experimental <code>AnchorMode</code> and <code>ItemComparer</code> parameters
+    (prepend/append at various scroll positions) so viewport-stability behavior can be verified for
+    QuickGrid, in both <code>Items</code> and <code>ItemsProvider</code> modes.
+</p>
+
+<div style="margin-bottom: 10px;">
+    <label>Anchor Mode:
+        <select id="qg-anchor-mode-select" @onchange="OnAnchorModeChanged">
+            <option value="0" selected="@(anchorMode == VirtualizeAnchorMode.None)">None</option>
+            <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Start)">Start</option>
+            <option value="2" selected="@(anchorMode == VirtualizeAnchorMode.End)">End</option>
+        </select>
+    </label>
+</div>
+
+<p>
+    <button id="qg-toggle-provider" @onclick="ToggleProvider">Source: @(useItemsProvider ? "ItemsProvider" : "Items")</button>
+    <button id="qg-toggle-delay" @onclick="ToggleDelay">Provider delay: @(slowProvider ? "150ms" : "off")</button>
+    <button id="qg-toggle-comparer" @onclick="ToggleComparer">Comparer: @(useDefaultComparer ? "Default" : "Custom")</button>
+    <button id="qg-prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
+    <button id="qg-append-items" @onclick="AppendItems">Append 10 Items</button>
+    <button id="qg-append-many-items" @onclick="AppendManyItems">Append 100 Items</button>
+    <button id="qg-toggle-provider-gate" @onclick="ToggleProviderGate">Gate: @(useProviderGate ? "On" : "Off")</button>
+    <button id="qg-release-provider-gate" @onclick="ReleaseProviderGate">Release gate</button>
+</p>
+
+<style>
+    .qg-anchor-cell .item { height: 50px; line-height: 50px; box-sizing: border-box; }
+</style>
+
+<div id="qg-anchor-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
+    @if (useItemsProvider)
+    {
+        <QuickGrid @ref="providerGrid" ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@(useDefaultComparer ? null : _itemComparer)">
+            <TemplateColumn Title="Item" Class="qg-anchor-cell">
+                <div class="item" data-index="@context.Index">Item @context.Index</div>
+            </TemplateColumn>
+        </QuickGrid>
+    }
+    else
+    {
+        <QuickGrid Items="@items.AsQueryable()" Virtualize="true" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@(useDefaultComparer ? null : _itemComparer)">
+            <TemplateColumn Title="Item" Class="qg-anchor-cell">
+                <div class="item" data-index="@context.Index">Item @context.Index</div>
+            </TemplateColumn>
+        </QuickGrid>
+    }
+</div>
+
+<p id="qg-status">@statusMessage</p>
+<p id="qg-current-mode">@((int)anchorMode)</p>
+<p id="qg-provider-call-index" data-value="@providerCallIndex">@providerCallIndex</p>
+<p id="qg-provider-events" data-value="@string.Join("|", providerEvents)">@string.Join("|", providerEvents)</p>
+
+@code {
+    internal class AnchorItem
+    {
+        public int Index { get; set; }
+    }
+
+    private List<AnchorItem> items = new();
+    private string statusMessage = "Ready";
+    private bool useItemsProvider;
+    private bool slowProvider;
+    private bool useDefaultComparer;
+    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
+    private QuickGrid<AnchorItem> providerGrid = default!;
+    private GridItemsProvider<AnchorItem> itemsProvider = default!;
+
+    private static readonly IEqualityComparer<AnchorItem> _itemComparer =
+        EqualityComparer<AnchorItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
+
+    private int nextPrependIndex = -1;
+    private int nextAppendIndex = 1000;
+
+    // Pending mutations applied inside the provider (simulates DB-backed data).
+#nullable enable
+    private List<AnchorItem>? _pendingPrepend;
+    private List<AnchorItem>? _pendingAppend;
+#nullable restore
+
+    // Deterministic gate: when armed, the provider blocks until the test releases it.
+    private bool useProviderGate;
+    private TaskCompletionSource providerGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private int providerCallIndex;
+    private readonly List<string> providerEvents = new();
+
+    protected override void OnInitialized()
+    {
+        items = Enumerable.Range(0, 1000).Select(i => new AnchorItem { Index = i }).ToList();
+        itemsProvider = GetItemsAsync;
+    }
+
+    private void ToggleProvider()
+    {
+        useItemsProvider = !useItemsProvider;
+        statusMessage = useItemsProvider ? "Switched to ItemsProvider" : "Switched to Items";
+    }
+
+    private void ToggleDelay()
+    {
+        slowProvider = !slowProvider;
+        statusMessage = slowProvider ? "Provider delay on (150ms)" : "Provider delay off";
+    }
+
+    private void ToggleComparer()
+    {
+        useDefaultComparer = !useDefaultComparer;
+        statusMessage = useDefaultComparer ? "Comparer: Default" : "Comparer: Custom";
+    }
+
+    private void ToggleProviderGate()
+    {
+        useProviderGate = !useProviderGate;
+        statusMessage = useProviderGate ? "Provider gate: On" : "Provider gate: Off";
+    }
+
+    private void ReleaseProviderGate()
+    {
+        var old = providerGate;
+        providerGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        old.TrySetResult();
+    }
+
+    private void OnAnchorModeChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            anchorMode = (VirtualizeAnchorMode)value;
+            statusMessage = $"AnchorMode changed to {anchorMode}";
+        }
+    }
+
+    private async Task PrependItems()
+    {
+        var newItems = Enumerable.Range(0, 10)
+            .Select(i => new AnchorItem { Index = nextPrependIndex - i })
+            .Reverse()
+            .ToList();
+        nextPrependIndex -= 10;
+        if (useItemsProvider && providerGrid != null)
+        {
+            _pendingPrepend = newItems;
+            await providerGrid.RefreshDataAsync();
+        }
+        else
+        {
+            items.InsertRange(0, newItems);
+        }
+        statusMessage = $"Prepended 10 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+    }
+
+    private async Task AppendItems()
+    {
+        var startIndex = nextAppendIndex;
+        var newItems = Enumerable.Range(startIndex, 10).Select(i => new AnchorItem { Index = i }).ToList();
+        nextAppendIndex += 10;
+        if (useItemsProvider && providerGrid != null)
+        {
+            _pendingAppend = newItems;
+            await providerGrid.RefreshDataAsync();
+        }
+        else
+        {
+            items.AddRange(newItems);
+        }
+        statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
+    }
+
+    private async Task AppendManyItems()
+    {
+        var startIndex = nextAppendIndex;
+        var newItems = Enumerable.Range(startIndex, 100).Select(i => new AnchorItem { Index = i }).ToList();
+        nextAppendIndex += 100;
+        if (useItemsProvider && providerGrid != null)
+        {
+            _pendingAppend = newItems;
+            await providerGrid.RefreshDataAsync();
+        }
+        else
+        {
+            items.AddRange(newItems);
+        }
+        statusMessage = $"Appended 100 items (indices {startIndex}..{startIndex + 99})";
+    }
+
+    private async ValueTask<GridItemsProviderResult<AnchorItem>> GetItemsAsync(GridItemsProviderRequest<AnchorItem> request)
+    {
+        await Task.Yield();
+        if (slowProvider)
+        {
+            await Task.Delay(150);
+        }
+
+        if (useProviderGate)
+        {
+            var n = Interlocked.Increment(ref providerCallIndex);
+            var gate = providerGate;
+            lock (providerEvents) providerEvents.Add($"p{n}-enter");
+            await InvokeAsync(StateHasChanged);
+            try
+            {
+                await gate.Task.WaitAsync(request.CancellationToken);
+                lock (providerEvents) providerEvents.Add($"p{n}-return");
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (OperationCanceledException)
+            {
+                lock (providerEvents) providerEvents.Add($"p{n}-cancel");
+                await InvokeAsync(StateHasChanged);
+                throw;
+            }
+        }
+
+        if (_pendingPrepend is not null)
+        {
+            items.InsertRange(0, _pendingPrepend);
+            _pendingPrepend = null;
+        }
+        if (_pendingAppend is not null)
+        {
+            items.AddRange(_pendingAppend);
+            _pendingAppend = null;
+        }
+
+        var count = request.Count ?? items.Count;
+        var result = items.Skip(request.StartIndex).Take(count)
+            .Select(i => new AnchorItem { Index = i.Index })
+            .ToList();
+        return GridItemsProviderResult.From(items: result, totalItemCount: items.Count);
+    }
+}
