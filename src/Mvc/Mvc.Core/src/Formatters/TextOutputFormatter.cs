@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -239,37 +240,36 @@ public abstract class TextOutputFormatter : OutputFormatter
             return values;
         }
 
-        var sorted = new List<(StringWithQualityHeaderValue Value, int Index)>(values.Count);
+        var sorted = new List<StringWithQualityHeaderValue>(values.Count);
         for (var i = 0; i < values.Count; i++)
         {
             var value = values[i];
             if (value.Quality != HeaderQuality.NoMatch)
             {
-                sorted.Add((value, i));
+                sorted.Add(value);
             }
         }
 
-        // We want a descending sort. QualityComparer produces an ascending order and treats
-        // equal-quality non-wildcard values as equal, so because List.Sort isn't stable we break
-        // those ties by the original header position. This keeps the selection deterministic and,
-        // matching the previous insertion sort, prefers the last header entry among equal values.
-        sorted.Sort(static (a, b) =>
+        // Sort in descending quality order in place over the list's backing array. QualityComparer
+        // produces an ascending order and treats equal-quality non-wildcard values as equal, and the
+        // framework sorts aren't stable, so we use an insertion sort (these header lists are tiny).
+        // This keeps the selection deterministic and, like the previous implementation, prefers the
+        // last header entry among equal-quality values.
+        var span = CollectionsMarshal.AsSpan(sorted);
+        for (var i = 1; i < span.Length; i++)
         {
-            var comparison = StringWithQualityHeaderValueComparer.QualityComparer.Compare(a.Value, b.Value);
-            if (comparison != 0)
+            var current = span[i];
+            var j = i - 1;
+            while (j >= 0 &&
+                StringWithQualityHeaderValueComparer.QualityComparer.Compare(current, span[j]) >= 0)
             {
-                return -comparison;
+                span[j + 1] = span[j];
+                j--;
             }
 
-            return b.Index - a.Index;
-        });
-
-        var result = new List<StringWithQualityHeaderValue>(sorted.Count);
-        for (var i = 0; i < sorted.Count; i++)
-        {
-            result.Add(sorted[i].Value);
+            span[j + 1] = current;
         }
 
-        return result;
+        return sorted;
     }
 }
