@@ -2833,6 +2833,78 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void ViewportAnchoring_RenderlessAboveViewportResize_AfterScroll_VisibleItemStaysInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+
+        var container = Browser.Exists(By.Id("incorrect-size-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".incorrect-size-item") > 0);
+
+        // Scroll down in increments so spacer redistribution runs, then let it settle.
+        // No further interaction happens after this, so there is no trailing Blazor render
+        // and the scroll-triggered suppression of overflow-anchor is the last state written.
+        for (var pos = 0; pos <= 1000; pos += 100)
+        {
+            ScrollContainer(js, container, pos);
+        }
+        AssertScrollTop(js, container, st => st >= 1000, "scrollTop >= 1000");
+
+        Browser.True(
+            () => (string)js.ExecuteScript(
+                "return getComputedStyle(arguments[0]).overflowAnchor", container) != "none",
+            TimeSpan.FromSeconds(5),
+            "overflow-anchor was not restored after scrolling settled");
+
+        WaitForRenderToSettle(container, js, ".incorrect-size-item");
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".incorrect-size-item");
+
+        // Grow the item immediately ABOVE the viewport by mutating its style directly.
+        // This is a browser-only reflow: it does NOT trigger a Blazor render, so the only
+        // thing that can keep the visible content stable is native scroll anchoring.
+        var growResult = js.ExecuteScript(@"
+            var container = arguments[0];
+            var grow = arguments[1];
+            var cRect = container.getBoundingClientRect();
+            var items = container.querySelectorAll('.incorrect-size-item');
+            for (var i = items.length - 1; i >= 0; i--) {
+                var r = items[i].getBoundingClientRect();
+                if (r.bottom <= cRect.top + 1) {
+                    items[i].style.height = (r.height + grow) + 'px';
+                    return { grew: true, text: items[i].textContent, anchor: getComputedStyle(container).overflowAnchor };
+                }
+            }
+            return { grew: false, anchor: getComputedStyle(container).overflowAnchor };
+        ", container, 200L) as Dictionary<string, object>;
+
+        Assert.NotNull(growResult);
+        Assert.True((bool)growResult["grew"], "Expected at least one rendered item above the viewport to grow.");
+
+        // Poll until the tracked item's position stops changing, so we measure the
+        // browser's settled response to the reflow (with or without scroll anchoring)
+        // deterministically instead of waiting a fixed amount of time.
+        var relTopAfter = relTopBefore;
+        var lastRelTop = double.NaN;
+        var stableReads = 0;
+        Browser.True(() =>
+        {
+            var (_, relTop, _) = GetItemPositionInContainer(js, container, ".incorrect-size-item", indexBefore);
+            stableReads = Math.Abs(relTop - lastRelTop) < 0.5 ? stableReads + 1 : 0;
+            lastRelTop = relTop;
+            relTopAfter = relTop;
+
+            // Require a few consecutive stable reads to be sure the reflow has settled.
+            return stableReads >= 3;
+        }, TimeSpan.FromSeconds(10), "Tracked item position did not settle after the render-less resize");
+
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
+            $"Item '{indexBefore}' should not have moved when an off-screen item grew via a " +
+            $"render-less browser reflow (overflow-anchor='{growResult["anchor"]}', grew item '{growResult["text"]}'). " +
+            $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px");
+    }
+
+    [Fact]
     public void Table_VariableHeight_IncrementalScrollDoesNotCauseWildJumps()
     {
         // Guards against a browser-level CSS Scroll Anchoring bug with <table> layout.
@@ -2863,6 +2935,27 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Total: {result["startY"]}->{result["endY"]} = {totalDelta}px (expected ~{expectedDelta}px). " +
             $"Jumps: [{result["jumps"]}]. " +
             $"Large jumps indicate CSS scroll anchoring is miscalculating on <tr> elements.");
+    }
+
+    [Fact]
+    public void ItemsIncrementalScroll_DoesNotJumpToStartOrEnd()
+    {
+        // Before the fix, each ~100px scroll produced large jumps in both directions.
+        Browser.MountTestComponent<VirtualizationComponent>();
+
+        Browser.True(() => GetElementCount(By.ClassName("incorrect-size-item")) > 0);
+
+        var result = ExecuteContainerScrollJumpDetectionScript("incorrect-size-container");
+
+        var maxJump = Convert.ToInt64(result["maxJump"], CultureInfo.InvariantCulture);
+        var scrollDelta = Convert.ToInt64(result["scrollDelta"], CultureInfo.InvariantCulture);
+
+        // Healthy behaviour: every step moves ~scrollDelta (100px)
+        Assert.True(maxJump < scrollDelta * 4,
+            $"Incremental scrolling should not cause the viewport to jump to the start/end of the list. " +
+            $"Largest single-step jump was {maxJump}px (each step requested {scrollDelta}px). " +
+            $"Down jumps: [{result["downJumps"]}]. Up jumps: [{result["upJumps"]}]. " +
+            $"Large jumps indicate the Virtualize reserved-height compensation is over-shifting (issue #67729).");
     }
 
     private void MountAnchorModeComponent(string anchorMode, bool variableHeight = false, bool useItemsProvider = false, bool useDefaultComparer = false)
@@ -4630,11 +4723,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
-    /// item count, scrollTop, and first visible item index stabilize.
+    /// item count, scrollTop, and first visible item identity stabilize.
     /// Use after actions that trigger async rendering (prepend/append with ItemsProvider on Server)
     /// to ensure anchor restore has completed before making single-shot assertions.
+    /// Pass <paramref name="itemSelector"/> for containers whose rows are not <c>.item[data-index]</c>.
     /// </summary>
-    private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js)
+    private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js, string itemSelector = ".item[data-index]")
     {
         long lastScrollTop = -1;
         int lastItemCount = -1;
@@ -4645,18 +4739,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         {
             var result = js.ExecuteScript(@"
                 var c = arguments[0];
-                var items = c.querySelectorAll('.item[data-index]');
+                var selector = arguments[1];
+                var items = c.querySelectorAll(selector);
                 var cr = c.getBoundingClientRect();
                 var firstIdx = '';
                 for (var i = 0; i < items.length; i++) {
                     var r = items[i].getBoundingClientRect();
                     if (r.bottom > cr.top + 2 && r.top < cr.bottom - 2) {
-                        firstIdx = items[i].getAttribute('data-index');
+                        firstIdx = items[i].getAttribute('data-index') || items[i].textContent;
                         break;
                     }
                 }
                 return { scrollTop: Math.round(c.scrollTop), itemCount: items.length, firstIndex: firstIdx };
-            ", container) as Dictionary<string, object>;
+            ", container, itemSelector) as Dictionary<string, object>;
 
             var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
             var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
@@ -4946,6 +5041,50 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     /// miscalculations on &lt;tr&gt; elements.
     /// Returns startY, endY, totalDelta, expected, maxJump, and comma-separated jumps.
     /// </summary>
+    private const string ScrollJumpDetectionHelpersJs = @"
+                // Event-driven wait: watches for DOM mutations from C# re-renders,
+                // then waits 3 animation frames with no new mutations (layout settled).
+                // Falls back after 30 frames if no mutations occur.
+                const waitForRenderSettle = (observed) => new Promise(resolve => {
+                    let mutationSeen = false;
+                    let framesSinceLastMutation = 0;
+                    let totalFrames = 0;
+
+                    const mo = new MutationObserver(() => {
+                        mutationSeen = true;
+                        framesSinceLastMutation = 0;
+                    });
+                    mo.observe(observed, { childList: true, subtree: true, attributes: true });
+
+                    const checkSettle = () => {
+                        totalFrames++;
+                        framesSinceLastMutation++;
+                        if ((mutationSeen && framesSinceLastMutation >= 3) || totalFrames >= 30) {
+                            mo.disconnect();
+                            resolve();
+                        } else {
+                            requestAnimationFrame(checkSettle);
+                        }
+                    };
+                    requestAnimationFrame(checkSettle);
+                });
+
+                const runScrollPass = async (observed, readPos, doScroll, count) => {
+                    const jumps = [];
+                    let maxJump = 0;
+                    for (let i = 0; i < count; i++) {
+                        const before = readPos();
+                        doScroll();
+                        await waitForRenderSettle(observed);
+                        const after = readPos();
+                        const jump = after - before;
+                        jumps.push(jump);
+                        if (Math.abs(jump) > Math.abs(maxJump)) maxJump = jump;
+                    }
+                    return { jumps, maxJump };
+                };
+";
+
     private Dictionary<string, object> ExecuteViewportScrollJumpDetectionScript(
         string tableId, int scrollCount = 15, int scrollDelta = 300)
     {
@@ -4953,59 +5092,48 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var done = arguments[0];
             (async () => {{
                 const tbody = document.querySelector('#{tableId} > tbody');
-
-                // Event-driven wait: watches for DOM mutations from C# re-renders,
-                // then waits 3 animation frames with no new mutations (layout settled).
-                // Falls back after 30 frames if no mutations occur.
-                const waitForRenderSettle = () => new Promise(resolve => {{
-                    let mutationSeen = false;
-                    let framesSinceLastMutation = 0;
-                    let totalFrames = 0;
-
-                    const mo = new MutationObserver(() => {{
-                        mutationSeen = true;
-                        framesSinceLastMutation = 0;
-                    }});
-                    mo.observe(tbody, {{ childList: true, subtree: true }});
-
-                    const checkSettle = () => {{
-                        totalFrames++;
-                        framesSinceLastMutation++;
-                        if ((mutationSeen && framesSinceLastMutation >= 3) || totalFrames >= 30) {{
-                            mo.disconnect();
-                            resolve();
-                        }} else {{
-                            requestAnimationFrame(checkSettle);
-                        }}
-                    }};
-                    requestAnimationFrame(checkSettle);
-                }});
-
+                {ScrollJumpDetectionHelpersJs}
                 const scrollCount = {scrollCount};
                 const scrollDelta = {scrollDelta};
                 const startY = Math.round(window.scrollY);
-                let maxJump = 0;
-                let prevY = startY;
-                const jumps = [];
-
-                for (let i = 0; i < scrollCount; i++) {{
-                    window.scrollBy(0, scrollDelta);
-                    await waitForRenderSettle();
-
-                    const currentY = Math.round(window.scrollY);
-                    const jump = currentY - prevY;
-                    jumps.push(jump);
-                    if (Math.abs(jump) > Math.abs(maxJump)) maxJump = jump;
-                    prevY = currentY;
-                }}
+                const pass = await runScrollPass(
+                    tbody,
+                    () => Math.round(window.scrollY),
+                    () => window.scrollBy(0, scrollDelta),
+                    scrollCount);
 
                 done({{
                     startY: startY,
                     endY: Math.round(window.scrollY),
                     totalDelta: Math.round(window.scrollY) - startY,
                     expected: scrollCount * scrollDelta,
-                    maxJump: maxJump,
-                    jumps: jumps.join(',')
+                    maxJump: pass.maxJump,
+                    jumps: pass.jumps.join(',')
+                }});
+            }})();";
+
+        return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
+    }
+
+    private Dictionary<string, object> ExecuteContainerScrollJumpDetectionScript(
+        string containerId, int scrollCount = 40, int scrollDelta = 100)
+    {
+        var script = $@"
+            var done = arguments[0];
+            (async () => {{
+                const container = document.getElementById('{containerId}');
+                {ScrollJumpDetectionHelpersJs}
+                const scrollCount = {scrollCount};
+                const scrollDelta = {scrollDelta};
+                const readPos = () => Math.round(container.scrollTop);
+                const down = await runScrollPass(container, readPos, () => {{ container.scrollTop = readPos() + scrollDelta; }}, scrollCount);
+                const up = await runScrollPass(container, readPos, () => {{ container.scrollTop = readPos() - scrollDelta; }}, scrollCount);
+
+                done({{
+                    scrollDelta: scrollDelta,
+                    maxJump: Math.max(Math.abs(down.maxJump), Math.abs(up.maxJump)),
+                    downJumps: down.jumps.join(','),
+                    upJumps: up.jumps.join(',')
                 }});
             }})();";
 
