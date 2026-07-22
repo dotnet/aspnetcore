@@ -239,20 +239,37 @@ public abstract class TextOutputFormatter : OutputFormatter
             return values;
         }
 
-        var sorted = new List<StringWithQualityHeaderValue>(values.Count);
+        var sorted = new List<(StringWithQualityHeaderValue Value, int Index)>(values.Count);
         for (var i = 0; i < values.Count; i++)
         {
             var value = values[i];
             if (value.Quality != HeaderQuality.NoMatch)
             {
-                sorted.Add(value);
+                sorted.Add((value, i));
             }
         }
 
-        sorted.Sort(StringWithQualityHeaderValueComparer.QualityComparer);
+        // We want a descending sort. QualityComparer produces an ascending order and treats
+        // equal-quality non-wildcard values as equal, so because List.Sort isn't stable we break
+        // those ties by the original header position. This keeps the selection deterministic and,
+        // matching the previous insertion sort, prefers the last header entry among equal values.
+        sorted.Sort(static (a, b) =>
+        {
+            var comparison = StringWithQualityHeaderValueComparer.QualityComparer.Compare(a.Value, b.Value);
+            if (comparison != 0)
+            {
+                return -comparison;
+            }
 
-        // We want a descending sort, but List.Sort produces ascending order.
-        sorted.Reverse();
-        return sorted;
+            return b.Index - a.Index;
+        });
+
+        var result = new List<StringWithQualityHeaderValue>(sorted.Count);
+        for (var i = 0; i < sorted.Count; i++)
+        {
+            result.Add(sorted[i].Value);
+        }
+
+        return result;
     }
 }
