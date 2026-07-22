@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Builder;
@@ -41,16 +40,15 @@ var hostBuilder = new HostBuilder()
 
             webHost.UseKestrel();
             // Register the DirectTls transport AFTER UseKestrel so it is offered DirectTlsEndpoints first.
-            webHost.UseDirectTlsTransport();
+            webHost.UseDirectTls();
 
             webHost.ConfigureKestrel(options =>
             {
                 // Endpoint 5001 exercises every DirectTls feature at once:
-                //   * ALPN / HTTP-2         -> Options.HttpProtocols = Http1AndHttp2
+                //   * ALPN / HTTP-2         -> ListenOptions.Protocols = Http1AndHttp2
                 //   * per-endpoint SNI      -> Options.ServerCertificateSelector
                 //   * ClientHello listener  -> Options.TlsClientHelloBytesCallback
                 var demoEndpoint = new DirectTlsEndpoint(IPAddress.Any, 5001);
-                demoEndpoint.Options.HttpProtocols = HttpProtocols.Http1AndHttp2;
 
                 // Per-endpoint certificate selection driven by the ClientHello SNI host. The connection is
                 // already allocated so the selector can read its ConnectionContext (e.g. ConnectionId).
@@ -62,20 +60,20 @@ var hostBuilder = new HostBuilder()
                 // (ClientHello). Inspect SNI / ALPN / cipher list here - do not block or throw.
                 demoEndpoint.Options.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
                 {
-                    var recordType = clientHelloBytes.IsEmpty ? (byte)0 : clientHelloBytes.FirstSpan[0];
+                    var recordType = clientHelloBytes.IsEmpty ? (byte)0 : clientHelloBytes[0];
                     Console.WriteLine(
                         $"[ClientHello] connection {connection.ConnectionId}: {clientHelloBytes.Length} bytes, " +
                         $"record type 0x{recordType:x2}");
                 };
-                options.Listen(demoEndpoint);
+                // The HTTP protocols (ALPN) come from ListenOptions.Protocols, not the endpoint options.
+                options.Listen(demoEndpoint, listenOptions => listenOptions.Protocols = HttpProtocols.Http1AndHttp2);
 
                 // "Clean" perf endpoint: DirectTls with a single fixed certificate and NO per-connection
                 // callbacks - no ServerCertificateSelector (SNI) and no ClientHello listener. This isolates
                 // the transport hot path from the observability/selection hooks to measure raw throughput.
                 var perfEndpoint = new DirectTlsEndpoint(IPAddress.Any, 5002);
-                perfEndpoint.Options.HttpProtocols = HttpProtocols.Http1AndHttp2;
                 perfEndpoint.Options.ServerCertificate = p256;
-                options.Listen(perfEndpoint);
+                options.Listen(perfEndpoint, listenOptions => listenOptions.Protocols = HttpProtocols.Http1AndHttp2);
             });
         }
         else

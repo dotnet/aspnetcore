@@ -16,6 +16,7 @@ public class DirectTlsTransportFactoryTests
     {
         return new DirectTlsTransportFactory(
             Options.Create(new DirectTlsTransportOptions()),
+            Options.Create(new KestrelServerOptions()),
             NullLoggerFactory.Instance);
     }
 

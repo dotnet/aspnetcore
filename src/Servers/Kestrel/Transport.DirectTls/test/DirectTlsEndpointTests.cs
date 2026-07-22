@@ -4,7 +4,6 @@
 using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Tests;
@@ -65,7 +64,6 @@ public class DirectTlsEndpointTests
 
         Assert.Null(options.ServerCertificate);
         Assert.Null(options.ServerCertificateSelector);
-        Assert.Equal(HttpProtocols.Http1AndHttp2, options.HttpProtocols);
         Assert.Equal(SslProtocols.None, options.SslProtocols);
         Assert.Equal(ClientCertificateMode.NoCertificate, options.ClientCertificateMode);
         Assert.Null(options.ClientCertificateValidation);

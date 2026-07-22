@@ -11,8 +11,11 @@
     <IsTrimmable>true</IsTrimmable>
     <!-- DirectTls consumes the experimental low-level TLS API (TlsContext/TlsSocketSession).
          ASPNETCORE_DIRECTTLS_001 is this transport's own [Experimental] id; suppress it inside the
-         defining assembly so the factory/extensions can use the endpoint API without warnings. -->
-    <NoWarn>$(NoWarn);SYSLIB5007;ASPNETCORE_DIRECTTLS_001</NoWarn>
+         defining assembly so the factory/extensions can use the endpoint API without warnings.
+         CS0436: this project has InternalsVisibleTo from Kestrel.Core (to read ListenOptions.Protocols
+         at bind time) and also share-source-compiles the same ServerInfrastructure files Core does
+         (DuplexPipe, TransportConnection); the identical local copies win and are only used internally. -->
+    <NoWarn>$(NoWarn);SYSLIB5007;ASPNETCORE_DIRECTTLS_001;CS0436</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

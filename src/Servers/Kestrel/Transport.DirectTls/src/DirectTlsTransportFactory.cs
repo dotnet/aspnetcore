@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
 {
     private readonly DirectTlsTransportOptions _options;
+    private readonly KestrelServerOptions _kestrelServerOptions;
 
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
@@ -31,15 +32,21 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
     /// Initializes a new instance of the <see cref="DirectTlsTransportFactory"/> class.
     /// </summary>
     /// <param name="options">The transport options.</param>
+    /// <param name="kestrelServerOptions">
+    /// The Kestrel server options, used to source each endpoint's <see cref="ListenOptions.Protocols"/>.
+    /// </param>
     /// <param name="loggerFactory">The logger factory.</param>
     public DirectTlsTransportFactory(
         IOptions<DirectTlsTransportOptions> options,
+        IOptions<KestrelServerOptions> kestrelServerOptions,
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(kestrelServerOptions);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
+        _kestrelServerOptions = kestrelServerOptions.Value;
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<DirectTlsTransportFactory>();
     }
@@ -70,9 +77,11 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
                 $"{nameof(ClientCertificateMode)}.{nameof(ClientCertificateMode.DelayCertificate)} is not supported by the DirectTls transport.");
         }
 
-        // ALPN list advertised during the handshake, derived from the endpoint's HttpProtocols (server
-        // preference h2 first). This is what lets HttpConnection.SelectProtocol negotiate HTTP/2.
-        var applicationProtocols = BuildApplicationProtocols(endpointOptions.HttpProtocols);
+        // ALPN list advertised during the handshake, derived from the endpoint's HTTP protocols (server
+        // preference h2 first). This is what lets HttpConnection.SelectProtocol negotiate HTTP/2. The
+        // protocols come from the endpoint's ListenOptions.Protocols rather than a duplicate knob on the
+        // endpoint options.
+        var applicationProtocols = BuildApplicationProtocols(ResolveHttpProtocols(directTlsEndpoint));
 
         bool requireClientCertificate =
             endpointOptions.ClientCertificateMode is ClientCertificateMode.AllowCertificate or ClientCertificateMode.RequireCertificate;
@@ -124,7 +133,7 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
                 return (context, clientCertificateValidation);
             };
 
-        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = endpointOptions.TlsClientHelloBytesCallback;
+        DirectTlsClientHelloBytesCallback? clientHelloCallback = endpointOptions.TlsClientHelloBytesCallback;
 
         // Each listener owns its own pump pool bound to its own listen socket. This keeps endpoints fully
         // isolated so per-endpoint certificate selection (e.g. two ports with different certs) works
@@ -173,6 +182,23 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
         }
 
         return applicationProtocols;
+    }
+
+    // Sources the HTTP protocols (ALPN) from the endpoint's ListenOptions.Protocols - the single Kestrel
+    // knob for protocol selection - rather than a duplicate property on the endpoint options. The
+    // non-multiplexed transport factory is only handed the EndPoint at bind time, so the matching
+    // ListenOptions is located by reference identity in KestrelServerOptions.
+    private HttpProtocols ResolveHttpProtocols(DirectTlsEndpoint endpoint)
+    {
+        foreach (var listenOptions in _kestrelServerOptions.GetListenOptions())
+        {
+            if (ReferenceEquals(listenOptions.EndPoint, endpoint))
+            {
+                return listenOptions.Protocols;
+            }
+        }
+
+        return ListenOptions.DefaultHttpProtocols;
     }
 
     // Maps the endpoint's ClientCertificateMode + optional user validation callback onto the

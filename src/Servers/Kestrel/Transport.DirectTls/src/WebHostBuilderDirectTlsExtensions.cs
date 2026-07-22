@@ -25,7 +25,7 @@ public static class WebHostBuilderDirectTlsExtensions
     /// Call this <b>after</b> <c>UseKestrel()</c> so the DirectTls transport is offered a
     /// <see cref="DirectTlsEndpoint"/> before the default transport.
     /// </remarks>
-    public static IWebHostBuilder UseDirectTlsTransport(this IWebHostBuilder hostBuilder)
+    public static IWebHostBuilder UseDirectTls(this IWebHostBuilder hostBuilder)
     {
         ArgumentNullException.ThrowIfNull(hostBuilder);
 
@@ -44,12 +44,12 @@ public static class WebHostBuilderDirectTlsExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <param name="configureOptions">A callback to configure <see cref="DirectTlsTransportOptions"/>.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    public static IWebHostBuilder UseDirectTlsTransport(this IWebHostBuilder hostBuilder, Action<DirectTlsTransportOptions> configureOptions)
+    public static IWebHostBuilder UseDirectTls(this IWebHostBuilder hostBuilder, Action<DirectTlsTransportOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(hostBuilder);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        return hostBuilder.UseDirectTlsTransport().ConfigureServices(services =>
+        return hostBuilder.UseDirectTls().ConfigureServices(services =>
         {
             services.Configure(configureOptions);
         });

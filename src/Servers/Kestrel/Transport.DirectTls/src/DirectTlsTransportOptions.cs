@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
 /// <summary>
 /// Transport-wide options for the DirectTls (fd-bound, native OpenSSL) socket transport. Configure with
-/// <c>UseDirectTlsTransport(options =&gt; ...)</c>. Per-endpoint TLS configuration is supplied separately via
+/// <c>UseDirectTls(options =&gt; ...)</c>. Per-endpoint TLS configuration is supplied separately via
 /// <see cref="DirectTlsEndpoint"/> / <see cref="DirectTlsEndpointOptions"/>; this type holds only the
 /// transport-wide worker/accept tuning.
 /// </summary>

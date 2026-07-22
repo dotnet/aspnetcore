@@ -158,7 +158,7 @@ public class DirectTlsFunctionalTests
             {
                 webHostBuilder
                     .UseKestrel()
-                    .UseDirectTlsTransport()
+                    .UseDirectTls()
                     .ConfigureKestrel(options => options.Listen(endpoint))
                     .Configure(appBuilder => appBuilder.Run(app));
             })

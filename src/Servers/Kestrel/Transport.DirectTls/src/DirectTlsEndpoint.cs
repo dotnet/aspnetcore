@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 /// <see cref="DirectTlsEndpointOptions.ServerCertificateSelector"/>).
 /// </para>
 /// <para>
-/// The DirectTls transport must be registered with <c>UseDirectTlsTransport()</c> after <c>UseKestrel()</c>.
+/// The DirectTls transport must be registered with <c>UseDirectTls()</c> after <c>UseKestrel()</c>.
 /// </para>
 /// </remarks>
 /// <example>
 /// <code>
-/// builder.WebHost.UseDirectTlsTransport();
+/// builder.WebHost.UseDirectTls();
 /// builder.WebHost.ConfigureKestrel(options =>
 /// {
 ///     var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 5001);
@@ -58,17 +58,6 @@ public sealed class DirectTlsEndpoint : IPEndPoint
     {
         ArgumentNullException.ThrowIfNull(options);
         Options = options;
-    }
-
-    /// <summary>
-    /// Initializes a new <see cref="DirectTlsEndpoint"/> that listens on all IPv4 addresses
-    /// (<see cref="IPAddress.Any"/>) with the specified TLS options.
-    /// </summary>
-    /// <param name="port">The port to listen on.</param>
-    /// <param name="options">The per-endpoint TLS configuration.</param>
-    public DirectTlsEndpoint(int port, DirectTlsEndpointOptions options)
-        : this(IPAddress.Any, port, options)
-    {
     }
 
     /// <summary>
