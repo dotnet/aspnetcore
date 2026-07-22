@@ -397,8 +397,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     foreach (var parameterComment in methodComment.Parameters)
                     {
                         var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
-                        var modelNames = GetModelNames(parameterInfo, parameterComment.Name);
-                        var operationParameter = GetOperationParameter(operation, modelNames);
+                        var modelName = GetModelName(parameterInfo, parameterComment.Name);
+                        var operationParameter = GetOperationParameter(operation, modelName);
                         if (operationParameter is not null)
                         {
                             var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         // Only fall back to the request body when the parameter is actually bound to it.
                         // This avoids applying documentation for parameters that aren't part of the
                         // OpenAPI surface (e.g. a `CancellationToken`) to the request body.
-                        else if (IsRequestBodyParameter(context, modelNames))
+                        else if (IsRequestBodyParameter(context, modelName))
                         {
                             var requestBody = operation.RequestBody;
                             if (requestBody is not null)
@@ -468,8 +468,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                     if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                     {
-                        var modelNames = GetModelNames(propertyInfo, propertyInfo.Name);
-                        var parameter = GetOperationParameter(operation, modelNames);
+                        var modelName = GetModelName(propertyInfo, propertyInfo.Name);
+                        var parameter = GetOperationParameter(operation, modelName);
                         var description = propertyComment.Summary;
                         if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
                         {
@@ -517,8 +517,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return Task.CompletedTask;
         }
 
-        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, IReadOnlySet<string> modelNames)
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, string? modelName)
         {
+            if (string.IsNullOrEmpty(modelName))
+            {
+                return null;
+            }
+
             var parameters = operation.Parameters;
             if (parameters is null || parameters.Count == 0)
             {
@@ -527,14 +532,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
             foreach (var parameter in parameters)
             {
-                var parameterName = parameter.Name;
-
-                if (string.IsNullOrEmpty(parameterName))
-                {
-                    continue;
-                }
-
-                if (modelNames.Contains(parameterName))
+                if (string.Equals(parameter.Name, modelName, StringComparison.Ordinal))
                 {
                     return parameter;
                 }
@@ -543,13 +541,17 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return null;
         }
 
-        private static bool IsRequestBodyParameter(OpenApiOperationTransformerContext context, IReadOnlySet<string> modelNames)
+        private static bool IsRequestBodyParameter(OpenApiOperationTransformerContext context, string? modelName)
         {
+            if (string.IsNullOrEmpty(modelName))
+            {
+                return false;
+            }
+
             foreach (var parameterDescription in context.Description.ParameterDescriptions)
             {
                 if (IsRequestBodyParameter(parameterDescription.Source)
-                    && parameterDescription.Name is { } parameterName
-                    && modelNames.Contains(parameterName))
+                    && string.Equals(parameterDescription.Name, modelName, StringComparison.Ordinal))
                 {
                     return true;
                 }
@@ -582,29 +584,20 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return null;
         }
 
-        private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider? attributeProvider, string? name)
+        private static string? GetModelName(ICustomAttributeProvider? attributeProvider, string? name)
         {
-            var modelNames = new HashSet<string>();
-
-            if (!string.IsNullOrEmpty(name))
+            if (attributeProvider is not null)
             {
-                modelNames.Add(name);
-            }
-
-            if (attributeProvider is null)
-            {
-                return modelNames;
-            }
-
-            foreach (var attribute in attributeProvider.GetCustomAttributes(inherit: true))
-            {
-                if (attribute is IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
+                foreach (var attribute in attributeProvider.GetCustomAttributes(inherit: true))
                 {
-                    modelNames.Add(modelNameProvider.Name);
+                    if (attribute is IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
+                    {
+                        return modelNameProvider.Name;
+                    }
                 }
             }
 
-            return modelNames;
+            return name;
         }
 
         private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
