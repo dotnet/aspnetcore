@@ -15,9 +15,6 @@
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext!
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationContext.set -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationOptions.set -> void
-abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? type) -> string?
-Microsoft.Extensions.Validation.DisplayNameInfo
-Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DisplayName.get -> string?
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DisplayName.init -> void

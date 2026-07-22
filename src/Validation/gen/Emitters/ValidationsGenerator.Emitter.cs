@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
+            global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
         {
             ContainingType = containingType;
         }
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.Validation.Generated
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
             ValidatablePropertyInfo[] members,
-            global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(type, members, displayNameInfo)
+            global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null) : base(type, members, displayNameInfo)
         {
         }
 
@@ -202,7 +202,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
     {{GeneratedCodeAttribute}}
-    file sealed class LiteralDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    file sealed class LiteralDisplayName : global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo
     {
         private readonly string _literal;
 
@@ -228,7 +228,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
     {{GeneratedCodeAttribute}}
-    file sealed class PropertyResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    file sealed class PropertyResourceDisplayName : global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo
     {
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
         private readonly global::System.Type _containingType;
@@ -248,7 +248,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
     {{GeneratedCodeAttribute}}
-    file sealed class TypeResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    file sealed class TypeResourceDisplayName : global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo
     {
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
         private readonly global::System.Type _type;

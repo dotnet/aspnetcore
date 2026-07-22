@@ -1,11 +1,3 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-
-namespace Microsoft.Extensions.Validation;
-
 /// <summary>
 /// Resolves the display name of a validated member (property, parameter, or type).
 /// Each validatable property, parameter, and type may carry a single <see cref="DisplayNameInfo"/>
@@ -29,8 +21,7 @@ namespace Microsoft.Extensions.Validation;
 /// source for the localized name.
 /// </para>
 /// </remarks>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class DisplayNameInfo
+file abstract class DisplayNameInfo
 {
     /// <summary>
     /// Resolves the display name to use when reporting validation errors for the member.

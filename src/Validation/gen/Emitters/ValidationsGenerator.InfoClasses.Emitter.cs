@@ -13,6 +13,7 @@ public sealed partial class ValidationsGenerator
     // C# compiler, but keeps the generated output readable.
     private static readonly string[] s_infoClassTemplates =
     [
+        "DisplayNameInfo.cs",
         "ValidatableInfo.cs",
         "ValidatableTypeInfo.cs",
         "ValidatablePropertyInfo.cs",
