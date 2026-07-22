@@ -22,7 +22,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
 
         var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The Test Parameter field is required.", error.Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Test Parameter field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -39,7 +39,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
 
         var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The Test Parameter field is required.", error.Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Test Parameter field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -71,7 +71,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
 
         var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -88,7 +88,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
 
         var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("Name", error.Key);
-        Assert.Equal("The Name field is required.", error.Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Name field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -105,7 +105,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
 
         var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("people[1].Name", error.Key);
-        Assert.Equal("The Name field is required.", error.Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Name field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -120,7 +120,7 @@ public class ValidatableParameterInfoTests : ValidationTestBase
 
         await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
-        var errors = Assert.Single(context.ValidationErrors!).Value.SelectMany(e => e.Errors).ToArray();
+        var errors = Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).ToArray();
         Assert.Contains("Range error", errors);
         Assert.Contains("Custom error", errors);
     }

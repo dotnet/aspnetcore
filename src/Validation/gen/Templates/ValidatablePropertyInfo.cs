@@ -262,7 +262,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
             {
                 Name = Name,
                 Path = context.CurrentValidationPath,
-                Errors = [errorMessage],
+                ErrorMessage = errorMessage,
                 Container = container,
             };
             context.AddValidationError(errorContext);

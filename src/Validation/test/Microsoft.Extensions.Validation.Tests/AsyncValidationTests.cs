@@ -18,7 +18,7 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new AsyncUser { Email = "duplicate@example.com" }, context, default);
 
-        Assert.Equal("Email already exists", Assert.Single(context.ValidationErrors!["Email"]).Errors.Single());
+        Assert.Equal("Email already exists", Assert.Single(context.ValidationErrors!["Email"]).ErrorMessage);
     }
 
     [Fact]
@@ -42,8 +42,8 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new AsyncProduct { Name = null, SKU = "DUPLICATE" }, context, default);
 
-        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
-        Assert.Equal("SKU already exists", context.ValidationErrors!["SKU"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("SKU already exists", context.ValidationErrors!["SKU"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class AsyncValidationTests
         await typeInfo.ValidateAsync(new RequiredBeforeAsyncModel { Value = null }, context, default);
 
         Assert.Equal(0, TrackingAsyncAttribute.CallCount);
-        Assert.Equal("The Value field is required.", context.ValidationErrors!["Value"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Value field is required.", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -69,8 +69,8 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new AsyncValidatableAccount { Username = "taken", Email = "duplicate@example.com" }, context, default);
 
-        Assert.Equal("Username is already taken", context.ValidationErrors!["Username"].SelectMany(e => e.Errors).Single());
-        Assert.Equal("Email is already registered", context.ValidationErrors!["Email"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Username is already taken", context.ValidationErrors!["Username"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("Email is already registered", context.ValidationErrors!["Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -82,8 +82,8 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new AsyncRegistrationForm { Password = "a", ConfirmPassword = "b" }, context, default);
 
-        Assert.Equal("Passwords do not match", context.ValidationErrors!["Password"].SelectMany(e => e.Errors).Single());
-        Assert.Equal("Passwords do not match", context.ValidationErrors!["ConfirmPassword"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Passwords do not match", context.ValidationErrors!["Password"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("Passwords do not match", context.ValidationErrors!["ConfirmPassword"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new AsyncOrder { Customer = new AsyncUser { Email = "duplicate@example.com" } }, context, default);
 
-        Assert.Equal("Email already exists", context.ValidationErrors!["Customer.Email"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Email already exists", context.ValidationErrors!["Customer.Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new AsyncTypeLevelModel { Value = "bad" }, context, default);
 
-        Assert.Equal("Type-level async error", Assert.Single(context.ValidationErrors!).Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("Type-level async error", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new AsyncUserCollection { Users = [new() { Email = "unique@example.com" }, new() { Email = "duplicate@example.com" }] }, context, default);
 
-        Assert.Equal("Email already exists", context.ValidationErrors!["Users[1].Email"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Email already exists", context.ValidationErrors!["Users[1].Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class AsyncValidationTests
         await typeInfo.ValidateAsync(new AsyncValidatableWithPropertyError { Email = "duplicate@example.com" }, context, default);
 
         Assert.Equal(0, AsyncValidatableWithPropertyError.AsyncCalls);
-        Assert.Equal("Email already exists", context.ValidationErrors!["Email"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Email already exists", context.ValidationErrors!["Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new AsyncValidatableWithPropertyError { Email = "unique@example.com", Bio = "short" }, context, default);
 
-        Assert.Equal("Bio is too short", context.ValidationErrors!["Bio"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Bio is too short", context.ValidationErrors!["Bio"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new NestedAsyncProfileContainer { Profile = new AsyncProfile { Bio = "short" } }, context, default);
 
-        Assert.Equal("Bio is too short", context.ValidationErrors!["Profile.Bio"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Bio is too short", context.ValidationErrors!["Profile.Bio"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public class AsyncValidationTests
         DelayedFailAttribute.Gate.SetResult();
         await task;
 
-        Assert.Equal("Delayed validation failed", context.ValidationErrors!["Value"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Delayed validation failed", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -274,7 +274,7 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new ShortCircuitSamePropertyModel { Value = "x" }, context, default);
 
-        Assert.Equal("First async error", context.ValidationErrors!["Value"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("First async error", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
         Assert.True(NeverCompletesUnlessCanceledAttribute.Canceled);
     }
 
@@ -304,7 +304,7 @@ public class AsyncValidationTests
 
         await typeInfo.ValidateAsync(new ConcurrentFailSamePropertyModel { Value = "x" }, context, default);
 
-        var errors = context.ValidationErrors!["Value"].SelectMany(e => e.Errors).ToArray();
+        var errors = context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).ToArray();
         Assert.Contains("Concurrent error A", errors);
         Assert.Contains("Concurrent error B", errors);
     }
@@ -372,7 +372,7 @@ public class AsyncValidationTests
         await typeInfo.ValidateAsync(new PropertyFailureShortCircuitsTypeLevelModel { Value = "x" }, context, default);
 
         Assert.Equal(0, TypeLevelShouldNotRunAttribute.CallCount);
-        Assert.Equal("Property async error", context.ValidationErrors!["Value"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Property async error", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -386,7 +386,7 @@ public class AsyncValidationTests
         await typeInfo.ValidateAsync(new AsyncValidatableWithRequiredProperty(), context, default);
 
         Assert.Equal(0, AsyncValidatableWithRequiredProperty.AsyncCalls);
-        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -399,7 +399,7 @@ public class AsyncValidationTests
 
         await parameterInfo.ValidateAsync(new[] { new AsyncUser { Email = "duplicate@example.com" } }, context, default);
 
-        Assert.Equal("Email already exists", context.ValidationErrors!["users[0].Email"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Email already exists", context.ValidationErrors!["users[0].Email"].Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -487,7 +487,7 @@ public class AsyncValidationTests
         await task;
 
         Assert.Equal(0, TypeLevelShouldNotRunAttribute.CallCount);
-        Assert.Equal("Property async error", context.ValidationErrors!["Second"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Property async error", context.ValidationErrors!["Second"].Select(e => e.ErrorMessage).Single());
     }
 }
 

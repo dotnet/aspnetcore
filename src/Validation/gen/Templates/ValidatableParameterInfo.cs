@@ -193,7 +193,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
             {
                 Name = Name,
                 Path = key,
-                Errors = [errorMessage],
+                ErrorMessage = errorMessage,
                 Container = null,
             };
             context.AddValidationError(errorContext);

@@ -245,7 +245,7 @@ public static partial class EditContextDataAnnotationsExtensions
                     foreach (var errorContext in error)
                     {
                         var fieldIdentifier = new FieldIdentifier(errorContext.Container ?? _editContext.Model, errorContext.Name);
-                        _messages.Add(fieldIdentifier, errorContext.Errors);
+                        _messages.Add(fieldIdentifier, errorContext.ErrorMessage);
                     }
                 }
             }
@@ -316,7 +316,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 {
                     foreach (var errorContext in error)
                     {
-                        _messages.Add(fieldIdentifier, errorContext.Errors);
+                        _messages.Add(fieldIdentifier, errorContext.ErrorMessage);
                     }
                 }
             }

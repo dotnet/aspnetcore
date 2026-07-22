@@ -75,7 +75,7 @@ public class RuntimeValidatableParameterInfoResolverTests : ValidationTestBase
 
         await ValidateAsync(validatableInfo, null, context, useAsync, default);
 
-        Assert.Equal("The Custom Display Name field is required.", Assert.Single(context.ValidationErrors!).Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Custom Display Name field is required.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class RuntimeValidatableParameterInfoResolverTests : ValidationTestBase
         await validatableInfo.ValidateAsync(null, context, default);
 
         Assert.Empty(localizer.DisplayNameCalls);
-        Assert.Equal("The Resource Display Name field is required.", Assert.Single(context.ValidationErrors!).Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Resource Display Name field is required.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]

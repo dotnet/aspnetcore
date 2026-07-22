@@ -946,7 +946,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     {
                         Name = memberName,
                         Path = key,
-                        Errors = [validationResult.ErrorMessage],
+                        ErrorMessage = validationResult.ErrorMessage,
                         Container = value,
                     };
                     context.AddValidationError(errorContext);
@@ -959,7 +959,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     {
                         Name = string.Empty,
                         Path = string.Empty,
-                        Errors = [validationResult.ErrorMessage],
+                        ErrorMessage = validationResult.ErrorMessage,
                         Container = value,
                     };
                     context.AddValidationError(errorContext);
@@ -1034,7 +1034,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     {
                         Name = memberName,
                         Path = key,
-                        Errors = [errorMessage],
+                        ErrorMessage = errorMessage,
                         Container = container,
                     };
                     context.AddValidationError(errorContext);
@@ -1058,7 +1058,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     {
                         Name = string.Empty,
                         Path = context.CurrentValidationPath,
-                        Errors = [errorMessage],
+                        ErrorMessage = errorMessage,
                         Container = container,
                     };
                     context.AddValidationError(errorContext);
@@ -1332,7 +1332,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 {
                     Name = Name,
                     Path = context.CurrentValidationPath,
-                    Errors = [errorMessage],
+                    ErrorMessage = errorMessage,
                     Container = container,
                 };
                 context.AddValidationError(errorContext);
@@ -1536,7 +1536,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 {
                     Name = Name,
                     Path = key,
-                    Errors = [errorMessage],
+                    ErrorMessage = errorMessage,
                     Container = null,
                 };
                 context.AddValidationError(errorContext);

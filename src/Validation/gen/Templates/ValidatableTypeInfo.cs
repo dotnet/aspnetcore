@@ -265,7 +265,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
                 {
                     Name = memberName,
                     Path = key,
-                    Errors = [validationResult.ErrorMessage],
+                    ErrorMessage = validationResult.ErrorMessage,
                     Container = value,
                 };
                 context.AddValidationError(errorContext);
@@ -278,7 +278,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
                 {
                     Name = string.Empty,
                     Path = string.Empty,
-                    Errors = [validationResult.ErrorMessage],
+                    ErrorMessage = validationResult.ErrorMessage,
                     Container = value,
                 };
                 context.AddValidationError(errorContext);
@@ -353,7 +353,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
                 {
                     Name = memberName,
                     Path = key,
-                    Errors = [errorMessage],
+                    ErrorMessage = errorMessage,
                     Container = container,
                 };
                 context.AddValidationError(errorContext);
@@ -377,7 +377,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
                 {
                     Name = string.Empty,
                     Path = context.CurrentValidationPath,
-                    Errors = [errorMessage],
+                    ErrorMessage = errorMessage,
                     Container = container,
                 };
                 context.AddValidationError(errorContext);

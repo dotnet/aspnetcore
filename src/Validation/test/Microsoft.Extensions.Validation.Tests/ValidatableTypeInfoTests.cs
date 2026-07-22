@@ -20,10 +20,10 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         await ValidateAsync(typeInfo, person, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].SelectMany(e => e.Errors).Single());
-        Assert.Equal("The field Age must be between 0 and 120.", context.ValidationErrors["Age"].SelectMany(e => e.Errors).Single());
-        Assert.Equal("The Street field is required.", context.ValidationErrors["Address.Street"].SelectMany(e => e.Errors).Single());
-        Assert.Equal("The City field is required.", context.ValidationErrors["Address.City"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("The field Age must be between 0 and 120.", context.ValidationErrors["Age"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("The Street field is required.", context.ValidationErrors["Address.Street"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("The City field is required.", context.ValidationErrors["Address.City"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -39,7 +39,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
 
         var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("Salary", error.Key);
-        Assert.Equal("Salary must be a positive value.", error.Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("Salary must be a positive value.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -54,9 +54,9 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         await ValidateAsync(typeInfo, new GeneratedCar { Doors = 7 }, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The field Doors must be between 2 and 5.", context.ValidationErrors["Doors"].SelectMany(e => e.Errors).Single());
-        Assert.Equal("The Make field is required.", context.ValidationErrors["Make"].SelectMany(e => e.Errors).Single());
-        Assert.Equal("The Model field is required.", context.ValidationErrors["Model"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The field Doors must be between 2 and 5.", context.ValidationErrors["Doors"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("The Make field is required.", context.ValidationErrors["Make"].Select(e => e.ErrorMessage).Single());
+        Assert.Equal("The Model field is required.", context.ValidationErrors["Model"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -128,7 +128,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new GeneratedProduct { SKU = "INVALID" }, context, useAsync, default);
 
-        Assert.Equal("SKU must start with 'PROD-'.", Assert.Single(context.ValidationErrors!).Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("SKU must start with 'PROD-'.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -142,7 +142,7 @@ public class ValidatableTypeInfoTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new GeneratedUser { Password = "abc" }, context, useAsync, default);
 
-        var passwordErrors = context.ValidationErrors!["Password"].SelectMany(e => e.Errors).ToArray();
+        var passwordErrors = context.ValidationErrors!["Password"].Select(e => e.ErrorMessage).ToArray();
         Assert.Contains("Password must be at least 8 characters.", passwordErrors);
         Assert.Contains("Password must contain at least one number and one special character.", passwordErrors);
     }

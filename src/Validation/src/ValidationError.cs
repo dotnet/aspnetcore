@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Validation;
 /// Represents a validation error.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public readonly struct ValidationError
+public sealed class ValidationError
 {
     /// <summary>
     /// Gets the name of the property or parameter that caused the validation error.
@@ -22,9 +22,9 @@ public readonly struct ValidationError
     public required string Path { get; init; }
 
     /// <summary>
-    /// Gets the list of error messages associated with the validation error.
+    /// Gets the error message associated with the validation error.
     /// </summary>
-    public required IReadOnlyList<string> Errors { get; init; }
+    public required string ErrorMessage { get; init; }
 
     /// <summary>
     /// Gets a reference to the container object of the validated property.
@@ -33,6 +33,6 @@ public readonly struct ValidationError
 
     private string GetDebuggerDisplay()
     {
-        return $"{Path}: {string.Join(",", Errors)}";
+        return $"{Path}: {ErrorMessage}";
     }
 }

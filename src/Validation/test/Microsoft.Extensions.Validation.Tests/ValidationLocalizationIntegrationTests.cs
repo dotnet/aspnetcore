@@ -19,7 +19,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
 
-        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -33,7 +33,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new LocalizedLiteralDisplayModel(), context, useAsync, default);
 
-        Assert.Equal("The Customer Name field is required.", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Customer Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -57,7 +57,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         Assert.Equal("Name", errorCall.MemberName);
         Assert.Equal(typeof(LocalizedLiteralDisplayModel), errorCall.DeclaringType);
         Assert.IsType<RequiredAttribute>(errorCall.Attribute);
-        Assert.Equal("Localized error", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Localized error", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -72,7 +72,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new LocalizedLiteralDisplayModel(), context, useAsync, default);
 
-        Assert.Equal("The Customer Name field is required.", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Customer Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -89,7 +89,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
         Assert.Single(localizer.DisplayNameCalls);
         Assert.Empty(localizer.ErrorMessageCalls);
-        Assert.Equal(LocalizedResources.RequiredError, context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal(LocalizedResources.RequiredError, context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -121,7 +121,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         await ValidateAsync(typeInfo, new LocalizedValidatableObjectModel(), context, useAsync, default);
 
         Assert.Empty(localizer.ErrorMessageCalls);
-        Assert.Equal("Object error", context.ValidationErrors!["Value"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Object error", context.ValidationErrors!["Value"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -139,7 +139,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
         Assert.Null(Assert.Single(localizer.DisplayNameCalls).Type);
         Assert.Null(Assert.Single(localizer.ErrorMessageCalls).DeclaringType);
-        Assert.Equal("Localized parameter error", context.ValidationErrors!["value"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("Localized parameter error", context.ValidationErrors!["value"].Select(e => e.ErrorMessage).Single());
     }
 }
 

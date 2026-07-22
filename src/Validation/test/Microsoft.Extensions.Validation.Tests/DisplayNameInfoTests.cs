@@ -20,7 +20,7 @@ public class DisplayNameInfoTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new DisplayDefaultModel(), context, useAsync, default);
 
-        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -34,7 +34,7 @@ public class DisplayNameInfoTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new DisplayAttributeModel(), context, useAsync, default);
 
-        Assert.Equal("The Custom Display Name field is required.", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Custom Display Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -48,7 +48,7 @@ public class DisplayNameInfoTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new DisplayNameAttributeModel(), context, useAsync, default);
 
-        Assert.Equal("The Component Display Name field is required.", context.ValidationErrors!["Name"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Component Display Name field is required.", context.ValidationErrors!["Name"].Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -62,7 +62,7 @@ public class DisplayNameInfoTests : ValidationTestBase
 
         await ValidateAsync(typeInfo, new DisplayTypeLevelModel { Start = 10, End = 5 }, context, useAsync, default);
 
-        Assert.Equal("Display Range is invalid.", Assert.Single(context.ValidationErrors!).Value.SelectMany(e => e.Errors).Single());
+        Assert.Equal("Display Range is invalid.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -77,7 +77,7 @@ public class DisplayNameInfoTests : ValidationTestBase
 
         await ValidateAsync(paramInfo, null, context, useAsync, default);
 
-        Assert.Equal("The Parameter Display field is required.", context.ValidationErrors!["value"].SelectMany(e => e.Errors).Single());
+        Assert.Equal("The Parameter Display field is required.", context.ValidationErrors!["value"].Select(e => e.ErrorMessage).Single());
     }
 }
 
