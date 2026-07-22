@@ -216,7 +216,7 @@ public abstract class TextOutputFormatter : OutputFormatter
     }
 
     // There's no allocation-free way to sort an IList and we may have to filter anyway,
-    // so we're going to have to live with the copy + sort.
+    // so we're going to have to live with a single copy that we sort as we build it.
     private static IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
     {
         var sortNeeded = false;
@@ -239,54 +239,34 @@ public abstract class TextOutputFormatter : OutputFormatter
             return values;
         }
 
-        // Count the entries we're going to keep (everything except explicit q=0 rejections).
-        var count = 0;
+        // Build the result directly in descending quality order with an insertion sort, filtering out
+        // the q=0 rejections as we go. We insert into descending order (rather than sorting ascending
+        // and reversing) because Accept-Charset headers usually list the most preferred charset first;
+        // for such already-descending input each value simply appends to the end with no shifting,
+        // making the common case O(n). QualityComparer produces an ascending order and treats
+        // equal-quality non-wildcard values as equal, so shifting past equals (Compare <= 0) places a
+        // later header entry ahead of earlier equals, preserving the previous last-entry-wins behavior.
+        var sorted = new List<StringWithQualityHeaderValue>(values.Count);
         for (var i = 0; i < values.Count; i++)
         {
-            if (values[i].Quality != HeaderQuality.NoMatch)
+            var value = values[i];
+            if (value.Quality == HeaderQuality.NoMatch)
             {
-                count++;
+                continue;
             }
-        }
 
-        // Sort indices rather than the values themselves so we can use the framework's
-        // introspective sort (O(n log n) worst case) while still breaking equal-quality ties by the
-        // original header position. QualityComparer treats equal-quality non-wildcard values as
-        // equal and the framework sort isn't stable, so the explicit tie-break keeps the selection
-        // deterministic and, like the previous implementation, prefers the last header entry among
-        // equal-quality values. The index buffer is tiny and stack-allocated for the common case.
-        const int StackallocThreshold = 32;
-        Span<int> order = count <= StackallocThreshold ? stackalloc int[StackallocThreshold] : new int[count];
-        order = order[..count];
-
-        var next = 0;
-        for (var i = 0; i < values.Count; i++)
-        {
-            if (values[i].Quality != HeaderQuality.NoMatch)
+            sorted.Add(value);
+            var j = sorted.Count - 1;
+            while (j > 0 &&
+                StringWithQualityHeaderValueComparer.QualityComparer.Compare(sorted[j - 1], value) <= 0)
             {
-                order[next++] = i;
+                sorted[j] = sorted[j - 1];
+                j--;
             }
-        }
 
-        order.Sort(new QualityDescendingComparer(values));
-
-        var sorted = new List<StringWithQualityHeaderValue>(count);
-        for (var i = 0; i < order.Length; i++)
-        {
-            sorted.Add(values[order[i]]);
+            sorted[j] = value;
         }
 
         return sorted;
-    }
-
-    // Orders indices into the source list by descending quality, using the original header position
-    // (larger index first) to break equal-quality ties so the result is deterministic.
-    private readonly struct QualityDescendingComparer(IList<StringWithQualityHeaderValue> values) : IComparer<int>
-    {
-        public int Compare(int x, int y)
-        {
-            var comparison = StringWithQualityHeaderValueComparer.QualityComparer.Compare(values[x], values[y]);
-            return comparison != 0 ? -comparison : y - x;
-        }
     }
 }
