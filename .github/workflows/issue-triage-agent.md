@@ -115,12 +115,27 @@ is to analyze a newly opened issue and perform three tasks:
 
 Triage the issue that triggered this workflow.
 
-- For `issues.opened` events, use the triggering issue context.
-- For `workflow_dispatch`, fetch the issue using the GitHub MCP Server's `get_issue` tool with issue number `${{ github.event.inputs.issue_number }}`.
+**Prefer the workflow event payload — the issue is already available there.** For
+`issues.opened` events the full issue is delivered in the event context, so you do
+**not** need to make any GitHub MCP call or network request to read it. Treat the
+values below as the source of truth for the title and body:
 
-Read the full issue title and body using the GitHub MCP Server tools:
+- **Number:** #${{ github.event.issue.number }}
+- **Title:** ${{ steps.sanitized.outputs.title }}
+- **Body:**
 
-- Use the `get_issue` tool from the **github** MCP server, providing the repository owner, repository name, and issue number.
+${{ steps.sanitized.outputs.body }}
+
+If the title and body above are populated, use them directly and **skip the MCP
+fetch entirely.**
+
+**Fallback — only when the payload is unavailable.** If the title/body above are
+empty (for example a `workflow_dispatch` run, which does not carry an issue
+payload), read the issue with the **github** MCP server's `issue_read` tool,
+providing the repository owner (`dotnet`), repository name (`aspnetcore`), and the
+issue number (`${{ github.event.issue.number || github.event.inputs.issue_number }}`).
+Do not fall back to `gh`, `curl`, `node`, or other shell commands to fetch the
+issue — use the `issue_read` MCP tool.
 
 ## Security Concerns Are Out of Scope
 
@@ -457,8 +472,8 @@ not speculative. Acceptable kinds of bullets, in priority order:
 
 4. **Verified cross-references** — issue is already closed by a
    maintainer, is a sub-issue of #NNN, is a verified duplicate of an
-   open #NNN. You must verify the cited issue's state via `get_issue`
-   before including it.
+   open #NNN. You must verify the cited issue's state via the `issue_read`
+   MCP tool before including it.
 
 ### What does NOT belong in `#### Notes`
 
