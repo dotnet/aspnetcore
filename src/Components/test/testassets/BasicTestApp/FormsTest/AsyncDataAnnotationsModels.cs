@@ -4,10 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -93,4 +97,34 @@ public sealed class ValidatorPathModel : AsyncRegistrationModelBase
 [Microsoft.Extensions.Validation.ValidatableType]
 public sealed class MevPathModel : AsyncRegistrationModelBase
 {
+}
+
+// Bridges the source-generated resolver across assemblies. MevPathModel is annotated
+// [ValidatableType] in THIS assembly, so BasicTestApp's generated AddValidation interceptor emits a
+// resolver that knows MevPathModel (and its base). Components.TestServer cannot itself source-generate
+// a resolver for a type defined here, so it registers this adapter, which reuses the generated resolver.
+public sealed class AsyncValidationResolver : IValidatableInfoResolver
+{
+    private readonly IValidatableInfoResolver _generatedResolver;
+
+    public AsyncValidationResolver()
+    {
+        var services = new ServiceCollection();
+
+        // Intercepted by BasicTestApp's generated AddValidation, which inserts the generated resolver
+        // at the front of Resolvers.
+        services.AddValidation();
+
+        var options = services.BuildServiceProvider()
+            .GetRequiredService<IOptions<ValidationOptions>>().Value;
+
+        // The generated resolver is inserted at index 0 by the interceptor; grab it and delegate to it.
+        _generatedResolver = options.Resolvers[0];
+    }
+
+    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo validatableTypeInfo)
+        => _generatedResolver.TryGetValidatableTypeInfo(type, out validatableTypeInfo);
+
+    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo validatableParameterInfo)
+        => _generatedResolver.TryGetValidatableParameterInfo(parameterInfo, out validatableParameterInfo);
 }
