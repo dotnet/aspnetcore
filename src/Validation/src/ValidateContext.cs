@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
-    private Dictionary<string, IReadOnlyList<ValidationErrorContext>>? _validationErrors;
+    private Dictionary<string, IReadOnlyList<ValidationError>>? _validationErrors;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -46,7 +46,7 @@ public sealed class ValidateContext
     /// Keys are property names or paths, and values are the collection of validation errors reported for that path.
     /// There are no guarantees whether or not this dictionary is lazy. Usages should treat null and empty dictionary the same.
     /// </remarks>
-    public IReadOnlyDictionary<string, IReadOnlyList<ValidationErrorContext>>? ValidationErrors
+    public IReadOnlyDictionary<string, IReadOnlyList<ValidationError>>? ValidationErrors
         => _validationErrors;
 
     /// <summary>
@@ -60,18 +60,18 @@ public sealed class ValidateContext
     /// <summary>
     /// Adds a validation error to <see cref="ValidationErrors"/>.
     /// </summary>
-    /// <param name="validationErrorContext">The validation error to add.</param>
-    public void AddValidationError(ValidationErrorContext validationErrorContext)
+    /// <param name="validationError">The validation error to add.</param>
+    public void AddValidationError(ValidationError validationError)
     {
-        _validationErrors ??= new Dictionary<string, IReadOnlyList<ValidationErrorContext>>();
+        _validationErrors ??= new Dictionary<string, IReadOnlyList<ValidationError>>();
 
-        if (!_validationErrors.TryGetValue(validationErrorContext.Path, out var existingErrors))
+        if (!_validationErrors.TryGetValue(validationError.Path, out var existingErrors))
         {
-            _validationErrors.Add(validationErrorContext.Path, new List<ValidationErrorContext> { validationErrorContext });
+            _validationErrors.Add(validationError.Path, new List<ValidationError> { validationError });
         }
         else
         {
-            ((List<ValidationErrorContext>)existingErrors).Add(validationErrorContext);
+            ((List<ValidationError>)existingErrors).Add(validationError);
         }
     }
 }

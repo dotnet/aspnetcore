@@ -287,7 +287,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePrope
 
         if (errorMessage is not null)
         {
-            var errorContext = new ValidationErrorContext()
+            var errorContext = new ValidationError()
             {
                 Name = Name,
                 Path = context.CurrentValidationPath,

@@ -311,7 +311,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
             foreach (var memberName in validationResult.MemberNames)
             {
                 var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                var errorContext = new ValidationErrorContext()
+                var errorContext = new ValidationError()
                 {
                     Name = memberName,
                     Path = key,
@@ -324,7 +324,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
             if (!validationResult.MemberNames.Any())
             {
                 // If no member names are specified, then treat this as a top-level error
-                var errorContext = new ValidationErrorContext()
+                var errorContext = new ValidationError()
                 {
                     Name = string.Empty,
                     Path = string.Empty,
@@ -399,7 +399,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
             if (errorMessage is not null)
             {
                 var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
-                var errorContext = new ValidationErrorContext()
+                var errorContext = new ValidationError()
                 {
                     Name = memberName,
                     Path = key,
@@ -423,7 +423,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
 
             if (errorMessage is not null)
             {
-                var errorContext = new ValidationErrorContext()
+                var errorContext = new ValidationError()
                 {
                     Name = string.Empty,
                     Path = context.CurrentValidationPath,

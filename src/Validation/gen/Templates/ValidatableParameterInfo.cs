@@ -224,7 +224,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
         if (errorMessage is not null)
         {
             var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-            var errorContext = new ValidationErrorContext()
+            var errorContext = new ValidationError()
             {
                 Name = Name,
                 Path = key,
