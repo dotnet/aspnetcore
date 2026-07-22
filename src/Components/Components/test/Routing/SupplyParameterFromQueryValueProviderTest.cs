@@ -50,6 +50,30 @@ public class SupplyParameterFromQueryValueProviderTest
         Assert.True(renderer.Batches.Count >= 2, "Should have rendered at least twice");
     }
 
+    [Fact]
+    public void LocationChangeWithChangingPathDoesNotInvokeCascadingValueNotification()
+    {
+        var serviceCollection = new ServiceCollection();
+        var navigationManager = new FakeNavigationManager();
+        serviceCollection.AddSingleton<NavigationManager>(navigationManager);
+        serviceCollection.AddSupplyValueFromQueryProvider();
+        var services = serviceCollection.BuildServiceProvider();
+
+        var renderer = new TestRenderer(services);
+
+        var component = new PathAndQueryComponent();
+        renderer.AssignRootComponentId(component);
+
+        navigationManager.NotifyLocationChanged("http://localhost/pageA?count=1", false);
+        component.TriggerRender();
+
+        var invocationsAfterFirstRender = component.ParameterInvocations;
+
+        navigationManager.NotifyLocationChanged("http://localhost/pageB?count=2", false);
+
+        Assert.Equal(invocationsAfterFirstRender, component.ParameterInvocations);
+    }
+
     private class FakeNavigationManager : NavigationManager
     {
         public FakeNavigationManager()
@@ -98,6 +122,32 @@ public class SupplyParameterFromQueryValueProviderTest
         {
             builder.OpenElement(0, "div");
             builder.AddContent(1, $"Child: {ChildParam}");
+            builder.CloseElement();
+        }
+    }
+
+    private class PathAndQueryComponent : AutoRenderComponent
+    {
+        public int ParameterInvocations { get; private set; }
+
+        [Parameter]
+        public string Name { get; set; }
+
+        [SupplyParameterFromQuery]
+        public int Count { get; set; }
+
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            ParameterInvocations++;
+            TriggerRender();
+            return Task.CompletedTask;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddContent(1, $"{Name}:{Count}");
             builder.CloseElement();
         }
     }
