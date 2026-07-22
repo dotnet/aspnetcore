@@ -52,7 +52,7 @@ internal sealed class TlsEventPump : IDisposable
     // handed to it as early as possible - at NeedsTlsContext, right after the session parses the
     // ClientHello and before the real context is installed - not at handshake-complete. Null (the
     // common case) means no capture work is done.
-    private DirectTlsClientHelloBytesCallback? _clientHelloCallback;
+    private ReadOnlySpanAction<byte, ConnectionContext>? _clientHelloCallback;
 
     // Cached loggers for connection creation (initialized in StartWithListenSocket)
     private ILogger<ConnectionIoState>? _connectionIoStateLogger;
@@ -107,7 +107,7 @@ internal sealed class TlsEventPump : IDisposable
         MemoryPool<byte> memoryPool,
         ILoggerFactory loggerFactory,
         bool noDelay,
-        DirectTlsClientHelloBytesCallback? clientHelloCallback = null)
+        ReadOnlySpanAction<byte, ConnectionContext>? clientHelloCallback = null)
     {
         _listenFd = listenFd;
         ArgumentNullException.ThrowIfNull(tlsContext);
@@ -737,7 +737,7 @@ internal sealed class TlsEventPump : IDisposable
             // The buffer is only valid for the duration of this synchronous call; it is returned to
             // the pool immediately afterwards. This matches the transient-buffer contract of the
             // socket-transport TlsListener middleware.
-            _clientHelloCallback!(connection, buffer.AsSpan(0, written));
+            _clientHelloCallback!(buffer.AsSpan(0, written), connection);
         }
         catch (Exception ex)
         {

@@ -48,7 +48,7 @@ internal sealed class TlsEventPumpPool : IDisposable
         ChannelWriter<DirectTlsConnection> readyConnections,
         MemoryPool<byte> memoryPool,
         bool noDelay,
-        DirectTlsClientHelloBytesCallback? clientHelloCallback = null)
+        ReadOnlySpanAction<byte, ConnectionContext>? clientHelloCallback = null)
     {
         foreach (var pump in _pumps)
         {

@@ -1,6 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Hosting.WebHostBuilderDirectTlsExtensions
-Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsClientHelloBytesCallback
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpoint
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpoint.DirectTlsEndpoint(System.Net.IPAddress! address, int port) -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpoint.DirectTlsEndpoint(System.Net.IPAddress! address, int port, Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions! options) -> void
@@ -18,7 +17,7 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificateSelector.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.SslProtocols.get -> System.Security.Authentication.SslProtocols
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.SslProtocols.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.get -> Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsClientHelloBytesCallback?
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.get -> System.Buffers.ReadOnlySpanAction<byte, Microsoft.AspNetCore.Connections.ConnectionContext!>?
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsTransportOptions.DirectTlsTransportOptions() -> void

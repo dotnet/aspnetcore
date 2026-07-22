@@ -3,8 +3,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -35,6 +37,10 @@ public static class WebHostBuilderDirectTlsExtensions
             // KestrelServerImpl reverses the factory list, so this last-registered factory is tried first and
             // its CanBind claims only DirectTlsEndpoint; every other endpoint falls through to the default.
             services.AddSingleton<IConnectionListenerFactory, DirectTlsTransportFactory>();
+
+            // Copies each DirectTlsEndpoint's ListenOptions.Protocols onto the endpoint after all endpoints
+            // are configured, so the transport can read the ALPN protocols off the endpoint itself.
+            services.AddSingleton<IPostConfigureOptions<KestrelServerOptions>, DirectTlsEndpointProtocolsSetup>();
         });
     }
 

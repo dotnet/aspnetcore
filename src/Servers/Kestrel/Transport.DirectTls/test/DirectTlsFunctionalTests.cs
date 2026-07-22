@@ -105,7 +105,7 @@ public class DirectTlsFunctionalTests
 
         var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
         endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
-        endpoint.Options.TlsClientHelloBytesCallback = (connection, bytes) => received.TrySetResult(bytes.ToArray());
+        endpoint.Options.TlsClientHelloBytesCallback = (bytes, connection) => received.TrySetResult(bytes.ToArray());
 
         using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
 

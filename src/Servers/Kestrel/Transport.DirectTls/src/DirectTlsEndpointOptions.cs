@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
@@ -67,5 +69,18 @@ public sealed class DirectTlsEndpointOptions
     /// the handshake completes. Intended for observation only (for example, TLS fingerprinting); it cannot
     /// alter or reject the handshake.
     /// </summary>
-    public DirectTlsClientHelloBytesCallback? TlsClientHelloBytesCallback { get; set; }
+    /// <remarks>
+    /// The <see cref="ReadOnlySpan{T}"/> is valid only for the duration of the callback; copy the bytes if
+    /// they must outlive the call. The second argument is the <see cref="ConnectionContext"/> for the
+    /// connection being negotiated.
+    /// </remarks>
+    public ReadOnlySpanAction<byte, ConnectionContext>? TlsClientHelloBytesCallback { get; set; }
+
+    /// <summary>
+    /// The HTTP protocols (ALPN) advertised for this endpoint, sourced from <see cref="ListenOptions.Protocols"/>
+    /// after the endpoint has been configured. Not part of the public surface: it is set by
+    /// <see cref="DirectTlsEndpointProtocolsSetup"/> so the transport does not need to depend on
+    /// <see cref="KestrelServerOptions"/>.
+    /// </summary>
+    internal HttpProtocols HttpProtocols { get; set; } = HttpProtocols.Http1AndHttp2;
 }
