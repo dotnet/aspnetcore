@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "SimpleWebSite": {
+    "SimpleWebSiteWithWebApplicationBuilderException": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

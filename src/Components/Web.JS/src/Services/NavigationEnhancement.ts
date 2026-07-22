@@ -105,7 +105,7 @@ function onDocumentClick(event: MouseEvent) {
     if (shouldScrollToHash) {
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
-      let isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
+      const isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
       if (!isSelfNavigation) {
         scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
@@ -196,7 +196,7 @@ function onDocumentSubmit(event: SubmitEvent) {
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl: boolean = true) {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl = true) {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
@@ -222,7 +222,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
-  await getResponsePartsWithFraming(responsePromise, abortSignal,
+  await getResponsePartsWithFraming(
+    responsePromise, abortSignal,
     (response, initialContent) => {
       const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
       const isSuccessResponse = response.status >= 200 && response.status < 300;
@@ -335,7 +336,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       while (fragment.firstChild) {
         document.body.appendChild(fragment.firstChild);
       }
-    });
+    }
+  );
 
   if (!abortSignal.aborted) {
     // The whole response including any streaming SSR is now finished, and it was not aborted (no other navigation
@@ -398,7 +400,7 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
           } else {
             onStreamingElement(chunk);
           }
-        }
+        },
       }));
   } catch (ex) {
     if ((ex as Error).name === 'AbortError' && abortSignal.aborted) {
@@ -434,7 +436,7 @@ function splitStream(frameBoundaryMarker: string) {
     },
     flush(controller) {
       controller.enqueue(buffer);
-    }
+    },
   });
 }
 

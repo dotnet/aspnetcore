@@ -43,27 +43,6 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// Determines whether the specified type is a nullable type.
-    /// </summary>
-    /// <param name="type">The type to check.</param>
-    /// <returns><see langword="true"/> if the type is nullable; otherwise, <see langword="false"/>.</returns>
-    public static bool IsNullable(this Type type)
-    {
-        if (type.IsValueType)
-        {
-            return false;
-        }
-
-        if (type.IsGenericType &&
-            type.GetGenericTypeDefinition() == typeof(Nullable<>))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
     /// Tries to get the <see cref="RequiredAttribute"/> from the specified array of validation attributes.
     /// </summary>
     /// <param name="attributes">The array of <see cref="ValidationAttribute"/> to search.</param>
@@ -82,34 +61,6 @@ internal static class TypeExtensions
 
         requiredAttribute = null;
         return false;
-    }
-
-    /// <summary>
-    /// Gets all types that the specified type implements or inherits from.
-    /// </summary>
-    /// <param name="type">The type to analyze.</param>
-    /// <returns>A collection containing all implemented interfaces and all base types of the given type.</returns>
-    public static List<Type> GetAllImplementedTypes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-
-        var implementedTypes = new List<Type>();
-
-        // Yield all interfaces directly and indirectly implemented by this type
-        foreach (var interfaceType in type.GetInterfaces())
-        {
-            implementedTypes.Add(interfaceType);
-        }
-
-        // Finally, walk up the inheritance chain
-        var baseType = type.BaseType;
-        while (baseType != null && baseType != typeof(object))
-        {
-            implementedTypes.Add(baseType);
-            baseType = baseType.BaseType;
-        }
-
-        return implementedTypes;
     }
 
     /// <summary>

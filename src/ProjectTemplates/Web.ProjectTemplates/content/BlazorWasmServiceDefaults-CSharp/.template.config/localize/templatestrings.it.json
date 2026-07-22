@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Impostazioni predefinite del servizio Blazor WebAssembly",
+  "description": "Modello di progetto per la creazione di una libreria delle impostazioni predefinite del servizio per le applicazioni Blazor WebAssembly. Include il supporto per OpenTelemetry, individuazione dei servizi e resilienza per l'integrazione di Aspire.",
+  "symbols/Framework/description": "Framework di destinazione per il progetto.",
+  "symbols/hosted/description": "Completa la configurazione per uno scenario Web Blazor ospitato in cui la configurazione viene eseguita dal server tramite un commento DOM. Se false (impostazione predefinita), completa la configurazione per uno scenario autonomo con un endpoint di configurazione e un inizializzatore JS.",
+  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
+  "postActions/restore/description": "Consente di ripristinare i pacchetti NuGet richiesti da questo progetto.",
+  "postActions/restore/manualInstructions/default/text": "Esegui \"dotnet restore\""
+}

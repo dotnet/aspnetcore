@@ -744,4 +744,57 @@ partial class HubConnectionTests : FunctionalTestBase
             Assert.Equal(ActivityKind.Client, clientActivity.Kind);
         }
     }
+
+    [Theory]
+    [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+    public async Task InvokeAsync_ServerActivityIncludesConnectionEndpointTags(string protocolName, HttpTransportType transportType, string path)
+    {
+        var protocol = HubProtocols[protocolName];
+        await using (var server = await StartServer<Startup>())
+        {
+            var serverChannel = Channel.CreateUnbounded<Activity>();
+            var serverSource = server.Services.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
+
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => ReferenceEquals(activitySource, serverSource),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = activity => serverChannel.Writer.TryWrite(activity)
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld)).DefaultTimeout();
+                Assert.Equal("Hello World!", result);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+
+            var port = new Uri(server.Url).Port;
+            // Read at least the OnConnected + HelloWorld activities
+            var serverActivities = await serverChannel.Reader.ReadAtLeastAsync(minimumCount: 2).DefaultTimeout();
+
+            // Verify server activities include connection endpoint tags
+            foreach (var activity in serverActivities.Where(a => a.DisplayName.Contains("OnConnected") || a.DisplayName.Contains("HelloWorld")))
+            {
+                var tags = activity.TagObjects.ToDictionary();
+                Assert.True(tags.ContainsKey("server.address"), $"Activity '{activity.DisplayName}' should have server.address tag");
+                Assert.True(tags.ContainsKey("server.port"), $"Activity '{activity.DisplayName}' should have server.port tag");
+                Assert.Equal(port, (int)tags["server.port"]);
+                Assert.Equal("127.0.0.1", tags["server.address"].ToString());
+                Assert.True(tags.ContainsKey("network.type"), $"Activity '{activity.DisplayName}' should have network.type tag");
+                Assert.True(tags.ContainsKey("network.transport"), $"Activity '{activity.DisplayName}' should have network.transport tag");
+            }
+        }
+    }
 }

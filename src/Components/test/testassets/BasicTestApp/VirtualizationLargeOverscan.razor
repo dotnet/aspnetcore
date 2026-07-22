@@ -2,11 +2,11 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 <div id="virtualize-large-overscan" style="height: 600px; overflow-y: auto; outline: 1px solid #999; background:#f8f8f8;">
-    <Virtualize Items="_items" ItemSize="30" MaxItemCount="100" OverscanCount="200">
-        <div class="large-overscan-item" @key="context" style="height:30px; line-height:30px; border-bottom:1px solid #ddd;">Item @context</div>
+    <Virtualize Items="_items" ItemSize="20" MaxItemCount="100" OverscanCount="200">
+        <div class="large-overscan-item" @key="context" style="height:20px; line-height:20px; border-bottom:1px solid #ddd;">Item @context</div>
     </Virtualize>
 </div>
 
 @code {
-    private IList<int> _items = Enumerable.Range(0, 5000).ToList();
+    private IList<int> _items = Enumerable.Range(0, 500).ToList();
 }

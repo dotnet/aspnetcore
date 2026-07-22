@@ -270,7 +270,6 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         public static void HealthCheckPublisherError(ILogger logger, IHealthCheckPublisher publisher, TimeSpan duration, Exception exception) =>
             HealthCheckPublisherError(logger, publisher, duration.TotalMilliseconds, exception);
 
-#pragma warning disable SYSLIB1006
         [LoggerMessage(EventIds.HealthCheckPublisherErrorId, LogLevel.Error, "Health check {HealthCheckPublisher} threw an unhandled exception after {ElapsedMilliseconds}ms", EventName = EventIds.HealthCheckPublisherErrorName)]
         private static partial void HealthCheckPublisherError(ILogger logger, IHealthCheckPublisher HealthCheckPublisher, double ElapsedMilliseconds, Exception exception);
 
@@ -279,6 +278,5 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
 
         [LoggerMessage(EventIds.HealthCheckPublisherTimeoutId, LogLevel.Error, "Health check {HealthCheckPublisher} was canceled after {ElapsedMilliseconds}ms", EventName = EventIds.HealthCheckPublisherTimeoutName)]
         private static partial void HealthCheckPublisherTimeout(ILogger logger, IHealthCheckPublisher HealthCheckPublisher, double ElapsedMilliseconds);
-#pragma warning restore SYSLIB1006
     }
 }

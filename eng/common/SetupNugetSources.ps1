@@ -13,7 +13,11 @@
 #      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
 #      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
 #    env:
-#      Token: $(dn-bot-dnceng-artifact-feeds-rw)
+#      Token: $(InternalFeedToken)
+#
+# Note: This logic is abstracted into enable-internal-sources.yml, which uses
+# NuGetAuthenticate or a WIF-backed service connection. Prefer that template
+# over calling this script directly.
 #
 # Note that the NuGetAuthenticate task should be called after SetupNugetSources.
 # This ensures that:
@@ -31,6 +35,11 @@ param (
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version 2.0
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# This script only consumes helper functions from tools.ps1 to configure NuGet feeds.
+# Skip importing configure-toolset.ps1 so that repo-specific toolset setup (e.g. acquiring
+# a bootstrap SDK) is not triggered as a side effect of feed configuration.
+$disableConfigureToolsetImport = $true
 
 . $PSScriptRoot\tools.ps1
 

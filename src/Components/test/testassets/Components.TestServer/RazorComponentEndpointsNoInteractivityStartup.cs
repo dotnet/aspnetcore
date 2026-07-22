@@ -5,9 +5,12 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
 using System.Web;
+
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -24,14 +27,47 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
+        // Force the cached QuickGridFeatureFlags field, since it captures the AppContext switch only at
+        // static initialization. This is safe only because the E2E suite runs serially; enabling
+        // parallelization would let servers needing opposite values race on it and reintroduce #66883.
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, true);
+
         services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         });
+
+        if (Configuration.GetValue<bool>("UseHybridCacheViewStore"))
+        {
+            services.AddHybridCache();
+        }
+
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
+
+        if (Configuration.GetValue<bool>("UseSession"))
+        {
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+            if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+            {
+                services.Configure<RazorComponentsServiceOptions>(options =>
+                {
+                    options.TempDataProviderType = TempDataProviderType.SessionStorage;
+                });
+            }
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,12 +95,17 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                     });
                 });
 
+                if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+                {
+                    app.UseSession();
+                }
+
                 if (!env.IsDevelopment())
                 {
                     app.UseExceptionHandler("/Error", createScopeForErrors: true);
                 }
 
-                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute");
                 reexecutionApp.UseStaticFiles();
                 reexecutionApp.UseRouting();
                 RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(reexecutionApp);
@@ -75,8 +116,39 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
+            app.Map("/streaming-reexecution", reexecutionApp =>
+            {
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute-streaming");
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                reexecutionApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorComponents<TRootComponent>()
+                        .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
+                });
+            });
+
+            if (Configuration.GetValue<bool>("UseSession"))
+            {
+                app.UseSession();
+            }
 
             ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    private void ConfigureReexecutionPipeline(IApplicationBuilder pipeline, string pathFormat)
+    {
+        pipeline.UseStatusCodePagesWithReExecute(pathFormat, createScopeForStatusCodePages: true);
+        pipeline.Use(async (context, next) =>
+        {
+            var reexecute = context.Features.Get<IStatusCodeReExecuteFeature>();
+            if (reexecute is not null && !string.IsNullOrEmpty(reexecute.OriginalQueryString))
+            {
+                context.Request.QueryString = new QueryString(reexecute.OriginalQueryString);
+            }
+
+            await next();
         });
     }
 

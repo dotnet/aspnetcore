@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
+using System.Threading;
 using OpenQA.Selenium;
 using OpenQA.Selenium.DevTools;
 using OpenQA.Selenium.Interactions;
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.E2ETesting;
 
 public static class WaitAssert
 {
-    private static bool TestRunFailed;
+    private static int _failureCount;
     public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultWaitTimeoutInSeconds);
     public static TimeSpan FailureTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultAfterFailureWaitTimeoutInSeconds);
 
@@ -91,11 +93,29 @@ public static class WaitAssert
         WaitAssertCore<object>(driver, () => { assertion(); return null; }, timeout);
     }
 
+    // Number of failures before the timeout is halved.
+    private const int FailuresPerStep = 5;
+
+    private static TimeSpan GetAdjustedTimeout()
+    {
+        var failures = Volatile.Read(ref _failureCount);
+        if (failures <= 0)
+        {
+            return DefaultTimeout;
+        }
+
+        // Halve the timeout every FailuresPerStep failures:
+        // 0-4 failures: 120s, 5-9: 60s, 10-14: 30s, 15-19: 15s, 20-24: 7.5s, 25+: floor
+        var steps = failures / FailuresPerStep;
+        var seconds = DefaultTimeout.TotalSeconds / Math.Pow(2, steps);
+        return TimeSpan.FromSeconds(Math.Max(seconds, FailureTimeout.TotalSeconds));
+    }
+
     private static TResult WaitAssertCore<TResult>(IWebDriver driver, Func<TResult> assertion, TimeSpan timeout = default)
     {
         if (timeout == default)
         {
-            timeout = !TestRunFailed ? DefaultTimeout : FailureTimeout;
+            timeout = GetAdjustedTimeout();
         }
 
         Exception lastException = null;
@@ -118,23 +138,26 @@ public static class WaitAssert
         }
         catch (WebDriverTimeoutException)
         {
-            // At this point at least one test failed, so we mark the test as failed. Any assertions after this one
-            // will fail faster. There's a small race condition here between checking the value for TestRunFailed
-            // above and setting it here, but nothing bad can come out of it. Worst case scenario, one or more
-            // tests running concurrently might use the DefaultTimeout in their current assertion, which is fine.
-            TestRunFailed = true;
+            // Increment the failure count so subsequent assertions use progressively shorter timeouts.
+            // The timeout halves with each failure until it reaches the FailureTimeout floor.
+            Interlocked.Increment(ref _failureCount);
+
+            var currentUrl = string.Empty;
+            try { currentUrl = driver.Url; }
+            catch { /* Browser may be in a bad state */ }
 
             var innerHtml = driver.FindElement(By.CssSelector(":first-child"))?.GetDomProperty("innerHTML");
 
             var fileId = $"{Guid.NewGuid():N}.png";
             var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
             var errors = driver.GetBrowserLogs(LogLevel.All).Select(c => c.ToString()).ToList();
+            var networkDetails = GetNetworkResponseDetails(driver);
 
             TakeScreenShot(driver, screenShotPath);
             var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :
                 CaptureException(() => assertion());
 
-            throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath, innerHtml);
+            throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath, innerHtml, currentUrl, networkDetails);
         }
 
         return result;
@@ -169,5 +192,48 @@ public static class WaitAssert
                 Console.WriteLine($"Failed to take a screenshot {ex.ToString()}");
             }
         }
+    }
+
+    private static List<string> GetNetworkResponseDetails(IWebDriver driver)
+    {
+        var details = new List<string>();
+        try
+        {
+            var performanceLogs = driver.Manage().Logs.GetLog("performance");
+            foreach (var entry in performanceLogs)
+            {
+                if (!entry.Message.Contains("Network.responseReceived"))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    using var doc = JsonDocument.Parse(entry.Message);
+                    var message = doc.RootElement.GetProperty("message");
+                    var parameters = message.GetProperty("params");
+                    var response = parameters.GetProperty("response");
+                    var url = response.GetProperty("url").GetString();
+                    var status = response.GetProperty("status").GetInt32();
+                    var mimeType = response.TryGetProperty("mimeType", out var mt) ? mt.GetString() : "unknown";
+
+                    // Only include framework-related URLs and error responses to keep output manageable
+                    if (url is not null && (url.Contains("_framework") || url.Contains("_blazor") || status >= 400))
+                    {
+                        details.Add($"  [{status}] {mimeType} - {url}");
+                    }
+                }
+                catch
+                {
+                    // Skip entries we can't parse
+                }
+            }
+        }
+        catch
+        {
+            // Performance logs might not be available
+        }
+
+        return details;
     }
 }

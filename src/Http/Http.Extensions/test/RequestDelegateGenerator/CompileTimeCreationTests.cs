@@ -788,4 +788,80 @@ app.MapPost("/", ([FromForm] string[]? message, HttpContext httpContext) =>
 
         Assert.Equal<string[]>(["hello", "bye"], (string[])httpContext.Items["message"]);
     }
+
+    // Test for https://github.com/dotnet/aspnetcore/issues/65452
+    // Reproduces the cross-generator scenario: another source generator produces the endpoint handler's
+    // return type. Source generators cannot observe each other's output, so the type appears as an
+    // IErrorTypeSymbol to the RDG during its pass. The RDG must emit a diagnostic and fall back to the
+    // runtime RequestDelegateFactory instead of emitting invalid code. The final compilation (which does
+    // include the other generator's output) must remain valid.
+    [Fact]
+    public async Task FallsBackToRuntimeFactoryWhenReturnTypeFromOtherSourceGenerator()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Http;
+
+public static class TestExtensions
+{
+    public static void MapTestEndpoint(IEndpointRouteBuilder app)
+    {
+        // GeneratedTypeFromOtherGenerator is produced by MockTypeSourceGenerator below.
+        app.MapGet("/test", () => GeneratedTypeFromOtherGenerator.Create());
+    }
+}
+""";
+        var project = CreateProject();
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var mockGenerator = new MockTypeSourceGenerator().AsSourceGenerator();
+        var rdgGenerator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            generators: new ISourceGenerator[] { mockGenerator, rdgGenerator },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var _);
+        var generatorRunResult = driver.GetRunResult();
+
+        // The RDG observes an unresolvable (error) return type, so it emits the fallback diagnostic and
+        // generates no source for the endpoint, deferring to the runtime RequestDelegateFactory.
+        var rdgResult = generatorRunResult.Results.Single(r => r.Generator.GetGeneratorType() == typeof(RequestDelegateGenerator.RequestDelegateGenerator));
+        var diagnostic = Assert.Single(rdgResult.Diagnostics);
+        Assert.Equal(DiagnosticDescriptors.UnableToResolveReturnType.Id, diagnostic.Id);
+        Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+        Assert.Empty(rdgResult.GeneratedSources);
+
+        // The other generator contributes the missing type, so the final compilation is valid: the RDG did
+        // not emit the invalid code (typeof(), JsonTypeInfo<?>) that caused the original issue.
+        var mockResult = generatorRunResult.Results.Single(r => r.Generator.GetGeneratorType() == typeof(MockTypeSourceGenerator));
+        Assert.Single(mockResult.GeneratedSources);
+        Assert.Empty(updatedCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error));
+    }
+
+    // Simulates a second source generator that produces a type referenced by an endpoint handler.
+    // Uses RegisterSourceOutput (not post-initialization) so the output is not visible to other generators
+    // in the same run, matching how the RDG observes types produced by other generators in a real build.
+    private sealed class MockTypeSourceGenerator : IIncrementalGenerator
+    {
+        public void Initialize(IncrementalGeneratorInitializationContext context)
+        {
+            context.RegisterSourceOutput(context.CompilationProvider, static (ctx, _) =>
+            {
+                var source = """
+namespace Microsoft.AspNetCore.Http
+{
+    public static class GeneratedTypeFromOtherGenerator
+    {
+        public static IResult Create() => Results.Ok("Generated");
+    }
+}
+""";
+                ctx.AddSource("GeneratedType.g.cs", source);
+            });
+        }
+    }
 }

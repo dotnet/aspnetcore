@@ -53,7 +53,7 @@ public class ComponentState : IAsyncDisposable
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
         }
 
-        if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+        if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
         {
             _componentTypeName = component.GetType().FullName;
         }
@@ -242,7 +242,7 @@ public class ComponentState : IAsyncDisposable
     // a consistent set to the recipient.
     private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
     {
-        var parametersStartTimestamp = _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
+        var parametersStartTimestamp = ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
 
         // Normalize sync and async exceptions into a Task
         Task setParametersAsyncTask;
@@ -251,14 +251,14 @@ public class ComponentState : IAsyncDisposable
             setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
 
             // collect metrics
-            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
             {
                 _ = _renderer.ComponentMetrics.CaptureParametersDuration(setParametersAsyncTask, parametersStartTimestamp, _componentTypeName);
             }
         }
         catch (Exception ex)
         {
-            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
             {
                 _renderer.ComponentMetrics.FailParametersSync(ex, parametersStartTimestamp, _componentTypeName);
             }

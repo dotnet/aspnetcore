@@ -62,4 +62,4 @@ steps:
       artifactName: BuildLogs_SourceBuild_${{ parameters.platform.name }}_Attempt$(System.JobAttempt)
       continueOnError: true
       condition: succeededOrFailed()
-      isProduction: false
+      isProduction: false # logs are non-production artifacts

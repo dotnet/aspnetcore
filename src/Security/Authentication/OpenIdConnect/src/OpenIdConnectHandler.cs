@@ -100,7 +100,12 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         return base.HandleRequestAsync();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Handles remote sign-out requests sent by the identity provider.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the request was handled by the OpenID Connect handler; otherwise, <see langword="false"/>.
+    /// </returns>
     protected virtual async Task<bool> HandleRemoteSignOutAsync()
     {
         OpenIdConnectMessage? message = null;
@@ -836,6 +841,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
                 // no need to validate signature when token is received using "code flow" as per spec
                 // [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
+                // codeql[SM04387] - By design: in code flow the ID token is fetched from the token endpoint over the TLS back-channel, so OIDC Core 1.0 does not require signature validation.
                 validationParameters.RequireSignedTokens = false;
 
                 // At least a cursory validation is required on the new IdToken, even if we've already validated the one from the authorization response.
@@ -1157,6 +1163,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         var cookieOptions = Options.NonceCookie.Build(Context, TimeProvider.GetUtcNow());
 
+        // codeql[SM02373] - The nonce cookie is Secure by default because NonceCookie.SecurePolicy defaults to CookieSecurePolicy.Always.
         Response.Cookies.Append(
             Options.NonceCookie.Name + Options.StringDataFormat.Protect(nonce),
             NonceProperty,

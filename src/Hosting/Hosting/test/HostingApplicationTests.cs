@@ -109,7 +109,8 @@ public class HostingApplicationTests
         var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
         Assert.NotNull(activityFeature);
         Assert.NotNull(activityFeature.Activity);
-        Assert.Equal(HostingApplicationDiagnostics.ActivityName, activityFeature.Activity.DisplayName);
+        Assert.Equal(HostingApplicationDiagnostics.ActivityName, activityFeature.Activity.OperationName);
+        Assert.Equal("HTTP", activityFeature.Activity.DisplayName);
         var initialActivity = Activity.Current;
 
         // Create nested dummy Activity
@@ -156,7 +157,8 @@ public class HostingApplicationTests
         var contextFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
         Assert.NotNull(contextFeature);
         Assert.NotNull(contextFeature.Activity);
-        Assert.Equal(HostingApplicationDiagnostics.ActivityName, contextFeature.Activity.DisplayName);
+        Assert.Equal(HostingApplicationDiagnostics.ActivityName, contextFeature.Activity.OperationName);
+        Assert.Equal("HTTP", contextFeature.Activity.DisplayName);
 
         Assert.NotEqual(overridenFeature, contextFeature);
     }
