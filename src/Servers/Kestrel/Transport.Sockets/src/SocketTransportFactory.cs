@@ -4,6 +4,7 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -46,6 +47,9 @@ public sealed class SocketTransportFactory : IConnectionListenerFactory, IConnec
     {
         return endpoint switch
         {
+            // DirectTlsEndpoint (an IPEndPoint subtype) opts into the native TLS transport. Refuse it here so
+            // it can never be bound as a plaintext socket if the DirectTls transport is tried after this one.
+            DirectTlsEndpoint _ => false,
             IPEndPoint _ => true,
             UnixDomainSocketEndPoint _ => true,
             FileHandleEndPoint _ => true,

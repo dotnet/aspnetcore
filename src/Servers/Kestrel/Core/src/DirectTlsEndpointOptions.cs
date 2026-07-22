@@ -78,8 +78,8 @@ public sealed class DirectTlsEndpointOptions
 
     /// <summary>
     /// The HTTP protocols (ALPN) advertised for this endpoint, sourced from <see cref="ListenOptions.Protocols"/>
-    /// after the endpoint has been configured. Not part of the public surface: it is set by
-    /// <see cref="DirectTlsEndpointProtocolsSetup"/> so the transport does not need to depend on
+    /// after the endpoint has been configured. Not part of the public surface: the DirectTls transport's
+    /// post-configure step copies the protocols here so the transport does not need to depend on
     /// <see cref="KestrelServerOptions"/>.
     /// </summary>
     internal HttpProtocols HttpProtocols { get; set; } = HttpProtocols.Http1AndHttp2;
