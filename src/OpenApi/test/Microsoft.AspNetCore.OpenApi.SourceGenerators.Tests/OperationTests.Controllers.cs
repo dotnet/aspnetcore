@@ -211,6 +211,61 @@ public class Query
     }
 
     [Fact]
+    public async Task DoesNotMisattributeDocumentationWhenMemberNameCollidesWithAnotherBindingName()
+    {
+        var source =
+"""
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services
+    .AddControllers()
+    .AddApplicationPart(typeof(TestController).Assembly);
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapControllers();
+
+app.Run();
+
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase
+{
+    /// <param name="sortColumn">The column to sort by.</param>
+    /// <param name="order">The sort direction.</param>
+    [HttpGet]
+    public string Get(
+        [FromQuery(Name = "order")] string sortColumn,
+        [FromQuery(Name = "sortBy")] string order)
+    {
+        return "Hello, World!";
+    }
+}
+
+public partial class Program {}
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var operation = document.Paths["/Test"].Operations[HttpMethod.Get];
+
+            var orderParameter = operation.Parameters.Single(parameter => parameter.Name == "order");
+            var sortByParameter = operation.Parameters.Single(parameter => parameter.Name == "sortBy");
+
+            // The OpenAPI parameter named "order" is bound from the C# `sortColumn` parameter.
+            Assert.Equal("The column to sort by.", orderParameter.Description);
+            // The OpenAPI parameter named "sortBy" is bound from the C# `order` parameter.
+            Assert.Equal("The sort direction.", sortByParameter.Description);
+        });
+    }
+
+    [Fact]
     public async Task ShouldNotApplyCancellationTokenDocumentationToRequestBody()
     {
         var source =

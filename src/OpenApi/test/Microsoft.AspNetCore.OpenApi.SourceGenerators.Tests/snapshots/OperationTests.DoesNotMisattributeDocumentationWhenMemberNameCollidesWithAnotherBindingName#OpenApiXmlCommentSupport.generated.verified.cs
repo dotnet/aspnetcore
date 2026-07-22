@@ -72,10 +72,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new Dictionary<string, XmlComment>();
 
-            cache.Add(@"T:GenericFoo`1", new XmlComment(@"Should not be duplicated. <see cref=""!:T"" />", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Bar.FooString", new XmlComment(@"FooString property xml comment.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Bar.FooInt", new XmlComment(@"FooInt property xml comment.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:Bar.Test(GenericFoo{System.Double})", new XmlComment(@"Method with GenericFoo{double} parameter.", null, null, null, null, false, null, [new XmlParameterComment(@"fooDouble", @"The GenericFoo of double.", null, false)], null));
+            cache.Add(@"M:TestController.Get(System.String,System.String)", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"sortColumn", @"The column to sort by.", null, false), new XmlParameterComment(@"order", @"The sort direction.", null, false)], null));
 
             return cache;
         }
