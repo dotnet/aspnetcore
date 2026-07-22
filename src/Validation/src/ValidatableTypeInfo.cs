@@ -16,6 +16,8 @@ public abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInf
     private readonly int _membersCount;
     private readonly Type[] _implementedInterfaces;
 
+    private static readonly object _throwawayObjectInstance = new();
+
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
     /// </summary>
@@ -144,7 +146,14 @@ public abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInf
         if (value is null)
         {
             // If we have null value here, the only thing we can validate is the type-level attributes.
-            // However, we also skip that for now. See similar early-return null check in ValidatableParameterInfo for reasons.
+            // There are no "members" to validate, and there is no IValidatableObject to validate.
+            var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+            await ValidateAttributesAsync(
+                context,
+                GetValidationAttributes(),
+                value: value,
+                container: value,
+                new ValidationContext(_throwawayObjectInstance, display, context.ServiceProvider, null), display, cancellationToken);
             return;
         }
 
@@ -177,7 +186,7 @@ public abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInf
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var validationContext = CreateValidationContext(context, value, displayName, null);
+        var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
 
         await ValidateAttributesAsync(context, GetValidationAttributes(), value, value, validationContext, displayName, cancellationToken);
 
@@ -197,7 +206,16 @@ public abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInf
     {
         if (value == null)
         {
-            // See comment in ValidateAsync.
+            // If we have null value here, the only thing we can validate is the type-level attributes.
+            // There are no "members" to validate, and there is no IValidatableObject to validate.
+            var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+            ValidateAllAttributesSynchronously(
+                context,
+                GetValidationAttributes(),
+                value: value,
+                container: value,
+                new ValidationContext(_throwawayObjectInstance, display, context.ServiceProvider, null), display);
+
             return;
         }
 
@@ -226,7 +244,7 @@ public abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInf
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var validationContext = CreateValidationContext(context, value, displayName, null);
+        var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
 
         ValidateAllAttributesSynchronously(context, GetValidationAttributes(), value, value, validationContext, displayName);
 

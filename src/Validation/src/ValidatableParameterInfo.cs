@@ -15,6 +15,8 @@ public abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePa
 {
     private RequiredAttribute? _requiredAttribute;
 
+    private static readonly object _throwawayObjectInstance = new();
+
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
     /// </summary>
@@ -88,29 +90,18 @@ public abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePa
         var validationAttributes = GetValidationAttributes();
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-        var validationContext = CreateValidationContext(context, value, displayName, Name);
+        var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
+        {
+            MemberName = Name
+        };
 
         if (!ValidateRequiredAttribute(validationAttributes, value, context, validationContext, displayName))
         {
             return;
         }
 
-        if (value is null)
-        {
-            // TODO: The blocker here to support this is that ValidationContext requires a non-null ObjectInstance.
-            // We have multiple options to fix this.
-            // 1. Don't create a ValidationContext at all, and use the old IsValid API.
-            // 2. Create a ValidationContext with a dummy object instance, not really matching ValidationContext API contract/expectation.
-            //
-            // For now, we only validate RequiredAttribute if present (which we know for sure doesn't need the ValidationContext)
-            // We could as well only validate RequiredAttribute, and decide to ship an analyzer
-            // to warn if minimal API parameter is nullable and has validation attributes.
-            return;
-        }
-
         // Validate against validation attributes
-        // Null suppression here is safe. ValidationContext is always non-null when value is not null.
-        await ValidateAttributesAsync(context, validationAttributes, value, null, validationContext!, displayName, cancellationToken);
+        await ValidateAttributesAsync(context, validationAttributes, value, null, validationContext, displayName, cancellationToken);
 
         // If the parameter is a collection, validate each item
         if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
@@ -176,16 +167,13 @@ public abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePa
         var validationAttributes = GetValidationAttributes();
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-        var validationContext = CreateValidationContext(context, value, displayName, Name);
+        var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
+        {
+            MemberName = Name
+        };
 
         if (!ValidateRequiredAttribute(validationAttributes, value, context, validationContext, displayName))
         {
-            return;
-        }
-
-        if (value is null)
-        {
-            // See comment in ValidateAsync.
             return;
         }
 

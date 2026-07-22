@@ -119,7 +119,10 @@ public abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePro
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-        var validationContext = CreateValidationContext(context, containingObject, displayName, Name);
+        var validationContext = new ValidationContext(containingObject, displayName, context.ServiceProvider, null)
+        {
+            MemberName = Name,
+        };
 
         // Check required attribute first
         if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
@@ -216,7 +219,10 @@ public abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePro
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-        var validationContext = CreateValidationContext(context, containingObject, displayName, Name);
+        var validationContext = new ValidationContext(containingObject, displayName, context.ServiceProvider, null)
+        {
+            MemberName = Name,
+        };
 
         // Check required attribute first
         if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
