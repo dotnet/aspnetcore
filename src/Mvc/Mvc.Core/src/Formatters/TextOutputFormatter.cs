@@ -216,10 +216,12 @@ public abstract class TextOutputFormatter : OutputFormatter
     }
 
     // We may have to filter q=0 values and reorder the rest by quality. StringWithQualityHeaderValue
-    // is a reference type, so it can't live in a stackalloc buffer, but its indices can: we sort a
-    // scratch buffer of indices into the original list and then materialize the result. Real
-    // Accept-Charset headers are tiny, so the scratch stays on the stack for the common case and only
-    // falls back to the heap for pathologically large headers.
+    // is a reference type, so it can't live in a stackalloc buffer, but its indices can. Real
+    // Accept-Charset headers are tiny (a handful of charsets at most), so for anything within the
+    // threshold we sort a stack-allocated buffer of indices with an insertion sort and never touch the
+    // heap for scratch. No real client sends more than a handful of charsets, so the >32 branch only
+    // exists for correctness; there we fall back to a plain List.Sort and don't bother preserving the
+    // tie ordering, because nothing observable can depend on it.
     private const int SortStackAllocThreshold = 32;
 
     private static IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
@@ -244,25 +246,43 @@ public abstract class TextOutputFormatter : OutputFormatter
             return values;
         }
 
-        Span<int> indices = values.Count <= SortStackAllocThreshold
-            ? stackalloc int[SortStackAllocThreshold]
-            : new int[values.Count];
+        return values.Count <= SortStackAllocThreshold
+            ? SortSmall(values)
+            : SortLarge(values);
+    }
 
+    // Fast path for realistic headers. We insert the surviving indices into a stack-allocated buffer in
+    // descending quality order, filtering out the q=0 rejections as we go. Building descending directly
+    // (rather than sorting ascending and reversing) means an already-preferred-first header appends with
+    // no shifting, so the common case is O(n); the worst case is an O(n^2) insertion sort, which is
+    // irrelevant for at most SortStackAllocThreshold entries. QualityComparer keeps a concrete charset
+    // ahead of an equal-quality wildcard and treats two equal-quality concrete values as equal, so
+    // shifting past equals (Compare <= 0) lands a later header entry ahead of earlier equals, preserving
+    // the previous last-entry-wins selection.
+    private static IList<StringWithQualityHeaderValue> SortSmall(IList<StringWithQualityHeaderValue> values)
+    {
+        Span<int> indices = stackalloc int[SortStackAllocThreshold];
         var count = 0;
+
         for (var i = 0; i < values.Count; i++)
         {
-            if (values[i].Quality != HeaderQuality.NoMatch)
+            var value = values[i];
+            if (value.Quality == HeaderQuality.NoMatch)
             {
-                indices[count++] = i;
+                continue;
             }
+
+            var j = count;
+            while (j > 0 &&
+                StringWithQualityHeaderValueComparer.QualityComparer.Compare(values[indices[j - 1]], value) <= 0)
+            {
+                indices[j] = indices[j - 1];
+                j--;
+            }
+
+            indices[j] = i;
+            count++;
         }
-
-        indices = indices[..count];
-
-        // The framework span sort is an introspective sort: O(n log n) in the worst case (no
-        // insertion-sort pathology) and, because the comparer breaks quality ties on the original
-        // index, its result is deterministic even though the sort itself isn't stable.
-        indices.Sort(new QualityDescendingComparer(values));
 
         var sorted = new List<StringWithQualityHeaderValue>(count);
         for (var i = 0; i < count; i++)
@@ -273,20 +293,26 @@ public abstract class TextOutputFormatter : OutputFormatter
         return sorted;
     }
 
-    // Orders indices into the source list by descending quality. QualityComparer already keeps concrete
-    // charsets ahead of an equal-quality wildcard; for a genuine tie (same quality, both non-wildcard)
-    // we keep the later header entry first, which preserves the previous last-entry-wins selection.
-    private readonly struct QualityDescendingComparer(IList<StringWithQualityHeaderValue> values) : IComparer<int>
+    // Pathological path that no real client will ever exercise: more than SortStackAllocThreshold
+    // charsets in a single Accept-Charset header. We don't allocate an index buffer or preserve the
+    // tie ordering here; a plain List.Sort is unstable, but with this many client-declared charsets
+    // there is nothing observable that could depend on how equal-quality values are ordered.
+    private static IList<StringWithQualityHeaderValue> SortLarge(IList<StringWithQualityHeaderValue> values)
     {
-        public int Compare(int x, int y)
+        var sorted = new List<StringWithQualityHeaderValue>(values.Count);
+        for (var i = 0; i < values.Count; i++)
         {
-            var comparison = StringWithQualityHeaderValueComparer.QualityComparer.Compare(values[y], values[x]);
-            if (comparison != 0)
+            var value = values[i];
+            if (value.Quality != HeaderQuality.NoMatch)
             {
-                return comparison;
+                sorted.Add(value);
             }
-
-            return y.CompareTo(x);
         }
+
+        // QualityComparer sorts ascending; reverse for the descending order we return.
+        sorted.Sort(StringWithQualityHeaderValueComparer.QualityComparer);
+        sorted.Reverse();
+
+        return sorted;
     }
 }
