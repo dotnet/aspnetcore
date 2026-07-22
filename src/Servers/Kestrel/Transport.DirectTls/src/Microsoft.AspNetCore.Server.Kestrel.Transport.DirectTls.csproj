@@ -3,11 +3,14 @@
   <PropertyGroup>
     <Description>DirectTls (fd-bound, native OpenSSL) transport for the ASP.NET Core Kestrel cross-platform web server. Linux only.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IsPackable>false</IsPackable>
+    <!-- Shipped as a standalone NuGet package rather than as part of the Microsoft.AspNetCore.App shared
+         framework (note: no IsAspNetCoreApp). This keeps the experimental transport opt-in and easy to remove
+         later. Its references to shared-framework assemblies (Kestrel.Core, etc.) become a
+         FrameworkReference to Microsoft.AspNetCore.App in the produced package. -->
+    <IsPackable>true</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <!-- DirectTls consumes the experimental low-level TLS API (TlsContext/TlsSocketSession).
          ASPNETCORE_DIRECTTLS_001 is this transport's own [Experimental] id; suppress it inside the
