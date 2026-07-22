@@ -1,17 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-
-namespace Microsoft.Extensions.Validation;
-
 /// <summary>
 /// Contains validation information for a member of a type.
 /// </summary>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePropertyInfo
+file abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePropertyInfo
 {
     private RequiredAttribute? _requiredAttribute;
 

@@ -1,12 +1,3 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-
-namespace Microsoft.Extensions.Validation;
-
 /// <summary>
 /// Provides the shared validation logic for <see cref="ValidatableTypeInfo"/>,
 /// <see cref="ValidatablePropertyInfo"/> and <see cref="ValidatableParameterInfo"/>.
@@ -15,8 +6,7 @@ namespace Microsoft.Extensions.Validation;
 /// All helpers exposed by this type interact with <see cref="ValidateContext"/> exclusively through its
 /// public surface, so neither this base class nor its derived types depend on any internal API.
 /// </remarks>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableInfo
+file abstract class ValidatableInfo
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ValidatableInfo"/> class.

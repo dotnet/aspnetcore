@@ -1,19 +1,4 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.IO.Pipelines;
-using System.Linq;
-using System.Reflection;
-using System.Security.Claims;
-
-namespace Microsoft.Extensions.Validation;
-
-internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
+file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
 {
     // TODO: the implementation currently relies on static discovery of types.
     public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)

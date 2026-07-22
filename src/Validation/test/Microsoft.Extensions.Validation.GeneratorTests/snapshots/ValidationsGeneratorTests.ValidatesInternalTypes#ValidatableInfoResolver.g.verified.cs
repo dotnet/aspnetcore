@@ -26,7 +26,7 @@ namespace System.Runtime.CompilerServices
 namespace Microsoft.Extensions.Validation.Generated
 {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.ValidatablePropertyInfo
+    file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.Generated.ValidatablePropertyInfo
     {
         public GeneratedValidatablePropertyInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
@@ -36,19 +36,17 @@ namespace Microsoft.Extensions.Validation.Generated
             global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
         {
             ContainingType = containingType;
-            Name = name;
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
         internal global::System.Type ContainingType { get; }
-        internal string Name { get; }
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    file sealed class GeneratedValidatableTypeInfo : global::Microsoft.Extensions.Validation.ValidatableTypeInfo
+    file sealed class GeneratedValidatableTypeInfo : global::Microsoft.Extensions.Validation.Generated.ValidatableTypeInfo
     {
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
@@ -56,11 +54,7 @@ namespace Microsoft.Extensions.Validation.Generated
             ValidatablePropertyInfo[] members,
             global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(type, members, displayNameInfo)
         {
-            Type = type;
         }
-
-        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
-        internal global::System.Type Type { get; }
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetTypeValidationAttributes(Type);
@@ -136,6 +130,9 @@ namespace Microsoft.Extensions.Validation.Generated
                 {
                     configureOptions(options);
                 }
+                // Support ParameterInfo resolution at runtime. Appended last so it runs after any
+                // user-registered resolvers, matching the previous ordering in AddValidation.
+                options.Resolvers.Add(new global::Microsoft.Extensions.Validation.Generated.RuntimeValidatableParameterInfoResolver());
             });
         }
     }
@@ -336,4 +333,1507 @@ namespace Microsoft.Extensions.Validation.Generated
                     .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t, inherit: true));
         }
     }
+}
+
+namespace Microsoft.Extensions.Validation.Generated
+{
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.ComponentModel.DataAnnotations;
+    using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using System.IO.Pipelines;
+    using System.Linq;
+    using System.Reflection;
+    using System.Security.Claims;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    /// <summary>
+    /// Provides the shared validation logic for <see cref="ValidatableTypeInfo"/>,
+    /// <see cref="ValidatablePropertyInfo"/> and <see cref="ValidatableParameterInfo"/>.
+    /// </summary>
+    /// <remarks>
+    /// All helpers exposed by this type interact with <see cref="ValidateContext"/> exclusively through its
+    /// public surface, so neither this base class nor its derived types depend on any internal API.
+    /// </remarks>
+    file abstract class ValidatableInfo
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValidatableInfo"/> class.
+        /// </summary>
+        protected ValidatableInfo()
+        {
+        }
+
+        /// <summary>
+        /// Reports a validation error produced by <paramref name="attribute"/> into <paramref name="context"/>.
+        /// </summary>
+        private protected abstract void ReportError(
+            ValidateContext context,
+            string displayName,
+            object? container,
+            ValidationAttribute attribute,
+            ValidationResult result);
+
+        /// <summary>
+        /// Determines whether the specified type is an enumerable type (other than <see cref="string"/>).
+        /// </summary>
+        private protected static bool IsEnumerable(Type type)
+        {
+            // Check if type itself is an IEnumerable
+            if (type.IsGenericType &&
+                (type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
+                type.GetGenericTypeDefinition() == typeof(ICollection<>) ||
+                type.GetGenericTypeDefinition() == typeof(List<>) ||
+                type.GetGenericTypeDefinition() == typeof(IList<>)))
+            {
+                return true;
+            }
+
+            // Or an array
+            if (type.IsArray)
+            {
+                return true;
+            }
+
+            // Then evaluate if it implements IEnumerable and is not a string
+            if (typeof(IEnumerable).IsAssignableFrom(type) &&
+                type != typeof(string))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the specified type implements the given interface.
+        /// </summary>
+        private protected static bool ImplementsInterface(Type type, Type interfaceType)
+        {
+            ArgumentNullException.ThrowIfNull(type);
+            ArgumentNullException.ThrowIfNull(interfaceType);
+
+            if (!interfaceType.IsInterface)
+            {
+                throw new ArgumentException($"Type {interfaceType.FullName} is not an interface.", nameof(interfaceType));
+            }
+
+            return interfaceType.IsAssignableFrom(type);
+        }
+
+        /// <summary>
+        /// Tries to get the <see cref="RequiredAttribute"/> from the specified array of validation attributes.
+        /// </summary>
+        private protected static bool TryGetRequiredAttribute(ValidationAttribute[] attributes, [NotNullWhen(true)] out RequiredAttribute? requiredAttribute)
+        {
+            foreach (var attribute in attributes)
+            {
+                if (attribute is RequiredAttribute requiredAttr)
+                {
+                    requiredAttribute = requiredAttr;
+                    return true;
+                }
+            }
+
+            requiredAttribute = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Resolves the (optionally localized) error message for the specified attribute result.
+        /// </summary>
+        private protected static string? ResolveAttributeErrorMessage(
+            ValidateContext context,
+            string memberName,
+            string displayName,
+            Type? declaringType,
+            ValidationAttribute attribute,
+            ValidationResult result)
+        {
+            if (context.ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
+            {
+                return result.ErrorMessage;
+            }
+
+            var localizationContext = new ErrorMessageLocalizationContext
+            {
+                MemberName = memberName,
+                DisplayName = displayName,
+                DeclaringType = declaringType,
+                Attribute = attribute,
+            };
+
+            return context.ValidationOptions.Localizer.ResolveErrorMessage(localizationContext) ?? result.ErrorMessage;
+        }
+
+        /// <summary>
+        /// Validates <paramref name="value"/> against <paramref name="validationAttributes"/>, running synchronous
+        /// attributes first and only then any asynchronous attributes.
+        /// </summary>
+        private protected async Task ValidateAttributesAsync(
+            ValidateContext context,
+            ValidationAttribute[] validationAttributes,
+            object? value,
+            object? container,
+            ValidationContext validationContext,
+            string displayName,
+            CancellationToken cancellationToken)
+        {
+            // NOTE: In case there are no async validation attributes, there should be no performance impact.
+            // The async state machine is a class only in Debug builds. But in Release it's a struct.
+            // So it will be efficient.
+            // And if this method completed synchronously because no async validation attributes exist, this
+            // will returned the same cached instance as Task.CompletedTask.
+            if (ValidateSynchronousOnly(context, validationAttributes, value, container, validationContext, displayName))
+            {
+                // Only validate async attributes if synchronous validation passed.
+                await ValidateAsynchronousOnlyAsync(context, validationAttributes, value, container, validationContext, displayName, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Validates <paramref name="value"/> against all <paramref name="validationAttributes"/> synchronously.
+        /// </summary>
+        private protected void ValidateAllAttributesSynchronously(
+            ValidateContext context,
+            ValidationAttribute[] validationAttributes,
+            object? value,
+            object? container,
+            ValidationContext validationContext,
+            string displayName)
+        {
+            for (var i = 0; i < validationAttributes.Length; i++)
+            {
+                var attribute = validationAttributes[i];
+
+                var result = attribute.GetValidationResult(value, validationContext);
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    ReportError(context, displayName, container, attribute, result);
+                }
+            }
+        }
+
+        private bool ValidateSynchronousOnly(
+            ValidateContext context,
+            ValidationAttribute[] validationAttributes,
+            object? value,
+            object? container,
+            ValidationContext validationContext,
+            string displayName)
+        {
+            bool hasErrors = false;
+            for (var i = 0; i < validationAttributes.Length; i++)
+            {
+                var attribute = validationAttributes[i];
+
+                if (attribute is AsyncValidationAttribute)
+                {
+                    continue;
+                }
+
+                var result = attribute.GetValidationResult(value, validationContext);
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    hasErrors = true;
+                    ReportError(context, displayName, container, attribute, result);
+                }
+            }
+
+            return !hasErrors;
+        }
+
+        private async Task ValidateAsynchronousOnlyAsync(
+            ValidateContext context,
+            ValidationAttribute[] validationAttributes,
+            object? value,
+            object? container,
+            ValidationContext validationContext,
+            string displayName,
+            CancellationToken cancellationToken)
+        {
+            CancellationTokenSource? linkedCts = null;
+            try
+            {
+                var tracker = new AsyncValidationTracker(context);
+                for (var i = 0; i < validationAttributes.Length; i++)
+                {
+                    var attribute = validationAttributes[i];
+                    if (attribute is not AsyncValidationAttribute asyncValidationAttribute)
+                    {
+                        continue;
+                    }
+
+                    linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    tracker.Track(
+                        GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, tracker.NextContext(), validationContext, displayName, cancellationToken, linkedCts));
+                }
+
+                await tracker.CompleteAsync();
+            }
+            finally
+            {
+                linkedCts?.Dispose();
+            }
+        }
+
+        private async Task GetValidationResultTaskCoreAsync(
+            AsyncValidationAttribute attribute,
+            object? value,
+            object? container,
+            ValidateContext context,
+            ValidationContext validationContext,
+            string displayName,
+            CancellationToken originalCancellationToken,
+            CancellationTokenSource linkedCancellationTokenSource)
+        {
+            // originalCancellationToken is the cancellation token passed to ValidateAttributesAsync.
+            // linkedCancellationToken is a LinkedCancellationToken that combines:
+            // 1. the original cancellation token, and
+            // 2. cancellation when we want to short-circuit on first error.
+            try
+            {
+                var result = await attribute.GetValidationResultAsync(value, validationContext, linkedCancellationTokenSource.Token);
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    ReportError(context, displayName, container, attribute, result);
+                    linkedCancellationTokenSource.Cancel();
+                }
+            }
+            catch (OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
+            {
+                // If the original token wasn't cancelled, but ours is cancelled, it means we cancelled to short-circuit.
+                // In this case, we want to just ignore this cancellation.
+            }
+        }
+
+        /// <summary>
+        /// Coordinates validations that may run concurrently once they go asynchronous.
+        /// Reuses a single <see cref="ValidateContext"/> while validations complete synchronously and
+        /// clones it only after one goes async, so two concurrently-running validations never share a context.
+        /// </summary>
+        /// <remarks>
+        /// The clone is created and merged back using only the public surface of <see cref="ValidateContext"/>.
+        /// </remarks>
+        private protected struct AsyncValidationTracker
+        {
+            private readonly ValidateContext _originalContext;
+            private readonly int _originalDepth;
+            private readonly string _originalPath;
+
+            private bool _nextNeedsClone;
+            private ValidateContext _currentContext;
+            private List<ValidateContext>? _clonedContexts;
+            private List<Task>? _pendingTasks;
+
+            public AsyncValidationTracker(ValidateContext context)
+            {
+                _originalContext = context;
+                _currentContext = context;
+                _originalDepth = context.CurrentDepth;
+                _originalPath = context.CurrentValidationPath;
+            }
+
+            // Reuses the context while validations complete synchronously; clones only after one goes async,
+            // so two concurrently-running validations never share a context.
+            public ValidateContext NextContext()
+            {
+                if (_nextNeedsClone)
+                {
+                    _currentContext = new ValidateContext
+                    {
+                        ValidationOptions = _originalContext.ValidationOptions,
+                        ServiceProvider = _originalContext.ServiceProvider,
+                        CurrentDepth = _originalDepth,
+                        CurrentValidationPath = _originalPath,
+                    };
+                    (_clonedContexts ??= []).Add(_currentContext);
+                    _nextNeedsClone = false;
+                }
+
+                return _currentContext;
+            }
+
+            public void Track(Task validationTask)
+            {
+                if (validationTask.IsCompletedSuccessfully)
+                {
+                    return; // synchronous: keep using the same context
+                }
+
+                _nextNeedsClone = true; // the next item must get its own clone
+                (_pendingTasks ??= []).Add(validationTask);
+            }
+
+            // Stays fully synchronous when nothing was tracked; otherwise awaits all and merges clone errors back.
+            public readonly Task<bool> CompleteAsync()
+                => _pendingTasks is null ? Task.FromResult(false) : AwaitAndMergeAsync(_pendingTasks, _clonedContexts, _originalContext);
+
+            private static async Task<bool> AwaitAndMergeAsync(List<Task> pendingTasks, List<ValidateContext>? clonedContexts, ValidateContext originalContext)
+            {
+                await Task.WhenAll(pendingTasks);
+                return MergeErrorsFromClonedContexts(clonedContexts, originalContext);
+            }
+
+            private static bool MergeErrorsFromClonedContexts(List<ValidateContext>? clonedContexts, ValidateContext originalContext)
+            {
+                if (clonedContexts is null)
+                {
+                    return false;
+                }
+
+                bool hasErrors = false;
+                foreach (var clonedContext in clonedContexts)
+                {
+                    if (clonedContext.ValidationErrors is null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var validationError in clonedContext.ValidationErrors)
+                    {
+                        hasErrors = true;
+
+                        foreach (var errorContext in validationError.Value)
+                        {
+                            originalContext.AddValidationError(errorContext);
+                        }
+                    }
+                }
+
+                return hasErrors;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains validation information for a type.
+    /// </summary>
+    file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
+    {
+        private readonly int _membersCount;
+        private readonly Type[] _implementedInterfaces;
+
+        private static readonly object _throwawayObjectInstance = new();
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
+        /// </summary>
+        /// <param name="type">The type being validated.</param>
+        /// <param name="members">The members that can be validated.</param>
+        /// <param name="displayNameInfo">An optional strategy that resolves the
+        /// display name for the type at validation time. When <see langword="null"/>, the validation
+        /// pipeline uses <see cref="System.Reflection.MemberInfo.Name"/> of <paramref name="type"/>
+        /// as the display name.</param>
+        protected ValidatableTypeInfo(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
+            IReadOnlyList<ValidatablePropertyInfo> members,
+            DisplayNameInfo? displayNameInfo = null)
+        {
+            Type = type;
+            Members = members;
+            DisplayNameInfo = displayNameInfo;
+            _membersCount = members.Count;
+            _implementedInterfaces = type.GetInterfaces();
+        }
+
+        /// <summary>
+        /// Gets the validation attributes applied to this type.
+        /// </summary>
+        /// <returns>An array of validation attributes to apply to this type.</returns>
+        protected abstract ValidationAttribute[] GetValidationAttributes();
+
+        /// <summary>
+        /// The type being validated.
+        /// </summary>
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+        internal Type Type { get; }
+
+        /// <summary>
+        /// The members that can be validated.
+        /// </summary>
+        internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
+
+        /// <summary>
+        /// Gets the strategy that resolves the display name for the type at validation time,
+        /// or <see langword="null"/> when no display name information was supplied.
+        /// </summary>
+        internal DisplayNameInfo? DisplayNameInfo { get; }
+
+        /// <summary>
+        /// Finds the <see cref="ValidatablePropertyInfo"/> for a member with the specified
+        /// <paramref name="propertyName"/>, including members inherited from base types or implemented
+        /// interfaces.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Members declared directly on <see cref="Type"/> take precedence over members inherited
+        /// from super-types, matching the order in which <see cref="ValidateAsync(object?, ValidateContext, CancellationToken)"/>
+        /// visits members.
+        /// </para>
+        /// <para>
+        /// Inherited members are resolved by looking up each super-type via
+        /// <paramref name="validationOptions"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
+        /// are not registered with a resolver are silently skipped.
+        /// </para>
+        /// </remarks>
+        /// <param name="propertyName">The CLR name of the property to find.</param>
+        /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
+        /// <param name="validatablePropertyInfo">The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
+        /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</param>
+        /// <returns>True if the property was found. Otherwise, false.</returns>
+        public bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
+        {
+            if (FindLocalMember(propertyName) is { } localMember)
+            {
+                validatablePropertyInfo = localMember;
+                return true;
+            }
+
+            foreach (var @interface in _implementedInterfaces)
+            {
+                if (validationOptions.TryGetValidatableTypeInfo(@interface, out var interfaceTypeInfo) &&
+                    interfaceTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo))
+                {
+                    return true;
+                }
+            }
+
+            var baseType = Type.BaseType;
+            while (baseType is not null)
+            {
+                if (validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo))
+                {
+                    return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo);
+                }
+
+                baseType = baseType.BaseType;
+            }
+
+            validatablePropertyInfo = null;
+            return false;
+        }
+
+        private ValidatablePropertyInfo? FindLocalMember(string memberName)
+        {
+            for (var i = 0; i < _membersCount; i++)
+            {
+                if (string.Equals(Members[i].Name, memberName, StringComparison.Ordinal))
+                {
+                    return Members[i];
+                }
+            }
+
+            return null;
+        }
+
+        private void ValidateDepth(ValidateContext context)
+        {
+            // Check if we've exceeded the maximum depth
+            if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
+            {
+                throw new InvalidOperationException(
+                    $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{Type.Name}'. " +
+                    "This is likely caused by a circular reference in the object graph. " +
+                    "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
+            }
+        }
+
+        /// <inheritdoc />
+        public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+        {
+            if (value is null)
+            {
+                // If we have null value here, the only thing we can validate is the type-level attributes.
+                // There are no "members" to validate, and there is no IValidatableObject to validate.
+                var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+                await ValidateAttributesAsync(
+                    context,
+                    GetValidationAttributes(),
+                    value: value,
+                    container: value,
+                    new ValidationContext(_throwawayObjectInstance, display, context.ServiceProvider, null), display, cancellationToken);
+                return;
+            }
+
+            ValidateDepth(context);
+
+            var originalErrorCount = context.ValidationErrors?.Count ?? 0;
+
+            // First validate direct members
+            var tracker = new AsyncValidationTracker(context);
+            tracker = ValidateMembers(value, tracker, cancellationToken);
+
+            var actualType = value.GetType();
+
+            // Then validate inherited members
+            foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
+            {
+                tracker = superTypeInfo.ValidateMembers(value, tracker, cancellationToken);
+            }
+
+            var clonedContextsHasErrors = await tracker.CompleteAsync();
+
+            var currentCount = context.ValidationErrors?.Count ?? 0;
+
+            // If any property-level validation errors were found, return early
+            if (currentCount > originalErrorCount || clonedContextsHasErrors)
+            {
+                return;
+            }
+
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+
+            // Validate type-level attributes
+            var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
+
+            await ValidateAttributesAsync(context, GetValidationAttributes(), value, value, validationContext, displayName, cancellationToken);
+
+            // If any type-level attribute errors were found, return early
+            currentCount = context.ValidationErrors?.Count ?? 0;
+            if (currentCount > originalErrorCount)
+            {
+                return;
+            }
+
+            // Finally validate IValidatableObject if implemented
+            await ValidateValidatableObjectInterfaceAsync(value, context, validationContext, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public virtual void Validate(object? value, ValidateContext context)
+        {
+            if (value == null)
+            {
+                // If we have null value here, the only thing we can validate is the type-level attributes.
+                // There are no "members" to validate, and there is no IValidatableObject to validate.
+                var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+                ValidateAllAttributesSynchronously(
+                    context,
+                    GetValidationAttributes(),
+                    value: value,
+                    container: value,
+                    new ValidationContext(_throwawayObjectInstance, display, context.ServiceProvider, null), display);
+
+                return;
+            }
+
+            ValidateDepth(context);
+
+            var originalErrorCount = context.ValidationErrors?.Count ?? 0;
+
+            ValidateMembersSynchronously(value, context);
+
+            var actualType = value.GetType();
+
+            // Then validate inherited members
+            foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
+            {
+                superTypeInfo.ValidateMembersSynchronously(value, context);
+            }
+
+            var currentCount = context.ValidationErrors?.Count ?? 0;
+
+            // If any property-level validation errors were found, return early
+            if (currentCount > originalErrorCount)
+            {
+                return;
+            }
+
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+
+            // Validate type-level attributes
+            var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
+
+            ValidateAllAttributesSynchronously(context, GetValidationAttributes(), value, value, validationContext, displayName);
+
+            // If any type-level attribute errors were found, return early
+            currentCount = context.ValidationErrors?.Count ?? 0;
+            if (currentCount > originalErrorCount)
+            {
+                return;
+            }
+
+            // Finally validate IValidatableObject if implemented
+            ValidateValidatableObjectInterface(value, context, validationContext);
+        }
+
+        private AsyncValidationTracker ValidateMembers(
+            object value,
+            AsyncValidationTracker tracker,
+            CancellationToken cancellationToken)
+        {
+            for (var i = 0; i < _membersCount; i++)
+            {
+                var context = tracker.NextContext();
+
+                try
+                {
+                    tracker.Track(Members[i].ValidateAsync(value, context, cancellationToken));
+                }
+                catch (Exception ex)
+                {
+                    tracker.Track(Task.FromException(ex));
+                }
+            }
+
+            return tracker;
+        }
+
+        private void ValidateMembersSynchronously(object value, ValidateContext context)
+        {
+            for (var i = 0; i < _membersCount; i++)
+            {
+                Members[i].Validate(value, context);
+            }
+        }
+
+        private async Task ValidateValidatableObjectInterfaceAsync(object? value, ValidateContext context, ValidationContext validationContext, CancellationToken cancellationToken)
+        {
+            if (ImplementsInterface(Type, typeof(IValidatableObject)) && value is IValidatableObject validatable)
+            {
+                var errorPrefix = context.CurrentValidationPath;
+                if (value is IAsyncValidatableObject asyncValidatable)
+                {
+                    await foreach (var validationResult in asyncValidatable.ValidateAsync(validationContext, cancellationToken))
+                    {
+                        HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
+                    }
+                }
+                else
+                {
+                    foreach (var validationResult in validatable.Validate(validationContext))
+                    {
+                        HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
+                    }
+                }
+            }
+        }
+
+        private static void HandleValidationResultForValidatableObject(ValidationResult validationResult, string errorPrefix, object? value, ValidateContext context)
+        {
+            if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
+            {
+                // Create a validation error for each member name that is provided
+                // We don't support automatic localization of IValidatableObject messages
+                foreach (var memberName in validationResult.MemberNames)
+                {
+                    var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = memberName,
+                        Path = key,
+                        Errors = [validationResult.ErrorMessage],
+                        Container = value,
+                    };
+                    context.AddValidationError(errorContext);
+                }
+
+                if (!validationResult.MemberNames.Any())
+                {
+                    // If no member names are specified, then treat this as a top-level error
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = string.Empty,
+                        Path = string.Empty,
+                        Errors = [validationResult.ErrorMessage],
+                        Container = value,
+                    };
+                    context.AddValidationError(errorContext);
+                }
+            }
+        }
+
+        private void ValidateValidatableObjectInterface(object? value, ValidateContext context, ValidationContext validationContext)
+        {
+            if (ImplementsInterface(Type, typeof(IValidatableObject)) && value is IValidatableObject validatable)
+            {
+                var errorPrefix = context.CurrentValidationPath;
+
+                foreach (var validationResult in validatable.Validate(validationContext))
+                {
+                    HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
+                }
+            }
+        }
+
+        private IEnumerable<ValidatableTypeInfo> GetSuperTypeInfos(Type actualType, ValidationOptions options)
+        {
+            foreach (var @interface in _implementedInterfaces)
+            {
+                if (TryGetValidatableTypeInfo(@interface, actualType, options) is { } superTypeInfo)
+                {
+                    yield return superTypeInfo;
+                }
+            }
+
+            var baseType = Type.BaseType;
+            while (baseType is not null)
+            {
+                if (TryGetValidatableTypeInfo(baseType, actualType, options) is { } superTypeInfo)
+                {
+                    yield return superTypeInfo;
+                }
+
+                baseType = baseType.BaseType;
+            }
+
+            static ValidatableTypeInfo? TryGetValidatableTypeInfo(Type superType, Type actualType, ValidationOptions options)
+            {
+                if (superType.IsAssignableFrom(actualType) &&
+                    options.TryGetValidatableTypeInfo(superType, out var found)
+                    && found is ValidatableTypeInfo superTypeInfo)
+                {
+                    return superTypeInfo;
+                }
+
+                return null;
+            }
+        }
+
+        private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
+        {
+            foreach (var memberName in result.MemberNames)
+            {
+                // Create a validation error for each member name that is provided
+                var errorMessage = ResolveAttributeErrorMessage(
+                    context,
+                    memberName,
+                    displayName,
+                    declaringType: Type,
+                    attribute,
+                    result);
+
+                if (errorMessage is not null)
+                {
+                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = memberName,
+                        Path = key,
+                        Errors = [errorMessage],
+                        Container = container,
+                    };
+                    context.AddValidationError(errorContext);
+                }
+            }
+
+            if (!result.MemberNames.Any())
+            {
+                // If no member names are specified, then treat this as a top-level error
+                var errorMessage = ResolveAttributeErrorMessage(
+                    context,
+                    memberName: Type.Name,
+                    displayName,
+                    declaringType: Type,
+                    attribute,
+                    result);
+
+                if (errorMessage is not null)
+                {
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = string.Empty,
+                        Path = context.CurrentValidationPath,
+                        Errors = [errorMessage],
+                        Container = container,
+                    };
+                    context.AddValidationError(errorContext);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains validation information for a member of a type.
+    /// </summary>
+    file abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePropertyInfo
+    {
+        private RequiredAttribute? _requiredAttribute;
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
+        /// </summary>
+        /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
+        /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="displayNameInfo">An optional strategy that resolves the
+        /// display name for the property at validation time. When <see langword="null"/>, the
+        /// validation pipeline uses <paramref name="name"/> as the display name.</param>
+        protected ValidatablePropertyInfo(
+            [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+            Type declaringType,
+            Type propertyType,
+            string name,
+            DisplayNameInfo? displayNameInfo = null)
+        {
+            DeclaringType = declaringType;
+            PropertyType = propertyType;
+            Name = name;
+            DisplayNameInfo = displayNameInfo;
+        }
+
+        /// <summary>
+        /// Gets the type that declares the property.
+        /// </summary>
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+        internal Type DeclaringType { get; }
+
+        /// <summary>
+        /// Gets the property type.
+        /// </summary>
+        internal Type PropertyType { get; }
+
+        /// <summary>
+        /// Gets the property name.
+        /// </summary>
+        internal string Name { get; }
+
+        /// <summary>
+        /// Gets the strategy that resolves the display name for the property at validation time,
+        /// or <see langword="null"/> when no display name information was supplied.
+        /// </summary>
+        internal DisplayNameInfo? DisplayNameInfo { get; }
+
+        private PropertyInfo Property
+            => DeclaringType.GetProperty(Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+
+        /// <summary>
+        /// Gets the validation attributes for this property.
+        /// </summary>
+        /// <returns>An array of validation attributes to apply to this property.</returns>
+        protected abstract ValidationAttribute[] GetValidationAttributes();
+
+        private void ValidateDepth(ValidateContext context)
+        {
+            // Check if we've reached the maximum depth before validating complex properties
+            if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
+            {
+                throw new InvalidOperationException(
+                    $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
+                    "This is likely caused by a circular reference in the object graph. " +
+                    "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
+            }
+        }
+
+        private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, ValidateContext context, object? propertyValue, object containingObject, ValidationContext validationContext)
+        {
+            if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
+            {
+                var result = _requiredAttribute.GetValidationResult(propertyValue, validationContext);
+
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    ReportError(context, validationContext.DisplayName, containingObject, _requiredAttribute, result);
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc />
+        public virtual async Task ValidateAsync(object containingObject, ValidateContext context, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(containingObject);
+
+            var propertyValue = Property.GetValue(containingObject);
+            var validationAttributes = GetValidationAttributes();
+
+            // Calculate and save the current path
+            var originalPrefix = context.CurrentValidationPath;
+
+            if (string.IsNullOrEmpty(originalPrefix))
+            {
+                context.CurrentValidationPath = Name;
+            }
+            else
+            {
+                context.CurrentValidationPath = $"{originalPrefix}.{Name}";
+            }
+
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+
+            var validationContext = new ValidationContext(containingObject, displayName, context.ServiceProvider, null)
+            {
+                MemberName = Name,
+            };
+
+            // Check required attribute first
+            if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
+            {
+                // Restore the validation path mutated above before returning early so that sibling
+                // members validated with the same (shared) context observe the original prefix.
+                context.CurrentValidationPath = originalPrefix;
+                return;
+            }
+
+            // Validate any other attributes
+            await ValidateAttributesAsync(context, validationAttributes, propertyValue, containingObject, validationContext, displayName, cancellationToken);
+
+            var validationOptions = context.ValidationOptions;
+
+            ValidateDepth(context);
+
+            // Increment depth counter
+            context.CurrentDepth++;
+
+            try
+            {
+                // Handle enumerable values
+                if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
+                {
+                    var index = 0;
+                    var currentPrefix = context.CurrentValidationPath;
+
+                    var tracker = new AsyncValidationTracker(context);
+                    foreach (var item in enumerable)
+                    {
+                        if (item != null)
+                        {
+                            var itemType = item.GetType();
+                            if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                            {
+                                var currentContext = tracker.NextContext();
+
+                                currentContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                                try
+                                {
+                                    tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
+                                }
+                                catch (Exception ex)
+                                {
+                                    tracker.Track(Task.FromException(ex));
+                                }
+                            }
+                        }
+
+                        index++;
+                    }
+
+                    await tracker.CompleteAsync();
+
+                    context.CurrentValidationPath = currentPrefix;
+                }
+                else if (propertyValue != null)
+                {
+                    // Validate as a complex object
+                    var valueType = propertyValue.GetType();
+                    if (validationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                    {
+                        await validatableType.ValidateAsync(propertyValue, context, cancellationToken);
+                    }
+                }
+            }
+            finally
+            {
+                context.CurrentDepth--;
+                context.CurrentValidationPath = originalPrefix;
+            }
+        }
+
+        /// <inheritdoc />
+        public virtual void Validate(object containingObject, ValidateContext context)
+        {
+            ArgumentNullException.ThrowIfNull(containingObject);
+
+            var propertyValue = Property.GetValue(containingObject);
+            var validationAttributes = GetValidationAttributes();
+
+            // Calculate and save the current path
+            var originalPrefix = context.CurrentValidationPath;
+
+            if (string.IsNullOrEmpty(originalPrefix))
+            {
+                context.CurrentValidationPath = Name;
+            }
+            else
+            {
+                context.CurrentValidationPath = $"{originalPrefix}.{Name}";
+            }
+
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+
+            var validationContext = new ValidationContext(containingObject, displayName, context.ServiceProvider, null)
+            {
+                MemberName = Name,
+            };
+
+            // Check required attribute first
+            if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
+            {
+                // Restore the validation path mutated above before returning early so that sibling
+                // members validated with the same (shared) context observe the original prefix.
+                context.CurrentValidationPath = originalPrefix;
+                return;
+            }
+
+            // Validate any other attributes
+            ValidateAllAttributesSynchronously(context, validationAttributes, propertyValue, containingObject, validationContext, displayName);
+
+            var validationOptions = context.ValidationOptions;
+
+            ValidateDepth(context);
+
+            // Increment depth counter
+            context.CurrentDepth++;
+
+            try
+            {
+                // Handle enumerable values
+                if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
+                {
+                    var index = 0;
+                    var currentPrefix = context.CurrentValidationPath;
+
+                    foreach (var item in enumerable)
+                    {
+                        if (item != null)
+                        {
+                            var itemType = item.GetType();
+                            if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                            {
+                                context.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                                validatableType.Validate(item, context);
+                            }
+                        }
+
+                        index++;
+                    }
+
+                    context.CurrentValidationPath = currentPrefix;
+                }
+                else if (propertyValue != null)
+                {
+                    // Validate as a complex object
+                    var valueType = propertyValue.GetType();
+                    if (validationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                    {
+                        validatableType.Validate(propertyValue, context);
+                    }
+                }
+            }
+            finally
+            {
+                context.CurrentDepth--;
+                context.CurrentValidationPath = originalPrefix;
+            }
+        }
+
+        private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
+        {
+            var errorMessage = ResolveAttributeErrorMessage(
+                context,
+                memberName: Name,
+                displayName,
+                declaringType: DeclaringType,
+                attribute,
+                result);
+
+            if (errorMessage is not null)
+            {
+                var errorContext = new ValidationErrorContext()
+                {
+                    Name = Name,
+                    Path = context.CurrentValidationPath,
+                    Errors = [errorMessage],
+                    Container = container,
+                };
+                context.AddValidationError(errorContext);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains validation information for a parameter.
+    /// </summary>
+    file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatableParameterInfo
+    {
+        private RequiredAttribute? _requiredAttribute;
+
+        private static readonly object _throwawayObjectInstance = new();
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
+        /// </summary>
+        /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="displayNameInfo">An optional strategy that resolves the
+        /// display name for the parameter at validation time. When <see langword="null"/>, the
+        /// validation pipeline uses <paramref name="name"/> as the display name.</param>
+        protected ValidatableParameterInfo(
+            Type parameterType,
+            string name,
+            DisplayNameInfo? displayNameInfo = null)
+        {
+            ParameterType = parameterType;
+            Name = name;
+            DisplayNameInfo = displayNameInfo;
+        }
+
+        /// <summary>
+        /// Gets the parameter type.
+        /// </summary>
+        internal Type ParameterType { get; }
+
+        /// <summary>
+        /// Gets the parameter name.
+        /// </summary>
+        internal string Name { get; }
+
+        /// <summary>
+        /// Gets the strategy that resolves the display name for the parameter at validation time,
+        /// or <see langword="null"/> when no display name information was supplied.
+        /// </summary>
+        internal DisplayNameInfo? DisplayNameInfo { get; }
+
+        /// <summary>
+        /// Gets the validation attributes for this parameter.
+        /// </summary>
+        /// <returns>An array of validation attributes to apply to this parameter.</returns>
+        protected abstract ValidationAttribute[] GetValidationAttributes();
+
+        private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context, ValidationContext? validationContext, string displayName)
+        {
+            if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
+            {
+                var result = validationContext is not null
+                    ? _requiredAttribute.GetValidationResult(value, validationContext)
+                    : CreateValidationResult(_requiredAttribute.IsValid(value), _requiredAttribute, displayName);
+
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    ReportError(context, displayName, container: null, _requiredAttribute, result);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static ValidationResult? CreateValidationResult(bool isValid, ValidationAttribute attribute, string displayName)
+            => isValid
+                ? ValidationResult.Success
+                : new ValidationResult(attribute.FormatErrorMessage(displayName), null);
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// If the parameter is a collection, each item in the collection will be validated.
+        /// If the parameter is not a collection but has a validatable type, the single value will be validated.
+        /// </remarks>
+        public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+        {
+            var validationAttributes = GetValidationAttributes();
+
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+            var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
+            {
+                MemberName = Name
+            };
+
+            if (!ValidateRequiredAttribute(validationAttributes, value, context, validationContext, displayName))
+            {
+                return;
+            }
+
+            // Validate against validation attributes
+            await ValidateAttributesAsync(context, validationAttributes, value, null, validationContext, displayName, cancellationToken);
+
+            // If the parameter is a collection, validate each item
+            if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
+            {
+                var index = 0;
+                var currentPrefix = context.CurrentValidationPath;
+
+                var validationOptions = context.ValidationOptions;
+
+                var tracker = new AsyncValidationTracker(context);
+
+                foreach (var item in enumerable)
+                {
+                    if (item != null)
+                    {
+                        if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                        {
+                            var currentContext = tracker.NextContext();
+
+                            currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                ? $"{Name}[{index}]"
+                                : $"{currentPrefix}.{Name}[{index}]";
+                            try
+                            {
+                                tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
+                            }
+                            catch (Exception ex)
+                            {
+                                tracker.Track(Task.FromException(ex));
+                            }
+                        }
+                    }
+                    index++;
+                }
+
+                try
+                {
+                    await tracker.CompleteAsync();
+                }
+                finally
+                {
+                    context.CurrentValidationPath = currentPrefix;
+                }
+            }
+            // If not enumerable, validate the single value
+            else if (value != null)
+            {
+                var valueType = value.GetType();
+                if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                {
+                    await validatableType.ValidateAsync(value, context, cancellationToken);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// If the parameter is a collection, each item in the collection will be validated.
+        /// If the parameter is not a collection but has a validatable type, the single value will be validated.
+        /// </remarks>
+        public virtual void Validate(object? value, ValidateContext context)
+        {
+            var validationAttributes = GetValidationAttributes();
+
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+            var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
+            {
+                MemberName = Name
+            };
+
+            if (!ValidateRequiredAttribute(validationAttributes, value, context, validationContext, displayName))
+            {
+                return;
+            }
+
+            // Validate against validation attributes
+            ValidateAllAttributesSynchronously(context, validationAttributes, value, null, validationContext!, displayName);
+
+            // If the parameter is a collection, validate each item
+            if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
+            {
+                var index = 0;
+                var currentPrefix = context.CurrentValidationPath;
+
+                var validationOptions = context.ValidationOptions;
+
+                foreach (var item in enumerable)
+                {
+                    if (item != null)
+                    {
+                        if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                        {
+                            context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                ? $"{Name}[{index}]"
+                                : $"{currentPrefix}.{Name}[{index}]";
+                            try
+                            {
+                                validatableType.Validate(item, context);
+                            }
+                            finally
+                            {
+                                context.CurrentValidationPath = currentPrefix;
+                            }
+                        }
+                    }
+                    index++;
+                }
+            }
+            // If not enumerable, validate the single value
+            else if (value != null)
+            {
+                var valueType = value.GetType();
+                if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                {
+                    validatableType.Validate(value, context);
+                }
+            }
+        }
+
+        private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
+        {
+            var errorMessage = ResolveAttributeErrorMessage(
+                context,
+                memberName: Name,
+                displayName,
+                declaringType: null,
+                attribute,
+                result);
+
+            if (errorMessage is not null)
+            {
+                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                var errorContext = new ValidationErrorContext()
+                {
+                    Name = Name,
+                    Path = key,
+                    Errors = [errorMessage],
+                    Container = null,
+                };
+                context.AddValidationError(errorContext);
+            }
+        }
+    }
+
+    file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
+    {
+        // TODO: the implementation currently relies on static discovery of types.
+        public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
+        {
+            validatableTypeInfo = null;
+            return false;
+        }
+
+        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
+        {
+            if (parameterInfo.Name == null)
+            {
+                throw new InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
+            }
+
+            // Skip method parameter if it or its type are annotated with SkipValidationAttribute.
+            if (parameterInfo.GetCustomAttribute<SkipValidationAttribute>() != null ||
+                parameterInfo.ParameterType.GetCustomAttribute<SkipValidationAttribute>() != null)
+            {
+                validatableParameterInfo = null;
+                return false;
+            }
+
+            var validationAttributes = parameterInfo
+                .GetCustomAttributes<ValidationAttribute>()
+                .ToArray();
+
+            // If there are no validation attributes and this type is not a complex type
+            // we don't need to validate it. Complex types without attributes are still
+            // validatable because we want to run the validations on the properties.
+            if (validationAttributes.Length == 0 && !IsComplexType(parameterInfo.ParameterType))
+            {
+                validatableParameterInfo = null;
+                return false;
+            }
+
+            var displayNameInfo = ResolveDisplayInfo(parameterInfo);
+
+            validatableParameterInfo = new RuntimeValidatableParameterInfo(
+                parameterType: parameterInfo.ParameterType,
+                name: parameterInfo.Name,
+                displayNameInfo: displayNameInfo,
+                validationAttributes: validationAttributes
+            );
+            return true;
+        }
+
+        private static DisplayNameInfo? ResolveDisplayInfo(ParameterInfo parameterInfo)
+        {
+            var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
+            if (displayAttribute is { ResourceType: not null, Name: not null })
+            {
+                // Resource-based display name from [Display(ResourceType = ..., Name = ...)] is the
+                // canonical localized source; the IValidationLocalizer is intentionally bypassed.
+                // The DisplayAttribute instance is retained for the lifetime of the resolver, mirroring
+                // the source-generator's static accessor design.
+                return new ParameterReflectionDisplayName(displayAttribute);
+            }
+
+            if (displayAttribute?.Name is not null)
+            {
+                // Literal name from [Display(Name = "...")].
+                return new LiteralDisplayName(displayAttribute.Name);
+            }
+
+            var displayNameAttribute = parameterInfo.GetCustomAttribute<DisplayNameAttribute>();
+            if (displayNameAttribute is not null)
+            {
+                // Literal name from [DisplayName("...")].
+                return new LiteralDisplayName(displayNameAttribute.DisplayName);
+            }
+
+            return null;
+        }
+
+        internal sealed class RuntimeValidatableParameterInfo(
+            Type parameterType,
+            string name,
+            DisplayNameInfo? displayNameInfo,
+            ValidationAttribute[] validationAttributes) :
+                ValidatableParameterInfo(parameterType, name, displayNameInfo)
+        {
+            protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+            private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        }
+
+        private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
+        {
+            public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
+            {
+                var localizer = context.ValidationOptions.Localizer;
+                if (localizer is null)
+                {
+                    return literal;
+                }
+
+                // The literal acts as both the lookup key for the localizer AND the fallback display
+                // name when the localizer can't translate.
+                return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
+                {
+                    Type = type,
+                    DisplayName = literal,
+                    MemberName = memberName,
+                }) ?? literal;
+            }
+        }
+
+        private sealed class ParameterReflectionDisplayName(DisplayAttribute attribute) : DisplayNameInfo
+        {
+            public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
+                => attribute.GetName();
+        }
+
+        private static bool IsComplexType(Type type)
+        {
+            // Skip primitives, enums, common built-in types, and types that are specially
+            // handled by RDF/RDG that don't need validation if they don't have attributes
+            if (type.IsPrimitive ||
+                type.IsEnum ||
+                type == typeof(string) ||
+                type == typeof(decimal) ||
+                type == typeof(DateTime) ||
+                type == typeof(DateTimeOffset) ||
+                type == typeof(TimeOnly) ||
+                type == typeof(DateOnly) ||
+                type == typeof(TimeSpan) ||
+                type == typeof(Guid) ||
+                type == typeof(ClaimsPrincipal) ||
+                type == typeof(CancellationToken) ||
+                type == typeof(Stream) ||
+                type == typeof(PipeReader))
+            {
+                return false;
+            }
+
+            // Check if the underlying type in a nullable is valid
+            if (Nullable.GetUnderlyingType(type) is { } nullableType)
+            {
+                return IsComplexType(nullableType);
+            }
+
+            // Complex types include both reference types (classes) and value types (structs, record structs)
+            // that aren't in the exclusion list above
+            return type.IsClass || type.IsValueType;
+        }
+    }
+
 }

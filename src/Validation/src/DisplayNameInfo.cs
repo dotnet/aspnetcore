@@ -8,9 +8,8 @@ namespace Microsoft.Extensions.Validation;
 
 /// <summary>
 /// Resolves the display name of a validated member (property, parameter, or type).
-/// Each <see cref="ValidatablePropertyInfo"/>, <see cref="ValidatableParameterInfo"/>, and
-/// <see cref="ValidatableTypeInfo"/> may carry a single <see cref="DisplayNameInfo"/> instance
-/// that encapsulates the strategy for producing its display name at validation time.
+/// Each validatable property, parameter, and type may carry a single <see cref="DisplayNameInfo"/>
+/// instance that encapsulates the strategy for producing its display name at validation time.
 /// </summary>
 /// <remarks>
 /// <para>

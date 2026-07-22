@@ -1,17 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-
-namespace Microsoft.Extensions.Validation;
-
 /// <summary>
 /// Contains validation information for a type.
 /// </summary>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
+file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
 {
     private readonly int _membersCount;
     private readonly Type[] _implementedInterfaces;
@@ -48,6 +38,7 @@ public abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInf
     /// <summary>
     /// The type being validated.
     /// </summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
     internal Type Type { get; }
 
     /// <summary>
