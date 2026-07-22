@@ -7,4 +7,5 @@ internal interface IVirtualizeJsCallbacks
 {
     void OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize);
     void OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize);
+    void OnContainerWidthChanged(float containerWidth);
 }

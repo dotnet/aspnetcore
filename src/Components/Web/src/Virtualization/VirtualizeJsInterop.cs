@@ -18,16 +18,17 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
 
     [DynamicDependency(nameof(OnSpacerBeforeVisible))]
     [DynamicDependency(nameof(OnSpacerAfterVisible))]
+    [DynamicDependency(nameof(OnContainerWidthChanged))]
     public VirtualizeJsInterop(IVirtualizeJsCallbacks owner, IJSRuntime jsRuntime)
     {
         _owner = owner;
         _jsRuntime = jsRuntime;
     }
 
-    public async ValueTask InitializeAsync(ElementReference spacerBefore, ElementReference spacerAfter, int anchorMode)
+    public async ValueTask InitializeAsync(ElementReference spacerBefore, ElementReference spacerAfter, int anchorMode, bool isGridLayout = false)
     {
         _selfReference = DotNetObjectReference.Create(this);
-        await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.init", _selfReference, spacerBefore, spacerAfter, anchorMode);
+        await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.init", _selfReference, spacerBefore, spacerAfter, anchorMode, 50, isGridLayout);
     }
 
     [JSInvokable]
@@ -40,6 +41,12 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
     public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
         _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize);
+    }
+
+    [JSInvokable]
+    public void OnContainerWidthChanged(float containerWidth)
+    {
+        _owner.OnContainerWidthChanged(containerWidth);
     }
 
     public ValueTask ScrollToBottomAsync()

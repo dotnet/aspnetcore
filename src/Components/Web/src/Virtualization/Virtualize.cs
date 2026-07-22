@@ -46,6 +46,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private float _lastSetItemSize;
 
+    private float _containerWidth;
+
+    private int _cachedItemsPerRow = 1;
+
     private IEnumerable<TItem>? _loadedItems;
 
     private TItem? _previousFirstLoadedItem;
@@ -210,6 +214,60 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public int InitialItemIndex { get; set; }
 
     private IEqualityComparer<TItem> _itemComparer = EqualityComparer<TItem>.Default;
+
+    /// <summary>
+    /// Gets or sets whether the <see cref="Virtualize{TItem}"/> component should use grid-based
+    /// virtualization instead of the default linear virtualization. When set to <c>true</c>,
+    /// items are arranged in a multi-column grid layout.
+    ///
+    /// Defaults to <c>false</c> (linear list mode).
+    ///
+    /// When using grid mode, the <see cref="ItemWidth"/> parameter must be specified to determine
+    /// how many items fit per row. The consumer is responsible for applying CSS flexbox styles to
+    /// wrap items: set <c>display: flex</c> and <c>flex-wrap: wrap</c> on the container element.
+    /// </summary>
+    [Parameter]
+    public bool IsGridLayout { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the width of each item in pixels when using grid layout mode (<see cref="IsGridLayout"/> = <c>true</c>).
+    /// This value is used to calculate how many items can fit in each row based on the container width.
+    ///
+    /// This parameter has no effect when <see cref="IsGridLayout"/> is <c>false</c>.
+    /// Defaults to <c>null</c> (no grid width specified).
+    ///
+    /// When specified, this value should match the CSS width of your rendered items to ensure
+    /// accurate column calculations.
+    /// </summary>
+    [Parameter]
+    public float? ItemWidth { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets the height of each item in pixels when using grid layout mode (<see cref="IsGridLayout"/> = <c>true</c>).
+    /// This value is used to calculate the spacer height based on rows instead of individual items.
+    ///
+    /// This parameter has no effect when <see cref="IsGridLayout"/> is <c>false</c>.
+    /// Defaults to <c>null</c> (uses <see cref="ItemSize"/> for grid height).
+    ///
+    /// When specified, this value should match the CSS height of your rendered items to ensure
+    /// accurate row height calculations. If not specified in grid mode, <see cref="ItemSize"/> is used.
+    /// </summary>
+    [Parameter]
+    public float? ItemHeight { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets the initial number of items per row to use during server-side rendering (SSR) when using grid layout mode.
+    /// This value is used during prerendering to calculate the correct grid layout before the JavaScript ResizeObserver
+    /// can measure the actual container width.
+    ///
+    /// This parameter has no effect when <see cref="IsGridLayout"/> is <c>false</c>.
+    /// Defaults to 1 (single column during SSR). Should match your expected layout for the initial render.
+    /// Once hydrated, the ResizeObserver will update this to the actual container width calculation.
+    ///
+    /// Example: If you know your grid will typically display 4 items per row, set this to 4 to prevent layout shift on hydration.
+    /// </summary>
+    [Parameter]
+    public int InitialItemsPerRow { get; set; } = 1;
 
     /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
@@ -387,6 +445,30 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 $"{GetType()} requires a positive value for parameter '{nameof(ItemSize)}'.");
         }
 
+        if (IsGridLayout && !ItemWidth.HasValue)
+        {
+            throw new InvalidOperationException(
+                $"{GetType()} requires the '{nameof(ItemWidth)}' parameter to be specified when '{nameof(IsGridLayout)}' is true.");
+        }
+
+        if (IsGridLayout && ItemWidth.HasValue && ItemWidth <= 0)
+        {
+            throw new InvalidOperationException(
+                $"{GetType()} requires a positive value for parameter '{nameof(ItemWidth)}' when '{nameof(IsGridLayout)}' is true.");
+        }
+
+        if (IsGridLayout && ItemHeight.HasValue && ItemHeight <= 0)
+        {
+            throw new InvalidOperationException(
+                $"{GetType()} requires a positive value for parameter '{nameof(ItemHeight)}' when '{nameof(IsGridLayout)}' is true.");
+        }
+
+        if (IsGridLayout && InitialItemsPerRow <= 0)
+        {
+            throw new InvalidOperationException(
+                $"{GetType()} requires a positive value for parameter '{nameof(InitialItemsPerRow)}' when '{nameof(IsGridLayout)}' is true.");
+        }
+
         if (_itemSize <= 0)
         {
             _itemSize = ItemSize;
@@ -399,6 +481,23 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _lastSetItemSize = ItemSize;
             _totalMeasuredHeight = 0;
             _measuredItemCount = 0;
+        }
+
+        // If grid layout parameters changed, reset measurements
+        if (IsGridLayout && ItemWidth.HasValue)
+        {
+            var newItemsPerRow = GetItemsPerRow();
+            if (newItemsPerRow != _cachedItemsPerRow)
+            {
+                _cachedItemsPerRow = newItemsPerRow;
+                _totalMeasuredHeight = 0;
+                _measuredItemCount = 0;
+            }
+        }
+        else if (IsGridLayout && _cachedItemsPerRow == 1 && InitialItemsPerRow > 1)
+        {
+            // During SSR, use InitialItemsPerRow for grid calculations since ResizeObserver isn't available
+            _cachedItemsPerRow = InitialItemsPerRow;
         }
 
         if (ItemsProvider != null)
@@ -458,7 +557,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (firstRender)
         {
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
-            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
+            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode, IsGridLayout);
             _lastRenderedAnchorMode = AnchorMode;
         }
 
@@ -517,6 +616,45 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
     }
 
+    /// <summary>
+    /// Called from JavaScript interop to update the container width when using grid layout.
+    /// This is called by ResizeObserver when the container dimensions change.
+    /// </summary>
+    /// <param name="newWidth">The new width of the virtualization container in pixels.</param>
+    void IVirtualizeJsCallbacks.OnContainerWidthChanged(float newWidth)
+    {
+        if (_containerWidth != newWidth && IsGridLayout && ItemWidth.HasValue)
+        {
+            _containerWidth = newWidth;
+            var newItemsPerRow = GetItemsPerRow();
+
+            // If the number of items per row changed, we need to recalculate the item distribution
+            if (newItemsPerRow != _cachedItemsPerRow)
+            {
+                _cachedItemsPerRow = newItemsPerRow;
+                // Reset measurements so calculations recalibrate based on new grid dimensions
+                _totalMeasuredHeight = 0;
+                _measuredItemCount = 0;
+                StateHasChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Calculates the number of items that can fit in a single row based on container width and item width.
+    /// Used only in grid layout mode.
+    /// </summary>
+    /// <returns>The number of items per row, minimum of 1.</returns>
+    private int GetItemsPerRow()
+    {
+        if (!IsGridLayout || !ItemWidth.HasValue || _containerWidth <= 0)
+        {
+            return 1;
+        }
+
+        return Math.Max(1, (int)Math.Floor(_containerWidth / ItemWidth.Value));
+    }
+
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -529,7 +667,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         builder.OpenElement(0, SpacerElement);
-        builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(_itemsBefore));
+        builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetGridAwareSpacerHeightPx(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
         builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
@@ -598,10 +736,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         builder.OpenElement(7, SpacerElement);
         builder.AddAttribute(8, "aria-hidden", "true");
-        builder.AddAttribute(9, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(itemsAfter));
+        builder.AddAttribute(9, "data-blazor-virtualize-reserved-height", GetGridAwareSpacerHeightPx(itemsAfter));
         if (_unusedItemCapacity != 0)
         {
-            builder.AddAttribute(10, "data-blazor-virtualize-loop-breaker-transform", GetSpacerHeightPx(_unusedItemCapacity));
+            builder.AddAttribute(10, "data-blazor-virtualize-loop-breaker-transform", GetGridAwareSpacerHeightPx(_unusedItemCapacity));
         }
         builder.AddElementReferenceCapture(11, elementReference => _spacerAfter = elementReference);
 
@@ -611,8 +749,40 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private string GetSpacerHeightPx(int itemCount)
         => (itemCount * GetItemHeight()).ToString(CultureInfo.InvariantCulture);
 
+    /// <summary>
+    /// Gets the spacer height in pixels, accounting for grid layout row calculations.
+    /// When in grid mode, converts the item count to rows before calculating pixel height.
+    /// In linear mode, calculates height directly from item count.
+    /// </summary>
+    /// <param name="itemCount">The number of items to calculate height for. In grid mode,
+    /// this is converted to rows using _cachedItemsPerRow.</param>
+    /// <returns>Height in pixels as a string suitable for CSS height values.</returns>
+    private string GetGridAwareSpacerHeightPx(int itemCount)
+    {
+        float heightInPixels;
+        if (IsGridLayout && _cachedItemsPerRow > 1)
+        {
+            var rows = Math.Max(0, (int)Math.Ceiling((float)itemCount / _cachedItemsPerRow));
+            heightInPixels = rows * GetItemHeight();
+        }
+        else
+        {
+            heightInPixels = itemCount * GetItemHeight();
+        }
+        return heightInPixels.ToString("F1", CultureInfo.InvariantCulture).TrimEnd('0').TrimEnd('.');
+    }
+
     private float GetItemHeight()
-        => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
+    {
+        // In grid mode, prefer explicit ItemHeight if provided
+        if (IsGridLayout && ItemHeight.HasValue)
+        {
+            return ItemHeight.Value;
+        }
+
+        // Fallback to measured height or ItemSize
+        return _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
+    }
 
     private bool ProcessMeasurements(float spacerSeparation)
     {
@@ -755,10 +925,29 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             effectiveItemSize = _itemSize;
         }
 
-        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
-        visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
-        unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
-        visibleItemCapacity -= unusedItemCapacity;
+        // Grid layout calculations: convert item-based calculations to row-based
+        if (IsGridLayout && ItemWidth.HasValue && _containerWidth > 0)
+        {
+            var itemsPerRow = GetItemsPerRow();
+            // Apply consistent 2 * OverscanCount buffering for grid mode to match linear mode behavior
+            var visibleRows = (int)Math.Ceiling(containerSize / effectiveItemSize) + (2 * OverscanCount);
+            var visibleItemsInGrid = visibleRows * itemsPerRow;
+
+            var rowsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - (2 * OverscanCount));
+            itemsInSpacer = rowsInSpacer * itemsPerRow;
+
+            visibleItemCapacity = visibleItemsInGrid;
+            unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
+            visibleItemCapacity -= unusedItemCapacity;
+        }
+        else
+        {
+            // Linear list mode (original behavior)
+            itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+            visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
+            unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
+            visibleItemCapacity -= unusedItemCapacity;
+        }
     }
 
     private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
