@@ -240,9 +240,9 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
             {
-                foreach (var (_, errorContexts) in validationErrors)
+                foreach (var (_, error) in validationErrors)
                 {
-                    foreach (var errorContext in errorContexts)
+                    foreach (var errorContext in error)
                     {
                         var fieldIdentifier = new FieldIdentifier(errorContext.Container ?? _editContext.Model, errorContext.Name);
                         _messages.Add(fieldIdentifier, errorContext.Errors);
@@ -312,9 +312,9 @@ public static partial class EditContextDataAnnotationsExtensions
 
             if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
             {
-                foreach (var (_, errorContexts) in validationErrors)
+                foreach (var (_, error) in validationErrors)
                 {
-                    foreach (var errorContext in errorContexts)
+                    foreach (var errorContext in error)
                     {
                         _messages.Add(fieldIdentifier, errorContext.Errors);
                     }

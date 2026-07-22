@@ -1061,7 +1061,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 foreach (var memberName in validationResult.MemberNames)
                 {
                     var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                    var errorContext = new ValidationErrorContext()
+                    var errorContext = new ValidationError()
                     {
                         Name = memberName,
                         Path = key,
@@ -1074,7 +1074,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 if (!validationResult.MemberNames.Any())
                 {
                     // If no member names are specified, then treat this as a top-level error
-                    var errorContext = new ValidationErrorContext()
+                    var errorContext = new ValidationError()
                     {
                         Name = string.Empty,
                         Path = string.Empty,
@@ -1149,7 +1149,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 if (errorMessage is not null)
                 {
                     var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
-                    var errorContext = new ValidationErrorContext()
+                    var errorContext = new ValidationError()
                     {
                         Name = memberName,
                         Path = key,
@@ -1173,7 +1173,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
                 if (errorMessage is not null)
                 {
-                    var errorContext = new ValidationErrorContext()
+                    var errorContext = new ValidationError()
                     {
                         Name = string.Empty,
                         Path = context.CurrentValidationPath,
@@ -1475,7 +1475,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
             if (errorMessage is not null)
             {
-                var errorContext = new ValidationErrorContext()
+                var errorContext = new ValidationError()
                 {
                     Name = Name,
                     Path = context.CurrentValidationPath,
@@ -1713,7 +1713,7 @@ namespace Microsoft.Extensions.Validation.Generated
             if (errorMessage is not null)
             {
                 var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                var errorContext = new ValidationErrorContext()
+                var errorContext = new ValidationError()
                 {
                     Name = Name,
                     Path = key,
