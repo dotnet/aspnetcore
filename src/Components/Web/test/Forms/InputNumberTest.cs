@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -152,4 +154,197 @@ public class InputNumberTest
             await InvokeAsync(() => { base.CurrentValueAsString = value; });
         }
     }
+
+    [Theory]
+    [InlineData("1e-6")]
+    [InlineData("2E-06")]
+    [InlineData("3.5e10")]
+    [InlineData("-4.2E-03")]
+    [InlineData("4E+8")]
+    public async Task InputNumber_Double_AcceptsScientificNotation(string input)
+    {
+        var model = new TestModelDouble();
+        var rootComponent = new TestInputHostComponent<double, TestInputNumberComponentDouble>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.Value,
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync(input);
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Empty(validationMessages);
+    }
+
+    [Theory]
+    [InlineData("1e-6")]
+    [InlineData("2E-06")]
+    [InlineData("3.5e4")]
+    [InlineData("-4.25E-03")]
+    [InlineData("4E+8")]
+    public async Task InputNumber_Float_AcceptsScientificNotation(string input)
+    {
+        var model = new TestModelFloat();
+        var rootComponent = new TestInputHostComponent<float, TestInputNumberComponentFloat>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.Value,
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync(input);
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Empty(validationMessages);
+    }
+
+    [Theory]
+    [InlineData("1e-6")]
+    [InlineData("2E-06")]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task InputNumber_NullableDouble_AcceptsScientificNotationAndEmpty(string? input)
+    {
+        var model = new TestModelNullableDouble();
+        var rootComponent = new TestInputHostComponent<double?, TestInputNumberComponentNullableDouble>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.Value,
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync(input ?? "");
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Empty(validationMessages);
+    }
+
+    [Theory]
+    [InlineData("1e-6")]
+    [InlineData("2E-06")]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task InputNumber_NullableFloat_AcceptsScientificNotationAndEmpty(string? input)
+    {
+        var model = new TestModelNullableFloat();
+        var rootComponent = new TestInputHostComponent<float?, TestInputNumberComponentNullableFloat>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.Value,
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync(input ?? "");
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.Empty(validationMessages);
+    }
+
+    [Theory]
+    [InlineData("2E")]
+    [InlineData("2E-")]
+    [InlineData("abc")]
+    [InlineData("1.2.3")]
+    public async Task InputNumber_Double_RejectsInvalidScientificNotation(string input)
+    {
+        var model = new TestModelDouble { Value = 1.0 }; // Set initial value
+        var rootComponent = new TestInputHostComponent<double, TestInputNumberComponentDouble>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.Value,
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var initialValue = model.Value;
+
+        await inputComponent.SetCurrentValueAsStringAsync(input);
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.NotEmpty(validationMessages);
+        Assert.Contains("must be a number", validationMessages.First());
+        Assert.Equal(initialValue, model.Value); // Value should remain unchanged
+    }
+
+    [Theory]
+    [InlineData("2E")]
+    [InlineData("2E-")]
+    [InlineData("abc")]
+    [InlineData("1.2.3")]
+    public async Task InputNumber_Float_RejectsInvalidScientificNotation(string input)
+    {
+        var model = new TestModelFloat { Value = 1.0f }; // Set initial value
+        var rootComponent = new TestInputHostComponent<float, TestInputNumberComponentFloat>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.Value,
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var initialValue = model.Value;
+
+        await inputComponent.SetCurrentValueAsStringAsync(input);
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.NotEmpty(validationMessages);
+        Assert.Contains("must be a number", validationMessages.First());
+        Assert.Equal(initialValue, model.Value); // Value should remain unchanged
+    }
+
+    private class TestModelDouble
+    {
+        public double Value { get; set; }
+    }
+
+    private class TestModelFloat
+    {
+        public float Value { get; set; }
+    }
+
+    private class TestModelNullableDouble
+    {
+        public double? Value { get; set; }
+    }
+
+    private class TestModelNullableFloat
+    {
+        public float? Value { get; set; }
+    }
+
+    private class TestInputNumberComponentDouble : InputNumber<double>
+    {
+        public async Task SetCurrentValueAsStringAsync(string value)
+        {
+            await InvokeAsync(() => { base.CurrentValueAsString = value; });
+        }
+    }
+
+    private class TestInputNumberComponentFloat : InputNumber<float>
+    {
+        public async Task SetCurrentValueAsStringAsync(string value)
+        {
+            await InvokeAsync(() => { base.CurrentValueAsString = value; });
+        }
+    }
+
+    private class TestInputNumberComponentNullableDouble : InputNumber<double?>
+    {
+        public async Task SetCurrentValueAsStringAsync(string value)
+        {
+            await InvokeAsync(() => { base.CurrentValueAsString = value; });
+        }
+    }
+
+    private class TestInputNumberComponentNullableFloat : InputNumber<float?>
+    {
+        public async Task SetCurrentValueAsStringAsync(string value)
+        {
+            await InvokeAsync(() => { base.CurrentValueAsString = value; });
+        }
+    }
+
 }
