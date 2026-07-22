@@ -1,19 +1,7 @@
-/// <summary>
-/// Contains validation information for a member of a type.
-/// </summary>
 file abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePropertyInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
-    /// <summary>
-    /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
-    /// </summary>
-    /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
-    /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
-    /// <param name="name">The property name.</param>
-    /// <param name="displayNameInfo">An optional strategy that resolves the
-    /// display name for the property at validation time. When <see langword="null"/>, the
-    /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatablePropertyInfo(
         [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         Type declaringType,
@@ -27,35 +15,18 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePrope
         DisplayNameInfo = displayNameInfo;
     }
 
-    /// <summary>
-    /// Gets the type that declares the property.
-    /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
     internal Type DeclaringType { get; }
 
-    /// <summary>
-    /// Gets the property type.
-    /// </summary>
     internal Type PropertyType { get; }
 
-    /// <summary>
-    /// Gets the property name.
-    /// </summary>
     internal string Name { get; }
 
-    /// <summary>
-    /// Gets the strategy that resolves the display name for the property at validation time,
-    /// or <see langword="null"/> when no display name information was supplied.
-    /// </summary>
     internal DisplayNameInfo? DisplayNameInfo { get; }
 
     private PropertyInfo Property
         => DeclaringType.GetProperty(Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
 
-    /// <summary>
-    /// Gets the validation attributes for this property.
-    /// </summary>
-    /// <returns>An array of validation attributes to apply to this property.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     private void ValidateDepth(ValidateContext context)

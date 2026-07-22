@@ -1,6 +1,3 @@
-/// <summary>
-/// Contains validation information for a type.
-/// </summary>
 file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
 {
     private readonly int _membersCount;
@@ -8,15 +5,6 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
 
     private static readonly object _throwawayObjectInstance = new();
 
-    /// <summary>
-    /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
-    /// </summary>
-    /// <param name="type">The type being validated.</param>
-    /// <param name="members">The members that can be validated.</param>
-    /// <param name="displayNameInfo">An optional strategy that resolves the
-    /// display name for the type at validation time. When <see langword="null"/>, the validation
-    /// pipeline uses <see cref="System.Reflection.MemberInfo.Name"/> of <paramref name="type"/>
-    /// as the display name.</param>
     protected ValidatableTypeInfo(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
         IReadOnlyList<ValidatablePropertyInfo> members,
@@ -29,51 +17,15 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
         _implementedInterfaces = type.GetInterfaces();
     }
 
-    /// <summary>
-    /// Gets the validation attributes applied to this type.
-    /// </summary>
-    /// <returns>An array of validation attributes to apply to this type.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
-    /// <summary>
-    /// The type being validated.
-    /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
     internal Type Type { get; }
 
-    /// <summary>
-    /// The members that can be validated.
-    /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
-    /// <summary>
-    /// Gets the strategy that resolves the display name for the type at validation time,
-    /// or <see langword="null"/> when no display name information was supplied.
-    /// </summary>
     internal DisplayNameInfo? DisplayNameInfo { get; }
 
-    /// <summary>
-    /// Finds the <see cref="ValidatablePropertyInfo"/> for a member with the specified
-    /// <paramref name="propertyName"/>, including members inherited from base types or implemented
-    /// interfaces.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Members declared directly on <see cref="Type"/> take precedence over members inherited
-    /// from super-types, matching the order in which <see cref="ValidateAsync(object?, ValidateContext, CancellationToken)"/>
-    /// visits members.
-    /// </para>
-    /// <para>
-    /// Inherited members are resolved by looking up each super-type via
-    /// <paramref name="validationOptions"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
-    /// are not registered with a resolver are silently skipped.
-    /// </para>
-    /// </remarks>
-    /// <param name="propertyName">The CLR name of the property to find.</param>
-    /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
-    /// <param name="validatablePropertyInfo">The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
-    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</param>
-    /// <returns>True if the property was found. Otherwise, false.</returns>
     public bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
     {
         if (FindLocalMember(propertyName) is { } localMember)
@@ -131,7 +83,6 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
         }
     }
 
-    /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         if (value is null)
@@ -192,7 +143,6 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
         await ValidateValidatableObjectInterfaceAsync(value, context, validationContext, cancellationToken);
     }
 
-    /// <inheritdoc />
     public virtual void Validate(object? value, ValidateContext context)
     {
         if (value == null)

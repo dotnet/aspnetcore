@@ -369,69 +369,18 @@ namespace Microsoft.Extensions.Validation.Generated
         }
     }
 
-    /// <summary>
-    /// Resolves the display name of a validated member (property, parameter, or type).
-    /// Each validatable property, parameter, and type may carry a single <see cref="DisplayNameInfo"/>
-    /// instance that encapsulates the strategy for producing its display name at validation time.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Implementations encode a single source of the display name (for example, a literal value from
-    /// <see cref="DisplayAttribute.Name"/>, a static resource accessor for
-    /// <c>[Display(ResourceType = ..., Name = ...)]</c>, or a custom strategy). The validation
-    /// pipeline calls <see cref="GetDisplayName(ValidateContext, string, Type?)"/> once per
-    /// member validation and uses the result, falling back to the CLR member name when the
-    /// implementation returns <see langword="null"/>.
-    /// </para>
-    /// <para>
-    /// Implementations may participate in localization by inspecting
-    /// <see cref="ValidationOptions.Localizer"/> on
-    /// <see cref="ValidateContext.ValidationOptions"/>. Implementations that source their value
-    /// from a static resource (the <see cref="DisplayAttribute.ResourceType"/> path) typically
-    /// bypass <see cref="IValidationLocalizer"/> because the resource lookup is the canonical
-    /// source for the localized name.
-    /// </para>
-    /// </remarks>
     file abstract class DisplayNameInfo
     {
-        /// <summary>
-        /// Resolves the display name to use when reporting validation errors for the member.
-        /// </summary>
-        /// <param name="context">The current validation context. Provides access to
-        /// <see cref="ValidationOptions.Localizer"/> for implementations that delegate to
-        /// <see cref="IValidationLocalizer"/>.</param>
-        /// <param name="memberName">The CLR member name (property name, parameter name, or
-        /// type name) being validated. Implementations may use this as a fallback display name
-        /// or as a localization lookup key.</param>
-        /// <param name="type">The type that declares the member for property-level validation,
-        /// the validated type itself for type-level validation, or <see langword="null"/>
-        /// for parameter validation.</param>
-        /// <returns>The display name for the member, or <see langword="null"/> when no value can
-        /// be produced. The validation pipeline falls back to <paramref name="memberName"/> in
-        /// the <see langword="null"/> case.</returns>
         public abstract string? GetDisplayName(ValidateContext context, string memberName, Type? type);
     }
 
-    /// <summary>
-    /// Provides the shared validation logic for <see cref="ValidatableTypeInfo"/>,
-    /// <see cref="ValidatablePropertyInfo"/> and <see cref="ValidatableParameterInfo"/>.
-    /// </summary>
-    /// <remarks>
-    /// All helpers exposed by this type interact with <see cref="ValidateContext"/> exclusively through its
-    /// public surface, so neither this base class nor its derived types depend on any internal API.
-    /// </remarks>
+
     file abstract class ValidatableInfo
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ValidatableInfo"/> class.
-        /// </summary>
         protected ValidatableInfo()
         {
         }
 
-        /// <summary>
-        /// Reports a validation error produced by <paramref name="attribute"/> into <paramref name="context"/>.
-        /// </summary>
         private protected abstract void ReportError(
             ValidateContext context,
             string displayName,
@@ -439,9 +388,6 @@ namespace Microsoft.Extensions.Validation.Generated
             ValidationAttribute attribute,
             ValidationResult result);
 
-        /// <summary>
-        /// Determines whether the specified type is an enumerable type (other than <see cref="string"/>).
-        /// </summary>
         private protected static bool IsEnumerable(Type type)
         {
             // Check if type itself is an IEnumerable
@@ -470,9 +416,6 @@ namespace Microsoft.Extensions.Validation.Generated
             return false;
         }
 
-        /// <summary>
-        /// Determines whether the specified type implements the given interface.
-        /// </summary>
         private protected static bool ImplementsInterface(Type type, Type interfaceType)
         {
             ArgumentNullException.ThrowIfNull(type);
@@ -486,9 +429,6 @@ namespace Microsoft.Extensions.Validation.Generated
             return interfaceType.IsAssignableFrom(type);
         }
 
-        /// <summary>
-        /// Tries to get the <see cref="RequiredAttribute"/> from the specified array of validation attributes.
-        /// </summary>
         private protected static bool TryGetRequiredAttribute(ValidationAttribute[] attributes, [NotNullWhen(true)] out RequiredAttribute? requiredAttribute)
         {
             foreach (var attribute in attributes)
@@ -504,9 +444,6 @@ namespace Microsoft.Extensions.Validation.Generated
             return false;
         }
 
-        /// <summary>
-        /// Resolves the (optionally localized) error message for the specified attribute result.
-        /// </summary>
         private protected static string? ResolveAttributeErrorMessage(
             ValidateContext context,
             string memberName,
@@ -531,10 +468,6 @@ namespace Microsoft.Extensions.Validation.Generated
             return context.ValidationOptions.Localizer.ResolveErrorMessage(localizationContext) ?? result.ErrorMessage;
         }
 
-        /// <summary>
-        /// Validates <paramref name="value"/> against <paramref name="validationAttributes"/>, running synchronous
-        /// attributes first and only then any asynchronous attributes.
-        /// </summary>
         private protected async Task ValidateAttributesAsync(
             ValidateContext context,
             ValidationAttribute[] validationAttributes,
@@ -556,9 +489,6 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        /// <summary>
-        /// Validates <paramref name="value"/> against all <paramref name="validationAttributes"/> synchronously.
-        /// </summary>
         private protected void ValidateAllAttributesSynchronously(
             ValidateContext context,
             ValidationAttribute[] validationAttributes,
@@ -672,14 +602,6 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        /// <summary>
-        /// Coordinates validations that may run concurrently once they go asynchronous.
-        /// Reuses a single <see cref="ValidateContext"/> while validations complete synchronously and
-        /// clones it only after one goes async, so two concurrently-running validations never share a context.
-        /// </summary>
-        /// <remarks>
-        /// The clone is created and merged back using only the public surface of <see cref="ValidateContext"/>.
-        /// </remarks>
         private protected struct AsyncValidationTracker
         {
             private readonly ValidateContext _originalContext;
@@ -771,9 +693,7 @@ namespace Microsoft.Extensions.Validation.Generated
         }
     }
 
-    /// <summary>
-    /// Contains validation information for a type.
-    /// </summary>
+
     file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
     {
         private readonly int _membersCount;
@@ -781,15 +701,6 @@ namespace Microsoft.Extensions.Validation.Generated
 
         private static readonly object _throwawayObjectInstance = new();
 
-        /// <summary>
-        /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
-        /// </summary>
-        /// <param name="type">The type being validated.</param>
-        /// <param name="members">The members that can be validated.</param>
-        /// <param name="displayNameInfo">An optional strategy that resolves the
-        /// display name for the type at validation time. When <see langword="null"/>, the validation
-        /// pipeline uses <see cref="System.Reflection.MemberInfo.Name"/> of <paramref name="type"/>
-        /// as the display name.</param>
         protected ValidatableTypeInfo(
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
             IReadOnlyList<ValidatablePropertyInfo> members,
@@ -802,51 +713,15 @@ namespace Microsoft.Extensions.Validation.Generated
             _implementedInterfaces = type.GetInterfaces();
         }
 
-        /// <summary>
-        /// Gets the validation attributes applied to this type.
-        /// </summary>
-        /// <returns>An array of validation attributes to apply to this type.</returns>
         protected abstract ValidationAttribute[] GetValidationAttributes();
 
-        /// <summary>
-        /// The type being validated.
-        /// </summary>
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
         internal Type Type { get; }
 
-        /// <summary>
-        /// The members that can be validated.
-        /// </summary>
         internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
-        /// <summary>
-        /// Gets the strategy that resolves the display name for the type at validation time,
-        /// or <see langword="null"/> when no display name information was supplied.
-        /// </summary>
         internal DisplayNameInfo? DisplayNameInfo { get; }
 
-        /// <summary>
-        /// Finds the <see cref="ValidatablePropertyInfo"/> for a member with the specified
-        /// <paramref name="propertyName"/>, including members inherited from base types or implemented
-        /// interfaces.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Members declared directly on <see cref="Type"/> take precedence over members inherited
-        /// from super-types, matching the order in which <see cref="ValidateAsync(object?, ValidateContext, CancellationToken)"/>
-        /// visits members.
-        /// </para>
-        /// <para>
-        /// Inherited members are resolved by looking up each super-type via
-        /// <paramref name="validationOptions"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
-        /// are not registered with a resolver are silently skipped.
-        /// </para>
-        /// </remarks>
-        /// <param name="propertyName">The CLR name of the property to find.</param>
-        /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
-        /// <param name="validatablePropertyInfo">The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
-        /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</param>
-        /// <returns>True if the property was found. Otherwise, false.</returns>
         public bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
         {
             if (FindLocalMember(propertyName) is { } localMember)
@@ -904,7 +779,6 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        /// <inheritdoc />
         public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
         {
             if (value is null)
@@ -965,7 +839,6 @@ namespace Microsoft.Extensions.Validation.Generated
             await ValidateValidatableObjectInterfaceAsync(value, context, validationContext, cancellationToken);
         }
 
-        /// <inheritdoc />
         public virtual void Validate(object? value, ValidateContext context)
         {
             if (value == null)
@@ -1209,22 +1082,11 @@ namespace Microsoft.Extensions.Validation.Generated
         }
     }
 
-    /// <summary>
-    /// Contains validation information for a member of a type.
-    /// </summary>
+
     file abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePropertyInfo
     {
         private RequiredAttribute? _requiredAttribute;
 
-        /// <summary>
-        /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
-        /// </summary>
-        /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
-        /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
-        /// <param name="name">The property name.</param>
-        /// <param name="displayNameInfo">An optional strategy that resolves the
-        /// display name for the property at validation time. When <see langword="null"/>, the
-        /// validation pipeline uses <paramref name="name"/> as the display name.</param>
         protected ValidatablePropertyInfo(
             [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
             Type declaringType,
@@ -1238,35 +1100,18 @@ namespace Microsoft.Extensions.Validation.Generated
             DisplayNameInfo = displayNameInfo;
         }
 
-        /// <summary>
-        /// Gets the type that declares the property.
-        /// </summary>
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         internal Type DeclaringType { get; }
 
-        /// <summary>
-        /// Gets the property type.
-        /// </summary>
         internal Type PropertyType { get; }
 
-        /// <summary>
-        /// Gets the property name.
-        /// </summary>
         internal string Name { get; }
 
-        /// <summary>
-        /// Gets the strategy that resolves the display name for the property at validation time,
-        /// or <see langword="null"/> when no display name information was supplied.
-        /// </summary>
         internal DisplayNameInfo? DisplayNameInfo { get; }
 
         private PropertyInfo Property
             => DeclaringType.GetProperty(Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
 
-        /// <summary>
-        /// Gets the validation attributes for this property.
-        /// </summary>
-        /// <returns>An array of validation attributes to apply to this property.</returns>
         protected abstract ValidationAttribute[] GetValidationAttributes();
 
         private void ValidateDepth(ValidateContext context)
@@ -1510,23 +1355,13 @@ namespace Microsoft.Extensions.Validation.Generated
         }
     }
 
-    /// <summary>
-    /// Contains validation information for a parameter.
-    /// </summary>
+
     file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatableParameterInfo
     {
         private RequiredAttribute? _requiredAttribute;
 
         private static readonly object _throwawayObjectInstance = new();
 
-        /// <summary>
-        /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
-        /// </summary>
-        /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
-        /// <param name="name">The parameter name.</param>
-        /// <param name="displayNameInfo">An optional strategy that resolves the
-        /// display name for the parameter at validation time. When <see langword="null"/>, the
-        /// validation pipeline uses <paramref name="name"/> as the display name.</param>
         protected ValidatableParameterInfo(
             Type parameterType,
             string name,
@@ -1537,26 +1372,12 @@ namespace Microsoft.Extensions.Validation.Generated
             DisplayNameInfo = displayNameInfo;
         }
 
-        /// <summary>
-        /// Gets the parameter type.
-        /// </summary>
         internal Type ParameterType { get; }
 
-        /// <summary>
-        /// Gets the parameter name.
-        /// </summary>
         internal string Name { get; }
 
-        /// <summary>
-        /// Gets the strategy that resolves the display name for the parameter at validation time,
-        /// or <see langword="null"/> when no display name information was supplied.
-        /// </summary>
         internal DisplayNameInfo? DisplayNameInfo { get; }
 
-        /// <summary>
-        /// Gets the validation attributes for this parameter.
-        /// </summary>
-        /// <returns>An array of validation attributes to apply to this parameter.</returns>
         protected abstract ValidationAttribute[] GetValidationAttributes();
 
         private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context, ValidationContext? validationContext, string displayName)
@@ -1582,11 +1403,6 @@ namespace Microsoft.Extensions.Validation.Generated
                 ? ValidationResult.Success
                 : new ValidationResult(attribute.FormatErrorMessage(displayName), null);
 
-        /// <inheritdoc />
-        /// <remarks>
-        /// If the parameter is a collection, each item in the collection will be validated.
-        /// If the parameter is not a collection but has a validatable type, the single value will be validated.
-        /// </remarks>
         public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
         {
             var validationAttributes = GetValidationAttributes();
@@ -1659,11 +1475,6 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        /// <inheritdoc />
-        /// <remarks>
-        /// If the parameter is a collection, each item in the collection will be validated.
-        /// If the parameter is not a collection but has a validatable type, the single value will be validated.
-        /// </remarks>
         public virtual void Validate(object? value, ValidateContext context)
         {
             var validationAttributes = GetValidationAttributes();
@@ -1747,6 +1558,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
     }
+
 
     file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
     {

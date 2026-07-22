@@ -1,23 +1,9 @@
-/// <summary>
-/// Provides the shared validation logic for <see cref="ValidatableTypeInfo"/>,
-/// <see cref="ValidatablePropertyInfo"/> and <see cref="ValidatableParameterInfo"/>.
-/// </summary>
-/// <remarks>
-/// All helpers exposed by this type interact with <see cref="ValidateContext"/> exclusively through its
-/// public surface, so neither this base class nor its derived types depend on any internal API.
-/// </remarks>
 file abstract class ValidatableInfo
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ValidatableInfo"/> class.
-    /// </summary>
     protected ValidatableInfo()
     {
     }
 
-    /// <summary>
-    /// Reports a validation error produced by <paramref name="attribute"/> into <paramref name="context"/>.
-    /// </summary>
     private protected abstract void ReportError(
         ValidateContext context,
         string displayName,
@@ -25,9 +11,6 @@ file abstract class ValidatableInfo
         ValidationAttribute attribute,
         ValidationResult result);
 
-    /// <summary>
-    /// Determines whether the specified type is an enumerable type (other than <see cref="string"/>).
-    /// </summary>
     private protected static bool IsEnumerable(Type type)
     {
         // Check if type itself is an IEnumerable
@@ -56,9 +39,6 @@ file abstract class ValidatableInfo
         return false;
     }
 
-    /// <summary>
-    /// Determines whether the specified type implements the given interface.
-    /// </summary>
     private protected static bool ImplementsInterface(Type type, Type interfaceType)
     {
         ArgumentNullException.ThrowIfNull(type);
@@ -72,9 +52,6 @@ file abstract class ValidatableInfo
         return interfaceType.IsAssignableFrom(type);
     }
 
-    /// <summary>
-    /// Tries to get the <see cref="RequiredAttribute"/> from the specified array of validation attributes.
-    /// </summary>
     private protected static bool TryGetRequiredAttribute(ValidationAttribute[] attributes, [NotNullWhen(true)] out RequiredAttribute? requiredAttribute)
     {
         foreach (var attribute in attributes)
@@ -90,9 +67,6 @@ file abstract class ValidatableInfo
         return false;
     }
 
-    /// <summary>
-    /// Resolves the (optionally localized) error message for the specified attribute result.
-    /// </summary>
     private protected static string? ResolveAttributeErrorMessage(
         ValidateContext context,
         string memberName,
@@ -117,10 +91,6 @@ file abstract class ValidatableInfo
         return context.ValidationOptions.Localizer.ResolveErrorMessage(localizationContext) ?? result.ErrorMessage;
     }
 
-    /// <summary>
-    /// Validates <paramref name="value"/> against <paramref name="validationAttributes"/>, running synchronous
-    /// attributes first and only then any asynchronous attributes.
-    /// </summary>
     private protected async Task ValidateAttributesAsync(
         ValidateContext context,
         ValidationAttribute[] validationAttributes,
@@ -142,9 +112,6 @@ file abstract class ValidatableInfo
         }
     }
 
-    /// <summary>
-    /// Validates <paramref name="value"/> against all <paramref name="validationAttributes"/> synchronously.
-    /// </summary>
     private protected void ValidateAllAttributesSynchronously(
         ValidateContext context,
         ValidationAttribute[] validationAttributes,
@@ -258,14 +225,6 @@ file abstract class ValidatableInfo
         }
     }
 
-    /// <summary>
-    /// Coordinates validations that may run concurrently once they go asynchronous.
-    /// Reuses a single <see cref="ValidateContext"/> while validations complete synchronously and
-    /// clones it only after one goes async, so two concurrently-running validations never share a context.
-    /// </summary>
-    /// <remarks>
-    /// The clone is created and merged back using only the public surface of <see cref="ValidateContext"/>.
-    /// </remarks>
     private protected struct AsyncValidationTracker
     {
         private readonly ValidateContext _originalContext;
