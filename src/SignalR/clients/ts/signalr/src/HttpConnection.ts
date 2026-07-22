@@ -41,10 +41,10 @@ export interface IAvailableTransport {
 }
 
 const MAX_REDIRECTS = 100;
-const MAX_TOKEN_LIFETIME_IN_MILLISECONDS = Number.MAX_SAFE_INTEGER;
+const MAX_TOKEN_LIFETIME_IN_SECONDS = Math.floor(Number.MAX_SAFE_INTEGER / 1000);
 
 interface IAuthenticationRefreshFeature {
-    initialTokenLifetimeInMilliseconds?: number;
+    initialTokenLifetimeInSeconds?: number;
     refreshAuthentication(): Promise<number | undefined>;
 }
 
@@ -68,7 +68,7 @@ export class HttpConnection implements IConnection {
     private _sendQueue?: TransportSendQueue;
     private _connectionToken?: string;
     private _connectionUrl?: string;
-    private _initialTokenLifetimeInMilliseconds?: number;
+    private _initialTokenLifetimeInSeconds?: number;
     private _transportAccessTokenFromServer: boolean = false;
 
     public readonly features: any = {};
@@ -239,7 +239,7 @@ export class HttpConnection implements IConnection {
         let url = this.baseUrl;
         this._connectionToken = undefined;
         this._connectionUrl = undefined;
-        this._initialTokenLifetimeInMilliseconds = undefined;
+        this._initialTokenLifetimeInSeconds = undefined;
         this._transportAccessTokenFromServer = false;
         delete this.features.authenticationRefresh;
         this._accessTokenFactory = this._options.accessTokenFactory;
@@ -358,9 +358,9 @@ export class HttpConnection implements IConnection {
                 return Promise.reject(new FailedToNegotiateWithServerError("Client didn't negotiate Stateful Reconnect but the server did."));
             }
 
-            const tokenLifetimeInMilliseconds = getAuthenticationTokenLifetimeInMilliseconds(negotiateResponse.tokenLifetimeSeconds);
-            if (tokenLifetimeInMilliseconds !== undefined) {
-                this._initialTokenLifetimeInMilliseconds = tokenLifetimeInMilliseconds;
+            const tokenLifetimeInSeconds = getAuthenticationTokenLifetimeInSeconds(negotiateResponse.tokenLifetimeSeconds);
+            if (tokenLifetimeInSeconds !== undefined) {
+                this._initialTokenLifetimeInSeconds = tokenLifetimeInSeconds;
             }
 
             return negotiateResponse;
@@ -403,7 +403,7 @@ export class HttpConnection implements IConnection {
         this._connectionUrl = this.baseUrl;
 
         const authenticationRefreshFeature: IAuthenticationRefreshFeature = {
-            initialTokenLifetimeInMilliseconds: this._initialTokenLifetimeInMilliseconds,
+            initialTokenLifetimeInSeconds: this._initialTokenLifetimeInSeconds,
             refreshAuthentication: () => this._refreshAuthentication(),
         };
         this.features.authenticationRefresh = authenticationRefreshFeature;
@@ -450,7 +450,7 @@ export class HttpConnection implements IConnection {
             }
         }
 
-        return getAuthenticationTokenLifetimeInMilliseconds(refreshResponse.tokenLifetimeSeconds);
+        return getAuthenticationTokenLifetimeInSeconds(refreshResponse.tokenLifetimeSeconds);
     }
 
     private async _createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<INegotiateResponse> {
@@ -704,12 +704,12 @@ function transportMatches(requestedTransport: HttpTransportType | undefined, act
     return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
 }
 
-function getAuthenticationTokenLifetimeInMilliseconds(tokenLifetimeSeconds: unknown): number | undefined {
+function getAuthenticationTokenLifetimeInSeconds(tokenLifetimeSeconds: unknown): number | undefined {
     if (typeof tokenLifetimeSeconds !== "number" || !Number.isFinite(tokenLifetimeSeconds) || tokenLifetimeSeconds <= 0) {
         return undefined;
     }
 
-    return Math.min(tokenLifetimeSeconds * 1000, MAX_TOKEN_LIFETIME_IN_MILLISECONDS);
+    return Math.min(tokenLifetimeSeconds, MAX_TOKEN_LIFETIME_IN_SECONDS);
 }
 
 /** @private */

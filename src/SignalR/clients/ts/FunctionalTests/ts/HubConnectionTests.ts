@@ -655,9 +655,9 @@ describe("hubConnection", () => {
                     expect(await hubConnection.invoke("GetUserClaim", "scope")).toBe("first");
 
                     jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken?user=stable-user&scope=second");
-                    const tokenLifetimeInMilliseconds = await hubConnection.refreshAuthentication();
+                    const tokenLifetimeInSeconds = await hubConnection.refreshAuthentication();
 
-                    expect(tokenLifetimeInMilliseconds).toBeGreaterThan(0);
+                    expect(tokenLifetimeInSeconds).toBeGreaterThan(0);
                     expect(await hubConnection.invoke("GetUserNameIdentifier")).toBe("stable-user");
                     expect(await hubConnection.invoke("GetUserClaim", "scope")).toBe("second");
 

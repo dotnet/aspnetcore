@@ -20,7 +20,7 @@ const DEFAULT_AUTHENTICATION_REFRESH_BEFORE_EXPIRATION_IN_MS = 5 * 60 * 1000;
 const MAX_AUTHENTICATION_REFRESH_INTERVAL_IN_MS = 2_147_483_647;
 
 interface IAuthenticationRefreshFeature {
-    initialTokenLifetimeInMilliseconds?: number;
+    initialTokenLifetimeInSeconds?: number;
     refreshAuthentication(): Promise<number | undefined>;
 }
 
@@ -613,7 +613,7 @@ export class HubConnection {
 
     /** Refreshes the authentication state for this connection.
      *
-     * @returns A Promise that resolves with the new server-reported token lifetime in milliseconds, or undefined when the server does not report one.
+     * @returns A Promise that resolves with the new server-reported token lifetime in seconds, or undefined when the server does not report one.
      */
     public async refreshAuthentication(): Promise<number | undefined> {
         if (this._connectionState !== HubConnectionState.Connected) {
@@ -625,9 +625,9 @@ export class HubConnection {
             throw new Error("Authentication refresh is only supported with HTTP-based connections.");
         }
 
-        let newTokenLifetimeInMilliseconds: number | undefined;
+        let newTokenLifetimeInSeconds: number | undefined;
         try {
-            newTokenLifetimeInMilliseconds = await authenticationRefreshFeature.refreshAuthentication();
+            newTokenLifetimeInSeconds = await authenticationRefreshFeature.refreshAuthentication();
         } catch (e) {
             await this._invokeAuthenticationRefreshFailed(e);
             throw e;
@@ -636,12 +636,12 @@ export class HubConnection {
         if (this._connectionState === HubConnectionState.Connected &&
             this.connection.features.authenticationRefresh === authenticationRefreshFeature &&
             this._isAutoAuthenticationRefreshEnabled() &&
-            isValidAuthenticationTokenLifetime(newTokenLifetimeInMilliseconds)) {
-            this._scheduleAuthenticationRefresh(newTokenLifetimeInMilliseconds);
+            isValidAuthenticationTokenLifetime(newTokenLifetimeInSeconds)) {
+            this._scheduleAuthenticationRefresh(newTokenLifetimeInSeconds);
         }
 
-        await this._invokeAuthenticationRefreshed(newTokenLifetimeInMilliseconds);
-        return newTokenLifetimeInMilliseconds;
+        await this._invokeAuthenticationRefreshed(newTokenLifetimeInSeconds);
+        return newTokenLifetimeInSeconds;
     }
 
     private _processIncomingData(data: any) {
@@ -1040,9 +1040,9 @@ export class HubConnection {
         }
 
         const authenticationRefreshFeature = this.connection.features.authenticationRefresh as IAuthenticationRefreshFeature | undefined;
-        const initialTokenLifetimeInMilliseconds = authenticationRefreshFeature?.initialTokenLifetimeInMilliseconds;
-        if (isValidAuthenticationTokenLifetime(initialTokenLifetimeInMilliseconds)) {
-            this._scheduleAuthenticationRefresh(initialTokenLifetimeInMilliseconds);
+        const initialTokenLifetimeInSeconds = authenticationRefreshFeature?.initialTokenLifetimeInSeconds;
+        if (isValidAuthenticationTokenLifetime(initialTokenLifetimeInSeconds)) {
+            this._scheduleAuthenticationRefresh(initialTokenLifetimeInSeconds);
         }
     }
 
@@ -1050,9 +1050,10 @@ export class HubConnection {
         return !!this._authenticationRefreshOptions && this._authenticationRefreshOptions.enableAutoRefresh !== false;
     }
 
-    private _scheduleAuthenticationRefresh(tokenLifetimeInMilliseconds: number): void {
+    private _scheduleAuthenticationRefresh(tokenLifetimeInSeconds: number): void {
         const refreshBeforeExpirationInMilliseconds = this._authenticationRefreshOptions?.refreshBeforeExpirationInMilliseconds ??
             DEFAULT_AUTHENTICATION_REFRESH_BEFORE_EXPIRATION_IN_MS;
+        const tokenLifetimeInMilliseconds = tokenLifetimeInSeconds * 1000;
         let refreshIn: number;
 
         if (tokenLifetimeInMilliseconds <= refreshBeforeExpirationInMilliseconds * 2) {
@@ -1091,14 +1092,14 @@ export class HubConnection {
 
         try {
             this._logger.log(LogLevel.Debug, "Refreshing authentication.");
-            const newTokenLifetimeInMilliseconds = await this.refreshAuthentication();
-            this._logger.log(LogLevel.Debug, `Authentication refresh completed. New token lifetime: ${newTokenLifetimeInMilliseconds}.`);
+            const newTokenLifetimeInSeconds = await this.refreshAuthentication();
+            this._logger.log(LogLevel.Debug, `Authentication refresh completed. New token lifetime: ${newTokenLifetimeInSeconds}.`);
         } catch (e) {
             this._logger.log(LogLevel.Error, `Authentication refresh failed: ${getErrorString(e)}`);
         }
     }
 
-    private async _invokeAuthenticationRefreshed(newTokenLifetimeInMilliseconds: number | undefined): Promise<void> {
+    private async _invokeAuthenticationRefreshed(newTokenLifetimeInSeconds: number | undefined): Promise<void> {
         const callback = this._authenticationRefreshOptions?.onAuthenticationRefreshed;
         if (!callback) {
             return;
@@ -1106,7 +1107,7 @@ export class HubConnection {
 
         const context: AuthenticationRefreshedContext = {
             connection: this,
-            newTokenLifetimeInMilliseconds,
+            newTokenLifetimeInSeconds,
             refreshedAt: new Date(),
         };
 
@@ -1330,8 +1331,8 @@ export class HubConnection {
     }
 }
 
-function isValidAuthenticationTokenLifetime(tokenLifetimeInMilliseconds: number | undefined): tokenLifetimeInMilliseconds is number {
-    return typeof tokenLifetimeInMilliseconds === "number" &&
-        Number.isFinite(tokenLifetimeInMilliseconds) &&
-        tokenLifetimeInMilliseconds > 0;
+function isValidAuthenticationTokenLifetime(tokenLifetimeInSeconds: number | undefined): tokenLifetimeInSeconds is number {
+    return typeof tokenLifetimeInSeconds === "number" &&
+        Number.isFinite(tokenLifetimeInSeconds) &&
+        tokenLifetimeInSeconds > 0;
 }

@@ -23,8 +23,8 @@ export interface AuthenticationRefreshedContext {
     /** The connection whose authentication was refreshed. */
     connection: HubConnection;
 
-    /** The new token lifetime reported by the server, in milliseconds, or undefined if not provided. */
-    newTokenLifetimeInMilliseconds?: number;
+    /** The new token lifetime reported by the server, in seconds, or undefined if not provided. */
+    newTokenLifetimeInSeconds?: number;
 
     /** The time at which refresh completed. */
     refreshedAt: Date;

@@ -69,7 +69,7 @@ describe("HttpConnection", () => {
             try {
                 await connection.start(TransferFormat.Text);
 
-                expect(connection.features.authenticationRefresh.initialTokenLifetimeInMilliseconds).toBe(60_000);
+                expect(connection.features.authenticationRefresh.initialTokenLifetimeInSeconds).toBe(60);
             } finally {
                 transport.onclose!();
                 await connection.stop();
@@ -93,7 +93,7 @@ describe("HttpConnection", () => {
                 try {
                     await connection.start(TransferFormat.Text);
 
-                    expect(connection.features.authenticationRefresh.initialTokenLifetimeInMilliseconds).toBeUndefined();
+                    expect(connection.features.authenticationRefresh.initialTokenLifetimeInSeconds).toBeUndefined();
                 } finally {
                     transport.onclose!();
                     await connection.stop();
@@ -117,7 +117,7 @@ describe("HttpConnection", () => {
             try {
                 await connection.start(TransferFormat.Text);
 
-                expect(connection.features.authenticationRefresh.initialTokenLifetimeInMilliseconds).toBe(Number.MAX_SAFE_INTEGER);
+                expect(connection.features.authenticationRefresh.initialTokenLifetimeInSeconds).toBe(Math.floor(Number.MAX_SAFE_INTEGER / 1000));
             } finally {
                 transport.onclose!();
                 await connection.stop();
@@ -153,9 +153,9 @@ describe("HttpConnection", () => {
             try {
                 await connection.start(TransferFormat.Text);
 
-                const newTokenLifetimeInMilliseconds = await connection.features.authenticationRefresh.refreshAuthentication();
+                const newTokenLifetimeInSeconds = await connection.features.authenticationRefresh.refreshAuthentication();
 
-                expect(newTokenLifetimeInMilliseconds).toBe(42_000);
+                expect(newTokenLifetimeInSeconds).toBe(42);
                 expect(accessTokenFactoryCallCount).toBe(2);
                 expect(negotiateAuthorizationHeader).toBe("Bearer token1");
                 expect(refreshAuthorizationHeader).toBe("Bearer token2");
@@ -207,11 +207,11 @@ describe("HttpConnection", () => {
             try {
                 await connection.start(TransferFormat.Text);
 
-                expect(connection.features.authenticationRefresh.initialTokenLifetimeInMilliseconds).toBe(60_000);
+                expect(connection.features.authenticationRefresh.initialTokenLifetimeInSeconds).toBe(60);
 
-                const newTokenLifetimeInMilliseconds = await connection.features.authenticationRefresh.refreshAuthentication();
+                const newTokenLifetimeInSeconds = await connection.features.authenticationRefresh.refreshAuthentication();
 
-                expect(newTokenLifetimeInMilliseconds).toBe(42_000);
+                expect(newTokenLifetimeInSeconds).toBe(42);
                 expect(firstNegotiateAuthorizationHeader).toBe("Bearer app-token");
                 expect(redirectedNegotiateAuthorizationHeader).toBe("Bearer service-token");
                 expect(refreshAuthorizationHeader).toBe("Bearer app-token");

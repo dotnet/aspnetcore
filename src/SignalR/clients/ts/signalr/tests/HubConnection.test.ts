@@ -204,17 +204,17 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 connection.features.authenticationRefresh = {
-                    refreshAuthentication: () => Promise.resolve(60_000),
+                    refreshAuthentication: () => Promise.resolve(60),
                 };
 
                 let refreshedContextConnection: HubConnection | undefined;
-                let refreshedTokenLifetimeInMilliseconds: number | undefined;
+                let refreshedTokenLifetimeInSeconds: number | undefined;
                 let refreshedAt: Date | undefined;
                 const hubConnection = createHubConnection(connection, logger, undefined, {
                     enableAutoRefresh: false,
                     onAuthenticationRefreshed: (context) => {
                         refreshedContextConnection = context.connection;
-                        refreshedTokenLifetimeInMilliseconds = context.newTokenLifetimeInMilliseconds;
+                        refreshedTokenLifetimeInSeconds = context.newTokenLifetimeInSeconds;
                         refreshedAt = context.refreshedAt;
                     },
                 });
@@ -222,11 +222,11 @@ describe("HubConnection", () => {
                 try {
                     await hubConnection.start();
 
-                    const newTokenLifetimeInMilliseconds = await hubConnection.refreshAuthentication();
+                    const newTokenLifetimeInSeconds = await hubConnection.refreshAuthentication();
 
-                    expect(newTokenLifetimeInMilliseconds).toBe(60_000);
+                    expect(newTokenLifetimeInSeconds).toBe(60);
                     expect(refreshedContextConnection).toBe(hubConnection);
-                    expect(refreshedTokenLifetimeInMilliseconds).toBe(60_000);
+                    expect(refreshedTokenLifetimeInSeconds).toBe(60);
                     expect(refreshedAt).toBeInstanceOf(Date);
                 } finally {
                     await hubConnection.stop();
@@ -271,10 +271,10 @@ describe("HubConnection", () => {
                 let refreshCount = 0;
                 const connection = new TestConnection(true, true);
                 connection.features.authenticationRefresh = {
-                    initialTokenLifetimeInMilliseconds: 100_000,
+                    initialTokenLifetimeInSeconds: 100,
                     refreshAuthentication: () => {
                         refreshCount++;
-                        return Promise.resolve(120_000);
+                        return Promise.resolve(120);
                     },
                 };
 
@@ -309,7 +309,7 @@ describe("HubConnection", () => {
                 let refreshCount = 0;
                 const connection = new TestConnection(true, true);
                 connection.features.authenticationRefresh = {
-                    initialTokenLifetimeInMilliseconds: 10_000,
+                    initialTokenLifetimeInSeconds: 10,
                     refreshAuthentication: () => {
                         refreshCount++;
                         return Promise.resolve(undefined);
@@ -345,7 +345,7 @@ describe("HubConnection", () => {
                 let refreshCount = 0;
                 const connection = new TestConnection(true, true);
                 connection.features.authenticationRefresh = {
-                    initialTokenLifetimeInMilliseconds: 60_000,
+                    initialTokenLifetimeInSeconds: 60,
                     refreshAuthentication: () => {
                         refreshCount++;
                         return Promise.resolve(undefined);
@@ -374,7 +374,7 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection(true, true);
                 connection.features.authenticationRefresh = {
-                    initialTokenLifetimeInMilliseconds: 60_000,
+                    initialTokenLifetimeInSeconds: 60,
                     refreshAuthentication: () => Promise.resolve(undefined),
                 };
 
@@ -397,7 +397,7 @@ describe("HubConnection", () => {
                 const refreshed = new PromiseSource();
                 const connection = new TestConnection(true, true);
                 connection.features.authenticationRefresh = {
-                    initialTokenLifetimeInMilliseconds: 60_000,
+                    initialTokenLifetimeInSeconds: 60,
                     refreshAuthentication: () => {
                         refreshStarted.resolve();
                         return refreshResult.promise;
@@ -415,7 +415,7 @@ describe("HubConnection", () => {
                 await hubConnection.stop();
                 expect(jest.getTimerCount()).toBe(0);
 
-                refreshResult.resolve(120_000);
+                refreshResult.resolve(120);
                 await refreshed.promise;
                 await Promise.resolve();
 
@@ -447,12 +447,12 @@ describe("HubConnection", () => {
                     await refreshStarted.promise;
 
                     connection.features.authenticationRefresh = {
-                        refreshAuthentication: () => Promise.resolve(120_000),
+                        refreshAuthentication: () => Promise.resolve(120),
                     };
 
-                    refreshResult.resolve(120_000);
+                    refreshResult.resolve(120);
 
-                    expect(await refreshPromise).toBe(120_000);
+                    expect(await refreshPromise).toBe(120);
                     expect(jest.getTimerCount()).toBe(0);
                 } finally {
                     await hubConnection.stop();
@@ -468,7 +468,7 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection(true, true);
                 connection.features.authenticationRefresh = {
-                    initialTokenLifetimeInMilliseconds: 60_000,
+                    initialTokenLifetimeInSeconds: 60,
                     refreshAuthentication: () => Promise.reject(refreshError),
                 };
 
