@@ -216,7 +216,7 @@ public abstract class TextOutputFormatter : OutputFormatter
     }
 
     // There's no allocation-free way to sort an IList and we may have to filter anyway,
-    // so we're going to have to live with the copy + insertion sort.
+    // so we're going to have to live with the copy + sort.
     private static IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
     {
         var sortNeeded = false;
@@ -239,30 +239,19 @@ public abstract class TextOutputFormatter : OutputFormatter
             return values;
         }
 
-        var sorted = new List<StringWithQualityHeaderValue>();
+        var sorted = new List<StringWithQualityHeaderValue>(values.Count);
         for (var i = 0; i < values.Count; i++)
         {
             var value = values[i];
-            if (value.Quality == HeaderQuality.NoMatch)
+            if (value.Quality != HeaderQuality.NoMatch)
             {
-                // Exclude this one
-            }
-            else
-            {
-                // Doing an insertion sort.
-                var position = sorted.BinarySearch(value, StringWithQualityHeaderValueComparer.QualityComparer);
-                if (position >= 0)
-                {
-                    sorted.Insert(position + 1, value);
-                }
-                else
-                {
-                    sorted.Insert(~position, value);
-                }
+                sorted.Add(value);
             }
         }
 
-        // We want a descending sort, but BinarySearch does ascending
+        sorted.Sort(StringWithQualityHeaderValueComparer.QualityComparer);
+
+        // We want a descending sort, but List.Sort produces ascending order.
         sorted.Reverse();
         return sorted;
     }
