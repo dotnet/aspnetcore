@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -240,36 +239,54 @@ public abstract class TextOutputFormatter : OutputFormatter
             return values;
         }
 
-        var sorted = new List<StringWithQualityHeaderValue>(values.Count);
+        // Count the entries we're going to keep (everything except explicit q=0 rejections).
+        var count = 0;
         for (var i = 0; i < values.Count; i++)
         {
-            var value = values[i];
-            if (value.Quality != HeaderQuality.NoMatch)
+            if (values[i].Quality != HeaderQuality.NoMatch)
             {
-                sorted.Add(value);
+                count++;
             }
         }
 
-        // Sort in descending quality order in place over the list's backing array. QualityComparer
-        // produces an ascending order and treats equal-quality non-wildcard values as equal, and the
-        // framework sorts aren't stable, so we use an insertion sort (these header lists are tiny).
-        // This keeps the selection deterministic and, like the previous implementation, prefers the
-        // last header entry among equal-quality values.
-        var span = CollectionsMarshal.AsSpan(sorted);
-        for (var i = 1; i < span.Length; i++)
-        {
-            var current = span[i];
-            var j = i - 1;
-            while (j >= 0 &&
-                StringWithQualityHeaderValueComparer.QualityComparer.Compare(current, span[j]) >= 0)
-            {
-                span[j + 1] = span[j];
-                j--;
-            }
+        // Sort indices rather than the values themselves so we can use the framework's
+        // introspective sort (O(n log n) worst case) while still breaking equal-quality ties by the
+        // original header position. QualityComparer treats equal-quality non-wildcard values as
+        // equal and the framework sort isn't stable, so the explicit tie-break keeps the selection
+        // deterministic and, like the previous implementation, prefers the last header entry among
+        // equal-quality values. The index buffer is tiny and stack-allocated for the common case.
+        const int StackallocThreshold = 32;
+        Span<int> order = count <= StackallocThreshold ? stackalloc int[StackallocThreshold] : new int[count];
+        order = order[..count];
 
-            span[j + 1] = current;
+        var next = 0;
+        for (var i = 0; i < values.Count; i++)
+        {
+            if (values[i].Quality != HeaderQuality.NoMatch)
+            {
+                order[next++] = i;
+            }
+        }
+
+        order.Sort(new QualityDescendingComparer(values));
+
+        var sorted = new List<StringWithQualityHeaderValue>(count);
+        for (var i = 0; i < order.Length; i++)
+        {
+            sorted.Add(values[order[i]]);
         }
 
         return sorted;
+    }
+
+    // Orders indices into the source list by descending quality, using the original header position
+    // (larger index first) to break equal-quality ties so the result is deterministic.
+    private readonly struct QualityDescendingComparer(IList<StringWithQualityHeaderValue> values) : IComparer<int>
+    {
+        public int Compare(int x, int y)
+        {
+            var comparison = StringWithQualityHeaderValueComparer.QualityComparer.Compare(values[x], values[y]);
+            return comparison != 0 ? -comparison : y - x;
+        }
     }
 }
