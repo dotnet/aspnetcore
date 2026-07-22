@@ -24,10 +24,6 @@ public static class ValidationServiceCollectionExtensions
             {
                 configureOptions(options);
             }
-
-            // Support ParameterInfo resolution at runtime. Appended last so it runs after any
-            // user-registered resolvers.
-            options.Resolvers.Add(new RuntimeValidatableParameterInfoResolver());
         });
         return services;
     }
