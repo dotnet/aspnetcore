@@ -25,20 +25,6 @@ namespace System.Runtime.CompilerServices
 
 namespace Microsoft.Extensions.Validation.Generated
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.ComponentModel.DataAnnotations;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.IO.Pipelines;
-    using System.Linq;
-    using System.Reflection;
-    using System.Security.Claims;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.Generated.ValidatablePropertyInfo
     {
@@ -350,7 +336,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
     file abstract class DisplayNameInfo
     {
-        public abstract string? GetDisplayName(ValidateContext context, string memberName, Type? type);
+        public abstract string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type);
     }
 
 
@@ -361,20 +347,20 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         private protected abstract void ReportError(
-            ValidateContext context,
+            global::Microsoft.Extensions.Validation.ValidateContext context,
             string displayName,
             object? container,
-            ValidationAttribute attribute,
-            ValidationResult result);
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
+            global::System.ComponentModel.DataAnnotations.ValidationResult result);
 
-        private protected static bool IsEnumerable(Type type)
+        private protected static bool IsEnumerable(global::System.Type type)
         {
             // Check if type itself is an IEnumerable
             if (type.IsGenericType &&
-                (type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
-                type.GetGenericTypeDefinition() == typeof(ICollection<>) ||
-                type.GetGenericTypeDefinition() == typeof(List<>) ||
-                type.GetGenericTypeDefinition() == typeof(IList<>)))
+                (type.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.IEnumerable<>) ||
+                type.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.ICollection<>) ||
+                type.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.List<>) ||
+                type.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.IList<>)))
             {
                 return true;
             }
@@ -386,7 +372,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
 
             // Then evaluate if it implements IEnumerable and is not a string
-            if (typeof(IEnumerable).IsAssignableFrom(type) &&
+            if (typeof(global::System.Collections.IEnumerable).IsAssignableFrom(type) &&
                 type != typeof(string))
             {
                 return true;
@@ -395,24 +381,24 @@ namespace Microsoft.Extensions.Validation.Generated
             return false;
         }
 
-        private protected static bool ImplementsInterface(Type type, Type interfaceType)
+        private protected static bool ImplementsInterface(global::System.Type type, global::System.Type interfaceType)
         {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(interfaceType);
+            global::System.ArgumentNullException.ThrowIfNull(type);
+            global::System.ArgumentNullException.ThrowIfNull(interfaceType);
 
             if (!interfaceType.IsInterface)
             {
-                throw new ArgumentException($"Type {interfaceType.FullName} is not an interface.", nameof(interfaceType));
+                throw new global::System.ArgumentException($"Type {interfaceType.FullName} is not an interface.", nameof(interfaceType));
             }
 
             return interfaceType.IsAssignableFrom(type);
         }
 
-        private protected static bool TryGetRequiredAttribute(ValidationAttribute[] attributes, [NotNullWhen(true)] out RequiredAttribute? requiredAttribute)
+        private protected static bool TryGetRequiredAttribute(global::System.ComponentModel.DataAnnotations.ValidationAttribute[] attributes, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::System.ComponentModel.DataAnnotations.RequiredAttribute? requiredAttribute)
         {
             foreach (var attribute in attributes)
             {
-                if (attribute is RequiredAttribute requiredAttr)
+                if (attribute is global::System.ComponentModel.DataAnnotations.RequiredAttribute requiredAttr)
                 {
                     requiredAttribute = requiredAttr;
                     return true;
@@ -424,19 +410,19 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         private protected static string? ResolveAttributeErrorMessage(
-            ValidateContext context,
+            global::Microsoft.Extensions.Validation.ValidateContext context,
             string memberName,
             string displayName,
-            Type? declaringType,
-            ValidationAttribute attribute,
-            ValidationResult result)
+            global::System.Type? declaringType,
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
+            global::System.ComponentModel.DataAnnotations.ValidationResult result)
         {
             if (context.ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
             {
                 return result.ErrorMessage;
             }
 
-            var localizationContext = new ErrorMessageLocalizationContext
+            var localizationContext = new global::Microsoft.Extensions.Validation.ErrorMessageLocalizationContext
             {
                 MemberName = memberName,
                 DisplayName = displayName,
@@ -447,14 +433,14 @@ namespace Microsoft.Extensions.Validation.Generated
             return context.ValidationOptions.Localizer.ResolveErrorMessage(localizationContext) ?? result.ErrorMessage;
         }
 
-        private protected async Task ValidateAttributesAsync(
-            ValidateContext context,
-            ValidationAttribute[] validationAttributes,
+        private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
+            global::Microsoft.Extensions.Validation.ValidateContext context,
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes,
             object? value,
             object? container,
-            ValidationContext validationContext,
+            global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
             string displayName,
-            CancellationToken cancellationToken)
+            global::System.Threading.CancellationToken cancellationToken)
         {
             // NOTE: In case there are no async validation attributes, there should be no performance impact.
             // The async state machine is a class only in Debug builds. But in Release it's a struct.
@@ -469,11 +455,11 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         private protected void ValidateAllAttributesSynchronously(
-            ValidateContext context,
-            ValidationAttribute[] validationAttributes,
+            global::Microsoft.Extensions.Validation.ValidateContext context,
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes,
             object? value,
             object? container,
-            ValidationContext validationContext,
+            global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
             string displayName)
         {
             for (var i = 0; i < validationAttributes.Length; i++)
@@ -481,7 +467,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 var attribute = validationAttributes[i];
 
                 var result = attribute.GetValidationResult(value, validationContext);
-                if (result is not null && result != ValidationResult.Success)
+                if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
                 {
                     ReportError(context, displayName, container, attribute, result);
                 }
@@ -489,11 +475,11 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         private bool ValidateSynchronousOnly(
-            ValidateContext context,
-            ValidationAttribute[] validationAttributes,
+            global::Microsoft.Extensions.Validation.ValidateContext context,
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes,
             object? value,
             object? container,
-            ValidationContext validationContext,
+            global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
             string displayName)
         {
             bool hasErrors = false;
@@ -501,13 +487,13 @@ namespace Microsoft.Extensions.Validation.Generated
             {
                 var attribute = validationAttributes[i];
 
-                if (attribute is AsyncValidationAttribute)
+                if (attribute is global::System.ComponentModel.DataAnnotations.AsyncValidationAttribute)
                 {
                     continue;
                 }
 
                 var result = attribute.GetValidationResult(value, validationContext);
-                if (result is not null && result != ValidationResult.Success)
+                if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
                 {
                     hasErrors = true;
                     ReportError(context, displayName, container, attribute, result);
@@ -517,28 +503,28 @@ namespace Microsoft.Extensions.Validation.Generated
             return !hasErrors;
         }
 
-        private async Task ValidateAsynchronousOnlyAsync(
-            ValidateContext context,
-            ValidationAttribute[] validationAttributes,
+        private async global::System.Threading.Tasks.Task ValidateAsynchronousOnlyAsync(
+            global::Microsoft.Extensions.Validation.ValidateContext context,
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes,
             object? value,
             object? container,
-            ValidationContext validationContext,
+            global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
             string displayName,
-            CancellationToken cancellationToken)
+            global::System.Threading.CancellationToken cancellationToken)
         {
-            CancellationTokenSource? linkedCts = null;
+            global::System.Threading.CancellationTokenSource? linkedCts = null;
             try
             {
                 var tracker = new AsyncValidationTracker(context);
                 for (var i = 0; i < validationAttributes.Length; i++)
                 {
                     var attribute = validationAttributes[i];
-                    if (attribute is not AsyncValidationAttribute asyncValidationAttribute)
+                    if (attribute is not global::System.ComponentModel.DataAnnotations.AsyncValidationAttribute asyncValidationAttribute)
                     {
                         continue;
                     }
 
-                    linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    linkedCts ??= global::System.Threading.CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     tracker.Track(
                         GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, tracker.NextContext(), validationContext, displayName, cancellationToken, linkedCts));
                 }
@@ -551,15 +537,15 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private async Task GetValidationResultTaskCoreAsync(
-            AsyncValidationAttribute attribute,
+        private async global::System.Threading.Tasks.Task GetValidationResultTaskCoreAsync(
+            global::System.ComponentModel.DataAnnotations.AsyncValidationAttribute attribute,
             object? value,
             object? container,
-            ValidateContext context,
-            ValidationContext validationContext,
+            global::Microsoft.Extensions.Validation.ValidateContext context,
+            global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
             string displayName,
-            CancellationToken originalCancellationToken,
-            CancellationTokenSource linkedCancellationTokenSource)
+            global::System.Threading.CancellationToken originalCancellationToken,
+            global::System.Threading.CancellationTokenSource linkedCancellationTokenSource)
         {
             // originalCancellationToken is the cancellation token passed to ValidateAttributesAsync.
             // linkedCancellationToken is a LinkedCancellationToken that combines:
@@ -568,13 +554,13 @@ namespace Microsoft.Extensions.Validation.Generated
             try
             {
                 var result = await attribute.GetValidationResultAsync(value, validationContext, linkedCancellationTokenSource.Token);
-                if (result is not null && result != ValidationResult.Success)
+                if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
                 {
                     ReportError(context, displayName, container, attribute, result);
                     linkedCancellationTokenSource.Cancel();
                 }
             }
-            catch (OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
+            catch (global::System.OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
             {
                 // If the original token wasn't cancelled, but ours is cancelled, it means we cancelled to short-circuit.
                 // In this case, we want to just ignore this cancellation.
@@ -583,16 +569,16 @@ namespace Microsoft.Extensions.Validation.Generated
 
         private protected struct AsyncValidationTracker
         {
-            private readonly ValidateContext _originalContext;
+            private readonly global::Microsoft.Extensions.Validation.ValidateContext _originalContext;
             private readonly int _originalDepth;
             private readonly string _originalPath;
 
             private bool _nextNeedsClone;
-            private ValidateContext _currentContext;
-            private List<ValidateContext>? _clonedContexts;
-            private List<Task>? _pendingTasks;
+            private global::Microsoft.Extensions.Validation.ValidateContext _currentContext;
+            private global::System.Collections.Generic.List<global::Microsoft.Extensions.Validation.ValidateContext>? _clonedContexts;
+            private global::System.Collections.Generic.List<global::System.Threading.Tasks.Task>? _pendingTasks;
 
-            public AsyncValidationTracker(ValidateContext context)
+            public AsyncValidationTracker(global::Microsoft.Extensions.Validation.ValidateContext context)
             {
                 _originalContext = context;
                 _currentContext = context;
@@ -602,11 +588,11 @@ namespace Microsoft.Extensions.Validation.Generated
 
             // Reuses the context while validations complete synchronously; clones only after one goes async,
             // so two concurrently-running validations never share a context.
-            public ValidateContext NextContext()
+            public global::Microsoft.Extensions.Validation.ValidateContext NextContext()
             {
                 if (_nextNeedsClone)
                 {
-                    _currentContext = new ValidateContext
+                    _currentContext = new global::Microsoft.Extensions.Validation.ValidateContext
                     {
                         ValidationOptions = _originalContext.ValidationOptions,
                         ServiceProvider = _originalContext.ServiceProvider,
@@ -620,7 +606,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 return _currentContext;
             }
 
-            public void Track(Task validationTask)
+            public void Track(global::System.Threading.Tasks.Task validationTask)
             {
                 if (validationTask.IsCompletedSuccessfully)
                 {
@@ -632,16 +618,16 @@ namespace Microsoft.Extensions.Validation.Generated
             }
 
             // Stays fully synchronous when nothing was tracked; otherwise awaits all and merges clone errors back.
-            public readonly Task<bool> CompleteAsync()
-                => _pendingTasks is null ? Task.FromResult(false) : AwaitAndMergeAsync(_pendingTasks, _clonedContexts, _originalContext);
+            public readonly global::System.Threading.Tasks.Task<bool> CompleteAsync()
+                => _pendingTasks is null ? global::System.Threading.Tasks.Task.FromResult(false) : AwaitAndMergeAsync(_pendingTasks, _clonedContexts, _originalContext);
 
-            private static async Task<bool> AwaitAndMergeAsync(List<Task> pendingTasks, List<ValidateContext>? clonedContexts, ValidateContext originalContext)
+            private static async global::System.Threading.Tasks.Task<bool> AwaitAndMergeAsync(global::System.Collections.Generic.List<global::System.Threading.Tasks.Task> pendingTasks, global::System.Collections.Generic.List<global::Microsoft.Extensions.Validation.ValidateContext>? clonedContexts, global::Microsoft.Extensions.Validation.ValidateContext originalContext)
             {
-                await Task.WhenAll(pendingTasks);
+                await global::System.Threading.Tasks.Task.WhenAll(pendingTasks);
                 return MergeErrorsFromClonedContexts(clonedContexts, originalContext);
             }
 
-            private static bool MergeErrorsFromClonedContexts(List<ValidateContext>? clonedContexts, ValidateContext originalContext)
+            private static bool MergeErrorsFromClonedContexts(global::System.Collections.Generic.List<global::Microsoft.Extensions.Validation.ValidateContext>? clonedContexts, global::Microsoft.Extensions.Validation.ValidateContext originalContext)
             {
                 if (clonedContexts is null)
                 {
@@ -673,16 +659,16 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
-    file abstract class ValidatableTypeInfo : ValidatableInfo, IValidatableTypeInfo
+    file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatableTypeInfo
     {
         private readonly int _membersCount;
-        private readonly Type[] _implementedInterfaces;
+        private readonly global::System.Type[] _implementedInterfaces;
 
         private static readonly object _throwawayObjectInstance = new();
 
         protected ValidatableTypeInfo(
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
-            IReadOnlyList<ValidatablePropertyInfo> members,
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)] global::System.Type type,
+            global::System.Collections.Generic.IReadOnlyList<global::Microsoft.Extensions.Validation.Generated.ValidatablePropertyInfo> members,
             DisplayNameInfo? displayNameInfo = null)
         {
             Type = type;
@@ -692,16 +678,16 @@ namespace Microsoft.Extensions.Validation.Generated
             _implementedInterfaces = type.GetInterfaces();
         }
 
-        protected abstract ValidationAttribute[] GetValidationAttributes();
+        protected abstract global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes();
 
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
-        internal Type Type { get; }
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+        internal global::System.Type Type { get; }
 
-        internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
+        internal global::System.Collections.Generic.IReadOnlyList<global::Microsoft.Extensions.Validation.Generated.ValidatablePropertyInfo> Members { get; }
 
         internal DisplayNameInfo? DisplayNameInfo { get; }
 
-        public bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
+        public bool TryFindProperty(string propertyName, global::Microsoft.Extensions.Validation.ValidationOptions validationOptions, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo)
         {
             if (FindLocalMember(propertyName) is { } localMember)
             {
@@ -737,7 +723,7 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             for (var i = 0; i < _membersCount; i++)
             {
-                if (string.Equals(Members[i].Name, memberName, StringComparison.Ordinal))
+                if (string.Equals(Members[i].Name, memberName, global::System.StringComparison.Ordinal))
                 {
                     return Members[i];
                 }
@@ -746,19 +732,19 @@ namespace Microsoft.Extensions.Validation.Generated
             return null;
         }
 
-        private void ValidateDepth(ValidateContext context)
+        private void ValidateDepth(global::Microsoft.Extensions.Validation.ValidateContext context)
         {
             // Check if we've exceeded the maximum depth
             if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
             {
-                throw new InvalidOperationException(
+                throw new global::System.InvalidOperationException(
                     $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{Type.Name}'. " +
                     "This is likely caused by a circular reference in the object graph. " +
                     "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
             }
         }
 
-        public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+        public virtual async global::System.Threading.Tasks.Task ValidateAsync(object? value, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Threading.CancellationToken cancellationToken)
         {
             if (value is null)
             {
@@ -770,7 +756,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     GetValidationAttributes(),
                     value: value,
                     container: value,
-                    new ValidationContext(_throwawayObjectInstance, display, context.ServiceProvider, null), display, cancellationToken);
+                    new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, display, context.ServiceProvider, null), display, cancellationToken);
                 return;
             }
 
@@ -803,7 +789,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
             // Validate type-level attributes
-            var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
+            var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
 
             await ValidateAttributesAsync(context, GetValidationAttributes(), value, value, validationContext, displayName, cancellationToken);
 
@@ -818,7 +804,7 @@ namespace Microsoft.Extensions.Validation.Generated
             await ValidateValidatableObjectInterfaceAsync(value, context, validationContext, cancellationToken);
         }
 
-        public virtual void Validate(object? value, ValidateContext context)
+        public virtual void Validate(object? value, global::Microsoft.Extensions.Validation.ValidateContext context)
         {
             if (value == null)
             {
@@ -830,7 +816,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     GetValidationAttributes(),
                     value: value,
                     container: value,
-                    new ValidationContext(_throwawayObjectInstance, display, context.ServiceProvider, null), display);
+                    new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, display, context.ServiceProvider, null), display);
 
                 return;
             }
@@ -860,7 +846,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
             // Validate type-level attributes
-            var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
+            var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
 
             ValidateAllAttributesSynchronously(context, GetValidationAttributes(), value, value, validationContext, displayName);
 
@@ -878,7 +864,7 @@ namespace Microsoft.Extensions.Validation.Generated
         private AsyncValidationTracker ValidateMembers(
             object value,
             AsyncValidationTracker tracker,
-            CancellationToken cancellationToken)
+            global::System.Threading.CancellationToken cancellationToken)
         {
             for (var i = 0; i < _membersCount; i++)
             {
@@ -888,16 +874,16 @@ namespace Microsoft.Extensions.Validation.Generated
                 {
                     tracker.Track(Members[i].ValidateAsync(value, context, cancellationToken));
                 }
-                catch (Exception ex)
+                catch (global::System.Exception ex)
                 {
-                    tracker.Track(Task.FromException(ex));
+                    tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
                 }
             }
 
             return tracker;
         }
 
-        private void ValidateMembersSynchronously(object value, ValidateContext context)
+        private void ValidateMembersSynchronously(object value, global::Microsoft.Extensions.Validation.ValidateContext context)
         {
             for (var i = 0; i < _membersCount; i++)
             {
@@ -905,12 +891,12 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private async Task ValidateValidatableObjectInterfaceAsync(object? value, ValidateContext context, ValidationContext validationContext, CancellationToken cancellationToken)
+        private async global::System.Threading.Tasks.Task ValidateValidatableObjectInterfaceAsync(object? value, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.ComponentModel.DataAnnotations.ValidationContext validationContext, global::System.Threading.CancellationToken cancellationToken)
         {
-            if (ImplementsInterface(Type, typeof(IValidatableObject)) && value is IValidatableObject validatable)
+            if (ImplementsInterface(Type, typeof(global::System.ComponentModel.DataAnnotations.IValidatableObject)) && value is global::System.ComponentModel.DataAnnotations.IValidatableObject validatable)
             {
                 var errorPrefix = context.CurrentValidationPath;
-                if (value is IAsyncValidatableObject asyncValidatable)
+                if (value is global::System.ComponentModel.DataAnnotations.IAsyncValidatableObject asyncValidatable)
                 {
                     await foreach (var validationResult in asyncValidatable.ValidateAsync(validationContext, cancellationToken))
                     {
@@ -927,16 +913,16 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private static void HandleValidationResultForValidatableObject(ValidationResult validationResult, string errorPrefix, object? value, ValidateContext context)
+        private static void HandleValidationResultForValidatableObject(global::System.ComponentModel.DataAnnotations.ValidationResult validationResult, string errorPrefix, object? value, global::Microsoft.Extensions.Validation.ValidateContext context)
         {
-            if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
+            if (validationResult != global::System.ComponentModel.DataAnnotations.ValidationResult.Success && validationResult.ErrorMessage is not null)
             {
                 // Create a validation error for each member name that is provided
                 // We don't support automatic localization of IValidatableObject messages
                 foreach (var memberName in validationResult.MemberNames)
                 {
                     var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                    var errorContext = new ValidationError()
+                    var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
                     {
                         Name = memberName,
                         Path = key,
@@ -946,10 +932,10 @@ namespace Microsoft.Extensions.Validation.Generated
                     context.AddValidationError(errorContext);
                 }
 
-                if (!validationResult.MemberNames.Any())
+                if (!global::System.Linq.Enumerable.Any(validationResult.MemberNames))
                 {
                     // If no member names are specified, then treat this as a top-level error
-                    var errorContext = new ValidationError()
+                    var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
                     {
                         Name = string.Empty,
                         Path = string.Empty,
@@ -961,9 +947,9 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private void ValidateValidatableObjectInterface(object? value, ValidateContext context, ValidationContext validationContext)
+        private void ValidateValidatableObjectInterface(object? value, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.ComponentModel.DataAnnotations.ValidationContext validationContext)
         {
-            if (ImplementsInterface(Type, typeof(IValidatableObject)) && value is IValidatableObject validatable)
+            if (ImplementsInterface(Type, typeof(global::System.ComponentModel.DataAnnotations.IValidatableObject)) && value is global::System.ComponentModel.DataAnnotations.IValidatableObject validatable)
             {
                 var errorPrefix = context.CurrentValidationPath;
 
@@ -974,7 +960,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private IEnumerable<ValidatableTypeInfo> GetSuperTypeInfos(Type actualType, ValidationOptions options)
+        private global::System.Collections.Generic.IEnumerable<global::Microsoft.Extensions.Validation.Generated.ValidatableTypeInfo> GetSuperTypeInfos(global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
         {
             foreach (var @interface in _implementedInterfaces)
             {
@@ -995,7 +981,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 baseType = baseType.BaseType;
             }
 
-            static ValidatableTypeInfo? TryGetValidatableTypeInfo(Type superType, Type actualType, ValidationOptions options)
+            static ValidatableTypeInfo? TryGetValidatableTypeInfo(global::System.Type superType, global::System.Type actualType, global::Microsoft.Extensions.Validation.ValidationOptions options)
             {
                 if (superType.IsAssignableFrom(actualType) &&
                     options.TryGetValidatableTypeInfo(superType, out var found)
@@ -1008,7 +994,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
+        private protected override void ReportError(global::Microsoft.Extensions.Validation.ValidateContext context, string displayName, object? container, global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute, global::System.ComponentModel.DataAnnotations.ValidationResult result)
         {
             foreach (var memberName in result.MemberNames)
             {
@@ -1024,7 +1010,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 if (errorMessage is not null)
                 {
                     var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
-                    var errorContext = new ValidationError()
+                    var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
                     {
                         Name = memberName,
                         Path = key,
@@ -1035,7 +1021,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 }
             }
 
-            if (!result.MemberNames.Any())
+            if (!global::System.Linq.Enumerable.Any(result.MemberNames))
             {
                 // If no member names are specified, then treat this as a top-level error
                 var errorMessage = ResolveAttributeErrorMessage(
@@ -1048,7 +1034,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
                 if (errorMessage is not null)
                 {
-                    var errorContext = new ValidationError()
+                    var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
                     {
                         Name = string.Empty,
                         Path = context.CurrentValidationPath,
@@ -1062,14 +1048,14 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
-    file abstract class ValidatablePropertyInfo : ValidatableInfo, IValidatablePropertyInfo
+    file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatablePropertyInfo
     {
-        private RequiredAttribute? _requiredAttribute;
+        private global::System.ComponentModel.DataAnnotations.RequiredAttribute? _requiredAttribute;
 
         protected ValidatablePropertyInfo(
-            [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-            Type declaringType,
-            Type propertyType,
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
+            global::System.Type declaringType,
+            global::System.Type propertyType,
             string name,
             DisplayNameInfo? displayNameInfo = null)
         {
@@ -1079,39 +1065,39 @@ namespace Microsoft.Extensions.Validation.Generated
             DisplayNameInfo = displayNameInfo;
         }
 
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-        internal Type DeclaringType { get; }
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
+        internal global::System.Type DeclaringType { get; }
 
-        internal Type PropertyType { get; }
+        internal global::System.Type PropertyType { get; }
 
         internal string Name { get; }
 
         internal DisplayNameInfo? DisplayNameInfo { get; }
 
-        private PropertyInfo Property
-            => DeclaringType.GetProperty(Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+        private global::System.Reflection.PropertyInfo Property
+            => DeclaringType.GetProperty(Name, global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly) ?? throw new global::System.InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
 
-        protected abstract ValidationAttribute[] GetValidationAttributes();
+        protected abstract global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes();
 
-        private void ValidateDepth(ValidateContext context)
+        private void ValidateDepth(global::Microsoft.Extensions.Validation.ValidateContext context)
         {
             // Check if we've reached the maximum depth before validating complex properties
             if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
             {
-                throw new InvalidOperationException(
+                throw new global::System.InvalidOperationException(
                     $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
                     "This is likely caused by a circular reference in the object graph. " +
                     "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
             }
         }
 
-        private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, ValidateContext context, object? propertyValue, object containingObject, ValidationContext validationContext)
+        private bool ValidateRequiredAttribute(global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes, global::Microsoft.Extensions.Validation.ValidateContext context, object? propertyValue, object containingObject, global::System.ComponentModel.DataAnnotations.ValidationContext validationContext)
         {
             if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
             {
                 var result = _requiredAttribute.GetValidationResult(propertyValue, validationContext);
 
-                if (result is not null && result != ValidationResult.Success)
+                if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
                 {
                     ReportError(context, validationContext.DisplayName, containingObject, _requiredAttribute, result);
 
@@ -1123,9 +1109,9 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         /// <inheritdoc />
-        public virtual async Task ValidateAsync(object containingObject, ValidateContext context, CancellationToken cancellationToken)
+        public virtual async global::System.Threading.Tasks.Task ValidateAsync(object containingObject, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Threading.CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(containingObject);
+            global::System.ArgumentNullException.ThrowIfNull(containingObject);
 
             var propertyValue = Property.GetValue(containingObject);
             var validationAttributes = GetValidationAttributes();
@@ -1144,7 +1130,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
             var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-            var validationContext = new ValidationContext(containingObject, displayName, context.ServiceProvider, null)
+            var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(containingObject, displayName, context.ServiceProvider, null)
             {
                 MemberName = Name,
             };
@@ -1191,9 +1177,9 @@ namespace Microsoft.Extensions.Validation.Generated
                                 {
                                     tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                                 }
-                                catch (Exception ex)
+                                catch (global::System.Exception ex)
                                 {
-                                    tracker.Track(Task.FromException(ex));
+                                    tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
                                 }
                             }
                         }
@@ -1223,9 +1209,9 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         /// <inheritdoc />
-        public virtual void Validate(object containingObject, ValidateContext context)
+        public virtual void Validate(object containingObject, global::Microsoft.Extensions.Validation.ValidateContext context)
         {
-            ArgumentNullException.ThrowIfNull(containingObject);
+            global::System.ArgumentNullException.ThrowIfNull(containingObject);
 
             var propertyValue = Property.GetValue(containingObject);
             var validationAttributes = GetValidationAttributes();
@@ -1244,7 +1230,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
             var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-            var validationContext = new ValidationContext(containingObject, displayName, context.ServiceProvider, null)
+            var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(containingObject, displayName, context.ServiceProvider, null)
             {
                 MemberName = Name,
             };
@@ -1310,7 +1296,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
+        private protected override void ReportError(global::Microsoft.Extensions.Validation.ValidateContext context, string displayName, object? container, global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute, global::System.ComponentModel.DataAnnotations.ValidationResult result)
         {
             var errorMessage = ResolveAttributeErrorMessage(
                 context,
@@ -1322,7 +1308,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
             if (errorMessage is not null)
             {
-                var errorContext = new ValidationError()
+                var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
                 {
                     Name = Name,
                     Path = context.CurrentValidationPath,
@@ -1335,14 +1321,14 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
-    file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatableParameterInfo
+    file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatableParameterInfo
     {
-        private RequiredAttribute? _requiredAttribute;
+        private global::System.ComponentModel.DataAnnotations.RequiredAttribute? _requiredAttribute;
 
         private static readonly object _throwawayObjectInstance = new();
 
         protected ValidatableParameterInfo(
-            Type parameterType,
+            global::System.Type parameterType,
             string name,
             DisplayNameInfo? displayNameInfo = null)
         {
@@ -1351,15 +1337,15 @@ namespace Microsoft.Extensions.Validation.Generated
             DisplayNameInfo = displayNameInfo;
         }
 
-        internal Type ParameterType { get; }
+        internal global::System.Type ParameterType { get; }
 
         internal string Name { get; }
 
         internal DisplayNameInfo? DisplayNameInfo { get; }
 
-        protected abstract ValidationAttribute[] GetValidationAttributes();
+        protected abstract global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes();
 
-        private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context, ValidationContext? validationContext, string displayName)
+        private bool ValidateRequiredAttribute(global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes, object? value, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.ComponentModel.DataAnnotations.ValidationContext? validationContext, string displayName)
         {
             if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
             {
@@ -1367,7 +1353,7 @@ namespace Microsoft.Extensions.Validation.Generated
                     ? _requiredAttribute.GetValidationResult(value, validationContext)
                     : CreateValidationResult(_requiredAttribute.IsValid(value), _requiredAttribute, displayName);
 
-                if (result is not null && result != ValidationResult.Success)
+                if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
                 {
                     ReportError(context, displayName, container: null, _requiredAttribute, result);
                     return false;
@@ -1377,17 +1363,17 @@ namespace Microsoft.Extensions.Validation.Generated
             return true;
         }
 
-        private static ValidationResult? CreateValidationResult(bool isValid, ValidationAttribute attribute, string displayName)
+        private static global::System.ComponentModel.DataAnnotations.ValidationResult? CreateValidationResult(bool isValid, global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute, string displayName)
             => isValid
-                ? ValidationResult.Success
-                : new ValidationResult(attribute.FormatErrorMessage(displayName), null);
+                ? global::System.ComponentModel.DataAnnotations.ValidationResult.Success
+                : new global::System.ComponentModel.DataAnnotations.ValidationResult(attribute.FormatErrorMessage(displayName), null);
 
-        public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+        public virtual async global::System.Threading.Tasks.Task ValidateAsync(object? value, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Threading.CancellationToken cancellationToken)
         {
             var validationAttributes = GetValidationAttributes();
 
             var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-            var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
+            var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
             {
                 MemberName = Name
             };
@@ -1401,7 +1387,7 @@ namespace Microsoft.Extensions.Validation.Generated
             await ValidateAttributesAsync(context, validationAttributes, value, null, validationContext, displayName, cancellationToken);
 
             // If the parameter is a collection, validate each item
-            if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
+            if (IsEnumerable(ParameterType) && value is global::System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
@@ -1425,9 +1411,9 @@ namespace Microsoft.Extensions.Validation.Generated
                             {
                                 tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                             }
-                            catch (Exception ex)
+                            catch (global::System.Exception ex)
                             {
-                                tracker.Track(Task.FromException(ex));
+                                tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
                             }
                         }
                     }
@@ -1454,12 +1440,12 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        public virtual void Validate(object? value, ValidateContext context)
+        public virtual void Validate(object? value, global::Microsoft.Extensions.Validation.ValidateContext context)
         {
             var validationAttributes = GetValidationAttributes();
 
             var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-            var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
+            var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
             {
                 MemberName = Name
             };
@@ -1473,7 +1459,7 @@ namespace Microsoft.Extensions.Validation.Generated
             ValidateAllAttributesSynchronously(context, validationAttributes, value, null, validationContext!, displayName);
 
             // If the parameter is a collection, validate each item
-            if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
+            if (IsEnumerable(ParameterType) && value is global::System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
@@ -1513,7 +1499,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
+        private protected override void ReportError(global::Microsoft.Extensions.Validation.ValidateContext context, string displayName, object? container, global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute, global::System.ComponentModel.DataAnnotations.ValidationResult result)
         {
             var errorMessage = ResolveAttributeErrorMessage(
                 context,
@@ -1526,7 +1512,7 @@ namespace Microsoft.Extensions.Validation.Generated
             if (errorMessage is not null)
             {
                 var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                var errorContext = new ValidationError()
+                var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
                 {
                     Name = Name,
                     Path = key,
@@ -1539,33 +1525,31 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
 
-    file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
+    file sealed class RuntimeValidatableParameterInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
         // TODO: the implementation currently relies on static discovery of types.
-        public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
             validatableTypeInfo = null;
             return false;
         }
 
-        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
         {
             if (parameterInfo.Name == null)
             {
-                throw new InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
+                throw new global::System.InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
             }
 
             // Skip method parameter if it or its type are annotated with SkipValidationAttribute.
-            if (parameterInfo.GetCustomAttribute<SkipValidationAttribute>() != null ||
-                parameterInfo.ParameterType.GetCustomAttribute<SkipValidationAttribute>() != null)
+            if (global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::Microsoft.Extensions.Validation.SkipValidationAttribute>(parameterInfo) != null ||
+                global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::Microsoft.Extensions.Validation.SkipValidationAttribute>(parameterInfo.ParameterType) != null)
             {
                 validatableParameterInfo = null;
                 return false;
             }
 
-            var validationAttributes = parameterInfo
-                .GetCustomAttributes<ValidationAttribute>()
-                .ToArray();
+            var validationAttributes = global::System.Linq.Enumerable.ToArray(global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameterInfo));
 
             // If there are no validation attributes and this type is not a complex type
             // we don't need to validate it. Complex types without attributes are still
@@ -1587,9 +1571,9 @@ namespace Microsoft.Extensions.Validation.Generated
             return true;
         }
 
-        private static DisplayNameInfo? ResolveDisplayInfo(ParameterInfo parameterInfo)
+        private static DisplayNameInfo? ResolveDisplayInfo(global::System.Reflection.ParameterInfo parameterInfo)
         {
-            var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
+            var displayAttribute = global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameterInfo);
             if (displayAttribute is { ResourceType: not null, Name: not null })
             {
                 // Resource-based display name from [Display(ResourceType = ..., Name = ...)] is the
@@ -1605,7 +1589,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 return new LiteralDisplayName(displayAttribute.Name);
             }
 
-            var displayNameAttribute = parameterInfo.GetCustomAttribute<DisplayNameAttribute>();
+            var displayNameAttribute = global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::System.ComponentModel.DisplayNameAttribute>(parameterInfo);
             if (displayNameAttribute is not null)
             {
                 // Literal name from [DisplayName("...")].
@@ -1616,20 +1600,20 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         internal sealed class RuntimeValidatableParameterInfo(
-            Type parameterType,
+            global::System.Type parameterType,
             string name,
             DisplayNameInfo? displayNameInfo,
-            ValidationAttribute[] validationAttributes) :
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) :
                 ValidatableParameterInfo(parameterType, name, displayNameInfo)
         {
-            protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+            protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 
-            private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+            private readonly global::System.ComponentModel.DataAnnotations.ValidationAttribute[] _validationAttributes = validationAttributes;
         }
 
         private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
         {
-            public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
+            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
             {
                 var localizer = context.ValidationOptions.Localizer;
                 if (localizer is null)
@@ -1639,7 +1623,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
                 // The literal acts as both the lookup key for the localizer AND the fallback display
                 // name when the localizer can't translate.
-                return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
+                return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
                 {
                     Type = type,
                     DisplayName = literal,
@@ -1648,13 +1632,13 @@ namespace Microsoft.Extensions.Validation.Generated
             }
         }
 
-        private sealed class ParameterReflectionDisplayName(DisplayAttribute attribute) : DisplayNameInfo
+        private sealed class ParameterReflectionDisplayName(global::System.ComponentModel.DataAnnotations.DisplayAttribute attribute) : DisplayNameInfo
         {
-            public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
+            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
                 => attribute.GetName();
         }
 
-        private static bool IsComplexType(Type type)
+        private static bool IsComplexType(global::System.Type type)
         {
             // Skip primitives, enums, common built-in types, and types that are specially
             // handled by RDF/RDG that don't need validation if they don't have attributes
@@ -1662,22 +1646,22 @@ namespace Microsoft.Extensions.Validation.Generated
                 type.IsEnum ||
                 type == typeof(string) ||
                 type == typeof(decimal) ||
-                type == typeof(DateTime) ||
-                type == typeof(DateTimeOffset) ||
-                type == typeof(TimeOnly) ||
-                type == typeof(DateOnly) ||
-                type == typeof(TimeSpan) ||
-                type == typeof(Guid) ||
-                type == typeof(ClaimsPrincipal) ||
-                type == typeof(CancellationToken) ||
-                type == typeof(Stream) ||
-                type == typeof(PipeReader))
+                type == typeof(global::System.DateTime) ||
+                type == typeof(global::System.DateTimeOffset) ||
+                type == typeof(global::System.TimeOnly) ||
+                type == typeof(global::System.DateOnly) ||
+                type == typeof(global::System.TimeSpan) ||
+                type == typeof(global::System.Guid) ||
+                type == typeof(global::System.Security.Claims.ClaimsPrincipal) ||
+                type == typeof(global::System.Threading.CancellationToken) ||
+                type == typeof(global::System.IO.Stream) ||
+                type == typeof(global::System.IO.Pipelines.PipeReader))
             {
                 return false;
             }
 
             // Check if the underlying type in a nullable is valid
-            if (Nullable.GetUnderlyingType(type) is { } nullableType)
+            if (global::System.Nullable.GetUnderlyingType(type) is { } nullableType)
             {
                 return IsComplexType(nullableType);
             }

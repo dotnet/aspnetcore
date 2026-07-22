@@ -1,30 +1,28 @@
-file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
+file sealed class RuntimeValidatableParameterInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
 {
     // TODO: the implementation currently relies on static discovery of types.
-    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
+    public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
     {
         validatableTypeInfo = null;
         return false;
     }
 
-    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
+    public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
     {
         if (parameterInfo.Name == null)
         {
-            throw new InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
+            throw new global::System.InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
         }
 
         // Skip method parameter if it or its type are annotated with SkipValidationAttribute.
-        if (parameterInfo.GetCustomAttribute<SkipValidationAttribute>() != null ||
-            parameterInfo.ParameterType.GetCustomAttribute<SkipValidationAttribute>() != null)
+        if (global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::Microsoft.Extensions.Validation.SkipValidationAttribute>(parameterInfo) != null ||
+            global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::Microsoft.Extensions.Validation.SkipValidationAttribute>(parameterInfo.ParameterType) != null)
         {
             validatableParameterInfo = null;
             return false;
         }
 
-        var validationAttributes = parameterInfo
-            .GetCustomAttributes<ValidationAttribute>()
-            .ToArray();
+        var validationAttributes = global::System.Linq.Enumerable.ToArray(global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameterInfo));
 
         // If there are no validation attributes and this type is not a complex type
         // we don't need to validate it. Complex types without attributes are still
@@ -46,9 +44,9 @@ file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoReso
         return true;
     }
 
-    private static DisplayNameInfo? ResolveDisplayInfo(ParameterInfo parameterInfo)
+    private static DisplayNameInfo? ResolveDisplayInfo(global::System.Reflection.ParameterInfo parameterInfo)
     {
-        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
+        var displayAttribute = global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameterInfo);
         if (displayAttribute is { ResourceType: not null, Name: not null })
         {
             // Resource-based display name from [Display(ResourceType = ..., Name = ...)] is the
@@ -64,7 +62,7 @@ file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoReso
             return new LiteralDisplayName(displayAttribute.Name);
         }
 
-        var displayNameAttribute = parameterInfo.GetCustomAttribute<DisplayNameAttribute>();
+        var displayNameAttribute = global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::System.ComponentModel.DisplayNameAttribute>(parameterInfo);
         if (displayNameAttribute is not null)
         {
             // Literal name from [DisplayName("...")].
@@ -75,20 +73,20 @@ file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoReso
     }
 
     internal sealed class RuntimeValidatableParameterInfo(
-        Type parameterType,
+        global::System.Type parameterType,
         string name,
         DisplayNameInfo? displayNameInfo,
-        ValidationAttribute[] validationAttributes) :
+        global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes) :
             ValidatableParameterInfo(parameterType, name, displayNameInfo)
     {
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+        protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 
-        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        private readonly global::System.ComponentModel.DataAnnotations.ValidationAttribute[] _validationAttributes = validationAttributes;
     }
 
     private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
     {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
         {
             var localizer = context.ValidationOptions.Localizer;
             if (localizer is null)
@@ -98,7 +96,7 @@ file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoReso
 
             // The literal acts as both the lookup key for the localizer AND the fallback display
             // name when the localizer can't translate.
-            return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
+            return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
             {
                 Type = type,
                 DisplayName = literal,
@@ -107,13 +105,13 @@ file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoReso
         }
     }
 
-    private sealed class ParameterReflectionDisplayName(DisplayAttribute attribute) : DisplayNameInfo
+    private sealed class ParameterReflectionDisplayName(global::System.ComponentModel.DataAnnotations.DisplayAttribute attribute) : DisplayNameInfo
     {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
             => attribute.GetName();
     }
 
-    private static bool IsComplexType(Type type)
+    private static bool IsComplexType(global::System.Type type)
     {
         // Skip primitives, enums, common built-in types, and types that are specially
         // handled by RDF/RDG that don't need validation if they don't have attributes
@@ -121,22 +119,22 @@ file sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoReso
             type.IsEnum ||
             type == typeof(string) ||
             type == typeof(decimal) ||
-            type == typeof(DateTime) ||
-            type == typeof(DateTimeOffset) ||
-            type == typeof(TimeOnly) ||
-            type == typeof(DateOnly) ||
-            type == typeof(TimeSpan) ||
-            type == typeof(Guid) ||
-            type == typeof(ClaimsPrincipal) ||
-            type == typeof(CancellationToken) ||
-            type == typeof(Stream) ||
-            type == typeof(PipeReader))
+            type == typeof(global::System.DateTime) ||
+            type == typeof(global::System.DateTimeOffset) ||
+            type == typeof(global::System.TimeOnly) ||
+            type == typeof(global::System.DateOnly) ||
+            type == typeof(global::System.TimeSpan) ||
+            type == typeof(global::System.Guid) ||
+            type == typeof(global::System.Security.Claims.ClaimsPrincipal) ||
+            type == typeof(global::System.Threading.CancellationToken) ||
+            type == typeof(global::System.IO.Stream) ||
+            type == typeof(global::System.IO.Pipelines.PipeReader))
         {
             return false;
         }
 
         // Check if the underlying type in a nullable is valid
-        if (Nullable.GetUnderlyingType(type) is { } nullableType)
+        if (global::System.Nullable.GetUnderlyingType(type) is { } nullableType)
         {
             return IsComplexType(nullableType);
         }

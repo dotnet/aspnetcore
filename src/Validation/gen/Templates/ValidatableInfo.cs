@@ -5,20 +5,20 @@ file abstract class ValidatableInfo
     }
 
     private protected abstract void ReportError(
-        ValidateContext context,
+        global::Microsoft.Extensions.Validation.ValidateContext context,
         string displayName,
         object? container,
-        ValidationAttribute attribute,
-        ValidationResult result);
+        global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
+        global::System.ComponentModel.DataAnnotations.ValidationResult result);
 
-    private protected static bool IsEnumerable(Type type)
+    private protected static bool IsEnumerable(global::System.Type type)
     {
         // Check if type itself is an IEnumerable
         if (type.IsGenericType &&
-            (type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
-            type.GetGenericTypeDefinition() == typeof(ICollection<>) ||
-            type.GetGenericTypeDefinition() == typeof(List<>) ||
-            type.GetGenericTypeDefinition() == typeof(IList<>)))
+            (type.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.IEnumerable<>) ||
+            type.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.ICollection<>) ||
+            type.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.List<>) ||
+            type.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.IList<>)))
         {
             return true;
         }
@@ -30,7 +30,7 @@ file abstract class ValidatableInfo
         }
 
         // Then evaluate if it implements IEnumerable and is not a string
-        if (typeof(IEnumerable).IsAssignableFrom(type) &&
+        if (typeof(global::System.Collections.IEnumerable).IsAssignableFrom(type) &&
             type != typeof(string))
         {
             return true;
@@ -39,24 +39,24 @@ file abstract class ValidatableInfo
         return false;
     }
 
-    private protected static bool ImplementsInterface(Type type, Type interfaceType)
+    private protected static bool ImplementsInterface(global::System.Type type, global::System.Type interfaceType)
     {
-        ArgumentNullException.ThrowIfNull(type);
-        ArgumentNullException.ThrowIfNull(interfaceType);
+        global::System.ArgumentNullException.ThrowIfNull(type);
+        global::System.ArgumentNullException.ThrowIfNull(interfaceType);
 
         if (!interfaceType.IsInterface)
         {
-            throw new ArgumentException($"Type {interfaceType.FullName} is not an interface.", nameof(interfaceType));
+            throw new global::System.ArgumentException($"Type {interfaceType.FullName} is not an interface.", nameof(interfaceType));
         }
 
         return interfaceType.IsAssignableFrom(type);
     }
 
-    private protected static bool TryGetRequiredAttribute(ValidationAttribute[] attributes, [NotNullWhen(true)] out RequiredAttribute? requiredAttribute)
+    private protected static bool TryGetRequiredAttribute(global::System.ComponentModel.DataAnnotations.ValidationAttribute[] attributes, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::System.ComponentModel.DataAnnotations.RequiredAttribute? requiredAttribute)
     {
         foreach (var attribute in attributes)
         {
-            if (attribute is RequiredAttribute requiredAttr)
+            if (attribute is global::System.ComponentModel.DataAnnotations.RequiredAttribute requiredAttr)
             {
                 requiredAttribute = requiredAttr;
                 return true;
@@ -68,19 +68,19 @@ file abstract class ValidatableInfo
     }
 
     private protected static string? ResolveAttributeErrorMessage(
-        ValidateContext context,
+        global::Microsoft.Extensions.Validation.ValidateContext context,
         string memberName,
         string displayName,
-        Type? declaringType,
-        ValidationAttribute attribute,
-        ValidationResult result)
+        global::System.Type? declaringType,
+        global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
+        global::System.ComponentModel.DataAnnotations.ValidationResult result)
     {
         if (context.ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
         {
             return result.ErrorMessage;
         }
 
-        var localizationContext = new ErrorMessageLocalizationContext
+        var localizationContext = new global::Microsoft.Extensions.Validation.ErrorMessageLocalizationContext
         {
             MemberName = memberName,
             DisplayName = displayName,
@@ -91,14 +91,14 @@ file abstract class ValidatableInfo
         return context.ValidationOptions.Localizer.ResolveErrorMessage(localizationContext) ?? result.ErrorMessage;
     }
 
-    private protected async Task ValidateAttributesAsync(
-        ValidateContext context,
-        ValidationAttribute[] validationAttributes,
+    private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
+        global::Microsoft.Extensions.Validation.ValidateContext context,
+        global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes,
         object? value,
         object? container,
-        ValidationContext validationContext,
+        global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
         string displayName,
-        CancellationToken cancellationToken)
+        global::System.Threading.CancellationToken cancellationToken)
     {
         // NOTE: In case there are no async validation attributes, there should be no performance impact.
         // The async state machine is a class only in Debug builds. But in Release it's a struct.
@@ -113,11 +113,11 @@ file abstract class ValidatableInfo
     }
 
     private protected void ValidateAllAttributesSynchronously(
-        ValidateContext context,
-        ValidationAttribute[] validationAttributes,
+        global::Microsoft.Extensions.Validation.ValidateContext context,
+        global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes,
         object? value,
         object? container,
-        ValidationContext validationContext,
+        global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
         string displayName)
     {
         for (var i = 0; i < validationAttributes.Length; i++)
@@ -125,7 +125,7 @@ file abstract class ValidatableInfo
             var attribute = validationAttributes[i];
 
             var result = attribute.GetValidationResult(value, validationContext);
-            if (result is not null && result != ValidationResult.Success)
+            if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
             {
                 ReportError(context, displayName, container, attribute, result);
             }
@@ -133,11 +133,11 @@ file abstract class ValidatableInfo
     }
 
     private bool ValidateSynchronousOnly(
-        ValidateContext context,
-        ValidationAttribute[] validationAttributes,
+        global::Microsoft.Extensions.Validation.ValidateContext context,
+        global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes,
         object? value,
         object? container,
-        ValidationContext validationContext,
+        global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
         string displayName)
     {
         bool hasErrors = false;
@@ -145,13 +145,13 @@ file abstract class ValidatableInfo
         {
             var attribute = validationAttributes[i];
 
-            if (attribute is AsyncValidationAttribute)
+            if (attribute is global::System.ComponentModel.DataAnnotations.AsyncValidationAttribute)
             {
                 continue;
             }
 
             var result = attribute.GetValidationResult(value, validationContext);
-            if (result is not null && result != ValidationResult.Success)
+            if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
             {
                 hasErrors = true;
                 ReportError(context, displayName, container, attribute, result);
@@ -161,28 +161,28 @@ file abstract class ValidatableInfo
         return !hasErrors;
     }
 
-    private async Task ValidateAsynchronousOnlyAsync(
-        ValidateContext context,
-        ValidationAttribute[] validationAttributes,
+    private async global::System.Threading.Tasks.Task ValidateAsynchronousOnlyAsync(
+        global::Microsoft.Extensions.Validation.ValidateContext context,
+        global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes,
         object? value,
         object? container,
-        ValidationContext validationContext,
+        global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
         string displayName,
-        CancellationToken cancellationToken)
+        global::System.Threading.CancellationToken cancellationToken)
     {
-        CancellationTokenSource? linkedCts = null;
+        global::System.Threading.CancellationTokenSource? linkedCts = null;
         try
         {
             var tracker = new AsyncValidationTracker(context);
             for (var i = 0; i < validationAttributes.Length; i++)
             {
                 var attribute = validationAttributes[i];
-                if (attribute is not AsyncValidationAttribute asyncValidationAttribute)
+                if (attribute is not global::System.ComponentModel.DataAnnotations.AsyncValidationAttribute asyncValidationAttribute)
                 {
                     continue;
                 }
 
-                linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                linkedCts ??= global::System.Threading.CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 tracker.Track(
                     GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, tracker.NextContext(), validationContext, displayName, cancellationToken, linkedCts));
             }
@@ -195,15 +195,15 @@ file abstract class ValidatableInfo
         }
     }
 
-    private async Task GetValidationResultTaskCoreAsync(
-        AsyncValidationAttribute attribute,
+    private async global::System.Threading.Tasks.Task GetValidationResultTaskCoreAsync(
+        global::System.ComponentModel.DataAnnotations.AsyncValidationAttribute attribute,
         object? value,
         object? container,
-        ValidateContext context,
-        ValidationContext validationContext,
+        global::Microsoft.Extensions.Validation.ValidateContext context,
+        global::System.ComponentModel.DataAnnotations.ValidationContext validationContext,
         string displayName,
-        CancellationToken originalCancellationToken,
-        CancellationTokenSource linkedCancellationTokenSource)
+        global::System.Threading.CancellationToken originalCancellationToken,
+        global::System.Threading.CancellationTokenSource linkedCancellationTokenSource)
     {
         // originalCancellationToken is the cancellation token passed to ValidateAttributesAsync.
         // linkedCancellationToken is a LinkedCancellationToken that combines:
@@ -212,13 +212,13 @@ file abstract class ValidatableInfo
         try
         {
             var result = await attribute.GetValidationResultAsync(value, validationContext, linkedCancellationTokenSource.Token);
-            if (result is not null && result != ValidationResult.Success)
+            if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
             {
                 ReportError(context, displayName, container, attribute, result);
                 linkedCancellationTokenSource.Cancel();
             }
         }
-        catch (OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
+        catch (global::System.OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
         {
             // If the original token wasn't cancelled, but ours is cancelled, it means we cancelled to short-circuit.
             // In this case, we want to just ignore this cancellation.
@@ -227,16 +227,16 @@ file abstract class ValidatableInfo
 
     private protected struct AsyncValidationTracker
     {
-        private readonly ValidateContext _originalContext;
+        private readonly global::Microsoft.Extensions.Validation.ValidateContext _originalContext;
         private readonly int _originalDepth;
         private readonly string _originalPath;
 
         private bool _nextNeedsClone;
-        private ValidateContext _currentContext;
-        private List<ValidateContext>? _clonedContexts;
-        private List<Task>? _pendingTasks;
+        private global::Microsoft.Extensions.Validation.ValidateContext _currentContext;
+        private global::System.Collections.Generic.List<global::Microsoft.Extensions.Validation.ValidateContext>? _clonedContexts;
+        private global::System.Collections.Generic.List<global::System.Threading.Tasks.Task>? _pendingTasks;
 
-        public AsyncValidationTracker(ValidateContext context)
+        public AsyncValidationTracker(global::Microsoft.Extensions.Validation.ValidateContext context)
         {
             _originalContext = context;
             _currentContext = context;
@@ -246,11 +246,11 @@ file abstract class ValidatableInfo
 
         // Reuses the context while validations complete synchronously; clones only after one goes async,
         // so two concurrently-running validations never share a context.
-        public ValidateContext NextContext()
+        public global::Microsoft.Extensions.Validation.ValidateContext NextContext()
         {
             if (_nextNeedsClone)
             {
-                _currentContext = new ValidateContext
+                _currentContext = new global::Microsoft.Extensions.Validation.ValidateContext
                 {
                     ValidationOptions = _originalContext.ValidationOptions,
                     ServiceProvider = _originalContext.ServiceProvider,
@@ -264,7 +264,7 @@ file abstract class ValidatableInfo
             return _currentContext;
         }
 
-        public void Track(Task validationTask)
+        public void Track(global::System.Threading.Tasks.Task validationTask)
         {
             if (validationTask.IsCompletedSuccessfully)
             {
@@ -276,16 +276,16 @@ file abstract class ValidatableInfo
         }
 
         // Stays fully synchronous when nothing was tracked; otherwise awaits all and merges clone errors back.
-        public readonly Task<bool> CompleteAsync()
-            => _pendingTasks is null ? Task.FromResult(false) : AwaitAndMergeAsync(_pendingTasks, _clonedContexts, _originalContext);
+        public readonly global::System.Threading.Tasks.Task<bool> CompleteAsync()
+            => _pendingTasks is null ? global::System.Threading.Tasks.Task.FromResult(false) : AwaitAndMergeAsync(_pendingTasks, _clonedContexts, _originalContext);
 
-        private static async Task<bool> AwaitAndMergeAsync(List<Task> pendingTasks, List<ValidateContext>? clonedContexts, ValidateContext originalContext)
+        private static async global::System.Threading.Tasks.Task<bool> AwaitAndMergeAsync(global::System.Collections.Generic.List<global::System.Threading.Tasks.Task> pendingTasks, global::System.Collections.Generic.List<global::Microsoft.Extensions.Validation.ValidateContext>? clonedContexts, global::Microsoft.Extensions.Validation.ValidateContext originalContext)
         {
-            await Task.WhenAll(pendingTasks);
+            await global::System.Threading.Tasks.Task.WhenAll(pendingTasks);
             return MergeErrorsFromClonedContexts(clonedContexts, originalContext);
         }
 
-        private static bool MergeErrorsFromClonedContexts(List<ValidateContext>? clonedContexts, ValidateContext originalContext)
+        private static bool MergeErrorsFromClonedContexts(global::System.Collections.Generic.List<global::Microsoft.Extensions.Validation.ValidateContext>? clonedContexts, global::Microsoft.Extensions.Validation.ValidateContext originalContext)
         {
             if (clonedContexts is null)
             {

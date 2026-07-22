@@ -27,10 +27,9 @@ public sealed partial class ValidationsGenerator
     /// Emits the <c>DisplayNameInfo</c> and <c>ValidatableInfo</c> family (and the runtime parameter
     /// resolver) as file-local class bodies so they no longer need to ship from the
     /// Microsoft.Extensions.Validation assembly. The bodies are emitted directly inside the existing
-    /// <c>Microsoft.Extensions.Validation.Generated</c> namespace block (which declares the required
-    /// <c>System.*</c> usings), alongside the generated resolver, and rely on enclosing-namespace
-    /// resolution to reference the public Microsoft.Extensions.Validation surface (ValidateContext,
-    /// ValidationOptions, ...).
+    /// <c>Microsoft.Extensions.Validation.Generated</c> namespace block, alongside the generated
+    /// resolver. Every type reference is fully qualified with <c>global::</c> so the emitted code needs
+    /// no <c>using</c> directives.
     /// </summary>
     internal static string EmitInfoClasses() => s_infoClasses.Value;
 

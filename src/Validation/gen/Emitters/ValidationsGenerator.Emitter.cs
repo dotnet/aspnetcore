@@ -54,20 +54,6 @@ namespace System.Runtime.CompilerServices
 
 namespace Microsoft.Extensions.Validation.Generated
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.ComponentModel.DataAnnotations;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.IO.Pipelines;
-    using System.Linq;
-    using System.Reflection;
-    using System.Security.Claims;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     {{GeneratedCodeAttribute}}
     file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.Generated.ValidatablePropertyInfo
     {

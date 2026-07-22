@@ -1,11 +1,11 @@
-file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatableParameterInfo
+file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatableParameterInfo
 {
-    private RequiredAttribute? _requiredAttribute;
+    private global::System.ComponentModel.DataAnnotations.RequiredAttribute? _requiredAttribute;
 
     private static readonly object _throwawayObjectInstance = new();
 
     protected ValidatableParameterInfo(
-        Type parameterType,
+        global::System.Type parameterType,
         string name,
         DisplayNameInfo? displayNameInfo = null)
     {
@@ -14,15 +14,15 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
         DisplayNameInfo = displayNameInfo;
     }
 
-    internal Type ParameterType { get; }
+    internal global::System.Type ParameterType { get; }
 
     internal string Name { get; }
 
     internal DisplayNameInfo? DisplayNameInfo { get; }
 
-    protected abstract ValidationAttribute[] GetValidationAttributes();
+    protected abstract global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes();
 
-    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context, ValidationContext? validationContext, string displayName)
+    private bool ValidateRequiredAttribute(global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes, object? value, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.ComponentModel.DataAnnotations.ValidationContext? validationContext, string displayName)
     {
         if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
         {
@@ -30,7 +30,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
                 ? _requiredAttribute.GetValidationResult(value, validationContext)
                 : CreateValidationResult(_requiredAttribute.IsValid(value), _requiredAttribute, displayName);
 
-            if (result is not null && result != ValidationResult.Success)
+            if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
             {
                 ReportError(context, displayName, container: null, _requiredAttribute, result);
                 return false;
@@ -40,17 +40,17 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
         return true;
     }
 
-    private static ValidationResult? CreateValidationResult(bool isValid, ValidationAttribute attribute, string displayName)
+    private static global::System.ComponentModel.DataAnnotations.ValidationResult? CreateValidationResult(bool isValid, global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute, string displayName)
         => isValid
-            ? ValidationResult.Success
-            : new ValidationResult(attribute.FormatErrorMessage(displayName), null);
+            ? global::System.ComponentModel.DataAnnotations.ValidationResult.Success
+            : new global::System.ComponentModel.DataAnnotations.ValidationResult(attribute.FormatErrorMessage(displayName), null);
 
-    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    public virtual async global::System.Threading.Tasks.Task ValidateAsync(object? value, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Threading.CancellationToken cancellationToken)
     {
         var validationAttributes = GetValidationAttributes();
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-        var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
+        var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
         {
             MemberName = Name
         };
@@ -64,7 +64,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
         await ValidateAttributesAsync(context, validationAttributes, value, null, validationContext, displayName, cancellationToken);
 
         // If the parameter is a collection, validate each item
-        if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
+        if (IsEnumerable(ParameterType) && value is global::System.Collections.IEnumerable enumerable)
         {
             var index = 0;
             var currentPrefix = context.CurrentValidationPath;
@@ -88,9 +88,9 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
                         {
                             tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                         }
-                        catch (Exception ex)
+                        catch (global::System.Exception ex)
                         {
-                            tracker.Track(Task.FromException(ex));
+                            tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
                         }
                     }
                 }
@@ -117,12 +117,12 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
         }
     }
 
-    public virtual void Validate(object? value, ValidateContext context)
+    public virtual void Validate(object? value, global::Microsoft.Extensions.Validation.ValidateContext context)
     {
         var validationAttributes = GetValidationAttributes();
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
-        var validationContext = new ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
+        var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
         {
             MemberName = Name
         };
@@ -136,7 +136,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
         ValidateAllAttributesSynchronously(context, validationAttributes, value, null, validationContext!, displayName);
 
         // If the parameter is a collection, validate each item
-        if (IsEnumerable(ParameterType) && value is IEnumerable enumerable)
+        if (IsEnumerable(ParameterType) && value is global::System.Collections.IEnumerable enumerable)
         {
             var index = 0;
             var currentPrefix = context.CurrentValidationPath;
@@ -176,7 +176,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
         }
     }
 
-    private protected override void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
+    private protected override void ReportError(global::Microsoft.Extensions.Validation.ValidateContext context, string displayName, object? container, global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute, global::System.ComponentModel.DataAnnotations.ValidationResult result)
     {
         var errorMessage = ResolveAttributeErrorMessage(
             context,
@@ -189,7 +189,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, IValidatablePara
         if (errorMessage is not null)
         {
             var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-            var errorContext = new ValidationError()
+            var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
             {
                 Name = Name,
                 Path = key,
