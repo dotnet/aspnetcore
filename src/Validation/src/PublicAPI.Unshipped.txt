@@ -4,6 +4,7 @@
 *REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.Dictionary<string!, string![]!>?
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.set -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidateContext.OnValidationError -> System.Action<Microsoft.Extensions.Validation.ValidationErrorContext>?
 *REMOVED*Microsoft.Extensions.Validation.IValidatableInfo
 *REMOVED*Microsoft.Extensions.Validation.IValidatableInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.Extensions.Validation.IValidatableInfoResolver.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo) -> bool
@@ -14,9 +15,6 @@
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext!
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationContext.set -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationOptions.set -> void
-abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? type) -> string?
-Microsoft.Extensions.Validation.DisplayNameInfo
-Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DisplayName.get -> string?
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DisplayName.init -> void
@@ -50,20 +48,40 @@ Microsoft.Extensions.Validation.IValidatableTypeInfo.ValidateAsync(object? value
 Microsoft.Extensions.Validation.IValidationLocalizer
 Microsoft.Extensions.Validation.IValidationLocalizer.ResolveDisplayName(in Microsoft.Extensions.Validation.DisplayNameLocalizationContext context) -> string?
 Microsoft.Extensions.Validation.IValidationLocalizer.ResolveErrorMessage(in Microsoft.Extensions.Validation.ErrorMessageLocalizationContext context) -> string?
-Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
-Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
-Microsoft.Extensions.Validation.ValidatableTypeInfo.TryFindProperty(string! propertyName, Microsoft.Extensions.Validation.ValidationOptions! validationOptions, out Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo) -> bool
-Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
-Microsoft.Extensions.Validation.ValidateContext.AddValidationError(Microsoft.Extensions.Validation.ValidationErrorContext validationErrorContext) -> void
+Microsoft.Extensions.Validation.ValidateContext.AddValidationError(Microsoft.Extensions.Validation.ValidationError! validationError) -> void
 Microsoft.Extensions.Validation.ValidateContext.ServiceProvider.get -> System.IServiceProvider?
 Microsoft.Extensions.Validation.ValidateContext.ServiceProvider.init -> void
-Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>?
+Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidationError!>!>?
 Microsoft.Extensions.Validation.ValidateContext.ValidationOptions.init -> void
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableInfo) -> bool
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo) -> bool
-virtual Microsoft.Extensions.Validation.ValidatableParameterInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void
-virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.Validate(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context) -> void
-virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidateAsync(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-virtual Microsoft.Extensions.Validation.ValidatableTypeInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void
+*REMOVED*abstract Microsoft.Extensions.Validation.ValidatableParameterInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
+*REMOVED*abstract Microsoft.Extensions.Validation.ValidatablePropertyInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
+*REMOVED*abstract Microsoft.Extensions.Validation.ValidatableTypeInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
+*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo
+*REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo
+*REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo
+*REMOVED*virtual Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+*REMOVED*virtual Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.Container.get -> object?
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.Container.init -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.Errors.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.Errors.init -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.Name.get -> string!
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.Name.init -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.Path.get -> string!
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.Path.init -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidationErrorContext.ValidationErrorContext() -> void
+Microsoft.Extensions.Validation.ValidationError
+Microsoft.Extensions.Validation.ValidationError.Container.get -> object?
+Microsoft.Extensions.Validation.ValidationError.Container.init -> void
+Microsoft.Extensions.Validation.ValidationError.ErrorMessage.get -> string!
+Microsoft.Extensions.Validation.ValidationError.ErrorMessage.init -> void
+Microsoft.Extensions.Validation.ValidationError.Name.get -> string!
+Microsoft.Extensions.Validation.ValidationError.Name.init -> void
+Microsoft.Extensions.Validation.ValidationError.Path.get -> string!
+Microsoft.Extensions.Validation.ValidationError.Path.init -> void
+Microsoft.Extensions.Validation.ValidationError.ValidationError() -> void

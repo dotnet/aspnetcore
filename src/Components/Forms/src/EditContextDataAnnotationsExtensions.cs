@@ -52,7 +52,6 @@ public static partial class EditContextDataAnnotationsExtensions
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private readonly IValidatableTypeInfo? _validatorTypeInfo;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        private readonly Dictionary<string, FieldIdentifier> _validationPathToFieldIdentifierMapping = new();
 
         [UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         public DataAnnotationsEventSubscriptions(EditContext editContext, IServiceProvider serviceProvider)
@@ -206,19 +205,9 @@ public static partial class EditContextDataAnnotationsExtensions
             // Clear stale messages so the form shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.
             _messages.Clear();
 
-            try
-            {
-                validateContext.OnValidationError += AddMapping;
+            await validatableInfo.ValidateAsync(_editContext.Model, validateContext, cancellationToken);
 
-                await validatableInfo.ValidateAsync(_editContext.Model, validateContext, cancellationToken);
-
-                AddValidateContextErrors(validateContext);
-            }
-            finally
-            {
-                validateContext.OnValidationError -= AddMapping;
-                _validationPathToFieldIdentifierMapping.Clear();
-            }
+            AddValidateContextErrors(validateContext);
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
@@ -229,19 +218,9 @@ public static partial class EditContextDataAnnotationsExtensions
             // Clear stale messages so the form shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.
             _messages.Clear();
 
-            try
-            {
-                validateContext.OnValidationError += AddMapping;
+            validatableInfo.Validate(_editContext.Model, validateContext);
 
-                validatableInfo.Validate(_editContext.Model, validateContext);
-
-                AddValidateContextErrors(validateContext);
-            }
-            finally
-            {
-                validateContext.OnValidationError -= AddMapping;
-                _validationPathToFieldIdentifierMapping.Clear();
-            }
+            AddValidateContextErrors(validateContext);
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
@@ -254,16 +233,20 @@ public static partial class EditContextDataAnnotationsExtensions
             };
         }
 
-        // Transfers ValidateContext errors to the ValidationMessageStore using the path-to-field mapping
-        // populated by AddMapping. Shared by the synchronous and asynchronous form validation paths.
+        // Transfers ValidateContext errors to the ValidationMessageStore. Each reported error carries the
+        // container and member name needed to build the FieldIdentifier directly. Shared by the synchronous
+        // and asynchronous form validation paths.
         private void AddValidateContextErrors(ValidateContext validateContext)
         {
             if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
             {
-                foreach (var (fieldKey, messages) in validationErrors)
+                foreach (var (_, error) in validationErrors)
                 {
-                    var fieldIdentifier = _validationPathToFieldIdentifierMapping[fieldKey];
-                    _messages.Add(fieldIdentifier, messages);
+                    foreach (var errorContext in error)
+                    {
+                        var fieldIdentifier = new FieldIdentifier(errorContext.Container ?? _editContext.Model, errorContext.Name);
+                        _messages.Add(fieldIdentifier, errorContext.ErrorMessage);
+                    }
                 }
             }
         }
@@ -329,19 +312,16 @@ public static partial class EditContextDataAnnotationsExtensions
 
             if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
             {
-                foreach (var (_, messages) in validationErrors)
+                foreach (var (_, error) in validationErrors)
                 {
-                    _messages.Add(fieldIdentifier, messages);
+                    foreach (var errorContext in error)
+                    {
+                        _messages.Add(fieldIdentifier, errorContext.ErrorMessage);
+                    }
                 }
             }
 
             _editContext.NotifyValidationStateChanged();
-        }
-
-        private void AddMapping(ValidationErrorContext context)
-        {
-            _validationPathToFieldIdentifierMapping[context.Path] =
-                new FieldIdentifier(context.Container ?? _editContext.Model, context.Name);
         }
 
         public void Dispose()
