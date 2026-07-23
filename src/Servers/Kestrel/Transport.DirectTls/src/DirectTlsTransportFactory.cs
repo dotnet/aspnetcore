@@ -129,8 +129,10 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
 
         // Each listener owns its own pump pool bound to its own listen socket. This keeps endpoints fully
         // isolated so per-endpoint certificate selection (e.g. two ports with different certs) works
-        // correctly, at the cost of WorkerCount threads per endpoint.
-        var pumpPool = new TlsEventPumpPool(_options.WorkerCount, _loggerFactory);
+        // correctly, at the cost of WorkerCount threads per endpoint. The endpoint may override the
+        // transport-wide worker count so multi-endpoint servers can bound their total thread count.
+        var workerCount = endpointOptions.WorkerCount ?? _options.WorkerCount;
+        var pumpPool = new TlsEventPumpPool(workerCount, _loggerFactory);
 
         var memoryPool = MemoryPool<byte>.Shared;
         var transport = new DirectTlsConnectionListener(

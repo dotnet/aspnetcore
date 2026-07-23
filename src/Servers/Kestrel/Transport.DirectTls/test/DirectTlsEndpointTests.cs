@@ -68,6 +68,24 @@ public class DirectTlsEndpointTests
         Assert.Equal(ClientCertificateMode.NoCertificate, options.ClientCertificateMode);
         Assert.Null(options.ClientCertificateValidation);
         Assert.Null(options.TlsClientHelloBytesCallback);
+        Assert.Null(options.WorkerCount);
+    }
+
+    [Fact]
+    public void EndpointOptions_WorkerCount_OverrideRoundTripsAndRejectsNonPositive()
+    {
+        var options = new DirectTlsEndpointOptions();
+
+        Assert.Null(options.WorkerCount);
+
+        options.WorkerCount = 3;
+        Assert.Equal(3, options.WorkerCount);
+
+        options.WorkerCount = null;
+        Assert.Null(options.WorkerCount);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.WorkerCount = 0);
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.WorkerCount = -1);
     }
 
     [Fact]

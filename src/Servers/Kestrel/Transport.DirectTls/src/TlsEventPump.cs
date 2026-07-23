@@ -151,40 +151,6 @@ internal sealed class TlsEventPump : IDisposable
         _pumpThread.Start();
     }
 
-    /// <summary>
-    /// Start the pump without a listen socket.
-    /// </summary>
-    public void Start()
-    {
-        _pumpThread.Start();
-    }
-
-    public void Register(ConnectionIoState conn)
-    {
-        _logger?.LogDebug("Registering fd={Fd} with epoll", conn.Fd);
-
-        conn.Pump = this;
-        _connections[conn.Fd] = conn;
-
-        // Register for EPOLLIN initially - EPOLLOUT will be added dynamically when needed
-        // Using level-triggered mode (no EPOLLET) for stability
-        var ev = new EpollEvent
-        {
-            Events = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP,
-            Data = new EpollData { Fd = conn.Fd }
-        };
-
-        int result = NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_ADD, conn.Fd, ref ev);
-        if (result < 0)
-        {
-            int errno = Marshal.GetLastWin32Error();
-            _logger?.LogError("epoll_ctl ADD failed for fd={Fd}: errno={Errno}", conn.Fd, errno);
-            throw new InvalidOperationException($"epoll_ctl ADD failed: {errno}");
-        }
-
-        _logger?.LogDebug("Successfully registered fd={Fd} with epoll", conn.Fd);
-    }
-
     public void Unregister(int fd)
     {
         _connections.TryRemove(fd, out _);

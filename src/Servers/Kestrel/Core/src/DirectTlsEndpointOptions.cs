@@ -77,6 +77,32 @@ public sealed class DirectTlsEndpointOptions
     public Action<ConnectionContext, ReadOnlySequence<byte>>? TlsClientHelloBytesCallback { get; set; }
 
     /// <summary>
+    /// Overrides the transport-wide worker count (<c>DirectTlsTransportOptions.WorkerCount</c>) for this
+    /// endpoint. When <see langword="null"/> (the default), the transport-wide worker count is used.
+    /// </summary>
+    /// <remarks>
+    /// Each DirectTls endpoint runs its own pool of worker threads, so a server's total thread count is the sum
+    /// of every bound endpoint's worker count. Set this on individual endpoints to bound threads when hosting
+    /// several DirectTls endpoints — for example, a low-traffic management port can use far fewer workers than a
+    /// public HTTPS port. Must be greater than zero when set.
+    /// </remarks>
+    public int? WorkerCount
+    {
+        get => _workerCount;
+        set
+        {
+            if (value is <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(WorkerCount)} must be greater than zero when set.");
+            }
+
+            _workerCount = value;
+        }
+    }
+
+    private int? _workerCount;
+
+    /// <summary>
     /// The HTTP protocols (ALPN) advertised for this endpoint, sourced from <see cref="ListenOptions.Protocols"/>
     /// after the endpoint has been configured. Not part of the public surface: the DirectTls transport's
     /// post-configure step copies the protocols here so the transport does not need to depend on

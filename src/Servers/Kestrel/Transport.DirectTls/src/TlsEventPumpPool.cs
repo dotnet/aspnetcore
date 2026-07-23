@@ -21,7 +21,6 @@ internal sealed class TlsEventPumpPool : IDisposable
 {
     private readonly TlsEventPump[] _pumps;
     private readonly ILoggerFactory? _loggerFactory;
-    private int _nextPump;
 
     public TlsEventPumpPool(int pumpCount = 0, ILoggerFactory? loggerFactory = null)
     {
@@ -62,15 +61,6 @@ internal sealed class TlsEventPumpPool : IDisposable
                 noDelay,
                 clientHelloCallback);
         }
-    }
-
-    /// <summary>
-    /// Returns the next pump in a round-robin fashion.
-    /// </summary>
-    public TlsEventPump GetNextPump()
-    {
-        int idx = Interlocked.Increment(ref _nextPump) % _pumps.Length;
-        return _pumps[idx];
     }
 
     public void Dispose()

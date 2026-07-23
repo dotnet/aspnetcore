@@ -18,4 +18,6 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.SslProtocols.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.get -> System.Action<Microsoft.AspNetCore.Connections.ConnectionContext!, System.Buffers.ReadOnlySequence<byte>>?
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.TlsClientHelloBytesCallback.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.WorkerCount.get -> int?
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.WorkerCount.set -> void
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseTlsClientHelloListener(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, System.Action<Microsoft.AspNetCore.Connections.ConnectionContext!, System.Buffers.ReadOnlySequence<byte>>! tlsClientHelloBytesCallback, System.TimeSpan? timeout = null) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
