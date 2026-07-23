@@ -63,6 +63,19 @@ internal sealed class TlsEventPumpPool : IDisposable
         }
     }
 
+    /// <summary>
+    /// Stop every pump from accepting new connections (de-register the listen fd from each pump's epoll
+    /// set and clear its cached listen fd). Established connections keep being serviced. Call this before
+    /// closing the listen socket. Idempotent.
+    /// </summary>
+    public void StopAccepting()
+    {
+        foreach (var pump in _pumps)
+        {
+            pump.StopAccepting();
+        }
+    }
+
     public void Dispose()
     {
         foreach (var pump in _pumps)

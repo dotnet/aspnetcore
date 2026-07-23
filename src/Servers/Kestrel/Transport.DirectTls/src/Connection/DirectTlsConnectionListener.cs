@@ -132,6 +132,11 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
 
     public async ValueTask DisposeAsync()
     {
+        // Quiesce accept on every pump (de-register the listen fd from their epoll sets and stop the
+        // accept loop) BEFORE closing the listen socket. Otherwise a pump can keep calling Accept() on a
+        // closed fd - or misroute a client fd that reuses the closed listen fd's number into the accept
+        // path - and tight-spin. See TlsEventPump.StopAccepting / AcceptConnections.
+        _pumpPool.StopAccepting();
         _listenSocket?.Dispose();
         _readyConnections.Writer.TryComplete();
 
@@ -154,6 +159,9 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
 
     public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
     {
+        // Stop accepting on all pumps and de-register the listen fd from their epoll sets before closing
+        // it, so pumps that keep serving established connections don't spin on / misroute the freed fd.
+        _pumpPool.StopAccepting();
         _listenSocket?.Dispose();
         _readyConnections.Writer.TryComplete();
         return ValueTask.CompletedTask;

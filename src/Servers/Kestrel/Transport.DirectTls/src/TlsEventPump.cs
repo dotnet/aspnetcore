@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 /// TLS event pump that handles accept, handshake, and I/O events on a dedicated thread.
 /// Uses EPOLLEXCLUSIVE on the listen socket to distribute accept load across workers.
 /// </summary>
-internal sealed class TlsEventPump : IDisposable
+internal class TlsEventPump : IDisposable
 {
     private readonly ILogger? _logger;
     private readonly int _id;
@@ -37,8 +37,9 @@ internal sealed class TlsEventPump : IDisposable
     private volatile bool _running = true;
     private bool _disposed;
 
-    // Listen socket (added with EPOLLEXCLUSIVE)
-    private int _listenFd = -1;
+    // Listen socket (added with EPOLLEXCLUSIVE). Volatile: written by StopAccepting() (on the disposing
+    // thread) and read by the pump thread in PumpLoop/AcceptConnections.
+    private volatile int _listenFd = -1;
     // Managed, non-owning wrapper over the listen fd used to call Socket.Accept().
     // The fd is owned by DirectTlsConnectionListener; this wrapper never closes it.
     private Socket? _listenSocket;
@@ -179,6 +180,37 @@ internal sealed class TlsEventPump : IDisposable
         }
     }
 
+    // Test-only seams: drive AcceptConnections' guard and loop deterministically without
+    // StartWithListenSocket, a real listen socket, epoll registration, or the pump thread.
+    internal void SetListenFdForTests(int fd) => _listenFd = fd;
+    internal void StopRunningForTests() => _running = false;
+
+    /// <summary>
+    /// Stop this pump from accepting new connections: de-register the listen fd from this pump's epoll
+    /// set and clear <see cref="_listenFd"/>. Must be called before the listener closes the listen
+    /// socket so that (a) the accept loop's guard breaks and (b) a later client fd that reuses the
+    /// closed listen fd's number is never misrouted into the accept path by PumpLoop. Idempotent.
+    /// Established connections owned by this pump keep being serviced.
+    /// </summary>
+    internal void StopAccepting()
+    {
+        int listenFd = _listenFd;
+        if (listenFd < 0)
+        {
+            return;
+        }
+
+        // Clear first so PumpLoop's `fd == _listenFd` check and AcceptConnections' guard both stop
+        // matching this fd number even before the epoll de-registration below completes.
+        _listenFd = -1;
+
+        // epoll_ctl is safe to call concurrently with the pump thread's epoll_wait.
+        if (NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, listenFd, IntPtr.Zero) < 0)
+        {
+            _logger?.LogDebug("epoll_ctl DEL listenFd={Fd} failed: errno={Errno}", listenFd, Marshal.GetLastWin32Error());
+        }
+    }
+
     private void PumpLoop()
     {
         const int MaxEvents = 256;
@@ -286,87 +318,122 @@ internal sealed class TlsEventPump : IDisposable
 
     /// <summary>
     /// Accept new connections from the listen socket via the managed Socket API.
-    /// Drains the accept backlog until <see cref="SocketError.WouldBlock"/>.
+    /// Drains the accept backlog until <see cref="SocketError.WouldBlock"/>, and stops if the pump is
+    /// shutting down (<see cref="_running"/> cleared) or the listen socket has been detached
+    /// (<see cref="_listenFd"/> set to -1 by <see cref="StopAccepting"/>).
     /// </summary>
-    private void AcceptConnections()
+    /// <remarks>
+    /// On any accept error we stop the drain and return to <c>epoll_wait</c> rather than looping: the
+    /// listen socket is level-triggered, so if connections are still pending we are re-woken immediately,
+    /// and once <see cref="StopAccepting"/> has de-registered the fd we are never woken for it again. This
+    /// makes the loop spin-proof without a failure counter - a persistently failing accept cannot tight-loop
+    /// because a closed listen fd is always de-registered before it is closed. Successful accepts still loop,
+    /// so backlog draining under load is unaffected.
+    /// </remarks>
+    internal void AcceptConnections()
     {
-        while (true)
+        while (_running && _listenFd >= 0)
         {
             Socket accepted;
             try
             {
-                accepted = _listenSocket!.Accept();
+                accepted = AcceptOne();
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.WouldBlock)
             {
                 // Backlog drained - nothing more to accept right now.
                 break;
             }
+            catch (ObjectDisposedException)
+            {
+                // Listen socket wrapper was disposed during shutdown - stop accepting.
+                break;
+            }
             catch (SocketException ex)
             {
-                // Transient accept failure (e.g. peer reset before accept) - skip it.
+                // Rare accept failure: a per-connection error (e.g. peer reset before accept) or a listen
+                // socket torn down mid-drain. Stop this drain and let epoll decide if there is more to do.
                 _logger?.LogDebug(ex, "Accept failed: {Error}", ex.SocketErrorCode);
-                continue;
+                break;
             }
 
-            // Configure the accepted socket through the managed API: non-blocking so the
-            // session can drive readiness via epoll, and TCP_NODELAY for low latency.
-            accepted.Blocking = false;
-            if (_noDelay)
-            {
-                accepted.NoDelay = true;
-            }
-
-            var remoteEndPoint = accepted.RemoteEndPoint as System.Net.IPEndPoint;
-            int clientFd = (int)accepted.Handle;
-
-            // Hand the accepted socket's own SafeSocketHandle to the session. TlsSocketSession
-            // takes ownership and disposes it (closing the fd) with the session. Suppress the
-            // managed Socket's finalizer so it never double-closes the fd the session now owns.
-            var socketHandle = accepted.SafeHandle;
-            GC.SuppressFinalize(accepted);
-
-            // Create a socket-bound TLS session and attach the shared server context.
-            // SetContext configures SSL_set_fd + server accept state internally.
-            var session = new TlsSocketSession(socketHandle);
-            try
-            {
-                session.SetContext(_tlsContext!);
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogDebug(ex, "Failed to initialize TLS session for fd={Fd}", clientFd);
-                session.Dispose();
-                continue;
-            }
-
-            // Register client socket with epoll for handshake events
-            var ev = new EpollEvent
-            {
-                Events = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP,
-                Data = new EpollData { Fd = clientFd }
-            };
-
-            int result = NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_ADD, clientFd, ref ev);
-            if (result < 0)
-            {
-                int errno = Marshal.GetLastWin32Error();
-                _logger?.LogWarning("epoll_ctl ADD failed for handshaking fd={Fd}: errno={Errno}", clientFd, errno);
-                session.Dispose();
-                continue;
-            }
-
-            // Track handshaking connection with captured remote endpoint
-            _handshaking[clientFd] = new HandshakingConnection
-            {
-                Fd = clientFd,
-                Session = session,
-                RemoteEndPoint = remoteEndPoint
-            };
-
-            // Try handshake immediately (might complete for resumed sessions)
-            TryAdvanceHandshake(clientFd, _handshaking[clientFd]);
+            ProcessAcceptedSocket(accepted);
         }
+    }
+
+    /// <summary>
+    /// Accept a single pending connection from the listen socket. Isolated as the sole native accept
+    /// call so tests can script accept outcomes without a real listen socket.
+    /// </summary>
+    internal virtual Socket AcceptOne()
+    {
+        return _listenSocket!.Accept();
+    }
+
+    /// <summary>
+    /// Configure a freshly accepted socket, create its TLS session, and register it for handshake
+    /// events. Isolated from the accept loop so tests can exercise the loop's control flow without the
+    /// native TLS/epoll work.
+    /// </summary>
+    internal virtual void ProcessAcceptedSocket(Socket accepted)
+    {
+        // Configure the accepted socket through the managed API: non-blocking so the
+        // session can drive readiness via epoll, and TCP_NODELAY for low latency.
+        accepted.Blocking = false;
+        if (_noDelay)
+        {
+            accepted.NoDelay = true;
+        }
+
+        var remoteEndPoint = accepted.RemoteEndPoint as System.Net.IPEndPoint;
+        int clientFd = (int)accepted.Handle;
+
+        // Hand the accepted socket's own SafeSocketHandle to the session. TlsSocketSession
+        // takes ownership and disposes it (closing the fd) with the session. Suppress the
+        // managed Socket's finalizer so it never double-closes the fd the session now owns.
+        var socketHandle = accepted.SafeHandle;
+        GC.SuppressFinalize(accepted);
+
+        // Create a socket-bound TLS session and attach the shared server context.
+        // SetContext configures SSL_set_fd + server accept state internally.
+        var session = new TlsSocketSession(socketHandle);
+        try
+        {
+            session.SetContext(_tlsContext!);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogDebug(ex, "Failed to initialize TLS session for fd={Fd}", clientFd);
+            session.Dispose();
+            return;
+        }
+
+        // Register client socket with epoll for handshake events
+        var ev = new EpollEvent
+        {
+            Events = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP,
+            Data = new EpollData { Fd = clientFd }
+        };
+
+        int result = NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_ADD, clientFd, ref ev);
+        if (result < 0)
+        {
+            int errno = Marshal.GetLastWin32Error();
+            _logger?.LogWarning("epoll_ctl ADD failed for handshaking fd={Fd}: errno={Errno}", clientFd, errno);
+            session.Dispose();
+            return;
+        }
+
+        // Track handshaking connection with captured remote endpoint
+        _handshaking[clientFd] = new HandshakingConnection
+        {
+            Fd = clientFd,
+            Session = session,
+            RemoteEndPoint = remoteEndPoint
+        };
+
+        // Try handshake immediately (might complete for resumed sessions)
+        TryAdvanceHandshake(clientFd, _handshaking[clientFd]);
     }
 
     /// <summary>
@@ -728,7 +795,12 @@ internal sealed class TlsEventPump : IDisposable
         _disposed = true;
 
         _running = false;
-        _pumpThread.Join(2000);
+        // IsAlive is false for a never-started thread (tests may construct a pump without starting it)
+        // and for an already-finished one; Join would throw on the former, so guard it.
+        if (_pumpThread.IsAlive)
+        {
+            _pumpThread.Join(2000);
+        }
         // Non-owning wrapper: disposing it does not close the listener-owned fd.
         _listenSocket?.Dispose();
 
