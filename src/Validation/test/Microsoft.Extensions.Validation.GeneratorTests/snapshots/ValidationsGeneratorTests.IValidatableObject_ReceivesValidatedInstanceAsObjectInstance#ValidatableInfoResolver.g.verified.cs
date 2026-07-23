@@ -66,39 +66,11 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
             validatableTypeInfo = null;
-            if (type == typeof(global::NestedType))
+            if (type == typeof(global::ObjectInstanceModel))
             {
                 validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
-                    type: typeof(global::NestedType),
+                    type: typeof(global::ObjectInstanceModel),
                     members: [],
-                    displayNameInfo: null
-                );
-                return true;
-            }
-            if (type == typeof(global::ComplexType))
-            {
-                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
-                    type: typeof(global::ComplexType),
-                    members: [
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "X",
-                            displayNameInfo: null
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "Y",
-                            displayNameInfo: null
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::NestedType),
-                            name: "ObjectProperty",
-                            displayNameInfo: null
-                        ),
-                    ],
                     displayNameInfo: null
                 );
                 return true;

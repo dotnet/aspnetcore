@@ -26,7 +26,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
 
     internal DisplayNameInfo? DisplayNameInfo { get; }
 
-    public bool TryFindProperty(string propertyName, global::Microsoft.Extensions.Validation.ValidationOptions validationOptions, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo)
+    public bool TryFindProperty(string propertyName, global::Microsoft.Extensions.Validation.ValidationOptions validationOptions, out global::Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo)
     {
         if (FindLocalMember(propertyName) is { } localMember)
         {
@@ -128,7 +128,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
+        var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(value ?? _throwawayObjectInstance, displayName, context.ServiceProvider, null);
 
         await ValidateAttributesAsync(context, GetValidationAttributes(), value, value, validationContext, displayName, cancellationToken);
 
@@ -185,7 +185,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null);
+        var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(value ?? _throwawayObjectInstance, displayName, context.ServiceProvider, null);
 
         ValidateAllAttributesSynchronously(context, GetValidationAttributes(), value, value, validationContext, displayName);
 

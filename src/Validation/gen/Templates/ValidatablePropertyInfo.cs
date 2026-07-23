@@ -45,7 +45,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
     {
         if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
         {
-            var result = _requiredAttribute.GetValidationResult(propertyValue, validationContext);
+            var result = _requiredAttribute!.GetValidationResult(propertyValue, validationContext);
 
             if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
             {

@@ -52,7 +52,7 @@ file abstract class ValidatableInfo
         return interfaceType.IsAssignableFrom(type);
     }
 
-    private protected static bool TryGetRequiredAttribute(global::System.ComponentModel.DataAnnotations.ValidationAttribute[] attributes, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::System.ComponentModel.DataAnnotations.RequiredAttribute? requiredAttribute)
+    private protected static bool TryGetRequiredAttribute(global::System.ComponentModel.DataAnnotations.ValidationAttribute[] attributes, out global::System.ComponentModel.DataAnnotations.RequiredAttribute? requiredAttribute)
     {
         foreach (var attribute in attributes)
         {

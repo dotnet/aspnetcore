@@ -27,8 +27,8 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
         if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
         {
             var result = validationContext is not null
-                ? _requiredAttribute.GetValidationResult(value, validationContext)
-                : CreateValidationResult(_requiredAttribute.IsValid(value), _requiredAttribute, displayName);
+                ? _requiredAttribute!.GetValidationResult(value, validationContext)
+                : CreateValidationResult(_requiredAttribute!.IsValid(value), _requiredAttribute, displayName);
 
             if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
             {

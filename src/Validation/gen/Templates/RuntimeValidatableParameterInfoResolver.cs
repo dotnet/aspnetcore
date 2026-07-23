@@ -1,13 +1,13 @@
 file sealed class RuntimeValidatableParameterInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
 {
     // TODO: the implementation currently relies on static discovery of types.
-    public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
+    public bool TryGetValidatableTypeInfo(global::System.Type type, out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
     {
         validatableTypeInfo = null;
         return false;
     }
 
-    public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
+    public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
     {
         if (parameterInfo.Name == null)
         {

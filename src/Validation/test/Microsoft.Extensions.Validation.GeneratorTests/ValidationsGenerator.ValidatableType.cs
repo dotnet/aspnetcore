@@ -747,4 +747,57 @@ public record SubTypeWithInheritance : SubType
             }
         });
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IValidatableObject_ReceivesValidatedInstanceAsObjectInstance(bool useAsync)
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/67960: the ValidationContext
+        // passed to IValidatableObject.Validate must carry the model being validated as ObjectInstance,
+        // not a placeholder. Otherwise user code that casts ObjectInstance back to the model throws.
+        var source = """
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+app.Run();
+
+[ValidatableType]
+public class ObjectInstanceModel : IValidatableObject
+{
+    public string Name { get; set; } = string.Empty;
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var model = (ObjectInstanceModel)validationContext.ObjectInstance;
+        yield return new ValidationResult($"ObjectInstance.Name = '{model.Name}'.", [nameof(Name)]);
+    }
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyValidatableType(compilation, "ObjectInstanceModel", async (validationOptions, type) =>
+        {
+            Assert.True(validationOptions.TryGetValidatableTypeInfo(type, out var validatableTypeInfo));
+
+            var instance = Activator.CreateInstance(type);
+            type.GetProperty("Name")!.SetValue(instance, "hello");
+            var context = new ValidateContext
+            {
+                ValidationOptions = validationOptions,
+                ServiceProvider = null,
+            };
+
+            await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
+
+            var error = Assert.Single(context.ValidationErrors!);
+            Assert.Equal("Name", error.Key);
+            Assert.Equal("ObjectInstance.Name = 'hello'.", error.Value.Select(e => e.ErrorMessage).Single());
+        });
+    }
 }
