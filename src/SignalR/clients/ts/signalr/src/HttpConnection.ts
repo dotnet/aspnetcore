@@ -424,7 +424,7 @@ export class HttpConnection implements IConnection {
         });
 
         if (response.statusCode !== 200) {
-            return Promise.reject(new Error(`Unexpected status code returned from authentication refresh '${response.statusCode}'`));
+            throw new Error(`Unexpected status code returned from authentication refresh '${response.statusCode}'`);
         }
 
         if (typeof response.content !== "string") {
