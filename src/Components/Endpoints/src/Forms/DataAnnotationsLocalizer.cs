@@ -69,7 +69,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
         }
 
         // Format the localized template with attribute-specific arguments
-        return FormatMessage(attribute, CultureInfo.CurrentCulture, localizedTemplate, displayName);
+        return FormatMessage(attribute, CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
     }
 
     private string? GetErrorMessageKey(ValidationAttribute attribute, string memberName, Type? type)

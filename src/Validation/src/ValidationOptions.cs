@@ -35,7 +35,7 @@ public class ValidationOptions
 
     /// <summary>
     /// Gets or sets a delegate that resolves the <see cref="IStringLocalizer"/> used to localize
-    /// validation messages for a given declaring type.
+    /// validation display names and error messages for a given declaring type.
     /// </summary>
     /// <remarks>
     /// The delegate receives the declaring type of the member being validated (which may be

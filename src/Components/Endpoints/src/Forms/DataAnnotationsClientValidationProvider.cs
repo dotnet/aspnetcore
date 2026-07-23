@@ -88,7 +88,7 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
         {
             var errorMessage = _localizer.ResolveAttributeErrorMessage(fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType, attribute);
 
-            if (string.IsNullOrEmpty(errorMessage))
+            if (errorMessage is null)
             {
                 continue;
             }
