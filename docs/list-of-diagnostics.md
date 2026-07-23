@@ -78,6 +78,7 @@
 |  __`BL0014`__ | For loop iterator used inside a closure. |
 |  __`BL0015`__ | [JSInvokable] methods should be public |
 |  __`BL0016`__ | Unguarded JS interop call |
+|  __`BL0017`__ | JS interop used without checking RendererInfo.IsInteractive |
 
 ### Request Delegate Generator  (`RDG001-RDG014`)
 
