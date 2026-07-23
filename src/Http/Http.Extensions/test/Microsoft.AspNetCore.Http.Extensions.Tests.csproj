@@ -5,6 +5,7 @@
     <!-- This is needed to support codepaths that use NullabilityInfoContext. -->
     <Features>$(Features.Replace('nullablePublicOnly', ''))</Features>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsNamespaces>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,7 +61,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" />
-
+    <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
