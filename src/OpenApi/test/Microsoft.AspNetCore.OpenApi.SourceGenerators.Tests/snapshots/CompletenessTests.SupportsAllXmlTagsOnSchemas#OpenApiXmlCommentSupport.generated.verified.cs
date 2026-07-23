@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
-    using Microsoft.AspNetCore.Mvc.ModelBinding;
     using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi;
