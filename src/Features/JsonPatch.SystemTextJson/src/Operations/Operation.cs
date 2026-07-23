@@ -15,7 +15,7 @@ public class Operation : OperationBase
 {
     internal struct ValueHolder : IEquatable<ValueHolder>
     {
-        // While ShouldSerializeValue appears unused. Be careful if you remove it.
+        // While ShouldSerializeValue appears unread. Be careful if you remove it.
         // It decides whether or not the value property is serialized.
         // It's used by STJ for deciding the JsonIgnore (WhenWritingDefault)
         public bool ShouldSerializeValue { get; set; }
@@ -35,7 +35,7 @@ public class Operation : OperationBase
             => obj is ValueHolder other && Equals(other);
 
         public override int GetHashCode()
-            => ShouldSerializeValue ? Value.GetHashCode() : 0;
+            => ShouldSerializeValue ? Value?.GetHashCode() ?? 0 : 0;
     }
 
     private sealed class ValueHolderConverter : JsonConverter<ValueHolder>
@@ -47,12 +47,7 @@ public class Operation : OperationBase
         }
 
         public override void Write(Utf8JsonWriter writer, ValueHolder value, JsonSerializerOptions options)
-        {
-            if (value.ShouldSerializeValue)
-            {
-                JsonSerializer.Serialize(writer, value.Value, options);
-            }
-        }
+            => JsonSerializer.Serialize(writer, value.Value, options);
     }
 
     [JsonIgnore]
