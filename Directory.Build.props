@@ -192,6 +192,12 @@
     <CreateDirectory Include="$(VisualStudioSetupOutputPath)" />
   </ItemGroup>
 
+  <!-- TEMPORARY: diagnosing internal/release/8.0 CI restore failures around ws@7.5.11; suppress the pre-existing
+       AngleSharp 0.9.9 audit warning so restore can proceed far enough to observe the npm/yarn failure. -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-pgww-w46g-26qg" />
+  </ItemGroup>
+
   <!-- The location of the local installation of the .NET Core shared framework. -->
   <PropertyGroup>
     <LocalDotNetRoot>$(RepoRoot).dotnet\</LocalDotNetRoot>
