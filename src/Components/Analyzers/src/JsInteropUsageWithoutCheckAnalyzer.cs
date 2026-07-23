@@ -24,25 +24,25 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-        context.RegisterCompilationStartAction(static compilationContext =>
+        context.RegisterCompilationStartAction(static context =>
         {
             var availableTypes = new Dictionary<string, INamedTypeSymbol?>()
             {
                 {
                     ComponentsApi.ComponentBase.MetadataName,
-                    compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName)
+                    context.Compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName)
                 },
                 {
                     ComponentsApi.JSInteropRuntime.MetadataName,
-                    compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.JSInteropRuntime.MetadataName)
+                    context.Compilation.GetTypeByMetadataName(ComponentsApi.JSInteropRuntime.MetadataName)
                 },
                 {
                     ComponentsApi.JSObjectReference.MetadataName,
-                    compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.JSObjectReference.MetadataName)
+                    context.Compilation.GetTypeByMetadataName(ComponentsApi.JSObjectReference.MetadataName)
                 },
                 {
                     ComponentsApi.RendererInfo.MetadataName,
-                    compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.RendererInfo.MetadataName)
+                    context.Compilation.GetTypeByMetadataName(ComponentsApi.RendererInfo.MetadataName)
                 }
             };
             if (availableTypes[ComponentsApi.ComponentBase.MetadataName] is null
@@ -53,15 +53,15 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            compilationContext.RegisterOperationBlockAction(blockContext =>
+            context.RegisterOperationBlockAction(context =>
             {
-                if (blockContext.OwningSymbol is IMethodSymbol owningMethod
+                if (context.OwningSymbol is IMethodSymbol owningMethod
                     && !IsImplementationOfOnAfterRender(owningMethod, availableTypes))
                 {
-                    foreach (var childBlock in blockContext.OperationBlocks)
+                    foreach (var childBlock in context.OperationBlocks)
                     {
                         // Should be one but could be more than one if there are multiple partial class definitions.
-                        AnalyzeOperationsTree(childBlock, new JSInteropAnalyzerState(blockContext, availableTypes));
+                        AnalyzeOperationsTree(childBlock, new JSInteropAnalyzerState(context, availableTypes));
                     }
                 }
             });
@@ -92,9 +92,9 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
     {
         if (operation is IVariableDeclarationOperation variableDeclaration)
         {
-            // Check is `RendererInfo.IsInteractive` is used in a boolean expression before if statement checking it.
+            // Check if `RendererInfo.IsInteractive` is used in a boolean expression before if statement checking it.
             // Also check for JSInterop calls in a ternary operator.
-            foreach(var declarator in variableDeclaration.Declarators)
+            foreach (var declarator in variableDeclaration.Declarators)
             {
                 AnalyzeDeclaration(declarator, state);
             }
