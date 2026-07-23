@@ -135,6 +135,10 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
         var pumpPool = new TlsEventPumpPool(workerCount, _loggerFactory);
 
         var memoryPool = MemoryPool<byte>.Shared;
+
+        // The listener owns the native contexts (bootstrap + per-SNI cache) and disposes them on teardown.
+        var ownedServerContexts = new ServerTlsContexts(bootstrapContext, contextCache);
+
         var transport = new DirectTlsConnectionListener(
             _loggerFactory,
             bootstrapContext,
@@ -143,7 +147,8 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
             endpoint,
             _options,
             memoryPool,
-            clientHelloCallback);
+            clientHelloCallback,
+            ownedServerContexts);
 
         _logger.LogInformation("DirectTls listener bound for endpoint {Endpoint}.", endpoint);
 

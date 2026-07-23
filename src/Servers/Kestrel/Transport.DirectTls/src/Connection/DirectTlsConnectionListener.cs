@@ -30,7 +30,12 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     private readonly TlsEventPumpPool _pumpPool;
     private readonly Action<ConnectionContext, ReadOnlySequence<byte>>? _clientHelloCallback;
 
+    // Native OpenSSL server credentials (bootstrap + per-SNI contexts) owned by this listener. Disposed once,
+    // at the end of DisposeAsync, after the pump threads are joined. Null only in tests that don't wire them.
+    private readonly IDisposable? _ownedServerContexts;
+
     private Socket? _listenSocket;
+    private int _disposed;
 
     // Channel for connections that have completed handshake and are ready to be returned
     private readonly Channel<DirectTlsConnection> _readyConnections;
@@ -45,7 +50,8 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         EndPoint endpoint,
         DirectTlsTransportOptions options,
         MemoryPool<byte> memoryPool,
-        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null)
+        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
+        IDisposable? ownedServerContexts = null)
     {
         ArgumentNullException.ThrowIfNull(tlsContext);
 
@@ -58,6 +64,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         _tlsContext = tlsContext;
         _contextResolver = contextResolver;
         _clientHelloCallback = clientHelloCallback;
+        _ownedServerContexts = ownedServerContexts;
         EndPoint = endpoint;
 
         // Unbounded channel - handshakes complete asynchronously and we don't want to block them
@@ -132,6 +139,13 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
 
     public async ValueTask DisposeAsync()
     {
+        // Idempotent: Kestrel disposes a listener once, but guard anyway so the owned native contexts are
+        // released exactly once and a stray second call can't double-drain the channel.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
         // Quiesce accept on every pump (de-register the listen fd from their epoll sets and stop the
         // accept loop) BEFORE closing the listen socket. Otherwise a pump can keep calling Accept() on a
         // closed fd - or misroute a client fd that reuses the closed listen fd's number into the accept
@@ -155,6 +169,11 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
 
         // This listener owns its pump pool; stop the pump threads and release their epoll fds.
         _pumpPool.Dispose();
+
+        // Now that the pump threads are joined and no handshake can be in flight, release the OpenSSL server
+        // credentials (bootstrap + per-SNI contexts). Done last so disposal can't race a pump using a context;
+        // idempotent, so a second DisposeAsync is a no-op here.
+        _ownedServerContexts?.Dispose();
     }
 
     public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
