@@ -42,8 +42,16 @@
   <Target Name="Restore">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Restore" />
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
+
+    <!-- TEMPORARY: extra diagnostics for investigating ws@7.5.11 restore failures on internal/release/8.0 CI.
+         Remove this Exec, and the verbose yarn flags below, once the root cause is understood. -->
+    <Exec Command="node &quot;$(MSBuildThisFileDirectory)..\scripts\diagnose-npm-registry.js&quot;"
+        StandardOutputImportance="High"
+        StandardErrorImportance="High"
+        ContinueOnError="true" />
+
     <!-- Add redundancy for yarn install - if first instance fails, try again -->
-    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
+    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile --verbose"
         StandardOutputImportance="High"
         StandardErrorImportance="High"
         IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" 
@@ -51,7 +59,16 @@
           <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode" />
     </Yarn>
     <Message Importance="High" Text="yarn install failed on $(MSBuildProjectFullPath), trying again" Condition="'$(_YarnExitCode)' != '0'" />
-    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
+
+    <!-- TEMPORARY: re-run diagnostics immediately before the retry too, in case state (DNS, feed
+         auth, etc.) changed between the two attempts. -->
+    <Exec Command="node &quot;$(MSBuildThisFileDirectory)..\scripts\diagnose-npm-registry.js&quot;"
+        StandardOutputImportance="High"
+        StandardErrorImportance="High"
+        ContinueOnError="true"
+        Condition="'$(_YarnExitCode)' != '0'" />
+
+    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile --verbose"
         StandardOutputImportance="High"
         StandardErrorImportance="High"
         IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" 
