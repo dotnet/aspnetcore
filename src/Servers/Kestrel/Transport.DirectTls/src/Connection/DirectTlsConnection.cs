@@ -36,6 +36,14 @@ internal sealed partial class DirectTlsConnection : TransportConnection
     private volatile bool _aborted;
     private int _disposed; // 0 = not disposed, 1 = disposed (for thread-safe Compare-And-Swap)
 
+    // The accepted client leaf certificate whose lifetime this connection owns, so it can be disposed
+    // exactly once on teardown. On the accept path the runtime's TlsSession transfers ownership of the leaf
+    // to the caller: SetRemoteCertificateValidationResult(None) promotes it into TlsSession._remoteCertificate,
+    // which TlsSession.Dispose() deliberately never frees (unlike _externalPendingCert and the intermediates).
+    // Tracked separately from the settable ITlsConnectionFeature.ClientCertificate property so that we always
+    // dispose the cert the runtime handed us - and never an object an app may have reassigned onto the feature.
+    private X509Certificate2? _ownedClientCertificate;
+
     public DirectTlsConnection(
         ConnectionIoState connectionState,
         TlsEventPump pump,
@@ -68,6 +76,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         // requested a client certificate (mTLS) and the peer presented one that passed validation, it is
         // stored in ClientCertificate so HttpContext.Connection.ClientCertificate resolves.
         ClientCertificate = clientCertificate;
+        _ownedClientCertificate = clientCertificate;
         Features.Set<ITlsConnectionFeature>(this);
         Features.Set<ITlsHandshakeFeature>(this);
 
@@ -118,6 +127,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
     internal void CompleteHandshake(SslApplicationProtocol negotiatedApplicationProtocol, X509Certificate2? clientCertificate)
     {
         ClientCertificate = clientCertificate;
+        _ownedClientCertificate = clientCertificate;
         _negotiatedApplicationProtocol = negotiatedApplicationProtocol;
     }
 
@@ -161,6 +171,10 @@ internal sealed partial class DirectTlsConnection : TransportConnection
             // Already disposed, ignore
         }
         _connectionClosedTokenSource.Dispose();
+
+        // A half-open handshake never reached mTLS validation, so _ownedClientCertificate is normally null
+        // here; dispose defensively (no-op when null) to keep both teardown paths symmetric.
+        _ownedClientCertificate?.Dispose();
     }
 
     /// <summary>
@@ -387,5 +401,11 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         // 7. Signal connection closed
         _connectionClosedTokenSource.Cancel();
         _connectionClosedTokenSource.Dispose();
+
+        // 8. Dispose the accepted client certificate. The runtime's TlsSession transferred ownership of the
+        //    leaf to us on the accept path (see _ownedClientCertificate) and never frees it itself, so the
+        //    transport must, or the native key handle leaks once per accepted mTLS connection. Kestrel is done
+        //    with the connection by now, mirroring how SslStream disposes RemoteCertificate with the stream.
+        _ownedClientCertificate?.Dispose();
     }
 }

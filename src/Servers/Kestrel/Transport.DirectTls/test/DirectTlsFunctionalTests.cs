@@ -124,6 +124,7 @@ public class DirectTlsFunctionalTests
     public async Task ClientCertificate_RequiredAndValidated_AllowsRequest()
     {
         var validationInvoked = false;
+        string? serverObservedThumbprint = null;
 
         var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
         endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
@@ -134,7 +135,13 @@ public class DirectTlsFunctionalTests
             return true;
         };
 
-        using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
+        using var host = await StartHostAsync(endpoint, context =>
+        {
+            // Read the surfaced client certificate while the request is in flight. This proves the accepted
+            // leaf is still usable when Kestrel needs it - i.e. the transport does not dispose it too early.
+            serverObservedThumbprint = context.Connection.ClientCertificate?.Thumbprint;
+            return context.Response.WriteAsync("ok");
+        });
 
         var clientCertificate = TestResources.GetTestCertificate("eku.client.pfx");
         using var sslStream = await ConnectAsync(
@@ -147,6 +154,7 @@ public class DirectTlsFunctionalTests
 
         Assert.Contains("200 OK", response);
         Assert.True(validationInvoked);
+        Assert.Equal(clientCertificate.Thumbprint, serverObservedThumbprint);
 
         await host.StopAsync().WaitAsync(Timeout);
     }
