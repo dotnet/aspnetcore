@@ -38,7 +38,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-#pragma warning disable ASP0029
+#pragma warning disable CS8767
 
 namespace System.Runtime.CompilerServices
 {
@@ -55,41 +55,35 @@ namespace System.Runtime.CompilerServices
 namespace Microsoft.Extensions.Validation.Generated
 {
     {{GeneratedCodeAttribute}}
-    file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.ValidatablePropertyInfo
+    file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.Generated.ValidatablePropertyInfo
     {
         public GeneratedValidatablePropertyInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
+            global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
         {
             ContainingType = containingType;
-            Name = name;
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
         internal global::System.Type ContainingType { get; }
-        internal string Name { get; }
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
     }
 
     {{GeneratedCodeAttribute}}
-    file sealed class GeneratedValidatableTypeInfo : global::Microsoft.Extensions.Validation.ValidatableTypeInfo
+    file sealed class GeneratedValidatableTypeInfo : global::Microsoft.Extensions.Validation.Generated.ValidatableTypeInfo
     {
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
             ValidatablePropertyInfo[] members,
-            global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(type, members, displayNameInfo)
+            global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo? displayNameInfo = null) : base(type, members, displayNameInfo)
         {
-            Type = type;
         }
-
-        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
-        internal global::System.Type Type { get; }
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetTypeValidationAttributes(Type);
@@ -98,7 +92,7 @@ namespace Microsoft.Extensions.Validation.Generated
     {{GeneratedCodeAttribute}}
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
-        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
             validatableTypeInfo = null;
 {{EmitTypeChecks(validatableTypes)}}
@@ -106,7 +100,7 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
         {
             validatableParameterInfo = null;
             return false;
@@ -127,6 +121,9 @@ namespace Microsoft.Extensions.Validation.Generated
                 {
                     configureOptions(options);
                 }
+                // Support ParameterInfo resolution at runtime. Appended last so it runs after any
+                // user-registered resolvers, matching the previous ordering in AddValidation.
+                options.Resolvers.Add(new global::Microsoft.Extensions.Validation.Generated.RuntimeValidatableParameterInfoResolver());
             });
         }
     }
@@ -205,7 +202,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
     {{GeneratedCodeAttribute}}
-    file sealed class LiteralDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    file sealed class LiteralDisplayName : global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo
     {
         private readonly string _literal;
 
@@ -231,7 +228,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
     {{GeneratedCodeAttribute}}
-    file sealed class PropertyResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    file sealed class PropertyResourceDisplayName : global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo
     {
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
         private readonly global::System.Type _containingType;
@@ -251,7 +248,7 @@ namespace Microsoft.Extensions.Validation.Generated
     }
 
     {{GeneratedCodeAttribute}}
-    file sealed class TypeResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    file sealed class TypeResourceDisplayName : global::Microsoft.Extensions.Validation.Generated.DisplayNameInfo
     {
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
         private readonly global::System.Type _type;
@@ -327,6 +324,8 @@ namespace Microsoft.Extensions.Validation.Generated
                     .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t, inherit: true));
         }
     }
+
+{{EmitInfoClasses()}}
 }
 """;
 

@@ -4,12 +4,11 @@
 #nullable enable
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
@@ -237,11 +236,11 @@ public class ClientValidationProviderTests
     }
 
     [Fact]
-    public void NestedField_IsSuppressed_WhenReachableOnlyThroughNonValidatableType()
+    public void NestedField_IsSuppressed_WhenReachableOnlyThroughSkippedMember()
     {
-        // Wrapper is not validatable, so the MEV submit walk never recurses into it - even though the
-        // field's owner type (AddressModel) is validatable and reachable elsewhere (via ShippingAddress).
-        var options = CreateMevOptions(typeof(OrderModel), typeof(AddressModel) /* WrapperModel deliberately not registered */);
+        // Wrapper is skipped, so the MEV submit walk never recurses into it - even though the field's
+        // owner type (AddressModel) is validatable and reachable elsewhere (via ShippingAddress).
+        var options = CreateMevOptions(typeof(OrderModel), typeof(AddressModel));
         var provider = CreateProvider(options);
         var model = new OrderModel();
         var fields = new Dictionary<FieldIdentifier, string>
@@ -259,9 +258,9 @@ public class ClientValidationProviderTests
     {
         // End-to-end reachability check: the client must emit rules for exactly the set of fields
         // MEV actually validates when the form is submitted. AddressModel is reachable via
-        // ShippingAddress (validated) but the same type reached via the non-validatable Wrapper is
-        // not, so this exercises the path-sensitive distinction against real MEV validation.
-        var options = CreateMevOptions(typeof(OrderModel), typeof(AddressModel) /* WrapperModel not validatable */);
+        // ShippingAddress (validated) but the same type reached via the skipped Wrapper is not, so
+        // this exercises the path-sensitive distinction against real MEV validation.
+        var options = CreateMevOptions(typeof(OrderModel), typeof(AddressModel));
         var model = new OrderModel(); // all [Required] strings empty -> everything reachable is invalid
 
         var fields = new Dictionary<FieldIdentifier, string>
@@ -367,23 +366,17 @@ public class ClientValidationProviderTests
 #pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
     private static ValidationOptions CreateMevOptions(params Type[] validatableTypes)
     {
-        var map = new Dictionary<Type, IValidatableTypeInfo>();
+        var services = new ServiceCollection();
+        services.AddValidation();
+        var options = services.BuildServiceProvider().GetRequiredService<IOptions<ValidationOptions>>().Value;
+
         foreach (var type in validatableTypes)
         {
-            var members = GetDeclaredProperties(type)
-                .Select(property => (ValidatablePropertyInfo)new ReflectedPropertyInfo(type, property))
-                .ToArray();
-            map[type] = new ReflectedTypeInfo(type, members);
+            Assert.True(options.TryGetValidatableTypeInfo(type, out _));
         }
 
-        var options = new ValidationOptions();
-        options.Resolvers.Add(new TestResolver(map));
         return options;
     }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Test models are preserved.")]
-    private static PropertyInfo[] GetDeclaredProperties(Type type)
-        => type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
     // Runs MEV validation the way the submit path does and returns the set of field paths that were
     // validated (surfaced as error keys) - used to assert the client emits rules for exactly those.
@@ -396,38 +389,6 @@ public class ClientValidationProviderTests
         };
         typeInfo!.Validate(model, validateContext);
         return validateContext.ValidationErrors?.Keys.ToArray() ?? Array.Empty<string>();
-    }
-
-    private sealed class TestResolver(Dictionary<Type, IValidatableTypeInfo> map) : IValidatableInfoResolver
-    {
-        public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableInfo)
-            => map.TryGetValue(type, out validatableInfo);
-
-        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
-        {
-            validatableInfo = null;
-            return false;
-        }
-    }
-
-    private sealed class ReflectedTypeInfo : ValidatableTypeInfo
-    {
-        private readonly Type _type;
-
-        public ReflectedTypeInfo(Type type, IReadOnlyList<ValidatablePropertyInfo> members)
-            : base(type, members)
-            => _type = type;
-
-        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Test models are preserved.")]
-        protected override ValidationAttribute[] GetValidationAttributes()
-            => _type.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
-    }
-
-    private sealed class ReflectedPropertyInfo(Type declaringType, PropertyInfo property)
-        : ValidatablePropertyInfo(declaringType, property.PropertyType, property.Name)
-    {
-        protected override ValidationAttribute[] GetValidationAttributes()
-            => property.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
     }
 #pragma warning restore ASP0029
 
@@ -515,24 +476,27 @@ public class ClientValidationProviderTests
         }
     }
 
-    private sealed class OrderModel
+    [Microsoft.Extensions.Validation.ValidatableType]
+    public sealed class OrderModel
     {
         [Required] public string OrderName { get; set; } = "";
 
         // Validatable-typed member -> the MEV submit walk recurses into it.
         public AddressModel ShippingAddress { get; set; } = new();
 
-        // Non-validatable-typed member -> the MEV submit walk does NOT recurse into it, so anything
-        // reachable only through it is not validated on submit.
+        // Skipped member -> the MEV submit walk does NOT recurse into it, so anything reachable
+        // only through it is not validated on submit.
+        [SkipValidation]
         public WrapperModel Wrapper { get; set; } = new();
     }
 
-    private sealed class AddressModel
+    [Microsoft.Extensions.Validation.ValidatableType]
+    public sealed class AddressModel
     {
         [Required] public string Street { get; set; } = "";
     }
 
-    private sealed class WrapperModel
+    public sealed class WrapperModel
     {
         public AddressModel Nested { get; set; } = new();
     }
