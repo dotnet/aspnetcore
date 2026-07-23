@@ -418,6 +418,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                 }
 
                 Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
+                Debug.Assert(CacheableKeyRing.IsValid(newCacheableKeyRing, utcNow), "GetCacheableKeyRing produced a ring that is already invalid at utcNow.");
                 return newCacheableKeyRing.KeyRing;
             }
 
@@ -438,9 +439,8 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             }
         }
 
-        // The only way to leave the lock without returning is as a non-forced caller that observed a
-        // present-but-stale ring (and kicked off the asynchronous refresh above). Prefer returning
-        // that stale ring to blocking.
+        // The only way to leave the lock without returning is as a non-forced caller that observed a present-but-stale ring
+        // (and kicked off the asynchronous refresh above). Prefer returning that stale ring to blocking.
         Debug.Assert(!forceRefresh, "A forced refresh should have produced a fresh key ring inline.");
         Debug.Assert(existingCacheableKeyRing is not null, "Should have refreshed inline when there was no cached key ring.");
         Debug.Assert(!CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow), "Should have returned a valid cached key ring above");
