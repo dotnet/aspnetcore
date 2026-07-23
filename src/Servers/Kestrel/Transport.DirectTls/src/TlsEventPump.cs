@@ -35,6 +35,7 @@ internal sealed class TlsEventPump : IDisposable
 
     private readonly Thread _pumpThread;
     private volatile bool _running = true;
+    private bool _disposed;
 
     // Listen socket (added with EPOLLEXCLUSIVE)
     private int _listenFd = -1;
@@ -751,10 +752,26 @@ internal sealed class TlsEventPump : IDisposable
 
     public void Dispose()
     {
+        // Dispose must be idempotent: close() is not idempotent, and double-closing _epollFd could close an
+        // unrelated fd whose number was recycled between calls. The pump is single-owner (the pool disposes it
+        // once), so a plain flag is sufficient.
+        if (_disposed)
+        {
+            return;
+        }
+        _disposed = true;
+
         _running = false;
         _pumpThread.Join(2000);
         // Non-owning wrapper: disposing it does not close the listener-owned fd.
         _listenSocket?.Dispose();
-        NativeTls.close(_epollFd);
+
+        // close() is intentionally not retried: on Linux the fd is released even when close returns EINTR, so a
+        // retry could close an unrelated fd. A failure here (realistically only EBADF) signals a lifecycle bug
+        // rather than a leak, so log it for diagnostics but don't act on it.
+        if (NativeTls.close(_epollFd) < 0)
+        {
+            _logger?.LogDebug("close(epollFd={EpollFd}) failed: errno={Errno}", _epollFd, Marshal.GetLastWin32Error());
+        }
     }
 }
