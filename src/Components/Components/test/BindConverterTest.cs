@@ -392,34 +392,6 @@ public class BindConverterTest
         Assert.True(result);
         Assert.Equal(expected, value);
     }
-// #nullable enable
-//     [Theory]
-//     [InlineData("")]
-//     [InlineData(null)]
-//     public void TryConvertToNullableFloat_AllowsEmptyValue(string? input)
-//     {
-//         var result = BindConverter.TryConvertTo<float?>(
-//             input,
-//             CultureInfo.InvariantCulture,
-//             out var value);
-
-//         Assert.True(result);
-//         Assert.Null(value);
-//     }
-
-//     [Theory]
-//     [InlineData("")]
-//     [InlineData(null)]
-//     public void TryConvertToNullableDouble_AllowsEmptyValue(string? input)
-//     {
-//         var result = BindConverter.TryConvertTo<double?>(
-//             input,
-//             CultureInfo.InvariantCulture,
-//             out var value);
-
-//         Assert.True(result);
-//         Assert.Null(value);
-//     }
 
     [Theory]
     [InlineData("1,234.5", 1234.5f)]
