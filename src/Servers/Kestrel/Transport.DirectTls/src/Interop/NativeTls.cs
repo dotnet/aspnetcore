@@ -12,12 +12,14 @@ internal static partial class NativeTls
 {
     private const string LIBC = "libc.so.6";
 
-    // Epoll
-    [LibraryImport(LIBC)] public static partial int epoll_create1(int flags);
-    [LibraryImport(LIBC)] public static partial int epoll_ctl(int epfd, int op, int fd, ref EpollEvent ev);
-    [LibraryImport(LIBC)] public static partial int epoll_ctl(int epfd, int op, int fd, IntPtr ev);
-    [LibraryImport(LIBC)] public static partial int epoll_wait(int epfd, EpollEvent[] events, int maxevents, int timeout);
-    [LibraryImport(LIBC)] public static partial int close(int fd);
+    // Epoll. SetLastError = true is required so Marshal.GetLastPInvokeError() returns the real errno
+    // after a failed call; [LibraryImport] defaults to SetLastError = false, which would otherwise leave
+    // callers (notably the EINTR retry in TlsEventPump.PumpLoop) reading a stale/garbage value.
+    [LibraryImport(LIBC, SetLastError = true)] public static partial int epoll_create1(int flags);
+    [LibraryImport(LIBC, SetLastError = true)] public static partial int epoll_ctl(int epfd, int op, int fd, ref EpollEvent ev);
+    [LibraryImport(LIBC, SetLastError = true)] public static partial int epoll_ctl(int epfd, int op, int fd, IntPtr ev);
+    [LibraryImport(LIBC, SetLastError = true)] public static partial int epoll_wait(int epfd, EpollEvent[] events, int maxevents, int timeout);
+    [LibraryImport(LIBC, SetLastError = true)] public static partial int close(int fd);
 
     // Epoll constants
     public const int EPOLL_CTL_ADD = 1;
