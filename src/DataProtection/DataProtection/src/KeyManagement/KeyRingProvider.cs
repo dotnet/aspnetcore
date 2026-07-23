@@ -399,19 +399,23 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                 }
                 catch (Exception ex)
                 {
-                    if (existingCacheableKeyRing is null)
+                    // Mirror GetKeyRingFromCompletedTaskUnsynchronized: only extend the lifetime of a ring
+                    // that is present but already stale. A forced refresh can fail while the cached ring is
+                    // still valid; in that case we must leave it untouched, because WithTemporaryExtendedLifetime
+                    // would cut its expiration to 2 minutes and swap its expiration token for CancellationToken.None,
+                    // causing key changes to be ignored until the shortened lifetime elapses.
+                    if (existingCacheableKeyRing is not null && !CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
                     {
-                        // Cold start: there's no stale ring to extend via WithTemporaryExtendedLifetime.
-                        // Leave _cacheableKeyRing null so the next caller retries from scratch.
-                        _logger.ErrorOccurredWhileReadingKeyRing(ex);
+                        // Refresh failures are usually transient, so slightly extend the current entry's lifetime
+                        // to avoid hammering the backing store on every subsequent call, then surface the error.
+                        Volatile.Write(ref _cacheableKeyRing, existingCacheableKeyRing.WithTemporaryExtendedLifetime(utcNow));
+                        _logger.ErrorOccurredWhileRefreshingKeyRing(ex);
                     }
                     else
                     {
-                        // Forced refresh over a stale ring: refresh failures are usually transient, so
-                        // slightly extend the current entry's lifetime to avoid hammering the backing
-                        // store on every subsequent call, then surface the error to the caller.
-                        Volatile.Write(ref _cacheableKeyRing, existingCacheableKeyRing.WithTemporaryExtendedLifetime(utcNow));
-                        _logger.ErrorOccurredWhileRefreshingKeyRing(ex);
+                        // Cold start (no ring to extend) or a forced refresh over a still-valid ring
+                        // (which we deliberately leave in place): just surface the error.
+                        _logger.ErrorOccurredWhileReadingKeyRing(ex);
                     }
 
                     throw;
@@ -419,6 +423,17 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
                 Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
                 Debug.Assert(CacheableKeyRing.IsValid(newCacheableKeyRing, utcNow), "GetCacheableKeyRing produced a ring that is already invalid at utcNow.");
+
+                // This inline result is authoritative. If an async refresh scheduled by an earlier non-forced
+                // caller is still in flight, discard it so its older result can't later be consumed and clobber
+                // the ring we just published. Observe any fault so the discarded task doesn't surface as an
+                // unobserved TaskScheduler.UnobservedTaskException.
+                if (existingTask is not null)
+                {
+                    ObserveTaskException(existingTask);
+                    _cacheableKeyRingTask = null;
+                }
+
                 return newCacheableKeyRing.KeyRing;
             }
 
@@ -492,6 +507,17 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
             throw;
         }
+    }
+
+    // Ensures a discarded refresh task's exception is observed so it doesn't raise
+    // TaskScheduler.UnobservedTaskException. Non-blocking: the continuation only runs if the task faults.
+    private static void ObserveTaskException(Task task)
+    {
+        _ = task.ContinueWith(
+            static t => _ = t.Exception,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     private TimeSpan GetRefreshPeriodWithJitter(TimeSpan refreshPeriod)
