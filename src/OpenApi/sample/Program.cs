@@ -46,6 +46,7 @@ builder.Services.AddOpenApi("forms");
 builder.Services.AddOpenApi("schemas-by-ref");
 builder.Services.AddOpenApi("xml");
 builder.Services.AddOpenApi("unions");
+builder.Services.AddOpenApi("obsolete");
 builder.Services.AddOpenApi("enum-pascalcase-nonnullable-param");
 builder.Services.AddOpenApi("enum-pascalcase-nullable-param");
 builder.Services.AddOpenApi("enum-camelcase-nonnullable-param");
@@ -84,6 +85,7 @@ app.MapXmlEndpoints();
 app.MapSchemasEndpoints();
 app.MapResponseEndpoints();
 app.MapUnionsEndpoints();
+app.MapObsoleteEndpoints();
 app.MapEnumsEndpoints();
 
 app.MapGet("/first-doc/get1", () => "Hello, world").WithGroupName("first-doc");

@@ -43,7 +43,7 @@ public class OperationBase
         }
     }
 
-    [JsonPropertyName(nameof(from))]
+    [JsonPropertyName(nameof(from)), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string from { get; set; }
 
     public OperationBase()
@@ -60,6 +60,8 @@ public class OperationBase
         this.from = from;
     }
 
+    // https://github.com/dotnet/aspnetcore/issues/67966
+    // This should be obsoleted.
     public bool ShouldSerializeFrom()
     {
         return (OperationType == OperationType.Move

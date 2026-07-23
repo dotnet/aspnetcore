@@ -325,11 +325,10 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         Dictionary<Type, ValidatableTypeInfo>? typeMapping = null)
     {
         var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var validationContext = new ValidationContext(new object(), serviceProvider, null);
 
         return new ValidateContext
         {
-            ValidationContext = validationContext,
+            ServiceProvider = serviceProvider,
             ValidationOptions = new TestValidationOptions(typeMapping ?? new Dictionary<Type, ValidatableTypeInfo>())
         };
     }

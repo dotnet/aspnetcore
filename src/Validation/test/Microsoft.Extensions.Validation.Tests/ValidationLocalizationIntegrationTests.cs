@@ -28,7 +28,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
             new TestValidatablePropertyInfo(typeof(SimpleModel), typeof(string), "Name",
                 [new RequiredAttribute()])
         ]);
-        var context = CreateContext(model, localizer: null);
+        var context = CreateContext(localizer: null);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -48,7 +48,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
                 [new RequiredAttribute()],
                 displayName: "Customer Name")
         ]);
-        var context = CreateContext(model, localizer: null);
+        var context = CreateContext(localizer: null);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -76,7 +76,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
                 [new RequiredAttribute()],
                 displayName: "Customer Name")
         ]);
-        var context = CreateContext(model, localizer);
+        var context = CreateContext(localizer);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -115,7 +115,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
                 [new RequiredAttribute()],
                 displayName: "Customer Name")
         ]);
-        var context = CreateContext(model, localizer);
+        var context = CreateContext(localizer);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -149,7 +149,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
             new TestValidatablePropertyInfo(typeof(SimpleModel), typeof(string), "Name", [requiredAttr],
                 displayName: "Customer Name")
         ]);
-        var context = CreateContext(model, localizer);
+        var context = CreateContext(localizer);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -180,7 +180,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
                 [new RequiredAttribute()],
                 displayResourceAccessor: () => "Resource-Resolved Name")
         ]);
-        var context = CreateContext(model, localizer);
+        var context = CreateContext(localizer);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -204,7 +204,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
                 [new RequiredAttribute()],
                 displayResourceAccessor: () => null)
         ]);
-        var context = CreateContext(model, localizer);
+        var context = CreateContext(localizer);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -231,7 +231,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
                 [new RequiredAttribute()],
                 displayResourceAccessor: () => throw thrown)
         ]);
-        var context = CreateContext(model, localizer: null);
+        var context = CreateContext(localizer: null);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => ValidateAsync(typeInfo, model, context, useAsync, default));
@@ -252,7 +252,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
         var model = new ValidatableObjectModel();
         var typeInfo = new TestValidatableTypeInfo(typeof(ValidatableObjectModel), []);
-        var context = CreateContext(model, localizer);
+        var context = CreateContext(localizer);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -279,7 +279,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
                 new TestValidatablePropertyInfo(typeof(RangeModel), typeof(int), "End", [])
             ],
             attributes: [new StartLessThanEndAttribute { ErrorMessage = "Start must be less than End." }]);
-        var context = CreateContext(model, localizer);
+        var context = CreateContext(localizer);
 
         await ValidateAsync(typeInfo, model, context, useAsync, default);
 
@@ -306,7 +306,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
         var paramInfo = new TestValidatableParameterInfo(
             typeof(string), "myParam", "Display Param",
             [new RequiredAttribute()]);
-        var context = CreateContext(model: new object(), localizer);
+        var context = CreateContext(localizer);
 
         await ValidateAsync(paramInfo, null, context, useAsync, default);
 
@@ -322,13 +322,13 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
     // --- Helpers and test doubles ---
 
-    private static ValidateContext CreateContext(object model, IValidationLocalizer? localizer)
+    private static ValidateContext CreateContext(IValidationLocalizer? localizer)
     {
         var options = new ValidationOptions { Localizer = localizer };
         return new ValidateContext
         {
             ValidationOptions = options,
-            ValidationContext = new ValidationContext(model),
+            ServiceProvider = null,
         };
     }
 

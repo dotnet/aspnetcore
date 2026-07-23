@@ -1,0 +1,233 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using System.Linq
+@using System.Threading
+
+<h1>QuickGrid ScrollToItem / InitialItemIndex</h1>
+
+<p>
+    Mirrors the Virtualize ScrollToItem / InitialItemIndex coverage, but exercises the same behavior
+    through QuickGrid's <code>InitialItemIndex</code> parameter and
+    <code>ScrollToItemAsync</code> method (in both <code>Items</code> and <code>ItemsProvider</code> modes).
+</p>
+
+<style>
+    .qg-scroll-cell .item { box-sizing: border-box; }
+</style>
+
+<div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
+    @if (listLoaded)
+    {
+        @if (useItemsProvider)
+        {
+            <QuickGrid @ref="providerGrid" ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50"
+                       InitialItemIndex="@initialItemIndex">
+                <TemplateColumn Title="Item" Class="qg-scroll-cell">
+                    <div class="item" data-index="@context.Index" style="min-height: @(context.Height)px; line-height: @(context.Height)px;">Item @context.Index</div>
+                </TemplateColumn>
+            </QuickGrid>
+        }
+        else
+        {
+            <QuickGrid @ref="itemsGrid" Items="@rows.AsQueryable()" Virtualize="true" ItemSize="50"
+                       InitialItemIndex="@initialItemIndex">
+                <TemplateColumn Title="Item" Class="qg-scroll-cell">
+                    <div class="item" data-index="@context.Index" style="min-height: @(context.Height)px; line-height: @(context.Height)px;">Item @context.Index</div>
+                </TemplateColumn>
+            </QuickGrid>
+        }
+    }
+    else
+    {
+        <p id="list-not-loaded" style="padding: 10px; color: #666;">List not loaded. Set an Initial Index below and click "Load list with Initial Index".</p>
+    }
+</div>
+
+<div style="margin-top: 6px;">
+    <label>Initial Index:
+        <input id="manual-initial-index" type="number" @bind="manualInitialIndex" style="width: 80px;" />
+    </label>
+    <button id="reload-with-initial-index" @onclick="ReloadWithInitialIndex">Load list with Initial Index</button>
+    <button id="unload-list" @onclick="UnloadList">Unload list</button>
+    <span id="manual-initial-index-bound" data-value="@manualInitialIndex" style="margin-left: 8px; color:#888;">bound:@manualInitialIndex</span>
+</div>
+
+<div style="margin-top: 6px;">
+    <input id="scroll-target-index" type="number" @bind="scrollTargetIndex" style="width: 80px;" />
+    <span id="scroll-target-index-bound" data-value="@scrollTargetIndex" style="margin-left: 8px; color:#888;">bound:@scrollTargetIndex</span>
+    <button id="scroll-to-item" @onclick="ScrollToTarget">Scroll To Item</button>
+    <button id="scroll-to-item-rapid" @onclick="ScrollRapid">Scroll Rapid (final=250)</button>
+    <button id="scroll-to-item-cancellable" @onclick="ScrollCancellable">Scroll Cancellable</button>
+    <button id="cancel-scroll" @onclick="CancelScroll">Cancel Scroll</button>
+</div>
+
+<p id="scroll-status" style="margin: 0; font-size: 12px;">@scrollStatus</p>
+
+<div style="margin-top: 10px;">
+    <button id="toggle-provider" @onclick="ToggleProvider">
+        Source: @(useItemsProvider ? "ItemsProvider" : "Items")
+    </button>
+    <button id="toggle-height" @onclick="ToggleVariableHeight">
+        Heights: @(useVariableHeight ? "Variable (10-200px)" : "Fixed (50px)")
+    </button>
+    <button id="toggle-delay" @onclick="ToggleDelay">
+        Provider Delay: @(useProviderDelay ? "150ms" : "None")
+    </button>
+</div>
+
+<p id="status">@statusMessage</p>
+
+@code {
+    private sealed class Row
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+    }
+
+    private List<Row> rows = new();
+    private string statusMessage = "Ready";
+    private bool useVariableHeight;
+    private bool useItemsProvider;
+    private bool useProviderDelay;
+
+    private QuickGrid<Row> providerGrid = default!;
+    private QuickGrid<Row> itemsGrid = default!;
+    private GridItemsProvider<Row> itemsProvider = default!;
+
+    private int initialItemIndex;
+    private int manualInitialIndex;
+    private bool listLoaded = true;
+    private int scrollTargetIndex = 200;
+    private string scrollStatus = "Idle";
+#nullable enable
+    private CancellationTokenSource? _userScrollCts;
+#nullable restore
+
+    private QuickGrid<Row> ActiveGrid => useItemsProvider ? providerGrid : itemsGrid;
+
+    protected override void OnInitialized()
+    {
+        rows = Enumerable.Range(0, 1000)
+            .Select(i => new Row { Index = i, Height = GetHeight(i) })
+            .ToList();
+        itemsProvider = GetItemsAsync;
+    }
+
+    private int GetHeight(int index)
+        => useVariableHeight ? 10 + (Math.Abs(index * 7 + 13) % 191) : 50;
+
+    private void ToggleVariableHeight()
+    {
+        useVariableHeight = !useVariableHeight;
+        foreach (var row in rows)
+        {
+            row.Height = GetHeight(row.Index);
+        }
+        statusMessage = useVariableHeight ? "Switched to variable heights" : "Switched to fixed heights";
+    }
+
+    private void ToggleProvider()
+    {
+        useItemsProvider = !useItemsProvider;
+        statusMessage = useItemsProvider ? "Switched to ItemsProvider" : "Switched to Items";
+    }
+
+    private void ToggleDelay()
+    {
+        useProviderDelay = !useProviderDelay;
+        statusMessage = useProviderDelay ? "Provider delay: 150ms" : "Provider delay: None";
+    }
+
+    private async ValueTask<GridItemsProviderResult<Row>> GetItemsAsync(GridItemsProviderRequest<Row> request)
+    {
+        await Task.Yield();
+        if (useProviderDelay)
+        {
+            await Task.Delay(150);
+        }
+
+        var count = request.Count ?? rows.Count;
+        var result = rows.Skip(request.StartIndex).Take(count)
+            .Select(r => new Row { Index = r.Index, Height = r.Height })
+            .ToList();
+        return GridItemsProviderResult.From(items: result, totalItemCount: rows.Count);
+    }
+
+    private async Task ReloadWithInitialIndex()
+    {
+        listLoaded = false;
+        StateHasChanged();
+        await Task.Yield();
+        initialItemIndex = manualInitialIndex;
+        listLoaded = true;
+    }
+
+    private void UnloadList() => listLoaded = false;
+
+    private async Task ScrollToTarget()
+    {
+        scrollStatus = $"Scrolling to {scrollTargetIndex}...";
+        try
+        {
+            await ActiveGrid.ScrollToItemAsync(scrollTargetIndex);
+            scrollStatus = $"Completed: {scrollTargetIndex}";
+        }
+        catch (OperationCanceledException)
+        {
+            scrollStatus = $"Canceled: {scrollTargetIndex}";
+        }
+        catch (Exception ex)
+        {
+            scrollStatus = $"Faulted: {ex.Message}";
+        }
+    }
+
+    private async Task ScrollRapid()
+    {
+        var grid = ActiveGrid;
+        scrollStatus = "Rapid scrolling...";
+        var tasks = new[]
+        {
+            grid.ScrollToItemAsync(50),
+            grid.ScrollToItemAsync(400),
+            grid.ScrollToItemAsync(100),
+            grid.ScrollToItemAsync(350),
+            grid.ScrollToItemAsync(250),
+        };
+        foreach (var t in tasks)
+        {
+            await SafeAwait(t);
+        }
+        var canceled = tasks.Count(t => t.IsCanceled);
+        var completed = tasks.Count(t => t.Status == TaskStatus.RanToCompletion);
+        var faulted = tasks.Count(t => t.IsFaulted);
+        scrollStatus = $"Completed: 250 (canceled={canceled}, completed={completed}, faulted={faulted})";
+    }
+
+    private static async Task SafeAwait(Task t)
+    {
+        try { await t; } catch (OperationCanceledException) { }
+    }
+
+    private async Task ScrollCancellable()
+    {
+        _userScrollCts?.Dispose();
+        _userScrollCts = new CancellationTokenSource();
+        scrollStatus = $"Scrolling to {scrollTargetIndex} (cancellable)...";
+        try
+        {
+            await ActiveGrid.ScrollToItemAsync(scrollTargetIndex, _userScrollCts.Token);
+            scrollStatus = $"Completed: {scrollTargetIndex}";
+        }
+        catch (OperationCanceledException)
+        {
+            scrollStatus = "Canceled";
+        }
+        catch (Exception ex)
+        {
+            scrollStatus = $"Faulted: {ex.Message}";
+        }
+    }
+
+    private void CancelScroll() => _userScrollCts?.Cancel();
+}
