@@ -419,6 +419,14 @@ internal class ConnectionIoState : IDisposable
     {
         // Best-effort graceful write-side shutdown (TLS close_notify), then dispose the session, which
         // closes the underlying socket fd (the session owns the SafeSocketHandle).
+        //
+        // Concurrency note: this can race with the pump thread, which may still be inside RawRead/RawWrite
+        // (i.e. TlsSocketSession.Read/Write) when DisposeAsync gets here. That is memory-safe because the
+        // runtime's TlsSession passes its SSL* as a SafeSslHandle to every P/Invoke (SslRead/SslWrite), and
+        // the socket fd is a SafeSocketHandle. Disposing those handles only *decrements* the ref count, so
+        // the native SSL_free/close is deferred until any in-flight native call releases its DangerousAddRef.
+        // The worst outcome of the race is a spurious ObjectDisposedException on the pump thread's next
+        // native call, which TlsEventPump.PumpLoop already catches and turns into an ordinary connection drop.
         _session.Shutdown();
         _session.Dispose();
     }
