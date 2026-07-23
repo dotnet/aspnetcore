@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -216,13 +217,27 @@ public abstract class TextOutputFormatter : OutputFormatter
     }
 
     // We may have to filter q=0 values and reorder the rest by quality. StringWithQualityHeaderValue
-    // is a reference type, so it can't live in a stackalloc buffer, but its indices can. Real
-    // Accept-Charset headers are tiny (a handful of charsets at most), so for anything within the
-    // threshold we sort a stack-allocated buffer of indices with an insertion sort and never touch the
-    // heap for scratch. No real client sends more than a handful of charsets, so the >32 branch only
-    // exists for correctness; there we fall back to a plain List.Sort and don't bother preserving the
-    // tie ordering, because nothing observable can depend on it.
+    // is a reference type, so it can't live in a stack buffer, but its indices can. Real Accept-Charset
+    // headers are tiny (a handful of charsets at most), so for anything within the threshold we sort a
+    // stack-allocated inline-array buffer of indices with an insertion sort and never touch the heap for
+    // scratch. No real client sends more than a handful of charsets, so the >32 branch only exists for
+    // correctness; there we fall back to a plain List.Sort and don't bother preserving the tie ordering,
+    // because nothing observable can depend on it.
     private const int SortStackAllocThreshold = 32;
+
+    // Inline-array buffer of SortStackAllocThreshold indices. Preferred over stackalloc because the
+    // compiler puts stronger guarantees on inline arrays (no stack cookie, better bounds analysis).
+    [InlineArray(SortStackAllocThreshold)]
+    private struct IndexBuffer
+    {
+#pragma warning disable CA1823 // Avoid unused private fields
+#pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable IDE0051 // Remove unused private members
+        private int _element0;
+#pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0044 // Add readonly modifier
+#pragma warning restore CA1823 // Avoid unused private fields
+    }
 
     private static IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
     {
@@ -261,7 +276,8 @@ public abstract class TextOutputFormatter : OutputFormatter
     // the previous last-entry-wins selection.
     private static IList<StringWithQualityHeaderValue> SortSmall(IList<StringWithQualityHeaderValue> values)
     {
-        Span<int> indices = stackalloc int[SortStackAllocThreshold];
+        var buffer = new IndexBuffer();
+        Span<int> indices = buffer;
         var count = 0;
 
         for (var i = 0; i < values.Count; i++)

@@ -3,6 +3,7 @@
 
 using BenchmarkDotNet.Attributes;
 using Microsoft.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Mvc.Microbenchmarks;
 
@@ -137,7 +138,8 @@ public class TextOutputFormatterSortBenchmark
 
     private static IList<StringWithQualityHeaderValue> SortAfterSmall(IList<StringWithQualityHeaderValue> values)
     {
-        Span<int> indices = stackalloc int[SortStackAllocThreshold];
+        var buffer = new IndexBuffer();
+        Span<int> indices = buffer;
         var count = 0;
 
         for (var i = 0; i < values.Count; i++)
@@ -184,5 +186,17 @@ public class TextOutputFormatterSortBenchmark
         sorted.Sort(StringWithQualityHeaderValueComparer.QualityComparer);
         sorted.Reverse();
         return sorted;
+    }
+
+    [InlineArray(SortStackAllocThreshold)]
+    private struct IndexBuffer
+    {
+#pragma warning disable CA1823 // Avoid unused private fields
+#pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable IDE0051 // Remove unused private members
+        private int _element0;
+#pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0044 // Add readonly modifier
+#pragma warning restore CA1823 // Avoid unused private fields
     }
 }
