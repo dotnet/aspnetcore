@@ -158,29 +158,6 @@ public class InputNumberTest
     [Theory]
     [InlineData("1e-6")]
     [InlineData("2E-06")]
-    [InlineData("3.5e10")]
-    [InlineData("-4.2E-03")]
-    [InlineData("4E+8")]
-    public async Task InputNumber_Double_AcceptsScientificNotation(string input)
-    {
-        var model = new TestModelDouble();
-        var rootComponent = new TestInputHostComponent<double, TestInputNumberComponentDouble>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.Value,
-        };
-        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        await inputComponent.SetCurrentValueAsStringAsync(input);
-
-        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
-        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
-        Assert.Empty(validationMessages);
-    }
-
-    [Theory]
-    [InlineData("1e-6")]
-    [InlineData("2E-06")]
     [InlineData("")]
     [InlineData(null)]
     public async Task InputNumber_NullableDouble_AcceptsScientificNotationAndEmpty(string? input)

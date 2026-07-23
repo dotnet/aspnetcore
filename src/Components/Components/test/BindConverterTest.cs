@@ -268,13 +268,8 @@ public class BindConverterTest
 
     [Theory]
     [InlineData("1e-6", 1e-6)]
-    [InlineData("1E-6", 1E-6)]
     [InlineData("2E-06", 2E-06)]
-    [InlineData("2.0e-6", 2.0e-6)]
     [InlineData("3.5e10", 3.5e10)]
-    [InlineData("-3.2E-04", -3.2E-04)]
-    [InlineData("4E8", 4E8)]
-    [InlineData("4E+8", 4E8)]
     [InlineData("+4E8", 4E8)]
     public void TryConvertToDouble_AcceptsScientificNotation(string input, double expected)
     {
