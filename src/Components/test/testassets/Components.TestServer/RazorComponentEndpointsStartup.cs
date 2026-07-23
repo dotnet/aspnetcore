@@ -57,7 +57,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
 #pragma warning restore ASP0029
-        services.AddValidationLocalization();
 
         // Increase 10 MB hub message limit (default 32 KB)
         if (Configuration.GetValue<bool>("AllowLargeHubMessages"))

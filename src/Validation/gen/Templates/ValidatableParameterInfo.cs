@@ -49,7 +49,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
     {
         var validationAttributes = GetValidationAttributes();
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, type: null) ?? Name;
         var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
         {
             MemberName = Name
@@ -121,7 +121,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
     {
         var validationAttributes = GetValidationAttributes();
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, type: null) ?? Name;
         var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
         {
             MemberName = Name
