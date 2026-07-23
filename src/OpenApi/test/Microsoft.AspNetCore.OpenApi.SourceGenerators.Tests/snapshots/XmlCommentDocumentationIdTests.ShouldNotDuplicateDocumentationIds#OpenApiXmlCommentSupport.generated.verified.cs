@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 foreach (var attribute in attributeProvider.GetCustomAttributes(inherit: true))
                 {
-                    if (attribute is IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
+                    if (attribute is global::Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
                     {
                         return modelNameProvider.Name;
                     }
