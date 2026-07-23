@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
@@ -165,25 +166,22 @@ public class ClientValidationProviderTests
     }
 
     [Fact]
-    public void Localizer_PopulatesContextsAndLocalizesMessage()
+    public void Localizer_LocalizesDisplayNameAndErrorMessage()
     {
-        var localizer = new RecordingLocalizer();
-        var options = new ValidationOptions { Localizer = localizer };
+        var translations = new Dictionary<string, string>
+        {
+            ["Custom Label"] = "Étiquette",
+            ["req-key"] = "{0} est requis.",
+        };
+#pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
+        var options = new ValidationOptions { MessageKeyProvider = _ => "req-key" };
+#pragma warning restore ASP0029
+        var factory = new TestStringLocalizerFactory(translations);
 
-        var rule = SingleRule(GetData<DisplayNameModel>(options, nameof(DisplayNameModel.Field))!, nameof(DisplayNameModel.Field));
+        var rule = SingleRule(GetData<DisplayNameModel>(options, factory, nameof(DisplayNameModel.Field))!, nameof(DisplayNameModel.Field));
 
-        // The rule message is the localizer's output.
-        Assert.Equal("localized-error", rule.Message);
-
-        // The display-name context carries the literal display name as the lookup key.
-        Assert.Equal("Custom Label", localizer.LastDisplayContext!.Value.DisplayName);
-        Assert.Equal(nameof(DisplayNameModel.Field), localizer.LastDisplayContext!.Value.MemberName);
-
-        // The error-message context carries the resolved display name, member, declaring type, and attribute.
-        Assert.Equal("localized-display", localizer.LastErrorContext!.Value.DisplayName);
-        Assert.Equal(nameof(DisplayNameModel.Field), localizer.LastErrorContext!.Value.MemberName);
-        Assert.Equal(typeof(DisplayNameModel), localizer.LastErrorContext!.Value.DeclaringType);
-        Assert.IsType<RequiredAttribute>(localizer.LastErrorContext!.Value.Attribute);
+        // The literal display name is localized and flows into the localized error-message template.
+        Assert.Equal("Étiquette est requis.", rule.Message);
     }
 
     [Fact]
@@ -305,16 +303,22 @@ public class ClientValidationProviderTests
         Assert.Null(CreateProvider(disableClientValidation: true).RenderClientValidationRules(editContext, fields));
     }
 
-    // ---- Helpers ----
-
     private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
 
-    private static DataAnnotationsClientValidationProvider CreateProvider(ValidationOptions? options = null, bool disableClientValidation = false)
+    private static DataAnnotationsClientValidationProvider CreateProvider(
+        ValidationOptions? options = null,
+        bool disableClientValidation = false,
+        IStringLocalizerFactory? localizerFactory = null)
     {
         var opts = Options.Create(options ?? new ValidationOptions());
         var cache = new ClientValidationCache(opts);
         var razorOptions = Options.Create(new RazorComponentsServiceOptions { DisableClientValidation = disableClientValidation });
-        return new DataAnnotationsClientValidationProvider(cache, opts, razorOptions);
+        var services = new ServiceCollection();
+        if (localizerFactory is not null)
+        {
+            services.AddSingleton(localizerFactory);
+        }
+        return new DataAnnotationsClientValidationProvider(cache, opts, razorOptions, services.BuildServiceProvider());
     }
 
     private static FormData? GetData<TModel>(params string[] fieldNames)
@@ -325,6 +329,19 @@ public class ClientValidationProviderTests
         where TModel : new()
     {
         var provider = CreateProvider(options);
+        var model = new TModel();
+        var fields = new Dictionary<FieldIdentifier, string>();
+        foreach (var name in fieldNames)
+        {
+            fields[new FieldIdentifier(model, name)] = name;
+        }
+        return Serialize(provider, new EditContext(model), fields);
+    }
+
+    private static FormData? GetData<TModel>(ValidationOptions? options, IStringLocalizerFactory localizerFactory, params string[] fieldNames)
+        where TModel : new()
+    {
+        var provider = CreateProvider(options, localizerFactory: localizerFactory);
         var model = new TModel();
         var fields = new Dictionary<FieldIdentifier, string>();
         foreach (var name in fieldNames)
@@ -392,25 +409,23 @@ public class ClientValidationProviderTests
     }
 #pragma warning restore ASP0029
 
-    private sealed class RecordingLocalizer : IValidationLocalizer
+    private sealed class TestStringLocalizerFactory(IDictionary<string, string> translations) : IStringLocalizerFactory
     {
-        public DisplayNameLocalizationContext? LastDisplayContext { get; private set; }
-        public ErrorMessageLocalizationContext? LastErrorContext { get; private set; }
-
-        public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
-        {
-            LastDisplayContext = context;
-            return "localized-display";
-        }
-
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context)
-        {
-            LastErrorContext = context;
-            return "localized-error";
-        }
+        public IStringLocalizer Create(Type resourceSource) => new TestStringLocalizer(translations);
+        public IStringLocalizer Create(string baseName, string location) => new TestStringLocalizer(translations);
     }
 
-    // ---- Test models ----
+    private sealed class TestStringLocalizer(IDictionary<string, string> translations) : IStringLocalizer
+    {
+        public LocalizedString this[string name] => translations.TryGetValue(name, out var value)
+            ? new LocalizedString(name, value, resourceNotFound: false)
+            : new LocalizedString(name, name, resourceNotFound: true);
+
+        public LocalizedString this[string name, params object[] arguments] => this[name];
+
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+            => throw new NotSupportedException();
+    }
 
     private sealed class AllAttributesModel
     {
