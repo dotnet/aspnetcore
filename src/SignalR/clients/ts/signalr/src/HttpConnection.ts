@@ -433,8 +433,10 @@ export class HttpConnection implements IConnection {
 
         const refreshResponse = JSON.parse(response.content) as { accessToken?: unknown, tokenLifetimeSeconds?: number };
         if (typeof refreshResponse.accessToken === "string" && refreshResponse.accessToken) {
+            // Redirecting servers can return a transport token that should replace the current cached token.
             this._setTransportAccessToken(refreshResponse.accessToken);
         } else if (!this._transportAccessTokenFromServer) {
+            // Without a server-provided transport token, reuse the app token that successfully authenticated refresh.
             const refreshRequestToken = this._httpClient.getRefreshRequestToken(response);
             if (refreshRequestToken) {
                 this._httpClient.updateCachedToken(refreshRequestToken);
