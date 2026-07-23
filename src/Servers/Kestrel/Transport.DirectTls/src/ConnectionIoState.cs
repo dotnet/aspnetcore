@@ -48,6 +48,7 @@ internal sealed class ConnectionIoState : IDisposable
     private ReadOnlyMemory<byte> _writeBuffer;  // Remaining (unwritten) application bytes
     private int _writeTotal;                     // Original request length to report on completion
     private bool _writeWantsRead;                // Write needs the socket to become readable (renegotiation)
+    private bool _writeWantsWrite;               // Write hit WouldBlock and needs the socket to become writable
 
     public ConnectionIoState(int fd, TlsSocketSession session, ILogger? logger = null)
     {
@@ -111,6 +112,31 @@ internal sealed class ConnectionIoState : IDisposable
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // EPOLL INTEREST
+    // ═══════════════════════════════════════════════════════════════
+
+    // Applies the epoll interest as the UNION of what the read and write sides currently need. EPOLLIN is
+    // always requested (the receive loop is the connection's steady-state reader, and the pump adds EPOLLRDHUP);
+    // EPOLLOUT is requested whenever either side is waiting for the socket to become writable - a write that hit
+    // WouldBlock (_writeWantsWrite) or a read flushing renegotiation output (_readWantsWrite). Because
+    // ModifyEvents sets the interest absolutely (EPOLL_CTL_MOD replaces, it does not OR), computing the combined
+    // mask in one place is what prevents one side's transition from silently dropping an EPOLLOUT the other side
+    // is still waiting on, which would otherwise wedge that operation until the connection dies. This is only
+    // ever called on EPOLLOUT-interest transitions (never on the steady-state WANT_READ path), so it adds no
+    // syscall to normal reads.
+    private void UpdateEvents()
+    {
+        uint events = NativeTls.EPOLLIN;
+
+        if (_readWantsWrite || _writeWantsWrite)
+        {
+            events |= NativeTls.EPOLLOUT;
+        }
+
+        Pump?.ModifyEvents(Fd, events);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // READ
     // ═══════════════════════════════════════════════════════════════
 
@@ -143,8 +169,9 @@ internal sealed class ConnectionIoState : IDisposable
                 // Renegotiation: the read needs to send handshake output. Wait for writable.
                 _readBuffer = buffer;
                 _readWantsWrite = true;
-                Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN | NativeTls.EPOLLOUT);
-                return _readAwaitable.Reset();
+                var pending = _readAwaitable.Reset();
+                UpdateEvents();
+                return pending;
 
             case TlsOperationStatus.Closed:
             default:
@@ -172,7 +199,7 @@ internal sealed class ConnectionIoState : IDisposable
 
                 if (wasWaitingForWrite)
                 {
-                    Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN);
+                    UpdateEvents();
                 }
 
                 _readAwaitable.TrySetResult(read);
@@ -180,20 +207,20 @@ internal sealed class ConnectionIoState : IDisposable
             }
 
             case TlsOperationStatus.NeedMoreData:
-                // Still need more ciphertext - if we were waiting for write, switch back to read.
+                // Still need more ciphertext - if we were flushing renegotiation output, switch back to read.
                 if (_readWantsWrite)
                 {
                     _readWantsWrite = false;
-                    Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN);
+                    UpdateEvents();
                 }
                 return;
 
             case TlsOperationStatus.DestinationTooSmall:
-                // Renegotiation: need to write - register for EPOLLOUT if not already.
+                // Renegotiation: need to write - request EPOLLOUT if not already.
                 if (!_readWantsWrite)
                 {
                     _readWantsWrite = true;
-                    Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN | NativeTls.EPOLLOUT);
+                    UpdateEvents();
                 }
                 return;
 
@@ -225,6 +252,7 @@ internal sealed class ConnectionIoState : IDisposable
         _writeBuffer = buffer;
         _writeTotal = buffer.Length;
         _writeWantsRead = false;
+        _writeWantsWrite = false;
 
         var status = TlsWrite(_writeBuffer.Span, out var written);
 
@@ -238,14 +266,16 @@ internal sealed class ConnectionIoState : IDisposable
                 // Socket WouldBlock mid-write. 'written' application bytes were consumed;
                 // retry the remainder once the socket is writable.
                 _writeBuffer = _writeBuffer.Slice(written);
-                Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN | NativeTls.EPOLLOUT);
-                return _writeAwaitable.Reset();
+                _writeWantsWrite = true;
+                var pending = _writeAwaitable.Reset();
+                UpdateEvents();
+                return pending;
 
             case TlsOperationStatus.NeedMoreData:
                 // Renegotiation: the write needs to read peer ciphertext first.
                 _writeBuffer = _writeBuffer.Slice(written);
                 _writeWantsRead = true;
-                // EPOLLIN is already registered.
+                // EPOLLIN is already registered (baseline).
                 return _writeAwaitable.Reset();
 
             case TlsOperationStatus.Closed:
@@ -259,8 +289,9 @@ internal sealed class ConnectionIoState : IDisposable
     {
         if (!_writeAwaitable.IsActive)
         {
-            // Spurious EPOLLOUT - remove it to avoid future wakeups.
-            Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN);
+            // Spurious EPOLLOUT - no write is pending, so drop the write side's writable interest.
+            _writeWantsWrite = false;
+            UpdateEvents();
             return;
         }
 
@@ -271,27 +302,30 @@ internal sealed class ConnectionIoState : IDisposable
             case TlsOperationStatus.Complete:
                 _writeBuffer = default;
                 _writeWantsRead = false;
-                Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN);
+                _writeWantsWrite = false;
+                UpdateEvents();
                 _writeAwaitable.TrySetResult(_writeTotal);
                 return;
 
             case TlsOperationStatus.DestinationTooSmall:
                 // Still WouldBlock. Advance past what was written and keep waiting for writable.
                 _writeBuffer = _writeBuffer.Slice(written);
-                if (_writeWantsRead)
+                if (_writeWantsRead || !_writeWantsWrite)
                 {
                     _writeWantsRead = false;
-                    Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN | NativeTls.EPOLLOUT);
+                    _writeWantsWrite = true;
+                    UpdateEvents();
                 }
                 return;
 
             case TlsOperationStatus.NeedMoreData:
-                // Renegotiation: need to read - drop EPOLLOUT, stay on EPOLLIN.
+                // Renegotiation: need to read - drop the write side's EPOLLOUT, stay on baseline EPOLLIN.
                 _writeBuffer = _writeBuffer.Slice(written);
                 if (!_writeWantsRead)
                 {
                     _writeWantsRead = true;
-                    Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN);
+                    _writeWantsWrite = false;
+                    UpdateEvents();
                 }
                 return;
 
@@ -299,7 +333,8 @@ internal sealed class ConnectionIoState : IDisposable
             default:
                 _writeBuffer = default;
                 _writeWantsRead = false;
-                Pump?.ModifyEvents(Fd, NativeTls.EPOLLIN);
+                _writeWantsWrite = false;
+                UpdateEvents();
                 _writeAwaitable.TrySetResult(0); // EOF
                 return;
         }
