@@ -83,6 +83,15 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public float ItemSize { get; set; } = 50;
 
     /// <summary>
+    /// This is applicable only when using <see cref="Virtualize"/>. Gets or sets the zero-based index of the
+    /// row to scroll to on first interactive render. Applied once when the grid first knows its item count and
+    /// ignored on subsequent re-renders; to scroll programmatically at any later point, call
+    /// <see cref="ScrollToItemAsync(int, CancellationToken)"/>. Out-of-range values are clamped. The default
+    /// value, <c>0</c>, means no initial scroll.
+    /// </summary>
+    [Parameter] public int InitialItemIndex { get; set; }
+
+    /// <summary>
     /// Optionally defines a value for @key on each rendered row. Typically this should be used to specify a
     /// unique identifier, such as a primary key value, for each data item.
     ///
@@ -477,6 +486,29 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         await RefreshDataCoreAsync();
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Scrolls the virtualized grid so the row at <paramref name="itemIndex"/> is aligned to the top of the
+    /// scrollable area. Only has an effect when <see cref="Virtualize"/> is <see langword="true"/>.
+    /// </summary>
+    /// <remarks>
+    /// Each call cancels any previously-running <see cref="ScrollToItemAsync(int, CancellationToken)"/> (last call wins).
+    /// Must be called on the renderer's synchronization context; background-thread callers should wrap with
+    /// <see cref="ComponentBase.InvokeAsync(Func{Task})"/>.
+    /// </remarks>
+    /// <param name="itemIndex">The zero-based index of the row to scroll to.</param>
+    /// <param name="cancellationToken">A token that lets the caller request cancellation.</param>
+    /// <returns>A <see cref="Task"/> that completes when the target is aligned or superseded by another call.</returns>
+    public Task ScrollToItemAsync(int itemIndex, CancellationToken cancellationToken = default)
+    {
+        if (!Virtualize || _virtualizeComponent is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(ScrollToItemAsync)} can only be used when {nameof(Virtualize)} is enabled and the grid has been rendered.");
+        }
+
+        return _virtualizeComponent.ScrollToItemAsync(itemIndex, cancellationToken);
     }
 
     // Same as RefreshDataAsync, except without forcing a re-render. We use this from OnParametersSetAsync

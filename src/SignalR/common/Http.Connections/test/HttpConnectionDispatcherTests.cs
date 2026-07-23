@@ -2443,6 +2443,326 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task StatefulReconnectWithDifferentUserNameRejectsRequestAndKeepsConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+            // pretend negotiate occurred
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+
+            var context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+            context.User = MakeUser("user1");
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ReconnectConnectionHandler>();
+            var app = builder.Build();
+
+            var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
+
+            var firstMsg = new byte[] { 1, 4, 8, 9 };
+            await connection.Application.Output.WriteAsync(firstMsg);
+
+            var websocketFeature = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+            var webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+            Assert.Equal(firstMsg, webSocketMessage.Buffer);
+
+            // New websocket connection with previous connection token but a different user
+            var reconnectContext = MakeRequest("/foo", connection, services);
+            SetTransport(reconnectContext, HttpTransportType.WebSockets);
+            reconnectContext.User = MakeUser("user2");
+
+            await dispatcher.ExecuteAsync(reconnectContext, options, app).DefaultTimeout();
+
+            // The mismatched reconnect is rejected and the original user is preserved
+            Assert.Equal(StatusCodes.Status403Forbidden, reconnectContext.Response.StatusCode);
+            Assert.Equal("user1", connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            // The original connection is left intact and still works
+            Assert.False(initialWebSocketTask.IsCompleted);
+            var secondMsg = new byte[] { 7, 6, 3, 2 };
+            await connection.Application.Output.WriteAsync(secondMsg);
+            webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+            Assert.Equal(secondMsg, webSocketMessage.Buffer);
+
+            connection.Abort();
+
+            await initialWebSocketTask.DefaultTimeout();
+        }
+    }
+
+    [Fact]
+    public async Task StatefulReconnectWithSameUserNameSucceeds()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+            // pretend negotiate occurred
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+
+            var context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+            context.User = MakeUser("user1");
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ReconnectConnectionHandler>();
+            var app = builder.Build();
+
+            var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+            var reconnectFeature = connection.Features.Get<IStatefulReconnectFeature>();
+#pragma warning restore CA2252 // This API requires opting into preview features
+            Assert.NotNull(reconnectFeature);
+
+            var firstMsg = new byte[] { 1, 4, 8, 9 };
+            await connection.Application.Output.WriteAsync(firstMsg);
+
+            var websocketFeature = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+            var webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+            Assert.Equal(firstMsg, webSocketMessage.Buffer);
+
+            var calledOnReconnectedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+#pragma warning disable CA2252 // This API requires opting into preview features
+            reconnectFeature.OnReconnected((writer) =>
+            {
+                calledOnReconnectedTcs.SetResult();
+                return Task.CompletedTask;
+            });
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            // New websocket connection with previous connection token and the same user (token refresh)
+            context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+            context.User = MakeUser("user1");
+
+            var newWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
+
+            // New connection with same token will complete previous request
+            await initialWebSocketTask.DefaultTimeout();
+            await calledOnReconnectedTcs.Task.DefaultTimeout();
+
+            Assert.False(newWebSocketTask.IsCompleted);
+            Assert.Equal("user1", connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            connection.Abort();
+
+            await newWebSocketTask.DefaultTimeout();
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingWithDifferentUserNameRejectsPoll()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddLogging();
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            var context = MakeRequest("/foo", connection, services);
+            context.User = MakeUser("user1");
+
+            // First poll establishes the connection user
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal("user1", connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            // A subsequent poll with a different user is rejected and the original user is preserved
+            var reconnectContext = MakeRequest("/foo", connection, services);
+            reconnectContext.User = MakeUser("user2");
+
+            await dispatcher.ExecuteAsync(reconnectContext, options, app).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, reconnectContext.Response.StatusCode);
+            Assert.Equal("user1", connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        }
+    }
+
+    [Fact]
+    public async Task SendWithDifferentUserNameRejectsRequestAndKeepsConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            connection.User = MakeUser("user1");
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo";
+            context.Request.Method = "POST";
+            context.Request.QueryString = new QueryString($"?id={connection.ConnectionToken}");
+            context.Response.Body = new MemoryStream();
+            context.User = MakeUser("user2");
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+            Assert.Equal("user1", connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            Assert.NotEqual(HttpConnectionStatus.Disposed, connection.Status);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithDifferentUserNameRejectsRequestAndKeepsConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            connection.User = MakeUser("user1");
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo";
+            context.Request.Method = "DELETE";
+            context.Request.QueryString = new QueryString($"?id={connection.ConnectionToken}");
+            context.Response.Body = new MemoryStream();
+            context.User = MakeUser("user2");
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+            Assert.Null(connection.DisposeAndRemoveTask);
+            Assert.NotEqual(HttpConnectionStatus.Disposed, connection.Status);
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingWithDifferentUpnClaimRejectsPoll()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddLogging();
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            var context = MakeRequest("/foo", connection, services);
+            context.User = MakeUserWithClaim(ClaimTypes.Upn, "user1@example.com");
+
+            // First poll establishes the connection user via the Upn claim (no NameIdentifier present)
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            // A subsequent poll with a different Upn is rejected and the original user is preserved
+            var reconnectContext = MakeRequest("/foo", connection, services);
+            reconnectContext.User = MakeUserWithClaim(ClaimTypes.Upn, "user2@example.com");
+
+            await dispatcher.ExecuteAsync(reconnectContext, options, app).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, reconnectContext.Response.StatusCode);
+            Assert.Equal("user1@example.com", connection.User.FindFirst(ClaimTypes.Upn)?.Value);
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingWithoutStandardIdentityClaimDoesNotReject()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddLogging();
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            var context = MakeRequest("/foo", connection, services);
+            context.User = MakeUserWithClaim("employeeId", "1");
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            // Neither principal carries a standard identity claim (sub/NameIdentifier/Upn), so the
+            // dispatcher can't tell them apart and does not reject; behavior matches the pre-hardening path.
+            var reconnectContext = MakeRequest("/foo", connection, services);
+            reconnectContext.User = MakeUserWithClaim("employeeId", "2");
+
+            var pollTask = dispatcher.ExecuteAsync(reconnectContext, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.NotEqual(StatusCodes.Status403Forbidden, reconnectContext.Response.StatusCode);
+        }
+    }
+
+    private static ClaimsPrincipal MakeUser(string nameIdentifier)
+    {
+        return new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, nameIdentifier) }));
+    }
+
+    private static ClaimsPrincipal MakeUserWithClaim(string claimType, string value)
+    {
+        return new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(claimType, value) }, "Test"));
+    }
+
+    [Fact]
     public async Task DisableReconnectDisallowsReplacementConnection()
     {
         using (StartVerifiableLog())
