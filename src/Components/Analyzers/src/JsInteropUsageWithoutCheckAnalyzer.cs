@@ -178,13 +178,15 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
                 AnalyzeOperationsTree(condition.WhenFalse, clonedState);
             }
 
-            if (isInteractiveWhenTrue && condition.WhenTrue is not null)
+            if (isInteractiveWhenTrue && condition.WhenFalse is not null)
             {
-                return ConditionBlockReturnsOnIsInteractive(condition.WhenTrue, state);
-            }
-            else if (isInteractiveWhenFalse && condition.WhenFalse is not null)
-            {
+                // If the condition check resolved to just `RendererInfo.IsInteractive`,  `WhenFalse` case should return to avoid JSInterop usage.
                 return ConditionBlockReturnsOnIsInteractive(condition.WhenFalse, state);
+            }
+            else if (isInteractiveWhenFalse && condition.WhenTrue is not null)
+            {
+                // If the condition check resolved to just `!RendererInfo.IsInteractive`, `WhenTrue` case should return to avoid JSInterop usage.
+                return ConditionBlockReturnsOnIsInteractive(condition.WhenTrue, state);
             }
         }
         return false;

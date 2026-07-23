@@ -658,7 +658,7 @@ namespace ConsoleApplication1
 
         protected async Task OnInitializedAsync()
         {
-            if (RendererInfo.IsInteractive)
+            if (!RendererInfo.IsInteractive)
             {
                 // This counts for the rest of the method, so we can safely call JS interop after that.
                 return;
@@ -689,7 +689,7 @@ namespace ConsoleApplication1
 
         protected async Task OnInitializedAsync()
         {
-            if (!RendererInfo.IsInteractive)
+            if (RendererInfo.IsInteractive)
             {
                 // Do stuff
             }
