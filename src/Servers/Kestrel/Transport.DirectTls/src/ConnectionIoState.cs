@@ -20,7 +20,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 /// <see cref="TlsEventPump"/> before this state is created. DirectTls terminates TLS for every connection,
 /// so the session is the only byte-stream backend.
 /// </summary>
-internal sealed class ConnectionIoState : IDisposable
+/// <remarks>
+/// Not <c>sealed</c> so tests can subclass it to script the raw session results via
+/// <see cref="RawRead"/>/<see cref="RawWrite"/> and observe the epoll interest via <see cref="ApplyEvents"/>
+/// without a live socket or pump. Those three members are the only <c>virtual</c> seams - they wrap just the
+/// native <c>SSL_read</c>/<c>SSL_write</c> calls and the <c>epoll_ctl</c> syscall; everything above them
+/// (status validation, abrupt-close translation, the read/write state machine and epoll-interest logic) is
+/// the real code exercised end to end.
+/// </remarks>
+internal class ConnectionIoState : IDisposable
 {
     private readonly ILogger? _logger;
     private readonly TlsSocketSession _session;
@@ -71,13 +79,27 @@ internal sealed class ConnectionIoState : IDisposable
     // TLS BYTE-STREAM I/O (SSL_read / SSL_write over the fd)
     // ═══════════════════════════════════════════════════════════════
 
+    // The only native session calls, isolated as the test seam (see class remarks). Virtual so tests can
+    // script raw statuses or simulate an abrupt close without a live TlsSocketSession.
+    internal virtual TlsOperationStatus RawRead(Span<byte> buffer, out int bytesRead)
+        => _session.Read(buffer, out bytesRead);
+
+    internal virtual TlsOperationStatus RawWrite(ReadOnlySpan<byte> buffer, out int bytesWritten)
+        => _session.Write(buffer, out bytesWritten);
+
+    // Applies the computed epoll interest. Virtual so tests can observe the mask without a live pump
+    internal virtual void ApplyEvents(uint events)
+    {
+        Pump?.ModifyEvents(Fd, events);
+    }
+
     // Reads decrypted application bytes into buffer. NeedMoreData -> need more ciphertext (wait readable);
     // DestinationTooSmall -> renegotiation must flush handshake output (wait writable).
     private TlsOperationStatus TlsRead(Span<byte> buffer, out int bytesRead)
     {
         try
         {
-            var status = _session.Read(buffer, out bytesRead);
+            var status = RawRead(buffer, out bytesRead);
             return status is TlsOperationStatus.Complete or TlsOperationStatus.NeedMoreData
                 or TlsOperationStatus.DestinationTooSmall or TlsOperationStatus.Closed
                 ? status
@@ -98,7 +120,7 @@ internal sealed class ConnectionIoState : IDisposable
     {
         try
         {
-            var status = _session.Write(buffer, out bytesWritten);
+            var status = RawWrite(buffer, out bytesWritten);
             return status is TlsOperationStatus.Complete or TlsOperationStatus.NeedMoreData
                 or TlsOperationStatus.DestinationTooSmall or TlsOperationStatus.Closed
                 ? status
@@ -133,7 +155,7 @@ internal sealed class ConnectionIoState : IDisposable
             events |= NativeTls.EPOLLOUT;
         }
 
-        Pump?.ModifyEvents(Fd, events);
+        ApplyEvents(events);
     }
 
     // ═══════════════════════════════════════════════════════════════
