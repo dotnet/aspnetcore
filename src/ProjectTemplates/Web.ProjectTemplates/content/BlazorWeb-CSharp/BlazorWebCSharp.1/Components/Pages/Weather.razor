@@ -39,7 +39,9 @@ else
 }
 
 @code {
+@*#if (InteractiveAtRoot) -->
     [PersistentState(AllowUpdates = true)]
+##endif*@
     public WeatherForecast[]? Forecasts { get; set; }
 
     protected override async Task OnInitializedAsync()
