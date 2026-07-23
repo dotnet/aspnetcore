@@ -341,8 +341,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             }
         }
 
-        CacheableKeyRing? existingCacheableKeyRing = null;
-        Task<CacheableKeyRing>? existingTask = null;
+        CacheableKeyRing? existingCacheableKeyRing;
 
         lock (_cacheableKeyRingLockObj)
         {
@@ -357,116 +356,95 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                 }
             }
 
-            existingTask = _cacheableKeyRingTask;
-            if (existingTask is null)
+            var existingTask = _cacheableKeyRingTask;
+
+            // If work kicked off by a previous caller has already completed, we should use those results.
+            // Logically, it would probably make more sense to check this before checking whether
+            // the cache is valid - there could be a newer value available - but keeping that path
+            // fast is more important.  The next forced refresh or cache expiration will cause the
+            // new value to be picked up.
+            //
+            // An unconsumed task result is considered to satisfy forceRefresh.  One could quibble that this isn't really
+            // a forced refresh, but we'll still return a key ring newer than the one the caller was dissatisfied with.
+            if (existingTask is { IsCompleted: true })
             {
-                // The forceRefresh path skipped reading _cacheableKeyRing above; read it now.
-                existingCacheableKeyRing ??= Volatile.Read(ref _cacheableKeyRing);
+                var taskKeyRing = GetKeyRingFromCompletedTaskUnsynchronized(existingTask, utcNow); // Throws if the task failed
+                Debug.Assert(taskKeyRing is not null, "How did _cacheableKeyRingTask change while we were holding the lock?");
+                return taskKeyRing;
+            }
 
-                if (existingCacheableKeyRing is null)
+            // The forceRefresh path skipped reading _cacheableKeyRing above; read it now.
+            existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
+
+            // Any caller that has to block for a value must produce it itself, on this thread,
+            // rather than scheduling the work to TaskScheduler.Default and then waiting on it.
+            // If all available thread-pool threads are blocked waiting on the result, the queued
+            // work item can't be picked up and the app hangs until the runtime injects more
+            // threads. See https://github.com/dotnet/aspnetcore/issues/66380. Two situations block:
+            //
+            //   * Cold start: there's no cached key ring at all, so every caller must wait.
+            //   * Forced refresh: the caller has explicitly rejected the cached ring (e.g. during
+            //     the two-minute startup auto-refresh window an incoming cookie names a key that
+            //     isn't in the current ring), so it must wait for a freshly read one.
+            //
+            // Running inline means racing blocking callers simply serialize on
+            // _cacheableKeyRingLockObj, which matches the pre-#54675 behavior that the
+            // DisableAsyncKeyRingUpdate switch preserves (https://github.com/dotnet/aspnetcore/pull/54675).
+            if (existingCacheableKeyRing is null || forceRefresh)
+            {
+                CacheableKeyRing newCacheableKeyRing;
+                try
                 {
-                    // Cold start: run the refresh inline on this thread. Scheduling the work
-                    // onto TaskScheduler.Default would risk thread-pool starvation - if all
-                    // available pool threads are blocked waiting on the result, the queued
-                    // work item can't be picked up and the app hangs until the runtime
-                    // injects more threads. See https://github.com/dotnet/aspnetcore/issues/66380.
-                    //
-                    // Other concurrent callers are parked on _cacheableKeyRingLockObj while we
-                    // run; once we publish _cacheableKeyRing and release the lock, they wake up.
-                    // Non-force-refresh callers can then re-check the cache and return the
-                    // freshly populated ring, while forceRefresh callers observe that a cached
-                    // ring now exists and continue through the stale-cache refresh path below.
-                    // This matches the pre-#54675 behavior (https://github.com/dotnet/aspnetcore/pull/54675).
-                    CacheableKeyRing newCacheableKeyRing;
-                    try
+                    newCacheableKeyRing = CacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
+                }
+                catch (Exception ex)
+                {
+                    if (existingCacheableKeyRing is null)
                     {
-                        newCacheableKeyRing = CacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Cold-start branch: always a "reading" rather than "refreshing" failure, and
-                        // there's no stale ring to extend via WithTemporaryExtendedLifetime.
-                        // The async refresh path handles both concerns. We leave _cacheableKeyRing
-                        // and _cacheableKeyRingTask null, so the next caller retries from scratch.
+                        // Cold start: there's no stale ring to extend via WithTemporaryExtendedLifetime.
+                        // Leave _cacheableKeyRing null so the next caller retries from scratch.
                         _logger.ErrorOccurredWhileReadingKeyRing(ex);
-                        throw;
+                    }
+                    else
+                    {
+                        // Forced refresh over a stale ring: refresh failures are usually transient, so
+                        // slightly extend the current entry's lifetime to avoid hammering the backing
+                        // store on every subsequent call, then surface the error to the caller.
+                        Volatile.Write(ref _cacheableKeyRing, existingCacheableKeyRing.WithTemporaryExtendedLifetime(utcNow));
+                        _logger.ErrorOccurredWhileRefreshingKeyRing(ex);
                     }
 
-                    Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
-                    return newCacheableKeyRing.KeyRing;
+                    throw;
                 }
 
-                // Stale ring exists: dispatch the refresh asynchronously and let every other
-                // caller return the stale ring without waiting. This is the perf win from #54675.
+                Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
+                return newCacheableKeyRing.KeyRing;
+            }
+
+            // Non-forced caller with a stale (but present) ring: dispatch the refresh asynchronously
+            // and fall through to return the stale ring below without waiting. No caller ever blocks
+            // on this task, so scheduling it to the thread pool cannot cause the starvation above.
+            // This is the perf win from #54675.
+            if (existingTask is null)
+            {
                 // PERF: Closing over utcNow substantially slows down the fast case (valid cache) in micro-benchmarks
                 // (closing over `this` for CacheableKeyRingProvider doesn't seem impactful)
-                existingTask = Task.Factory.StartNew(
+                _cacheableKeyRingTask = Task.Factory.StartNew(
                     utcNowState => CacheableKeyRingProvider.GetCacheableKeyRing((DateTime)utcNowState!),
                     utcNow,
                     CancellationToken.None, // GetKeyRingFromCompletedTaskUnsynchronized will need to react if this becomes cancellable
                     TaskCreationOptions.DenyChildAttach,
                     TaskScheduler.Default);
-                _cacheableKeyRingTask = existingTask;
-            }
-
-            // This is mostly for the case where existingTask already set, but no harm in checking a fresh one
-            if (existingTask.IsCompleted)
-            {
-                // If work kicked off by a previous caller has completed, we should use those results.
-                // Logically, it would probably make more sense to check this before checking whether
-                // the cache is valid - there could be a newer value available - but keeping that path
-                // fast is more important.  The next forced refresh or cache expiration will cause the
-                // new value to be picked up.
-
-                // An unconsumed task result is considered to satisfy forceRefresh.  One could quibble that this isn't really
-                // a forced refresh, but we'll still return a key ring newer than the one the caller was dissatisfied with.
-                var taskKeyRing = GetKeyRingFromCompletedTaskUnsynchronized(existingTask, utcNow); // Throws if the task failed
-                Debug.Assert(taskKeyRing is not null, "How did _cacheableKeyRingTask change while we were holding the lock?");
-                return taskKeyRing;
             }
         }
 
-        // Prefer a stale cached key ring to blocking
-        if (!forceRefresh && existingCacheableKeyRing is not null)
-        {
-            Debug.Assert(!CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow), "Should have returned a valid cached key ring above");
-            return existingCacheableKeyRing.KeyRing;
-        }
-
-        // If there's not even a stale cached key ring we can use, we have to wait.
-        // It's not ideal to wait for a task that was just scheduled, but it makes the code a lot simpler
-        // (compared to having a separate, synchronous code path).
-
-        // The reason we yield the lock and wait for the task instead is to allow racing forceRefresh threads
-        // to wait for the same task, rather than being sequentialized (and each doing its own refresh).
-
-        // Cleverness: swallow any exceptions - they'll be surfaced by GetKeyRingFromCompletedTaskUnsynchronized, if appropriate.
-        existingTask
-            .ContinueWith(
-                static t => _ = t.Exception, // Still observe the exception - just don't throw it
-                CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default)
-            .Wait();
-
-        lock (_cacheableKeyRingLockObj)
-        {
-            var newKeyRing = GetKeyRingFromCompletedTaskUnsynchronized(existingTask, utcNow); // Throws if the task failed (winning thread only)
-            if (newKeyRing is null)
-            {
-                // Another thread won - check whether it cached a new key ring
-                var newCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
-                if (newCacheableKeyRing is null)
-                {
-                    // There will have been a better exception from the winning thread
-                    throw Error.KeyRingProvider_RefreshFailedOnOtherThread(existingTask.Exception);
-                }
-
-                newKeyRing = newCacheableKeyRing.KeyRing;
-            }
-
-            return newKeyRing;
-        }
+        // The only way to leave the lock without returning is as a non-forced caller that observed a
+        // present-but-stale ring (and kicked off the asynchronous refresh above). Prefer returning
+        // that stale ring to blocking.
+        Debug.Assert(!forceRefresh, "A forced refresh should have produced a fresh key ring inline.");
+        Debug.Assert(existingCacheableKeyRing is not null, "Should have refreshed inline when there was no cached key ring.");
+        Debug.Assert(!CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow), "Should have returned a valid cached key ring above");
+        return existingCacheableKeyRing!.KeyRing;
     }
 
     /// <summary>

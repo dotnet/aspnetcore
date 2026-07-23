@@ -854,6 +854,58 @@ public class KeyRingProviderTests
         Assert.Equal(callingThreadId, refreshThreadId);
     }
 
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/66380.
+    // The cold-start starvation was fixed, but a second variant remained: when a valid key
+    // ring is already cached and a caller forces a refresh (e.g. during the two-minute startup
+    // auto-refresh window, an incoming cookie names a key that isn't in the current ring), the
+    // new async-refresh path scheduled the refresh to TaskScheduler.Default and then blocked
+    // on Task.Wait(). With every thread-pool thread parked on that wait, the queued refresh
+    // could not be picked up, reproducing the same starvation and multi-second freeze.
+    //
+    // As with the cold-start test above, we verify the invariant that makes starvation
+    // impossible by construction rather than the (non-deterministic) timing: a forced refresh
+    // must perform the refresh on the calling thread, not on a pool worker.
+    [Fact]
+    public void GetCurrentKeyRing_ForceRefreshWithCachedRing_RefreshRunsOnCallingThread()
+    {
+        var now = StringToDateTime("2015-03-01 00:00:00Z");
+        var refreshTime = now.AddMinutes(1);
+        var initialKeyRing = new Mock<IKeyRing>().Object;
+        var refreshedKeyRing = new Mock<IKeyRing>().Object;
+
+        int? refreshThreadId = null;
+
+        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider>();
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(now))
+            .Returns(new CacheableKeyRing(
+                expirationToken: CancellationToken.None,
+                expirationTime: now.AddDays(1),
+                keyRing: initialKeyRing));
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(refreshTime))
+            .Returns(() =>
+            {
+                refreshThreadId = Environment.CurrentManagedThreadId;
+                return new CacheableKeyRing(
+                    expirationToken: CancellationToken.None,
+                    expirationTime: refreshTime.AddDays(1),
+                    keyRing: refreshedKeyRing);
+            });
+
+        var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
+
+        // Populate the cache with a valid ring.
+        Assert.Same(initialKeyRing, keyRingProvider.GetCurrentKeyRingCore(now));
+
+        // Force a refresh even though the cached ring is still valid.
+        var callingThreadId = Environment.CurrentManagedThreadId;
+        var keyRing = keyRingProvider.GetCurrentKeyRingCore(refreshTime, forceRefresh: true);
+
+        Assert.Same(refreshedKeyRing, keyRing);
+        Assert.Equal(callingThreadId, refreshThreadId);
+    }
+
     [Fact]
     public async Task MultipleThreadsSeeExpiredCachedValue()
     {
