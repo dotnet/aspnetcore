@@ -4,6 +4,10 @@
     <TestGroupName>Mvc.FunctionalTests</TestGroupName>
     <!-- The test asset projects this depends on are not strong-named. -->
     <SignAssembly>false</SignAssembly>
+    <!-- Suppress NuGet vulnerability audit warnings for the AngleSharp test-only dependency.
+         Uses NoWarn instead of WarningsNotAsErrors because NuGet restore promotes audit warnings to errors
+         via its own mechanism that WarningsNotAsErrors does not override. -->
+    <NoWarn>$(NoWarn);NU1901;NU1902;NU1903;NU1904</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
