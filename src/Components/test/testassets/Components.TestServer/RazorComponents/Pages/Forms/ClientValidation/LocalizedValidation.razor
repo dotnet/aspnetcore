@@ -1,6 +1,7 @@
-@page "/forms/client-validation/localized-validation"
+﻿@page "/forms/client-validation/localized-validation"
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
+@using BasicTestApp.ValidationModels
 
 <h2 id="page-title">Localized client-side validation</h2>
 
@@ -38,15 +39,4 @@
     [SupplyParameterFromForm] private LocalizedFormModel? Form { get; set; }
 
     protected override void OnInitialized() => Form ??= new LocalizedFormModel();
-
-    public class LocalizedFormModel
-    {
-        [Required(ErrorMessage = "RequiredKey")]
-        [Display(Name = "Email Address")]
-        public string? Email { get; set; }
-
-        [Range(18, 120, ErrorMessage = "RangeKey")]
-        [Display(Name = "Age")]
-        public int Age { get; set; }
-    }
 }
