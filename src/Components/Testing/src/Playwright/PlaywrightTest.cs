@@ -16,14 +16,10 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// shared by every test in the test assembly. It is intentionally not disposed —
 /// the underlying Node.js driver process is reaped when the test host exits.
 /// </remarks>
-[TestClass]
-public abstract class PlaywrightTest
+public abstract class PlaywrightTest : UITest
 {
     private static IPlaywright? s_playwright;
     private static readonly SemaphoreSlim s_initLock = new(1, 1);
-
-    /// <summary>The MSTest test context for the current test.</summary>
-    public TestContext TestContext { get; set; } = null!;
 
     /// <summary>The shared Playwright instance. Initialized on first use.</summary>
     public IPlaywright Playwright =>

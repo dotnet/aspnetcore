@@ -14,16 +14,15 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// <see cref="ContextTest.Context"/> and is closed when its parent context is disposed
 /// at end of test.
 /// </remarks>
-[TestClass]
 public abstract class PageTest : ContextTest
 {
     /// <summary>The page for the current test.</summary>
     public IPage Page { get; private set; } = null!;
 
-    /// <summary>MSTest hook: creates the per-test <see cref="Page"/>.</summary>
-    [TestInitialize]
-    public async Task PageTestSetup()
+    /// <summary>Creates the per-test <see cref="Page"/>.</summary>
+    protected internal override async Task InitializeCoreAsync()
     {
+        await base.InitializeCoreAsync().ConfigureAwait(false);
         Page = await Context.NewPageAsync().ConfigureAwait(false);
     }
 }

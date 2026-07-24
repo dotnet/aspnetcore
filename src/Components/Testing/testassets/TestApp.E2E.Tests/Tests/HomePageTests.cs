@@ -10,22 +10,20 @@ using TestApp.E2E.Tests.Fixtures;
 
 namespace TestApp.E2E.Tests.Tests;
 
-[TestClass]
-public class HomePageTests : BrowserTest
+[UITest]
+public partial class HomePageTests : BrowserTest
 {
     private ServerInstance _server = null!;
     private IPage _page = null!;
 
-    [TestInitialize]
-    public async Task Init()
+    protected override async Task InitializeCoreAsync()
     {
+        await base.InitializeCoreAsync();
         _server = await TestRoot.Servers.StartServerAsync<App>();
+        DiagnosticServers.Add(_server);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         _page = await context.NewPageAsync();
     }
-
-    [TestCleanup]
-    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
     [TestMethod]
     public async Task HomePage_DisplaysTitle()

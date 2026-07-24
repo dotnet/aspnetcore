@@ -11,19 +11,17 @@ using TestApp.E2E.Tests.Fixtures;
 namespace TestApp.E2E.Tests.Tests;
 
 // Validates the tracing infrastructure.
-[TestClass]
-public class TracingTests : BrowserTest
+[UITest]
+public partial class TracingTests : BrowserTest
 {
     private ServerInstance _server = null!;
 
-    [TestInitialize]
-    public async Task Init()
+    protected override async Task InitializeCoreAsync()
     {
+        await base.InitializeCoreAsync();
         _server = await TestRoot.Servers.StartServerAsync<App>();
+        DiagnosticServers.Add(_server);
     }
-
-    [TestCleanup]
-    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
     [TestMethod]
     public async Task HomePage_WithTracing_DisplaysContent()

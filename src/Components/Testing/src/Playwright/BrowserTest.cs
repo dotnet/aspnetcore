@@ -19,12 +19,11 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// </para>
 /// <para>
 /// Use <see cref="NewContext"/> to create a per-test <see cref="IBrowserContext"/>; every
-/// context obtained that way is tracked and closed automatically in
-/// <c>[TestCleanup]</c>. The class therefore plays nicely with MSTest's default
+/// context obtained that way is tracked and closed automatically during per-test cleanup
+/// (<see cref="CleanupCoreAsync"/>). The class therefore plays nicely with MSTest's default
 /// method-level parallelism — contexts are per-test, no shared mutable browser-page state.
 /// </para>
 /// </remarks>
-[TestClass]
 public abstract class BrowserTest : PlaywrightTest
 {
     private static IBrowser? s_browser;
@@ -36,7 +35,7 @@ public abstract class BrowserTest : PlaywrightTest
     public IBrowser Browser =>
         s_browser ?? throw new InvalidOperationException(
             $"Browser has not been initialized. {nameof(EnsureBrowserAsync)} is called automatically " +
-            "by the BrowserTest [TestInitialize] hook; ensure your derived class does not shadow it.");
+            "by the BrowserTest initialization hook; ensure your derived class calls base.InitializeCoreAsync().");
 
     /// <summary>The browser type to launch. Defaults to <c>chromium</c>. Override to use <c>firefox</c> or <c>webkit</c>.</summary>
     public virtual string BrowserName => "chromium";
@@ -100,13 +99,15 @@ public abstract class BrowserTest : PlaywrightTest
         return ctx;
     }
 
-    /// <summary>MSTest hook: ensures the shared browser is initialized before the test runs.</summary>
-    [TestInitialize]
-    public Task BrowserTestSetup() => EnsureBrowserAsync();
+    /// <summary>Ensures the shared browser is initialized before the test runs.</summary>
+    protected internal override async Task InitializeCoreAsync()
+    {
+        await base.InitializeCoreAsync().ConfigureAwait(false);
+        await EnsureBrowserAsync().ConfigureAwait(false);
+    }
 
-    /// <summary>MSTest hook: closes every <see cref="IBrowserContext"/> obtained via <see cref="NewContext"/> during the test.</summary>
-    [TestCleanup]
-    public async Task BrowserTestTeardown()
+    /// <summary>Closes every <see cref="IBrowserContext"/> obtained via <see cref="NewContext"/> during the test.</summary>
+    protected internal override async Task CleanupCoreAsync()
     {
         IBrowserContext[] toDispose;
         lock (_trackedContexts)
@@ -126,5 +127,7 @@ public abstract class BrowserTest : PlaywrightTest
                 // context may already be closed (e.g. by TracingSession's video-flush path); ignore
             }
         }
+
+        await base.CleanupCoreAsync().ConfigureAwait(false);
     }
 }

@@ -52,13 +52,17 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 ///     public static Task Cleanup() =&gt; Servers.DisposeAsync().AsTask();
 /// }
 ///
-/// [TestClass]
-/// public class MyTests : Microsoft.Playwright.MSTest.PageTest
+/// [UITest]
+/// public partial class MyTests : Microsoft.AspNetCore.Components.Testing.Playwright.PageTest
 /// {
 ///     private ServerInstance _server = null!;
 ///
-///     [TestInitialize]
-///     public async Task Init() =&gt; _server = await TestRoot.Servers.StartServerAsync&lt;App&gt;();
+///     protected override async Task InitializeCoreAsync()
+///     {
+///         await base.InitializeCoreAsync();
+///         _server = await TestRoot.Servers.StartServerAsync&lt;App&gt;();
+///         DiagnosticServers.Add(_server);
+///     }
 /// }
 /// </code>
 /// </para>

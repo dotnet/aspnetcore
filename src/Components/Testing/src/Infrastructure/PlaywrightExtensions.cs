@@ -34,12 +34,6 @@ public static class PlaywrightExtensions
     /// </summary>
     public static bool RecordVideoEnabled => s_recordVideo;
 
-    // Override the default artifact root directory via E2E_ARTIFACTS_DIR environment variable.
-    // Defaults to a test-artifacts/ subdirectory next to the test assembly.
-    private static readonly string s_artifactsRoot =
-        Environment.GetEnvironmentVariable("E2E_ARTIFACTS_DIR")
-        ?? Path.Combine(AppContext.BaseDirectory, "test-artifacts");
-
     /// <summary>
     /// Sets the <c>X-Test-Backend</c> header on browser context options
     /// so the YARP proxy routes requests to the correct <see cref="ServerInstance"/>.
@@ -78,16 +72,21 @@ public static class PlaywrightExtensions
     /// <summary>
     /// Starts tracing on an existing browser context. Returns a <see cref="TracingSession"/>
     /// that saves or discards the trace (and video) on disposal based on the
-    /// outcome reported by <paramref name="test"/>.
+    /// <paramref name="shouldSave"/> delegate.
     /// </summary>
     /// <param name="context">The browser context to trace.</param>
-    /// <param name="test">The MSTest test context for the currently running test.</param>
     /// <param name="artifactDir">The directory to store trace artifacts in.</param>
+    /// <param name="shouldSave">Evaluated at disposal time to decide whether to keep artifacts.</param>
+    /// <param name="onArtifactsSaved">Optional callback with the saved artifact file paths.</param>
     /// <returns>A <see cref="TracingSession"/> that manages trace lifecycle.</returns>
     public static async Task<TracingSession> TraceAsync(
-        this IBrowserContext context, TestContext test, string artifactDir)
+        this IBrowserContext context,
+        string artifactDir,
+        Func<bool> shouldSave,
+        Action<IReadOnlyList<string>>? onArtifactsSaved = null)
     {
-        return await TracingSession.StartAsync(context, test, artifactDir, s_recordVideo).ConfigureAwait(false);
+        return await TracingSession.StartAsync(context, artifactDir, s_recordVideo, shouldSave, onArtifactsSaved)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -96,23 +95,24 @@ public static class PlaywrightExtensions
     /// <see cref="TracedContext"/> that wraps the context and tracing session.
     /// </summary>
     /// <param name="browser">The Playwright browser to create the context on.</param>
-    /// <param name="test">The MSTest test context for the currently running test.</param>
     /// <param name="server">The server instance to route traffic to.</param>
+    /// <param name="artifactDir">The directory to store trace artifacts in.</param>
+    /// <param name="shouldSave">Evaluated at disposal time to decide whether to keep artifacts.</param>
+    /// <param name="onArtifactsSaved">Optional callback with the saved artifact file paths.</param>
     /// <param name="options">Optional browser context options. If <c>null</c>, defaults are used.</param>
     /// <returns>A <see cref="TracedContext"/> wrapping the browser context and tracing session.</returns>
     public static async Task<TracedContext> NewTracedContextAsync(
         this IBrowser browser,
-        TestContext test,
         ServerInstance server,
+        string artifactDir,
+        Func<bool> shouldSave,
+        Action<IReadOnlyList<string>>? onArtifactsSaved = null,
         BrowserNewContextOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(browser);
-        ArgumentNullException.ThrowIfNull(test);
         ArgumentNullException.ThrowIfNull(server);
-
-        var testName = test.TestName ?? "unknown";
-        var sanitized = SanitizeFileName(testName);
-        var artifactDir = Path.Combine(s_artifactsRoot, sanitized);
+        ArgumentNullException.ThrowIfNull(artifactDir);
+        ArgumentNullException.ThrowIfNull(shouldSave);
 
         options ??= new BrowserNewContextOptions();
         options = options
@@ -120,36 +120,35 @@ public static class PlaywrightExtensions
             .WithArtifacts(artifactDir);
 
         var context = await browser.NewContextAsync(options).ConfigureAwait(false);
-        var session = await TracingSession.StartAsync(context, test, artifactDir, s_recordVideo).ConfigureAwait(false);
+        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo, shouldSave, onArtifactsSaved)
+            .ConfigureAwait(false);
         // ownsContext: true — the IBrowser overload created the context, so the wrapper owns disposal.
         return new TracedContext(context, session, ownsContext: true);
     }
 
     /// <summary>
-    /// Variant of <see cref="NewTracedContextAsync(IBrowser, TestContext, ServerInstance, BrowserNewContextOptions?)"/>
+    /// Variant of <see cref="NewTracedContextAsync(IBrowser, ServerInstance, string, Func{bool}, Action{IReadOnlyList{string}}?, BrowserNewContextOptions?)"/>
     /// that starts tracing on an existing <paramref name="context"/> instead of creating a
     /// new one. Use this when you need to configure the context yourself (e.g. with
     /// custom cookies, viewport, etc.) before tracing begins.
     /// </summary>
     /// <param name="context">An existing Playwright browser context. The caller owns its disposal.</param>
-    /// <param name="test">The MSTest test context for the currently running test.</param>
-    /// <param name="server">The server instance whose name is used for the artifact directory.</param>
-    /// <param name="artifactDirOverride">Optional override for the artifact directory.</param>
+    /// <param name="artifactDir">The directory to store trace artifacts in.</param>
+    /// <param name="shouldSave">Evaluated at disposal time to decide whether to keep artifacts.</param>
+    /// <param name="onArtifactsSaved">Optional callback with the saved artifact file paths.</param>
     /// <returns>A <see cref="TracedContext"/> wrapping the browser context and tracing session.</returns>
     public static async Task<TracedContext> NewTracedContextAsync(
         IBrowserContext context,
-        TestContext test,
-        ServerInstance server,
-        string? artifactDirOverride = null)
+        string artifactDir,
+        Func<bool> shouldSave,
+        Action<IReadOnlyList<string>>? onArtifactsSaved = null)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(test);
-        ArgumentNullException.ThrowIfNull(server);
+        ArgumentNullException.ThrowIfNull(artifactDir);
+        ArgumentNullException.ThrowIfNull(shouldSave);
 
-        var artifactDir = artifactDirOverride
-            ?? Path.Combine(s_artifactsRoot, SanitizeFileName(test.TestName ?? "unknown"));
-
-        var session = await TracingSession.StartAsync(context, test, artifactDir, s_recordVideo).ConfigureAwait(false);
+        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo, shouldSave, onArtifactsSaved)
+            .ConfigureAwait(false);
         // ownsContext: false — caller passed the context in and is responsible for disposing it.
         return new TracedContext(context, session, ownsContext: false);
     }
