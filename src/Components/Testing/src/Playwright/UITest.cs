@@ -31,9 +31,46 @@ public abstract class UITest
     /// <summary>
     /// Servers whose captured stdout/stderr should be attached to the test result when the
     /// test fails. Add the servers a test starts here (typically from an
-    /// <see cref="InitializeCoreAsync"/> override); the generated cleanup hook reads this list.
+    /// <see cref="InitializeCoreAsync"/> override); <see cref="SaveServerDiagnostics"/> reads
+    /// this list from the generated cleanup hook.
     /// </summary>
-    protected internal List<ServerInstance> DiagnosticServers { get; } = new();
+    protected List<ServerInstance> DiagnosticServers { get; } = new();
+
+    /// <summary>
+    /// When <paramref name="failed"/> is <c>true</c>, flushes the captured stdout/stderr of every
+    /// server registered in <see cref="DiagnosticServers"/> into the per-test artifacts directory
+    /// and invokes <paramref name="attach"/> once per file produced.
+    /// </summary>
+    /// <remarks>
+    /// This is the framework-agnostic seam the source-generated test cleanup hook calls: the
+    /// generator supplies <paramref name="failed"/> from the test framework's outcome,
+    /// <paramref name="testName"/> from its current test name, and <paramref name="attach"/> from
+    /// its result-file attachment API (for MSTest, <c>TestContext.AddResultFile</c>).
+    /// </remarks>
+    /// <param name="failed">Whether the current test failed (or timed out / errored / aborted).</param>
+    /// <param name="testName">The current test name, used to name the artifacts sub-directory.</param>
+    /// <param name="attach">Invoked with the absolute path of each log file that was written.</param>
+    protected void SaveServerDiagnostics(bool failed, string testName, Action<string> attach)
+    {
+        ArgumentNullException.ThrowIfNull(attach);
+
+        if (!failed || DiagnosticServers.Count == 0)
+        {
+            return;
+        }
+
+        var dir = E2EArtifacts.GetPath(
+            "server-output",
+            PlaywrightExtensions.SanitizeFileName(testName ?? "unknown"));
+
+        foreach (var server in DiagnosticServers)
+        {
+            foreach (var path in server.WriteCapturedOutputTo(dir))
+            {
+                attach(path);
+            }
+        }
+    }
 
     /// <summary>
     /// Per-test initialization. Override to perform setup, calling

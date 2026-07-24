@@ -33,22 +33,22 @@ public class ServerInstance : IAsyncDisposable
     /// <summary>
     /// Unique identifier for this server instance (used for <c>X-Test-Backend</c> header).
     /// </summary>
-    public string Id { get; } = Guid.NewGuid().ToString("N")[..8];
+    internal string Id { get; } = Guid.NewGuid().ToString("N")[..8];
 
     /// <summary>
     /// The app name (matches the key in the E2E manifest).
     /// </summary>
-    public string AppName { get; }
+    internal string AppName { get; }
 
     /// <summary>
     /// Direct URL of the app process (random port, localhost).
     /// </summary>
-    public string AppUrl { get; private set; } = "";
+    internal string AppUrl { get; private set; } = "";
 
     /// <summary>
     /// Public-facing URL from the manifest (for OAuth redirect URIs, etc.).
     /// </summary>
-    public string? PublicUrl { get; private set; }
+    internal string? PublicUrl { get; private set; }
 
     /// <summary>
     /// URL that tests should navigate to. Always routes through the proxy.
@@ -181,21 +181,21 @@ public class ServerInstance : IAsyncDisposable
     /// <paramref name="directory"/>. The directory is created if it does not exist.
     /// </summary>
     /// <param name="directory">Destination directory.</param>
-    public void WriteCapturedOutputTo(string directory)
+    /// <returns>The absolute paths of the stdout and stderr log files that were written.</returns>
+    internal IReadOnlyList<string> WriteCapturedOutputTo(string directory)
     {
         Directory.CreateDirectory(directory);
+        var stdoutPath = Path.Combine(directory, $"{AppName}-{Id}.stdout.log");
+        var stderrPath = Path.Combine(directory, $"{AppName}-{Id}.stderr.log");
         lock (_stdoutBuffer)
         {
-            File.WriteAllText(
-                Path.Combine(directory, $"{AppName}-{Id}.stdout.log"),
-                _stdoutBuffer.ToString());
+            File.WriteAllText(stdoutPath, _stdoutBuffer.ToString());
         }
         lock (_stderrBuffer)
         {
-            File.WriteAllText(
-                Path.Combine(directory, $"{AppName}-{Id}.stderr.log"),
-                _stderrBuffer.ToString());
+            File.WriteAllText(stderrPath, _stderrBuffer.ToString());
         }
+        return [stdoutPath, stderrPath];
     }
 
     internal static string ComputeKey(string appName, ServerStartOptions options)

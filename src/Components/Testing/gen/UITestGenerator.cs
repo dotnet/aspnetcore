@@ -114,7 +114,9 @@ internal sealed class UITestGenerator : IIncrementalGenerator
         sb.AppendLine("    {");
         sb.AppendLine("        try");
         sb.AppendLine("        {");
-        sb.AppendLine("            TestContext.AttachServerOutputIfFailed(DiagnosticServers.ToArray());");
+        sb.AppendLine("            var __outcome = TestContext.CurrentTestOutcome;");
+        sb.AppendLine("            var __failed = __outcome is not (UnitTestOutcome.Passed or UnitTestOutcome.Inconclusive);");
+        sb.AppendLine("            SaveServerDiagnostics(__failed, TestContext.TestName ?? \"unknown\", TestContext.AddResultFile);");
         sb.AppendLine("        }");
         sb.AppendLine("        finally");
         sb.AppendLine("        {");
@@ -181,50 +183,6 @@ internal sealed class UITestGenerator : IIncrementalGenerator
                     foreach (var path in paths)
                     {
                         test.WriteLine($"[E2E]   {Path.GetFileName(path)}");
-                    }
-                }
-            }
-
-            /// <summary>
-            /// When the current test has failed (or timed out / errored / aborted), flushes the
-            /// captured stdout/stderr of each server and attaches them to the test result.
-            /// </summary>
-            public static void AttachServerOutputIfFailed(this TestContext test, params ServerInstance[] servers)
-            {
-                ArgumentNullException.ThrowIfNull(test);
-                ArgumentNullException.ThrowIfNull(servers);
-
-                if (test.CurrentTestOutcome is not (
-                    UnitTestOutcome.Failed
-                    or UnitTestOutcome.Timeout
-                    or UnitTestOutcome.Aborted
-                    or UnitTestOutcome.Error))
-                {
-                    return;
-                }
-
-                if (servers.Length == 0)
-                {
-                    return;
-                }
-
-                var dir = E2EArtifactPaths.ServerOutput(test.TestName ?? "unknown");
-
-                foreach (var server in servers)
-                {
-                    ArgumentNullException.ThrowIfNull(server);
-
-                    server.WriteCapturedOutputTo(dir);
-
-                    var stdout = Path.Combine(dir, $"{server.AppName}-{server.Id}.stdout.log");
-                    var stderr = Path.Combine(dir, $"{server.AppName}-{server.Id}.stderr.log");
-                    if (File.Exists(stdout))
-                    {
-                        test.AddResultFile(stdout);
-                    }
-                    if (File.Exists(stderr))
-                    {
-                        test.AddResultFile(stderr);
                     }
                 }
             }

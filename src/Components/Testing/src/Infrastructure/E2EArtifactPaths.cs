@@ -19,13 +19,4 @@ public static class E2EArtifactPaths
     /// <returns>An absolute directory path under the resolved artifacts root (not created on disk).</returns>
     public static string ForTest(string testName)
         => E2EArtifacts.GetPath(PlaywrightExtensions.SanitizeFileName(testName ?? "unknown"));
-
-    /// <summary>
-    /// The directory that captured server stdout/stderr for <paramref name="testName"/>
-    /// is written to.
-    /// </summary>
-    /// <param name="testName">The current test name (for example MSTest's <c>TestContext.TestName</c>).</param>
-    /// <returns>An absolute directory path under the resolved artifacts root (not created on disk).</returns>
-    public static string ServerOutput(string testName)
-        => E2EArtifacts.GetPath("server-output", PlaywrightExtensions.SanitizeFileName(testName ?? "unknown"));
 }
