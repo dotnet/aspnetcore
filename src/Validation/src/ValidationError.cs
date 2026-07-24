@@ -2,16 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
 
 /// <summary>
-/// Represents the context of a validation error.
+/// Represents a validation error.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public readonly struct ValidationErrorContext
+public sealed class ValidationError
 {
     /// <summary>
     /// Gets the name of the property or parameter that caused the validation error.
@@ -24,9 +22,9 @@ public readonly struct ValidationErrorContext
     public required string Path { get; init; }
 
     /// <summary>
-    /// Gets the list of error messages associated with the validation error.
+    /// Gets the error message associated with the validation error.
     /// </summary>
-    public required IReadOnlyList<string> Errors { get; init; }
+    public required string ErrorMessage { get; init; }
 
     /// <summary>
     /// Gets a reference to the container object of the validated property.
@@ -35,6 +33,6 @@ public readonly struct ValidationErrorContext
 
     private string GetDebuggerDisplay()
     {
-        return $"{Path}: {string.Join(",", Errors)}";
+        return $"{Path}: {ErrorMessage}";
     }
 }

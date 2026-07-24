@@ -1,33 +1,11 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-
-namespace Microsoft.Extensions.Validation;
-
-/// <summary>
-/// Contains validation information for a member of a type.
-/// </summary>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValidationErrorReporter
+file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatablePropertyInfo
 {
-    private RequiredAttribute? _requiredAttribute;
+    private global::System.ComponentModel.DataAnnotations.RequiredAttribute? _requiredAttribute;
 
-    /// <summary>
-    /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
-    /// </summary>
-    /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
-    /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
-    /// <param name="name">The property name.</param>
-    /// <param name="displayNameInfo">An optional strategy that resolves the
-    /// display name for the property at validation time. When <see langword="null"/>, the
-    /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatablePropertyInfo(
-        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-        Type declaringType,
-        Type propertyType,
+        [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
+        global::System.Type declaringType,
+        global::System.Type propertyType,
         string name,
         DisplayNameInfo? displayNameInfo = null)
     {
@@ -37,58 +15,41 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         DisplayNameInfo = displayNameInfo;
     }
 
-    /// <summary>
-    /// Gets the type that declares the property.
-    /// </summary>
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-    internal Type DeclaringType { get; }
+    [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
+    internal global::System.Type DeclaringType { get; }
 
-    /// <summary>
-    /// Gets the property type.
-    /// </summary>
-    internal Type PropertyType { get; }
+    internal global::System.Type PropertyType { get; }
 
-    /// <summary>
-    /// Gets the property name.
-    /// </summary>
     internal string Name { get; }
 
-    /// <summary>
-    /// Gets the strategy that resolves the display name for the property at validation time,
-    /// or <see langword="null"/> when no display name information was supplied.
-    /// </summary>
     internal DisplayNameInfo? DisplayNameInfo { get; }
 
-    private PropertyInfo Property
-        => DeclaringType.GetProperty(Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+    private global::System.Reflection.PropertyInfo Property
+        => DeclaringType.GetProperty(Name, global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly) ?? throw new global::System.InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
 
-    /// <summary>
-    /// Gets the validation attributes for this property.
-    /// </summary>
-    /// <returns>An array of validation attributes to apply to this property.</returns>
-    protected abstract ValidationAttribute[] GetValidationAttributes();
+    protected abstract global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes();
 
-    private void ValidateDepth(ValidateContext context)
+    private void ValidateDepth(global::Microsoft.Extensions.Validation.ValidateContext context)
     {
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
-            throw new InvalidOperationException(
+            throw new global::System.InvalidOperationException(
                 $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
     }
 
-    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, ValidateContext context, object? propertyValue, object containingObject, ValidationContext validationContext)
+    private bool ValidateRequiredAttribute(global::System.ComponentModel.DataAnnotations.ValidationAttribute[] validationAttributes, global::Microsoft.Extensions.Validation.ValidateContext context, object? propertyValue, object containingObject, global::System.ComponentModel.DataAnnotations.ValidationContext validationContext)
     {
-        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        if (_requiredAttribute is not null || TryGetRequiredAttribute(validationAttributes, out _requiredAttribute))
         {
-            var result = _requiredAttribute.GetValidationResult(propertyValue, validationContext);
+            var result = _requiredAttribute!.GetValidationResult(propertyValue, validationContext);
 
-            if (result is not null && result != ValidationResult.Success)
+            if (result is not null && result != global::System.ComponentModel.DataAnnotations.ValidationResult.Success)
             {
-                ((IValidationErrorReporter)this).ReportError(context, validationContext.DisplayName, containingObject, _requiredAttribute, result);
+                ReportError(context, validationContext.DisplayName, containingObject, _requiredAttribute, result);
 
                 return false;
             }
@@ -98,9 +59,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     }
 
     /// <inheritdoc />
-    public virtual async Task ValidateAsync(object containingObject, ValidateContext context, CancellationToken cancellationToken)
+    public virtual async global::System.Threading.Tasks.Task ValidateAsync(object containingObject, global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Threading.CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(containingObject);
+        global::System.ArgumentNullException.ThrowIfNull(containingObject);
 
         var propertyValue = Property.GetValue(containingObject);
         var validationAttributes = GetValidationAttributes();
@@ -119,7 +80,10 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-        var validationContext = context.CreateValidationContext(containingObject, displayName, Name);
+        var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(containingObject, displayName, context.ServiceProvider, null)
+        {
+            MemberName = Name,
+        };
 
         // Check required attribute first
         if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
@@ -131,7 +95,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
 
         // Validate any other attributes
-        await context.ValidateAttributesAsync(propertyValue, containingObject, this, validationContext, displayName, cancellationToken);
+        await ValidateAttributesAsync(context, validationAttributes, propertyValue, containingObject, validationContext, displayName, cancellationToken);
 
         var validationOptions = context.ValidationOptions;
 
@@ -143,12 +107,12 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         try
         {
             // Handle enumerable values
-            if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
+            if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
 
-                var tracker = context.TrackAsyncValidations();
+                var tracker = new AsyncValidationTracker(context);
                 foreach (var item in enumerable)
                 {
                     if (item != null)
@@ -163,9 +127,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
                             {
                                 tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                             }
-                            catch (Exception ex)
+                            catch (global::System.Exception ex)
                             {
-                                tracker.Track(Task.FromException(ex));
+                                tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
                             }
                         }
                     }
@@ -195,9 +159,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     }
 
     /// <inheritdoc />
-    public virtual void Validate(object containingObject, ValidateContext context)
+    public virtual void Validate(object containingObject, global::Microsoft.Extensions.Validation.ValidateContext context)
     {
-        ArgumentNullException.ThrowIfNull(containingObject);
+        global::System.ArgumentNullException.ThrowIfNull(containingObject);
 
         var propertyValue = Property.GetValue(containingObject);
         var validationAttributes = GetValidationAttributes();
@@ -216,7 +180,10 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-        var validationContext = context.CreateValidationContext(containingObject, displayName, Name);
+        var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(containingObject, displayName, context.ServiceProvider, null)
+        {
+            MemberName = Name,
+        };
 
         // Check required attribute first
         if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
@@ -228,7 +195,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
 
         // Validate any other attributes
-        context.ValidateAllAttributesSynchronously(propertyValue, containingObject, this, validationContext, displayName);
+        ValidateAllAttributesSynchronously(context, validationAttributes, propertyValue, containingObject, validationContext, displayName);
 
         var validationOptions = context.ValidationOptions;
 
@@ -240,7 +207,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         try
         {
             // Handle enumerable values
-            if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
+            if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
@@ -279,14 +246,10 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
     }
 
-    ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
+    private protected override void ReportError(global::Microsoft.Extensions.Validation.ValidateContext context, string displayName, object? container, global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute, global::System.ComponentModel.DataAnnotations.ValidationResult result)
     {
-        return GetValidationAttributes();
-    }
-
-    void IValidationErrorReporter.ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
-    {
-        var errorMessage = context.ResolveAttributeErrorMessage(
+        var errorMessage = ResolveAttributeErrorMessage(
+            context,
             memberName: Name,
             displayName,
             declaringType: DeclaringType,
@@ -295,11 +258,11 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         if (errorMessage is not null)
         {
-            var errorContext = new ValidationErrorContext()
+            var errorContext = new global::Microsoft.Extensions.Validation.ValidationError()
             {
                 Name = Name,
                 Path = context.CurrentValidationPath,
-                Errors = [errorMessage],
+                ErrorMessage = errorMessage,
                 Container = container,
             };
             context.AddValidationError(errorContext);

@@ -1,5 +1,3 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -10,26 +8,23 @@ using System.Security.Claims;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
-public class RuntimeValidatableParameterInfoResolverTests
+public class RuntimeValidatableParameterInfoResolverTests : ValidationTestBase
 {
-    private readonly RuntimeValidatableParameterInfoResolver _resolver = new();
-
     [Fact]
     public void TryGetValidatableTypeInfo_AlwaysReturnsFalse()
     {
-        var result = _resolver.TryGetValidatableTypeInfo(typeof(string), out var validatableInfo);
+        var (_, options) = GeneratedValidationTestHelpers.CreateValidationServices();
 
-        Assert.False(result);
+        Assert.False(options.TryGetValidatableTypeInfo(typeof(UnannotatedRuntimeParameterClass), out var validatableInfo));
         Assert.Null(validatableInfo);
     }
 
     [Fact]
     public void TryGetValidatableParameterInfo_WithNullName_ThrowsInvalidOperationException()
     {
-        var parameterInfo = new NullNameParameterInfo();
+        var (_, options) = GeneratedValidationTestHelpers.CreateValidationServices();
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-            _resolver.TryGetValidatableParameterInfo(parameterInfo, out _));
+        var exception = Assert.Throws<InvalidOperationException>(() => options.TryGetValidatableParameterInfo(new NullNameParameterInfo(), out _));
 
         Assert.Contains("without a name", exception.Message);
     }
@@ -41,7 +36,7 @@ public class RuntimeValidatableParameterInfoResolverTests
     [InlineData(typeof(DateTime))]
     [InlineData(typeof(Guid))]
     [InlineData(typeof(decimal))]
-    [InlineData(typeof(DayOfWeek))] // Enum
+    [InlineData(typeof(DayOfWeek))]
     [InlineData(typeof(ClaimsPrincipal))]
     [InlineData(typeof(PipeReader))]
     [InlineData(typeof(DateTimeOffset))]
@@ -51,213 +46,105 @@ public class RuntimeValidatableParameterInfoResolverTests
     [InlineData(typeof(CancellationToken))]
     public void TryGetValidatableParameterInfo_WithSimpleTypesAndNoAttributes_ReturnsFalse(Type parameterType)
     {
-        var parameterInfo = GetParameter(parameterType);
+        var (_, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = typeof(RuntimeParameterHolder).GetMethod(nameof(RuntimeParameterHolder.Method))!.MakeGenericMethod(parameterType).GetParameters()[0];
 
-        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
-
-        Assert.False(result);
+        Assert.False(options.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo));
         Assert.Null(validatableInfo);
     }
 
     [Fact]
     public void TryGetValidatableParameterInfo_WithClassTypeAndNoAttributes_ReturnsTrue()
     {
-        var parameterInfo = GetParameter(typeof(TestClass));
+        var (_, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = typeof(RuntimeParameterHolder).GetMethod(nameof(RuntimeParameterHolder.Method))!.MakeGenericMethod(typeof(UnannotatedRuntimeParameterClass)).GetParameters()[0];
 
-        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
-
-        Assert.True(result);
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo));
         Assert.NotNull(validatableInfo);
-        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
-        Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Null(parameterValidatableInfo.DisplayNameInfo);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TryGetValidatableParameterInfo_WithDisplayAttribute_UsesDisplayNameFromAttribute(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(RuntimeParameterActions.DisplayAttributeParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(validatableInfo, null, context, useAsync, default);
+
+        Assert.Equal("The Custom Display Name field is required.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
-    public void TryGetValidatableParameterInfo_WithSimpleTypeAndAttributes_ReturnsTrue()
+    public async Task TryGetValidatableParameterInfo_WithDisplayAttributeWithResourceType_BypassesLocalizer()
     {
-        var parameterInfo = typeof(TestController)
-            .GetMethod(nameof(TestController.MethodWithAttributedParam))!
-            .GetParameters()[0];
+        var localizer = new RecordingValidationLocalizer { DisplayNameResult = "Should not be used" };
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices(o => o.Localizer = localizer);
+        var parameterInfo = GetParameter(nameof(RuntimeParameterActions.ResourceDisplayAttributeParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
+        await validatableInfo.ValidateAsync(null, context, default);
 
-        Assert.True(result);
-        Assert.NotNull(validatableInfo);
-        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
-        Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Null(parameterValidatableInfo.DisplayNameInfo);
+        Assert.Empty(localizer.DisplayNameCalls);
+        Assert.Equal("The Resource Display Name field is required.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
-    public void TryGetValidatableParameterInfo_WithDisplayAttribute_UsesDisplayNameFromAttribute()
+    public async Task TryGetValidatableParameterInfo_WithLiteralDisplayAttribute_ConsultsLocalizerWhenSet()
     {
-        var parameterInfo = typeof(TestController)
-            .GetMethod(nameof(TestController.MethodWithDisplayAttribute))!
-            .GetParameters()[0];
+        var localizer = new RecordingValidationLocalizer { DisplayNameResult = "Localized Custom Display Name" };
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices(o => o.Localizer = localizer);
+        var parameterInfo = GetParameter(nameof(RuntimeParameterActions.DisplayAttributeParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
+        await validatableInfo.ValidateAsync(null, context, default);
 
-        Assert.True(result);
-        Assert.NotNull(validatableInfo);
-        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
-        Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("Custom Display Name", ResolveDisplayName(parameterValidatableInfo));
-    }
-
-    [Fact]
-    public void TryGetValidatableParameterInfo_WithDisplayAttributeWithResourceType_BypassesLocalizer()
-    {
-        var parameterInfo = typeof(TestController)
-            .GetMethod(nameof(TestController.MethodWithResourceDisplayAttribute))!
-            .GetParameters()[0];
-
-        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
-
-        Assert.True(result);
-        Assert.NotNull(validatableInfo);
-        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
-        Assert.NotNull(parameterValidatableInfo.DisplayNameInfo);
-        // The localizer must be bypassed for the resource-attribute path: even with a localizer
-        // configured, the strategy returns the resource-resolved name directly.
-        var localizer = new ThrowingValidationLocalizer();
-        Assert.Equal("Resource Display Name", ResolveDisplayName(parameterValidatableInfo, localizer));
-    }
-
-    [Fact]
-    public void TryGetValidatableParameterInfo_WithLiteralDisplayAttribute_ConsultsLocalizerWhenSet()
-    {
-        var parameterInfo = typeof(TestController)
-            .GetMethod(nameof(TestController.MethodWithDisplayAttribute))!
-            .GetParameters()[0];
-
-        _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
-        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
-
-        var localizer = new RecordingValidationLocalizer { Translations = { ["Custom Display Name"] = "Localized Custom Display Name" } };
-        Assert.Equal("Localized Custom Display Name", ResolveDisplayName(parameterValidatableInfo, localizer));
-        var record = Assert.Single(localizer.DisplayNameCalls);
-        Assert.Equal("Custom Display Name", record.DisplayName);
-        Assert.Equal("value", record.MemberName);
-        Assert.Null(record.Type);
-    }
-
-    [Fact]
-    public void TryGetValidatableParameterInfo_WithDisplayAttributeWithNullName_UsesParameterName()
-    {
-        var parameterInfo = typeof(TestController)
-            .GetMethod(nameof(TestController.MethodWithNullDisplayName))!
-            .GetParameters()[0];
-
-        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
-
-        Assert.True(result);
-        Assert.NotNull(validatableInfo);
-        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
-        Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Null(parameterValidatableInfo.DisplayNameInfo);
+        var call = Assert.Single(localizer.DisplayNameCalls);
+        Assert.Equal("Custom Display Name", call.DisplayName);
+        Assert.Equal("value", call.MemberName);
+        Assert.Null(call.Type);
     }
 
     [Fact]
     public void TryGetValidatableParameterInfo_WithNullableValueType_ReturnsFalse()
     {
-        var parameterInfo = GetParameter(typeof(int?));
+        var (_, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = typeof(RuntimeParameterHolder).GetMethod(nameof(RuntimeParameterHolder.NullableMethod))!.MakeGenericMethod(typeof(int)).GetParameters()[0];
 
-        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
-
-        Assert.False(result);
+        Assert.False(options.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo));
         Assert.Null(validatableInfo);
     }
 
-    [Fact]
-    public void TryGetValidatableParameterInfo_WithNullableReferenceType_ReturnsTrue()
-    {
-        var parameterInfo = GetNullableParameter(typeof(TestClass));
+    private static ParameterInfo GetParameter(string methodName)
+        => typeof(RuntimeParameterActions).GetMethod(methodName)!.GetParameters()[0];
 
-        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
-
-        Assert.True(result);
-        Assert.NotNull(validatableInfo);
-        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
-        Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Null(parameterValidatableInfo.DisplayNameInfo);
-    }
-
-    private static string? ResolveDisplayName(ValidatableParameterInfo info, IValidationLocalizer? localizer = null)
-        => info.DisplayNameInfo?.GetDisplayName(
-            new ValidateContext
-            {
-                ValidationOptions = new ValidationOptions { Localizer = localizer },
-                ServiceProvider = null,
-            },
-            info.Name,
-            type: null);
-
-    private sealed class RecordingValidationLocalizer : IValidationLocalizer
-    {
-        public Dictionary<string, string> Translations { get; } = new();
-        public List<DisplayNameLocalizationContext> DisplayNameCalls { get; } = new();
-
-        public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
-        {
-            DisplayNameCalls.Add(context);
-            return context.DisplayName is not null && Translations.TryGetValue(context.DisplayName, out var v) ? v : null;
-        }
-
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => null;
-    }
-
-    private sealed class ThrowingValidationLocalizer : IValidationLocalizer
-    {
-        public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
-            => throw new InvalidOperationException("ResolveDisplayName must not be called for resource-attribute paths.");
-
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => null;
-    }
-
-    private static ParameterInfo GetParameter(Type parameterType)
-    {
-        return typeof(TestParameterHolder)
-            .GetMethod(nameof(TestParameterHolder.Method))!
-            .MakeGenericMethod(parameterType)
-            .GetParameters()[0];
-    }
-
-    private static ParameterInfo GetNullableParameter(Type parameterType)
-    {
-        return typeof(TestParameterHolder)
-            .GetMethod(nameof(TestParameterHolder.MethodWithNullable))!
-            .MakeGenericMethod(parameterType)
-            .GetParameters()[0];
-    }
-
-    private class TestClass { }
-
-    private class TestParameterHolder
-    {
-        public void Method<T>(T testParam) { }
-        public void MethodWithNullable<T>(T? testParam) { }
-    }
-
-    private class TestController
-    {
-        public void MethodWithAttributedParam([Required] string value) { }
-
-        public void MethodWithDisplayAttribute([Display(Name = "Custom Display Name")][Required] string value) { }
-
-        public void MethodWithResourceDisplayAttribute([Display(Name = "TestKey", ResourceType = typeof(TestResources))][Required] string value) { }
-
-        public void MethodWithNullDisplayName([Display(Name = null)][Required] string value) { }
-    }
-
-    private static class TestResources
-    {
-        public static string TestKey => "Resource Display Name";
-    }
-
-    private class NullNameParameterInfo : ParameterInfo
+    private sealed class NullNameParameterInfo : ParameterInfo
     {
         public override string? Name => null;
         public override Type ParameterType => typeof(string);
     }
+}
+
+public sealed class UnannotatedRuntimeParameterClass { }
+
+public static class RuntimeParameterHolder
+{
+    public static void Method<T>(T testParam) { }
+    public static void NullableMethod<T>(T? testParam) where T : struct { }
+}
+
+public static class RuntimeParameterActions
+{
+    public static void DisplayAttributeParameter([Display(Name = "Custom Display Name")][Required] string? value) { }
+    public static void ResourceDisplayAttributeParameter([Display(Name = "TestKey", ResourceType = typeof(RuntimeParameterResources))][Required] string? value) { }
+}
+
+public static class RuntimeParameterResources
+{
+    public static string TestKey => "Resource Display Name";
 }
