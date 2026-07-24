@@ -37,6 +37,6 @@
       as the 'environment' setting, which is equivalent to the ASPNETCORE_ENVIRONMENT / DOTNET_ENVIRONMENT
       environment variable.
     -->
-    <OpenApiGenerateEnvironment Condition=" '$(OpenApiGenerateEnvironment)' == '' " />
+    <OpenApiGenerationEnvironment Condition=" '$(OpenApiGenerationEnvironment)' == '' " />
   </PropertyGroup>
 </Project>
