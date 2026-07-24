@@ -87,7 +87,6 @@ internal class ConnectionIoState : IDisposable
     internal virtual TlsOperationStatus RawWrite(ReadOnlySpan<byte> buffer, out int bytesWritten)
         => _session.Write(buffer, out bytesWritten);
 
-    // Applies the computed epoll interest. Virtual so tests can observe the mask without a live pump
     internal virtual void ApplyEvents(uint events)
     {
         Pump?.ModifyEvents(Fd, events);

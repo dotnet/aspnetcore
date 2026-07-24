@@ -6,19 +6,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- Shipped as a standalone NuGet package rather than as part of the Microsoft.AspNetCore.App shared
-         framework (note: no IsAspNetCoreApp). This keeps the experimental transport opt-in and easy to remove
-         later. Its references to shared-framework assemblies (Kestrel.Core, etc.) become a
-         FrameworkReference to Microsoft.AspNetCore.App in the produced package. -->
-    <IsPackable>true</IsPackable>
+    <IsPackable>true</IsPackable> <!-- Shipped as a standalone NuGet package -->
     <IsTrimmable>true</IsTrimmable>
-    <!-- DirectTls consumes the experimental low-level TLS API (TlsContext/TlsSocketSession).
-         ASPNETCORE_DIRECTTLS_001 is this transport's own [Experimental] id; suppress it inside the
-         defining assembly so the factory/extensions can use the endpoint API without warnings.
-         CS0436: this project has InternalsVisibleTo from Kestrel.Core (to read ListenOptions.Protocols
-         at bind time) and also share-source-compiles the same ServerInfrastructure files Core does
-         (DuplexPipe, TransportConnection); the identical local copies win and are only used internally. -->
-    <NoWarn>$(NoWarn);SYSLIB5007;ASPNETCORE_DIRECTTLS_001;CS0436</NoWarn>
+    <NoWarn>$(NoWarn);SYSLIB5007;ASPNETCORE_DIRECTTLS_001;CS0436</NoWarn> <!-- Experimental DirectTLS ASPNETCORE_DIRECTTLS_001 is suppressed -->
   </PropertyGroup>
 
   <ItemGroup>

@@ -13,9 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
 /// <summary>
-/// Per-endpoint TLS configuration for an endpoint served by the DirectTls transport. Attach an instance
-/// to a <see cref="DirectTlsEndpoint"/> to tell Kestrel how to terminate TLS for that endpoint using the
-/// native, file-descriptor-bound OpenSSL session (rather than <see cref="SslStream"/>).
+/// Per-endpoint TLS configuration for an endpoint served by the DirectTls transport.
 /// </summary>
 /// <remarks>
 /// DirectTls is TLS-only: every endpoint served by this transport terminates TLS, so a server certificate
@@ -52,8 +50,8 @@ public sealed class DirectTlsEndpointOptions
     /// Whether a client certificate is requested and/or required during the handshake (mutual TLS).
     /// </summary>
     /// <remarks>
-    /// Defaults to <see cref="ClientCertificateMode.NoCertificate"/>. <see cref="ClientCertificateMode.DelayCertificate"/>
-    /// is not supported by this transport.
+    /// Defaults to <see cref="ClientCertificateMode.NoCertificate"/>.
+    /// <see cref="ClientCertificateMode.DelayCertificate"/> is not supported (see https://github.com/dotnet/aspnetcore/issues/67915)
     /// </remarks>
     public ClientCertificateMode ClientCertificateMode { get; set; } = ClientCertificateMode.NoCertificate;
 
@@ -66,8 +64,7 @@ public sealed class DirectTlsEndpointOptions
 
     /// <summary>
     /// An optional callback invoked with the raw ClientHello record bytes as soon as they are parsed, before
-    /// the handshake completes. Intended for observation only (for example, TLS fingerprinting); it cannot
-    /// alter or reject the handshake.
+    /// the handshake completes.
     /// </summary>
     /// <remarks>
     /// The <see cref="ReadOnlySequence{T}"/> is only valid for the duration of the callback; copy the bytes
@@ -131,10 +128,8 @@ public sealed class DirectTlsEndpointOptions
     private TimeSpan _handshakeTimeout = HttpsConnectionAdapterOptions.DefaultHandshakeTimeout;
 
     /// <summary>
-    /// The HTTP protocols (ALPN) advertised for this endpoint, sourced from <see cref="ListenOptions.Protocols"/>
-    /// after the endpoint has been configured. Not part of the public surface: the DirectTls transport's
-    /// post-configure step copies the protocols here so the transport does not need to depend on
-    /// <see cref="KestrelServerOptions"/>.
+    /// The HTTP protocols (ALPN) advertised for this endpoint,
+    /// sourced from <see cref="ListenOptions.Protocols"/> after the endpoint has been configured. 
     /// </summary>
     internal HttpProtocols HttpProtocols { get; set; } = HttpProtocols.Http1AndHttp2;
 }

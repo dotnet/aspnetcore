@@ -4,10 +4,6 @@
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Interop;
 
-// libc P/Invoke surface for the DirectTls transport. All TLS work is handled by the
-// runtime's TlsSocketSession and all socket configuration (non-blocking, TCP_NODELAY,
-// accept, peer address) goes through the managed Socket API. The only primitive that
-// has no managed equivalent is epoll, so that is all this file exposes.
 internal static partial class NativeTls
 {
     private const string LIBC = "libc.so.6";

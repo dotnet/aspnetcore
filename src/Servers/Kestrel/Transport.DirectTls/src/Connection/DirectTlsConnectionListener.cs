@@ -103,7 +103,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         listenSocket.Blocking = false;
 
         _listenSocket = listenSocket;
-        
+
         // Start all pump threads with the listen socket (EPOLLEXCLUSIVE)
         // Each pump will accept connections directly in its epoll loop
         int listenFd = (int)listenSocket.Handle;
@@ -115,7 +115,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             _memoryPool,
             _options.NoDelay,
             _clientHelloCallback);
-            
+
         _logger?.LogInformation("DirectTls listener started with EPOLLEXCLUSIVE worker accept");
     }
 

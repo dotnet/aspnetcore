@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Moq;
-using Xunit;
 
 namespace Sockets.BindTests;
 
@@ -33,9 +29,7 @@ public class SocketTransportFactoryTests
     [Fact]
     public void CanBind_DirectTlsEndpoint_ReturnsFalse()
     {
-        // DirectTlsEndpoint derives from IPEndPoint, so the socket transport must explicitly refuse it;
-        // otherwise a DirectTls endpoint could be bound as a plaintext socket if this factory is tried first.
-#pragma warning disable ASPNETCORE_DIRECTTLS_001 // Experimental API
+#pragma warning disable ASPNETCORE_DIRECTTLS_001
         var directTlsEndpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
 #pragma warning restore ASPNETCORE_DIRECTTLS_001
         var socketTransportFactory = new SocketTransportFactory(Options.Create(new SocketTransportOptions()), new LoggerFactory());

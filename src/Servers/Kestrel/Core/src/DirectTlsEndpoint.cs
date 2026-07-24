@@ -17,28 +17,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 /// <see cref="DirectTlsEndpointOptions.ServerCertificate"/> or
 /// <see cref="DirectTlsEndpointOptions.ServerCertificateSelector"/>).
 /// </para>
-/// <para>
-/// The DirectTls transport must be registered with <c>UseDirectTls()</c> after <c>UseKestrel()</c>.
-/// </para>
 /// </remarks>
-/// <example>
-/// <code>
-/// builder.WebHost.UseDirectTls();
-/// builder.WebHost.ConfigureKestrel(options =>
-/// {
-///     var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 5001);
-///     endpoint.Options.ServerCertificate = certificate;
-///     options.Listen(endpoint);
-/// });
-/// </code>
-/// </example>
 [Experimental("ASPNETCORE_DIRECTTLS_001", UrlFormat = "https://aka.ms/aspnetcore/directtls")]
 public sealed class DirectTlsEndpoint : IPEndPoint
 {
     /// <summary>
     /// Initializes a new <see cref="DirectTlsEndpoint"/> with a default <see cref="DirectTlsEndpointOptions"/>.
-    /// Configure TLS by mutating <see cref="Options"/> (for example, set
-    /// <see cref="DirectTlsEndpointOptions.ServerCertificate"/>).
     /// </summary>
     /// <param name="address">The IP address to listen on.</param>
     /// <param name="port">The port to listen on.</param>
@@ -61,8 +45,7 @@ public sealed class DirectTlsEndpoint : IPEndPoint
     }
 
     /// <summary>
-    /// Initializes a new <see cref="DirectTlsEndpoint"/> from an existing <see cref="IPEndPoint"/> with the
-    /// specified TLS options.
+    /// Initializes a new <see cref="DirectTlsEndpoint"/> from an existing <see cref="IPEndPoint"/> with the specified TLS options.
     /// </summary>
     /// <param name="endpoint">The IP endpoint (address and port) to listen on.</param>
     /// <param name="options">The per-endpoint TLS configuration.</param>

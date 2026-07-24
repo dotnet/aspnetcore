@@ -13,22 +13,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 
 /// <summary>
 /// Feature-collection surface for a DirectTls connection, implemented directly on the connection object.
-///
-/// This mirrors two existing patterns in the codebase:
-/// <list type="bullet">
-///   <item><c>SocketConnection.FeatureCollection.cs</c>, which implements <see cref="IConnectionSocketFeature"/>
-///   on the connection itself and reads from its private <c>Socket</c>.</item>
-///   <item>The SslStream path's <c>TlsConnectionFeature</c>, a single object that backs every TLS feature by
-///   reading live from one underlying <see cref="System.Net.Security.SslStream"/>.</item>
-/// </list>
-///
-/// Here the single source of truth is the <see cref="System.Net.Security.TlsSocketSession"/> driving the
-/// connection's <see cref="ConnectionIoState"/>. The negotiated
-/// TLS values are immutable once the handshake completes (which is always the case by the time these features
-/// are read on the request path), so they are read live rather than snapshotted. The one exception is the
-/// client certificate, which is captured and validated on the pump thread at handshake completion and stored
-/// in <see cref="ClientCertificate"/>. DirectTls terminates TLS for every connection, so the
-/// <see cref="TlsSession"/> accessor is non-null whenever these features are read.
 /// </summary>
 internal sealed partial class DirectTlsConnection : ITlsConnectionFeature, ITlsHandshakeFeature, ITlsApplicationProtocolFeature, IConnectionSocketFeature
 {

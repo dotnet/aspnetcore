@@ -10,9 +10,7 @@
     <IsPackable>false</IsPackable>
     <DefineConstants>$(DefineConstants);KESTREL</DefineConstants>
     <NoWarn>$(NoWarn);IDE0060</NoWarn><!-- APIs in HTTP3 are work in progress and produce these warnings frequently-->
-    <!-- ASPNETCORE_DIRECTTLS_001 is the [Experimental] id on the DirectTls endpoint/options types defined
-         here; suppress it inside the defining assembly so the types can reference each other without warnings. -->
-    <NoWarn>$(NoWarn);ASPNETCORE_DIRECTTLS_001</NoWarn>
+    <NoWarn>$(NoWarn);ASPNETCORE_DIRECTTLS_001</NoWarn> <!-- ASPNETCORE_DIRECTTLS_001 is the [Experimental] id on the DirectTls endpoint/options types defined here -->
     <IsTrimmable>true</IsTrimmable>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <GenerateRequiresPreviewFeaturesAttribute>false</GenerateRequiresPreviewFeaturesAttribute>

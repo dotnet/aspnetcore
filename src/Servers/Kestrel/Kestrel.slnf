@@ -57,6 +57,7 @@
       "src\\Servers\\Kestrel\\samples\\WebTransportInteractiveSampleApp\\WebTransportInteractiveSampleApp.csproj",
       "src\\Servers\\Kestrel\\samples\\WebTransportSampleApp\\WebTransportSampleApp.csproj",
       "src\\Servers\\Kestrel\\samples\\http2cat\\http2cat.csproj",
+      "src\\Servers\\Kestrel\\samples\\DirectTlsTransportApp\\DirectTlsTransportApp.csproj",
       "src\\Servers\\Kestrel\\stress\\HttpStress.csproj",
       "src\\Servers\\Kestrel\\test\\InMemory.FunctionalTests\\InMemory.FunctionalTests.csproj",
       "src\\Servers\\Kestrel\\test\\Interop.FunctionalTests\\Interop.FunctionalTests.csproj",
