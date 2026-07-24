@@ -650,7 +650,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         [InterceptsLocation]
         public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddOpenApi(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
-            return global::Microsoft.AspNetCore.OpenApi.OpenApiServiceCollectionExtensions.AddOpenApi(services, "v1", options =>
+            return global::Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(services, "v1", options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
@@ -659,7 +659,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         [InterceptsLocation]
         public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddOpenApi(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, string documentName)
         {
-            return global::Microsoft.AspNetCore.OpenApi.OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
+            return global::Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
@@ -669,7 +669,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         [InterceptsLocation]
         public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddOpenApi(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<global::Microsoft.AspNetCore.OpenApi.OpenApiOptions> configureOptions)
         {
-            return global::Microsoft.AspNetCore.OpenApi.OpenApiServiceCollectionExtensions.AddOpenApi(services, "v1", options =>
+            return global::Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(services, "v1", options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
@@ -681,7 +681,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddOpenApi(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, string documentName, global::System.Action<global::Microsoft.AspNetCore.OpenApi.OpenApiOptions> configureOptions)
         {
             // This overload is not intercepted.
-            return global::Microsoft.AspNetCore.OpenApi.OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
+            return global::Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());

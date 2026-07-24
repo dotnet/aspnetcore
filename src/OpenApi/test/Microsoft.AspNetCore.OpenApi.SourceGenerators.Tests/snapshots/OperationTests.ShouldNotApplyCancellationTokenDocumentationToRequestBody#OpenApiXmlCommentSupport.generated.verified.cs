@@ -651,7 +651,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         [InterceptsLocation]
         public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddOpenApi(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
-            return global::Microsoft.AspNetCore.OpenApi.OpenApiServiceCollectionExtensions.AddOpenApi(services, "v1", options =>
+            return global::Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(services, "v1", options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
