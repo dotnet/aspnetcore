@@ -27,9 +27,8 @@ public sealed class ValidationMessageKeyContext
     public required string MemberName { get; init; }
 
     /// <summary>
-    /// Gets the type that declares the member being validated (the containing type for a property, or
-    /// the validated type itself for type-level validation), or <see langword="null"/> when there is
-    /// no declaring type (for example, a top-level minimal API parameter).
+    /// Gets the type associated with the member being validated: the containing type for a property,
+    /// the validated type itself for type-level validation, or the parameter's own type for a parameter.
     /// </summary>
-    public Type? DeclaringType { get; init; }
+    public required Type DeclaringType { get; init; }
 }

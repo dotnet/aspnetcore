@@ -80,7 +80,7 @@ file sealed class RuntimeValidatableParameterInfoResolver : global::Microsoft.Ex
 
     private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
     {
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
         {
             var factory = context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) as global::Microsoft.Extensions.Localization.IStringLocalizerFactory;
             if (factory is null)
@@ -97,7 +97,7 @@ file sealed class RuntimeValidatableParameterInfoResolver : global::Microsoft.Ex
 
     private sealed class ParameterReflectionDisplayName(global::System.ComponentModel.DataAnnotations.DisplayAttribute attribute) : DisplayNameInfo
     {
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             => attribute.GetName();
     }
 

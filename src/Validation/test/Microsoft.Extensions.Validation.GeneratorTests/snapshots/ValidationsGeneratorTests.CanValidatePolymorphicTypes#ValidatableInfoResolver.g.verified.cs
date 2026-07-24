@@ -267,7 +267,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _literal = literal;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
         {
             var factory = context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) as global::Microsoft.Extensions.Localization.IStringLocalizerFactory;
             if (factory is null)
@@ -297,7 +297,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _propertyName = propertyName;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             => DisplayAttributeCache.GetPropertyDisplayAttribute(_containingType, _propertyName)?.GetName();
     }
 
@@ -314,7 +314,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _type = type;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             => DisplayAttributeCache.GetTypeDisplayAttribute(_type)?.GetName();
     }
 
@@ -381,7 +381,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
     file abstract class DisplayNameInfo
     {
-        public abstract string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type);
+        public abstract string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type);
     }
 
 
@@ -389,11 +389,11 @@ namespace Microsoft.Extensions.Validation.Generated
     {
         public static global::Microsoft.Extensions.Localization.IStringLocalizer CreateStringLocalizer(
             global::Microsoft.Extensions.Validation.ValidateContext context,
-            global::System.Type? type,
+            global::System.Type type,
             global::Microsoft.Extensions.Localization.IStringLocalizerFactory factory)
                 => context.ValidationOptions.LocalizerProvider(type, factory)
                     ?? throw new global::System.InvalidOperationException(
-                        $"The ValidationOptions.LocalizerProvider delegate returned null for type '{type?.FullName ?? "<null>"}'. The delegate must return a non-null IStringLocalizer instance.");
+                        $"The ValidationOptions.LocalizerProvider delegate returned null for type '{type.FullName}'. The delegate must return a non-null IStringLocalizer instance.");
     }
 
 
@@ -470,7 +470,7 @@ namespace Microsoft.Extensions.Validation.Generated
             global::Microsoft.Extensions.Validation.ValidateContext context,
             string memberName,
             string displayName,
-            global::System.Type? declaringType,
+            global::System.Type declaringType,
             global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
             global::System.ComponentModel.DataAnnotations.ValidationResult result)
         {
@@ -1700,7 +1700,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
         private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
         {
-            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             {
                 var factory = context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) as global::Microsoft.Extensions.Localization.IStringLocalizerFactory;
                 if (factory is null)
@@ -1717,7 +1717,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
         private sealed class ParameterReflectionDisplayName(global::System.ComponentModel.DataAnnotations.DisplayAttribute attribute) : DisplayNameInfo
         {
-            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
                 => attribute.GetName();
         }
 

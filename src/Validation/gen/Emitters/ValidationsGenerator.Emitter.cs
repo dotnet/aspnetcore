@@ -211,7 +211,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _literal = literal;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
         {
             var factory = context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) as global::Microsoft.Extensions.Localization.IStringLocalizerFactory;
             if (factory is null)
@@ -241,7 +241,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _propertyName = propertyName;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             => DisplayAttributeCache.GetPropertyDisplayAttribute(_containingType, _propertyName)?.GetName();
     }
 
@@ -258,7 +258,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _type = type;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             => DisplayAttributeCache.GetTypeDisplayAttribute(_type)?.GetName();
     }
 

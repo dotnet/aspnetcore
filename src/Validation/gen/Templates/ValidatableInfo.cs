@@ -71,7 +71,7 @@ file abstract class ValidatableInfo
         global::Microsoft.Extensions.Validation.ValidateContext context,
         string memberName,
         string displayName,
-        global::System.Type? declaringType,
+        global::System.Type declaringType,
         global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
         global::System.ComponentModel.DataAnnotations.ValidationResult result)
     {

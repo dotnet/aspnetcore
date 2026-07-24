@@ -73,7 +73,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
         return FormatMessage(attribute, CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
     }
 
-    private string? GetErrorMessageKey(ValidationAttribute attribute, string memberName, Type? type)
+    private string? GetErrorMessageKey(ValidationAttribute attribute, string memberName, Type type)
     {
         if (!string.IsNullOrEmpty(attribute.ErrorMessage))
         {
@@ -92,7 +92,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
         => options.LocalizerProvider(type, localizerFactory)
             ?? throw new InvalidOperationException(
                 $"The {nameof(ValidationOptions)}.{nameof(ValidationOptions.LocalizerProvider)} " +
-                $"delegate returned null for type '{type?.FullName ?? "<null>"}'. " +
+                $"delegate returned null for type '{type.FullName}'. " +
                 $"The delegate must return a non-null {nameof(IStringLocalizer)} instance.");
 
     private static string FormatMessage(ValidationAttribute attribute, CultureInfo culture, string messageTemplate, string displayName)
