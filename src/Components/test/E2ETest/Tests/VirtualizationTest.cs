@@ -1347,7 +1347,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Equal("Total: 1001", () => totalItemCount.Text);
 
         refreshButton.Click();
-        finishLoadingButton.Click();
+        Browser.True(() =>
+        {
+            finishLoadingButton.Click();
+            return container.FindElements(By.Id("async-variable-item-0")).Count > 0;
+        }, TimeSpan.FromSeconds(5), "New item-0 should render at top after prepend");
 
         firstItem = container.FindElement(By.Id("async-variable-item-0"));
         Assert.Contains("height: 100px", firstItem.GetDomAttribute("style"));
@@ -1992,10 +1996,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0", false)]
     [InlineData("1", false)]
     [InlineData("2", false)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
-    // [InlineData("0", true)]
-    // [InlineData("1", true)]
-    // [InlineData("2", true)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("2", true)]
     public void QuickGrid_AnchorMode_NearTop_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
@@ -2091,7 +2094,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("2", false)]
     [InlineData("0", true)]
     [InlineData("1", true)]
-    [InlineData("2", true)]
+    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
+    // [InlineData("2", true)]
     public void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
@@ -2120,10 +2124,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0", false)]
     [InlineData("1", false)]
     [InlineData("2", false)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
-    // [InlineData("0", true)]
-    // [InlineData("1", true)]
-    // [InlineData("2", true)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("2", true)]
     public void QuickGrid_AnchorMode_Bottom_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent(anchorMode, useItemsProvider);
@@ -2153,8 +2156,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Theory]
     [InlineData(false)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865:
-    // [InlineData(true)]
+    [InlineData(true)]
     public void QuickGrid_AnchorMode_None_PrependAtTop_ViewportStaysStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("0", useItemsProvider);
@@ -2214,8 +2216,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Theory]
     [InlineData(false)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race; Items false is 0/5 across runs):
-    // [InlineData(true)]
+    [InlineData(true)]
     public void QuickGrid_AnchorMode_End_PrependAtTop_ViewportStaysStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("2", useItemsProvider);
@@ -2244,7 +2245,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67865")] // fails pre-fix
     public void QuickGrid_AnchorMode_None_AsyncProvider_PrependKeepsViewportStable()
     {
         MountQuickGridAnchorModeComponent("0", useItemsProvider: true);
@@ -2455,8 +2455,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Theory]
     [InlineData(false)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race: index jumps 90->80):
-    // [InlineData(true)]
+    [InlineData(true)]
     public void QuickGrid_AnchorMode_None_MidList_ViewportStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("0", useItemsProvider);
@@ -2486,8 +2485,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Theory]
     [InlineData(false)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race: index jumps 90->80):
-    // [InlineData(true)]
+    [InlineData(true)]
     public void QuickGrid_AnchorMode_Start_MidList_ViewportStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("1", useItemsProvider);
@@ -2517,8 +2515,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Theory]
     [InlineData(false)]
-    // Disabled pending fix https://github.com/dotnet/aspnetcore/issues/67865 (provider async-anchor race: index jumps 90->80):
-    // [InlineData(true)]
+    [InlineData(true)]
     public void QuickGrid_AnchorMode_End_MidList_ViewportStable(bool useItemsProvider)
     {
         MountQuickGridAnchorModeComponent("2", useItemsProvider);
@@ -2836,6 +2833,78 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void ViewportAnchoring_RenderlessAboveViewportResize_AfterScroll_VisibleItemStaysInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+
+        var container = Browser.Exists(By.Id("incorrect-size-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".incorrect-size-item") > 0);
+
+        // Scroll down in increments so spacer redistribution runs, then let it settle.
+        // No further interaction happens after this, so there is no trailing Blazor render
+        // and the scroll-triggered suppression of overflow-anchor is the last state written.
+        for (var pos = 0; pos <= 1000; pos += 100)
+        {
+            ScrollContainer(js, container, pos);
+        }
+        AssertScrollTop(js, container, st => st >= 1000, "scrollTop >= 1000");
+
+        Browser.True(
+            () => (string)js.ExecuteScript(
+                "return getComputedStyle(arguments[0]).overflowAnchor", container) != "none",
+            TimeSpan.FromSeconds(5),
+            "overflow-anchor was not restored after scrolling settled");
+
+        WaitForRenderToSettle(container, js, ".incorrect-size-item");
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".incorrect-size-item");
+
+        // Grow the item immediately ABOVE the viewport by mutating its style directly.
+        // This is a browser-only reflow: it does NOT trigger a Blazor render, so the only
+        // thing that can keep the visible content stable is native scroll anchoring.
+        var growResult = js.ExecuteScript(@"
+            var container = arguments[0];
+            var grow = arguments[1];
+            var cRect = container.getBoundingClientRect();
+            var items = container.querySelectorAll('.incorrect-size-item');
+            for (var i = items.length - 1; i >= 0; i--) {
+                var r = items[i].getBoundingClientRect();
+                if (r.bottom <= cRect.top + 1) {
+                    items[i].style.height = (r.height + grow) + 'px';
+                    return { grew: true, text: items[i].textContent, anchor: getComputedStyle(container).overflowAnchor };
+                }
+            }
+            return { grew: false, anchor: getComputedStyle(container).overflowAnchor };
+        ", container, 200L) as Dictionary<string, object>;
+
+        Assert.NotNull(growResult);
+        Assert.True((bool)growResult["grew"], "Expected at least one rendered item above the viewport to grow.");
+
+        // Poll until the tracked item's position stops changing, so we measure the
+        // browser's settled response to the reflow (with or without scroll anchoring)
+        // deterministically instead of waiting a fixed amount of time.
+        var relTopAfter = relTopBefore;
+        var lastRelTop = double.NaN;
+        var stableReads = 0;
+        Browser.True(() =>
+        {
+            var (_, relTop, _) = GetItemPositionInContainer(js, container, ".incorrect-size-item", indexBefore);
+            stableReads = Math.Abs(relTop - lastRelTop) < 0.5 ? stableReads + 1 : 0;
+            lastRelTop = relTop;
+            relTopAfter = relTop;
+
+            // Require a few consecutive stable reads to be sure the reflow has settled.
+            return stableReads >= 3;
+        }, TimeSpan.FromSeconds(10), "Tracked item position did not settle after the render-less resize");
+
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
+            $"Item '{indexBefore}' should not have moved when an off-screen item grew via a " +
+            $"render-less browser reflow (overflow-anchor='{growResult["anchor"]}', grew item '{growResult["text"]}'). " +
+            $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px");
+    }
+
+    [Fact]
     public void Table_VariableHeight_IncrementalScrollDoesNotCauseWildJumps()
     {
         // Guards against a browser-level CSS Scroll Anchoring bug with <table> layout.
@@ -2868,11 +2937,38 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Large jumps indicate CSS scroll anchoring is miscalculating on <tr> elements.");
     }
 
-    private void MountAnchorModeComponent(string anchorMode, bool variableHeight = false, bool useItemsProvider = false)
+    [Fact]
+    public void ItemsIncrementalScroll_DoesNotJumpToStartOrEnd()
+    {
+        // Before the fix, each ~100px scroll produced large jumps in both directions.
+        Browser.MountTestComponent<VirtualizationComponent>();
+
+        Browser.True(() => GetElementCount(By.ClassName("incorrect-size-item")) > 0);
+
+        var result = ExecuteContainerScrollJumpDetectionScript("incorrect-size-container");
+
+        var maxJump = Convert.ToInt64(result["maxJump"], CultureInfo.InvariantCulture);
+        var scrollDelta = Convert.ToInt64(result["scrollDelta"], CultureInfo.InvariantCulture);
+
+        // Healthy behaviour: every step moves ~scrollDelta (100px)
+        Assert.True(maxJump < scrollDelta * 4,
+            $"Incremental scrolling should not cause the viewport to jump to the start/end of the list. " +
+            $"Largest single-step jump was {maxJump}px (each step requested {scrollDelta}px). " +
+            $"Down jumps: [{result["downJumps"]}]. Up jumps: [{result["upJumps"]}]. " +
+            $"Large jumps indicate the Virtualize reserved-height compensation is over-shifting (issue #67729).");
+    }
+
+    private void MountAnchorModeComponent(string anchorMode, bool variableHeight = false, bool useItemsProvider = false, bool useDefaultComparer = false)
     {
         Browser.MountTestComponent<VirtualizationAnchorMode>();
         var container = Browser.Exists(By.Id("scroll-container"));
         Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        if (useDefaultComparer)
+        {
+            Browser.Exists(By.Id("toggle-comparer")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+        }
 
         if (useItemsProvider)
         {
@@ -3124,9 +3220,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0", true)]
     [InlineData("1", true)]
     [InlineData("2", true)]
-    public void AnchorMode_NearTop_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider)
+    [InlineData("0", true, true)]
+    [InlineData("1", true, true)]
+    public void AnchorMode_NearTop_PrependKeepsViewportStable(string anchorMode, bool useItemsProvider, bool useDefaultComparer = false)
     {
-        MountAnchorModeComponent(anchorMode, useItemsProvider: useItemsProvider);
+        MountAnchorModeComponent(anchorMode, useItemsProvider: useItemsProvider, useDefaultComparer: useDefaultComparer);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -3145,7 +3243,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             ".item",
             indexBefore,
             relTopBefore,
-            $"AnchorMode {anchorMode} near top: viewport should stay stable after prepend",
+            $"AnchorMode {anchorMode} near top (defaultComparer={useDefaultComparer}): viewport should stay stable after prepend",
             driftTolerance: 2);
     }
 
@@ -3247,9 +3345,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("1", false)]
     [InlineData("0", true)]
     [InlineData("1", true)]
-    public void AnchorMode_MidList_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
+    [InlineData("0", true, true)]
+    [InlineData("1", true, true)]
+    public void AnchorMode_MidList_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider, bool useDefaultComparer = false)
     {
-        MountAnchorModeComponent(anchorMode, useItemsProvider: useItemsProvider);
+        MountAnchorModeComponent(anchorMode, useItemsProvider: useItemsProvider, useDefaultComparer: useDefaultComparer);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -3268,7 +3368,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             ".item",
             indexBefore,
             relTopBefore,
-            $"AnchorMode {anchorMode} mid-list: viewport should stay stable after append",
+            $"AnchorMode {anchorMode} mid-list (defaultComparer={useDefaultComparer}): viewport should stay stable after append",
             driftTolerance: 2);
     }
     [Theory]
@@ -4623,11 +4723,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
-    /// item count, scrollTop, and first visible item index stabilize.
+    /// item count, scrollTop, and first visible item identity stabilize.
     /// Use after actions that trigger async rendering (prepend/append with ItemsProvider on Server)
     /// to ensure anchor restore has completed before making single-shot assertions.
+    /// Pass <paramref name="itemSelector"/> for containers whose rows are not <c>.item[data-index]</c>.
     /// </summary>
-    private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js)
+    private void WaitForRenderToSettle(IWebElement container, IJavaScriptExecutor js, string itemSelector = ".item[data-index]")
     {
         long lastScrollTop = -1;
         int lastItemCount = -1;
@@ -4638,18 +4739,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         {
             var result = js.ExecuteScript(@"
                 var c = arguments[0];
-                var items = c.querySelectorAll('.item[data-index]');
+                var selector = arguments[1];
+                var items = c.querySelectorAll(selector);
                 var cr = c.getBoundingClientRect();
                 var firstIdx = '';
                 for (var i = 0; i < items.length; i++) {
                     var r = items[i].getBoundingClientRect();
                     if (r.bottom > cr.top + 2 && r.top < cr.bottom - 2) {
-                        firstIdx = items[i].getAttribute('data-index');
+                        firstIdx = items[i].getAttribute('data-index') || items[i].textContent;
                         break;
                     }
                 }
                 return { scrollTop: Math.round(c.scrollTop), itemCount: items.length, firstIndex: firstIdx };
-            ", container) as Dictionary<string, object>;
+            ", container, itemSelector) as Dictionary<string, object>;
 
             var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
             var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
@@ -4939,6 +5041,50 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     /// miscalculations on &lt;tr&gt; elements.
     /// Returns startY, endY, totalDelta, expected, maxJump, and comma-separated jumps.
     /// </summary>
+    private const string ScrollJumpDetectionHelpersJs = @"
+                // Event-driven wait: watches for DOM mutations from C# re-renders,
+                // then waits 3 animation frames with no new mutations (layout settled).
+                // Falls back after 30 frames if no mutations occur.
+                const waitForRenderSettle = (observed) => new Promise(resolve => {
+                    let mutationSeen = false;
+                    let framesSinceLastMutation = 0;
+                    let totalFrames = 0;
+
+                    const mo = new MutationObserver(() => {
+                        mutationSeen = true;
+                        framesSinceLastMutation = 0;
+                    });
+                    mo.observe(observed, { childList: true, subtree: true, attributes: true });
+
+                    const checkSettle = () => {
+                        totalFrames++;
+                        framesSinceLastMutation++;
+                        if ((mutationSeen && framesSinceLastMutation >= 3) || totalFrames >= 30) {
+                            mo.disconnect();
+                            resolve();
+                        } else {
+                            requestAnimationFrame(checkSettle);
+                        }
+                    };
+                    requestAnimationFrame(checkSettle);
+                });
+
+                const runScrollPass = async (observed, readPos, doScroll, count) => {
+                    const jumps = [];
+                    let maxJump = 0;
+                    for (let i = 0; i < count; i++) {
+                        const before = readPos();
+                        doScroll();
+                        await waitForRenderSettle(observed);
+                        const after = readPos();
+                        const jump = after - before;
+                        jumps.push(jump);
+                        if (Math.abs(jump) > Math.abs(maxJump)) maxJump = jump;
+                    }
+                    return { jumps, maxJump };
+                };
+";
+
     private Dictionary<string, object> ExecuteViewportScrollJumpDetectionScript(
         string tableId, int scrollCount = 15, int scrollDelta = 300)
     {
@@ -4946,59 +5092,48 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var done = arguments[0];
             (async () => {{
                 const tbody = document.querySelector('#{tableId} > tbody');
-
-                // Event-driven wait: watches for DOM mutations from C# re-renders,
-                // then waits 3 animation frames with no new mutations (layout settled).
-                // Falls back after 30 frames if no mutations occur.
-                const waitForRenderSettle = () => new Promise(resolve => {{
-                    let mutationSeen = false;
-                    let framesSinceLastMutation = 0;
-                    let totalFrames = 0;
-
-                    const mo = new MutationObserver(() => {{
-                        mutationSeen = true;
-                        framesSinceLastMutation = 0;
-                    }});
-                    mo.observe(tbody, {{ childList: true, subtree: true }});
-
-                    const checkSettle = () => {{
-                        totalFrames++;
-                        framesSinceLastMutation++;
-                        if ((mutationSeen && framesSinceLastMutation >= 3) || totalFrames >= 30) {{
-                            mo.disconnect();
-                            resolve();
-                        }} else {{
-                            requestAnimationFrame(checkSettle);
-                        }}
-                    }};
-                    requestAnimationFrame(checkSettle);
-                }});
-
+                {ScrollJumpDetectionHelpersJs}
                 const scrollCount = {scrollCount};
                 const scrollDelta = {scrollDelta};
                 const startY = Math.round(window.scrollY);
-                let maxJump = 0;
-                let prevY = startY;
-                const jumps = [];
-
-                for (let i = 0; i < scrollCount; i++) {{
-                    window.scrollBy(0, scrollDelta);
-                    await waitForRenderSettle();
-
-                    const currentY = Math.round(window.scrollY);
-                    const jump = currentY - prevY;
-                    jumps.push(jump);
-                    if (Math.abs(jump) > Math.abs(maxJump)) maxJump = jump;
-                    prevY = currentY;
-                }}
+                const pass = await runScrollPass(
+                    tbody,
+                    () => Math.round(window.scrollY),
+                    () => window.scrollBy(0, scrollDelta),
+                    scrollCount);
 
                 done({{
                     startY: startY,
                     endY: Math.round(window.scrollY),
                     totalDelta: Math.round(window.scrollY) - startY,
                     expected: scrollCount * scrollDelta,
-                    maxJump: maxJump,
-                    jumps: jumps.join(',')
+                    maxJump: pass.maxJump,
+                    jumps: pass.jumps.join(',')
+                }});
+            }})();";
+
+        return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
+    }
+
+    private Dictionary<string, object> ExecuteContainerScrollJumpDetectionScript(
+        string containerId, int scrollCount = 40, int scrollDelta = 100)
+    {
+        var script = $@"
+            var done = arguments[0];
+            (async () => {{
+                const container = document.getElementById('{containerId}');
+                {ScrollJumpDetectionHelpersJs}
+                const scrollCount = {scrollCount};
+                const scrollDelta = {scrollDelta};
+                const readPos = () => Math.round(container.scrollTop);
+                const down = await runScrollPass(container, readPos, () => {{ container.scrollTop = readPos() + scrollDelta; }}, scrollCount);
+                const up = await runScrollPass(container, readPos, () => {{ container.scrollTop = readPos() - scrollDelta; }}, scrollCount);
+
+                done({{
+                    scrollDelta: scrollDelta,
+                    maxJump: Math.max(Math.abs(down.maxJump), Math.abs(up.maxJump)),
+                    downJumps: down.jumps.join(','),
+                    upJumps: up.jumps.join(',')
                 }});
             }})();";
 
@@ -5467,5 +5602,207 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 var er = el.getBoundingClientRect();
                 return er.top < window.innerHeight && er.bottom > 0;
             "), "Item 100 must be visible in window viewport.");
+    }
+
+    private void MountQuickGridForScrollToItem(bool useItemsProvider = true, bool variableHeight = false)
+    {
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridScrollComponent>();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        if (useItemsProvider)
+        {
+            Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+            Browser.Exists(By.Id("toggle-delay")).Click();
+        }
+
+        if (variableHeight)
+        {
+            Browser.Exists(By.Id("toggle-height")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+        }
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public void QuickGrid_ScrollToItem_LandsAtTop(bool useItemsProvider, bool variableHeight)
+    {
+        MountQuickGridForScrollToItem(useItemsProvider, variableHeight);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(200);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 200");
+
+        Browser.True(() => GetTopRenderedIndex(js) == 200,
+            $"Top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_NegativeIndex_ScrollsToTop(bool useItemsProvider)
+    {
+        MountQuickGridForScrollToItem(useItemsProvider);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(150);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 150");
+
+        SetScrollTargetIndex(-1);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: -1");
+
+        Browser.True(() => GetTopRenderedIndex(js) == 0,
+            $"Negative index should clamp to the first row; topRendered={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_MaxIntIndex_ScrollsToLast(bool useItemsProvider)
+    {
+        MountQuickGridForScrollToItem(useItemsProvider);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(int.MaxValue);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: " + int.MaxValue.ToString(CultureInfo.InvariantCulture));
+
+        Browser.True(() =>
+        {
+            var st = GetScrollTop(js, container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return st > 0 && st >= sh - ch - 2;
+        }, message: "Scroll should be at the bottom (last item region) after clamp to MaxValue.");
+
+        Browser.True(() =>
+            (bool)js.ExecuteScript(@"
+                var el = document.querySelector('#scroll-container .item[data-index=""999""]');
+                if (!el) return false;
+                var cr = document.getElementById('scroll-container').getBoundingClientRect();
+                var er = el.getBoundingClientRect();
+                return er.top < cr.bottom && er.bottom > cr.top;
+            "));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_ScrollToItem_WithProviderDelay_LandsAtTargetWithRealContent(bool variableHeight)
+    {
+        MountQuickGridForScrollToItem(variableHeight: variableHeight);
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(300);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 300", timeoutSeconds: 30);
+
+        Browser.True(() => GetTopRenderedIndex(js) == 300,
+            $"Top rendered should be real item 300 (not placeholder); got {GetTopRenderedIndex(js)}");
+    }
+
+    [Theory]
+    [InlineData(1, false, false)]
+    [InlineData(5, false, false)]
+    [InlineData(500, false, false)]
+    [InlineData(1, false, true)]
+    [InlineData(500, false, true)]
+    [InlineData(1, true, false)]
+    [InlineData(500, true, false)]
+    [InlineData(1, true, true)]
+    [InlineData(500, true, true)]
+    public void QuickGrid_InitialIndex_OpensAtTargetWithRealContent(int initialIndex, bool variableHeight, bool useItemsProvider)
+    {
+        MountQuickGridForScrollToItem(useItemsProvider: useItemsProvider, variableHeight: variableHeight);
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+        SetManualInitialIndex(initialIndex);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void QuickGrid_InitialIndex_BeyondCount_ClampsToEnd(bool useItemsProvider)
+    {
+        MountQuickGridForScrollToItem(useItemsProvider);
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+        SetManualInitialIndex(100000);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        Browser.True(() => (bool)js.ExecuteScript(@"
+            var c = document.getElementById('scroll-container');
+            var last = c.querySelector('.item[data-index=""999""]');
+            if (!last) return false;
+            return Math.abs((c.scrollTop + c.clientHeight) - c.scrollHeight) <= 2;
+        "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialItemIndex=100000.");
+    }
+
+    [Fact]
+    public void QuickGrid_ScrollToItem_RapidCalls_OnlyLastTargetReached()
+    {
+        MountQuickGridForScrollToItem();
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("scroll-to-item-rapid")).Click();
+        WaitForScrollStatus("Completed: 250 (canceled=0, completed=5, faulted=0)", timeoutSeconds: 30);
+
+        Browser.True(() => GetTopRenderedIndex(js) == 250,
+            $"After rapid-fire scroll, top should be 250 but was {GetTopRenderedIndex(js)}");
+    }
+
+    [Fact]
+    public void QuickGrid_ScrollToItem_ExternalCancellation_TaskCancels()
+    {
+        MountQuickGridForScrollToItem();
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(450);
+        Browser.Exists(By.Id("scroll-to-item-cancellable")).Click();
+        Browser.Exists(By.Id("cancel-scroll")).Click();
+        WaitForScrollStatus("Canceled");
+
+        SetScrollTargetIndex(120);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 120", timeoutSeconds: 30);
+        Browser.True(() => GetTopRenderedIndex(js) == 120);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void QuickGrid_ScrollToItem_AnchorStart_AtTop_LandsAtTarget(bool useItemsProvider)
+    {
+        MountQuickGridForScrollToItem(useItemsProvider);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.True(() => GetScrollTop(js, container) == 0);
+
+        SetScrollTargetIndex(2);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 2");
+
+        Browser.True(() => GetTopRenderedIndex(js) == 2,
+            $"Top should be 2 but was {GetTopRenderedIndex(js)}");
     }
 }
