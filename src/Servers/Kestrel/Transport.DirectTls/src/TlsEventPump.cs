@@ -480,41 +480,15 @@ internal class TlsEventPump : IDisposable
             if (conn.ClientCertificateValidation is { } validateClientCertificate)
             {
                 // The peer's leaf certificate, or null when the client presented none. On the fd fast path
-                // this is the runtime's pending external-validation certificate.
+                // this is the runtime's pending external-validation certificate. Intermediates are only
+                // fetched when a leaf is present (they feed the chain's ExtraStore). The chain build,
+                // policy, and callback invocation live in ClientCertificateValidator so they can be unit
+                // tested without epoll or a live session - see its remarks for why AIA downloads are
+                // disabled on this pump thread.
                 var presentedCertificate = conn.Session.GetRemoteCertificate();
+                var intermediates = presentedCertificate is null ? null : conn.Session.GetRemoteCertificates();
 
-                bool accepted;
-                if (presentedCertificate is null)
-                {
-                    // No client certificate presented. The endpoint's callback encodes the mode:
-                    // AllowCertificate accepts (returns true); RequireCertificate rejects (returns false).
-                    accepted = validateClientCertificate(conn.Session, null, null, SslPolicyErrors.RemoteCertificateNotAvailable);
-                }
-                else
-                {
-                    // Build the peer's chain (mirrors SslStream's default client-certificate validation) so
-                    // the endpoint's callback and any operator ClientCertificateValidation delegate observe a
-                    // real chain and errors. RevocationMode.NoCheck avoids blocking the pump thread on CRL/OCSP
-                    // network I/O and matches the default (CheckCertificateRevocation == false).
-                    // DisableCertificateDownloads stops the chain engine from making synchronous AIA fetches
-                    // for missing intermediates: chain.Build runs on the pump thread, so an attacker-supplied
-                    // leaf with an unreachable AIA URL could otherwise stall every connection this pump owns.
-                    // This mirrors SslStream, which sets the same flag on the server side.
-                    // Legitimate clients send their intermediates in the handshake (added to ExtraStore below).
-                    using var chain = new X509Chain();
-                    chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                    chain.ChainPolicy.DisableCertificateDownloads = true;
-                    if (conn.Session.GetRemoteCertificates() is { } intermediates)
-                    {
-                        chain.ChainPolicy.ExtraStore.AddRange(intermediates);
-                    }
-
-                    var sslPolicyErrors = chain.Build(presentedCertificate)
-                        ? SslPolicyErrors.None
-                        : SslPolicyErrors.RemoteCertificateChainErrors;
-
-                    accepted = validateClientCertificate(conn.Session, presentedCertificate, chain, sslPolicyErrors);
-                }
+                var accepted = ClientCertificateValidator.Validate(conn.Session, presentedCertificate, intermediates, validateClientCertificate);
 
                 if (!accepted)
                 {
@@ -535,9 +509,12 @@ internal class TlsEventPump : IDisposable
                     // NeedsCertificateValidation before reaching Complete).
                 }
 
-                // Surface the accepted certificate (null when the client presented none on an
-                // AllowCertificate endpoint) so the connection exposes it via ITlsConnectionFeature.
-                clientCertificate = conn.Session.GetRemoteCertificate();
+                // Surface the accepted certificate to Kestrel via ITlsConnectionFeature. This is the same
+                // instance the runtime just promoted into its canonical remote-cert slot (on the accept path
+                // SetRemoteCertificateValidationResult moves _externalPendingCert into _remoteCertificate
+                // without reallocating), and null when the client presented none on an AllowCertificate
+                // endpoint - so we reuse presentedCertificate instead of re-reading it from the session.
+                clientCertificate = presentedCertificate;
             }
 
             // Reuse the DirectTlsConnection allocated early for the ClientHello listener (at
