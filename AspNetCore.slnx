@@ -267,12 +267,10 @@
   </Folder>
   <Folder Name="/src/Grpc/JsonTranscoding/src/">
     <Project Path="src/Grpc/JsonTranscoding/src/Microsoft.AspNetCore.Grpc.JsonTranscoding/Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
-    <Project Path="src/Grpc/JsonTranscoding/src/Microsoft.AspNetCore.Grpc.Swagger/Microsoft.AspNetCore.Grpc.Swagger.csproj" />
   </Folder>
   <Folder Name="/src/Grpc/JsonTranscoding/test/">
     <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests/Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.csproj" />
     <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests/Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.csproj" />
-    <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.Swagger.Tests/Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Grpc/JsonTranscoding/test/testassets/">
     <Project Path="src/Grpc/JsonTranscoding/test/testassets/IntegrationTestsWebsite/IntegrationTestsWebsite.csproj" />
