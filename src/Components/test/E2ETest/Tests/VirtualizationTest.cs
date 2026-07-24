@@ -4145,9 +4145,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var currentScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         var targetScrollTop = (int)(currentScrollTop - 500);
         ScrollUntil(js, container, () => ScrollContainer(js, container, targetScrollTop),
-            st => st < currentScrollTop - 100,
-            $"scrollTop < {currentScrollTop - 100} after scrolling away from bottom");
+            st => st < currentScrollTop - 300,
+            $"scrollTop < {currentScrollTop - 300} after scrolling away from bottom");
         WaitForRenderToSettle(container, js);
+
+        Browser.True(() =>
+        {
+            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+
+            return (sh - st - ch) > 300;
+        },
+        "Should be at least 300px away from bottom before second append");
 
         var scrollTopBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         var scrollHeightBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
