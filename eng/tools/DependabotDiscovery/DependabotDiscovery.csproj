@@ -1,30 +1,7 @@
 <!--
   DO NOT build, pack, sign, or add this project to AspNetCore.slnx / any ProjectToBuild list.
-
-  Exists solely so Dependabot can discover and update the external NuGet packages listed in
-  eng/Dependencies.props. Real projects reference those packages via <Reference Include="X" />
-  (see eng/targets/ResolveReferences.targets, docs/ReferenceResolution.md), an indirection
-  Dependabot's MSBuild-based discovery can't see through. This project restates them as literal
-  <PackageReference> items using the same eng/Versions.props version properties, so Dependabot
-  can find and bump them - bumping a property here updates the real dependency too.
-
-  Keep in sync with eng/Dependencies.props: CodeCheck.ps1 fails if eng/Dependencies.props changes
-  without a matching change here. Maestro-managed packages (eng/Version.Details.props) and the
-  $(IdentityModelVersion)-pinned IdentityModel packages are intentionally omitted; see
-  .github/dependabot.yml for the matching ignore list. See README.md for more details.
-
-  Do NOT set ExcludeFromBuild here: Arcade's ExcludeFromBuild disables NuGet restore entirely
-  (points NuGetRestoreTargets at an empty file), which would also stop Dependabot resolving any
-  packages out of this project. Nothing globs eng/tools/** into the real build or references this
-  project, so it never participates in a real build anyway.
-
-  A few real, referenced packages are intentionally omitted because Dependabot can never treat
-  them as updatable no matter how they're declared:
-  - NETStandard.Library: dependabot-core hard-codes this as "resolved but not reported" (an SDK
-    compatibility shim, not something anyone updates independently).
-  - Microsoft.CodeAnalysis.PublicApiAnalyzers: the .NET SDK implicitly references this itself, so
-    MSBuild marks any explicit reference IsImplicitlyDefined="true", which dependabot-core treats
-    as non-top-level/non-updatable.
+  It exists solely so Dependabot can discover packages it otherwise can't see. See README.md
+  before adding, removing, or changing anything here.
 -->
 <Project Sdk="Microsoft.NET.Sdk">
 

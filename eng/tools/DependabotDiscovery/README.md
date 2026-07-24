@@ -46,3 +46,17 @@ project) is suppressed via `NoWarn`, since this project is never actually built 
 Whenever you add, remove, or rename a package in `eng/Dependencies.props`, make the matching change
 here (unless it's Maestro- or IdentityModel-managed). `eng/scripts/CodeCheck.ps1` fails CI if
 `eng/Dependencies.props` changes without a corresponding change to this file.
+
+## Adding a package
+
+1. Confirm it meets all the criteria listed above (not Maestro/IdentityModel-managed, not a
+   `ProjectReferenceProvider` name, has a real `$(SomePackageNameVersion)` property).
+2. Add `<PackageReference Include="PackageName" Version="$(PackageNameVersion)" />` to the main
+   `ItemGroup`.
+3. Run `dotnet restore` on this project. If it fails with `NU1202` (package doesn't support a
+   target framework), the package needs its own TFM-conditioned `ItemGroup` instead of the main
+   one - move it into (or add) an `ItemGroup Condition="'$(TargetFramework)' == 'net472'"` or
+   `!= 'net472'` block, matching whichever TFM it actually supports (see the existing
+   `Microsoft.Owin.*` and `Grpc.AspNetCore`/etc. groups for examples). Other restore errors
+   (e.g. `NU1101`) usually mean the package isn't available on the `dotnet-public` feed and needs
+   to be mirrored there first.
