@@ -17,6 +17,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal static ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
+
+        // Validations generator doesn't need an accurate signature.
+        // We don't care about parameter names of the delegate, we don't care about parameter attributes, and we don't care
+        // about the exact delegate type. All we care about is the types of the parameters.
+        // The type of the parameters will always be correct.
         var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, needsAccurateSignature: false, out var method)
             ? method.Parameters
             : [];
