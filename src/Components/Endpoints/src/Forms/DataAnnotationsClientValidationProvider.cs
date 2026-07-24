@@ -70,23 +70,24 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
 
         var writer = new ClientValidationDataWriter();
         var validatableFields = _clientValidationCache.GetValidatableFieldMetadata(renderedFields, editContext.Model);
+        var useStringLocalizer = _clientValidationCache.HasValidatableTypeInfo(editContext.Model.GetType());
 
         foreach (var (renderedName, fieldMetadata) in validatableFields)
         {
-            WriteFieldRules(writer, renderedName, fieldMetadata);
+            WriteFieldRules(writer, renderedName, fieldMetadata, useStringLocalizer);
         }
 
         return writer.Complete();
     }
 
-    private void WriteFieldRules(ClientValidationDataWriter writer, string renderedName, ClientValidationFieldMetadata fieldMetadata)
+    private void WriteFieldRules(ClientValidationDataWriter writer, string renderedName, ClientValidationFieldMetadata fieldMetadata, bool useStringLocalizer)
     {
-        var displayName = _localizer.ResolveDisplayName(fieldMetadata);
+        var displayName = _localizer.ResolveDisplayName(fieldMetadata, useStringLocalizer);
         writer.BeginField(renderedName);
 
         foreach (var attribute in fieldMetadata.ValidationAttributes)
         {
-            var errorMessage = _localizer.ResolveAttributeErrorMessage(fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType, attribute)
+            var errorMessage = _localizer.ResolveAttributeErrorMessage(fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType, attribute, useStringLocalizer)
                 ?? string.Empty;
 
             if (TryWriteBuiltInRule(writer, attribute, errorMessage))
