@@ -13,6 +13,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetBuildTasksArchivesPackageVersion>11.0.0-beta.26365.101</MicrosoftDotNetBuildTasksArchivesPackageVersion>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26365.101</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksTemplatingPackageVersion>11.0.0-beta.26365.101</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26365.101</MicrosoftDotNetHelixJobMonitorPackageVersion>
     <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26365.101</MicrosoftDotNetHelixSdkPackageVersion>
     <MicrosoftDotNetRemoteExecutorPackageVersion>11.0.0-beta.26365.101</MicrosoftDotNetRemoteExecutorPackageVersion>
     <MicrosoftDotNetSharedFrameworkSdkPackageVersion>11.0.0-beta.26365.101</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
@@ -131,6 +132,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetBuildTasksArchivesVersion>$(MicrosoftDotNetBuildTasksArchivesPackageVersion)</MicrosoftDotNetBuildTasksArchivesVersion>
     <MicrosoftDotNetBuildTasksInstallersVersion>$(MicrosoftDotNetBuildTasksInstallersPackageVersion)</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>$(MicrosoftDotNetBuildTasksTemplatingPackageVersion)</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetHelixJobMonitorVersion>$(MicrosoftDotNetHelixJobMonitorPackageVersion)</MicrosoftDotNetHelixJobMonitorVersion>
     <MicrosoftDotNetHelixSdkVersion>$(MicrosoftDotNetHelixSdkPackageVersion)</MicrosoftDotNetHelixSdkVersion>
     <MicrosoftDotNetRemoteExecutorVersion>$(MicrosoftDotNetRemoteExecutorPackageVersion)</MicrosoftDotNetRemoteExecutorVersion>
     <MicrosoftDotNetSharedFrameworkSdkVersion>$(MicrosoftDotNetSharedFrameworkSdkPackageVersion)</MicrosoftDotNetSharedFrameworkSdkVersion>
