@@ -6,9 +6,9 @@ using System.Globalization;
 namespace Microsoft.Extensions.Validation;
 
 /// <summary>
-/// Formats a validation message template with attribute-specific arguments.
-/// Used by the validation localization pipeline to produce fully formatted messages
-/// from localized templates that contain positional placeholders.
+/// When implemented by a custom attribute derived from <see cref="System.ComponentModel.DataAnnotations.ValidationAttribute"/>
+/// it is used by the validation localization pipeline to produce fully formatted messages
+/// from localized templates that contain positional placeholders for the attribute-specific arguments.
 /// </summary>
 public interface IValidationMessageFormatter
 {

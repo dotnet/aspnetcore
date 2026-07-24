@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 internal readonly struct ClientValidationFieldMetadata(
     string propertyName,
     ValidationAttribute[] validationAttributes,
-    Type? declaringType,
+    Type declaringType,
     DisplayAttribute? resourceDisplayAttribute,
     string? literalDisplayName)
 {
@@ -19,7 +19,7 @@ internal readonly struct ClientValidationFieldMetadata(
 
     public ValidationAttribute[] ValidationAttributes { get; } = validationAttributes;
 
-    public Type? DeclaringType { get; } = declaringType;
+    public Type DeclaringType { get; } = declaringType;
 
     // [Display(Name=..., ResourceType=...)]
     public DisplayAttribute? ResourceDisplayAttribute { get; } = resourceDisplayAttribute;

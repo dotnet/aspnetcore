@@ -38,12 +38,13 @@ public class ValidationOptions
     /// validation display names and error messages for a given declaring type.
     /// </summary>
     /// <remarks>
-    /// The delegate receives the declaring type of the member being validated (which may be
-    /// <see langword="null"/> for top-level minimal API parameters) and the ambient
-    /// <see cref="IStringLocalizerFactory"/>. When not set, the localizer is created from the factory
-    /// using the declaring type (or <see cref="object"/> when the type is <see langword="null"/>).
+    /// The delegate receives the declaring type of the member being validated (which is <see langword="null"/>
+    /// for top-level minimal API parameters) and the registered <see cref="IStringLocalizerFactory"/>.
+    /// When not set, the localizer is created from the factory using the declaring type (or <see cref="object"/>
+    /// when the type is <see langword="null"/>).
     /// </remarks>
-    public Func<Type?, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
+    public Func<Type?, IStringLocalizerFactory, IStringLocalizer> LocalizerProvider { get; set; }
+        = (type, factory) => factory.Create(type ?? typeof(object));
 
     /// <summary>
     /// Gets or sets a delegate that computes the resource key used to look up a localized validation
