@@ -13,7 +13,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
     // Mirrors the decision tree used by the server-side validation.
     // Resource-attribute display names bypass the localizer (resource lookup is the canonical
     // localized source). Literal display names act as both lookup key and fallback for the localizer.
-    public string ResolveDisplayName(in ClientValidationFieldMetadata metadata)
+    public string ResolveDisplayName(in ClientValidationFieldMetadata metadata, bool useStringLocalizer)
     {
         if (metadata.ResourceDisplayAttribute is { } resourceAttribute)
         {
@@ -25,7 +25,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
             return metadata.PropertyName;
         }
 
-        if (localizerFactory is null)
+        if (!useStringLocalizer || localizerFactory is null)
         {
             return literal;
         }
@@ -46,9 +46,10 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
        string memberName,
        string displayName,
        Type type,
-       ValidationAttribute attribute)
+       ValidationAttribute attribute,
+       bool useStringLocalizer)
     {
-        if (localizerFactory is null || attribute.ErrorMessageResourceType is not null)
+        if (!useStringLocalizer || localizerFactory is null || attribute.ErrorMessageResourceType is not null)
         {
             return attribute.FormatErrorMessage(displayName);
         }

@@ -1396,7 +1396,7 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             var validationAttributes = GetValidationAttributes();
 
-            var displayName = DisplayNameInfo?.GetDisplayName(context, type: null) ?? Name;
+            var displayName = DisplayNameInfo?.GetDisplayName(context, ParameterType) ?? Name;
             var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
             {
                 MemberName = Name
@@ -1468,7 +1468,7 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             var validationAttributes = GetValidationAttributes();
 
-            var displayName = DisplayNameInfo?.GetDisplayName(context, type: null) ?? Name;
+            var displayName = DisplayNameInfo?.GetDisplayName(context, ParameterType) ?? Name;
             var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
             {
                 MemberName = Name
@@ -1529,7 +1529,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 context,
                 memberName: Name,
                 displayName,
-                declaringType: null,
+                declaringType: ParameterType,
                 attribute,
                 result);
 

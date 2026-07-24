@@ -249,10 +249,18 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Parameter_LocalizesWithNullDeclaringType(bool useAsync)
+    public async Task Parameter_LocalizerProvider_InvokedWithParameterType_AndUsed(bool useAsync)
     {
+        // A top-level parameter has no declaring type, so the localizer is resolved from the
+        // parameter's own type (mirrors MVC's ContainerType ?? ModelType) instead of falling back to
+        // typeof(object).
         var translations = new Dictionary<string, string> { ["Parameter Name"] = "Nom du paramètre" };
-        var (provider, options) = CreateServices(translations);
+        Type? seenType = null;
+        var (provider, options) = CreateServices(translations, o => o.LocalizerProvider = (type, factory) =>
+        {
+            seenType = type;
+            return factory.Create(type ?? typeof(object));
+        });
         var parameterInfo = typeof(LocalizedParameterActions)
             .GetMethod(nameof(LocalizedParameterActions.Action))!
             .GetParameters()[0];
@@ -261,6 +269,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
 
         await ValidateAsync(paramInfo, null, context, useAsync, default);
 
+        Assert.Equal(typeof(string), seenType);
         Assert.Equal("The Nom du paramètre field is required.", Single(context, "value"));
     }
 
