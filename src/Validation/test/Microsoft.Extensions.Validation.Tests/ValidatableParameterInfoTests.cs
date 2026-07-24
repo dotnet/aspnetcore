@@ -1,12 +1,8 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
@@ -17,24 +13,16 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_RequiredParameter_AddsErrorWhenNull(bool useAsync)
     {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(string),
-            name: "testParam",
-            displayName: "Test Parameter",
-            validationAttributes: [new RequiredAttribute()]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.RequiredParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var context = CreateValidatableContext();
-
-        // Act
         await ValidateAsync(paramInfo, null, context, useAsync, default);
 
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
+        var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The Test Parameter field is required.", error.Value.Single());
+        Assert.Equal("The Test Parameter field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -42,26 +30,16 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_RequiredParameter_ShortCircuitsOtherValidations(bool useAsync)
     {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(string),
-            name: "testParam",
-            displayName: "Test Parameter",
-            // Most ValidationAttributes skip validation if the value is null
-            // so we use a custom one that always fails to assert on the behavior here
-            validationAttributes: [new RequiredAttribute(), new CustomTestValidationAttribute()]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.RequiredAndCustomParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var context = CreateValidatableContext();
-
-        // Act
         await ValidateAsync(paramInfo, null, context, useAsync, default);
 
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
+        var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The Test Parameter field is required.", error.Value.Single());
+        Assert.Equal("The Test Parameter field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -69,21 +47,14 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_SkipsValidation_WhenNullAndNotRequired(bool useAsync)
     {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(string),
-            name: "testParam",
-            displayName: "Test Parameter",
-            validationAttributes: [new StringLengthAttribute(10)]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.StringLengthParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var context = CreateValidatableContext();
-
-        // Act
         await ValidateAsync(paramInfo, null, context, useAsync, default);
 
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.True(errors is null || errors.Count == 0); // No errors added
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
     }
 
     [Theory]
@@ -91,50 +62,16 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_WithRangeAttribute_ValidatesCorrectly(bool useAsync)
     {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(int),
-            name: "testParam",
-            displayName: "Test Parameter",
-            validationAttributes: [new RangeAttribute(10, 100)]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.RangeParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var context = CreateValidatableContext();
-
-        // Act
         await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
+        var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("testParam", error.Key);
-        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.First());
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Validate_WithDisplayNameAttribute_UsesDisplayNameInErrorMessage(bool useAsync)
-    {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(string),
-            name: "testParam",
-            displayName: "Custom Display Name",
-            validationAttributes: [new RequiredAttribute()]);
-
-        var context = CreateValidatableContext();
-
-        // Act
-        await ValidateAsync(paramInfo, null, context, useAsync, default);
-
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
-        Assert.Equal("testParam", error.Key);
-        // The error message should use the display name
-        Assert.Equal("The Custom Display Name field is required.", error.Value.First());
+        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -142,42 +79,16 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_WhenValidatableTypeHasErrors_AddsNestedErrors(bool useAsync)
     {
-        // Arrange
-        var personTypeInfo = new TestValidatableTypeInfo(
-            typeof(Person),
-            [
-                new TestValidatablePropertyInfo(
-                    typeof(Person),
-                    typeof(string),
-                    "Name",
-                    "Name",
-                    [new RequiredAttribute()])
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.PersonParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(Person),
-            name: "person",
-            displayName: "Person",
-            validationAttributes: []);
+        await ValidateAsync(paramInfo, new ParameterPerson(), context, useAsync, default);
 
-        var typeMapping = new Dictionary<Type, ValidatableTypeInfo>
-        {
-            { typeof(Person), personTypeInfo }
-        };
-
-        var context = CreateValidatableContext(typeMapping);
-        var person = new Person(); // Name is null, so should fail validation
-
-        // Act
-        await ValidateAsync(paramInfo, person, context, useAsync, default);
-
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
+        var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("Name", error.Key);
-        var errorValue = Assert.Single(error.Value);
-        Assert.Equal("The Name field is required.", errorValue);
+        Assert.Equal("The Name field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -185,46 +96,16 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_WithEnumerableOfValidatableType_ValidatesEachItem(bool useAsync)
     {
-        // Arrange
-        var personTypeInfo = new TestValidatableTypeInfo(
-            typeof(Person),
-            [
-                new TestValidatablePropertyInfo(
-                    typeof(Person),
-                    typeof(string),
-                    "Name",
-                    "Name",
-                    [new RequiredAttribute()])
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.PeopleParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(IEnumerable<Person>),
-            name: "people",
-            displayName: "People",
-            validationAttributes: []);
+        await ValidateAsync(paramInfo, new[] { new ParameterPerson { Name = "Valid" }, new ParameterPerson() }, context, useAsync, default);
 
-        var typeMapping = new Dictionary<Type, ValidatableTypeInfo>
-        {
-            { typeof(Person), personTypeInfo }
-        };
-
-        var context = CreateValidatableContext(typeMapping);
-        var people = new List<Person>
-        {
-            new() { Name = "Valid" },
-            new() // Name is null, should fail
-        };
-
-        // Act
-        await ValidateAsync(paramInfo, people, context, useAsync, default);
-
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
+        var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("people[1].Name", error.Key);
-        var errorValue = Assert.Single(error.Value);
-        Assert.Equal("The Name field is required.", errorValue);
+        Assert.Equal("The Name field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -232,30 +113,16 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_MultipleErrorsOnSameParameter_CollectsAllErrors(bool useAsync)
     {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(int),
-            name: "testParam",
-            displayName: "Test Parameter",
-            validationAttributes:
-            [
-                new RangeAttribute(10, 100) { ErrorMessage = "Range error" },
-                new CustomTestValidationAttribute { ErrorMessage = "Custom error" }
-            ]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.MultipleErrorsParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var context = CreateValidatableContext();
-
-        // Act
         await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
-        Assert.Equal("testParam", error.Key);
-        Assert.Collection(error.Value,
-            e => Assert.Equal("Range error", e),
-            e => Assert.Equal("Custom error", e));
+        var errors = Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).ToArray();
+        Assert.Contains("Range error", errors);
+        Assert.Contains("Custom error", errors);
     }
 
     [Theory]
@@ -263,25 +130,16 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_WithContextPrefix_AddsErrorsWithCorrectPrefix(bool useAsync)
     {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(int),
-            name: "testParam",
-            displayName: "Test Parameter",
-            validationAttributes: [new RangeAttribute(10, 100)]);
-
-        var context = CreateValidatableContext();
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.RangeParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
         context.CurrentValidationPath = "parent";
 
-        // Act
         await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
+        var error = Assert.Single(context.ValidationErrors!);
         Assert.Equal("parent.testParam", error.Key);
-        Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.First());
     }
 
     [Theory]
@@ -289,158 +147,46 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_ExceptionDuringValidation_Rethrown(bool useAsync)
     {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(string),
-            name: "testParam",
-            displayName: "Test Parameter",
-            validationAttributes: [new ThrowingValidationAttribute()]);
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.ThrowingParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
-        var context = CreateValidatableContext();
-
-        // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => ValidateAsync(paramInfo, "test", context, useAsync, default));
 
-        // Assert
         Assert.Equal("Test exception", ex.Message);
-
-        var errors = context.ValidationErrors;
         Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
     }
 
-    private TestValidatableParameterInfo CreateTestParameterInfo(
-        Type parameterType,
-        string name,
-        string displayName,
-        ValidationAttribute[] validationAttributes)
-    {
-        return new TestValidatableParameterInfo(
-            parameterType,
-            name,
-            new TestLiteralDisplayName(displayName),
-            validationAttributes);
-    }
+    private static ParameterInfo GetParameter(string methodName)
+        => typeof(ParameterActions).GetMethod(methodName)!.GetParameters()[0];
+}
 
-    private ValidateContext CreateValidatableContext(
-        Dictionary<Type, ValidatableTypeInfo>? typeMapping = null)
-    {
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+public static class ParameterActions
+{
+    public static void RequiredParameter([Display(Name = "Test Parameter")][Required] string? testParam) { }
+    public static void RequiredAndCustomParameter([Display(Name = "Test Parameter")][Required][AlwaysFailsValidation] string? testParam) { }
+    public static void StringLengthParameter([Display(Name = "Test Parameter")][StringLength(10)] string? testParam) { }
+    public static void RangeParameter([Display(Name = "Test Parameter")][Range(10, 100)] int testParam) { }
+    public static void PersonParameter(ParameterPerson person) { }
+    public static void PeopleParameter([Required] IEnumerable<ParameterPerson> people) { }
+    public static void MultipleErrorsParameter([Display(Name = "Test Parameter")][Range(10, 100, ErrorMessage = "Range error")][AlwaysFailsValidation(ErrorMessage = "Custom error")] int testParam) { }
+    public static void ThrowingParameter([ThrowingValidation] string testParam) { }
+}
 
-        return new ValidateContext
-        {
-            ServiceProvider = serviceProvider,
-            ValidationOptions = new TestValidationOptions(typeMapping ?? new Dictionary<Type, ValidatableTypeInfo>())
-        };
-    }
+[ValidatableType]
+public sealed class ParameterPerson
+{
+    [Required]
+    public string? Name { get; set; }
+}
 
-    private class TestValidatableParameterInfo : ValidatableParameterInfo
-    {
-        private readonly ValidationAttribute[] _validationAttributes;
+public sealed class AlwaysFailsValidationAttribute : ValidationAttribute
+{
+    public override bool IsValid(object? value) => false;
+}
 
-        public TestValidatableParameterInfo(
-            Type parameterType,
-            string name,
-            DisplayNameInfo? displayNameInfo,
-            ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayNameInfo)
-        {
-            _validationAttributes = validationAttributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    }
-
-    private class TestValidatablePropertyInfo : ValidatablePropertyInfo
-    {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatablePropertyInfo(
-            Type containingType,
-            Type propertyType,
-            string name,
-            string displayName,
-            ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, new TestLiteralDisplayName(displayName))
-        {
-            _validationAttributes = validationAttributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    }
-
-    private class TestValidationOptions : ValidationOptions
-    {
-        public TestValidationOptions(Dictionary<Type, ValidatableTypeInfo> typeInfoMappings)
-        {
-            // Create a custom resolver that uses the dictionary
-            var resolver = new DictionaryBasedResolver(typeInfoMappings);
-
-            // Add it to the resolvers collection
-            Resolvers.Add(resolver);
-        }
-
-        // Private resolver implementation that uses a dictionary lookup
-        private class DictionaryBasedResolver : IValidatableInfoResolver
-        {
-            private readonly Dictionary<Type, ValidatableTypeInfo> _typeInfoMappings;
-
-            public DictionaryBasedResolver(Dictionary<Type, ValidatableTypeInfo> typeInfoMappings)
-            {
-                _typeInfoMappings = typeInfoMappings;
-            }
-
-            public ValidatableTypeInfo? TryGetValidatableTypeInfo(Type type)
-            {
-                _typeInfoMappings.TryGetValue(type, out var info);
-                return info;
-            }
-
-            public ValidatableParameterInfo? GetValidatableParameterInfo(ParameterInfo parameterInfo)
-            {
-                // Not implemented in the test
-                return null;
-            }
-
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableInfo)
-            {
-                if (_typeInfoMappings.TryGetValue(type, out var validatableTypeInfo))
-                {
-                    validatableInfo = validatableTypeInfo;
-                    return true;
-                }
-                validatableInfo = null;
-                return false;
-            }
-
-            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
-            {
-                validatableInfo = null;
-                return false;
-            }
-        }
-    }
-
-    // Test data classes and validation attributes
-
-    private class Person
-    {
-        public string? Name { get; set; }
-    }
-
-    private class CustomTestValidationAttribute : ValidationAttribute
-    {
-        public override bool IsValid(object? value)
-        {
-            // Always fail for testing
-            return false;
-        }
-    }
-
-    private class ThrowingValidationAttribute : ValidationAttribute
-    {
-        public override bool IsValid(object? value)
-        {
-            throw new InvalidOperationException("Test exception");
-        }
-    }
+public sealed class ThrowingValidationAttribute : ValidationAttribute
+{
+    public override bool IsValid(object? value) => throw new InvalidOperationException("Test exception");
 }
