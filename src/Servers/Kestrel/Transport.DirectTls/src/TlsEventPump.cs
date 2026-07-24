@@ -496,8 +496,14 @@ internal class TlsEventPump : IDisposable
                     // the endpoint's callback and any operator ClientCertificateValidation delegate observe a
                     // real chain and errors. RevocationMode.NoCheck avoids blocking the pump thread on CRL/OCSP
                     // network I/O and matches the default (CheckCertificateRevocation == false).
+                    // DisableCertificateDownloads stops the chain engine from making synchronous AIA fetches
+                    // for missing intermediates: chain.Build runs on the pump thread, so an attacker-supplied
+                    // leaf with an unreachable AIA URL could otherwise stall every connection this pump owns.
+                    // This mirrors SslStream, which sets the same flag on the server side.
+                    // Legitimate clients send their intermediates in the handshake (added to ExtraStore below).
                     using var chain = new X509Chain();
                     chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                    chain.ChainPolicy.DisableCertificateDownloads = true;
                     if (conn.Session.GetRemoteCertificates() is { } intermediates)
                     {
                         chain.ChainPolicy.ExtraStore.AddRange(intermediates);
