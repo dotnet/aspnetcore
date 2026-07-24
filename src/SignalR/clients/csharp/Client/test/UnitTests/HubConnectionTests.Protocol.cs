@@ -4,6 +4,7 @@
 using System.Threading.Channels;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
@@ -848,8 +849,7 @@ public partial class HubConnectionTests
 
                 var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
 
-                // Binding fails before dispatch because no handler is registered for 'Result'.
-                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client failed to parse argument(s).\"}", invokeMessage);
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client didn't provide a result.\"}", invokeMessage);
             }
             finally
             {
@@ -861,9 +861,11 @@ public partial class HubConnectionTests
         [Theory]
         [InlineData(new object[] { new object[0] })]
         [InlineData(new object[] { new object[] { 42 } })]
-        public async Task InvocationOfNonexistentMethodLogsMissingMethodBindingFailure(object[] arguments)
+        public async Task InvocationOfNonexistentMethodLogsWarningWithoutError(object[] arguments)
         {
-            using (StartVerifiableLog(expectedErrorsFilter: w => w.EventId.Name == "ArgumentBindingFailure"))
+            // No expectedErrorsFilter: a server invocation of a method the client doesn't handle is intentional
+            // and must not produce an error log, otherwise StartVerifiableLog would fail the test.
+            using (StartVerifiableLog())
             {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
@@ -880,9 +882,10 @@ public partial class HubConnectionTests
                     await connection.ReceiveJsonMessage(new { type = 1, target = "Bar", arguments = new object[0] }).DefaultTimeout();
                     await handlerCalled.Task.DefaultTimeout();
 
-                    var write = Assert.Single(TestSink.Writes.Where(w => w.EventId.Name == "ArgumentBindingFailure"));
-                    var exception = Assert.IsType<HubException>(write.Exception);
-                    Assert.Equal("Method 'NonexistentMethod' does not exist.", exception.Message);
+                    // The missing method surfaces as a warning, not an error.
+                    var write = Assert.Single(TestSink.Writes.Where(w => w.EventId.Name == "MissingHandler"));
+                    Assert.Equal(LogLevel.Warning, write.LogLevel);
+                    Assert.DoesNotContain(TestSink.Writes, w => w.EventId.Name == "ArgumentBindingFailure");
                 }
                 finally
                 {
