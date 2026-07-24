@@ -47,6 +47,11 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
     /// <inheritdoc />
     public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
     {
+        if (!OperatingSystem.IsLinux())
+        {
+            throw new PlatformNotSupportedException("The DirectTls transport requires a Linux operating system.");
+        }
+
         if (endpoint is not DirectTlsEndpoint directTlsEndpoint)
         {
             throw new NotSupportedException(

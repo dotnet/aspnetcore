@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
@@ -27,9 +28,14 @@ public static class WebHostBuilderDirectTlsExtensions
     /// Call this <b>after</b> <c>UseKestrel()</c> so the DirectTls transport is offered a
     /// <see cref="DirectTlsEndpoint"/> before the default transport.
     /// </remarks>
+    [SupportedOSPlatform("linux")]
     public static IWebHostBuilder UseDirectTls(this IWebHostBuilder hostBuilder)
     {
         ArgumentNullException.ThrowIfNull(hostBuilder);
+        if (!OperatingSystem.IsLinux())
+        {
+            throw new PlatformNotSupportedException("The DirectTls transport requires a Linux operating system.");
+        }
 
         return hostBuilder.ConfigureServices(services =>
         {
@@ -50,6 +56,7 @@ public static class WebHostBuilderDirectTlsExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <param name="configureOptions">A callback to configure <see cref="DirectTlsTransportOptions"/>.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+    [SupportedOSPlatform("linux")]
     public static IWebHostBuilder UseDirectTls(this IWebHostBuilder hostBuilder, Action<DirectTlsTransportOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(hostBuilder);
