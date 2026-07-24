@@ -89,6 +89,25 @@ public class DefaultAntiforgeryTokenSerializerTest
     }
 
     [Theory]
+    [InlineData("a=")] // Padded input
+    [InlineData("ab==")] // Padded input
+    [InlineData("abc=")] // Padded input
+    [InlineData("ab+d")] // Invalid Base64Url character '+'
+    [InlineData("ab/d")] // Invalid Base64Url character '/'
+    [InlineData("!")] // Invalid character
+    [InlineData("a b")] // Whitespace
+    [InlineData("")] // Empty string
+    public void Deserialize_InvalidBase64UrlInput_ThrowsAndWrapsFormatException(string serializedToken)
+    {
+        var dataProtector = CreateDataProtector(DataProtectorType.SpanDataProtector);
+        var serializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
+
+        var ex = Assert.Throws<AntiforgeryValidationException>(() => serializer.Deserialize(serializedToken));
+        Assert.Equal("The antiforgery token could not be decrypted.", ex.Message);
+        Assert.IsAssignableFrom<FormatException>(ex.InnerException);
+    }
+
+    [Theory]
     [InlineData(DataProtectorType.SpanDataProtector)]
     [InlineData(DataProtectorType.DefaultDataProtector)]
     public void Serialize_FieldToken_WithClaimUid_TokenRoundTripSuccessful(DataProtectorType protectorType)

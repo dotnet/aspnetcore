@@ -6,7 +6,6 @@ using System.Buffers.Text;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Shared;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -17,6 +16,30 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
     private readonly IDataProtector _defaultCryptoSystem;
     private readonly ISpanDataProtector? _perfCryptoSystem;
+
+    private static bool IsValidBase64Url(ReadOnlySpan<char> input)
+    {
+        if (input.IsEmpty)
+        {
+            return false;
+        }
+
+        foreach (var c in input)
+        {
+            if (!IsBase64UrlChar(c))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static bool IsBase64UrlChar(char c) =>
+        (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z') ||
+        (c >= '0' && c <= '9') ||
+        c == '-' ||
+        c == '_';
 
     public DefaultAntiforgeryTokenSerializer(IDataProtectionProvider provider)
     {
@@ -32,6 +55,11 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         Exception? innerException = null;
         try
         {
+            if (!IsValidBase64Url(serializedToken))
+            {
+                throw new FormatException("The serialized antiforgery token is not a valid Base64Url string.");
+            }
+
             var maxTokenDecodedSize = Base64Url.GetMaxDecodedLength(serializedToken.Length);
 
             var rent = maxTokenDecodedSize <= 256
