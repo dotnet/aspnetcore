@@ -22,17 +22,21 @@ internal sealed class TlsEventPumpPool : IDisposable
     private readonly TlsEventPump[] _pumps;
     private readonly ILoggerFactory? _loggerFactory;
 
-    public TlsEventPumpPool(int pumpCount = 0, ILoggerFactory? loggerFactory = null)
+    public TlsEventPumpPool(int pumpCount = 0, ILoggerFactory? loggerFactory = null, TimeSpan? handshakeTimeout = null)
     {
         _loggerFactory = loggerFactory;
 
         // Default: 1 pump per CPU core
         pumpCount = pumpCount > 0 ? pumpCount : Environment.ProcessorCount;
 
+        // No timeout by default (used by tests that construct the pool directly); the transport factory
+        // always supplies the endpoint's configured HandshakeTimeout.
+        var effectiveHandshakeTimeout = handshakeTimeout ?? Timeout.InfiniteTimeSpan;
+
         _pumps = new TlsEventPump[pumpCount];
         for (int i = 0; i < pumpCount; i++)
         {
-            _pumps[i] = new TlsEventPump(loggerFactory?.CreateLogger<TlsEventPump>(), i);
+            _pumps[i] = new TlsEventPump(loggerFactory?.CreateLogger<TlsEventPump>(), i, effectiveHandshakeTimeout);
         }
     }
 

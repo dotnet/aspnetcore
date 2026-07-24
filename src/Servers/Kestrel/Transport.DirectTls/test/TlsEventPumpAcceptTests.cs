@@ -33,7 +33,7 @@ public class TlsEventPumpAcceptTests
                 () => null!,                  // accepted #2
                 () => throw WouldBlock(),     // backlog drained
             });
-        pump.SetListenFdForTests(1);
+        pump.SetListenFd(1);
 
         pump.AcceptConnections();
 
@@ -52,7 +52,7 @@ public class TlsEventPumpAcceptTests
                 () => throw Fatal(),
                 () => null!,   // must never be reached
             });
-        pump.SetListenFdForTests(1);
+        pump.SetListenFd(1);
 
         pump.AcceptConnections();
 
@@ -69,7 +69,7 @@ public class TlsEventPumpAcceptTests
         using var pump = new ScriptedAcceptPump(
             script: Array.Empty<Func<Socket>>(),
             defaultOutcome: () => throw Fatal());
-        pump.SetListenFdForTests(1);
+        pump.SetListenFd(1);
 
         pump.AcceptConnections();
 
@@ -86,7 +86,7 @@ public class TlsEventPumpAcceptTests
                 () => throw new ObjectDisposedException("listenSocket"),
                 () => null!,   // must never be reached
             });
-        pump.SetListenFdForTests(1);
+        pump.SetListenFd(1);
 
         pump.AcceptConnections();
 
@@ -112,8 +112,8 @@ public class TlsEventPumpAcceptTests
     {
         using var pump = new ScriptedAcceptPump(
             new Func<Socket>[] { () => null!, () => null! });
-        pump.SetListenFdForTests(1);
-        pump.StopRunningForTests();
+        pump.SetListenFd(1);
+        pump.StopRunning();
 
         pump.AcceptConnections();
 
@@ -126,7 +126,7 @@ public class TlsEventPumpAcceptTests
     {
         using var pump = new ScriptedAcceptPump(
             new Func<Socket>[] { () => null!, () => null! });
-        pump.SetListenFdForTests(1);
+        pump.SetListenFd(1);
 
         pump.StopAccepting();
         pump.AcceptConnections();
@@ -139,7 +139,7 @@ public class TlsEventPumpAcceptTests
     public void StopAccepting_IsIdempotent()
     {
         using var pump = new ScriptedAcceptPump(Array.Empty<Func<Socket>>());
-        pump.SetListenFdForTests(1);
+        pump.SetListenFd(1);
 
         pump.StopAccepting();
         pump.StopAccepting();   // second call must be a no-op, not throw
@@ -160,7 +160,7 @@ public class TlsEventPumpAcceptTests
         public int ProcessedCount { get; private set; }
 
         public ScriptedAcceptPump(IEnumerable<Func<Socket>> script, Func<Socket>? defaultOutcome = null)
-            : base(tlsPumpLogger: null, id: 0)
+            : base(tlsPumpLogger: null, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
         {
             _script = new Queue<Func<Socket>>(script);
             // When the script is exhausted, behave like a drained backlog unless told otherwise.

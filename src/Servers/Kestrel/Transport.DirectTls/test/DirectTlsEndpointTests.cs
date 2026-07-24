@@ -69,6 +69,27 @@ public class DirectTlsEndpointTests
         Assert.Null(options.ClientCertificateValidation);
         Assert.Null(options.TlsClientHelloBytesCallback);
         Assert.Null(options.WorkerCount);
+        Assert.Equal(TimeSpan.FromSeconds(10), options.HandshakeTimeout);
+    }
+
+    [Fact]
+    public void EndpointOptions_HandshakeTimeout_RoundTripsRejectsNonPositiveAndStoresInfiniteAsMaxValue()
+    {
+        var options = new DirectTlsEndpointOptions();
+
+        // Default mirrors HttpsConnectionAdapterOptions (10 seconds).
+        Assert.Equal(TimeSpan.FromSeconds(10), options.HandshakeTimeout);
+
+        options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+        Assert.Equal(TimeSpan.FromSeconds(30), options.HandshakeTimeout);
+
+        // Timeout.InfiniteTimeSpan disables the timeout and is normalized to TimeSpan.MaxValue, matching
+        // HttpsConnectionAdapterOptions so the pump can treat "no timeout" as a single sentinel.
+        options.HandshakeTimeout = Timeout.InfiniteTimeSpan;
+        Assert.Equal(TimeSpan.MaxValue, options.HandshakeTimeout);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.HandshakeTimeout = TimeSpan.Zero);
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.HandshakeTimeout = TimeSpan.FromSeconds(-1));
     }
 
     [Fact]

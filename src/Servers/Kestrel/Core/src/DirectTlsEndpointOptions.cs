@@ -103,6 +103,34 @@ public sealed class DirectTlsEndpointOptions
     private int? _workerCount;
 
     /// <summary>
+    /// The maximum amount of time allowed for the TLS handshake to complete on a connection to this endpoint.
+    /// A connection whose handshake does not finish within this window is dropped. Defaults to 10 seconds.
+    /// Set to <see cref="Timeout.InfiniteTimeSpan"/> to disable the timeout; any other non-positive value is rejected.
+    /// </summary>
+    /// <remarks>
+    /// This bounds slow or stalled handshakes — for example a client that opens a connection and then dribbles
+    /// the ClientHello one byte at a time — which would otherwise keep a file descriptor and its native TLS
+    /// session pinned to a worker indefinitely. It mirrors <see cref="HttpsConnectionAdapterOptions.HandshakeTimeout"/>,
+    /// which provides the same protection for the <see cref="SslStream"/>-based HTTPS middleware, and shares its
+    /// 10-second default.
+    /// </remarks>
+    public TimeSpan HandshakeTimeout
+    {
+        get => _handshakeTimeout;
+        set
+        {
+            if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
+            }
+
+            _handshakeTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
+        }
+    }
+
+    private TimeSpan _handshakeTimeout = HttpsConnectionAdapterOptions.DefaultHandshakeTimeout;
+
+    /// <summary>
     /// The HTTP protocols (ALPN) advertised for this endpoint, sourced from <see cref="ListenOptions.Protocols"/>
     /// after the endpoint has been configured. Not part of the public surface: the DirectTls transport's
     /// post-configure step copies the protocols here so the transport does not need to depend on

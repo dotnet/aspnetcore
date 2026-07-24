@@ -137,7 +137,7 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
         // correctly, at the cost of WorkerCount threads per endpoint. The endpoint may override the
         // transport-wide worker count so multi-endpoint servers can bound their total thread count.
         var workerCount = endpointOptions.WorkerCount ?? _options.WorkerCount;
-        var pumpPool = new TlsEventPumpPool(workerCount, _loggerFactory);
+        var pumpPool = new TlsEventPumpPool(workerCount, _loggerFactory, endpointOptions.HandshakeTimeout);
 
         var memoryPool = MemoryPool<byte>.Shared;
 

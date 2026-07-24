@@ -10,6 +10,8 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ClientCertificateMode.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ClientCertificateValidation.get -> System.Func<System.Security.Cryptography.X509Certificates.X509Certificate2!, System.Security.Cryptography.X509Certificates.X509Chain?, System.Net.Security.SslPolicyErrors, bool>?
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ClientCertificateValidation.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.HandshakeTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.HandshakeTimeout.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2?
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificate.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.DirectTlsEndpointOptions.ServerCertificateSelector.get -> System.Func<Microsoft.AspNetCore.Connections.ConnectionContext?, string?, System.Security.Cryptography.X509Certificates.X509Certificate2?>?

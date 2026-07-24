@@ -25,6 +25,11 @@ internal class TlsEventPump : IDisposable
     private readonly ILogger? _logger;
     private readonly int _id;
 
+    // Maximum time a connection is allowed to spend handshaking before the pump drops it. Stored as
+    // milliseconds for cheap comparison against Environment.TickCount64. long.MaxValue means "no timeout"
+    // (Timeout.InfiniteTimeSpan / TimeSpan.MaxValue) and is never enforced.
+    private readonly long _handshakeTimeoutMs;
+
     private readonly int _epollFd;
 
     // Established connections (handshake complete) - use fd as key
@@ -68,7 +73,7 @@ internal class TlsEventPump : IDisposable
     /// Uses less memory than ConnectionIoState since we don't need full read/write machinery.
     /// NOTE: We don't create the Socket wrapper - use fd directly to avoid syscall overhead.
     /// </summary>
-    private struct HandshakingConnection
+    internal struct HandshakingConnection
     {
         public int Fd;
         public TlsSocketSession Session;
@@ -77,12 +82,18 @@ internal class TlsEventPump : IDisposable
         // DirectTlsConnection allocated early (at NeedsTlsContext) so the ClientHello listener has a stable
         // ConnectionContext. Null until the listener fires; reused when the handshake reaches Complete.
         public DirectTlsConnection? Connection;
+        // Environment.TickCount64 value at/after which this handshake is considered timed out and dropped.
+        // long.MaxValue means the handshake never times out (timeouts disabled for this pump).
+        public long HandshakeDeadlineTimestamp;
     }
 
-    public TlsEventPump(ILogger? tlsPumpLogger, int id)
+    public TlsEventPump(ILogger? tlsPumpLogger, int id, TimeSpan handshakeTimeout)
     {
         _id = id;
         _logger = tlsPumpLogger;
+        _handshakeTimeoutMs = handshakeTimeout == Timeout.InfiniteTimeSpan || handshakeTimeout == TimeSpan.MaxValue
+            ? long.MaxValue
+            : (long)handshakeTimeout.TotalMilliseconds;
 
         _epollFd = NativeTls.epoll_create1(0);
         if (_epollFd < 0)
@@ -180,10 +191,11 @@ internal class TlsEventPump : IDisposable
         }
     }
 
-    // Test-only seams: drive AcceptConnections' guard and loop deterministically without
-    // StartWithListenSocket, a real listen socket, epoll registration, or the pump thread.
-    internal void SetListenFdForTests(int fd) => _listenFd = fd;
-    internal void StopRunningForTests() => _running = false;
+    // internal for testing
+    internal void SetListenFd(int fd) => _listenFd = fd;
+    internal void StopRunning() => _running = false;
+    internal Dictionary<int, HandshakingConnection> Handshakes => _handshaking;
+    internal bool IsHandshaking(int fd) => _handshaking.ContainsKey(fd);
 
     /// <summary>
     /// Stop this pump from accepting new connections: de-register the listen fd from this pump's epoll
@@ -304,6 +316,14 @@ internal class TlsEventPump : IDisposable
                         conn.OnError(new IOException("Peer closed connection"));
                     }
                 }
+            }
+
+            // Drop connections whose handshake has taken too long. The epoll_wait timeout above is 10ms
+            // while any handshake is in flight, so a stalled handshake (e.g. a slow-loris ClientHello) is
+            // swept within ~10ms of its deadline even when the connection sends nothing to wake the pump.
+            if (_handshakeTimeoutMs != long.MaxValue && _handshaking.Count > 0)
+            {
+                SweepExpiredHandshakes(Environment.TickCount64);
             }
         }
 
@@ -429,7 +449,8 @@ internal class TlsEventPump : IDisposable
         {
             Fd = clientFd,
             Session = session,
-            RemoteEndPoint = remoteEndPoint
+            RemoteEndPoint = remoteEndPoint,
+            HandshakeDeadlineTimestamp = ComputeHandshakeDeadline(Environment.TickCount64),
         };
 
         // Try handshake immediately (might complete for resumed sessions)
@@ -710,6 +731,14 @@ internal class TlsEventPump : IDisposable
     {
         _handshaking.Remove(fd);
         NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
+        ReleaseHandshakeResources(conn);
+    }
+
+    // Releases the native resources of a dropped handshake. Split out from DropHandshake (which owns the
+    // pump-thread-local bookkeeping - dictionary removal and epoll de-registration) so tests can override
+    // just the native teardown without a real TLS session or socket fd.
+    private protected virtual void ReleaseHandshakeResources(in HandshakingConnection conn)
+    {
         if (conn.Connection is { } earlyConnection)
         {
             earlyConnection.AbortBeforeStart();
@@ -718,6 +747,54 @@ internal class TlsEventPump : IDisposable
         {
             conn.Session.Dispose();
         }
+    }
+
+    // Returns the Environment.TickCount64 deadline for a handshake starting at <paramref name="nowTimestamp"/>,
+    // or long.MaxValue when handshake timeouts are disabled for this pump.
+    internal long ComputeHandshakeDeadline(long nowTimestamp)
+        => _handshakeTimeoutMs == long.MaxValue ? long.MaxValue : nowTimestamp + _handshakeTimeoutMs;
+
+    // Drops every handshaking connection whose deadline has passed. Returns the number dropped this sweep.
+    // Runs on the pump thread only. Connections with a long.MaxValue deadline (timeout disabled) are never
+    // dropped, even if nowTimestamp is long.MaxValue.
+    internal int SweepExpiredHandshakes(long nowTimestamp)
+    {
+        if (_handshaking.Count == 0)
+        {
+            return 0;
+        }
+
+        // Collect expired fds into a small stack buffer, then drop them in a second pass: a Dictionary
+        // cannot be structurally modified (DropHandshake calls Remove) while it is being enumerated. The
+        // buffer is bounded so a single sweep can never stall the pump under a flood of stalled handshakes;
+        // any overflow beyond the buffer is caught by the next sweep (~10ms later), which is harmless
+        // because those deadlines have already passed. 256 matches the epoll batch size (MaxEvents).
+        Span<int> expired = stackalloc int[256];
+        int count = 0;
+        foreach (var kvp in _handshaking)
+        {
+            long deadline = kvp.Value.HandshakeDeadlineTimestamp;
+            if (deadline != long.MaxValue && deadline <= nowTimestamp)
+            {
+                expired[count++] = kvp.Key;
+                if (count == expired.Length)
+                {
+                    break;
+                }
+            }
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            int fd = expired[i];
+            if (_handshaking.TryGetValue(fd, out var conn))
+            {
+                _logger?.LogDebug("Handshake timed out for fd={Fd} after {TimeoutMs}ms; dropping connection.", fd, _handshakeTimeoutMs);
+                DropHandshake(fd, conn);
+            }
+        }
+
+        return count;
     }
 
     // Copies the raw parsed ClientHello record from the session and hands it to the
