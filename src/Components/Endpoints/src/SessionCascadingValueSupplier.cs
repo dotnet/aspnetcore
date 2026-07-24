@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -147,23 +149,20 @@ internal partial class SessionCascadingValueSupplier
     {
         private readonly SessionCascadingValueSupplier _owner;
         private readonly string _sessionKey;
-        private readonly Type _underlyingType;
-        private readonly bool _isEnum;
-        private readonly bool _isEnumArray;
+        [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)]
+        private readonly Type _propertyType;
         private readonly Func<object?> _currentValueGetter;
         private bool _delivered;
 
         public SessionSubscription(
             SessionCascadingValueSupplier owner,
             string sessionKey,
-            Type propertyType,
+            [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] Type propertyType,
             Func<object?> currentValueGetter)
         {
             _owner = owner;
             _sessionKey = sessionKey;
-            _underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
-            _isEnum = _underlyingType.IsEnum;
-            _isEnumArray = _underlyingType.IsArray && _underlyingType.GetElementType()!.IsEnum;
+            _propertyType = propertyType;
             _currentValueGetter = currentValueGetter;
         }
 
@@ -189,34 +188,9 @@ internal partial class SessionCascadingValueSupplier
                     return null;
                 }
 
-                var value = _owner._serializer.DeserializeValue(bytes);
-                if (value is null)
-                {
-                    return null;
-                }
-
-                if (_isEnum && value is int intValue)
-                {
-                    return Enum.ToObject(_underlyingType, intValue);
-                }
-
-                if (_isEnumArray && value is int[] intArray)
-                {
-                    var elementType = _underlyingType.GetElementType()!;
-                    var enumArray = Array.CreateInstance(elementType, intArray.Length);
-                    for (var i = 0; i < intArray.Length; i++)
-                    {
-                        enumArray.SetValue(Enum.ToObject(elementType, intArray[i]), i);
-                    }
-                    return enumArray;
-                }
-
-                if (!_underlyingType.IsAssignableFrom(value.GetType()))
-                {
-                    return null;
-                }
-
-                return value;
+                // The property type is known, so the serializer deserializes straight to it and recovers
+                // the exact enum/collection type without consulting the stored token.
+                return _owner._serializer.DeserializeValue(bytes, _propertyType);
             }
             catch (Exception ex)
             {

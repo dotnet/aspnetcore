@@ -2,17 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-// Serializes a limited set of types for TempData/Session. The value is (de)serialized directly by
-// System.Text.Json against its real CLR type: on write we save the type (its assembly-qualified name),
-// and on read we recover it with Type.GetType and hand it back to STJ. This means enums and exact
-// collection types round-trip faithfully, and there is no hand-maintained name->Type table. Supported
-// types are limited by a structural allowlist that is only enforced during serialization (and re-checked
-// on read as a guard, since the payload is integrity-protected by the cookie/session providers).
 internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
 {
     private static readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
@@ -75,7 +70,7 @@ internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
             || type == typeof(string)
             || type == typeof(Guid)
             || type == typeof(DateTime)
-            || type.IsEnum;
+            || (type.IsEnum && type.GetEnumUnderlyingType() == typeof(int));
     }
 
     public IDictionary<string, object?> DeserializeData(IDictionary<string, JsonElement> data)
@@ -119,7 +114,12 @@ internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
     [return: DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)]
     private Type ResolveType(string typeName)
     {
-        var type = Type.GetType(typeName, throwOnError: false);
+        // Tokens are the storage type rendered as Type.ToString() (enums normalized to Int32), so they
+        // only ever name BCL types. Most resolve against corelib directly; the supported collection
+        // types that live outside corelib are probed in their known assemblies.
+        var type = Type.GetType(typeName, throwOnError: false)
+            ?? Type.GetType($"{typeName}, System.Collections", throwOnError: false)
+            ?? Type.GetType($"{typeName}, System.ObjectModel", throwOnError: false);
 
         // Guard against tampered/unknown tokens: only allow types we would have serialized ourselves.
         if (type is null || !CanSerialize(type))
@@ -128,6 +128,42 @@ internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
         }
 
         return type;
+    }
+
+    // Renders the token stored alongside a value. Enums are normalized to their Int32 storage type so a
+    // token never names a user-defined assembly, which keeps it compact ("System.Int32") and resolvable
+    // without an assembly-qualified name. This matches storageType.ToString() exactly so ResolveType can
+    // round-trip it via Type.GetType, and is built as a string to avoid constructing types reflectively.
+    private static string GetStorageToken(Type type)
+    {
+        if (type.IsEnum)
+        {
+            return "System.Int32";
+        }
+
+        if (type.IsSZArray)
+        {
+            return GetStorageToken(type.GetElementType()!) + "[]";
+        }
+
+        if (type.IsGenericType)
+        {
+            var arguments = type.GetGenericArguments();
+            var builder = new StringBuilder(type.GetGenericTypeDefinition().FullName);
+            builder.Append('[');
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if (i > 0)
+                {
+                    builder.Append(',');
+                }
+                builder.Append(GetStorageToken(arguments[i]));
+            }
+            builder.Append(']');
+            return builder.ToString();
+        }
+
+        return type.ToString();
     }
 
     public byte[] SerializeData(IDictionary<string, object?> data)
@@ -166,7 +202,7 @@ internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
         }
 
         writer.WriteStartObject();
-        writer.WriteString("type", valueType.AssemblyQualifiedName);
+        writer.WriteString("type", GetStorageToken(valueType));
         writer.WritePropertyName("value");
 
         // object[] is the only kind stored recursively (each element carries its own type token),
@@ -199,9 +235,24 @@ internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
         return buffer.ToArray();
     }
 
-    public object? DeserializeValue(ReadOnlySpan<byte> utf8Json)
+    public object? DeserializeValue(ReadOnlySpan<byte> utf8Json, [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] Type targetType)
     {
         var element = JsonSerializer.Deserialize<JsonElement>(utf8Json, _options);
+        if (element.ValueKind is JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        // When the caller knows the concrete target type (e.g. [SupplyParameterFromSession]), let
+        // System.Text.Json deserialize against it directly so enums and exact collection types are
+        // recovered as their real type. For object/polymorphic targets, fall back to the self-describing
+        // token, which yields the Int32-normalized value.
+        if (targetType != typeof(object) && CanSerialize(targetType))
+        {
+            var valueElement = element.GetProperty("value");
+            return JsonSerializer.Deserialize(valueElement, targetType, _options);
+        }
+
         return DeserializeEntry(element);
     }
 }

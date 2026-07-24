@@ -24,7 +24,7 @@ public class SessionCascadingValueSupplierTest
     private static void AssertSessionValue(ISession session, string key, object? expected)
     {
         Assert.True(session.TryGetValue(key, out var bytes));
-        var value = _serializer.DeserializeValue(bytes);
+        var value = _serializer.DeserializeValue(bytes, expected?.GetType() ?? typeof(object));
         Assert.Equal(expected, value);
     }
 

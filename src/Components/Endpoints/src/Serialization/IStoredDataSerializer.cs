@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -15,5 +17,5 @@ internal interface IStoredDataSerializer
 
     byte[] SerializeValue(object value, Type type);
 
-    object? DeserializeValue(ReadOnlySpan<byte> utf8Json);
+    object? DeserializeValue(ReadOnlySpan<byte> utf8Json, [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] Type targetType);
 }
