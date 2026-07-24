@@ -8,11 +8,6 @@
 <button id="increment-button" class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-    // [PersistentState] property used by PersistedState_IsEmitted_OnReExecutedPage
-    // regression test for https://github.com/dotnet/aspnetcore/issues/64386.
-    [PersistentState]
-    public int PersistedCount { get; set; }
-
     private int currentCount = 0;
 
     private void IncrementCount()
