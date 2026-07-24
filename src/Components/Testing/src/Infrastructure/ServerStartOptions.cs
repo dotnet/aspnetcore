@@ -22,19 +22,6 @@ public class ServerStartOptions
     /// </summary>
     public int ReadinessTimeoutMs { get; set; } = 60_000;
 
-    /// <summary>
-    /// When <c>true</c>, a retry of the same test forces a fresh app process for the
-    /// <see cref="ServerInstance"/> returned by
-    /// <see cref="ServerFactory{TTestAssembly}.StartServerAsync{TApp}"/>. Default is
-    /// <c>false</c> (the existing app is reused across retries — the factory's
-    /// idempotency semantics still apply).
-    /// </summary>
-    /// <remarks>
-    /// Retry attempt detection relies on the <c>TESTINGPLATFORM_RETRY_ATTEMPT</c>
-    /// environment variable set by <c>Microsoft.Testing.Extensions.Retry</c>.
-    /// </remarks>
-    public bool RecycleOnRetry { get; set; }
-
     internal string? ServiceOverrideTypeName { get; private set; }
 
     internal string? ServiceOverrideMethodName { get; private set; }

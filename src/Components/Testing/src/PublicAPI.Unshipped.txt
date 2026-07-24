@@ -18,21 +18,14 @@ Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerFactory<TTestAssemb
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerFactory<TTestAssembly>.StartServerAsync(string! appName, System.Action<Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions!>? configure = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance!>!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerFactory<TTestAssembly>.StartServerAsync<TApp>(System.Action<Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions!>? configure = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance!>!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance
-Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.AppName.get -> string!
-Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.AppUrl.get -> string!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.Id.get -> string!
-Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.PublicUrl.get -> string?
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.TestUrl.get -> string!
-Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.WriteCapturedOutputTo(string! directory) -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ConfigureServices(System.Type! type, string! methodName) -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ConfigureServices<T>(string! methodName) -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.EnvironmentVariables.get -> System.Collections.Generic.Dictionary<string!, string!>!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ReadinessTimeoutMs.get -> int
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ReadinessTimeoutMs.set -> void
-Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.RecycleOnRetry.get -> bool
-Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.RecycleOnRetry.set -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ServerStartOptions() -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockClient
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockClient.Lock(string! name) -> Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock!
@@ -70,6 +63,7 @@ Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.Playwright.get
 Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.PlaywrightTest() -> void
 Microsoft.AspNetCore.Components.Testing.Playwright.UITest
 Microsoft.AspNetCore.Components.Testing.Playwright.UITest.DiagnosticServers.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance!>!
+Microsoft.AspNetCore.Components.Testing.Playwright.UITest.SaveServerDiagnostics(bool failed, string! testName, System.Action<string!>! attach) -> void
 Microsoft.AspNetCore.Components.Testing.Playwright.UITest.UITest() -> void
 Microsoft.AspNetCore.Components.Testing.Playwright.UITestAttribute
 Microsoft.AspNetCore.Components.Testing.Playwright.UITestAttribute.UITestAttribute() -> void
@@ -78,7 +72,6 @@ override Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.Initiali
 override Microsoft.AspNetCore.Components.Testing.Playwright.ContextTest.InitializeCoreAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Testing.Playwright.PageTest.InitializeCoreAsync() -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.Testing.Infrastructure.E2EArtifactPaths.ForTest(string! testName) -> string!
-static Microsoft.AspNetCore.Components.Testing.Infrastructure.E2EArtifactPaths.ServerOutput(string! testName) -> string!
 static Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions.NewTracedContextAsync(Microsoft.Playwright.IBrowserContext! context, string! artifactDir, System.Func<bool>! shouldSave, System.Action<System.Collections.Generic.IReadOnlyList<string!>!>? onArtifactsSaved = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Testing.Infrastructure.TracedContext!>!
 static Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions.NewTracedContextAsync(this Microsoft.Playwright.IBrowser! browser, Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance! server, string! artifactDir, System.Func<bool>! shouldSave, System.Action<System.Collections.Generic.IReadOnlyList<string!>!>? onArtifactsSaved = null, Microsoft.Playwright.BrowserNewContextOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Testing.Infrastructure.TracedContext!>!
 static Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions.RecordVideoEnabled.get -> bool
