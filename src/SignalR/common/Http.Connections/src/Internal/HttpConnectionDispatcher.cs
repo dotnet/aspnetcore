@@ -200,6 +200,24 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
+        // A refresh only ever rotates the token CONTENT for the SAME user. Compare the freshly
+        // authenticated principal's identity key against the connection's bound user; if a different
+        // user (different sub/NameIdentifier/Upn) presented this connection's token, reject before the
+        // OnAuthenticationRefresh callback or UpdateUser can run so the connection is left fully intact
+        // and is not torn down by the Hub-layer UserIdentifier abort. This mirrors the reject on the
+        // poll/reconnect path but emits /refresh's JSON error contract instead of a text/plain body.
+        if (connection.User is not null)
+        {
+            var originalIdentity = GetUserIdentityKey(connection.User);
+            var newIdentity = GetUserIdentityKey(newPrincipal);
+            if (originalIdentity != newIdentity)
+            {
+                Log.UserNameChangedRejected(_logger, originalIdentity?.Value, newIdentity?.Value);
+                await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "user_changed");
+                return;
+            }
+        }
+
         var newExpiration = GetAuthenticationExpiration(authResult, context.User);
 
         if (options.OnAuthenticationRefresh is { } callback)
@@ -859,10 +877,18 @@ internal sealed partial class HttpConnectionDispatcher
         // Only connections that reuse their state across requests (Stateful Reconnect or Long
         // Polling) re-enter here with an already-populated User; other transports handle a single
         // request per connection. This must run before any connection state is mutated below so a
-        // rejected request leaves the existing connection fully intact. When authentication refresh
-        // is enabled the application owns principal-change policy via OnAuthenticationRefresh, so the
-        // hardening reject only applies when that feature is not enabled.
-        if (!options.EnableAuthenticationRefresh && connection.ClientReconnectExpected() && await RejectIfUserChangedAsync(connection, context))
+        // rejected request leaves the existing connection fully intact. The identity reject always
+        // runs for reconnect-capable connections, regardless of EnableAuthenticationRefresh:
+        // OnAuthenticationRefresh governs only same-user token CONTENT changes, so a genuine identity
+        // change (a different sub/NameIdentifier/Upn) is rejected up front before the stale/skip logic
+        // below can swallow it. A legitimate same-user token refresh keeps the same identity key, so it
+        // is not rejected and flows into the authentication-refresh path exactly as before. This is also
+        // consistent with the Hub layer, which already treats a UserIdentifier change on refresh as fatal
+        // (it aborts); converting that to an earlier 403 that leaves the connection intact is strictly more
+        // graceful. Because every path that reaches the auth-refresh block below (LongPolling or stateful
+        // reconnect) also satisfies ClientReconnectExpected(), this guarantees the downstream
+        // skipUserRefresh/stale branches only ever see same-identity tokens (their original intent).
+        if (connection.ClientReconnectExpected() && await RejectIfUserChangedAsync(connection, context))
         {
             return false;
         }
