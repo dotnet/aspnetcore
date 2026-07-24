@@ -4156,8 +4156,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
 
             return (sh - st - ch) > 300;
-        },
-        "Should be at least 300px away from bottom before second append");
+        }, "Should be at least 300px away from bottom before second append");
 
         var scrollTopBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         var scrollHeightBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
