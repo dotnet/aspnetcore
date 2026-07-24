@@ -86,12 +86,8 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
 
         foreach (var attribute in fieldMetadata.ValidationAttributes)
         {
-            var errorMessage = _localizer.ResolveAttributeErrorMessage(fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType, attribute);
-
-            if (errorMessage is null)
-            {
-                continue;
-            }
+            var errorMessage = _localizer.ResolveAttributeErrorMessage(fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType, attribute)
+                ?? string.Empty;
 
             if (TryWriteBuiltInRule(writer, attribute, errorMessage))
             {

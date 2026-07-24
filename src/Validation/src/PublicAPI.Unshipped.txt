@@ -42,7 +42,7 @@ Microsoft.Extensions.Validation.ValidationMessageKeyContext.MemberName.init -> v
 Microsoft.Extensions.Validation.ValidationMessageKeyContext.ValidationMessageKeyContext() -> void
 Microsoft.Extensions.Validation.ValidationMessageKeyContext.ValidatorType.get -> System.Type!
 Microsoft.Extensions.Validation.ValidationMessageKeyContext.ValidatorType.init -> void
-Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.get -> System.Func<System.Type?, Microsoft.Extensions.Localization.IStringLocalizerFactory!, Microsoft.Extensions.Localization.IStringLocalizer!>?
+Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.get -> System.Func<System.Type?, Microsoft.Extensions.Localization.IStringLocalizerFactory!, Microsoft.Extensions.Localization.IStringLocalizer!>!
 Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.MessageKeyProvider.get -> System.Func<Microsoft.Extensions.Validation.ValidationMessageKeyContext!, string?>?
 Microsoft.Extensions.Validation.ValidationOptions.MessageKeyProvider.set -> void

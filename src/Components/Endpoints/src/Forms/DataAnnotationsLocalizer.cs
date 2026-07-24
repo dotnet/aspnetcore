@@ -45,7 +45,7 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
     public string? ResolveAttributeErrorMessage(
        string memberName,
        string displayName,
-       Type? type,
+       Type type,
        ValidationAttribute attribute)
     {
         if (localizerFactory is null || attribute.ErrorMessageResourceType is not null)
@@ -87,19 +87,12 @@ internal class DataAnnotationsLocalizer(ValidationOptions options, IStringLocali
         });
     }
 
-    private IStringLocalizer GetStringLocalizer(Type? type, IStringLocalizerFactory localizerFactory)
-    {
-        if (options.LocalizerProvider is { } provider)
-        {
-            return provider(type, localizerFactory)
-                ?? throw new InvalidOperationException(
-                    $"The {nameof(ValidationOptions)}.{nameof(ValidationOptions.LocalizerProvider)} " +
-                    $"delegate returned null for type '{type?.FullName ?? "<null>"}'. " +
-                    $"The delegate must return a non-null {nameof(IStringLocalizer)} instance.");
-        }
-
-        return localizerFactory.Create(type ?? typeof(object));
-    }
+    private IStringLocalizer GetStringLocalizer(Type type, IStringLocalizerFactory localizerFactory)
+        => options.LocalizerProvider(type, localizerFactory)
+            ?? throw new InvalidOperationException(
+                $"The {nameof(ValidationOptions)}.{nameof(ValidationOptions.LocalizerProvider)} " +
+                $"delegate returned null for type '{type?.FullName ?? "<null>"}'. " +
+                $"The delegate must return a non-null {nameof(IStringLocalizer)} instance.");
 
     private static string FormatMessage(ValidationAttribute attribute, CultureInfo culture, string messageTemplate, string displayName)
         => attribute switch

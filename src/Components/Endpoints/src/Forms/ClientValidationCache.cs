@@ -247,7 +247,7 @@ internal sealed class ClientValidationCache : IDisposable
         return new ClientValidationFieldMetadata(
             propertyName: property.Name,
             validationAttributes,
-            declaringType: property.DeclaringType,
+            declaringType: modelType,
             resourceDisplayAttribute,
             literalDisplayName);
     }
