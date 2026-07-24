@@ -12,25 +12,23 @@ using TestApp.E2E.Tests.ServiceOverrides;
 namespace TestApp.E2E.Tests.Tests;
 
 // Tests that run against the app with the FakeWeather service override.
-[TestClass]
-public class WeatherServiceOverrideTests : BrowserTest
+[UITest]
+public partial class WeatherServiceOverrideTests : BrowserTest
 {
     private ServerInstance _server = null!;
     private IPage _page = null!;
 
-    [TestInitialize]
-    public async Task Init()
+    protected override async Task InitializeCoreAsync()
     {
+        await base.InitializeCoreAsync();
         _server = await TestRoot.Servers.StartServerAsync<App>(options =>
         {
             options.ConfigureServices<TestOverrides>(nameof(TestOverrides.FakeWeather));
         });
+        DiagnosticServers.Add(_server);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         _page = await context.NewPageAsync();
     }
-
-    [TestCleanup]
-    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
     [TestMethod]
     public async Task WeatherPage_ShowsFakeData()

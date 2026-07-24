@@ -43,7 +43,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="MSTest.TestFramework" />
     <Reference Include="Microsoft.Playwright" />
     <Reference Include="Microsoft.Testing.Extensions.Retry" />
     <Reference Include="Yarp.ReverseProxy" />

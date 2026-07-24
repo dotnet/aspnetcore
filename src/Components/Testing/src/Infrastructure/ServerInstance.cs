@@ -176,53 +176,6 @@ public class ServerInstance : IAsyncDisposable
     }
 
     /// <summary>
-    /// Length (in characters) of the buffered stdout captured from the app process so far.
-    /// Useful for slicing logs across retry attempts when combined with <see cref="GetStdoutSince(int)"/>.
-    /// </summary>
-    public int StdoutBufferLength
-    {
-        get { lock (_stdoutBuffer) { return _stdoutBuffer.Length; } }
-    }
-
-    /// <summary>
-    /// Length (in characters) of the buffered stderr captured from the app process so far.
-    /// </summary>
-    public int StderrBufferLength
-    {
-        get { lock (_stderrBuffer) { return _stderrBuffer.Length; } }
-    }
-
-    /// <summary>
-    /// Returns the slice of captured stdout starting at the given character offset.
-    /// Pair with a snapshot of <see cref="StdoutBufferLength"/> at the start of a test
-    /// to attach only the output produced during that test.
-    /// </summary>
-    /// <param name="offset">Character offset into the buffer. Values past the end return an empty string.</param>
-    public string GetStdoutSince(int offset)
-    {
-        lock (_stdoutBuffer)
-        {
-            return offset < _stdoutBuffer.Length
-                ? _stdoutBuffer.ToString(offset, _stdoutBuffer.Length - offset)
-                : string.Empty;
-        }
-    }
-
-    /// <summary>
-    /// Returns the slice of captured stderr starting at the given character offset.
-    /// </summary>
-    /// <param name="offset">Character offset into the buffer. Values past the end return an empty string.</param>
-    public string GetStderrSince(int offset)
-    {
-        lock (_stderrBuffer)
-        {
-            return offset < _stderrBuffer.Length
-                ? _stderrBuffer.ToString(offset, _stderrBuffer.Length - offset)
-                : string.Empty;
-        }
-    }
-
-    /// <summary>
     /// Writes the captured stdout and stderr buffers to two files
     /// (<c>{AppName}-{Id}.stdout.log</c>, <c>{AppName}-{Id}.stderr.log</c>) under
     /// <paramref name="directory"/>. The directory is created if it does not exist.

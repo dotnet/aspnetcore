@@ -58,6 +58,23 @@
     Condition="'$(_E2ETasksAssembly)' != ''" />
 
   <!--
+    Inject the artifacts directory into the test assembly as an
+    [assembly: AssemblyMetadata("Microsoft.AspNetCore.Components.Testing.ArtifactsPath", ...)]
+    value. The E2EArtifacts runtime helper reads this to route test artifacts into a
+    build/output location instead of the machine temp folder.
+  -->
+  <Target Name="_AddE2EArtifactsAssemblyMetadata"
+          BeforeTargets="GetAssemblyAttributes"
+          Condition="'$(E2EArtifactsPath)' != ''">
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.Components.Testing.ArtifactsPath</_Parameter1>
+        <_Parameter2>$(E2EArtifactsPath)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <!--
     Target: PrepareE2EApps
     Runs after Build and Publish. Depending on E2EAppMode, copies source and/or
     publishes each E2EApp project, then generates the manifest.

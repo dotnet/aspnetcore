@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// returned by <see cref="GetContextOptions"/> and is automatically disposed at end of
 /// test via the <see cref="BrowserTest"/> base.
 /// </remarks>
-[TestClass]
 public abstract class ContextTest : BrowserTest
 {
     /// <summary>The browser context for the current test.</summary>
@@ -26,10 +25,10 @@ public abstract class ContextTest : BrowserTest
     /// </summary>
     public virtual BrowserNewContextOptions GetContextOptions() => new();
 
-    /// <summary>MSTest hook: creates the per-test <see cref="Context"/>.</summary>
-    [TestInitialize]
-    public async Task ContextTestSetup()
+    /// <summary>Creates the per-test <see cref="Context"/>.</summary>
+    protected internal override async Task InitializeCoreAsync()
     {
+        await base.InitializeCoreAsync().ConfigureAwait(false);
         Context = await NewContext(GetContextOptions()).ConfigureAwait(false);
     }
 }

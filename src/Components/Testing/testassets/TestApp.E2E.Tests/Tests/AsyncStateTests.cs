@@ -12,22 +12,20 @@ using TestApp.E2E.Tests.ServiceOverrides;
 namespace TestApp.E2E.Tests.Tests;
 
 // Deterministic async state control via TestLockClient.
-[TestClass]
-public class AsyncStateTests : BrowserTest
+[UITest]
+public partial class AsyncStateTests : BrowserTest
 {
     private ServerInstance _server = null!;
 
-    [TestInitialize]
-    public async Task Init()
+    protected override async Task InitializeCoreAsync()
     {
+        await base.InitializeCoreAsync();
         _server = await TestRoot.Servers.StartServerAsync<App>(options =>
         {
             options.ConfigureServices<TestOverrides>(nameof(TestOverrides.LockableWeather));
         });
+        DiagnosticServers.Add(_server);
     }
-
-    [TestCleanup]
-    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
     [TestMethod]
     public async Task WeatherPage_ShowsLoadingThenData_WhenLockReleased()

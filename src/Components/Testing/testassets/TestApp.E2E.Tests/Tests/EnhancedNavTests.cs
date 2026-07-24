@@ -11,22 +11,20 @@ using TestApp.E2E.Tests.Fixtures;
 namespace TestApp.E2E.Tests.Tests;
 
 // Detecting enhanced navigation (DOM patching) via the Blazor 'enhancedload' event.
-[TestClass]
-public class EnhancedNavTests : BrowserTest
+[UITest]
+public partial class EnhancedNavTests : BrowserTest
 {
     private ServerInstance _server = null!;
     private IPage _page = null!;
 
-    [TestInitialize]
-    public async Task Init()
+    protected override async Task InitializeCoreAsync()
     {
+        await base.InitializeCoreAsync();
         _server = await TestRoot.Servers.StartServerAsync<App>();
+        DiagnosticServers.Add(_server);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         _page = await context.NewPageAsync();
     }
-
-    [TestCleanup]
-    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
     [TestMethod]
     public async Task NavLink_TriggersEnhancedNavigation_ToCounterPage()

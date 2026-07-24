@@ -12,19 +12,17 @@ using TestApp.E2E.Tests.Fixtures;
 namespace TestApp.E2E.Tests.Tests;
 
 // Verifying prerendered content by holding blazor.web.js via ResourceLock.
-[TestClass]
-public class PrerenderingTests : BrowserTest
+[UITest]
+public partial class PrerenderingTests : BrowserTest
 {
     private ServerInstance _server = null!;
 
-    [TestInitialize]
-    public async Task Init()
+    protected override async Task InitializeCoreAsync()
     {
+        await base.InitializeCoreAsync();
         _server = await TestRoot.Servers.StartServerAsync<App>();
+        DiagnosticServers.Add(_server);
     }
-
-    [TestCleanup]
-    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
     [TestMethod]
     public async Task HomePage_ShowsPrerenderContent_BeforeBlazorStarts()
