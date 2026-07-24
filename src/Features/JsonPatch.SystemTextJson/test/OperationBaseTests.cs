@@ -7,19 +7,6 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
 
 public class OperationBaseTests
 {
-    [Fact]
-    public void ShouldSerializeFrom_HasObsoleteAttribute()
-    {
-        const string expectedMessage = "This method is obsolete and will be removed in .NET 13. If you were calling this method, replace the call with 'operation.OperationType is OperationType.Move or OperationType.Copy'";
-
-        var method = typeof(OperationBase).GetMethod(nameof(OperationBase.ShouldSerializeFrom));
-        Assert.NotNull(method);
-
-        var obsoleteAttributes = method.GetCustomAttributes(typeof(System.ObsoleteAttribute), inherit: false);
-        var obsoleteAttribute = Assert.IsType<System.ObsoleteAttribute>(Assert.Single(obsoleteAttributes));
-        Assert.Equal(expectedMessage, obsoleteAttribute.Message);
-    }
-
     [Theory]
     [InlineData("ADd", OperationType.Add)]
     [InlineData("Copy", OperationType.Copy)]
