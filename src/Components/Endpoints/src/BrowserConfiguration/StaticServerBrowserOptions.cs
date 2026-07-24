@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// Serializable subset of <c>SsrStartOptions</c>.
+/// Serializable subset of <c>SsrStartOptions</c> for the static server render mode.
 /// </summary>
-public sealed class SsrBrowserOptions
+public sealed class StaticServerBrowserOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether the DOM is preserved during enhanced navigation.

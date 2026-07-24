@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// Non-serializable options (<c>loadBootResource</c>, <c>configureRuntime</c>,
 /// <c>initializers</c>) must use <c>Blazor.start()</c> or JS initializers.
 /// </summary>
-public sealed class WebAssemblyBrowserOptions
+public sealed class InteractiveWebAssemblyBrowserOptions
 {
     /// <summary>
     /// Gets or sets the hosting environment name (e.g., "Development", "Production").
