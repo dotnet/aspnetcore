@@ -158,41 +158,26 @@ public class KestrelServerTests
     [InlineData(null)] // Uses the default
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
+    [InlineData(HttpProtocols.Http1AndHttp2)]
     public void NoTlsLogging_None(HttpProtocols? protocols)
     {
-        var (warnings, infos) = GetNoTlsLogging(protocols);
-        Assert.Empty(warnings);
-        Assert.Empty(infos);
+        var (http2DisabledLogs, http3DisabledLogs) = GetNoTlsLogging(protocols);
+        Assert.Empty(http2DisabledLogs);
+        Assert.Empty(http3DisabledLogs);
     }
 
     [Theory]
     [InlineData(HttpProtocols.Http1 | HttpProtocols.Http3)]
-    public void NoTlsLogging_Info(HttpProtocols? protocols)
-    {
-        var (warnings, infos) = GetNoTlsLogging(protocols);
-        Assert.Empty(warnings);
-        Assert.Equal(2, infos.Count()); // ipv4 and ipv6
-    }
-
-    [Theory]
-    [InlineData(HttpProtocols.Http1AndHttp2)]
-    public void NoTlsLogging_Warn(HttpProtocols? protocols)
-    {
-        var (warnings, infos) = GetNoTlsLogging(protocols);
-        Assert.Equal(2, warnings.Count()); // ipv4 and ipv6
-        Assert.Empty(infos);
-    }
-
-    [Theory]
     [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
-    public void NoTlsLogging_WarnAndInfo(HttpProtocols? protocols)
+    public void NoTlsLogging_Http3Warning(HttpProtocols? protocols)
     {
-        var (warnings, infos) = GetNoTlsLogging(protocols);
-        Assert.Equal(2, warnings.Count()); // ipv4 and ipv6
-        Assert.Equal(2, infos.Count()); // ipv4 and ipv6
+        var (http2DisabledLogs, http3DisabledLogs) = GetNoTlsLogging(protocols);
+        Assert.Empty(http2DisabledLogs);
+        Assert.Equal(2, http3DisabledLogs.Count()); // ipv4 and ipv6
+        Assert.All(http3DisabledLogs, message => Assert.Contains("will use another configured HTTP protocol", message.Message));
     }
 
-    private static (IEnumerable<TestApplicationErrorLogger.LogMessage> warnings, IEnumerable<TestApplicationErrorLogger.LogMessage> infos) GetNoTlsLogging(HttpProtocols? protocols)
+    private static (IEnumerable<TestApplicationErrorLogger.LogMessage> http2DisabledLogs, IEnumerable<TestApplicationErrorLogger.LogMessage> http3DisabledLogs) GetNoTlsLogging(HttpProtocols? protocols)
     {
         var testLogger = new TestApplicationErrorLogger();
         var kestrelOptions = new KestrelServerOptions();

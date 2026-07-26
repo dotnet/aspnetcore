@@ -8,6 +8,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal static class HttpConnectionBuilderExtensions
 {
+    public static IConnectionBuilder UseHttp2PriorKnowledge(this IConnectionBuilder builder, ServiceContext serviceContext, HttpProtocols protocols)
+    {
+        return builder.Use(next =>
+        {
+            var middleware = new Http2PrefaceConnectionMiddleware(next, serviceContext, protocols);
+            return middleware.OnConnectionAsync;
+        });
+    }
+
     public static IConnectionBuilder UseHttpServer<TContext>(this IConnectionBuilder builder, ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols, bool addAltSvcHeader) where TContext : notnull
     {
         var middleware = new HttpConnectionMiddleware<TContext>(serviceContext, application, protocols, addAltSvcHeader);

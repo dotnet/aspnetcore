@@ -86,16 +86,17 @@ public class RequestHeadersTimeoutTests : LoggedTest
     }
 
     [Theory]
-    [InlineData("P")]
-    [InlineData("POST / HTTP/1.1\r")]
-    public async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(string requestLine)
+    [InlineData(HttpProtocols.Http1, "P")]
+    [InlineData(HttpProtocols.Http1, "POST / HTTP/1.1\r")]
+    [InlineData(HttpProtocols.Http1AndHttp2, "POST / HTTP/1.1\r")]
+    public async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(HttpProtocols protocols, string requestLine)
     {
         var testMeterFactory = new TestMeterFactory();
         using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
         var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
-        await using (var server = CreateServer(testContext))
+        await using (var server = CreateServer(testContext, protocols))
         {
             using (var connection = server.CreateConnection())
             {
@@ -112,6 +113,29 @@ public class RequestHeadersTimeoutTests : LoggedTest
         }
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
+    }
+
+    [Theory]
+    [InlineData(HttpProtocols.Http1)]
+    [InlineData(HttpProtocols.Http1AndHttp2)]
+    public async Task LeadingBlankLineDoesNotStartRequestHeadersTimeout(HttpProtocols protocols)
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = CreateServer(testContext, protocols))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.TransportConnection.WaitForReadTask;
+                await connection.Send("\r\n");
+
+                testContext.FakeTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.ConnectionManager.OnHeartbeat();
+
+                await connection.Send("GET / HTTP/1.1\r\nHost:\r\n\r\n");
+                await ReceiveResponse(connection, testContext);
+            }
+        }
     }
 
     [Fact]
@@ -148,7 +172,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.RequestHeadersTimeout, m.Tags));
     }
 
-    private TestServer CreateServer(TestServiceContext context)
+    private TestServer CreateServer(TestServiceContext context, HttpProtocols protocols = HttpProtocols.Http1)
     {
         // Ensure request headers timeout is started as soon as the tests send requests.
         context.Scheduler = PipeScheduler.Inline;
@@ -159,7 +183,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
         {
             await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
             await httpContext.Response.WriteAsync("hello, world");
-        }, context);
+        }, context, listenOptions => listenOptions.Protocols = protocols);
     }
 
     private async Task ReceiveResponse(InMemoryConnection connection, TestServiceContext testContext)

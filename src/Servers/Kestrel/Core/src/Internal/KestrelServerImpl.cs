@@ -147,22 +147,14 @@ internal sealed class KestrelServerImpl : IServer
 
                 if (!hasTls)
                 {
-                    // Http/1 without TLS, no-op HTTP/2 and 3.
+                    // Http/1 without TLS, no-op HTTP/3.
                     if (hasHttp1)
                     {
-                        if (options.ProtocolsSetExplicitly)
+                        if (options.ProtocolsSetExplicitly && hasHttp3)
                         {
-                            if (hasHttp2)
-                            {
-                                Trace.Http2DisabledWithHttp1AndNoTls(options.EndPoint);
-                            }
-                            if (hasHttp3)
-                            {
-                                Trace.Http3DisabledWithHttp1AndNoTls(options.EndPoint);
-                            }
+                            Trace.Http3DisabledWithHttp1AndNoTls(options.EndPoint);
                         }
 
-                        hasHttp2 = false;
                         hasHttp3 = false;
                     }
                     // Http/3 requires TLS. Note we only let it fall back to HTTP/1, not HTTP/2
@@ -192,6 +184,11 @@ internal sealed class KestrelServerImpl : IServer
                     if (_transportFactories.Count == 0)
                     {
                         throw new InvalidOperationException($"Cannot start HTTP/1.x or HTTP/2 server if no {nameof(IConnectionListenerFactory)} is registered.");
+                    }
+
+                    if (!hasTls && hasHttp1 && hasHttp2 && !Options.DisableHttp2PriorKnowledge)
+                    {
+                        options.UseHttp2PriorKnowledge(ServiceContext, options.Protocols);
                     }
 
                     options.UseHttpServer(ServiceContext, application, options.Protocols, addAltSvcHeader);
