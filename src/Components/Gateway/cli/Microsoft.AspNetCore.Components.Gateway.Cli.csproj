@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageId>Microsoft.AspNetCore.Components.Gateway.Cli</PackageId>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <Description>Command line tool (blazor-gateway) for hosting Blazor applications.</Description>
+    <PackageTags>blazor;gateway;dotnettool</PackageTags>
+    <!-- This project only repackages the gateway binaries as a dotnet tool; it has no code of its own. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <Nullable>enable</Nullable>
+    <NuspecFile>Microsoft.AspNetCore.Components.Gateway.Cli.nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_GatewayProject>$(MSBuildThisFileDirectory)..\src\Microsoft.AspNetCore.Components.Gateway.csproj</_GatewayProject>
+    <!-- Arcade lays projects out under artifacts/bin/<ProjectName>/<Configuration>/<TargetFramework>/.
+         The gateway publishes into the "publish" subfolder of that output directory. -->
+    <_GatewayOutputDir>$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Gateway\$(Configuration)\$(DefaultNetCoreTargetFramework)\</_GatewayOutputDir>
+    <_GatewayPublishDir>$(_GatewayOutputDir)publish\</_GatewayPublishDir>
+    <_DotnetToolSettings>$(MSBuildThisFileDirectory)DotnetToolSettings.xml</_DotnetToolSettings>
+  </PropertyGroup>
+
+  <!-- Reference the gateway project purely to establish restore and build ordering. Its output
+       assembly is not referenced; the binaries are consumed from the published output below. -->
+  <ItemGroup>
+    <ProjectReference Include="$(_GatewayProject)"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      Private="false"
+                      PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Build and publish the gateway before packing so its binaries are available to the nuspec. -->
+  <Target Name="_PublishGatewayForTool" BeforeTargets="GenerateNuspec">
+    <MSBuild Projects="$(_GatewayProject)"
+             Targets="Publish"
+             Properties="Configuration=$(Configuration);TargetFramework=$(DefaultNetCoreTargetFramework)" />
+
+    <Error Condition="!Exists('$(_GatewayPublishDir)blazor-gateway.dll')"
+           Text="Expected the gateway to publish 'blazor-gateway.dll' to '$(_GatewayPublishDir)' but it was not found." />
+    <Error Condition="!Exists('$(_GatewayOutputDir)blazor-gateway.runtimeconfig.json')"
+           Text="Expected the gateway build to produce 'blazor-gateway.runtimeconfig.json' in '$(_GatewayOutputDir)' but it was not found." />
+  </Target>
+
+  <ItemGroup>
+    <NuspecProperty Include="publishDir=$(_GatewayPublishDir)" />
+    <NuspecProperty Include="binDir=$(_GatewayOutputDir)" />
+    <NuspecProperty Include="toolTfm=$(DefaultNetCoreTargetFramework)" />
+    <NuspecProperty Include="dotnetToolSettings=$(_DotnetToolSettings)" />
+    <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
+  </ItemGroup>
+
+</Project>
