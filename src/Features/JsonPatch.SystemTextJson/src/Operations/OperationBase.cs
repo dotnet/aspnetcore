@@ -60,8 +60,7 @@ public class OperationBase
         this.from = from;
     }
 
-    // https://github.com/dotnet/aspnetcore/issues/67966
-    // This should be obsoleted.
+    [Obsolete("This method is obsolete and will be removed in .NET 13. If you were calling this method, replace the call with 'operation.OperationType is OperationType.Move or OperationType.Copy'")]
     public bool ShouldSerializeFrom()
     {
         return (OperationType == OperationType.Move
