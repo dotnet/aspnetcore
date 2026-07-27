@@ -150,10 +150,9 @@ public class IdentityBuilder
         Services.Configure<IdentityOptions>(options =>
         {
             // Overwrite ProviderType if it exists for backcompat, but keep a reference to the old one in case it's needed
-            // by a SignInManager with a different UserType. We'll continue to just overwrite ProviderInstance until someone asks for a fix though.
+            // by a SignInManager with a different UserType. Any pre-configured ProviderInstance is preserved.
             if (options.Tokens.ProviderMap.TryGetValue(providerName, out var descriptor))
             {
-                descriptor.ProviderInstance = null;
                 descriptor.AddProviderType(provider);
             }
             else
