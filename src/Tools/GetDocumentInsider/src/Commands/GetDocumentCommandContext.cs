@@ -38,5 +38,13 @@ public class GetDocumentCommandContext
     /// </summary>
     public string FileName { get; set; }
 
+    /// <summary>
+    /// The environment name to use when executing the application.
+    /// Passed to the host as the <c>environment</c> setting, which is
+    /// equivalent to the ASPNETCORE_ENVIRONMENT / DOTNET_ENVIRONMENT
+    /// environment variable.
+    /// </summary>
+    public string Environment { get; set; }
+
     public IReporter Reporter { get; set; }
 }
