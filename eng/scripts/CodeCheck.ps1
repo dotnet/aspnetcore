@@ -209,6 +209,18 @@ try {
             }
         }
 
+        # Check that the Dependabot discovery project stays in sync with eng/Dependencies.props
+        $allChangedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only
+        $dependencyDiscoveryProject = "eng/tools/DependabotDiscovery/DependabotDiscovery.csproj"
+
+        if (($allChangedFilesFromTarget -contains "eng/Dependencies.props") -and
+            ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
+            LogError ("eng/Dependencies.props changed but $dependencyDiscoveryProject was not updated. " +
+                "If you added, removed, or renamed a package that isn't managed by Maestro or " +
+                "the shared `$(IdentityModelVersion) property, update $dependencyDiscoveryProject to match. " +
+                "See eng/tools/DependabotDiscovery/README.md for details.")
+        }
+
         # Check for relevant changes to SignalR typescript files
         $tsChanges = $changedFilesFromTarget | Where-Object { $_ -like "src/SignalR/clients/ts/*" -and $_ -ne "src/SignalR/clients/ts/CHANGELOG.md" }
         $changelogChanged = $changedFilesFromTarget -contains "src/SignalR/clients/ts/CHANGELOG.md"

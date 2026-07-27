@@ -1,4 +1,21 @@
 #nullable enable
+Microsoft.AspNetCore.Components.CacheBehavior
+Microsoft.AspNetCore.Components.CacheBehavior.Rerender = 0 -> Microsoft.AspNetCore.Components.CacheBehavior
+Microsoft.AspNetCore.Components.CacheBehavior.Throw = 1 -> Microsoft.AspNetCore.Components.CacheBehavior
+Microsoft.AspNetCore.Components.CacheBehaviorAttribute
+Microsoft.AspNetCore.Components.CacheBehaviorAttribute.Behavior.get -> Microsoft.AspNetCore.Components.CacheBehavior
+Microsoft.AspNetCore.Components.CacheBehaviorAttribute.CacheBehaviorAttribute(Microsoft.AspNetCore.Components.CacheBehavior behavior) -> void
+Microsoft.AspNetCore.Components.CacheConditionAttribute
+Microsoft.AspNetCore.Components.CacheConditionAttribute.CacheConditionAttribute(Microsoft.AspNetCore.Components.CacheVaryBy varyBy) -> void
+Microsoft.AspNetCore.Components.CacheConditionAttribute.VaryBy.get -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Cookie = 8 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Culture = 32 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Header = 4 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.None = 0 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Query = 1 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.Route = 2 -> Microsoft.AspNetCore.Components.CacheVaryBy
+Microsoft.AspNetCore.Components.CacheVaryBy.User = 16 -> Microsoft.AspNetCore.Components.CacheVaryBy
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.Dispose() -> void
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurrentValue() -> object?
 Microsoft.AspNetCore.Components.CascadingParameterSubscription

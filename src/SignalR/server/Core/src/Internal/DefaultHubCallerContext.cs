@@ -12,10 +12,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 internal sealed class DefaultHubCallerContext : HubCallerContext
 {
     private readonly HubConnectionContext _connection;
+    private readonly ClaimsPrincipal _user;
 
-    public DefaultHubCallerContext(HubConnectionContext connection)
+    public DefaultHubCallerContext(HubConnectionContext connection, ClaimsPrincipal user)
     {
         _connection = connection;
+        _user = user;
     }
 
     /// <inheritdoc />
@@ -25,7 +27,7 @@ internal sealed class DefaultHubCallerContext : HubCallerContext
     public override string? UserIdentifier => _connection.UserIdentifier;
 
     /// <inheritdoc />
-    public override ClaimsPrincipal? User => _connection.User;
+    public override ClaimsPrincipal? User => _user;
 
     /// <inheritdoc />
     public override IDictionary<object, object?> Items => _connection.Items;
