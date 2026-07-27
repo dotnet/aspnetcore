@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Validation;
 /// </summary>
 public sealed class ValidateContext
 {
-    private Dictionary<string, List<ValidationError>>? _mutableValidationErrors;
+    private Dictionary<string, List<ValidationError>>? _validationErrors;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -46,7 +46,7 @@ public sealed class ValidateContext
     /// There are no guarantees whether or not this dictionary is lazy. Usages should treat null and empty dictionary the same.
     /// </remarks>
     public IReadOnlyDictionary<string, IReadOnlyList<ValidationError>>? ValidationErrors
-        => _mutableValidationErrors?.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<ValidationError>)kvp.Value.AsReadOnly()).AsReadOnly();
+        => _validationErrors?.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<ValidationError>)kvp.Value.AsReadOnly()).AsReadOnly();
 
     /// <summary>
     /// Gets or sets the current depth in the validation hierarchy.
@@ -62,16 +62,15 @@ public sealed class ValidateContext
     /// <param name="validationError">The validation error to add.</param>
     public void AddValidationError(ValidationError validationError)
     {
-        _mutableValidationErrors ??= [];
+        _validationErrors ??= new Dictionary<string, List<ValidationError>>();
 
-        if (!_mutableValidationErrors.TryGetValue(validationError.Path, out var existingList))
+        if (!_validationErrors.TryGetValue(validationError.Path, out var existingErrors))
         {
-            var newList = new List<ValidationError> { validationError };
-            _mutableValidationErrors.Add(validationError.Path, newList);
+            _validationErrors.Add(validationError.Path, new List<ValidationError> { validationError });
         }
         else
         {
-            existingList.Add(validationError);
+            existingErrors.Add(validationError);
         }
     }
 }
