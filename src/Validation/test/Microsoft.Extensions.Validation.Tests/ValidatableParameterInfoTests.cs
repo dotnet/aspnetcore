@@ -113,46 +113,21 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [InlineData(false)]
     public async Task Validate_WithDictionaryOfValidatableType_ValidatesEachValue(bool useAsync)
     {
-        // Arrange
-        var personTypeInfo = new TestValidatableTypeInfo(
-            typeof(Person),
-            [
-                new TestValidatablePropertyInfo(
-                    typeof(Person),
-                    typeof(string),
-                    "Name",
-                    "Name",
-                    [new RequiredAttribute()])
-            ]);
-
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(Dictionary<string, Person>),
-            name: "people",
-            displayName: "People",
-            validationAttributes: []);
-
-        var typeMapping = new Dictionary<Type, ValidatableTypeInfo>
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.DictionaryPeopleParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+        var people = new Dictionary<string, ParameterPerson>
         {
-            { typeof(Person), personTypeInfo }
+            ["valid"] = new() { Name = "Valid" },
+            ["invalid"] = new() // Name is null, should fail
         };
 
-        var context = CreateValidatableContext(typeMapping);
-        var people = new Dictionary<string, Person>
-        {
-            ["first"] = new() { Name = "Valid" },
-            ["second"] = new() // Name is null, should fail
-        };
-
-        // Act
         await ValidateAsync(paramInfo, people, context, useAsync, default);
 
-        // Assert
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
-        Assert.Equal("people[second].Name", error.Key);
-        var errorValue = Assert.Single(error.Value);
-        Assert.Equal("The Name field is required.", errorValue);
+        var error = Assert.Single(context.ValidationErrors!);
+        Assert.Equal("people[invalid].Name", error.Key);
+        Assert.Equal("The Name field is required.", error.Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Theory]
@@ -217,6 +192,7 @@ public static class ParameterActions
     public static void RangeParameter([Display(Name = "Test Parameter")][Range(10, 100)] int testParam) { }
     public static void PersonParameter(ParameterPerson person) { }
     public static void PeopleParameter([Required] IEnumerable<ParameterPerson> people) { }
+    public static void DictionaryPeopleParameter(Dictionary<string, ParameterPerson> people) { }
     public static void MultipleErrorsParameter([Display(Name = "Test Parameter")][Range(10, 100, ErrorMessage = "Range error")][AlwaysFailsValidation(ErrorMessage = "Custom error")] int testParam) { }
     public static void ThrowingParameter([ThrowingValidation] string testParam) { }
 }

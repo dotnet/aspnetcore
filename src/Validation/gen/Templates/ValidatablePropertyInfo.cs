@@ -1,22 +1,4 @@
-<<<<<<< HEAD:src/Validation/src/ValidatablePropertyInfo.cs
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-
-namespace Microsoft.Extensions.Validation;
-
-/// <summary>
-/// Contains validation information for a member of a type.
-/// </summary>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValidationErrorReporter
-=======
 file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft.Extensions.Validation.IValidatablePropertyInfo
->>>>>>> origin/main:src/Validation/gen/Templates/ValidatablePropertyInfo.cs
 {
     private global::System.ComponentModel.DataAnnotations.RequiredAttribute? _requiredAttribute;
 
@@ -125,42 +107,25 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
         try
         {
             // Handle enumerable values
-<<<<<<< HEAD:src/Validation/src/ValidatablePropertyInfo.cs
-            if (PropertyType.IsEnumerable() && propertyValue is IEnumerable enumerable)
-=======
-            if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
->>>>>>> origin/main:src/Validation/gen/Templates/ValidatablePropertyInfo.cs
+            if (IsEnumerable(PropertyType) && propertyValue is global::System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
 
-<<<<<<< HEAD:src/Validation/src/ValidatablePropertyInfo.cs
-                var tracker = context.TrackAsyncValidations();
-=======
                 var tracker = new AsyncValidationTracker(context);
-                foreach (var item in enumerable)
-                {
-                    if (item != null)
-                    {
-                        var itemType = item.GetType();
-                        if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
-                        {
-                            var currentContext = tracker.NextContext();
->>>>>>> origin/main:src/Validation/gen/Templates/ValidatablePropertyInfo.cs
 
                 var enumerator = enumerable.GetEnumerator();
                 try
                 {
                     while (enumerator.MoveNext())
                     {
-                        var (key, item) = enumerator is IDictionaryEnumerator de ? (de.Key, de.Value) : (index, enumerator.Current);
+                        var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
 
                         if (item is not null)
                         {
                             var itemType = item.GetType();
                             if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                             {
-<<<<<<< HEAD:src/Validation/src/ValidatablePropertyInfo.cs
                                 var currentContext = tracker.NextContext();
 
                                 currentContext.CurrentValidationPath = $"{currentPrefix}[{key}]";
@@ -168,17 +133,10 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
                                 {
                                     tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                                 }
-                                catch (Exception ex)
+                                catch (global::System.Exception ex)
                                 {
-                                    tracker.Track(Task.FromException(ex));
+                                    tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
                                 }
-=======
-                                tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
-                            }
-                            catch (global::System.Exception ex)
-                            {
-                                tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
->>>>>>> origin/main:src/Validation/gen/Templates/ValidatablePropertyInfo.cs
                             }
                         }
 
@@ -187,7 +145,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
                 }
                 finally
                 {
-                    (enumerator as IDisposable)?.Dispose();
+                    (enumerator as global::System.IDisposable)?.Dispose();
                 }
 
                 await tracker.CompleteAsync();
@@ -260,11 +218,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
         try
         {
             // Handle enumerable values
-<<<<<<< HEAD:src/Validation/src/ValidatablePropertyInfo.cs
-            if (PropertyType.IsEnumerable() && propertyValue is IEnumerable enumerable)
-=======
-            if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
->>>>>>> origin/main:src/Validation/gen/Templates/ValidatablePropertyInfo.cs
+            if (IsEnumerable(PropertyType) && propertyValue is global::System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
@@ -274,7 +228,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
                 {
                     while (enumerator.MoveNext())
                     {
-                        var (key, item) = enumerator is IDictionaryEnumerator de ? (de.Key, de.Value) : (index, enumerator.Current);
+                        var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
 
                         if (item is not null)
                         {
@@ -291,7 +245,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
                 }
                 finally
                 {
-                    (enumerator as IDisposable)?.Dispose();
+                    (enumerator as global::System.IDisposable)?.Dispose();
                 }
 
                 context.CurrentValidationPath = currentPrefix;

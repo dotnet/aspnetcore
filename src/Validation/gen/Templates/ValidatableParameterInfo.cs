@@ -78,14 +78,14 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
             {
                 while (enumerator.MoveNext())
                 {
-                    var (key, item) = enumerator is IDictionaryEnumerator de ? (de.Key, de.Value) : (index, enumerator.Current);
+                    var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
+
                     if (item != null)
                     {
                         if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                         {
                             var currentContext = tracker.NextContext();
 
-<<<<<<< HEAD:src/Validation/src/ValidatableParameterInfo.cs
                             currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                                 ? $"{Name}[{key}]"
                                 : $"{currentPrefix}.{Name}[{key}]";
@@ -93,22 +93,10 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
                             {
                                 tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                             }
-                            catch (Exception ex)
+                            catch (global::System.Exception ex)
                             {
-                                tracker.Track(Task.FromException(ex));
+                                tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
                             }
-=======
-                        currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                            ? $"{Name}[{index}]"
-                            : $"{currentPrefix}.{Name}[{index}]";
-                        try
-                        {
-                            tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
-                        }
-                        catch (global::System.Exception ex)
-                        {
-                            tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
->>>>>>> origin/main:src/Validation/gen/Templates/ValidatableParameterInfo.cs
                         }
                     }
                     index++;
@@ -116,7 +104,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
             }
             finally
             {
-                (enumerator as IDisposable)?.Dispose();
+                (enumerator as global::System.IDisposable)?.Dispose();
             }
 
             try
@@ -170,7 +158,8 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
             {
                 while (enumerator.MoveNext())
                 {
-                    var (key, item) = enumerator is IDictionaryEnumerator de ? (de.Key, de.Value) : (index, enumerator.Current);
+                    var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
+
                     if (item != null)
                     {
                         if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
@@ -193,7 +182,7 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
             }
             finally
             {
-                (enumerator as IDisposable)?.Dispose();
+                (enumerator as global::System.IDisposable)?.Dispose();
             }
         }
         // If not enumerable, validate the single value
