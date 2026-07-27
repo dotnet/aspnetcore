@@ -431,7 +431,7 @@ export class HttpConnection implements IConnection {
             throw new Error("Invalid authentication refresh response received: expected JSON content.");
         }
 
-        const refreshResponse = JSON.parse(response.content) as { accessToken?: unknown, tokenLifetimeSeconds?: number };
+        const refreshResponse = JSON.parse(response.content) as { accessToken?: unknown, tokenLifetimeSeconds?: unknown };
         if (typeof refreshResponse.accessToken === "string" && refreshResponse.accessToken) {
             // Redirecting servers can return a transport token that should replace the current cached token.
             this._setTransportAccessToken(refreshResponse.accessToken);

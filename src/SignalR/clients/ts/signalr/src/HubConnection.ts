@@ -1114,7 +1114,7 @@ export class HubConnection {
         try {
             await callback(context);
         } catch (e) {
-            this._logger.log(LogLevel.Error, `An onAuthenticationRefreshed callback threw error '${e}'.`);
+            this._logger.log(LogLevel.Error, `An onAuthenticationRefreshed callback threw error '${getErrorString(e)}'.`);
         }
     }
 
@@ -1132,7 +1132,7 @@ export class HubConnection {
         try {
             await callback(context);
         } catch (e) {
-            this._logger.log(LogLevel.Error, `An onAuthenticationRefreshFailed callback threw error '${e}'.`);
+            this._logger.log(LogLevel.Error, `An onAuthenticationRefreshFailed callback threw error '${getErrorString(e)}'.`);
         }
     }
 

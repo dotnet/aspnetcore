@@ -13,7 +13,7 @@ public class HubWithAuthorization : Hub
 {
     public string Echo(string message) => message;
 
-    public string GetUserNameIdentifier() => Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+    public string GetUserNameIdentifier() => Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-    public string GetUserClaim(string type) => Context.User.FindFirst(type)?.Value ?? string.Empty;
+    public string GetUserClaim(string type) => Context.User?.FindFirst(type)?.Value ?? string.Empty;
 }
