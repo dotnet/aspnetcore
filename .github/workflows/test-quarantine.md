@@ -1533,13 +1533,20 @@ Before you call `create_pull_request` for any quarantine or re-quarantine, re-re
 
 If any added attribute fails these checks, **do not create the PR** — correct the reference first, or skip the candidate entirely. It is far better to skip a quarantine than to commit a wrong issue link.
 
+#### Compute failure frequency and most-recent-build link (do this for every Case A and Case B write-up)
+
+Before writing the issue body (Case A) or investigation comment (Case B), compute two things for this candidate — both are required in the write-up, and both come entirely from the already-injected Part 1 data (no extra AzDO calls needed):
+
+1. **Failure frequency.** The test's total combined failure count across all sources, as already computed in Step 1.2. Phrase it as: `Failed {N} times over the past 30 days.`
+2. **Most recent failing build.** Across the test's combined `builds` list (`source_a` plus `source_b`, deduplicated), find the build ID whose `builds[<id>].startedUtc` (from the injected metadata map) is latest.
+
 #### Case B — Re-quarantine of a previously unquarantined test
 
 For re-quarantines, **reuse the original quarantine issue** instead of creating a new one. You identified this issue in Step 1.2.
 
 **Each re-quarantine must be its own dedicated PR** (see the grouping rules above): it must contain **only** Case B re-quarantine attribute additions for this one issue — never a Case A new quarantine, an unquarantine, or a re-quarantine for a different issue. This is because the `re-quarantine` label applied in step 2 below permanently bars every test touched by the PR from automated unquarantining.
 
-1. **Post an investigation comment** on the **existing** issue using `add_comment` with `item_number` set to the existing numeric issue number (e.g., `item_number: 66035`). Explain that the test was unquarantined but is failing again, include the recent failure details, and note which unquarantine PR removed the attribute.
+1. **Post an investigation comment** on the **existing** issue using `add_comment` with `item_number` set to the existing numeric issue number (e.g., `item_number: 66035`). Explain that the test was unquarantined but is failing again, include the recent failure details, and note which unquarantine PR removed the attribute. Also include the **failure frequency** sentence and a link to the **most recent failing build** (`https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`), both computed above — do not omit these even though this is a re-quarantine of an existing issue.
 
 2. **Create a PR** that:
    - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class), using the **existing issue's numeric URL** directly (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]`) — not a temporary ID.
@@ -1553,10 +1560,11 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
    - **Title**: `Quarantine {FULLY_QUALIFIED_TEST_NAME}`
    - **Body**: Use the `50_test_failure.md` template format:
      - `## Failing Test(s)` — fully qualified test name(s)
+     - `## Failure Frequency` — the failure frequency sentence computed above, e.g. `Failed 2 times over the past 30 days.`
      - `## Error Message` — from the most recent failure's console log, in a ` ```text ``` ` block
      - `## Stacktrace` — in a `<details>` block with ` ```text ``` `
      - `## Logs` — console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Prefer to include the full, verbatim log when it fits within GitHub issue size limits. If the log is very large or would exceed those limits, include a representative head and tail of the log in the issue and provide a direct link to the full Helix log file (and/or attach it as an artifact) so the complete output is still accessible.
-     - `## Build` — link to the most recent failing build: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
+     - `## Build` — link to the most recent failing build (computed above): `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
 
 2. **Post an investigation comment** on the issue using `add_comment` with `item_number` set to the same `temporary_id` (e.g., `item_number: "aw_http2ign"`). **Important:** pass the temporary ID as a plain string — do not wrap it in extra quotes or other formatting. Examine all available failure logs for the test. Be concise but thorough:
    - If you can identify a root cause, explain it and suggest a fix if one is obvious.

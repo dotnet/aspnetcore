@@ -66,95 +66,21 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
             validatableTypeInfo = null;
-            if (type == typeof(global::SubType))
+            if (type == typeof(global::CreateOrderRequest))
             {
                 validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
-                    type: typeof(global::SubType),
+                    type: typeof(global::CreateOrderRequest),
                     members: [
                         new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::SubType),
+                            containingType: typeof(global::CreateOrderRequest),
                             propertyType: typeof(string),
-                            name: "RequiredProperty",
+                            name: "ProductName",
                             displayNameInfo: null
                         ),
                         new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::SubType),
-                            propertyType: typeof(string),
-                            name: "StringWithLength",
-                            displayNameInfo: null
-                        ),
-                    ],
-                    displayNameInfo: null
-                );
-                return true;
-            }
-            if (type == typeof(global::SubTypeWithInheritance))
-            {
-                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
-                    type: typeof(global::SubTypeWithInheritance),
-                    members: [
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::SubTypeWithInheritance),
-                            propertyType: typeof(string),
-                            name: "EmailString",
-                            displayNameInfo: null
-                        ),
-                    ],
-                    displayNameInfo: null
-                );
-                return true;
-            }
-            if (type == typeof(global::ComplexType))
-            {
-                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
-                    type: typeof(global::ComplexType),
-                    members: [
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
+                            containingType: typeof(global::CreateOrderRequest),
                             propertyType: typeof(int),
-                            name: "IntegerWithRange",
-                            displayNameInfo: null
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "IntegerWithRangeAndDisplayName",
-                            displayNameInfo: new global::Microsoft.Extensions.Validation.Generated.LiteralDisplayName("Valid identifier")
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::SubType),
-                            name: "PropertyWithMemberAttributes",
-                            displayNameInfo: null
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::SubType),
-                            name: "PropertyWithoutMemberAttributes",
-                            displayNameInfo: null
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::SubTypeWithInheritance),
-                            name: "PropertyWithInheritance",
-                            displayNameInfo: null
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::System.Collections.Generic.List<global::SubType>),
-                            name: "ListOfSubTypes",
-                            displayNameInfo: null
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "IntegerWithCustomValidationAttribute",
-                            displayNameInfo: null
-                        ),
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "PropertyWithMultipleAttributes",
+                            name: "Quantity",
                             displayNameInfo: null
                         ),
                     ],

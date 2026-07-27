@@ -81,33 +81,31 @@ public class RuntimeValidatableParameterInfoResolverTests : ValidationTestBase
     [Fact]
     public async Task TryGetValidatableParameterInfo_WithDisplayAttributeWithResourceType_BypassesLocalizer()
     {
-        var localizer = new RecordingValidationLocalizer { DisplayNameResult = "Should not be used" };
-        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices(o => o.Localizer = localizer);
+        // A resource-type display name is the canonical localized source, so the registered localizer
+        // is not consulted even though it has a matching translation.
+        var translations = new Dictionary<string, string> { ["Resource Display Name"] = "Should not be used" };
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices(translations);
         var parameterInfo = GetParameter(nameof(RuntimeParameterActions.ResourceDisplayAttributeParameter));
         Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo));
         var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
         await validatableInfo.ValidateAsync(null, context, default);
 
-        Assert.Empty(localizer.DisplayNameCalls);
         Assert.Equal("The Resource Display Name field is required.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]
-    public async Task TryGetValidatableParameterInfo_WithLiteralDisplayAttribute_ConsultsLocalizerWhenSet()
+    public async Task TryGetValidatableParameterInfo_WithLiteralDisplayAttribute_LocalizesDisplayNameWhenFactoryRegistered()
     {
-        var localizer = new RecordingValidationLocalizer { DisplayNameResult = "Localized Custom Display Name" };
-        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices(o => o.Localizer = localizer);
+        var translations = new Dictionary<string, string> { ["Custom Display Name"] = "Localized Custom Display Name" };
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices(translations);
         var parameterInfo = GetParameter(nameof(RuntimeParameterActions.DisplayAttributeParameter));
         Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo));
         var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
         await validatableInfo.ValidateAsync(null, context, default);
 
-        var call = Assert.Single(localizer.DisplayNameCalls);
-        Assert.Equal("Custom Display Name", call.DisplayName);
-        Assert.Equal("value", call.MemberName);
-        Assert.Null(call.Type);
+        Assert.Equal("The Localized Custom Display Name field is required.", Assert.Single(context.ValidationErrors!).Value.Select(e => e.ErrorMessage).Single());
     }
 
     [Fact]

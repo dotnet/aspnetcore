@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components;
@@ -12,18 +14,45 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public sealed class BrowserOptions
 {
+    private static readonly object Key = new();
+
     /// <summary>
     /// Gets or sets the log level for the Blazor JS runtime. Applies to all render modes.
     /// Maps to <c>WebStartOptions.logLevel</c>.
     /// </summary>
     public LogLevel? LogLevel { get; set; }
 
-    /// <summary>Gets the WebAssembly-specific options.</summary>
-    public WebAssemblyBrowserOptions WebAssembly { get; } = new();
+    /// <summary>Gets the interactive WebAssembly-specific options.</summary>
+    [JsonPropertyName("webAssembly")]
+    public InteractiveWebAssemblyBrowserOptions InteractiveWebAssembly { get; } = new();
 
     /// <summary>Gets the interactive server (circuit) specific options.</summary>
-    public InteractiveServerBrowserOptions Server { get; } = new();
+    [JsonPropertyName("server")]
+    public InteractiveServerBrowserOptions InteractiveServer { get; } = new();
 
-    /// <summary>Gets the SSR-specific options.</summary>
-    public SsrBrowserOptions Ssr { get; } = new();
+    /// <summary>Gets the static server (SSR) specific options.</summary>
+    [JsonPropertyName("ssr")]
+    public StaticServerBrowserOptions StaticServer { get; } = new();
+
+    /// <summary>
+    /// Gets the <see cref="BrowserOptions"/> for the current request.
+    /// If not already set, seeds from endpoint metadata or creates a new instance.
+    /// </summary>
+    /// <param name="context">The <see cref="HttpContext"/>.</param>
+    /// <returns>The <see cref="BrowserOptions"/> for the current request.</returns>
+    public static BrowserOptions GetBrowserOptions(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (!context.Items.TryGetValue(Key, out var result))
+        {
+            // Seed from endpoint metadata if available
+            var metadataOptions = context.GetEndpoint()?.Metadata.GetMetadata<BrowserOptions>();
+            var options = metadataOptions ?? new BrowserOptions();
+            context.Items[Key] = options;
+            return options;
+        }
+
+        return (BrowserOptions)result!;
+    }
 }

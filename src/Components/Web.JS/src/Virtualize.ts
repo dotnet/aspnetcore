@@ -187,9 +187,20 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     wasAtBottomLastRender: false,
     // Has the viewport actually reached the bottom? Not set at mount, stays sticky across appends.
     reached: false,
-    // Follow intent: true in End mode until the user scrolls up. Drives the C# scroll-to-bottom path.
+    // Follow intent: true in End mode (or after a user-initiated End-key jump) until the user scrolls away. Drives the C# scroll-to-bottom path in End mode.
     following: (anchorMode & 2) !== 0,
   };
+  const clearBottomFollow = () => {
+    bottomTracking.following = false;
+    bottomTracking.reached = false;
+    bottomTracking.wasAtBottomLastRender = false;
+  };
+  const anchorModeIs = {
+    get none(): boolean { return anchorMode === 0; },
+    get beginning(): boolean { return (anchorMode & 1) !== 0; },
+    get end(): boolean { return (anchorMode & 2) !== 0; },
+  };
+  const isAtScrollTop = (): boolean => scrollElement.scrollTop < 1;
   // Pending scroll correction after redistribution changes spacer→item heights.
   let pendingScrollCorrection = false;
   let scrollCorrectionItemIndex = 0;
@@ -343,7 +354,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     // End mode: pin new items into view if we're at the bottom now, or were and are still following.
-    if ((anchorMode & 2) && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached)) {
+    if ((anchorModeIs.end || bottomTracking.following) && (bottomTracking.wasAtBottomLastRender || bottomTracking.reached)) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
       ignoreAnchorScroll = true;
       // Start convergence only when there are more items to load (spacerAfter > 0).
@@ -402,7 +413,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     // Beginning mode at the very top: show new items by converging to top.
-    if ((anchorMode & 1) && snapshot.scrollTop < 1) {
+    if (anchorModeIs.beginning && snapshot.scrollTop < 1) {
       scrollElement.scrollTop = 0;
       startConvergenceObserving('top');
       return;
@@ -424,7 +435,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     // End mode: only carry the at-bottom state forward if the viewport is actually at the bottom right now.
     // Don't rely on the cached wasAtBottomLastRender — it may be stale if the user scrolled away.
-    const preserveWasAtBottom = (anchorMode & 2) !== 0 && isViewportAtBottom();
+    const preserveWasAtBottom = anchorModeIs.end && isViewportAtBottom();
 
     if (Math.abs(delta) > 1) {
       scrollElement.scrollTop += delta;
@@ -479,6 +490,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       reobserveSpacers();
       pendingJumpToEnd = true;
       pendingJumpToStart = false;
+      if (!anchorModeIs.end) {
+        bottomTracking.following = true;
+        bottomTracking.reached = true;
+      }
       if (!convergence.bottom && spacerAfter.offsetHeight > 0) {
         startConvergenceObserving('bottom');
       }
@@ -487,6 +502,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       reobserveSpacers();
       pendingJumpToStart = true;
       pendingJumpToEnd = false;
+      clearBottomFollow();
       if (!convergence.top && spacerBefore.offsetHeight > 0) {
         startConvergenceObserving('top');
       }
@@ -512,7 +528,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     // A user scroll is the only thing that (re)sets follow state (programmatic scrolls early-return above).
-    if (anchorMode & 2) {
+    if (anchorModeIs.end || bottomTracking.following) {
       const atBottom = isViewportAtBottom();
       bottomTracking.following = atBottom;
       bottomTracking.reached = atBottom;
@@ -637,7 +653,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    if (!(anchorMode & 2)) return;
+    if (!anchorModeIs.end) return;
 
     const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
     if (!atBottom) return;
@@ -663,9 +679,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    if (!(anchorMode & 1)) return;
+    if (!anchorModeIs.beginning) return;
 
-    const atTop = scrollElement.scrollTop < 1;
+    const atTop = isAtScrollTop();
     if (!atTop) return;
 
     startConvergenceObserving('top');
@@ -686,8 +702,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const rect = el.getBoundingClientRect();
       if (rect.bottom > containerTop) {
         const existing = observersByDotNetObjectId[id].anchorSnapshot;
-        const startAnchoring = (anchorMode & 1) !== 0 && !convergence.top;
-        if (!useNativeAnchoring && (anchorMode === 0 || anchorMode === 2 || startAnchoring) && existing && rect.top - containerTop > rect.height) {
+        const nativeAnchoringUnavailable = !useNativeAnchoring || (scrollContainer !== null && isAtScrollTop());
+        // Keep the pre-shift snapshot for None/End modes, and for Start modes that are not actively
+        // converging to the top (during top convergence the viewport is repositioned instead).
+        const modePinsTopItem = !anchorModeIs.beginning || !convergence.top;
+        const itemAlreadyShifted = rect.top - containerTop > rect.height;
+        if (nativeAnchoringUnavailable && modePinsTopItem && existing && itemAlreadyShifted) {
           return;
         }
         observersByDotNetObjectId[id].anchorSnapshot = {
