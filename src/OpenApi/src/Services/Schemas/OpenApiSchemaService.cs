@@ -107,9 +107,14 @@ internal sealed class OpenApiSchemaService(
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
             var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
-            if (underlyingType.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            var typeAttributes = underlyingType.GetCustomAttributes(inherit: false);
+            if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
             {
                 schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+            }
+            if (typeAttributes.OfType<ObsoleteAttribute>().Any())
+            {
+                schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
             }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
@@ -129,12 +134,20 @@ internal sealed class OpenApiSchemaService(
                     {
                         schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
                     }
+                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    {
+                        schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+                    }
                 }
                 else
                 {
                     if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
                     {
                         schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                    }
+                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    {
+                        schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
                     }
                 }
             }

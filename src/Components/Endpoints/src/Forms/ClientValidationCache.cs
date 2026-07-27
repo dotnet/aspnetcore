@@ -14,7 +14,7 @@ using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
-using FieldKey = (Type ModelType, string FieldName);
+using FieldKey = (Type ContainerType, string FieldName);
 
 internal sealed class ClientValidationCache : IDisposable
 {
@@ -57,7 +57,7 @@ internal sealed class ClientValidationCache : IDisposable
             var fieldKey = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
             var cachedMetadata = _metadataCache.GetOrAdd(
                 fieldKey,
-                static key => BuildFieldMetadata(key.ModelType, key.FieldName));
+                static key => BuildFieldMetadata(key.ContainerType, key.FieldName));
 
             if (cachedMetadata is { } fieldMetadata)
             {
@@ -124,7 +124,7 @@ internal sealed class ClientValidationCache : IDisposable
             && ownerInfo.TryFindProperty(path[^1], _validationOptions, out _);
     }
 
-    private bool HasValidatableTypeInfo(Type type) =>
+    internal bool HasValidatableTypeInfo(Type type) =>
         _validationOptions.Resolvers.Count > 0
             && _typeHasValidatableInfo.GetOrAdd(type,
                 key => _validationOptions.TryGetValidatableTypeInfo(key, out _));
@@ -159,9 +159,9 @@ internal sealed class ClientValidationCache : IDisposable
 
     [UnconditionalSuppressMessage("Trimming", "IL2070",
         Justification = "Model types are application code and are preserved by default.")]
-    private static Type? GetRecursableMemberType(Type ownerType, string propertyName)
+    private static Type? GetRecursableMemberType(Type containerType, string propertyName)
     {
-        var propertyType = ownerType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)?.PropertyType;
+        var propertyType = containerType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)?.PropertyType;
         if (propertyType is null)
         {
             return null;
@@ -214,9 +214,9 @@ internal sealed class ClientValidationCache : IDisposable
 
     [UnconditionalSuppressMessage("Trimming", "IL2070",
         Justification = "Model types are application code and are preserved by default.")]
-    private static ClientValidationFieldMetadata? BuildFieldMetadata(Type modelType, string propertyName)
+    private static ClientValidationFieldMetadata? BuildFieldMetadata(Type containerType, string propertyName)
     {
-        var property = modelType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        var property = containerType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
 
         if (property is null)
         {
@@ -245,9 +245,9 @@ internal sealed class ClientValidationCache : IDisposable
         }
 
         return new ClientValidationFieldMetadata(
-            propertyName: property.Name,
+            property.Name,
             validationAttributes,
-            declaringType: property.DeclaringType,
+            property.DeclaringType!,
             resourceDisplayAttribute,
             literalDisplayName);
     }

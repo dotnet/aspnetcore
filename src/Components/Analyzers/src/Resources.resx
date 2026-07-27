@@ -261,4 +261,16 @@
   <data name="JSInvokableMethodShouldBePublic_FixTitle" xml:space="preserve">
     <value>Make [JSInvokable] method public.</value>
   </data>
+  <data name="UnguardedJSInteropCall_Description" xml:space="preserve">
+    <value>JS interop calls should be guarded with a try/catch block to handle potential exceptions.</value>
+  </data>
+  <data name="UnguardedJSInteropCall_Format" xml:space="preserve">
+    <value>JS interop call '{0}' is not guarded with a try/catch block.</value>
+  </data>
+  <data name="UnguardedJSInteropCall_Title" xml:space="preserve">
+    <value>Unguarded JS interop call</value>
+  </data>
+  <data name="UnguardedJSInteropCall_FixTitle" xml:space="preserve">
+    <value>Wrap JS interop call in a try/catch block.</value>
+  </data>
 </root>
