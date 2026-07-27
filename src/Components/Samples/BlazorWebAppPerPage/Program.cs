@@ -16,7 +16,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+#pragma warning disable ASPDEPR011 // UseWebAssemblyDebugging is obsolete
     app.UseWebAssemblyDebugging();
+#pragma warning restore ASPDEPR011
 }
 else
 {
