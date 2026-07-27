@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -11,8 +12,6 @@ namespace Microsoft.Extensions.Validation;
 public sealed class ValidateContext
 {
     private Dictionary<string, List<ValidationError>>? _mutableValidationErrors;
-    private Dictionary<string, IReadOnlyList<ValidationError>>? _readOnlyValidationErrors;
-    private ReadOnlyDictionary<string, IReadOnlyList<ValidationError>>? _validationErrorsView;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -48,7 +47,7 @@ public sealed class ValidateContext
     /// There are no guarantees whether or not this dictionary is lazy. Usages should treat null and empty dictionary the same.
     /// </remarks>
     public IReadOnlyDictionary<string, IReadOnlyList<ValidationError>>? ValidationErrors
-        => _validationErrorsView;
+        => _mutableValidationErrors?.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<ValidationError>)kvp.Value.AsReadOnly()).AsReadOnly();
 
     /// <summary>
     /// Gets or sets the current depth in the validation hierarchy.
@@ -64,18 +63,12 @@ public sealed class ValidateContext
     /// <param name="validationError">The validation error to add.</param>
     public void AddValidationError(ValidationError validationError)
     {
-        if (_mutableValidationErrors is null)
-        {
-            _mutableValidationErrors = [];
-            _readOnlyValidationErrors = [];
-            _validationErrorsView = new ReadOnlyDictionary<string, IReadOnlyList<ValidationError>>(_readOnlyValidationErrors);
-        }
+        _mutableValidationErrors ??= [];
 
         if (!_mutableValidationErrors.TryGetValue(validationError.Path, out var existingList))
         {
             var newList = new List<ValidationError> { validationError };
             _mutableValidationErrors.Add(validationError.Path, newList);
-            _readOnlyValidationErrors!.Add(validationError.Path, newList.AsReadOnly());
         }
         else
         {
