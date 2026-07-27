@@ -1556,19 +1556,18 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     {
         Navigate($"{ServerPathBase}/interactive-reexecution/not-existing-page");
 
-        // Synchronous XHR (rather than fetch) because Selenium's IJavaScriptExecutor doesn't unwrap Promises.
-        // Relative URL keeps it same-origin and avoids CORS.
+        Assert404ReExecuted();
+        AssertReExecutedPageIsInteractive();
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
+
+        // The persisted-state comment must be present in the raw HTML response.
         var url = $"{ServerPathBase}/interactive-reexecution/not-existing-page";
         var html = ((IJavaScriptExecutor)Browser).ExecuteScript(
             $@"var x = new XMLHttpRequest(); x.open('GET', {System.Text.Json.JsonSerializer.Serialize(url)}, false); x.send(); return x.responseText;")
             as string;
 
-        // Re-execute must have rendered ReexecutedPageInteractive...
         Assert.NotNull(html);
-        Assert.Contains("test-info", html);
-
-        // ...and the persisted-state comment must be present. It's an HTML comment with the
-        // "Blazor-Server-Component-State" prefix (see ComponentStateHtmlContent.WriteTo).
         Assert.Contains("Blazor-Server-Component-State", html);
     }
 
