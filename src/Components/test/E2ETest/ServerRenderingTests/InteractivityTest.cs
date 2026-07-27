@@ -1554,7 +1554,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [Fact]
     public void PersistedState_IsEmitted_OnReExecutedPage()
     {
-        Navigate($"{ServerPathBase}/persist-state?server=true");
+        Navigate($"{ServerPathBase}/interactive-reexecution/not-existing-page");
 
         // Synchronous XHR (rather than fetch) because Selenium's IJavaScriptExecutor doesn't unwrap Promises.
         // Relative URL keeps it same-origin and avoids CORS.
