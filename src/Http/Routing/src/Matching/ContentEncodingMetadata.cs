@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing.Matching;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// Metadata used to negotiate wich endpoint to select based on the value of the Accept-Encoding header.
+/// Metadata used to negotiate which endpoint to select based on the value of the Accept-Encoding header.
 /// </summary>
 /// <param name="value">The <c>Accept-Encoding</c> value this metadata represents.</param>
 /// <param name="quality">The server preference to apply to break ties.</param>

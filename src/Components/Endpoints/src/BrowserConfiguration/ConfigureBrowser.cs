@@ -7,8 +7,8 @@ namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// A component that configures the Blazor browser runtime by merging
-/// configuration into the <see cref="BrowserConfiguration"/> on the current
-/// <see cref="HttpContext"/>. The merged configuration is emitted as
+/// options into the <see cref="BrowserOptions"/> on the current
+/// <see cref="HttpContext"/>. The merged options are emitted as
 /// a <c>&lt;!--Blazor-Configuration:{...}--&gt;</c> DOM comment by the renderer.
 /// </summary>
 public sealed class ConfigureBrowser : IComponent
@@ -16,16 +16,13 @@ public sealed class ConfigureBrowser : IComponent
     private RenderHandle _renderHandle;
 
     /// <summary>
-    /// Gets or sets the <see cref="BrowserConfiguration"/> to merge.
+    /// Gets or sets the <see cref="BrowserOptions"/> to merge.
     /// </summary>
     [Parameter, EditorRequired]
-    public BrowserConfiguration Configuration { get; set; } = default!;
+    public BrowserOptions Options { get; set; } = default!;
 
-    /// <summary>
-    /// Gets or sets the <see cref="HttpContext"/> for the current request.
-    /// </summary>
     [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
+    internal HttpContext? HttpContext { get; set; }
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -38,32 +35,36 @@ public sealed class ConfigureBrowser : IComponent
 
         if (HttpContext is not null)
         {
-            var existing = HttpContext.GetBrowserConfiguration();
-            MergeInto(existing, Configuration);
+            var existing = BrowserOptions.GetBrowserOptions(HttpContext);
+            MergeInto(existing, Options);
         }
 
         return Task.CompletedTask;
     }
 
-    internal static void MergeInto(BrowserConfiguration target, BrowserConfiguration source)
+    internal static void MergeInto(BrowserOptions target, BrowserOptions source)
     {
         target.LogLevel = source.LogLevel ?? target.LogLevel;
 
-        // WebAssembly
-        target.WebAssembly.EnvironmentName = source.WebAssembly.EnvironmentName ?? target.WebAssembly.EnvironmentName;
-        target.WebAssembly.ApplicationCulture = source.WebAssembly.ApplicationCulture ?? target.WebAssembly.ApplicationCulture;
-        foreach (var kvp in source.WebAssembly.EnvironmentVariables)
+        // Interactive WebAssembly
+        target.InteractiveWebAssembly.EnvironmentName = source.InteractiveWebAssembly.EnvironmentName ?? target.InteractiveWebAssembly.EnvironmentName;
+        target.InteractiveWebAssembly.ApplicationCulture = source.InteractiveWebAssembly.ApplicationCulture ?? target.InteractiveWebAssembly.ApplicationCulture;
+        foreach (var kvp in source.InteractiveWebAssembly.EnvironmentVariables)
         {
-            target.WebAssembly.EnvironmentVariables[kvp.Key] = kvp.Value;
+            target.InteractiveWebAssembly.EnvironmentVariables[kvp.Key] = kvp.Value;
         }
 
-        // Server
-        target.Server.ReconnectionMaxRetries = source.Server.ReconnectionMaxRetries ?? target.Server.ReconnectionMaxRetries;
-        target.Server.ReconnectionRetryIntervalMilliseconds = source.Server.ReconnectionRetryIntervalMilliseconds ?? target.Server.ReconnectionRetryIntervalMilliseconds;
-        target.Server.ReconnectionDialogId = source.Server.ReconnectionDialogId ?? target.Server.ReconnectionDialogId;
+        // Interactive server
+        target.InteractiveServer.ReconnectionMaxRetries = source.InteractiveServer.ReconnectionMaxRetries ?? target.InteractiveServer.ReconnectionMaxRetries;
+        target.InteractiveServer.ReconnectionRetryInterval = source.InteractiveServer.ReconnectionRetryInterval ?? target.InteractiveServer.ReconnectionRetryInterval;
+        target.InteractiveServer.ReconnectionDialogId = source.InteractiveServer.ReconnectionDialogId ?? target.InteractiveServer.ReconnectionDialogId;
+        foreach (var kvp in source.InteractiveServer.Extensions)
+        {
+            target.InteractiveServer.Extensions[kvp.Key] = kvp.Value;
+        }
 
-        // SSR
-        target.Ssr.DisableDomPreservation = source.Ssr.DisableDomPreservation ?? target.Ssr.DisableDomPreservation;
-        target.Ssr.CircuitInactivityTimeoutMs = source.Ssr.CircuitInactivityTimeoutMs ?? target.Ssr.CircuitInactivityTimeoutMs;
+        // Static server (SSR)
+        target.StaticServer.PreserveDom = source.StaticServer.PreserveDom ?? target.StaticServer.PreserveDom;
+        target.StaticServer.CircuitInactivityTimeout = source.StaticServer.CircuitInactivityTimeout ?? target.StaticServer.CircuitInactivityTimeout;
     }
 }

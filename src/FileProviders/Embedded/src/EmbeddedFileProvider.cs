@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -21,8 +22,14 @@ namespace Microsoft.Extensions.FileProviders;
 /// </summary>
 public class EmbeddedFileProvider : IFileProvider
 {
-    private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
+    private static char[] GetInvalidFileNameChars() => Path.GetInvalidFileNameChars()
         .Where(c => c != '/' && c != '\\').ToArray();
+
+#if NET8_0_OR_GREATER
+    private static readonly SearchValues<char> _invalidFileNameChars = SearchValues.Create(GetInvalidFileNameChars());
+#else
+    private static readonly char[] _invalidFileNameChars = GetInvalidFileNameChars();
+#endif
 
     private readonly Assembly _assembly;
     private readonly string _baseNamespace;

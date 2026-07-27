@@ -115,6 +115,8 @@
       "src\\Tools\\LinkabilityChecker\\LinkabilityChecker.csproj",
       "src\\Tools\\Microsoft.dotnet-openapi\\src\\Microsoft.dotnet-openapi.csproj",
       "src\\Tools\\Microsoft.dotnet-openapi\\test\\dotnet-microsoft.openapi.Tests.csproj",
+      "src\\Tools\\NativeAot\\aspnetcoretools\\aspnetcoretools.csproj",
+      "src\\Tools\\NativeAot\\test\\Microsoft.AspNetCore.Tools.NativeAot.Tests.csproj",
       "src\\Tools\\dotnet-dev-certs\\src\\dotnet-dev-certs.csproj",
       "src\\Tools\\dotnet-getdocument\\src\\dotnet-getdocument.csproj",
       "src\\Tools\\dotnet-sql-cache\\src\\dotnet-sql-cache.csproj",

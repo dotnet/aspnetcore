@@ -1,0 +1,128 @@
+﻿{
+  "openapi": "3.2.0",
+  "info": {
+    "title": "Sample | obsolete",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/obsolete/deprecated": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestWithObsoleteMembers"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestWithObsoleteMembers"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/obsolete/current": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CurrentResponse": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "ObsoleteType": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "deprecated": true
+      },
+      "RequestWithObsoleteMembers": {
+        "required": [
+          "current",
+          "currentReference",
+          "obsoleteType"
+        ],
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "string"
+          },
+          "legacy": {
+            "type": "string",
+            "deprecated": true
+          },
+          "currentReference": {
+            "$ref": "#/components/schemas/ReusableType"
+          },
+          "legacyReference": {
+            "deprecated": true,
+            "$ref": "#/components/schemas/ReusableType"
+          },
+          "obsoleteType": {
+            "$ref": "#/components/schemas/ObsoleteType"
+          }
+        }
+      },
+      "ReusableType": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

@@ -31,9 +31,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
-#if NEWSHIM_FUNCTIONALS
-[QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
-#endif
 public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
@@ -704,6 +701,7 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62802")]
     public async Task SetCurrentDirectoryHandlerSettingWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -1189,7 +1187,6 @@ public class StartupTests : IISFunctionalTestBase
     public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
 
     private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
@@ -1298,7 +1295,7 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewHandler]
     [RequiresNewShim]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2026.Pre.Scout.Open;" + "Windows.Amd64.VS2026.Pre.Scout;")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2026.Open;" + "Windows.Amd64.VS2026;")]
     public async Task ServerAddressesIncludesBaseAddress()
     {
         var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";

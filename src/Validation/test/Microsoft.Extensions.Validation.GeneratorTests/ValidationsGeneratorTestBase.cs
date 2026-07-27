@@ -1,5 +1,3 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -57,6 +55,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
                     MetadataReference.CreateFromFile(typeof(IFormFileCollection).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(PipeReader).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.ValidationAttribute).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.ComponentModel.DisplayNameAttribute).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(RouteData).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(IFeatureCollection).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(ValidateOptionsResult).Assembly.Location),
@@ -66,6 +65,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
                     MetadataReference.CreateFromFile(typeof(IValidatableInfoResolver).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(EndpointFilterFactoryContext).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(ValidationServiceCollectionExtensions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Localization.IStringLocalizerFactory).Assembly.Location),
                 ]);
         var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
@@ -83,9 +83,12 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
-            .UseDirectory(SkipOnHelixAttribute.OnHelix() && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") is { } workItemRoot
-                ? Path.Combine(workItemRoot, "snapshots")
-                : "snapshots");
+            .UseDirectory(SkipOnHelixAttribute.OnHelix()
+                ? Path.Combine(AppContext.BaseDirectory, "snapshots")
+                : "snapshots")
+            // Tests are parameterized on useAsync which is not relevant for the snapshot.
+            // We produce a single snapshot for both cases, so we need to disable the unique prefix requirement.
+            .DisableRequireUniquePrefix();
     }
 
     internal static async Task VerifyValidatableType(Compilation compilation, string typeName, Func<ValidationOptions, Type, Task> verifyFunc)

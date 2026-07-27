@@ -35,16 +35,19 @@
     <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(BaseOutputPath)Directory.Build.props" />
     <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)Directory.Build.props.in"
       Properties="$(_TemplateProperties)"
+      SkipUnchanged="true"
       OutputPath="$(BaseOutputPath)Directory.Build.props" />
 
     <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(BaseOutputPath)Directory.Build.targets" />
     <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)Directory.Build.targets.in"
       Properties="$(_TemplateProperties)"
+      SkipUnchanged="true"
       OutputPath="$(BaseOutputPath)Directory.Build.targets" />
 
     <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.json" />
     <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.json.in"
       Properties="$(_TemplateProperties)"
+      SkipUnchanged="true"
       OutputPath="$(ConfigDirectory)dotnet-tools.json" />
   </Target>
 </Project>

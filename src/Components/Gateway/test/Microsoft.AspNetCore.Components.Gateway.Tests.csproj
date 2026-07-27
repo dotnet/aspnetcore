@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.Components.Gateway</RootNamespace>
+    <Nullable>enable</Nullable>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\BlazorGateway.cs" />
+    <Compile Include="..\src\BlazorGatewayOptions.cs" />
+    <Compile Include="..\src\TelemetryFilters.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <Reference Include="Yarp.ReverseProxy" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
+  </ItemGroup>
+
+  <!-- Surface the information the Gateway.Cli tool package tests need to locate the built package,
+       the repo SDK, and throwaway working folders. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsShippingPackagesDir</_Parameter1>
+      <_Parameter2>$(ArtifactsShippingPackagesDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
+      <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>GatewayCliPackageVersion</_Parameter1>
+      <_Parameter2>$(PackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsTmpDir</_Parameter1>
+      <_Parameter2>$(ArtifactsTmpDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DefaultNetCoreTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

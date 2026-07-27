@@ -75,7 +75,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         }
     }
 
-    // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
+    // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue1<subdelimiter>HeaderValue2<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
     public string CreateStorageVaryByKey(ResponseCachingContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -121,6 +121,11 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
 
                     for (var j = 0; j < headerValuesArray.Length; j++)
                     {
+                        if (j > 0)
+                        {
+                            builder.Append(KeySubDelimiter);
+                        }
+
                         ThrowIfContainsDelimiters(headerValuesArray[j]);
                         builder.Append(headerValuesArray[j]);
                     }
@@ -201,7 +206,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
 
     internal static void ThrowIfContainsDelimiters(string? value)
     {
-        if (!string.IsNullOrEmpty(value) && value.AsSpan().IndexOfAny(KeyDelimiter, KeySubDelimiter) >= 0)
+        if (!string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter))
         {
             throw new CacheKeyDelimiterException();
         }
