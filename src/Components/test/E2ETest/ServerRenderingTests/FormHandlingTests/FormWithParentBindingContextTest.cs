@@ -649,7 +649,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         for (var i = 0; i < 2; i++)
         {
-               var name = Browser.Exists(By.CssSelector($"""input[name="Model[{i}].Name"]"""));
+            var name = Browser.Exists(By.CssSelector($"""input[name="Model[{i}].Name"]"""));
             name.Clear();
             name.SendKeys($"John{i + 4}");
             var email = Browser.Exists(By.CssSelector($"""input[name="Model[{i}].Email"]"""));
@@ -678,7 +678,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         if (!suppressEnhancedNavigation)
         {
-           Browser.True(() => !string.IsNullOrEmpty(Browser.FindElement(By.CssSelector("form")).GetDomAttribute("action")));
+            Browser.True(() => !string.IsNullOrEmpty(Browser.FindElement(By.CssSelector("form")).GetDomAttribute("action")));
         }
     }
 
