@@ -9,9 +9,9 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>10</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>10</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>12</AspNetCorePatchVersion>
     <PreReleaseVersionIteration></PreReleaseVersionIteration>
-    <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">8.0.1</IdentityModelVersion>
+    <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">8.19.2</IdentityModelVersion>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">*-*</IdentityModelVersion>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
