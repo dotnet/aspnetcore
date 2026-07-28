@@ -6,6 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 internal sealed class DataAnnotationsClientValidationProvider : ClientValidationProvider
 {
     private readonly ClientValidationCache _clientValidationCache;
-    private readonly IValidationLocalizer? _validationLocalizer;
+    private readonly DataAnnotationsLocalizer _localizer;
     private readonly bool _clientValidationDisabled;
 
     [UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "Preserves ValidationOptions's parameterless constructor used by Microsoft.Extensions.Options to materialize IOptions<ValidationOptions>.")]
@@ -22,11 +24,14 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
     public DataAnnotationsClientValidationProvider(
         ClientValidationCache clientValidationCache,
         IOptions<ValidationOptions> validationOptions,
-        IOptions<RazorComponentsServiceOptions> razorComponentsOptions)
+        IOptions<RazorComponentsServiceOptions> razorComponentsOptions,
+        IServiceProvider serviceProvider)
     {
         _clientValidationCache = clientValidationCache;
-        _validationLocalizer = validationOptions.Value.Localizer;
         _clientValidationDisabled = razorComponentsOptions.Value.DisableClientValidation;
+
+        var stringLocalizerFactory = serviceProvider.GetService<IStringLocalizerFactory>();
+        _localizer = new DataAnnotationsLocalizer(validationOptions.Value, stringLocalizerFactory);
     }
 
     public override RenderFragment? RenderClientValidationRules(EditContext editContext, IReadOnlyDictionary<FieldIdentifier, string> renderedFields)
@@ -65,23 +70,25 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
 
         var writer = new ClientValidationDataWriter();
         var validatableFields = _clientValidationCache.GetValidatableFieldMetadata(renderedFields, editContext.Model);
+        var useStringLocalizer = _clientValidationCache.HasValidatableTypeInfo(editContext.Model.GetType());
 
         foreach (var (renderedName, fieldMetadata) in validatableFields)
         {
-            WriteFieldRules(writer, renderedName, fieldMetadata);
+            WriteFieldRules(writer, renderedName, fieldMetadata, useStringLocalizer);
         }
 
         return writer.Complete();
     }
 
-    private void WriteFieldRules(ClientValidationDataWriter writer, string renderedName, ClientValidationFieldMetadata fieldMetadata)
+    private void WriteFieldRules(ClientValidationDataWriter writer, string renderedName, ClientValidationFieldMetadata fieldMetadata, bool useStringLocalizer)
     {
-        var displayName = ResolveDisplayName(fieldMetadata);
+        var displayName = _localizer.ResolveDisplayName(fieldMetadata, useStringLocalizer);
         writer.BeginField(renderedName);
 
         foreach (var attribute in fieldMetadata.ValidationAttributes)
         {
-            var errorMessage = ResolveErrorMessage(attribute, fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType);
+            var errorMessage = _localizer.ResolveAttributeErrorMessage(fieldMetadata.PropertyName, displayName, fieldMetadata.DeclaringType, attribute, useStringLocalizer)
+                ?? string.Empty;
 
             if (TryWriteBuiltInRule(writer, attribute, errorMessage))
             {
@@ -206,57 +213,6 @@ internal sealed class DataAnnotationsClientValidationProvider : ClientValidation
             .Replace(".", string.Empty)
             .ToLowerInvariant();
         return string.Join(",", normalizedExtensions.Split(',').Select(e => "." + e));
-    }
-
-    // Mirrors the decision tree used by the server-side validation.
-    // Resource-attribute display names bypass the localizer (resource lookup is the canonical
-    // localized source). Literal display names act as both lookup key and fallback for the localizer.
-    private string ResolveDisplayName(in ClientValidationFieldMetadata metadata)
-    {
-        if (metadata.ResourceDisplayAttribute is { } resourceAttribute)
-        {
-            return resourceAttribute.GetName() ?? metadata.PropertyName;
-        }
-
-        if (metadata.LiteralDisplayName is not { } literal)
-        {
-            return metadata.PropertyName;
-        }
-
-        if (_validationLocalizer is null)
-        {
-            return literal;
-        }
-
-        return _validationLocalizer.ResolveDisplayName(new DisplayNameLocalizationContext
-        {
-            Type = metadata.DeclaringType,
-            DisplayName = literal,
-            MemberName = metadata.PropertyName,
-        }) ?? literal;
-    }
-
-    // Mirrors the decision tree used by the server-side validation. Falls back to
-    // FormatErrorMessage when no localizer is configured or the attribute already supplies
-    // resource-based localization.
-    private string ResolveErrorMessage(
-        ValidationAttribute attribute,
-        string fieldName,
-        string displayName,
-        Type? declaringType)
-    {
-        if (_validationLocalizer is null || attribute.ErrorMessageResourceType is not null)
-        {
-            return attribute.FormatErrorMessage(displayName);
-        }
-
-        return _validationLocalizer.ResolveErrorMessage(new ErrorMessageLocalizationContext
-        {
-            MemberName = fieldName,
-            DisplayName = displayName,
-            DeclaringType = declaringType,
-            Attribute = attribute,
-        }) ?? attribute.FormatErrorMessage(displayName);
     }
 
     // RangeAttribute supports non-numeric operand types (e.g., DateTime) that the JS validator
