@@ -180,24 +180,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public virtual void CancelsOutdatedRefreshes_Async()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var cancellationCount = Browser.Exists(By.Id("cancellation-count"));
-        var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
-        var js = (IJavaScriptExecutor)Browser;
+        var startOverlapButton = Browser.Exists(By.Id("start-overlap-test"));
+        var releaseOverlapButton = Browser.Exists(By.Id("release-overlap-test"));
 
-        // Load the initial set of items.
-        finishLoadingButton.Click();
+        startOverlapButton.Click();
+        Browser.Equal("Overlap test ready", () => Browser.FindElement(By.Id("overlap-status")).Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("cancellation-count")).Text);
 
-        // Validate that there are no initial cancellations.
-        Browser.Equal("0", () => cancellationCount.Text);
+        releaseOverlapButton.Click();
 
-        // Validate that scrolling causes cancellations
-        for (var y = 1000; y <= 5000; y += 1000)
-        {
-            js.ExecuteScript($"document.getElementById('async-container').scrollTo({{ top: {y} }})");
-            Browser.Equal(y, () => (long)js.ExecuteScript("return document.getElementById('async-container').scrollTop"));
-        }
+        Browser.Equal("Overlap test released", () => Browser.FindElement(By.Id("overlap-status")).Text);
 
-        Browser.True(() => int.Parse(cancellationCount.Text, CultureInfo.InvariantCulture) > 0);
+        Browser.True(() =>
+            int.Parse(Browser.FindElement(By.Id("cancellation-count")).Text, CultureInfo.InvariantCulture) > 0);
     }
 
     [Fact]

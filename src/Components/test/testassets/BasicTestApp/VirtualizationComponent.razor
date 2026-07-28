@@ -17,6 +17,9 @@
     <button id="finish-loading-button-empty" @onclick="() => FinishLoadingAsync(0)">Finish loading with total item count = 0</button><br />
     <button id="finish-loading-button" @onclick="() => FinishLoadingAsync(200)">Finish loading with total item count = 200</button><br />
     <button id="refresh-data-async" @onclick="() => asyncComponent.RefreshDataAsync()">Call RefreshDataAsync</button><br />
+    <button id="start-overlap-test" @onclick="StartOverlapTestAsync">Start overlap test</button><br />
+    <button id="release-overlap-test" @onclick="ReleaseOverlapTestAsync">Release overlap test</button><br />
+    <span id="overlap-status">@overlapStatus</span><br />
     Cancellation count: <span id="cancellation-count">@asyncCancellationCount</span><br />
     <div id="async-container" style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize @ref="asyncComponent" ItemsProvider="GetItemsAsync" ItemSize="itemSize" OverscanCount="3">
@@ -71,12 +74,33 @@
 
     int asyncTotalItemCount = 200;
     int asyncCancellationCount = 0;
+    string overlapStatus = "Idle";
     TaskCompletionSource asyncTcs = new TaskCompletionSource();
+    TaskCompletionSource overlapTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    TaskCompletionSource overlapStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    TaskCompletionSource secondRequestQueuedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    int overlapRequestCount = 0;
 
     Virtualize<int> asyncComponent;
 
     async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
     {
+        if (Interlocked.Increment(ref overlapRequestCount) == 1)
+        {
+            overlapStatus = "First request pending";
+            await InvokeAsync(StateHasChanged);
+            overlapStartedTcs.TrySetResult();
+            await overlapTcs.Task;
+            overlapStatus = "First request released";
+            await InvokeAsync(StateHasChanged);
+        }
+        else if (overlapRequestCount == 2)
+        {
+            overlapStatus = "Second request queued";
+            secondRequestQueuedTcs.TrySetResult();
+            await InvokeAsync(StateHasChanged);
+        }
+
         var loadingTask = asyncTcs.Task;
 
         var registration = request.CancellationToken.Register(() => CancelLoadingAsync(request.CancellationToken));
@@ -102,6 +126,31 @@
 
         asyncCancellationCount++;
 
+        StateHasChanged();
+    }
+
+    async Task StartOverlapTestAsync()
+    {
+        overlapStatus = "Starting overlap test";
+        overlapTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        overlapStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        secondRequestQueuedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        overlapRequestCount = 0;
+
+        await asyncComponent.RefreshDataAsync();
+
+        await overlapStartedTcs.Task;
+        overlapStatus = "Overlap test ready";
+        StateHasChanged();
+    }
+
+    async Task ReleaseOverlapTestAsync()
+    {
+        overlapStatus = "Releasing overlap test";
+        overlapTcs.TrySetResult();
+        await secondRequestQueuedTcs.Task;
+        await asyncComponent.RefreshDataAsync();
+        overlapStatus = "Overlap test released";
         StateHasChanged();
     }
 }
