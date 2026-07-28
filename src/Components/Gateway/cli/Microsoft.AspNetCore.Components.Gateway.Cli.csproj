@@ -37,11 +37,19 @@
                       PrivateAssets="All" />
   </ItemGroup>
 
-  <!-- Build and publish the gateway before packing so its binaries are available to the nuspec. -->
+  <!-- Build and publish the gateway before packing so its binaries are available to the nuspec.
+       Gateway.csproj also ships its own package, so it's already built directly as a top-level
+       project elsewhere in the overall (parallel) build. Forcing an explicit TargetFramework here
+       gave this MSBuild request a global property that the other invocation doesn't have (Gateway.csproj
+       is single-targeted, so it doesn't need one), making MSBuild treat the two as distinct, unrelated
+       build instances. Both ended up running concurrently and racing to write the same compressed
+       static web asset files (see https://github.com/dotnet/dotnet/issues/8005). Not overriding
+       Configuration/TargetFramework here lets this request's global properties match the other
+       invocation's, so MSBuild recognizes it as the same request and reuses/waits for its result
+       instead of duplicating it. -->
   <Target Name="_PublishGatewayForTool" BeforeTargets="GenerateNuspec">
     <MSBuild Projects="$(_GatewayProject)"
-             Targets="Publish"
-             Properties="Configuration=$(Configuration);TargetFramework=$(DefaultNetCoreTargetFramework)" />
+             Targets="Publish" />
 
     <Error Condition="!Exists('$(_GatewayPublishDir)blazor-gateway.dll')"
            Text="Expected the gateway to publish 'blazor-gateway.dll' to '$(_GatewayPublishDir)' but it was not found." />
