@@ -9,8 +9,7 @@ namespace Microsoft.AspNetCore.Identity.Data;
 /// The response body of the well-known passkey endpoints document.
 /// </summary>
 /// <remarks>
-/// Members are omitted when unset. An empty object is valid, and signals that the server supports
-/// passkeys without advertising any specific endpoint.
+/// Members are omitted when unset. If neither endpoint is configured, the document is not served.
 /// See <see href="https://w3c.github.io/webappsec-passkey-endpoints/"/>.
 /// </remarks>
 internal sealed class PasskeyEndpointsResponse
