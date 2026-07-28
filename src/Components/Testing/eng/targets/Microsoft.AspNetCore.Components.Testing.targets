@@ -62,13 +62,17 @@
     Runs after Build and Publish. Depending on E2EAppMode, copies source and/or
     publishes each E2EApp project, then generates the manifest.
 
+    Skipped when the project is excluded from the build (e.g. Arcade's SkipTestBuild),
+    since Arcade replaces Build with an empty target that would still trigger AfterTargets.
+
     On Build: output goes to $(OutputPath) (local dev).
     On Publish: output goes to $(PublishDir).
     Follows the same pattern as FunctionalTestWithAssets.targets.
   -->
   <Target
     Name="PrepareE2EApps"
-    AfterTargets="Build;Publish">
+    AfterTargets="Build;Publish"
+    Condition="'$(ExcludeFromBuild)' != 'true'">
 
     <!--
       Detect whether we are running during Publish.
