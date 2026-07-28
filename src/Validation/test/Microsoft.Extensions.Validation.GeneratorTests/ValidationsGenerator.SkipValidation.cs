@@ -1,5 +1,3 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -20,8 +18,6 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
     public async Task DoesNotEmit_ForSkipValidationAttribute_OnClassProperties(bool useAsync)
     {
         var source = """
-#pragma warning disable ASP0029
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
@@ -126,7 +122,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -144,7 +140,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -152,7 +148,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("ObjectProperty.IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -166,7 +162,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -190,7 +186,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(rootInstance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, rootInstance, context, useAsync, CancellationToken.None);
@@ -198,7 +194,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("ListOfNestedTypes[0].IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -218,7 +214,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(rootInstance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, rootInstance, context, useAsync, CancellationToken.None);
@@ -238,7 +234,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -248,12 +244,12 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     kvp =>
                     {
                         Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange2", kvp.Key);
-                        Assert.Equal("The field IntegerWithRange2 must be between 10 and 100.", kvp.Value.Single());
+                        Assert.Equal("The field IntegerWithRange2 must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     },
                     kvp =>
                     {
                         Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange1", kvp.Key);
-                        Assert.Equal("The field IntegerWithRange1 must be between 10 and 100.", kvp.Value.Single());
+                        Assert.Equal("The field IntegerWithRange1 must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                     });
             }
 
@@ -267,7 +263,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -283,8 +279,6 @@ public class SubTypeOfSkippedBase : SkippedBaseType
     public async Task DoesNotEmit_ForSkipValidationAttribute_OnRecordProperties(bool useAsync)
     {
         var source = """
-#pragma warning disable ASP0029
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
@@ -346,7 +340,7 @@ public record AlwaysSkippedType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -354,7 +348,7 @@ public record AlwaysSkippedType
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
                     Assert.Equal("ObjectProperty.IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Select(e => e.ErrorMessage).Single());
                 });
             }
 
@@ -370,7 +364,7 @@ public record AlwaysSkippedType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -388,7 +382,7 @@ public record AlwaysSkippedType
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ServiceProvider = null,
                 };
 
                 await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
@@ -402,8 +396,6 @@ public record AlwaysSkippedType
     public async Task DoesNotEmit_ForSkipValidationAttribute_OnEndpointParameters()
     {
         var source = """
-#pragma warning disable ASP0029
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;

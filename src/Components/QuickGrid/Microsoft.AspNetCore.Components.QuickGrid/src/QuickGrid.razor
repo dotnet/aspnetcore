@@ -23,6 +23,7 @@
                         TItem="(int RowIndex, TGridItem Data)"
                         ItemSize="@ItemSize"
                         OverscanCount="@OverscanCount"
+                        InitialItemIndex="@InitialItemIndex"
                         ItemsProvider="@ProvideVirtualizedItems"
                         ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
                         Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))"
