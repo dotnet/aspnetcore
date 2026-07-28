@@ -199,7 +199,8 @@
   </Target>
 
   <Import Project="eng\Workarounds.targets" />
-  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
+  <!-- This file is generated at build time and doesn't exist under Dependabot's un-built clone; skip it there (see eng/tools/DependabotDiscovery). -->
+  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' AND '$(DEPENDABOT_NATIVE_HELPERS_PATH)' == '' " />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
