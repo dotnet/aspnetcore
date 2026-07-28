@@ -661,7 +661,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             {
                 Browser.Click(preferredCriteria);
             }
-            // Set the value for preferred ti 'invalid' to trigger a binding error
+            // Set the value for preferred to 'invalid' to trigger a binding error
             ((IJavaScriptExecutor)Browser).ExecuteScript($"arguments[0].setAttribute('value', 'invalid{i}')", preferred);
         }
 
