@@ -51,11 +51,20 @@
   <!--
     Development layout: point the tasks assembly to the artifacts bin output so that
     Microsoft.AspNetCore.Components.Testing.targets (which only handles the NuGet package
-    layout) can find it when building inside the aspnetcore repo.
+    layout) can find it when building inside the aspnetcore repo. The ProjectReference
+    guarantees the tasks assembly is built before this project needs it.
   -->
   <PropertyGroup>
-    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
+    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == ''">$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="../../Testing/tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
+  </ItemGroup>
 
   <!--
     Development layout: add the source generator as an analyzer from the local project.
@@ -70,10 +79,12 @@
 
   <!--
     E2E tests require Playwright/browser infrastructure, so they are not run by Arcade's
-    RunTests target during regular CI builds or on Helix. They are run explicitly by the
-    components E2E pipeline.
+    Test target during regular CI builds or on Helix. Clearing IsUnitTestProject (rather
+    than IsTestProject) keeps the project classified as a test project, so the public API
+    analyzers stay off. They are run explicitly by the components E2E pipeline.
   -->
   <PropertyGroup>
+    <IsUnitTestProject>false</IsUnitTestProject>
     <SkipTests>true</SkipTests>
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
