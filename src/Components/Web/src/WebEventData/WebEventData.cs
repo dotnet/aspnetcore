@@ -72,15 +72,14 @@ internal sealed class WebEventData
                 return eventArgs;
             }
 
-            // For custom events, the args type is determined from the associated delegate
+            // For custom events, the args type is determined from the associated delegate. The type
+            // is registered via the [EventHandler] attribute, whose 'eventArgsType' argument is
+            // annotated with DynamicallyAccessedMembers so the members required for JSON
+            // deserialization are preserved when trimming. We deserialize using the JsonTypeInfo
+            // returned by the options, which is the trim-safe API.
             var eventArgsType = renderer.GetEventArgsType(eventHandlerId);
-            if (eventArgsType == typeof(EventArgs))
-            {
-                return EventArgs.Empty;
-            }
-
             var eventArgsTypeInfo = jsonSerializerOptions.GetTypeInfo(eventArgsType);
-            return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsTypeInfo)!;
+            return (EventArgs)JsonSerializer.Deserialize(eventArgsJson.GetRawText(), eventArgsTypeInfo)!;
         }
         catch (Exception e)
         {
