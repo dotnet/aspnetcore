@@ -277,7 +277,14 @@ on:
 
         data = []
         for number, pr in by_number.items():
-            issue_meta = get_issue(number) if pr.get("closed_at") else {"closed_at": None, "closed_by": None}
+            # labeled_prs is queried across any PR state (open/closed/merged), since a
+            # maintainer may label a PR after it merges. But a merged PR represents a
+            # *successful* action, not a rejected attempt — it must never seed a failure
+            # cutoff below. Use pull_request.merged_at (present on search results) rather
+            # than an extra API call to tell "merged" apart from "closed without merging".
+            was_merged = bool((pr.get("pull_request") or {}).get("merged_at"))
+            issue_meta = (get_issue(number) if pr.get("closed_at") and not was_merged
+                          else {"closed_at": None, "closed_by": None})
             closed_by = issue_meta.get("closed_by")
             author_login = (pr.get("user") or {}).get("login")
             # Both queries above are restricted to author:app/github-actions, so this PR is
@@ -302,7 +309,9 @@ on:
                 # closed_at is the cutoff timestamp: when a trusted contributor closed our
                 # own rejected (re-)quarantine attempt, only failures AFTER this instant
                 # should count toward re-attempting it (see the "prior-attempt cutoff" rule).
-                "closed_at": issue_meta.get("closed_at") or pr.get("closed_at"),
+                # Null for merged PRs — a merge is a successful outcome, not a rejection,
+                # and must never seed this cutoff.
+                "closed_at": None if was_merged else (issue_meta.get("closed_at") or pr.get("closed_at")),
                 "closed_by": closed_by,
                 # "trusted_closed" is true only when a non-bot human closed this bot-authored
                 # PR (requires triage/write access). No comment text or org-membership check
