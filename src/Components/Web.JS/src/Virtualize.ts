@@ -709,7 +709,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         const modePinsTopItem = !anchorModeIs.beginning || !convergence.top;
         const itemAlreadyShifted = rect.top - containerTop > rect.height;
         if (nativeAnchoringUnavailable && modePinsTopItem && existing && itemAlreadyShifted) {
-          if (existing.scrollTop < 1 && !anchorModeIs.beginning) {
+          // Only End mode needs the racing before-spacer load suppressed at the
+          // very top: it pins the top row while prepended items land, and on
+          // Blazor Server the spacer callback can otherwise load them before the
+          // async anchor restore completes. None mode must NOT be suppressed here
+          // — with no user scroll to clear it, the before spacer that reveals the
+          // topmost item would stay stuck (e.g. a 50px spacer that never reaches 0).
+          if (existing.scrollTop < 1 && anchorModeIs.end) {
             suppressSpacerCallbacks = true;
           }
           return;
