@@ -65,6 +65,14 @@ parameters:
   type: boolean
   default: true
 
+# When true, test results are reported to Azure DevOps using the fully qualified test name
+# (Namespace.Type.Method) as the stable automatedTestName and the visible title is qualified as
+# well (--use-fully-qualified-test-name). Opt-in because it changes AzDO test identity and display;
+# primarily useful for frameworks like MSTest whose display name is only the method name.
+- name: useFullyQualifiedTestName
+  type: boolean
+  default: false
+
 # Advanced: optional pipeline artifact (produced earlier in this run) that contains the tool
 # nupkg. When set, the artifact is downloaded and the tool is installed from the nupkg into
 # a local tool-path; this bypasses the repo's .config/dotnet-tools.json manifest and is
@@ -176,11 +184,12 @@ jobs:
       set -euo pipefail
 
       toolArgs=(
-        --helix-base-uri           '${{ parameters.helixBaseUri }}'
-        --polling-interval-seconds '${{ parameters.pollingIntervalSeconds }}'
-        --fail-on-failed-tests     '${{ parameters.failWorkItemsWithFailedTests }}'
-        --max-wait-minutes         "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
-        --stage-name               '$(System.StageName)'
+        --helix-base-uri              '${{ parameters.helixBaseUri }}'
+        --polling-interval-seconds    '${{ parameters.pollingIntervalSeconds }}'
+        --fail-on-failed-tests        '${{ parameters.failWorkItemsWithFailedTests }}'
+        --use-fully-qualified-test-name '${{ parameters.useFullyQualifiedTestName }}'
+        --max-wait-minutes            "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
+        --stage-name                  '$(System.StageName)'
       )
 
       organization='${{ parameters.organization }}'
