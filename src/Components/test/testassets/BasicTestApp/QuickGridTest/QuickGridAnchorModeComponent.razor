@@ -23,7 +23,7 @@
 
 <p>
     <button id="qg-toggle-provider" @onclick="ToggleProvider">Source: @(useItemsProvider ? "ItemsProvider" : "Items")</button>
-    <button id="qg-toggle-delay" @onclick="ToggleDelay">Provider delay: @(slowProvider ? "150ms" : "off")</button>
+    <button id="qg-toggle-delay" @onclick="ToggleDelay">Provider delay for QuickGrid: @(slowProvider ? "150ms" : "off")</button>
     <button id="qg-toggle-comparer" @onclick="ToggleComparer">Comparer: @(useDefaultComparer ? "Default" : "Custom")</button>
     <button id="qg-prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
     <button id="qg-append-items" @onclick="AppendItems">Append 10 Items</button>
@@ -108,7 +108,7 @@
     private void ToggleDelay()
     {
         slowProvider = !slowProvider;
-        statusMessage = slowProvider ? "Provider delay on (150ms)" : "Provider delay off";
+        statusMessage = slowProvider ? "Provider delay for QuickGrid on (150ms)" : "Provider delay for QuickGrid off";
     }
 
     private void ToggleComparer()

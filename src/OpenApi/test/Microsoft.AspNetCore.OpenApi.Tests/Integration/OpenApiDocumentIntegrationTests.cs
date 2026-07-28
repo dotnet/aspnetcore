@@ -31,6 +31,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
             testCases.Add("schemas-by-ref", version);
             testCases.Add("xml", version);
             testCases.Add("unions", version);
+            testCases.Add("obsolete", version);
 
             foreach (var enumDocument in EnumDocuments)
             {
