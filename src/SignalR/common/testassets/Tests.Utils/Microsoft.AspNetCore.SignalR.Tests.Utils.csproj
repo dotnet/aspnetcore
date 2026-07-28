@@ -15,11 +15,9 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
     <Reference Include="Moq" />
-    <Reference Include="StackExchange.Redis.StrongName" />
   </ItemGroup>
 
 </Project>

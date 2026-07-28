@@ -13,18 +13,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         private static readonly IHubProtocol JsonHubProtocol = new JsonHubProtocol();
 
-        private static readonly IHubProtocol MessagePackHubProtocol = new MessagePackHubProtocol();
-
         public static readonly List<string> AllProtocolNames = new List<string>
         {
-            JsonHubProtocol.Name,
-            MessagePackHubProtocol.Name
+            JsonHubProtocol.Name
         };
 
         public static readonly IList<IHubProtocol> AllProtocols = new List<IHubProtocol>()
         {
-            JsonHubProtocol,
-            MessagePackHubProtocol
+            JsonHubProtocol
         };
 
         public static IHubProtocol GetHubProtocol(string name)

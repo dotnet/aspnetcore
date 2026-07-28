@@ -1019,26 +1019,6 @@
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.MessagePack-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' ">
-    <BaselinePackageVersion>1.2.11</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.7, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.SignalR.Redis-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Redis' ">
-    <BaselinePackageVersion>1.2.11</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Redis' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.7, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[8.0.2, )" />
-    <BaselinePackageReference Include="StackExchange.Redis.StrongName" Version="[1.2.6, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[8.0.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR' ">
     <BaselinePackageVersion>1.2.11</BaselinePackageVersion>

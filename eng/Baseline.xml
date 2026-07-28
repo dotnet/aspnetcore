@@ -111,8 +111,6 @@ build of ASP.NET Core 2.3.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.SignalR.Common" Version="1.2.11" />
   <Package Id="Microsoft.AspNetCore.SignalR.Core" Version="1.2.11" />
   <Package Id="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="1.2.11" />
-  <Package Id="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="1.2.11" />
-  <Package Id="Microsoft.AspNetCore.SignalR.Redis" Version="1.2.11" />
   <Package Id="Microsoft.AspNetCore.SignalR" Version="1.2.11" />
   <Package Id="Microsoft.AspNetCore.SpaServices.Extensions" Version="2.3.11" />
   <Package Id="Microsoft.AspNetCore.SpaServices" Version="2.3.11" />

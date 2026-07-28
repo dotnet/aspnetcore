@@ -56,8 +56,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             services.AddOptions()
                 .AddLogging();
 
-            services.AddSignalR()
-                .AddMessagePackProtocol();
+            services.AddSignalR();
 
             addServices?.Invoke(services);
 

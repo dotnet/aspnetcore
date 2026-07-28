@@ -971,36 +971,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Fact]
-        public async Task NegotiationSkipsServerSentEventsWhenUsingBinaryProtocol()
-        {
-            using (StartVerifiableLog(out var loggerFactory))
-            {
-                var hubConnectionBuilder = new HubConnectionBuilder()
-                    .WithLoggerFactory(loggerFactory)
-                    .AddMessagePackProtocol()
-                    .WithUrl(ServerFixture.Url + "/default-nowebsockets");
-
-                var hubConnection = hubConnectionBuilder.Build();
-                try
-                {
-                    await hubConnection.StartAsync().OrTimeout();
-
-                    var transport = await hubConnection.InvokeAsync<HttpTransportType>(nameof(TestHub.GetActiveTransportName)).OrTimeout();
-                    Assert.Equal(HttpTransportType.LongPolling, transport);
-                }
-                catch (Exception ex)
-                {
-                    loggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                    throw;
-                }
-                finally
-                {
-                    await hubConnection.DisposeAsync().OrTimeout();
-                }
-            }
-        }
-
-        [Fact]
         public async Task StopCausesPollToReturnImmediately()
         {
             using (StartVerifiableLog(out var loggerFactory))
@@ -1071,10 +1041,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     {
                         foreach (var hubPath in HubPaths)
                         {
-                            if (!(protocol.Value is MessagePackHubProtocol) || transport != HttpTransportType.ServerSentEvents)
-                            {
-                                yield return new object[] { protocol.Key, transport, hubPath };
-                            }
+                            yield return new object[] { protocol.Key, transport, hubPath };
                         }
                     }
                 }
@@ -1088,7 +1055,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             new Dictionary<string, IHubProtocol>
             {
                 { "json", new JsonHubProtocol() },
-                { "messagepack", new MessagePackHubProtocol() },
             };
 
         public static IEnumerable<object[]> TransportTypes()
