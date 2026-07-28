@@ -125,7 +125,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66693")]
     public void DataAnnotationsWorkForForms(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -636,6 +635,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68021")]
     public void CanDisplayBindingErrorsCollectionsToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-collection-parameter";
