@@ -352,8 +352,6 @@ stages:
 
         # Populate internal runtime variables.
         - template: /eng/common/templates/steps/enable-internal-sources.yml
-          parameters:
-            legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
 
         - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
