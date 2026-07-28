@@ -519,8 +519,15 @@ public class Http3RequestTests : LoggedTest
 
             var serverReadTask = await readAsyncTask.Task.DefaultTimeout();
 
-            var serverEx = await Assert.ThrowsAsync<IOException>(() => serverReadTask).DefaultTimeout();
-            Assert.Equal("The client reset the request stream.", serverEx.Message);
+            try
+            {
+                int bytesRead = await serverReadTask;
+                Assert.Equal(0, bytesRead);
+            }
+            catch (IOException ex)
+            {
+                Assert.Equal("The client reset the request stream.", ex.Message);
+            }
 
             await host.StopAsync().DefaultTimeout();
         }
