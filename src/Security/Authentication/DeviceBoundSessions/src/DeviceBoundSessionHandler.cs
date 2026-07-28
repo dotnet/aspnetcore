@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// Authentication handler that implements the Device Bound Session Credentials (DBSC) protocol.
 /// Handles registration and refresh endpoints, delegating cookie management to separate cookie schemes.
 /// </summary>
-[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessionOptions>, IAuthenticationRequestHandler
 {
     private readonly DeviceBoundSessionChallengeProtector _challengeProtector;

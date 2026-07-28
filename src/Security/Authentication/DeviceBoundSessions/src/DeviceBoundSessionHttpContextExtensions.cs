@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// <summary>
 /// Extension methods on <see cref="HttpContext"/> for Device Bound Session Credentials (DBSC).
 /// </summary>
-[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public static class DeviceBoundSessionHttpContextExtensions
 {
     /// <summary>

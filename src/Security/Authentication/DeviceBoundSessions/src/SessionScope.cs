@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// Represents the scope of a DBSC session. Corresponds to the "JSON Session Scope Instruction
 /// Format" defined in W3C Device Bound Session Credentials §9.7.
 /// </summary>
-[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class SessionScope
 {
     /// <summary>

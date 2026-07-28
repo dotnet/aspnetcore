@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// <summary>
 /// Source-generated JSON serialization context for DBSC configuration types.
 /// </summary>
-[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 [JsonSerializable(typeof(SessionInstruction))]
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 internal sealed partial class DeviceBoundSessionJsonContext : JsonSerializerContext

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// <summary>
 /// Represents a scope rule for DBSC session configuration.
 /// </summary>
-[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public class DeviceBoundSessionScopeRule
 {
     /// <summary>

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// and (optionally) refresh. Corresponds to the "JSON Session Instruction Format" defined in
 /// W3C Device Bound Session Credentials §9.6.
 /// </summary>
-[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class SessionInstruction
 {
     /// <summary>

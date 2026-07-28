@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// Represents a credential in the DBSC session instructions. Corresponds to the "JSON Session
 /// Credential Format" defined in W3C Device Bound Session Credentials §9.9.
 /// </summary>
-[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class SessionCredential
 {
     /// <summary>

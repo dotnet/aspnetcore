@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// <summary>
 /// Default values for the Device Bound Session Credentials authentication scheme.
 /// </summary>
-[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+[Experimental("ASP0031", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public static class DeviceBoundSessionDefaults
 {
     /// <summary>
