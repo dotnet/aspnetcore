@@ -39,9 +39,13 @@
 
   <!-- Build and publish the gateway before packing so its binaries are available to the nuspec. -->
   <Target Name="_PublishGatewayForTool" BeforeTargets="GenerateNuspec">
+    <!-- Intentionally omit TargetFramework from Properties: passing it as a global property would
+         create a distinct MSBuild project instance for Gateway.csproj, causing a parallel publish
+         race with the instance already scheduled by the main build graph. Configuration is
+         forwarded explicitly so cross-configuration builds (e.g. Debug vs Release) are correct. -->
     <MSBuild Projects="$(_GatewayProject)"
              Targets="Publish"
-             Properties="Configuration=$(Configuration);TargetFramework=$(DefaultNetCoreTargetFramework)" />
+             Properties="Configuration=$(Configuration)" />
 
     <Error Condition="!Exists('$(_GatewayPublishDir)blazor-gateway.dll')"
            Text="Expected the gateway to publish 'blazor-gateway.dll' to '$(_GatewayPublishDir)' but it was not found." />
