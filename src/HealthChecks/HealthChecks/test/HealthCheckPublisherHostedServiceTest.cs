@@ -233,7 +233,6 @@ public class HealthCheckPublisherHostedServiceTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49745")]
     public async Task RunAsync_WaitsForCompletion_Single_RegistrationParameters()
     {
         // Arrange
@@ -498,7 +497,6 @@ public class HealthCheckPublisherHostedServiceTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56245")]
     public async Task RunAsync_CanFilterHealthChecks()
     {
         // Arrange

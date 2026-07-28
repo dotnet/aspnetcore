@@ -1230,6 +1230,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
+            Assert.DoesNotContain("application/json", operation.RequestBody.Content.Keys);
+            Assert.DoesNotContain("application/json-patch+json", operation.RequestBody.Content.Keys);
             Assert.Equal("application/vnd.github.patch+json", content.Key);
             var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
             Assert.Equal("JsonPatchDocument", schema.Reference.Id);
@@ -1253,6 +1255,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
+            Assert.DoesNotContain("application/json", operation.RequestBody.Content.Keys);
+            Assert.DoesNotContain("application/json-patch+json", operation.RequestBody.Content.Keys);
             Assert.Equal("application/vnd.github.patch+json", content.Key);
             var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
             Assert.Equal("JsonPatchDocument", schema.Reference.Id);
@@ -1356,6 +1360,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
+            Assert.DoesNotContain("application/json", operation.RequestBody.Content.Keys);
+            Assert.DoesNotContain("application/json-patch+json", operation.RequestBody.Content.Keys);
             Assert.Equal("application/vnd.github.patch+json", content.Key);
             var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
             Assert.Equal("JsonPatchDocument", schema.Reference.Id);
@@ -1379,6 +1385,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
+            Assert.DoesNotContain("application/json", operation.RequestBody.Content.Keys);
+            Assert.DoesNotContain("application/json-patch+json", operation.RequestBody.Content.Keys);
             Assert.Equal("application/vnd.github.patch+json", content.Key);
             var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
             Assert.Equal("JsonPatchDocument", schema.Reference.Id);

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -22,10 +21,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering;
 
 public class RemoteRendererTest
 {
-    // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
-    // failures.
-    private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
-
     private const int MaxInteractiveServerRootComponentCount = 3;
 
     private readonly IDataProtectionProvider _ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -127,11 +122,9 @@ public class RemoteRendererTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61807")]
     public async Task ProcessBufferedRenderBatches_WritesRenders()
     {
         // Arrange
-        var @event = new ManualResetEventSlim();
         var serviceProvider = CreateServiceProvider();
         var renderIds = new List<long>();
 
@@ -161,15 +154,19 @@ public class RemoteRendererTest
         component.TriggerRender();
         _ = renderer.OnRenderCompletedAsync(2, null);
 
-        @event.Reset();
         firstBatchTCS.SetResult();
 
-        // Waiting is required here because the continuations of SetResult will not execute synchronously.
-        @event.Wait(Timeout);
-
-        circuitClient.SetDisconnected();
-        component.TriggerRender();
-        component.TriggerRender();
+        // After SetResult, async continuations are queued on the renderer's
+        // dispatcher. Run the remaining setup on the dispatcher so that:
+        // 1) All prior queued work drains before our callback executes, and
+        // 2) TriggerRender runs with CheckAccess() == true, bypassing the
+        //    internal task queue and executing the render synchronously.
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            circuitClient.SetDisconnected();
+            component.TriggerRender();
+            component.TriggerRender();
+        });
 
         // Act
         circuitClient.Transfer(client.Object, "new-connection");

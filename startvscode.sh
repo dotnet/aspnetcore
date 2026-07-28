@@ -10,7 +10,7 @@ export DOTNET_ROOT="$DIR/.dotnet"
 export PATH="$DOTNET_ROOT:$PATH"
 
 # Sets TFW for Visual Studio Code usage
-export TARGET=net10.0
+export TARGET=net11.0
 
 if [ ! -f "$DOTNET_ROOT/dotnet" ]; then
     echo ".NET has not yet been installed. Run `./restore.sh` to install tools."

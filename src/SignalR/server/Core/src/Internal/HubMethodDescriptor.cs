@@ -30,7 +30,7 @@ internal sealed class HubMethodDescriptor
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
 
-    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<IAuthorizeData> policies)
+    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<object> authorizationMetadata)
     {
         MethodExecutor = methodExecutor;
 
@@ -60,8 +60,8 @@ internal sealed class HubMethodDescriptor
         // Take out synthetic arguments that will be provided by the server, this list will be given to the protocol parsers
         ParameterTypes = methodExecutor.MethodParameters.Where((p, index) =>
         {
-            // Only streams can take CancellationTokens currently
-            if (IsStreamResponse && p.ParameterType == typeof(CancellationToken))
+            // CancellationTokens are synthetic arguments provided by the server
+            if (p.ParameterType == typeof(CancellationToken))
             {
                 HasSyntheticArguments = true;
                 return false;
@@ -141,7 +141,7 @@ internal sealed class HubMethodDescriptor
             OriginalParameterTypes = methodExecutor.MethodParameters.Select(p => p.ParameterType).ToArray();
         }
 
-        Policies = policies.ToArray();
+        AuthorizationMetadata = authorizationMetadata.ToArray();
     }
 
     private bool MarkServiceParameter(int index)
@@ -172,7 +172,11 @@ internal sealed class HubMethodDescriptor
 
     public Type? StreamReturnType { get; }
 
-    public IList<IAuthorizeData> Policies { get; }
+    /// <summary>
+    /// Gets the authorization metadata (for example <see cref="IAuthorizeData"/> and
+    /// <see cref="IAuthorizationRequirementData"/>) associated with the hub method.
+    /// </summary>
+    public IReadOnlyList<object> AuthorizationMetadata { get; }
 
     public bool HasSyntheticArguments { get; private set; }
 

@@ -438,13 +438,17 @@ FILE_WATCHER::RunNotificationCallback(
 HRESULT
 FILE_WATCHER::Monitor(VOID)
 {
-    DWORD   cbRead;
+    DWORD   cbRead = 0;
     ZeroMemory(&_overlapped, sizeof(_overlapped));
+
+    // Watch subdirectories when shadow copy is enabled to detect DLL changes in nested folders.
+    // For app_offline.htm monitoring only, subdirectory watching is not needed.
+    BOOL watchSubtree = m_fShadowCopyEnabled ? TRUE : FALSE;
 
     RETURN_LAST_ERROR_IF(!ReadDirectoryChangesW(_hDirectory,
         _buffDirectoryChanges.QueryPtr(),
         _buffDirectoryChanges.QuerySize(),
-        FALSE,        // Watching sub dirs. Set to False now as only monitoring app_offline
+        watchSubtree,
         FILE_NOTIFY_VALID_MASK & ~FILE_NOTIFY_CHANGE_LAST_ACCESS & ~FILE_NOTIFY_CHANGE_SECURITY & ~FILE_NOTIFY_CHANGE_ATTRIBUTES,
         &cbRead,
         &_overlapped,

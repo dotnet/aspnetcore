@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -31,6 +32,12 @@ public sealed class WebAssemblyHostBuilder
     private RootTypeCache? _rootComponentCache;
     private string? _persistedState;
     private ServiceProviderOptions? _serviceProviderOptions;
+
+    [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+    internal static bool IsMeterSupported { get; } =
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : true;
+
+    internal static bool IsMeterEnabled { get; set; } = IsMeterSupported;
 
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -190,6 +197,7 @@ public sealed class WebAssemblyHostBuilder
         var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
 
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
+        Services.AddSingleton<IHostEnvironment>(sp => new WebAssemblyHostEnvironmentAdapter(sp.GetRequiredService<IWebAssemblyHostEnvironment>()));
 
         var configFiles = new[]
         {
@@ -343,7 +351,16 @@ public sealed class WebAssemblyHostBuilder
         });
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
+        Services.AddSingleton<CultureStateProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
+
+        // Register metrics and tracing when supported and not disabled by the feature switch.
+        if (IsMeterSupported && IsMeterEnabled)
+        {
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);
+        }
         Services.AddSingleton<HostedServiceExecutor>();
     }
 }

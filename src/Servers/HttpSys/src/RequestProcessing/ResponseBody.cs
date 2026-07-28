@@ -151,14 +151,7 @@ internal sealed partial class ResponseBody : Stream
             }
             else
             {
-                statusCode = PInvoke.HttpSendResponseEntityBody(
-                    RequestQueueHandle,
-                    RequestId,
-                    flags,
-                    dataChunks,
-                    null,
-                    null,
-                    null);
+                statusCode = PInvoke.HttpSendResponseEntityBody(RequestQueueHandle, RequestId, flags, dataChunks);
             }
         }
         finally
@@ -480,6 +473,11 @@ internal sealed partial class ResponseBody : Stream
             {
                 _leftToWrite = -1; // unlimited
             }
+        }
+
+        if (!_requestContext.Request.KeepAlive)
+        {
+            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
         }
 
         if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)

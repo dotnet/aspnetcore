@@ -35,6 +35,8 @@ internal sealed class BinaryBlob : IEquatable<BinaryBlob>
         _data = data;
     }
 
+    internal int Length => _data.Length;
+
     public int BitLength
     {
         get

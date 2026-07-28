@@ -2,7 +2,7 @@
 
 show_usage() {
     echo "Common settings:"
-    echo "  --task <value>           Name of Arcade task (name of a project in SdkTasks directory of the Arcade SDK package)"
+    echo "  --task <value>           Name of Arcade task (name of a project in toolset directory of the Arcade SDK package)"
     echo "  --restore                Restore dependencies"
     echo "  --verbosity <value>      Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]"
     echo "  --help                   Print help and exit"

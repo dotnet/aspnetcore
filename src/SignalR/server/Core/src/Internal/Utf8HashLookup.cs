@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 /// <summary>
 /// A small dictionary optimized for utf8 string lookup via spans. Adapted from https://github.com/dotnet/runtime/blob/4ed596ef63e60ce54cfb41d55928f0fe45f65cf3/src/libraries/System.Linq.Parallel/src/System/Linq/Parallel/Utils/HashLookup.cs.
 /// </summary>
+/// <remarks>
+/// This type is not robust against hash collision attacks. DO NOT add arbitrary adversary-influenced keys to the collection.
+/// </remarks>
 internal sealed class Utf8HashLookup
 {
     private int[] _buckets;

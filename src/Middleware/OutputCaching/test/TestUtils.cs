@@ -306,7 +306,6 @@ internal class LoggedMessage
     internal static LoggedMessage ResponseCached => new LoggedMessage(8, LogLevel.Information);
     internal static LoggedMessage ResponseNotCached => new LoggedMessage(9, LogLevel.Information);
     internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(10, LogLevel.Warning);
-    internal static LoggedMessage ExpirationExpiresExceeded => new LoggedMessage(11, LogLevel.Debug);
 
     private LoggedMessage(int evenId, LogLevel logLevel)
     {

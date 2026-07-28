@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- NU5100: Tasks DLL is intentionally in tasks/ folder, not lib/ -->
+    <!-- RS0026: New package with no prior shipped API; optional parameter backcompat is N/A -->
+    <NoWarn>$(NoWarn);NU5100;RS0026</NoWarn>
+    <Description>Cross-render-mode E2E testing library for Blazor using Playwright, xUnit V3, and YARP.</Description>
+    <PackageTags>blazor;e2e;testing;playwright</PackageTags>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Testing.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Playwright.Xunit.v3" />
+    <Reference Include="xunit.v3.extensibility.core" />
+    <Reference Include="Yarp.ReverseProxy" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Pack the source generator into analyzers/ folder -->
+  <Target Name="_IncludeGeneratorInPackage" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Generators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Generators.dll"
+            Pack="true"
+            PackagePath="analyzers/dotnet/cs"
+            Visible="false" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Pack the MSBuild task assembly into tasks/ folder -->
+  <Target Name="_IncludeTasksInPackage" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll"
+            Pack="true"
+            PackagePath="tasks/netstandard2.0"
+            Visible="false" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <None Include="../eng/targets/Microsoft.AspNetCore.Components.Testing.props" Pack="true" PackagePath="buildTransitive/net10.0/" />
+    <None Include="../eng/targets/Microsoft.AspNetCore.Components.Testing.targets" Pack="true" PackagePath="buildTransitive/net10.0/" />
+  </ItemGroup>
+
+</Project>

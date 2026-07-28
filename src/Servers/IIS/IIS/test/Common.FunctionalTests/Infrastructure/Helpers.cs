@@ -72,7 +72,7 @@ public static class Helpers
         }
         else
         {
-            return Path.Combine(folder, "W3SVC1");
+            return Path.Combine(folder, $"W3SVC{result.DeploymentParameters.SiteName}");
         }
     }
 
@@ -256,7 +256,7 @@ public static class Helpers
         var siteElement = config
             .RequiredElement("system.applicationHost")
             .RequiredElement("sites")
-            .RequiredElement("site");
+            .Elements("site").Last();
 
         var application = siteElement
             .RequiredElement("application");

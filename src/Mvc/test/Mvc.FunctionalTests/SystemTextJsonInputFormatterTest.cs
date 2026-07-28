@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase<FormatterWebSite.StartupWithJsonFormatter>
+public partial class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase<FormatterWebSite.StartupWithJsonFormatter>
 {
     [Fact(Skip = "https://github.com/dotnet/runtime/issues/38539")]
     public override Task JsonInputFormatter_RoundtripsRecordType()

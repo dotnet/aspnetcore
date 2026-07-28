@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
 using Xunit;
 
@@ -161,5 +162,45 @@ public class AnonymousObjectIntegrationTest
         // Assert
         Assert.Equal("The current value 'A' at path 'StringProperty' is not equal to the test value 'B'.",
             exception.Message);
+    }
+
+    [Fact]
+    public void DeeplyNestedArrayTraversal_ReplaceSucceeds()
+    {
+        //Arrange
+        var doc = new JsonObject
+        {
+            ["data"] = new JsonObject
+            {
+                ["levels"] = new JsonArray
+                {
+                    null,
+                    new JsonObject
+                    {
+                        ["items"] = new JsonArray
+                        {
+                            new JsonObject { ["id"] = 100 },
+                            new JsonObject
+                            {
+                                ["details"] = new JsonArray
+                                {
+                                    new JsonObject { ["value"] = "old" },
+                                    new JsonObject { ["value"] = "target" },
+                                    new JsonObject { ["value"] = 999 }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        var patch = new JsonPatchDocument().Replace("/data/levels/1/items/1/details/1/value", "updated");
+
+        //Act
+        patch.ApplyTo(doc);
+
+        //Assert
+        Assert.Equal("updated", doc["data"]["levels"][1]["items"][1]["details"][1]["value"].GetValue<string>());
     }
 }

@@ -22,20 +22,15 @@ public class ResponseCompressionMiddlewareTest
 {
     private const string TextPlain = "text/plain";
 
+    private static readonly string[] _supportedEncodings =
+        [
+            "gzip",
+            "br",
+            "zstd"
+        ];
+
     public static IEnumerable<object[]> SupportedEncodings =>
-        TestData.Select(x => new object[] { x.EncodingName });
-
-    public static IEnumerable<object[]> SupportedEncodingsWithBodyLength =>
-        TestData.Select(x => new object[] { x.EncodingName, x.ExpectedBodyLength });
-
-    private static IEnumerable<EncodingTestData> TestData
-    {
-        get
-        {
-            yield return new EncodingTestData("gzip", expectedBodyLength: 29);
-            yield return new EncodingTestData("br", expectedBodyLength: 21);
-        }
-    }
+        _supportedEncodings.Select(encoding => new[] { encoding });
 
     [Fact]
     public void Options_HttpsDisabledByDefault()
@@ -46,12 +41,14 @@ public class ResponseCompressionMiddlewareTest
     }
 
     [Fact]
-    public async Task Request_NoAcceptEncoding_Uncompressed()
+    public async Task Request_NoAcceptEncoding_Uncompressed_WithVaryHeader()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain);
 
-        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
-        AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
     }
 
     [Fact]
@@ -72,10 +69,34 @@ public class ResponseCompressionMiddlewareTest
         AssertCompressedWithLog(logMessages, "br");
     }
 
+    [Fact]
+    public async Task Request_AcceptZstd_CompressedZstd()
+    {
+        var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "zstd" }, responseType: TextPlain);
+
+        await CheckResponseCompressed(response, "zstd");
+        AssertCompressedWithLog(logMessages, "zstd");
+    }
+
+    [Theory]
+    [InlineData("zstd", "gzip")]
+    [InlineData("gzip", "zstd")]
+    [InlineData("zstd", "br")]
+    [InlineData("br", "zstd")]
+    [InlineData("zstd", "gzip", "br")]
+    [InlineData("br", "gzip", "zstd")]
+    public async Task Request_AcceptMixed_CompressedZstd(params string[] encodings)
+    {
+        var (response, logMessages) = await InvokeMiddleware(100, encodings, responseType: TextPlain);
+
+        await CheckResponseCompressed(response, "zstd");
+        AssertCompressedWithLog(logMessages, "zstd");
+    }
+
     [Theory]
     [InlineData("gzip", "br")]
     [InlineData("br", "gzip")]
-    public async Task Request_AcceptMixed_CompressedBrotli(string encoding1, string encoding2)
+    public async Task Request_AcceptMixed_NoBestMatch_CompressedBrotli(string encoding1, string encoding2)
     {
         var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain);
 
@@ -113,12 +134,14 @@ public class ResponseCompressionMiddlewareTest
     }
 
     [Fact]
-    public async Task RequestHead_NoAcceptEncoding_Uncompressed()
+    public async Task RequestHead_NoAcceptEncoding_Uncompressed_WithVaryHeader()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain, httpMethod: HttpMethods.Head);
 
-        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
-        AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
     }
 
     [Fact]
@@ -345,8 +368,8 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
 
-        await CheckResponseCompressed(response, "br");
-        AssertCompressedWithLog(logMessages, "br");
+        await CheckResponseCompressed(response, "zstd");
+        AssertCompressedWithLog(logMessages, "zstd");
     }
 
     [Fact]
@@ -1353,6 +1376,13 @@ public class ResponseCompressionMiddlewareTest
             using var reader = new StreamReader(brotliStream);
             decompressedContent = await reader.ReadToEndAsync();
         }
+        else if (expectedEncoding == "zstd")
+        {
+            using var compressedStream = new MemoryStream(compressedBytes);
+            using var zstdStream = new ZstandardStream(compressedStream, CompressionMode.Decompress);
+            using var reader = new StreamReader(zstdStream);
+            decompressedContent = await reader.ReadToEndAsync();
+        }
         else
         {
             throw new ArgumentException($"Unsupported encoding: {expectedEncoding}");
@@ -1435,19 +1465,6 @@ public class ResponseCompressionMiddlewareTest
         }
 
         public Task StartAsync(CancellationToken token = default) => InnerFeature.StartAsync(token);
-    }
-
-    private readonly struct EncodingTestData
-    {
-        public EncodingTestData(string encodingName, int expectedBodyLength)
-        {
-            EncodingName = encodingName;
-            ExpectedBodyLength = expectedBodyLength;
-        }
-
-        public string EncodingName { get; }
-
-        public int ExpectedBodyLength { get; }
     }
 
     private class NoSyncWrapperStream : Stream
