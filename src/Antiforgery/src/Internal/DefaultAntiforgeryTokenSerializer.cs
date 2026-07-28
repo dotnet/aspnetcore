@@ -17,30 +17,6 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
     private readonly IDataProtector _defaultCryptoSystem;
     private readonly ISpanDataProtector? _perfCryptoSystem;
 
-    private static bool IsValidBase64Url(ReadOnlySpan<char> input)
-    {
-        if (input.IsEmpty)
-        {
-            return false;
-        }
-
-        foreach (var c in input)
-        {
-            if (!IsBase64UrlChar(c))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static bool IsBase64UrlChar(char c) =>
-        (c >= 'A' && c <= 'Z') ||
-        (c >= 'a' && c <= 'z') ||
-        (c >= '0' && c <= '9') ||
-        c == '-' ||
-        c == '_';
-
     public DefaultAntiforgeryTokenSerializer(IDataProtectionProvider provider)
     {
         ArgumentNullException.ThrowIfNull(provider);
@@ -224,7 +200,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         var totalSize =
             1 // TokenVersion
             + securityTokenBytes.Length + // SecurityToken
-            +1; // IsCookieToken
+            + 1; // IsCookieToken
         if (!token.IsCookieToken)
         {
             totalSize += 1; // isClaimsBased
