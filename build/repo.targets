@@ -293,7 +293,6 @@
 
       <!-- Make sure 3rd party binaries get 3rd party certificate -->
       <CustomFileSignInfo Include="MsgPack.dll" CertificateName="3PartySHA2" />
-      <CustomFileSignInfo Include="MessagePack.dll" CertificateName="3PartySHA2" />
       <CustomFileSignInfo Include="Newtonsoft.Json.Bson.dll" CertificateName="3PartySHA2" />
       <CustomFileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
       <CustomFileSignInfo Include="Remotion.Linq.dll" CertificateName="3PartySHA2" />

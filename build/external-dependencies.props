@@ -155,7 +155,6 @@
     <ExternalDependency Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" />
     <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
     <ExternalDependency Include="Moq" Version="$(MoqPackageVersion)" />
-    <ExternalDependency Include="MessagePack" Version="$(MessagePackPackageVersion)" />
 
     <!-- netstandard1.x -->
     <ExternalDependency Include="NETStandard.Library" Version="$(NETStandard16PackageVersion)" VariableName="NETStandard16PackageVersion" />
