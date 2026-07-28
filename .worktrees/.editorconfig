@@ -1,0 +1,3 @@
+# Traversal ceiling: stops .editorconfig discovery from climbing past
+# .worktrees/ into the repo-root configuration.
+root = true
