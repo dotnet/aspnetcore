@@ -38,15 +38,9 @@
   </ItemGroup>
 
   <!-- Build and publish the gateway before packing so its binaries are available to the nuspec.
-       Gateway.csproj also ships its own package, so it's already built directly as a top-level
-       project elsewhere in the overall (parallel) build. Forcing an explicit TargetFramework here
-       gave this MSBuild request a global property that the other invocation doesn't have (Gateway.csproj
-       is single-targeted, so it doesn't need one), making MSBuild treat the two as distinct, unrelated
-       build instances. Both ended up running concurrently and racing to write the same compressed
-       static web asset files (see https://github.com/dotnet/dotnet/issues/8005). Not overriding
-       Configuration/TargetFramework here lets this request's global properties match the other
-       invocation's, so MSBuild recognizes it as the same request and reuses/waits for its result
-       instead of duplicating it. -->
+       No Properties override: Gateway.csproj is also built as a top-level project elsewhere in the
+       build, and forcing TargetFramework here made MSBuild treat the two as separate, racing builds
+       (see https://github.com/dotnet/dotnet/issues/8005). -->
   <Target Name="_PublishGatewayForTool" BeforeTargets="GenerateNuspec">
     <MSBuild Projects="$(_GatewayProject)"
              Targets="Publish" />
