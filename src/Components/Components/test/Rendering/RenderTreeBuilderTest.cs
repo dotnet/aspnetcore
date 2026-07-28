@@ -2021,6 +2021,162 @@ public class RenderTreeBuilderTest
             f => AssertFrame.Attribute(f, "id", "bye"));
     }
 
+    [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public void AddAttribute_Element_SpellcheckBool_AddsFrameWithExplicitStringValue(bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "spellcheck", value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, "spellcheck", expected, 1));
+    }
+
+    [Theory]
+    [InlineData("spellcheck", true, "true")]
+    [InlineData("SPELLCHECK", false, "false")]
+    [InlineData("Spellcheck", true, "true")]
+    public void AddAttribute_Element_SpellcheckAttributeName_IsMatchedCaseInsensitively(string attributeName, bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, attributeName, value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, attributeName, expected, 1));
+    }
+
+    [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public void AddAttribute_Element_ObjectSpellcheckBool_AddsFrameWithExplicitStringValue(bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "spellcheck", (object)value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, "spellcheck", expected, 1));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AddAttribute_Component_SpellcheckBool_SetsAttributeValue(bool value)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddAttribute(1, "spellcheck", value);
+        builder.CloseComponent();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
+            frame => AssertFrame.Attribute(frame, "spellcheck", value, 1));
+    }
+
+    [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public void AddAttribute_Element_ContenteditableBool_AddsFrameWithExplicitStringValue(bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "contenteditable", value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, "contenteditable", expected, 1));
+    }
+
+    [Theory]
+    [InlineData("contenteditable", true, "true")]
+    [InlineData("CONTENTEDITABLE", false, "false")]
+    [InlineData("ContentEditable", true, "true")]
+    public void AddAttribute_Element_ContenteditableAttributeName_IsMatchedCaseInsensitively(string attributeName, bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, attributeName, value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, attributeName, expected, 1));
+    }
+
+    [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public void AddAttribute_Element_ObjectContenteditableBool_AddsFrameWithExplicitStringValue(bool value, string expected)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "contenteditable", (object)value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, "contenteditable", expected, 1));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AddAttribute_Component_ContenteditableBool_SetsAttributeValue(bool value)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddAttribute(1, "contenteditable", value);
+        builder.CloseComponent();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
+            frame => AssertFrame.Attribute(frame, "contenteditable", value, 1));
+    }
+
+    [Theory]
+    [InlineData("disabled", true)]
+    [InlineData("hidden", true)]
+    [InlineData("readonly", true)]
+    public void AddAttribute_Element_RegularBoolAttribute_NotAffectedByEnumeratedLogic(string attributeName, bool value)
+    {
+        var builder = new RenderTreeBuilder();
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, attributeName, value);
+        builder.CloseElement();
+
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "div", 2, 0),
+            frame => AssertFrame.Attribute(frame, attributeName, 1));
+    }
+
     [Fact]
     public void ProcessDuplicateAttributes_DoesNotRemoveDuplicatesInsideChildElement()
     {
