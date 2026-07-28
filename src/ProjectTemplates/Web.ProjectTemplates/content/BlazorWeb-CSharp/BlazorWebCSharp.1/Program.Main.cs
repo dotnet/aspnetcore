@@ -81,6 +81,16 @@ public class Program
 
         builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+        // Advertises where passkeys can be created and managed at /.well-known/passkey-endpoints so
+        // that credential managers can offer to upgrade a saved password to a passkey without the
+        // user having to find the page themselves.
+        // See https://w3c.github.io/webappsec-passkey-endpoints/.
+        builder.Services.AddPasskeyEndpoints(options =>
+        {
+            options.Enroll = "/Account/Manage/Passkeys";
+            options.Manage = "/Account/Manage/Passkeys";
+        });
+
         #endif
         var app = builder.Build();
 
