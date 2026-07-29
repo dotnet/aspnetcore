@@ -137,10 +137,10 @@ public class ResourceManagerStringLocalizerTest
         var value = localizer["a key!"];
 
         // Assert
-        var write = Sink.Writes;
-        Assert.Equal(2, write.Count);
-        Assert.Equal("ResourceManagerStringLocalizer searched for 'a key!' in 'Resources.TestResource' with culture 'en-US'.", write.ElementAt(0).State.ToString());
-        Assert.Equal("The resource with key 'a key!' is found.", write.ElementAt(1).State.ToString());
+        var writes = Sink.Writes.ToArray();
+        Assert.Equal(2, writes.Length);
+        Assert.Equal("ResourceManagerStringLocalizer searched for 'a key!' in 'Resources.TestResource' with culture 'en-US'.", writes[0].State.ToString());
+        Assert.Equal("A resource for 'a key!' with culture 'en-US' was not found.", writes[1].State.ToString());
     }
 
     [Theory]
