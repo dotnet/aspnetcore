@@ -135,7 +135,7 @@
     private void ToggleDelay()
     {
         useProviderDelay = !useProviderDelay;
-        statusMessage = useProviderDelay ? "Provider delay: 150ms" : "Provider delay: None";
+        statusMessage = useProviderDelay ? "Provider delay for QuickGrid: 150ms" : "Provider delay for QuickGrid: None";
     }
 
     private async ValueTask<GridItemsProviderResult<Row>> GetItemsAsync(GridItemsProviderRequest<Row> request)

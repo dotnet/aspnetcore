@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 internal readonly struct ClientValidationFieldMetadata(
     string propertyName,
     ValidationAttribute[] validationAttributes,
-    Type? declaringType,
+    Type declaringType,
     DisplayAttribute? resourceDisplayAttribute,
     string? literalDisplayName)
 {
@@ -19,9 +19,12 @@ internal readonly struct ClientValidationFieldMetadata(
 
     public ValidationAttribute[] ValidationAttributes { get; } = validationAttributes;
 
-    public Type? DeclaringType { get; } = declaringType;
+    // Type that declares the property. Differs from the runtime container type for inherited
+    // properties. Used for localizer resolution so the client mirrors the server, which resolves
+    // the localizer, message key, and display name from the declaring type.
+    public Type DeclaringType { get; } = declaringType;
 
-    // [Display(Name=..., ResourceType=...)]
+    // [Display(Name=..., ResourceType=...)].
     public DisplayAttribute? ResourceDisplayAttribute { get; } = resourceDisplayAttribute;
 
     // [Display(Name="X")] (no ResourceType) or [DisplayName("X")].

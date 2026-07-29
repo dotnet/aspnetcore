@@ -117,7 +117,7 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void EndAnchoredAppend_IssuesExactlyTwoProviderCalls_AdvancingToTail()
     {
-        Navigate($"{ServerPathBase}/virtualize-append?comparer=true");
+        Navigate($"{ServerPathBase}/virtualize-append?comparer=true&delay=50");
         Browser.Exists(By.Id("interactive-ready"));
         var initialCount = GetReportedItemCount();
         var batch = GetInputValue("batch-input");

@@ -267,19 +267,17 @@ namespace Microsoft.Extensions.Validation.Generated
             _literal = literal;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
         {
-            var localizer = context.ValidationOptions.Localizer;
-            if (localizer is null)
+            var factory = context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) as global::Microsoft.Extensions.Localization.IStringLocalizerFactory;
+            if (factory is null)
             {
                 return _literal;
             }
-            return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
-            {
-                Type = type,
-                DisplayName = _literal,
-                MemberName = memberName,
-            }) ?? _literal;
+            var localizer = LocalizationHelpers.CreateStringLocalizer(context, type, factory);
+            var localizedName = localizer[_literal];
+
+            return localizedName.ResourceNotFound ? _literal : localizedName.Value;
         }
     }
 
@@ -299,7 +297,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _propertyName = propertyName;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             => DisplayAttributeCache.GetPropertyDisplayAttribute(_containingType, _propertyName)?.GetName();
     }
 
@@ -316,7 +314,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _type = type;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             => DisplayAttributeCache.GetTypeDisplayAttribute(_type)?.GetName();
     }
 
@@ -383,7 +381,19 @@ namespace Microsoft.Extensions.Validation.Generated
 
     file abstract class DisplayNameInfo
     {
-        public abstract string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type);
+        public abstract string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type);
+    }
+
+
+    file static class LocalizationHelpers
+    {
+        public static global::Microsoft.Extensions.Localization.IStringLocalizer CreateStringLocalizer(
+            global::Microsoft.Extensions.Validation.ValidateContext context,
+            global::System.Type type,
+            global::Microsoft.Extensions.Localization.IStringLocalizerFactory factory)
+                => context.ValidationOptions.LocalizerProvider(type, factory)
+                    ?? throw new global::System.InvalidOperationException(
+                        $"The ValidationOptions.LocalizerProvider delegate returned null for type '{type.FullName}'. The delegate must return a non-null IStringLocalizer instance.");
     }
 
 
@@ -460,25 +470,66 @@ namespace Microsoft.Extensions.Validation.Generated
             global::Microsoft.Extensions.Validation.ValidateContext context,
             string memberName,
             string displayName,
-            global::System.Type? declaringType,
+            global::System.Type declaringType,
             global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
             global::System.ComponentModel.DataAnnotations.ValidationResult result)
         {
-            if (context.ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
+            if (attribute.ErrorMessageResourceType is not null)
             {
                 return result.ErrorMessage;
             }
 
-            var localizationContext = new global::Microsoft.Extensions.Validation.ErrorMessageLocalizationContext
+            if (context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) is not global::Microsoft.Extensions.Localization.IStringLocalizerFactory localizerFactory)
             {
-                MemberName = memberName,
-                DisplayName = displayName,
-                DeclaringType = declaringType,
-                Attribute = attribute,
-            };
+                return result.ErrorMessage;
+            }
 
-            return context.ValidationOptions.Localizer.ResolveErrorMessage(localizationContext) ?? result.ErrorMessage;
+            var lookupKey = !string.IsNullOrEmpty(attribute.ErrorMessage)
+                ? attribute.ErrorMessage
+                : context.ValidationOptions.MessageKeyProvider?.Invoke(new global::Microsoft.Extensions.Validation.ValidationMessageKeyContext
+                {
+                    ValidatorType = attribute.GetType(),
+                    MemberName = memberName,
+                    DeclaringType = declaringType,
+                });
+
+            if (string.IsNullOrEmpty(lookupKey))
+            {
+                return result.ErrorMessage;
+            }
+
+            var localizer = LocalizationHelpers.CreateStringLocalizer(context, declaringType, localizerFactory);
+
+            var localizedTemplate = localizer[lookupKey!];
+            if (localizedTemplate.ResourceNotFound)
+            {
+                return result.ErrorMessage;
+            }
+
+            return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
         }
+
+        // Keep in sync with DataAnnotationsLocalizer.FormatMessage in
+        // src/Components/Endpoints/src/Forms/DataAnnotationsLocalizer.cs, which mirrors this switch for the
+        // Blazor SSR client-validation payload.
+        private static string FormatErrorMessage(
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
+            global::System.Globalization.CultureInfo culture,
+            string messageTemplate,
+            string displayName)
+            => attribute switch
+            {
+                global::Microsoft.Extensions.Validation.IValidationMessageFormatter selfFormatter => selfFormatter.FormatMessage(culture, messageTemplate, displayName),
+                global::System.ComponentModel.DataAnnotations.CompareAttribute a => string.Format(culture, messageTemplate, displayName, a.OtherPropertyDisplayName ?? a.OtherProperty),
+                global::System.ComponentModel.DataAnnotations.FileExtensionsAttribute a => string.Format(culture, messageTemplate, displayName, a.Extensions),
+                global::System.ComponentModel.DataAnnotations.LengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MinimumLength, a.MaximumLength),
+                global::System.ComponentModel.DataAnnotations.MaxLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
+                global::System.ComponentModel.DataAnnotations.MinLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
+                global::System.ComponentModel.DataAnnotations.RangeAttribute a => string.Format(culture, messageTemplate, displayName, a.Minimum, a.Maximum),
+                global::System.ComponentModel.DataAnnotations.RegularExpressionAttribute a => string.Format(culture, messageTemplate, displayName, a.Pattern),
+                global::System.ComponentModel.DataAnnotations.StringLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MaximumLength, a.MinimumLength),
+                _ => string.Format(culture, messageTemplate, displayName),
+            };
 
         private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
             global::Microsoft.Extensions.Validation.ValidateContext context,
@@ -489,11 +540,6 @@ namespace Microsoft.Extensions.Validation.Generated
             string displayName,
             global::System.Threading.CancellationToken cancellationToken)
         {
-            // NOTE: In case there are no async validation attributes, there should be no performance impact.
-            // The async state machine is a class only in Debug builds. But in Release it's a struct.
-            // So it will be efficient.
-            // And if this method completed synchronously because no async validation attributes exist, this
-            // will returned the same cached instance as Task.CompletedTask.
             if (ValidateSynchronousOnly(context, validationAttributes, value, container, validationContext, displayName))
             {
                 // Only validate async attributes if synchronous validation passed.
@@ -797,7 +843,7 @@ namespace Microsoft.Extensions.Validation.Generated
             {
                 // If we have null value here, the only thing we can validate is the type-level attributes.
                 // There are no "members" to validate, and there is no IValidatableObject to validate.
-                var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+                var display = DisplayNameInfo?.GetDisplayName(context, Type) ?? Type.Name;
                 await ValidateAttributesAsync(
                     context,
                     GetValidationAttributes(),
@@ -833,7 +879,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 return;
             }
 
-            var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Type) ?? Type.Name;
 
             // Validate type-level attributes
             var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(value ?? _throwawayObjectInstance, displayName, context.ServiceProvider, null);
@@ -857,7 +903,7 @@ namespace Microsoft.Extensions.Validation.Generated
             {
                 // If we have null value here, the only thing we can validate is the type-level attributes.
                 // There are no "members" to validate, and there is no IValidatableObject to validate.
-                var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+                var display = DisplayNameInfo?.GetDisplayName(context, Type) ?? Type.Name;
                 ValidateAllAttributesSynchronously(
                     context,
                     GetValidationAttributes(),
@@ -890,7 +936,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 return;
             }
 
-            var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Type) ?? Type.Name;
 
             // Validate type-level attributes
             var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(value ?? _throwawayObjectInstance, displayName, context.ServiceProvider, null);
@@ -1048,7 +1094,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 // Create a validation error for each member name that is provided
                 var errorMessage = ResolveAttributeErrorMessage(
                     context,
-                    memberName,
+                    memberName: memberName,
                     displayName,
                     declaringType: Type,
                     attribute,
@@ -1175,7 +1221,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 context.CurrentValidationPath = $"{originalPrefix}.{Name}";
             }
 
-            var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+            var displayName = DisplayNameInfo?.GetDisplayName(context, DeclaringType) ?? Name;
 
             var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(containingObject, displayName, context.ServiceProvider, null)
             {
@@ -1275,7 +1321,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 context.CurrentValidationPath = $"{originalPrefix}.{Name}";
             }
 
-            var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+            var displayName = DisplayNameInfo?.GetDisplayName(context, DeclaringType) ?? Name;
 
             var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(containingObject, displayName, context.ServiceProvider, null)
             {
@@ -1419,7 +1465,7 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             var validationAttributes = GetValidationAttributes();
 
-            var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+            var displayName = DisplayNameInfo?.GetDisplayName(context, ParameterType) ?? Name;
             var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
             {
                 MemberName = Name
@@ -1491,7 +1537,7 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             var validationAttributes = GetValidationAttributes();
 
-            var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+            var displayName = DisplayNameInfo?.GetDisplayName(context, ParameterType) ?? Name;
             var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(_throwawayObjectInstance, displayName, context.ServiceProvider, null)
             {
                 MemberName = Name
@@ -1552,7 +1598,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 context,
                 memberName: Name,
                 displayName,
-                declaringType: null,
+                declaringType: ParameterType,
                 attribute,
                 result);
 
@@ -1623,23 +1669,17 @@ namespace Microsoft.Extensions.Validation.Generated
             var displayAttribute = global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameterInfo);
             if (displayAttribute is { ResourceType: not null, Name: not null })
             {
-                // Resource-based display name from [Display(ResourceType = ..., Name = ...)] is the
-                // canonical localized source; the IValidationLocalizer is intentionally bypassed.
-                // The DisplayAttribute instance is retained for the lifetime of the resolver, mirroring
-                // the source-generator's static accessor design.
                 return new ParameterReflectionDisplayName(displayAttribute);
             }
 
             if (displayAttribute?.Name is not null)
             {
-                // Literal name from [Display(Name = "...")].
                 return new LiteralDisplayName(displayAttribute.Name);
             }
 
             var displayNameAttribute = global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::System.ComponentModel.DisplayNameAttribute>(parameterInfo);
             if (displayNameAttribute is not null)
             {
-                // Literal name from [DisplayName("...")].
                 return new LiteralDisplayName(displayNameAttribute.DisplayName);
             }
 
@@ -1660,28 +1700,24 @@ namespace Microsoft.Extensions.Validation.Generated
 
         private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
         {
-            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             {
-                var localizer = context.ValidationOptions.Localizer;
-                if (localizer is null)
+                var factory = context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) as global::Microsoft.Extensions.Localization.IStringLocalizerFactory;
+                if (factory is null)
                 {
                     return literal;
                 }
 
-                // The literal acts as both the lookup key for the localizer AND the fallback display
-                // name when the localizer can't translate.
-                return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
-                {
-                    Type = type,
-                    DisplayName = literal,
-                    MemberName = memberName,
-                }) ?? literal;
+                var localizer = LocalizationHelpers.CreateStringLocalizer(context, type, factory);
+                var localizedName = localizer[literal];
+
+                return localizedName.ResourceNotFound ? literal : localizedName.Value;
             }
         }
 
         private sealed class ParameterReflectionDisplayName(global::System.ComponentModel.DataAnnotations.DisplayAttribute attribute) : DisplayNameInfo
         {
-            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+            public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
                 => attribute.GetName();
         }
 
