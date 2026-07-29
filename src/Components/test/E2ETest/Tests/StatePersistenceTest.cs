@@ -311,6 +311,52 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             stateValue: "other");
     }
 
+    // Same regression as above, but with streaming rendering, where the persisted state only reaches
+    // the document on a streaming update at the end of the response, after the interactive components
+    // have already been discovered.
+    [Theory]
+    [InlineData("server", typeof(InteractiveServerRenderMode), "ServerStreaming")]
+    [InlineData("wasm", typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
+    public void StateIsRestoredOnSubsequentEnhancedNavigationsWithStreamingRendering(string mode, Type renderMode, string streaming)
+    {
+        Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('keep-circuit-alive', 'true')");
+        Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}");
+
+        // First enhanced navigation to a page with components. This activates the runtime.
+        Browser.Click(By.Id("page-with-components-link-and-declarative-state"));
+        EndStreamingAndAssertStateIsRestored();
+
+        // Navigate away and back. The runtime is already running, so the components get activated
+        // through a root component update rather than through the initial update.
+        Browser.Click(By.Id("page-no-components-link"));
+        Browser.Click(By.Id("page-with-components-link-and-declarative-state"));
+        EndStreamingAndAssertStateIsRestored();
+
+        void EndStreamingAndAssertStateIsRestored()
+        {
+            // Wait for the component to be streaming before releasing it, so that we know the
+            // persisted state is emitted after the components have been discovered.
+            AssertDeclarativePageState(
+                mode: mode,
+                renderMode: renderMode.Name,
+                interactive: false,
+                stateValue: null,
+                streamingId: streaming,
+                streamingCompleted: false);
+
+            Browser.Click(By.Id("end-streaming"));
+
+            AssertDeclarativePageState(
+                mode: mode,
+                renderMode: renderMode.Name,
+                interactive: true,
+                stateValue: "other",
+                streamingId: streaming,
+                streamingCompleted: true);
+        }
+    }
+
     [Theory]
     [InlineData("ServerNonPrerendered")]
     [InlineData("WebAssemblyNonPrerendered")]
