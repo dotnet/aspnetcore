@@ -180,19 +180,37 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public virtual void CancelsOutdatedRefreshes_Async()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var startOverlapButton = Browser.Exists(By.Id("start-overlap-test"));
-        var releaseOverlapButton = Browser.Exists(By.Id("release-overlap-test"));
 
-        startOverlapButton.Click();
-        Browser.Equal("Overlap test ready", () => Browser.FindElement(By.Id("overlap-status")).Text);
-        Browser.Equal("0", () => Browser.FindElement(By.Id("cancellation-count")).Text);
+        Browser.Equal("First request pending", () => Browser.FindElement(By.Id("scroll-cancel-status")).Text);
+        Browser.Equal("1", () => Browser.FindElement(By.Id("scroll-cancel-request-count")).Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("scroll-cancel-count")).Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("scroll-cancel-cancelled-request-id")).Text);
 
-        releaseOverlapButton.Click();
-
-        Browser.Equal("Overlap test released", () => Browser.FindElement(By.Id("overlap-status")).Text);
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() =>
+        {
+            var container = Browser.FindElement(By.Id("scroll-cancel-container"));
+            js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", container);
+            var scrollTop = Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
+            return scrollTop > 0;
+        });
 
         Browser.True(() =>
-            int.Parse(Browser.FindElement(By.Id("cancellation-count")).Text, CultureInfo.InvariantCulture) > 0);
+        {
+            var requestCount = int.Parse(Browser.FindElement(By.Id("scroll-cancel-request-count")).Text, CultureInfo.InvariantCulture);
+            return requestCount > 1;
+        }, TimeSpan.FromSeconds(10), "Scrolling should trigger a newer Virtualize request");
+
+        Browser.True(() =>
+        {
+            var countText = Browser.FindElement(By.Id("scroll-cancel-count")).Text;
+            var cancelledRequestText = Browser.FindElement(By.Id("scroll-cancel-cancelled-request-id")).Text;
+            return int.TryParse(countText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var c)
+                && c > 0
+                && int.TryParse(cancelledRequestText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var cancelledRequestId)
+                && cancelledRequestId == 1;
+        }, TimeSpan.FromSeconds(10),
+            "Cancellation count should increment after a scroll-driven refresh supersedes the in-flight request");
     }
 
     [Fact]

@@ -37,6 +37,24 @@
 </p>
 
 <p>
+    Scroll cancellation test:<br />
+    <span id="scroll-cancel-status">@scrollCancelStatus</span><br />
+    Request count: <span id="scroll-cancel-request-count">@scrollCancelRequestCount</span><br />
+    Cancelled request id: <span id="scroll-cancel-cancelled-request-id">@scrollCancelCancelledRequestId</span><br />
+    Cancellation count: <span id="scroll-cancel-count">@scrollCancelCount</span><br />
+    <div id="scroll-cancel-container" style="background-color: #eee; height: 200px; overflow-y: auto">
+        <Virtualize ItemsProvider="GetScrollCancelItemsAsync" ItemSize="50" OverscanCount="3">
+            <ItemContent>
+                <div @key="context" id="scroll-cancel-item" style="height: 50px; background-color: lightblue;">Item @context</div>
+            </ItemContent>
+            <Placeholder>
+                <div id="scroll-cancel-placeholder" style="height: 50px; background-color: orange;">Loading...</div>
+            </Placeholder>
+        </Virtualize>
+    </div>
+</p>
+
+<p>
     Empty Content:<br />
 <div id="empty-container" style="background-color: #eee; height: 100px; overflow-y: auto">
     <Virtualize Items="@emptyCollection" ItemSize="itemSize">
@@ -81,6 +99,12 @@
     TaskCompletionSource secondRequestQueuedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     int overlapRequestCount = 0;
 
+    int scrollCancelCount = 0;
+    string scrollCancelStatus = "Idle";
+    TaskCompletionSource scrollCancelTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    int scrollCancelRequestCount = 0;
+    int scrollCancelCancelledRequestId = 0;
+
     Virtualize<int> asyncComponent;
 
     async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
@@ -117,6 +141,30 @@
         asyncTotalItemCount = totalItemCount;
         asyncTcs.SetResult();
         asyncTcs = new TaskCompletionSource();
+    }
+
+    async ValueTask<ItemsProviderResult<int>> GetScrollCancelItemsAsync(ItemsProviderRequest request)
+    {
+        var requestNumber = Interlocked.Increment(ref scrollCancelRequestCount);
+        scrollCancelStatus = requestNumber == 1 ? "First request pending" : $"Request {requestNumber} pending";
+        await InvokeAsync(StateHasChanged);
+
+        var registration = request.CancellationToken.Register(() =>
+        {
+            scrollCancelCancelledRequestId = requestNumber;
+            Interlocked.Increment(ref scrollCancelCount);
+            scrollCancelStatus = $"Request {requestNumber} cancelled";
+            InvokeAsync(StateHasChanged);
+        });
+
+        if (requestNumber == 1)
+        {
+            await scrollCancelTcs.Task;
+        }
+
+        registration.Dispose();
+
+        return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), 1000);
     }
 
     void CancelLoadingAsync(System.Threading.CancellationToken cancellationToken)
