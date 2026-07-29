@@ -1091,6 +1091,68 @@ public class SignInManagerTest
             Times.Never());
     }
 
+    [Fact]
+    public async Task ResignInNoOpsAndLogsErrorIfSecurityStampIsStale()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        var manager = SetupUserManager(user);
+        manager.Setup(m => m.SupportsUserSecurityStamp).Returns(true);
+        manager.Setup(m => m.GetSecurityStampAsync(user)).ReturnsAsync("current-stamp");
+        var logger = new TestLogger<SignInManager<PocoUser>>();
+        var signInManager = new Mock<SignInManager<PocoUser>>(manager.Object,
+            new HttpContextAccessor { HttpContext = context },
+            new Mock<IUserClaimsPrincipalFactory<PocoUser>>().Object,
+            null, logger, new Mock<IAuthenticationSchemeProvider>().Object, null)
+        { CallBase = true };
+        var id = new ClaimsIdentity("authscheme");
+        id.AddClaim(new Claim(new IdentityOptions().ClaimsIdentity.SecurityStampClaimType, "stale-stamp"));
+        var claimsPrincipal = new ClaimsPrincipal(id);
+        var authResult = AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, new AuthenticationProperties(), "authscheme"));
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.ApplicationScheme))
+            .Returns(Task.FromResult(authResult)).Verifiable();
+        manager.Setup(m => m.GetUserId(claimsPrincipal)).Returns(user.Id.ToString());
+
+        await signInManager.Object.RefreshSignInAsync(user);
+
+        Assert.Contains("RefreshSignInAsync prevented because the presented security stamp is stale.", logger.LogMessages);
+        auth.Verify();
+        signInManager.Verify(s => s.SignInWithClaimsAsync(It.IsAny<PocoUser>(), It.IsAny<AuthenticationProperties>(), It.IsAny<IEnumerable<Claim>>()),
+            Times.Never());
+    }
+
+    [Fact]
+    public async Task CanResignInWhenSecurityStampMatches()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        var manager = SetupUserManager(user);
+        manager.Setup(m => m.SupportsUserSecurityStamp).Returns(true);
+        manager.Setup(m => m.GetSecurityStampAsync(user)).ReturnsAsync("current-stamp");
+        var id = new ClaimsIdentity("authscheme");
+        id.AddClaim(new Claim(new IdentityOptions().ClaimsIdentity.SecurityStampClaimType, "current-stamp"));
+        var claimsPrincipal = new ClaimsPrincipal(id);
+        var authResult = AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, new AuthenticationProperties(), "authscheme"));
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.ApplicationScheme))
+            .Returns(Task.FromResult(authResult)).Verifiable();
+        manager.Setup(m => m.GetUserId(claimsPrincipal)).Returns(user.Id.ToString());
+        var signInManager = new Mock<SignInManager<PocoUser>>(manager.Object,
+            new HttpContextAccessor { HttpContext = context },
+            new Mock<IUserClaimsPrincipalFactory<PocoUser>>().Object,
+            null, null, new Mock<IAuthenticationSchemeProvider>().Object, null)
+        { CallBase = true };
+        signInManager.Setup(s => s.SignInWithClaimsAsync(user, It.IsAny<AuthenticationProperties>(), It.IsAny<IEnumerable<Claim>>()))
+            .Returns(Task.FromResult(0)).Verifiable();
+        signInManager.Object.Context = context;
+
+        await signInManager.Object.RefreshSignInAsync(user);
+
+        auth.Verify();
+        signInManager.Verify();
+    }
+
     [Theory]
     [InlineData(true, true, true, true)]
     [InlineData(true, true, false, true)]

@@ -206,6 +206,13 @@ public class SignInManager<TUser> where TUser : class
             return (false, auth.Properties?.IsPersistent);
         }
 
+        var presentedStamp = auth.Principal?.FindFirstValue(Options.ClaimsIdentity.SecurityStampClaimType);
+        if (!await ValidateSecurityStampAsync(user, presentedStamp))
+        {
+            Logger.LogError("RefreshSignInAsync prevented because the presented security stamp is stale.");
+            return (false, auth.Properties?.IsPersistent);
+        }
+
         IList<Claim> claims = Array.Empty<Claim>();
         var authenticationMethod = auth.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
         var amr = auth.Principal?.FindFirst("amr");
