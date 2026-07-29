@@ -36,7 +36,6 @@
       "serialize-javascript": ">=7.0.5"
     },
     "lodash": ">=4.18.0",
-    "glob": ">=13.0.0",
     "cacache": ">=21.0.0",
     "ignore-walk": ">=9.0.0",
     "read-package-json": ">=7.0.0",
