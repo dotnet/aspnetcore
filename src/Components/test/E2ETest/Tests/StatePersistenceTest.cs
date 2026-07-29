@@ -276,6 +276,41 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming, stateValue: "other");
     }
 
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/63895
+    // The first enhanced navigation to a page with interactive components goes through the initial
+    // root component update, which reads the persisted state independently. Subsequent enhanced
+    // navigations activate components through 'updateRootComponents' instead, and used to drop the
+    // persisted state because the renderer had not been assigned to the component yet at the time
+    // we decided which persisted state to look for.
+    [Theory]
+    [InlineData("server", typeof(InteractiveServerRenderMode))]
+    [InlineData("wasm", typeof(InteractiveWebAssemblyRenderMode))]
+    public void StateIsRestoredOnSubsequentEnhancedNavigationsToPagesWithComponents(string mode, Type renderMode)
+    {
+        // The test app tears down idle circuits aggressively. Keep the circuit alive so that the
+        // second activation happens on the existing runtime through a root component update,
+        // instead of through circuit creation, which reads the persisted state independently.
+        Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('keep-circuit-alive', 'true')");
+        Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}");
+
+        // First enhanced navigation to a page with components. This activates the runtime.
+        Browser.Click(By.Id("page-with-components-link"));
+        RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation: false, mode, renderMode, streaming: null);
+
+        // Navigate away and back. The runtime is already running, so the components get activated
+        // through a root component update rather than through the initial update.
+        Browser.Click(By.Id("page-no-components-link"));
+        Browser.Click(By.Id("page-with-components-link-and-state"));
+
+        RenderComponentsWithPersistentStateAndValidate(
+            suppressEnhancedNavigation: false,
+            mode,
+            renderMode,
+            streaming: null,
+            stateValue: "other");
+    }
+
     [Theory]
     [InlineData("ServerNonPrerendered")]
     [InlineData("WebAssemblyNonPrerendered")]
