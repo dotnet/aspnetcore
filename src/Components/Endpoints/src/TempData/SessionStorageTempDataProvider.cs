@@ -25,10 +25,10 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
     {
         ArgumentNullException.ThrowIfNull(context);
 
+        var session = SessionResolver.GetRequiredSession(context);
+
         try
         {
-            var session = context.Session;
-
             if (session.TryGetValue(TempDataSessionStateKey, out var value))
             {
                 var dataFromSession = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(value);
@@ -63,7 +63,7 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
             }
         }
 
-        var session = context.Session;
+        var session = SessionResolver.GetRequiredSession(context);
         if (values.Count == 0)
         {
             session.Remove(TempDataSessionStateKey);

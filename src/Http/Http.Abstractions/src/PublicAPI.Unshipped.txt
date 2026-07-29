@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.IsAllowed.get -> bool
+static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Allowed() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!
+static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Denied() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!
+Microsoft.AspNetCore.Antiforgery.ICsrfProtection
+Microsoft.AspNetCore.Antiforgery.ICsrfProtection.ValidateAsync(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!>

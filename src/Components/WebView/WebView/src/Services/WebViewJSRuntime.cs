@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Services;
 internal sealed class WebViewJSRuntime : JSRuntime
 {
     private IpcSender _ipcSender;
+    private bool _disconnected;
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -43,8 +44,20 @@ internal sealed class WebViewJSRuntime : JSRuntime
         BeginInvokeJS(invocationInfo);
     }
 
+    internal void MarkAsDisconnected()
+    {
+        _disconnected = true;
+    }
+
     protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
+        if (_disconnected)
+        {
+            throw new JSDisconnectedException(
+                "JavaScript interop calls cannot be issued at this time. This is because the WebView has been disposed " +
+                "or the page has navigated away.");
+        }
+
         if (_ipcSender is null)
         {
             throw new InvalidOperationException("Cannot invoke JavaScript outside of a WebView context.");

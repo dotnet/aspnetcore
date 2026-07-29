@@ -28,12 +28,15 @@ The workflow for implementing new features in the Components area follows these 
 
 ### Sample Projects
 
-The `src/Components/Samples` folder contains several sample projects you can use for developing and testing features:
+The `src/Components/Samples` folder contains canonical Blazor Web App samples, and `src/Components/WebAssembly/Samples` contains a standalone WebAssembly sample, that you can use for developing and testing features. All are generated from the `dotnet new blazor`/`blazorwasm` templates with `Auto` interactivity and adapted to reference the in-tree framework:
 
-- **BlazorUnitedApp** - A Blazor Web App (united/hybrid mode) for testing combined server and WebAssembly scenarios
-- **BlazorUnitedApp.Client** - The client-side portion of the BlazorUnitedApp
+- **BlazorWebAppGlobal** (+ **.Client**) - A Blazor Web App with **global** interactivity (`@rendermode="InteractiveAuto"` on `Routes`/`HeadOutlet` in `App.razor`). Change that one value to `InteractiveServer`/`InteractiveWebAssembly` to test the whole app on a single platform.
+- **BlazorWebAppPerPage** (+ **.Client**) - A Blazor Web App with **per-page** interactivity. Apply `@rendermode` per page/component (`InteractiveServer`/`InteractiveWebAssembly`/`InteractiveAuto`), mix modes, or omit it for static SSR.
+- **BlazorWebAssemblyStandalone** - A standalone Blazor WebAssembly app (no server host), under `src/Components/WebAssembly/Samples`.
 
-**Always start by adding your feature scenario to one of these sample projects first.** This allows you to:
+Together these cover every interactivity platform (Server/WebAssembly/Auto/None) and location (Global/Per-page) by editing a single `@rendermode` rather than restructuring.
+
+**Always start by adding your feature scenario to whichever sample matches the render mode you need.** This allows you to:
 - Quickly iterate on the implementation
 - Test the feature interactively in a real browser
 - Verify the feature works before writing formal E2E tests

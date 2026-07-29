@@ -21,23 +21,49 @@ internal sealed class AccessTokenHttpMessageHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var shouldRetry = true;
-        if (string.IsNullOrEmpty(_accessToken) ||
-            // Negotiate redirects likely will have a new access token so let's always grab a (potentially) new access token on negotiate
 #if NET5_0_OR_GREATER
-            request.Options.TryGetValue(new HttpRequestOptionsKey<bool>("IsNegotiate"), out var value) && value == true
+        var isNegotiate = request.Options.TryGetValue(new HttpRequestOptionsKey<bool>("IsNegotiate"), out var negotiateValue) && negotiateValue;
+        var isRefresh = request.Options.TryGetValue(new HttpRequestOptionsKey<bool>("IsRefresh"), out var refreshValue) && refreshValue;
 #else
-            request.Properties.TryGetValue("IsNegotiate", out var value) && value is true
+        var isNegotiate = request.Properties.TryGetValue("IsNegotiate", out var negotiateValue) && negotiateValue is true;
+        var isRefresh = request.Properties.TryGetValue("IsRefresh", out var refreshValue) && refreshValue is true;
 #endif
-            )
+
+        var shouldRetry = true;
+        // The token to attach to this request. Defaults to the cached token for normal transport
+        // requests (polls/sends), which must keep using whatever the cache currently holds.
+        var tokenForRequest = _accessToken;
+        if (string.IsNullOrEmpty(_accessToken) || isNegotiate || isRefresh)
         {
             shouldRetry = false;
-            _accessToken = await _httpConnection.GetAccessTokenAsync().ConfigureAwait(false);
+            // Negotiate redirects likely will have a new access token so let's always grab a (potentially) new access token on negotiate.
+            // Authentication refresh exists specifically to obtain a new access token, so always re-fetch on refresh too.
+            tokenForRequest = isRefresh
+                ? await _httpConnection.GetRefreshRequestTokenAsync().ConfigureAwait(false)
+                : await _httpConnection.GetAccessTokenAsync().ConfigureAwait(false);
+
+            // For negotiate (and the initial fetch) adopt the new token immediately. For refresh, defer
+            // updating the cache until we know the server accepted the refresh (below): a rejected
+            // refresh (for example an OnAuthenticationRefresh denial returning 403) must not poison the cache and
+            // leak the rejected token onto subsequent transport requests (e.g. Long Polling polls/sends).
+            if (!isRefresh)
+            {
+                _accessToken = tokenForRequest;
+            }
+            else
+            {
+#if NET5_0_OR_GREATER
+                request.Options.Set(new HttpRequestOptionsKey<string?>("RefreshRequestToken"), tokenForRequest);
+#else
+                request.Properties["RefreshRequestToken"] = tokenForRequest;
+#endif
+            }
         }
 
-        SetAccessToken(_accessToken, request);
+        SetAccessToken(tokenForRequest, request);
 
         var result = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
         // retry once with a new token on auth failure
         if (shouldRetry && result.StatusCode is HttpStatusCode.Unauthorized)
         {
@@ -63,4 +89,7 @@ internal sealed class AccessTokenHttpMessageHandler : DelegatingHandler
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         }
     }
+
+    // Adopts a token obtained outside the normal request flow as the cached transport credential.
+    internal void UpdateCachedToken(string? accessToken) => _accessToken = accessToken;
 }

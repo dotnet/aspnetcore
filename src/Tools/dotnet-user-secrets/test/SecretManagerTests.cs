@@ -79,6 +79,30 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Fact]
+    public void Error_File_DoesNotExist()
+    {
+        var filePath = Path.Combine(_fixture.GetTempSecretProject(), "does_not_exist.cs");
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("list", "--file", filePath);
+        Assert.Contains(SecretsHelpersResources.FormatError_File_NotFound(filePath), _console.GetOutput());
+    }
+
+    [Fact]
+    public void Error_File_InvalidExtension()
+    {
+        var filePath = Path.Combine(_fixture.GetTempSecretProject(), "foo.txt");
+        File.WriteAllText(filePath, string.Empty);
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("list", "--file", filePath);
+        var output = _console.GetOutput();
+
+        Assert.Contains(Resources.Error_FileInvalidExtension, output);
+        Assert.DoesNotContain(SecretsHelpersResources.FormatError_ProjectFailedToLoad(filePath), output);
+    }
+
+    [Fact]
     public void Error_InitFile()
     {
         var dir = _fixture.CreateFileBasedApp(null);

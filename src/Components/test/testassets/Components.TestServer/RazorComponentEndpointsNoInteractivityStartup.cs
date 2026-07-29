@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
 using System.Web;
+
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
@@ -27,17 +28,30 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     public void ConfigureServices(IServiceCollection services)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
+        // Force the cached QuickGridFeatureFlags field, since it captures the AppContext switch only at
+        // static initialization. This is safe only because the E2E suite runs serially; enabling
+        // parallelization would let servers needing opposite values race on it and reintroduce #66883.
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, true);
 
-        var builder = services.AddRazorComponents(options =>
+        services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         });
+
+        if (Configuration.GetValue<bool>("UseHybridCacheViewStore"))
+        {
+            services.AddHybridCache();
+        }
+
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
 
-        if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+        if (Configuration.GetValue<bool>("UseSession"))
         {
             services.AddDistributedMemoryCache();
             services.AddSession(options =>
@@ -45,10 +59,14 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            services.Configure<RazorComponentsServiceOptions>(options =>
+
+            if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
             {
-                options.TempDataProviderType = TempDataProviderType.SessionStorage;
-            });
+                services.Configure<RazorComponentsServiceOptions>(options =>
+                {
+                    options.TempDataProviderType = TempDataProviderType.SessionStorage;
+                });
+            }
         }
     }
 
@@ -109,6 +127,11 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
+
+            if (Configuration.GetValue<bool>("UseSession"))
+            {
+                app.UseSession();
+            }
 
             ConfigureSubdirPipeline(app, env);
         });

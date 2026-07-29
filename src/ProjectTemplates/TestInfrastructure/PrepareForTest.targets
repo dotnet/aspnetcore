@@ -136,12 +136,14 @@
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)..\TestInfrastructure\Directory.Build.targets.in"
       Properties="Configuration=$(Configuration);
-          RestoreAdditionalProjectSources=$([MSBuild]::Escape('$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)'));MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion=$(PackageVersion)"
+          RestoreAdditionalProjectSources=$([MSBuild]::Escape('$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)'));MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion=$(PackageVersion);MicrosoftAspNetCoreComponentsGatewayVersion=$(PackageVersion)"
+      SkipUnchanged="true"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.targets" />
 
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)..\TestInfrastructure\Directory.Build.props.in"
       Properties="RepoRoot=$(RepoRoot);ArtifactsBinDir=$(ArtifactsBinDir);TargetingPackLayoutRoot=$(TargetingPackLayoutRoot);SharedFrameworkLayoutRoot=$(SharedFrameworkLayoutRoot);TestDependsOnAspNetPackages=$(TestDependsOnAspNetPackages);MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion)"
+      SkipUnchanged="true"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->

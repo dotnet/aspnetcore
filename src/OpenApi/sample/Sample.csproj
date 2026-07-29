@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="../test/Microsoft.AspNetCore.OpenApi.Tests/Shared/SharedTypes.cs" />
     <Compile Include="../test/Microsoft.AspNetCore.OpenApi.Tests/Shared/SharedTypes.Polymorphism.cs" />
+    <Compile Include="../test/Microsoft.AspNetCore.OpenApi.Tests/Shared/SharedTypes.Unions.cs" />
   </ItemGroup>
 
   <!-- Required to generated trimmable Map-invocations. -->

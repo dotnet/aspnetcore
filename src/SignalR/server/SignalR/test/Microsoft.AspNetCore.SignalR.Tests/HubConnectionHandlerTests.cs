@@ -2258,6 +2258,65 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task UnauthorizedConnectionCannotInvokeHubMethodWithRequirementDataAuthorization()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization();
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.RequirementDataAuthMethod)).DefaultTimeout();
+
+                Assert.NotNull(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task AuthorizedConnectionCanInvokeHubMethodWithRequirementDataAuthorization()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization();
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.RequirementDataAuthMethod)).DefaultTimeout();
+
+                Assert.Null(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
     private class TestConnectionLifetimeNotification : IConnectionLifetimeNotificationFeature
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -4376,22 +4435,35 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task InvokeHubMethodCannotAcceptCancellationTokenAsArgument()
+    public async Task InvokeHubMethodCanAcceptCancellationTokenAsArgument()
     {
         using (StartVerifiableLog())
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
 
             using (var client = new TestClient())
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var invocationId = await client.SendInvocationAsync(nameof(MethodHub.InvalidArgument)).DefaultTimeout();
+                var invocationId = await client.SendInvocationAsync(nameof(LongRunningHub.CancelableInvocation)).DefaultTimeout();
+                // Wait for the hub method to start
+                await tcsService.StartedMethod.Task.DefaultTimeout();
 
-                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                // Cancel the invocation which should trigger the CancellationToken in the hub method
+                await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).DefaultTimeout();
 
-                Assert.Equal("Failed to invoke 'InvalidArgument' due to an error on the server.", completion.Error);
+                var result = await client.ReadAsync().DefaultTimeout();
+
+                var completion = Assert.IsType<CompletionMessage>(result);
+                Assert.Null(completion.Error);
+
+                // CancellationToken passed to hub method will allow EndMethod to be triggered if it is canceled.
+                await tcsService.EndMethod.Task.DefaultTimeout();
 
                 client.Dispose();
 

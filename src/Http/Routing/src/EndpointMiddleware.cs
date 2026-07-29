@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -14,7 +13,6 @@ internal sealed partial class EndpointMiddleware
 {
     internal const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareWithEndpointInvoked";
     internal const string CorsMiddlewareInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
-    internal const string AntiforgeryMiddlewareWithEndpointInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
 
     private readonly ILogger _logger;
     private readonly RequestDelegate _next;
@@ -38,7 +36,7 @@ internal sealed partial class EndpointMiddleware
             // This check should be kept in sync with the one in EndpointRoutingMiddleware
             if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
             {
-                if (endpoint.Metadata.GetMetadata<IAuthorizeData>() is not null &&
+                if (AuthorizationMetadataHelper.HasAuthorizationMetadata(endpoint) &&
                     !httpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
                 {
                     ThrowMissingAuthMiddlewareException(endpoint);
@@ -51,7 +49,8 @@ internal sealed partial class EndpointMiddleware
                 }
 
                 if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
-                    !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey))
+                    !httpContext.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery) &&
+                    !httpContext.Items.ContainsKey(MiddlewareInvokedKeys.CsrfProtection))
                 {
                     ThrowMissingAntiforgeryMiddlewareException(endpoint);
                 }

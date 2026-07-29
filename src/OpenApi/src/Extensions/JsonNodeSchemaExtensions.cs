@@ -403,7 +403,7 @@ internal static class JsonNodeSchemaExtensions
         }
 
         if (parameterDescription.Source is { } bindingSource
-            && SupportsNullableProperty(bindingSource)
+            && DoesNotSupportNullValue(bindingSource)
             && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
             schemaTypes.HasFlag(JsonSchemaType.Null))
         {
@@ -412,7 +412,7 @@ internal static class JsonNodeSchemaExtensions
 
         // Parameters sourced from the header, query, route, and/or form cannot be nullable based on our binding
         // rules but can be optional.
-        static bool SupportsNullableProperty(BindingSource bindingSource) => bindingSource == BindingSource.Header
+        static bool DoesNotSupportNullValue(BindingSource bindingSource) => bindingSource == BindingSource.Header
             || bindingSource == BindingSource.Query
             || bindingSource == BindingSource.Path
             || bindingSource == BindingSource.Form
@@ -447,6 +447,7 @@ internal static class JsonNodeSchemaExtensions
             {
                 return;
             }
+            var baseSchemaReferenceId = createSchemaReferenceId(context.TypeInfo);
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
@@ -458,11 +459,15 @@ internal static class JsonNodeSchemaExtensions
                     // that we hardcode here. We could use `OpenApiReference` to construct the reference and
                     // serialize it but we use a hardcoded string here to avoid allocating a new object and
                     // working around Microsoft.OpenApi's serialization libraries.
-                    mappings[$"{discriminator}"] = $"{createSchemaReferenceId(context.TypeInfo)}{createSchemaReferenceId(jsonDerivedType)}";
+                    mappings[$"{discriminator}"] = $"{baseSchemaReferenceId}{createSchemaReferenceId(jsonDerivedType)}";
                 }
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
             schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
+            if (baseSchemaReferenceId is not null && IsNonAbstractTypeWithDerivedTypeReference(context))
+            {
+                schema[OpenApiSchemaKeywords.DiscriminatorDefaultMappingKeyword] = baseSchemaReferenceId;
+            }
         }
     }
 
@@ -477,6 +482,10 @@ internal static class JsonNodeSchemaExtensions
         if (createSchemaReferenceId(context.TypeInfo) is { } schemaReferenceId)
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
+        }
+        if (context.TypeInfo.Kind == JsonTypeInfoKind.Union)
+        {
+            schema[OpenApiConstants.SchemaIsUnion] = true;
         }
         // If the type is a non-abstract base class that is not one of the derived types then mark it as a base schema.
         if (context.BaseTypeInfo == context.TypeInfo &&
@@ -526,6 +535,18 @@ internal static class JsonNodeSchemaExtensions
         return !context.TypeInfo.Type.IsAbstract
             && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
             && !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type);
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if the current type is a non-abstract base class that is defined as its
+    /// own derived type with a discriminator.
+    /// </summary>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    private static bool IsNonAbstractTypeWithDerivedTypeReference(JsonSchemaExporterContext context)
+    {
+        return !context.TypeInfo.Type.IsAbstract
+            && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
+            && polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type && type.TypeDiscriminator is not null);
     }
 
     /// <summary>

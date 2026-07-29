@@ -1,0 +1,42 @@
+﻿@page "/forms/client-validation/localized-validation"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using BasicTestApp.ValidationModels
+
+<h2 id="page-title">Localized client-side validation</h2>
+
+<p>
+    The server's validation localization resolves the display name and error message
+    based on <code>CurrentUICulture</code> (set per request via <code>?culture=</code>). The
+    localized strings are baked into the <code>&lt;blazor-client-validation-data&gt;</code> payload,
+    so the JS engine displays culture-appropriate messages without a round trip.
+</p>
+
+<style>
+    .validation-message { color: red; }
+
+</style>
+
+<EditForm Model="Form" FormName="localized-form" method="post">
+    <DataAnnotationsValidator />
+
+    <div>
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="Form!.Email" />
+        <ValidationMessage For="() => Form!.Email" />
+    </div>
+
+    <div>
+        <label for="age">Age</label>
+        <InputNumber id="age" @bind-Value="Form!.Age" />
+        <ValidationMessage For="() => Form!.Age" />
+    </div>
+
+    <button type="submit" id="submit">Submit</button>
+</EditForm>
+
+@code {
+    [SupplyParameterFromForm] private LocalizedFormModel? Form { get; set; }
+
+    protected override void OnInitialized() => Form ??= new LocalizedFormModel();
+}

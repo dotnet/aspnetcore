@@ -9,7 +9,14 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup>
-    <HelixTimeout>00:45:00</HelixTimeout>
+    <!--
+      Default per-work-item timeout. Projects that need longer (e.g. template tests that
+      scaffold, restore, build and run real apps) override HelixTimeout in their .csproj.
+      Such projects are excluded from work item batching (see Helix.targets) because they
+      are heavy and need their own dedicated work item timeout.
+    -->
+    <DefaultHelixTimeout>00:45:00</DefaultHelixTimeout>
+    <HelixTimeout>$(DefaultHelixTimeout)</HelixTimeout>
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>20.7.0</NodeVersion>

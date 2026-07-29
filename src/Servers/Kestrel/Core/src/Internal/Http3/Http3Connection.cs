@@ -77,11 +77,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private void UpdateHighestOpenedRequestStreamId(long streamId)
     {
         // Only one thread will update the highest stream ID value at a time.
-        // Additional thread safty not required.
+        // Additional thread safety not required.
 
         if (_highestOpenedRequestStreamId >= streamId)
         {
-            // Double check here incase the streams are received out of order.
+            // Double check here in case the streams are received out of order.
             return;
         }
 
