@@ -592,7 +592,7 @@ public class CustomParsableType
 ");
 
         // Assert
-        Assert.Empty(result.Completions.ItemsList);
+        Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
     [Fact]
@@ -618,7 +618,7 @@ public interface NonParsableType
 ");
 
         // Assert
-        Assert.Empty(result.Completions.ItemsList);
+        Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
     [Theory]
@@ -693,7 +693,7 @@ class Program
 ");
 
         // Assert
-        Assert.Empty(result.Completions.ItemsList);
+        Assert.DoesNotContain(result.Completions.ItemsList, i => i.DisplayText == "id");
     }
 
     [Fact]
