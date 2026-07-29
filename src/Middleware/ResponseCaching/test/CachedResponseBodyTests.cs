@@ -10,7 +10,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests;
 
 public class CachedResponseBodyTests
 {
-    private readonly int _timeout = Debugger.IsAttached ? -1 : 5000;
+    private static readonly TimeSpan HangGuardTimeout =
+        Debugger.IsAttached ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(5);
 
     [Fact]
     public void GetSegments()
@@ -38,12 +39,11 @@ public class CachedResponseBodyTests
         var body = new CachedResponseBody(segments, 0);
 
         var pipe = new Pipe();
-        using var cts = new CancellationTokenSource(_timeout);
 
-        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments, cts.Token);
-        var copyTask = body.CopyToAsync(pipe.Writer, cts.Token).ContinueWith(_ => pipe.Writer.CompleteAsync());
+        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
+        var copyTask = body.CopyToAsync(pipe.Writer, CancellationToken.None).ContinueWith(_ => pipe.Writer.CompleteAsync());
 
-        await Task.WhenAll(receiverTask, copyTask);
+        await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
 
         Assert.Empty(receivedSegments);
     }
@@ -60,12 +60,10 @@ public class CachedResponseBodyTests
 
         var pipe = new Pipe();
 
-        using var cts = new CancellationTokenSource(_timeout);
+        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
+        var copyTask = CopyDataAsync(body, pipe.Writer);
 
-        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments, cts.Token);
-        var copyTask = CopyDataAsync(body, pipe.Writer, cts.Token);
-
-        await Task.WhenAll(receiverTask, copyTask);
+        await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
 
         Assert.Equal(segments, receivedSegments);
     }
@@ -83,19 +81,17 @@ public class CachedResponseBodyTests
 
         var pipe = new Pipe();
 
-        using var cts = new CancellationTokenSource(_timeout);
+        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
+        var copyTask = CopyDataAsync(body, pipe.Writer);
 
-        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments, cts.Token);
-        var copyTask = CopyDataAsync(body, pipe.Writer, cts.Token);
-
-        await Task.WhenAll(receiverTask, copyTask);
+        await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
 
         Assert.Equal(new byte[] { 1, 2, 3 }, receivedSegments.SelectMany(x => x).ToArray());
     }
 
-    static async Task CopyDataAsync(CachedResponseBody body, PipeWriter writer, CancellationToken cancellationToken)
+    static async Task CopyDataAsync(CachedResponseBody body, PipeWriter writer)
     {
-        await body.CopyToAsync(writer, cancellationToken);
+        await body.CopyToAsync(writer, CancellationToken.None);
         await writer.CompleteAsync();
     }
 
@@ -103,7 +99,7 @@ public class CachedResponseBodyTests
     {
         while (true)
         {
-            var result = await reader.ReadAsync(cancellationToken);
+            var result = await reader.ReadAsync();
             var buffer = result.Buffer;
 
             foreach (var memory in buffer)
