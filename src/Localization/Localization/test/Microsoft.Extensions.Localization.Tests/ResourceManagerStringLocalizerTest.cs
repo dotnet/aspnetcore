@@ -11,7 +11,6 @@ using System.Resources;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.VisualBasic;
 using Xunit;
 
 namespace Microsoft.Extensions.Localization;
