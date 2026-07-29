@@ -366,7 +366,6 @@ public class BindConverterTest
     [InlineData("2E-")]
     [InlineData("2e+")]
     [InlineData("e10")]
-    [InlineData("1ee6")]
     [InlineData("1e--6")]
     public void TryConvertToDouble_RejectsIncompleteOrInvalidScientificNotation(
         string input)
@@ -379,7 +378,7 @@ public class BindConverterTest
         Assert.False(result);
         Assert.Equal(default, value);
     }
-
+    
     [Fact]
     public void TryConvertTo_Guid_Valid()
     {

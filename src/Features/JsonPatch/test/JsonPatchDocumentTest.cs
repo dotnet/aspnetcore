@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch;
@@ -157,5 +158,29 @@ public class JsonPatchDocumentTest
 
         // Assert
         Assert.Equal("The JSON patch document was malformed and could not be parsed.", exception.Message);
+    }
+
+    [Fact]
+    public void Serialization_ShouldExcludeFrom_WhenNullAndNotMoveOrCopy()
+    {
+        // Arrange
+        JsonPatchDocument patchDocument = new();
+        patchDocument.Add("/a/b/c", "foo");
+        patchDocument.Remove("/x/y/z");
+        patchDocument.Replace("/d/e", "bar");
+        patchDocument.Test("/f/e", "t1");
+        patchDocument.Replace("/a/b/c", null);
+
+        var json = JsonConvert.SerializeObject(patchDocument);
+
+        // Assert
+        var expectedJson = """
+        [{"value":"foo","path":"/a/b/c","op":"add"},{"path":"/x/y/z","op":"remove"},
+        {"value":"bar","path":"/d/e","op":"replace"},{ "value":"t1","path":"/f/e","op":"test"},
+        {"value":null,"path":"/a/b/c","op":"replace"}]
+        """;
+
+        // Act
+        Assert.True(JToken.DeepEquals(JArray.Parse(expectedJson), JArray.Parse(json)));
     }
 }

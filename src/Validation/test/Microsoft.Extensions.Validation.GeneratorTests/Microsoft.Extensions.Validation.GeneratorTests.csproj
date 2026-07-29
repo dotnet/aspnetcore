@@ -38,6 +38,7 @@
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.HostFiltering" />
     <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
