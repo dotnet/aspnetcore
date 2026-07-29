@@ -48,12 +48,14 @@ internal sealed partial class PasskeyEndpointsStartupFilter : IStartupFilter
 
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
     {
-        var enroll = _options.Enroll;
-        var manage = _options.Manage;
+        // These values often come from configuration, so they are normalized once at startup rather
+        // than trusted verbatim on every request.
+        var enroll = Normalize(_options.Enroll);
+        var manage = Normalize(_options.Manage);
 
         // Advertising nothing at all would claim passkey support without giving a credential
         // manager anywhere to send the user, so the document is not served in that case.
-        if (string.IsNullOrEmpty(enroll) && string.IsNullOrEmpty(manage))
+        if (enroll is null && manage is null)
         {
             Log.NoPasskeyEndpointsConfigured(_logger);
             return next;
@@ -102,9 +104,23 @@ internal sealed partial class PasskeyEndpointsStartupFilter : IStartupFilter
         };
     }
 
+    private static string? Normalize(string? value)
+    {
+        // A value that is entirely whitespace is treated as unset, so that it triggers the
+        // unconfigured warning instead of being advertised as a URL pointing at nothing.
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        // Uri already ignores surrounding whitespace when parsing an absolute URL, so trimming here
+        // gives relative values the same treatment and keeps stray whitespace out of the document.
+        return value.Trim();
+    }
+
     private static string? ResolveUrl(string? value, HttpRequest request)
     {
-        if (string.IsNullOrEmpty(value))
+        if (value is null)
         {
             return null;
         }

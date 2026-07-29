@@ -111,6 +111,63 @@ public class AddPasskeyEndpointsTests : LoggedTest
     }
 
     [Fact]
+    public async Task TreatsWhitespaceOnlyValuesAsUnset()
+    {
+        await using var app = await CreateAppAsync(options =>
+        {
+            options.Enroll = "   ";
+            options.Manage = "/Account/Manage/Passkeys";
+        });
+        using var client = app.GetTestClient();
+
+        var body = await client.GetStringAsync(PasskeyEndpointsPath);
+
+        Assert.Equal("""{"manage":"http://example.com/Account/Manage/Passkeys"}""", body);
+        Assert.DoesNotContain("enroll", body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task LogsWarningAndServesNothingWhenEveryValueIsWhitespace()
+    {
+        // The unconfigured gate and the URL resolution have to agree on what counts as unset, or a
+        // whitespace value would suppress the warning and then advertise a URL pointing at nothing.
+        await using var app = await CreateAppAsync(options =>
+        {
+            options.Enroll = " ";
+            options.Manage = "\t";
+        });
+        using var client = app.GetTestClient();
+
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(PasskeyEndpointsPath)).StatusCode);
+
+        var write = Assert.Single(PasskeyEndpointsLogs);
+        Assert.Equal(LogLevel.Warning, write.LogLevel);
+        Assert.Equal("NoPasskeyEndpointsConfigured", write.EventId.Name);
+    }
+
+    [Fact]
+    public async Task TrimsSurroundingWhitespaceFromRelativePaths()
+    {
+        await using var app = await CreateAppAsync(options => options.Enroll = "  /Account/Manage/Passkeys  ");
+        using var client = app.GetTestClient();
+
+        var body = await client.GetStringAsync(PasskeyEndpointsPath);
+
+        Assert.Equal("""{"enroll":"http://example.com/Account/Manage/Passkeys"}""", body);
+    }
+
+    [Fact]
+    public async Task TrimsSurroundingWhitespaceFromAbsoluteUrls()
+    {
+        await using var app = await CreateAppAsync(options => options.Enroll = "  https://accounts.contoso.com/passkeys  ");
+        using var client = app.GetTestClient();
+
+        var body = await client.GetStringAsync(PasskeyEndpointsPath);
+
+        Assert.Equal("""{"enroll":"https://accounts.contoso.com/passkeys"}""", body);
+    }
+
+    [Fact]
     public async Task ResolvesRelativePathsWithoutLeadingSlash()
     {
         await using var app = await CreateAppAsync(options => options.Enroll = "Account/Manage/Passkeys");
