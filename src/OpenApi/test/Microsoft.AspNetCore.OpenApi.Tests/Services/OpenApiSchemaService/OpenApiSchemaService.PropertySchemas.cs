@@ -641,6 +641,32 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiSchema_HandlesNullableConstructorBoundProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ConstructorBoundPropertyModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, async document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema;
+
+            var nullableProperty = schema.Properties["value"];
+            Assert.NotNull(nullableProperty.OneOf);
+            Assert.Equal(2, nullableProperty.OneOf.Count);
+            Assert.Collection(nullableProperty.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal(JsonSchemaType.String, item.Type));
+        });
+    }
+
 #nullable enable
     private class NullablePropertiesTestModel
     {
@@ -656,6 +682,12 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     {
         public Todo? NullableTodo { get; set; }
         public Account? NullableAccount { get; set; }
+    }
+
+    private class ConstructorBoundPropertyModel
+    {
+        public ConstructorBoundPropertyModel(string? value) => Value = value;
+        public string? Value { get; }
     }
 
     private class NullableCollectionPropertiesModel
