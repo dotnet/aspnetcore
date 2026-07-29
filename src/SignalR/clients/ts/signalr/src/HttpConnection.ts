@@ -4,6 +4,7 @@
 import { AccessTokenHttpClient } from "./AccessTokenHttpClient";
 import { DefaultHttpClient } from "./DefaultHttpClient";
 import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError, AbortError } from "./Errors";
+import { HttpRequest } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { ILogger, LogLevel } from "./ILogger";
@@ -70,6 +71,7 @@ export class HttpConnection implements IConnection {
     private _connectionUrl?: string;
     private _initialTokenLifetimeInSeconds?: number;
     private _transportAccessTokenFromServer: boolean = false;
+    private _connectionGeneration: number = 0;
 
     public readonly features: any = {};
     public baseUrl: string;
@@ -193,6 +195,7 @@ export class HttpConnection implements IConnection {
         }
 
         this._connectionState = ConnectionState.Disconnecting;
+        this._connectionGeneration++;
 
         this._stopPromise = new Promise((resolve) => {
             // Don't complete stop() until stopConnection() completes.
@@ -237,6 +240,7 @@ export class HttpConnection implements IConnection {
         // Store the original base url and the access token factory since they may change
         // as part of negotiating
         let url = this.baseUrl;
+        this._connectionGeneration++;
         this._connectionToken = undefined;
         this._connectionUrl = undefined;
         this._initialTokenLifetimeInSeconds = undefined;
@@ -331,12 +335,14 @@ export class HttpConnection implements IConnection {
         const negotiateUrl = this._resolveNegotiateUrl(url);
         this._logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}.`);
         try {
-            const response = await this._httpClient.post(negotiateUrl, {
+            const request: HttpRequest = {
                 content: "",
                 headers: { ...headers, ...this._options.headers },
                 timeout: this._options.timeout,
                 withCredentials: this._options.withCredentials,
-            });
+            };
+            this._httpClient.markNegotiateRequest(request);
+            const response = await this._httpClient.post(negotiateUrl, request);
 
             if (response.statusCode !== 200) {
                 return Promise.reject(new Error(`Unexpected status code returned from negotiate '${response.statusCode}'`));
@@ -409,6 +415,7 @@ export class HttpConnection implements IConnection {
             throw new Error("Cannot refresh authentication before the connection is started.");
         }
 
+        const connectionGeneration = this._connectionGeneration;
         const headers: {[k: string]: string} = {};
         const [name, value] = getUserAgentHeader();
         headers[name] = value;
@@ -416,12 +423,14 @@ export class HttpConnection implements IConnection {
         const refreshUrl = this._createRefreshUrl(this._connectionUrl, this._connectionToken);
         this._logger.log(LogLevel.Debug, `Sending authentication refresh request: ${refreshUrl}.`);
 
-        const response = await this._httpClient.post(refreshUrl, {
+        const request: HttpRequest = {
             content: "",
             headers: { ...headers, ...this._options.headers },
             timeout: this._options.timeout,
             withCredentials: this._options.withCredentials,
-        });
+        };
+        this._httpClient.markAuthenticationRefreshRequest(request);
+        const response = await this._httpClient.post(refreshUrl, request);
 
         if (response.statusCode !== 200) {
             throw new Error(`Unexpected status code returned from authentication refresh '${response.statusCode}'`);
@@ -429,6 +438,10 @@ export class HttpConnection implements IConnection {
 
         if (typeof response.content !== "string") {
             throw new Error("Invalid authentication refresh response received: expected JSON content.");
+        }
+
+        if (connectionGeneration !== this._connectionGeneration) {
+            return undefined;
         }
 
         const refreshResponse = JSON.parse(response.content) as { accessToken?: unknown, tokenLifetimeSeconds?: unknown };
@@ -613,6 +626,8 @@ export class HttpConnection implements IConnection {
             this._logger.log(LogLevel.Warning, `Call to HttpConnection.stopConnection(${error}) was ignored because the connection is still in the connecting state.`);
             throw new Error(`HttpConnection.stopConnection(${error}) was called while the connection is still in the connecting state.`);
         }
+
+        this._connectionGeneration++;
 
         if (this._connectionState === ConnectionState.Disconnecting) {
             // A call to stop() induced this call to stopConnection and needs to be completed.

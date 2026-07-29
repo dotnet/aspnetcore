@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpRequest, HttpResponse } from "../src/HttpClient";
+import { AccessTokenHttpClient } from "../src/AccessTokenHttpClient";
 import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
@@ -262,6 +263,51 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("does not replace cached transport token when authentication refresh is rejected", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            let accessTokenFactoryCallCount = 0;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                accessTokenFactory: () => `token${++accessTokenFactoryCallCount}`,
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, () => defaultNegotiateResponse)
+                    .on("POST", /\/refresh/, () => new HttpResponse(403)),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://original.example/hub", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                await expect(connection.features.authenticationRefresh.refreshAuthentication())
+                    .rejects
+                    .toThrow("Unexpected status code returned from authentication refresh '403'");
+
+                expect(accessTokenFactoryCallCount).toBe(2);
+                expect((connection as any)._httpClient._accessToken).toBe("token1");
+            } finally {
+                transport.onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("does not infer special access token handling from normal transport request URLs", async () => {
+        let accessTokenFactoryCallCount = 0;
+        const innerClient = new TestHttpClient()
+            .on("POST", () => new HttpResponse(200));
+        const accessTokenHttpClient = new AccessTokenHttpClient(innerClient, () => `new-token${++accessTokenFactoryCallCount}`);
+        accessTokenHttpClient.updateCachedToken("cached-token");
+
+        await accessTokenHttpClient.post("http://tempuri.org/refresh?id=123abc");
+        await accessTokenHttpClient.post("http://tempuri.org/negotiate?id=123abc");
+
+        expect(accessTokenFactoryCallCount).toBe(0);
+        expect(accessTokenHttpClient._accessToken).toBe("cached-token");
+    });
+
     it("does not retry transport requests with application token after refresh returns access token", async () => {
         await VerifyLogger.run(async (logger) => {
             const transport = new TestTransport();
@@ -299,6 +345,42 @@ describe("HttpConnection", () => {
                 transport.onclose!();
                 await connection.stop();
             }
+        });
+    });
+
+    it("does not apply stale authentication refresh response after restart", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const transport = new TestTransport();
+            const refreshResponse = new PromiseSource<object>();
+            let accessTokenFactoryCallCount = 0;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                accessTokenFactory: () => `token${++accessTokenFactoryCallCount}`,
+                httpClient: new TestHttpClient()
+                    .on("POST", /\/negotiate/, () => defaultNegotiateResponse)
+                    .on("POST", /\/refresh/, () => refreshResponse.promise),
+                logger,
+                transport,
+            };
+
+            const connection = new HttpConnection("http://original.example/hub", options);
+            await connection.start(TransferFormat.Text);
+
+            const refreshPromise = connection.features.authenticationRefresh.refreshAuthentication();
+            const stopPromise = connection.stop();
+            transport.onclose!();
+            await stopPromise;
+
+            await connection.start(TransferFormat.Text);
+
+            refreshResponse.resolve({ accessToken: "stale-token", tokenLifetimeSeconds: 42 });
+
+            expect(await refreshPromise).toBeUndefined();
+            expect(accessTokenFactoryCallCount).toBe(3);
+            expect((connection as any)._httpClient._accessToken).toBe("token3");
+
+            transport.onclose!();
+            await connection.stop();
         });
     });
 

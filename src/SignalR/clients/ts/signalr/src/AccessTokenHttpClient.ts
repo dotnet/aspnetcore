@@ -4,6 +4,11 @@
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 
+interface AccessTokenHttpRequest extends HttpRequest {
+    _negotiate?: boolean;
+    _authenticationRefresh?: boolean;
+}
+
 /** @private */
 export class AccessTokenHttpClient extends HttpClient {
     private _innerClient: HttpClient;
@@ -22,8 +27,9 @@ export class AccessTokenHttpClient extends HttpClient {
 
     public async send(request: HttpRequest): Promise<HttpResponse> {
         let allowRetry = true;
-        const isNegotiate = this._isNegotiate(request.url);
-        const isRefresh = this._isRefresh(request.url);
+        const accessTokenRequest = request as AccessTokenHttpRequest;
+        const isNegotiate = accessTokenRequest._negotiate === true;
+        const isRefresh = accessTokenRequest._authenticationRefresh === true;
         let accessToken = isRefresh ? undefined : this._accessToken;
 
         if (isRefresh && this._refreshAccessTokenFactory) {
@@ -52,6 +58,14 @@ export class AccessTokenHttpClient extends HttpClient {
         return response;
     }
 
+    public markNegotiateRequest(request: HttpRequest): void {
+        (request as AccessTokenHttpRequest)._negotiate = true;
+    }
+
+    public markAuthenticationRefreshRequest(request: HttpRequest): void {
+        (request as AccessTokenHttpRequest)._authenticationRefresh = true;
+    }
+
     public setRefreshAccessTokenFactory(accessTokenFactory: (() => string | Promise<string>) | undefined): void {
         this._refreshAccessTokenFactory = accessTokenFactory;
     }
@@ -77,14 +91,6 @@ export class AccessTokenHttpClient extends HttpClient {
                 delete request.headers[HeaderNames.Authorization];
             }
         }
-    }
-
-    private _isNegotiate(url: string | undefined): boolean {
-        return !!url && url.indexOf("/negotiate?") > 0;
-    }
-
-    private _isRefresh(url: string | undefined): boolean {
-        return !!url && url.indexOf("/refresh?") > 0;
     }
 
     public getCookieString(url: string): string {
