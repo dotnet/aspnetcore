@@ -229,16 +229,61 @@ try {
             }
         }
 
-        # Check that the Dependabot discovery project stays in sync with eng/Dependencies.props
+        # Check that the Dependabot discovery project stays in sync with eng/Dependencies.props, but
+        # only for packages that aren't managed by Maestro (i.e. don't have a version property in
+        # eng/Version.Details.props). Renaming a Maestro-managed package (e.g. #68014) shows up as an
+        # add + remove in eng/Dependencies.props but doesn't need a DependabotDiscovery.csproj update.
         $allChangedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only
         $dependencyDiscoveryProject = "eng/tools/DependabotDiscovery/DependabotDiscovery.csproj"
 
-        if (($allChangedFilesFromTarget -contains "eng/Dependencies.props") -and
-            ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
-            LogError ("eng/Dependencies.props changed but $dependencyDiscoveryProject was not updated. " +
-                "If you added, removed, or renamed a package that isn't managed by Maestro or " +
-                "the shared `$(IdentityModelVersion) property, update $dependencyDiscoveryProject to match. " +
-                "See eng/tools/DependabotDiscovery/README.md for details.")
+        function Get-LatestPackageReferenceNames([string[]]$fileContent) {
+            $names = [System.Collections.Generic.HashSet[string]]::new()
+            foreach ($line in $fileContent) {
+                if ($line -match '<LatestPackageReference\s+Include="([^"]+)"\s*/?>') {
+                    [void]$names.Add($matches[1])
+                }
+            }
+            return , $names
+        }
+
+        function Get-MaestroManagedVersionProperties([string[]]$fileContent) {
+            $properties = [System.Collections.Generic.HashSet[string]]::new()
+            foreach ($line in $fileContent) {
+                if ($line -match '<(\w+Version)>') {
+                    [void]$properties.Add($matches[1])
+                }
+            }
+            return , $properties
+        }
+
+        if ($allChangedFilesFromTarget -contains "eng/Dependencies.props") {
+            $oldPackageNames = Get-LatestPackageReferenceNames (git show "origin/${targetBranch}:eng/Dependencies.props")
+            $newPackageNames = Get-LatestPackageReferenceNames (Get-Content "$repoRoot/eng/Dependencies.props")
+
+            # Packages added or removed (a rename shows up as one of each) since the target branch.
+            $changedPackageNames = [System.Collections.Generic.HashSet[string]]::new()
+            $changedPackageNames.UnionWith($oldPackageNames)
+            $changedPackageNames.SymmetricExceptWith($newPackageNames)
+
+            if ($changedPackageNames.Count -gt 0) {
+                # Union of both sides, so renames away from (or into) a Maestro-managed package are recognized either way.
+                $maestroManagedVersionProperties = [System.Collections.Generic.HashSet[string]]::new()
+                $maestroManagedVersionProperties.UnionWith((Get-MaestroManagedVersionProperties (git show "origin/${targetBranch}:eng/Version.Details.props")))
+                $maestroManagedVersionProperties.UnionWith((Get-MaestroManagedVersionProperties (Get-Content "$repoRoot/eng/Version.Details.props")))
+
+                $nonMaestroPackageNames = @($changedPackageNames | Where-Object {
+                    $versionProperty = "$($_.Replace('.', ''))Version"
+                    -not $maestroManagedVersionProperties.Contains($versionProperty)
+                })
+
+                if ($nonMaestroPackageNames.Count -gt 0 -and ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
+                    LogError ("eng/Dependencies.props changed but $dependencyDiscoveryProject was not updated. " +
+                        "The following added or removed packages aren't managed by Maestro (no matching " +
+                        "version property in eng/Version.Details.props): $($nonMaestroPackageNames -join ', '). " +
+                        "Update $dependencyDiscoveryProject to match. " +
+                        "See eng/tools/DependabotDiscovery/README.md for details.")
+                }
+            }
         }
 
         # Check for relevant changes to SignalR typescript files
