@@ -125,8 +125,12 @@ internal sealed partial class PasskeyEndpointsStartupFilter : IStartupFilter
             return null;
         }
 
-        // Absolute URLs are advertised unchanged, which allows pointing at a separate host.
-        if (Uri.TryCreate(value, UriKind.Absolute, out _))
+        // Absolute URLs are advertised unchanged, which allows pointing at a separate host. Only
+        // http and https qualify: every other scheme parses too, and on Unix a rooted path such as
+        // "/account/passkeys" is a valid implicit file URI, so an unrestricted check would advertise
+        // it unresolved on those platforms while resolving it correctly on Windows.
+        if (Uri.TryCreate(value, UriKind.Absolute, out var absolute) &&
+            (absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps))
         {
             return value;
         }

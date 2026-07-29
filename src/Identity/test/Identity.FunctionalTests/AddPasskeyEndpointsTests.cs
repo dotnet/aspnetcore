@@ -210,6 +210,24 @@ public class AddPasskeyEndpointsTests : LoggedTest
             body);
     }
 
+    [Theory]
+    // Each of these parses as an absolute Uri on every platform, so restricting the absolute branch
+    // to http and https is what keeps them out of it. A rooted path like "/Account/Manage/Passkeys"
+    // parses the same way on Unix but not on Windows, so these stand in for a case a Windows-only
+    // test run cannot reach.
+    [InlineData("javascript:alert(1)", "http://example.com/javascript:alert(1)")]
+    [InlineData("file:///Account/Manage/Passkeys", "http://example.com/file:///Account/Manage/Passkeys")]
+    [InlineData("ftp://accounts.contoso.com/passkeys", "http://example.com/ftp://accounts.contoso.com/passkeys")]
+    public async Task DoesNotAdvertiseNonHttpSchemesUnchanged(string configured, string expected)
+    {
+        await using var app = await CreateAppAsync(options => options.Enroll = configured);
+        using var client = app.GetTestClient();
+
+        var body = await client.GetStringAsync(PasskeyEndpointsPath);
+
+        Assert.Equal($$"""{"enroll":"{{expected}}"}""", body);
+    }
+
     [Fact]
     public async Task ResolvesRelativePathsPerRequestHost()
     {
