@@ -378,7 +378,7 @@ public class BindConverterTest
         Assert.False(result);
         Assert.Equal(default, value);
     }
-    
+
     [Fact]
     public void TryConvertTo_Guid_Valid()
     {
