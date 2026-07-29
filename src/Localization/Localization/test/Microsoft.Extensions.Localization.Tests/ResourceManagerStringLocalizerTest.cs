@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -136,8 +137,122 @@ public class ResourceManagerStringLocalizerTest
         var value = localizer["a key!"];
 
         // Assert
-        var write = Assert.Single(Sink.Writes);
+        var write = Sink.Writes.First(w => w.EventId.Name == "SearchedLocation");
         Assert.Equal("ResourceManagerStringLocalizer searched for 'a key!' in 'Resources.TestResource' with culture 'en-US'.", write.State.ToString());
+    }
+
+    [Fact]
+    [ReplaceCulture("en-US", "en-US")]
+    public void GetString_LogsResourceNotFound_WhenResourceIsMissing()
+    {
+        // Arrange
+        var baseName = "Resources.TestResource";
+        var resourceNamesCache = new ResourceNamesCache();
+        var resourceAssembly = new TestAssemblyWrapper();
+        var resourceManager = new TestResourceManager(baseName, resourceAssembly);
+        var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceManager, resourceAssembly.Assembly, baseName);
+        var logger = Logger;
+
+        var localizer = new ResourceManagerStringLocalizer(
+            resourceManager,
+            resourceStreamManager,
+            baseName,
+            resourceNamesCache,
+            logger);
+
+        // Act
+        var value = localizer["a key!"];
+
+        // Assert
+        Assert.True(value.ResourceNotFound);
+        var write = Assert.Single(Sink.Writes, w => w.EventId.Name == "ResourceNotFound");
+        Assert.Equal(LogLevel.Debug, write.LogLevel);
+        Assert.Equal("A resource for 'a key!' with culture 'en-US' was not found.", write.State.ToString());
+    }
+
+    [Fact]
+    [ReplaceCulture("fr-FR", "fr-FR")]
+    public void GetString_LogsResourceNotFound_IncludesCurrentUICulture()
+    {
+        // Arrange
+        var baseName = "Resources.TestResource";
+        var resourceNamesCache = new ResourceNamesCache();
+        var resourceAssembly = new TestAssemblyWrapper();
+        var resourceManager = new TestResourceManager(baseName, resourceAssembly);
+        var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceManager, resourceAssembly.Assembly, baseName);
+        var logger = Logger;
+
+        var localizer = new ResourceManagerStringLocalizer(
+            resourceManager,
+            resourceStreamManager,
+            baseName,
+            resourceNamesCache,
+            logger);
+
+        // Act
+        var value = localizer["a key!"];
+
+        // Assert
+        var write = Assert.Single(Sink.Writes, w => w.EventId.Name == "ResourceNotFound");
+        Assert.Equal("A resource for 'a key!' with culture 'fr-FR' was not found.", write.State.ToString());
+    }
+
+    [Fact]
+    [ReplaceCulture("en-US", "en-US")]
+    public void GetString_DoesNotLogResourceNotFound_WhenResourceIsFound()
+    {
+        // Arrange
+        var baseName = "Resources.TestResource";
+        var resourceNamesCache = new ResourceNamesCache();
+        var resourceAssembly = new TestAssemblyWrapper();
+        var resourceManager = new TestResourceManager(baseName, resourceAssembly, new Dictionary<string, string> { ["a key!"] = "a value!" });
+        var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceManager, resourceAssembly.Assembly, baseName);
+        var logger = Logger;
+
+        var localizer = new ResourceManagerStringLocalizer(
+            resourceManager,
+            resourceStreamManager,
+            baseName,
+            resourceNamesCache,
+            logger);
+
+        // Act
+        var value = localizer["a key!"];
+
+        // Assert
+        Assert.Equal("a value!", value.Value);
+        Assert.False(value.ResourceNotFound);
+        Assert.DoesNotContain(Sink.Writes, w => w.EventId.Name == "ResourceNotFound");
+    }
+
+    [Fact]
+    [ReplaceCulture("en-US", "en-US")]
+    public void GetString_LogsResourceNotFoundOnce_WhenManifestIsMissing()
+    {
+        // Arrange
+        var baseName = "Resources.TestResource";
+        var resourceNamesCache = new ResourceNamesCache();
+        var resourceAssembly = new TestAssemblyWrapper();
+        var resourceManager = new TestResourceManager(baseName, resourceAssembly) { ThrowMissingManifest = true };
+        var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceManager, resourceAssembly.Assembly, baseName);
+        var logger = Logger;
+
+        var localizer = new ResourceManagerStringLocalizer(
+            resourceManager,
+            resourceStreamManager,
+            baseName,
+            resourceNamesCache,
+            logger);
+
+        // Act
+        _ = localizer["a key!"];
+        _ = localizer["a key!"];
+
+        // Assert
+        // The second lookup is served from the missing manifest cache but is still reported as a miss.
+        var writes = Sink.Writes.Where(w => w.EventId.Name == "ResourceNotFound").ToList();
+        Assert.Equal(2, writes.Count);
+        Assert.All(writes, w => Assert.Equal("A resource for 'a key!' with culture 'en-US' was not found.", w.State.ToString()));
     }
 
     [Theory]
@@ -248,15 +363,32 @@ public class ResourceManagerStringLocalizerTest
 
     internal class TestResourceManager : ResourceManager
     {
-        private AssemblyWrapper _assemblyWrapper;
+        private readonly AssemblyWrapper _assemblyWrapper;
+        private readonly IDictionary<string, string>? _strings;
 
         public TestResourceManager(string baseName, AssemblyWrapper assemblyWrapper)
+            : this(baseName, assemblyWrapper, strings: null)
+        {
+        }
+
+        public TestResourceManager(string baseName, AssemblyWrapper assemblyWrapper, IDictionary<string, string>? strings)
             : base(baseName, assemblyWrapper.Assembly)
         {
             _assemblyWrapper = assemblyWrapper;
+            _strings = strings;
         }
 
-        public override string? GetString(string name, CultureInfo? culture) => null;
+        public bool ThrowMissingManifest { get; set; }
+
+        public override string? GetString(string name, CultureInfo? culture)
+        {
+            if (ThrowMissingManifest)
+            {
+                throw new MissingManifestResourceException();
+            }
+
+            return _strings is not null && _strings.TryGetValue(name, out var value) ? value : null;
+        }
 
         public override ResourceSet? GetResourceSet(CultureInfo culture, bool createIfNotExists, bool tryParents)
         {
