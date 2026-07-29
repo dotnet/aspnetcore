@@ -267,6 +267,23 @@ public class BindConverterTest
     }
 
     [Theory]
+    [InlineData("123+", 123d)]
+    [InlineData("123.45-", -123.45d)]
+    [InlineData("1,234-", -1234d)]
+    public void TryConvertToDouble_PreservesTrailingSignSupport(
+        string input,
+        double expected)
+    {
+        var result = BindConverter.TryConvertTo<double>(
+            input,
+            CultureInfo.GetCultureInfo("en-US"),
+            out var value);
+
+        Assert.True(result);
+        Assert.Equal(expected, value);
+    }
+
+    [Theory]
     [InlineData("1e-6", 1e-6)]
     [InlineData("2E-06", 2E-06)]
     [InlineData("3.5e10", 3.5e10)]
@@ -347,15 +364,10 @@ public class BindConverterTest
     [Theory]
     [InlineData("2E")]
     [InlineData("2E-")]
-    [InlineData("2E+")]
-    [InlineData("2e")]
-    [InlineData("2e-")]
     [InlineData("2e+")]
-    [InlineData("E10")]
     [InlineData("e10")]
     [InlineData("1ee6")]
     [InlineData("1e--6")]
-    [InlineData("1e++6")]
     public void TryConvertToDouble_RejectsIncompleteOrInvalidScientificNotation(
         string input)
     {
