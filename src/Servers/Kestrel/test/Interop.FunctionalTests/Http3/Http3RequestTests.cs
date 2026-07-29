@@ -454,7 +454,7 @@ public class Http3RequestTests : LoggedTest
         // Arrange
         var syncPoint = new SyncPoint();
         var cancelledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var readAsyncTask = new TaskCompletionSource<Task<int>>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var builder = CreateHostBuilder(async context =>
         {
