@@ -1247,7 +1247,7 @@ You are an automated workflow that manages flaky test quarantine in the dotnet/a
 
 Before creating any PRs or issues, check for existing open PRs in dotnet/aspnetcore that already address the same tests. Humans may also open quarantine/unquarantine PRs without the `[test-quarantine]` prefix, so do not rely solely on title matching. For each test you plan to modify, search open PRs for any that touch the same test file by looking at PR changed files. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you were about to modify, skip that test.
 
-Also check for recently closed (not merged) `[test-quarantine]` PRs from the past 30 days that targeted the same test, and for any `[test-quarantine]` PR (open or closed) carrying the `no-quarantine-for-30-days` or `no-unquarantine-for-30-days` label — skip that test if either signal establishes a cutoff. See the "Important Rules" section for details.
+Also check for recently closed (not merged) `[test-quarantine]` PRs from the past 30 days that targeted the same test, and for any `[test-quarantine]` PR (open or closed) carrying the `no-quarantine-for-30-days` or `no-unquarantine-for-30-days` label — skip that test if the signal applicable to what you're about to do (quarantine vs. unquarantine) establishes a cutoff. These two labels are not interchangeable: `no-quarantine-for-30-days` only suppresses quarantine/re-quarantine, and `no-unquarantine-for-30-days` only suppresses unquarantine. See the "Important Rules" section for the exact mapping.
 
 ---
 
