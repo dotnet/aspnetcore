@@ -255,8 +255,13 @@ public class AddPasskeyEndpointsTests : LoggedTest
         using var client = app.GetTestClient();
 
         // The control endpoint proves the fallback policy is enforced, and shows the redirect that
-        // the specification forbids for the passkey endpoints document.
-        Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync("/protected")).StatusCode);
+        // the specification forbids for the passkey endpoints document. WebApplication injects the
+        // authentication and authorization middleware itself, so the pipeline below does not add
+        // them; a 302 to the cookie login path is only possible if authorization actually ran.
+        var protectedResponse = await client.GetAsync("/protected");
+
+        Assert.Equal(HttpStatusCode.Redirect, protectedResponse.StatusCode);
+        Assert.Contains("/Account/Login", protectedResponse.Headers.Location?.OriginalString, StringComparison.Ordinal);
 
         var response = await client.GetAsync(PasskeyEndpointsPath);
 
@@ -408,6 +413,11 @@ public class AddPasskeyEndpointsTests : LoggedTest
             app.UseRouting();
         }
 
+        // UseAuthentication and UseAuthorization are deliberately not called. WebApplication injects
+        // both when the matching services are registered, and defers them until after routing when
+        // routing is added explicitly, so they observe the matched endpoint. Calling them here would
+        // set the flags that suppress that injection, moving responsibility for their placement into
+        // this helper for no benefit.
         configureApp?.Invoke(app);
 
         await app.StartAsync();
