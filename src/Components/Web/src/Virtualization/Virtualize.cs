@@ -499,7 +499,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _pendingAnchorRestore = false;
             _deferPrependAnchorClear = false;
 
-            await _jsInterop.RefreshObserversAsync();
+            await _jsInterop.RefreshObserversAsync(_loading);
         }
 
         // Apply InitialItemIndex once: drive the first fetch via ScrollToItemAsync rather than

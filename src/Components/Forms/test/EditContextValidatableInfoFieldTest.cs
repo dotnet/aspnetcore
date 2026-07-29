@@ -6,9 +6,8 @@
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
@@ -135,27 +134,12 @@ public class EditContextValidatableInfoFieldTest
 
     private static (EditContext editContext, IDisposable subscription) CreateEditContextWithValidation(RootModel model)
     {
-        var rootTypeInfo = new TestValidatableTypeInfo(typeof(RootModel),
-        [
-            new TestValidatablePropertyInfo(typeof(RootModel), typeof(string), nameof(RootModel.Name),
-                [new RequiredAttribute { ErrorMessage = "Name is required." }]),
-            new TestValidatablePropertyInfo(typeof(RootModel), typeof(List<ItemModel>), nameof(RootModel.Items),
-                []),
-        ]);
-        var itemTypeInfo = new TestValidatableTypeInfo(typeof(ItemModel),
-        [
-            new TestValidatablePropertyInfo(typeof(ItemModel), typeof(int), nameof(ItemModel.Value),
-                [new RangeAttribute(1, 100) { ErrorMessage = "Value out of range." }]),
-        ]);
-
-        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-        {
-            [typeof(RootModel)] = rootTypeInfo,
-            [typeof(ItemModel)] = itemTypeInfo,
-        });
+        var services = new ServiceCollection();
+        services.AddValidation();
+        var options = services.BuildServiceProvider().GetRequiredService<IOptions<ValidationOptions>>().Value;
 
         var serviceProvider = new TestServiceProvider();
-        serviceProvider.AddService<IOptions<ValidationOptions>>(Options.Create<ValidationOptions>(options));
+        serviceProvider.AddService<IOptions<ValidationOptions>>(Options.Create(options));
 
         var editContext = new EditContext(model);
         var subscription = editContext.EnableDataAnnotationsValidation(serviceProvider);
@@ -186,78 +170,19 @@ public class EditContextValidatableInfoFieldTest
     private static Task RunOnDispatcher(Func<Task> body)
         => Dispatcher.CreateDefault().InvokeAsync(body);
 
-    private sealed class RootModel
+    [Microsoft.Extensions.Validation.ValidatableType]
+    public sealed class RootModel
     {
+        [Required(ErrorMessage = "Name is required.")]
         public string? Name { get; set; }
 
         public List<ItemModel> Items { get; } = new();
     }
 
-    private sealed class ItemModel
+    [Microsoft.Extensions.Validation.ValidatableType]
+    public sealed class ItemModel
     {
+        [Range(1, 100, ErrorMessage = "Value out of range.")]
         public int Value { get; set; } = 1;
-    }
-
-    private sealed class TestValidatableTypeInfo : ValidatableTypeInfo
-    {
-        public TestValidatableTypeInfo(Type type, IReadOnlyList<ValidatablePropertyInfo> members)
-            : base(type, members)
-        {
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => [];
-    }
-
-    private sealed class TestValidatablePropertyInfo : ValidatablePropertyInfo
-    {
-        private readonly ValidationAttribute[] _attributes;
-
-        public TestValidatablePropertyInfo(
-            Type declaringType,
-            Type propertyType,
-            string name,
-            ValidationAttribute[] attributes)
-            : base(declaringType, propertyType, name, displayNameInfo: null)
-        {
-            _attributes = attributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _attributes;
-    }
-
-    private sealed class TestValidationOptions : ValidationOptions
-    {
-        public TestValidationOptions(Dictionary<Type, ValidatableTypeInfo> mappings)
-        {
-            Resolvers.Add(new DictionaryResolver(mappings));
-        }
-
-        private sealed class DictionaryResolver : IValidatableInfoResolver
-        {
-            private readonly Dictionary<Type, ValidatableTypeInfo> _mappings;
-
-            public DictionaryResolver(Dictionary<Type, ValidatableTypeInfo> mappings)
-            {
-                _mappings = mappings;
-            }
-
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
-            {
-                if (_mappings.TryGetValue(type, out var info))
-                {
-                    validatableTypeInfo = info;
-                    return true;
-                }
-
-                validatableTypeInfo = null;
-                return false;
-            }
-
-            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
-            {
-                validatableParameterInfo = null;
-                return false;
-            }
-        }
     }
 }

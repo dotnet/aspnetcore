@@ -182,6 +182,26 @@ try {
         $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
         $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
+        # Use the target branch's actual PreReleaseVersionLabel instead of its name to detect an
+        # API-frozen (rtm or servicing) branch. A branch can be named like "release/11.0" long
+        # before it reaches 'rtm' or 'servicing', and API surface is still expected to change
+        # until then.
+        $targetVersionsPropsContent = git show "origin/${targetBranch}:eng/Versions.props" 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Unable to read eng/Versions.props from origin/${targetBranch}: $targetVersionsPropsContent"
+        }
+        $targetVersionsProps = [xml]($targetVersionsPropsContent | Out-String)
+        $preReleaseVersionLabelNode = $targetVersionsProps.SelectSingleNode('/Project/PropertyGroup/PreReleaseVersionLabel')
+        if (!$preReleaseVersionLabelNode) {
+            throw "eng/Versions.props on origin/${targetBranch} does not define PreReleaseVersionLabel"
+        }
+        $preReleaseVersionLabel = $preReleaseVersionLabelNode.InnerText.Trim()
+        $validPreReleaseVersionLabels = @('alpha', 'preview', 'rc', 'rtm', 'servicing')
+        if ($preReleaseVersionLabel -notin $validPreReleaseVersionLabels) {
+            throw "eng/Versions.props on origin/${targetBranch} has an unrecognized PreReleaseVersionLabel: '$preReleaseVersionLabel'"
+        }
+        $isRtmOrServicing = $preReleaseVersionLabel -in @('rtm', 'servicing')
+
         if ($changedFilesFromTarget) {
             foreach ($file in $changedFilesFromTarget) {
                 # Check for changes in Shipped in all branches
@@ -190,8 +210,8 @@ try {
                         $changedAPIBaselines.Add($file)
                     }
                 }
-                # Check for changes in Unshipped in servicing branches
-                if ($targetBranch -like 'release*' -and $targetBranch -notlike '*preview*' -and $targetBranch -notlike '*rc1*' -and $targetBranch -notlike '*rc2*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                # Check for changes in Unshipped once the branch has reached rtm or servicing
+                if ($isRtmOrServicing -and $file -like '*PublicAPI.Unshipped.txt') {
                     $changedAPIBaselines.Add($file)
                 }
             }
@@ -207,6 +227,18 @@ try {
             foreach ($file in $changedAPIBaselines) {
                 LogError $file
             }
+        }
+
+        # Check that the Dependabot discovery project stays in sync with eng/Dependencies.props
+        $allChangedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only
+        $dependencyDiscoveryProject = "eng/tools/DependabotDiscovery/DependabotDiscovery.csproj"
+
+        if (($allChangedFilesFromTarget -contains "eng/Dependencies.props") -and
+            ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
+            LogError ("eng/Dependencies.props changed but $dependencyDiscoveryProject was not updated. " +
+                "If you added, removed, or renamed a package that isn't managed by Maestro or " +
+                "the shared `$(IdentityModelVersion) property, update $dependencyDiscoveryProject to match. " +
+                "See eng/tools/DependabotDiscovery/README.md for details.")
         }
 
         # Check for relevant changes to SignalR typescript files

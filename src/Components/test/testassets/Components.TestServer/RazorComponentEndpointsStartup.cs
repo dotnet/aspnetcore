@@ -57,7 +57,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
 #pragma warning restore ASP0029
-        services.AddValidationLocalization();
 
         // Increase 10 MB hub message limit (default 32 KB)
         if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
@@ -274,12 +273,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
                 .WithBrowserOptions(config =>
                 {
-                    config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
-                    config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                    config.InteractiveWebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
+                    config.InteractiveWebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
                     if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
                         || Configuration.GetValue<bool>("EnableOutOfProcessRenderer"))
                     {
-                        config.WebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
+                        config.InteractiveWebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
                     }
                 });
 
