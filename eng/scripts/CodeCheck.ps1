@@ -230,57 +230,97 @@ try {
         }
 
         # Check that the Dependabot discovery project stays in sync with eng/Dependencies.props, but
-        # only for packages that aren't managed by Maestro (i.e. don't have a version property in
-        # eng/Version.Details.props). Renaming a Maestro-managed package (e.g. #68014) shows up as an
-        # add + remove in eng/Dependencies.props but doesn't need a DependabotDiscovery.csproj update.
+        # only for packages that aren't excluded from DependabotDiscovery.csproj (i.e. aren't Maestro-
+        # managed, IdentityModel-managed, mapped to an in-repo ProjectReferenceProvider, or one of the
+        # two hard-coded exclusions - see eng/tools/DependabotDiscovery/README.md for details on each).
+        # Renaming a Maestro-managed package (e.g. #68014) shows up as an add + remove in
+        # eng/Dependencies.props but doesn't need a DependabotDiscovery.csproj update.
         $allChangedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only
         $dependencyDiscoveryProject = "eng/tools/DependabotDiscovery/DependabotDiscovery.csproj"
 
-        function Get-LatestPackageReferenceNames([string[]]$fileContent) {
-            $names = [System.Collections.Generic.HashSet[string]]::new()
-            foreach ($line in $fileContent) {
-                if ($line -match '<LatestPackageReference\s+Include="([^"]+)"\s*/?>') {
-                    [void]$names.Add($matches[1])
-                }
+        # Reads a file's content from the target branch, failing loudly (rather than silently reading
+        # an empty/missing file) if the path doesn't exist there.
+        function Get-TargetBranchFileContent([string]$relativePath) {
+            $content = git show "origin/${targetBranch}:${relativePath}" 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                throw "Unable to read ${relativePath} from origin/${targetBranch}: $content"
             }
-            return , $names
+            return $content
         }
 
-        function Get-MaestroManagedVersionProperties([string[]]$fileContent) {
-            $properties = [System.Collections.Generic.HashSet[string]]::new()
-            foreach ($line in $fileContent) {
-                if ($line -match '<(\w+Version)>') {
-                    [void]$properties.Add($matches[1])
-                }
-            }
-            return , $properties
+        # Returns unique, sorted package names as a plain string array. Joins the file content into a
+        # single string first so an Include/Version pair split across lines is still matched. Always
+        # wrap calls to this function in @(...) at the call site — PowerShell can otherwise unwrap a
+        # single-element (or empty) array result into a scalar (or $null).
+        function Get-LatestPackageReferenceNames([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<LatestPackageReference\b[^<>]*?\bInclude="([^"]+)"') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
         }
+
+        # Returns the set of "FooVersion" property names defined (i.e. given a value) in an
+        # eng/Version.Details.props-like file. As above, always wrap calls in @(...) at the call site.
+        function Get-DefinedVersionProperties([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<(\w+Version)\b[^<>]*>') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Returns the set of "FooVersion" property names whose value is exactly $(IdentityModelVersion)
+        # in an eng/Versions.props-like file. As above, always wrap calls in @(...) at the call site.
+        function Get-IdentityModelManagedVersionProperties([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<(\w+Version)>\s*\$\(IdentityModelVersion\)\s*</\1>') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Returns the set of names mapped to an in-repo project via ProjectReferenceProvider (see
+        # eng/ProjectReferences.props) - these aren't real external packages and have no version to
+        # bump. As above, always wrap calls in @(...) at the call site.
+        function Get-ProjectReferenceProviderNames([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<ProjectReferenceProvider\b[^<>]*?\bInclude="([^"]+)"') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Packages excluded from DependabotDiscovery.csproj for reasons unrelated to Maestro or
+        # IdentityModel - see eng/tools/DependabotDiscovery/README.md for why each is hard-coded here.
+        $hardCodedDiscoveryExclusions = @('NETStandard.Library', 'Microsoft.CodeAnalysis.PublicApiAnalyzers')
 
         if ($allChangedFilesFromTarget -contains "eng/Dependencies.props") {
-            $oldPackageNames = Get-LatestPackageReferenceNames (git show "origin/${targetBranch}:eng/Dependencies.props")
-            $newPackageNames = Get-LatestPackageReferenceNames (Get-Content "$repoRoot/eng/Dependencies.props")
+            $oldPackageNames = @(Get-LatestPackageReferenceNames (Get-TargetBranchFileContent "eng/Dependencies.props"))
+            $newPackageNames = @(Get-LatestPackageReferenceNames (Get-Content "$repoRoot/eng/Dependencies.props"))
 
             # Packages added or removed (a rename shows up as one of each) since the target branch.
-            $changedPackageNames = [System.Collections.Generic.HashSet[string]]::new()
-            $changedPackageNames.UnionWith($oldPackageNames)
-            $changedPackageNames.SymmetricExceptWith($newPackageNames)
+            $changedPackageNames = @(Compare-Object -ReferenceObject $oldPackageNames -DifferenceObject $newPackageNames -PassThru)
 
             if ($changedPackageNames.Count -gt 0) {
-                # Union of both sides, so renames away from (or into) a Maestro-managed package are recognized either way.
-                $maestroManagedVersionProperties = [System.Collections.Generic.HashSet[string]]::new()
-                $maestroManagedVersionProperties.UnionWith((Get-MaestroManagedVersionProperties (git show "origin/${targetBranch}:eng/Version.Details.props")))
-                $maestroManagedVersionProperties.UnionWith((Get-MaestroManagedVersionProperties (Get-Content "$repoRoot/eng/Version.Details.props")))
+                # Union of both sides (target branch and current tree) of both files, so a rename
+                # into or out of a managed name is recognized regardless of which side you check.
+                $managedVersionProperties = @(Get-DefinedVersionProperties (Get-TargetBranchFileContent "eng/Version.Details.props")) +
+                    @(Get-DefinedVersionProperties (Get-Content "$repoRoot/eng/Version.Details.props")) +
+                    @(Get-IdentityModelManagedVersionProperties (Get-TargetBranchFileContent "eng/Versions.props")) +
+                    @(Get-IdentityModelManagedVersionProperties (Get-Content "$repoRoot/eng/Versions.props"))
 
-                $nonMaestroPackageNames = @($changedPackageNames | Where-Object {
+                $projectReferenceProviderNames = @(Get-ProjectReferenceProviderNames (Get-TargetBranchFileContent "eng/ProjectReferences.props")) +
+                    @(Get-ProjectReferenceProviderNames (Get-Content "$repoRoot/eng/ProjectReferences.props"))
+
+                $unmanagedPackageNames = @($changedPackageNames | Where-Object {
                     $versionProperty = "$($_.Replace('.', ''))Version"
-                    -not $maestroManagedVersionProperties.Contains($versionProperty)
+                    ($managedVersionProperties -notcontains $versionProperty) -and
+                        ($projectReferenceProviderNames -notcontains $_) -and
+                        ($hardCodedDiscoveryExclusions -notcontains $_)
                 })
 
-                if ($nonMaestroPackageNames.Count -gt 0 -and ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
+                if ($unmanagedPackageNames.Count -gt 0 -and ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
                     LogError ("eng/Dependencies.props changed but $dependencyDiscoveryProject was not updated. " +
-                        "The following added or removed packages aren't managed by Maestro (no matching " +
-                        "version property in eng/Version.Details.props): $($nonMaestroPackageNames -join ', '). " +
-                        "Update $dependencyDiscoveryProject to match. " +
+                        "The following added or removed packages aren't excluded from $dependencyDiscoveryProject " +
+                        "(not Maestro- or IdentityModel-managed, not a ProjectReferenceProvider, not hard-coded): " +
+                        "$($unmanagedPackageNames -join ', '). Update $dependencyDiscoveryProject to match. " +
                         "See eng/tools/DependabotDiscovery/README.md for details.")
                 }
             }
