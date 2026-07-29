@@ -778,6 +778,83 @@ internal unsafe class NativeRequestContext : IDisposable
         return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
     }
 
+    /// <summary>
+    /// Reads the per-request TLS channel binding token (CBT) produced by http.sys when
+    /// the URL group has <c>HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN</c> enabled.
+    /// </summary>
+    /// <returns>
+    /// A freshly-allocated byte array containing the SEC_CHANNEL_BINDINGS structure
+    /// http.sys produced for this request, or <see langword="null"/> if no channel
+    /// binding info is attached to the request.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// The <c>HTTP_REQUEST_CHANNEL_BIND_STATUS.ChannelToken</c> field is an embedded
+    /// pointer into the original http.sys request buffer. After <see cref="ReleasePins"/>
+    /// the buffer has been unpinned and may be moved by the GC, so the absolute address
+    /// is no longer valid. This method translates it back into a current-address span
+    /// within <c>_backingBuffer</c> using the same <c>baseAddress</c> fixup logic the
+    /// rest of this class uses, then copies the bytes into a managed array.
+    /// </para>
+    /// </remarks>
+    internal byte[]? GetChannelBindingToken()
+    {
+        if (PermanentlyPinned)
+        {
+            return GetChannelBindingToken((IntPtr)_nativeRequest, (HTTP_REQUEST_V2*)_nativeRequest);
+        }
+
+        fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
+        {
+            var request = (HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+            return GetChannelBindingToken(_originalBufferAddress, request);
+        }
+    }
+
+    private byte[]? GetChannelBindingToken(IntPtr baseAddress, HTTP_REQUEST_V2* nativeRequest)
+    {
+        var count = nativeRequest->RequestInfoCount;
+        if (count == 0)
+        {
+            return null;
+        }
+
+        var fixup = (byte*)nativeRequest - (byte*)baseAddress;
+        var pRequestInfo = (HTTP_REQUEST_INFO*)((byte*)nativeRequest->pRequestInfo + fixup);
+
+        for (var i = 0; i < count; i++)
+        {
+            var entry = pRequestInfo[i];
+            if (entry.InfoType != HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeChannelBind)
+            {
+                continue;
+            }
+
+            // entry.pInfo is an original-buffer address; translate to current.
+            var pStatus = (HTTP_REQUEST_CHANNEL_BIND_STATUS*)
+                (PermanentlyPinned
+                    ? (byte*)entry.pInfo
+                    : (byte*)entry.pInfo + fixup);
+
+            var tokenSize = (int)pStatus->ChannelTokenSize;
+            if (pStatus->ChannelToken == null || tokenSize <= 0)
+            {
+                return null;
+            }
+
+            // ChannelToken is itself an original-buffer address; translate again.
+            var pToken = PermanentlyPinned
+                ? (byte*)pStatus->ChannelToken
+                : (byte*)pStatus->ChannelToken + fixup;
+
+            var token = new byte[tokenSize];
+            new ReadOnlySpan<byte>(pToken, tokenSize).CopyTo(token);
+            return token;
+        }
+
+        return null;
+    }
+
     internal X509Certificate2? GetClientCertificate()
     {
         if (PermanentlyPinned)

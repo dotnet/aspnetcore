@@ -43,10 +43,14 @@
           "status": {
             "oneOf": [
               {
+                "enum": [
+                  null
+                ]
+              },
+              {
                 "$ref": "#/components/schemas/CamelCaseStatus"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },

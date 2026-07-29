@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -55,16 +54,13 @@ internal sealed partial class EndpointRoutingMiddleware
         if (endpointRouteBuilder is IApplicationBuilder applicationBuilder &&
             applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingPipeline, out var value))
         {
-            // Consume the block so additional UseRouting() calls don't run it again.
-            applicationBuilder.Properties.Remove(MiddlewareInvokedKeys.PostRoutingPipeline);
-
             // Reject any custom user-placed code under PostRoutingPipeline
-            if (value is not Func<RequestDelegate, RequestDelegate> postRoutingMiddleware || !IsFrameworkPostRoutingMiddleware(postRoutingMiddleware))
+            if (value is not Func<RequestDelegate, RequestDelegate> postRoutingPipeline || !IsFrameworkPostRoutingMiddleware(postRoutingPipeline))
             {
                 throw new InvalidOperationException($"The '{MiddlewareInvokedKeys.PostRoutingPipeline}' application property is reserved for the framework and cannot be set by application code.");
             }
 
-            next = postRoutingMiddleware(next);
+            next = postRoutingPipeline(next);
         }
 
         _next = next;
@@ -203,7 +199,7 @@ internal sealed partial class EndpointRoutingMiddleware
         // This check should be kept in sync with the one in EndpointMiddleware
         if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
         {
-            if (endpoint.Metadata.GetMetadata<IAuthorizeData>() is not null)
+            if (AuthorizationMetadataHelper.HasAuthorizationMetadata(endpoint))
             {
                 ThrowCannotShortCircuitAnAuthRouteException(endpoint);
             }

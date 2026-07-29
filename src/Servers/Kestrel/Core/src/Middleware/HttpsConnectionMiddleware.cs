@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Net.Security;
 using System.Security;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
@@ -155,7 +156,7 @@ internal sealed class HttpsConnectionMiddleware
             context.Features.Get<IMemoryPoolFeature>()?.MemoryPool ?? MemoryPool<byte>.Shared);
         var sslStream = sslDuplexPipe.Stream;
 
-        var feature = new Core.Internal.TlsConnectionFeature(sslStream, context);
+        var feature = new Core.Internal.TlsConnectionFeature(sslStream, context, _logger);
         // Set the mode if options were used. If the callback is used it will set the mode later.
         feature.AllowDelayedClientCertificateNegotation =
             _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
@@ -645,6 +646,9 @@ internal static partial class HttpsConnectionMiddlewareLoggerExtensions
 
     [LoggerMessage(9, LogLevel.Information, "Certificate with thumbprint {Thumbprint} lacks the subjectAlternativeName (SAN) extension and may not be accepted by browsers.", EventName = "NoSubjectAlternativeName")]
     public static partial void NoSubjectAlternativeName(this ILogger<HttpsConnectionMiddleware> logger, string thumbprint);
+
+    [LoggerMessage(10, LogLevel.Debug, "Failed to read TLS channel binding token of kind {ChannelBindingKind}.", EventName = "FailedToReadChannelBinding")]
+    public static partial void FailedToReadChannelBinding(this ILogger<HttpsConnectionMiddleware> logger, ChannelBindingKind channelBindingKind, Exception exception);
 
     public static void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, StoreLocation storeLocation, Exception exception)
     {
