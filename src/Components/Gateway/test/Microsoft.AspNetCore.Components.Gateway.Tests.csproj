@@ -29,4 +29,33 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
   </ItemGroup>
 
+  <!-- Surface the information the Gateway.Cli tool package tests need to locate the built package,
+       the repo SDK, and throwaway working folders. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsShippingPackagesDir</_Parameter1>
+      <_Parameter2>$(ArtifactsShippingPackagesDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
+      <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>GatewayCliPackageVersion</_Parameter1>
+      <_Parameter2>$(PackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsTmpDir</_Parameter1>
+      <_Parameter2>$(ArtifactsTmpDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DefaultNetCoreTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>

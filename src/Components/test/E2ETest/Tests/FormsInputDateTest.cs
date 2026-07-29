@@ -233,6 +233,7 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         return () => appElement.FindElements(By.ClassName("validation-message"))
             .Select(x => x.Text)
+            .Where(text => !string.IsNullOrEmpty(text))
             .OrderBy(x => x)
             .ToArray();
     }

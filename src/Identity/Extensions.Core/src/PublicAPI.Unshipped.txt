@@ -1,3 +1,5 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Identity.UserOptions.AllowedUserNameCharacters.get -> string!
+Microsoft.AspNetCore.Identity.UserOptions.AllowedUserNameCharacters.get -> string?
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.Aaguid.get -> byte[]?
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.Aaguid.set -> void

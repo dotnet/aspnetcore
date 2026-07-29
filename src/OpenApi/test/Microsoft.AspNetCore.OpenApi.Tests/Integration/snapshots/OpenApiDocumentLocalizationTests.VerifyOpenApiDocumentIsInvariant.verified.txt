@@ -60,7 +60,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PascalCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PascalCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -125,7 +132,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CamelCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CamelCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -305,7 +319,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PascalCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PascalCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -369,7 +390,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CamelCaseStatus"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CamelCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -1343,6 +1371,28 @@
         }
       }
     },
+    "/schemas-by-ref/pet": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/schemas-by-ref/category": {
       "post": {
         "tags": [
@@ -1759,6 +1809,28 @@
         }
       }
     },
+    "/schemas-by-ref/favorite-shape": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shape"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
     "/responses/200-add-xml": {
       "get": {
         "tags": [
@@ -2136,6 +2208,55 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Kitten"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/obsolete/deprecated": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestWithObsoleteMembers"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestWithObsoleteMembers"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/obsolete/current": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentResponse"
                 }
               }
             }
@@ -2815,6 +2936,17 @@
           }
         }
       },
+      "CurrentResponse": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        }
+      },
       "CurrentWeather": {
         "type": "object",
         "properties": {
@@ -3160,6 +3292,18 @@
           }
         }
       },
+      "ObsoleteType": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "deprecated": true
+      },
       "ParentObject": {
         "type": "object",
         "properties": {
@@ -3257,6 +3401,90 @@
             "type": "string"
           },
           "subject": {
+            "type": "string"
+          }
+        }
+      },
+      "Pet": {
+        "required": [
+          "$type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PetCat"
+          },
+          {
+            "$ref": "#/components/schemas/PetDog"
+          },
+          {
+            "$ref": "#/components/schemas/PetPet"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "cat": "#/components/schemas/PetCat",
+            "dog": "#/components/schemas/PetDog",
+            "pet": "#/components/schemas/PetPet"
+          },
+          "defaultMapping": "#/components/schemas/Pet"
+        }
+      },
+      "PetCat": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "cat"
+            ],
+            "type": "string"
+          },
+          "isKitten": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "PetDog": {
+        "required": [
+          "breed",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "dog"
+            ],
+            "type": "string"
+          },
+          "breed": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "PetPet": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "pet"
+            ],
+            "type": "string"
+          },
+          "name": {
             "type": "string"
           }
         }
@@ -3377,6 +3605,44 @@
             "type": "string"
           },
           "email": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestWithObsoleteMembers": {
+        "required": [
+          "current",
+          "currentReference",
+          "obsoleteType"
+        ],
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "string"
+          },
+          "legacy": {
+            "type": "string",
+            "deprecated": true
+          },
+          "currentReference": {
+            "$ref": "#/components/schemas/ReusableType"
+          },
+          "legacyReference": {
+            "deprecated": true,
+            "$ref": "#/components/schemas/ReusableType"
+          },
+          "obsoleteType": {
+            "$ref": "#/components/schemas/ObsoleteType"
+          }
+        }
+      },
+      "ReusableType": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
             "type": "string"
           }
         }
