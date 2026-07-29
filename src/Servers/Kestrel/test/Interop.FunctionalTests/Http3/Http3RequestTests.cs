@@ -314,7 +314,6 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52573")]
     [ConditionalTheory]
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
