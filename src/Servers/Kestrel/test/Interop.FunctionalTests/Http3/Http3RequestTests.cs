@@ -769,6 +769,16 @@ public class Http3RequestTests : LoggedTest
             Interlocked.Increment(ref requestCount);
             return Task.CompletedTask;
         });
+        configureKestrel: kestrel =>
+        {
+            kestrel.Limits.MinResponseDataRate = null;
+
+            kestrel.Listen(IPAddress.Loopback, 0, listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http3;
+                listenOptions.UseHttps(TestResources.GetTestCertificate());
+            });
+        });
 
         using (var host = builder.Build())
         {
