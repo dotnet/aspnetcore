@@ -556,16 +556,36 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
     internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
     {
-        // Avoid setting explicit nullability annotations for `object` types so they continue to match on the catch
-        // all schema (no type, no format, no constraints).
-        if (propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable))
+        var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable);
+        var shouldPruneNullFromReadOnlyProperty = propertyInfo.PropertyType != typeof(object) &&
+            propertyInfo.AttributeProvider is PropertyInfo { SetMethod: null } &&
+            !propertyInfo.IsGetNullable &&
+            propertyInfo.IsSetNullable;
+        if (shouldPruneNullFromReadOnlyProperty)
         {
-            if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
-                !schemaTypes.HasFlag(JsonSchemaType.Null))
+            shouldApplyNullableSchema = false;
+        }
+
+        if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes)
+        {
+            if (shouldApplyNullableSchema && !schemaTypes.HasFlag(JsonSchemaType.Null))
             {
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
             }
+            else if (shouldPruneNullFromReadOnlyProperty && schemaTypes.HasFlag(JsonSchemaType.Null))
+            {
+                var nonNullableSchemaTypes = schemaTypes & ~JsonSchemaType.Null;
+                if (nonNullableSchemaTypes != 0)
+                {
+                    schema[OpenApiSchemaKeywords.TypeKeyword] = nonNullableSchemaTypes.ToString();
+                }
+                else if (schema is JsonObject schemaObject)
+                {
+                    schemaObject.Remove(OpenApiSchemaKeywords.TypeKeyword);
+                }
+            }
         }
+
         if (schema.WillBeComponentized() &&
             propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
         {
