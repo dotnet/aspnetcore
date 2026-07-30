@@ -778,7 +778,7 @@ public class Http3RequestTests : LoggedTest
                 listenOptions.Protocols = HttpProtocols.Http3;
                 listenOptions.UseHttps(TestResources.GetTestCertificate());
             });
-        });
+        };
 
         using (var host = builder.Build())
         {
