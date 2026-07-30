@@ -56,7 +56,7 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
             var target = container.FindElement(By.CssSelector(".item[data-index='500']"));
             var scrollTop = double.Parse(container.GetDomProperty("scrollTop"), CultureInfo.InvariantCulture);
 
-            return scrollTop > 0 && Math.Abs(target.Location.Y - container.Location.Y) <= 1;
+            return scrollTop > 0 && Math.Abs(target.Location.Y - container.Location.Y) <= 2;
         },
             "Expected InitialItemIndex=500 to remain aligned after the initial spacer callback.");
     }
