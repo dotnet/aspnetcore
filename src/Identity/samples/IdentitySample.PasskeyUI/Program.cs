@@ -49,6 +49,7 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
+app.MapWellKnownPasskeyEndpoints();
 
 app.MapPost("attestation/options", async (
     [FromServices] UserManager<PocoUser> userManager,

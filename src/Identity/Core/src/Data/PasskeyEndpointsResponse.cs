@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Identity.Data;
 /// The response body of the well-known passkey endpoints document.
 /// </summary>
 /// <remarks>
-/// Members are omitted when unset. If neither endpoint is configured, the document is not served.
+/// Members are omitted when unset. An empty document is valid, and signals support for passkeys
+/// without advertising specific pages.
 /// See <see href="https://w3c.github.io/webappsec-passkey-endpoints/"/>.
 /// </remarks>
 internal sealed class PasskeyEndpointsResponse
@@ -21,4 +22,8 @@ internal sealed class PasskeyEndpointsResponse
     [JsonPropertyName("manage")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Manage { get; init; }
+
+    [JsonPropertyName("prfUsageDetails")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PrfUsageDetails { get; init; }
 }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
@@ -27,9 +28,9 @@ public class AddPasskeyEndpointsTests : LoggedTest
     private static Uri BaseAddress { get; } = new Uri("http://example.com");
 
     [Fact]
-    public async Task IsNotServedWhenAddPasskeyEndpointsIsNeverCalled()
+    public async Task IsNotServedWhenMapWellKnownPasskeyEndpointsIsNeverCalled()
     {
-        await using var app = await CreateAppAsync(configure: null);
+        await using var app = await CreateAppAsync(configure: null, map: false);
         using var client = app.GetTestClient();
 
         var response = await client.GetAsync(PasskeyEndpointsPath);
@@ -38,12 +39,13 @@ public class AddPasskeyEndpointsTests : LoggedTest
     }
 
     [Fact]
-    public async Task DoesNotShadowAnApplicationsOwnEndpointWhenNotRegistered()
+    public async Task DoesNotShadowAnApplicationsOwnEndpointWhenNotMapped()
     {
-        // Early adopters may already serve a hand-written document. Nothing is registered unless
-        // AddPasskeyEndpoints is called, so theirs keeps working.
+        // Early adopters may already serve a hand-written document. Nothing is served unless
+        // MapWellKnownPasskeyEndpoints is called, so theirs keeps working.
         await using var app = await CreateAppAsync(
             configure: null,
+            map: false,
             configureApp: app => app.MapGet(PasskeyEndpointsPath, () => Results.Text("""{"enroll":"/custom"}""", "application/json")));
         using var client = app.GetTestClient();
 
@@ -96,18 +98,35 @@ public class AddPasskeyEndpointsTests : LoggedTest
     }
 
     [Fact]
-    public async Task LogsWarningAndServesNothingWhenNoEndpointIsConfigured()
+    public async Task AdvertisesAPrfUsageDetailsPage()
     {
-        // Advertising an empty document would claim passkey support without giving a credential
-        // manager anywhere to send the user.
+        await using var app = await CreateAppAsync(options =>
+        {
+            options.Manage = "/Account/Manage/Passkeys";
+            options.PrfUsageDetails = "/Help/Passkeys";
+        });
+        using var client = app.GetTestClient();
+
+        var body = await client.GetStringAsync(PasskeyEndpointsPath);
+
+        Assert.Equal(
+            """{"manage":"http://example.com/Account/Manage/Passkeys","prfUsageDetails":"http://example.com/Help/Passkeys"}""",
+            body);
+    }
+
+    [Fact]
+    public async Task ServesAnEmptyDocumentWhenNoEndpointIsConfigured()
+    {
+        // Calling the map method is itself the statement that the application supports passkeys, and
+        // the specification defines an empty document as signalling exactly that.
         await using var app = await CreateAppAsync(options => { });
         using var client = app.GetTestClient();
 
-        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(PasskeyEndpointsPath)).StatusCode);
+        var response = await client.GetAsync(PasskeyEndpointsPath);
 
-        var write = Assert.Single(PasskeyEndpointsLogs);
-        Assert.Equal(LogLevel.Warning, write.LogLevel);
-        Assert.Equal("NoPasskeyEndpointsConfigured", write.EventId.Name);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("{}", await response.Content.ReadAsStringAsync());
+        Assert.Empty(PasskeyEndpointsLogs);
     }
 
     [Fact]
@@ -127,22 +146,19 @@ public class AddPasskeyEndpointsTests : LoggedTest
     }
 
     [Fact]
-    public async Task LogsWarningAndServesNothingWhenEveryValueIsWhitespace()
+    public async Task ServesAnEmptyDocumentWhenEveryValueIsWhitespace()
     {
-        // The unconfigured gate and the URL resolution have to agree on what counts as unset, or a
-        // whitespace value would suppress the warning and then advertise a URL pointing at nothing.
         await using var app = await CreateAppAsync(options =>
         {
             options.Enroll = " ";
             options.Manage = "\t";
+            options.PrfUsageDetails = "  ";
         });
         using var client = app.GetTestClient();
 
-        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(PasskeyEndpointsPath)).StatusCode);
+        var body = await client.GetStringAsync(PasskeyEndpointsPath);
 
-        var write = Assert.Single(PasskeyEndpointsLogs);
-        Assert.Equal(LogLevel.Warning, write.LogLevel);
-        Assert.Equal("NoPasskeyEndpointsConfigured", write.EventId.Name);
+        Assert.Equal("{}", body);
     }
 
     [Fact]
@@ -194,7 +210,7 @@ public class AddPasskeyEndpointsTests : LoggedTest
     }
 
     [Fact]
-    public async Task AdvertisesAbsoluteUrlsUnchanged()
+    public async Task AdvertisesAbsoluteUrls()
     {
         await using var app = await CreateAppAsync(options =>
         {
@@ -208,6 +224,51 @@ public class AddPasskeyEndpointsTests : LoggedTest
         Assert.Equal(
             """{"enroll":"https://accounts.contoso.com/passkeys/create?source=upgrade","manage":"https://accounts.contoso.com/passkeys"}""",
             body);
+    }
+
+    [Theory]
+    // Uri accepts these even though they are not well formed, so advertising the configured value
+    // verbatim would put a raw space into the document.
+    [InlineData("https://accounts.contoso.com/pass keys", "https://accounts.contoso.com/pass%20keys")]
+    [InlineData("HTTPS://Accounts.Contoso.COM/passkeys", "https://accounts.contoso.com/passkeys")]
+    // A default port and a dot segment are removed, and an authority on its own gains a path, so an
+    // absolute value is advertised as it stands only up to normalization.
+    [InlineData("https://accounts.contoso.com:443/passkeys", "https://accounts.contoso.com/passkeys")]
+    [InlineData("https://accounts.contoso.com", "https://accounts.contoso.com/")]
+    [InlineData("https://accounts.contoso.com/passkeys/../passkeys", "https://accounts.contoso.com/passkeys")]
+    public async Task NormalizesAbsoluteUrls(string configured, string expected)
+    {
+        await using var app = await CreateAppAsync(options => options.Enroll = configured);
+        using var client = app.GetTestClient();
+
+        var body = await client.GetStringAsync(PasskeyEndpointsPath);
+
+        Assert.Equal($$"""{"enroll":"{{expected}}"}""", body);
+    }
+
+    [Theory]
+    // A path is escaped rather than concatenated, because an unescaped '#' would truncate the URL at
+    // the fragment and send the user to the wrong page.
+    [InlineData("/Account/Pass keys", "http://example.com/Account/Pass%20keys")]
+    [InlineData("/passkeys/cr\u00e9er", "http://example.com/passkeys/cr%C3%A9er")]
+    // A query and a fragment are preserved rather than escaped into the path, and are escaped in
+    // turn, because unlike PathString they are taken to be escaped already.
+    [InlineData("/Account/Passkeys?ref=cm", "http://example.com/Account/Passkeys?ref=cm")]
+    [InlineData("/Account/Passkeys#create", "http://example.com/Account/Passkeys#create")]
+    [InlineData("/Account/Passkeys?ref=cm#create", "http://example.com/Account/Passkeys?ref=cm#create")]
+    [InlineData("/Account/Passkeys?return=/my page", "http://example.com/Account/Passkeys?return=/my%20page")]
+    [InlineData("/Account/Passkeys#cr\u00e9er", "http://example.com/Account/Passkeys#cr%C3%A9er")]
+    [InlineData("/Account/Passkeys?a=b c#fr ag", "http://example.com/Account/Passkeys?a=b%20c#fr%20ag")]
+    // Escaping is not applied twice, so a value that is already escaped survives unchanged.
+    [InlineData("/Account/Pass%20keys", "http://example.com/Account/Pass%20keys")]
+    public async Task EscapesRelativeValues(string configured, string expected)
+    {
+        await using var app = await CreateAppAsync(options => options.Enroll = configured);
+        using var client = app.GetTestClient();
+
+        var body = await client.GetStringAsync(PasskeyEndpointsPath);
+
+        Assert.Equal($$"""{"enroll":"{{expected}}"}""", body);
     }
 
     [Theory]
@@ -241,6 +302,34 @@ public class AddPasskeyEndpointsTests : LoggedTest
         Assert.Equal("""{"enroll":"http://first.example.com/Account/Manage/Passkeys"}""", first);
         Assert.Equal("""{"enroll":"http://second.example.com/Account/Manage/Passkeys"}""", second);
         Assert.Equal(first, firstAgain);
+    }
+
+    [Fact]
+    public async Task ResolvesRelativePathsAgainstForwardedHeaders()
+    {
+        // The endpoint runs where the application places it, so middleware that corrects the scheme
+        // and host of a proxied request is observed. Advertising the internal origin instead would
+        // send the user somewhere unreachable.
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            services => services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+                options.KnownProxies.Clear();
+                options.KnownIPNetworks.Clear();
+            }),
+            configureApp: app => app.UseForwardedHeaders());
+        using var client = app.GetTestClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, PasskeyEndpointsPath);
+        request.Headers.Add("X-Forwarded-Proto", "https");
+        request.Headers.Add("X-Forwarded-Host", "contoso.com");
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(
+            """{"enroll":"https://contoso.com/Account/Manage/Passkeys"}""",
+            await response.Content.ReadAsStringAsync());
     }
 
     [Fact]
@@ -288,32 +377,90 @@ public class AddPasskeyEndpointsTests : LoggedTest
     }
 
     [Fact]
-    public async Task IsServedAtTheOriginRootGivenUsePathBase()
+    public async Task ThrowsWhenMappedIntoARouteGroupWithAPrefix()
     {
-        // The middleware runs before UsePathBase, so the document stays where the specification
-        // requires it rather than moving under the prefix.
-        await using var app = await CreateAppAsync(
-            options => options.Enroll = "/Account/Manage/Passkeys",
-            usePathBase: "/myapp");
-        using var client = app.GetTestClient();
+        // A prefix would move the document off the root of the origin, which is the only place a
+        // credential manager looks for it. Authorization resolves the endpoint data source while the
+        // pipeline is built, so an application that uses it, as every Identity application does,
+        // fails at startup rather than on the first request.
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateAppAsync(
+                options => options.Enroll = "/Account/Manage/Passkeys",
+                map: false,
+                configureApp: app => app.MapGroup("/api").MapWellKnownPasskeyEndpoints()));
 
-        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(PasskeyEndpointsPath)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/myapp" + PasskeyEndpointsPath)).StatusCode);
+        Assert.Contains("/api/.well-known/passkey-endpoints", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task RelativePathsIgnoreAPathBaseAddedByThePipeline()
+    public async Task IsServedWhenMappedIntoARouteGroupWithoutAPrefix()
     {
-        // A documented limitation: UsePathBase runs after this middleware, so applications that set
-        // a path base in the pipeline have to advertise absolute URLs.
+        // MapIdentityApi groups its endpoints this way, so an empty prefix has to stay allowed.
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            map: false,
+            configureApp: app => app.MapGroup("").MapWellKnownPasskeyEndpoints());
+        using var client = app.GetTestClient();
+
+        var response = await client.GetAsync(PasskeyEndpointsPath);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("""{"enroll":"http://example.com/Account/Manage/Passkeys"}""", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task IsServedAtTheOriginRootGivenUsePathBase()
+    {
+        // Credential managers request the document at the root of the origin, so it has to be served
+        // there whether or not the application also answers under its path base.
         await using var app = await CreateAppAsync(
             options => options.Enroll = "/Account/Manage/Passkeys",
             usePathBase: "/myapp");
         using var client = app.GetTestClient();
 
-        var body = await client.GetStringAsync(PasskeyEndpointsPath);
+        var response = await client.GetAsync(PasskeyEndpointsPath);
 
-        Assert.Equal("""{"enroll":"http://example.com/Account/Manage/Passkeys"}""", body);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("""{"enroll":"http://example.com/Account/Manage/Passkeys"}""", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task RelativePathsIncludeAPathBaseAddedByThePipeline()
+    {
+        // The endpoint is matched after UsePathBase, so a path base set there is visible and belongs
+        // in the advertised URL.
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            usePathBase: "/myapp");
+        using var client = app.GetTestClient();
+
+        var body = await client.GetStringAsync("/myapp" + PasskeyEndpointsPath);
+
+        Assert.Equal("""{"enroll":"http://example.com/myapp/Account/Manage/Passkeys"}""", body);
+    }
+
+    [Fact]
+    public async Task IsServedUnderAPathBaseWithoutAnExplicitCallToUseRouting()
+    {
+        // WebApplication places its own UseRouting ahead of the pipeline, so UsePathBase would be
+        // too late to be seen were it not for UsePathBase re-running routing itself. Both the root
+        // of the origin and the path base therefore work in a default pipeline.
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            usePathBase: "/myapp",
+            useExplicitRouting: false);
+        using var client = app.GetTestClient();
+
+        var atRoot = await client.GetAsync(PasskeyEndpointsPath);
+        var underPathBase = await client.GetAsync("/myapp" + PasskeyEndpointsPath);
+
+        Assert.Equal(HttpStatusCode.OK, atRoot.StatusCode);
+        Assert.Equal("""{"enroll":"http://example.com/Account/Manage/Passkeys"}""", await atRoot.Content.ReadAsStringAsync());
+
+        Assert.Equal(HttpStatusCode.OK, underPathBase.StatusCode);
+        Assert.Equal(
+            """{"enroll":"http://example.com/myapp/Account/Manage/Passkeys"}""",
+            await underPathBase.Content.ReadAsStringAsync());
     }
 
     [Fact]
@@ -359,6 +506,19 @@ public class AddPasskeyEndpointsTests : LoggedTest
     }
 
     [Fact]
+    public async Task AnswersHeadRequests()
+    {
+        await using var app = await CreateAppAsync(options => options.Enroll = "/Account/Manage/Passkeys");
+        using var client = app.GetTestClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Head, PasskeyEndpointsPath);
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
     public async Task LogsWarningOncePerAppGivenServerDomainMismatch()
     {
         await using var app = await CreateAppAsync(
@@ -388,6 +548,38 @@ public class AddPasskeyEndpointsTests : LoggedTest
         Assert.Empty(PasskeyEndpointsLogs);
     }
 
+    [Theory]
+    // The relying party identifier may be a registrable suffix of the origin serving the document,
+    // so a subdomain of it is a correct configuration rather than a mistake to warn about.
+    [InlineData("http://id.example.com")]
+    [InlineData("http://accounts.id.example.com")]
+    public async Task DoesNotLogGivenAHostBelowTheServerDomain(string requestOrigin)
+    {
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            services => services.Configure<IdentityPasskeyOptions>(options => options.ServerDomain = "example.com"));
+        using var client = app.GetTestClient();
+
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(requestOrigin + PasskeyEndpointsPath)).StatusCode);
+
+        Assert.Empty(PasskeyEndpointsLogs);
+    }
+
+    [Fact]
+    public async Task LogsWarningGivenAHostThatMerelyEndsWithTheServerDomain()
+    {
+        // "notexample.com" ends with "example.com" without being below it, so the suffix check has
+        // to require a label boundary.
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            services => services.Configure<IdentityPasskeyOptions>(options => options.ServerDomain = "example.com"));
+        using var client = app.GetTestClient();
+
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("http://notexample.com" + PasskeyEndpointsPath)).StatusCode);
+
+        Assert.Single(PasskeyEndpointsLogs);
+    }
+
     private IEnumerable<WriteContext> PasskeyEndpointsLogs
         => TestSink.Writes.Where(w => w.LoggerName == LoggerCategory);
 
@@ -396,7 +588,9 @@ public class AddPasskeyEndpointsTests : LoggedTest
         Action<IServiceCollection>? configureServices = null,
         Action<WebApplication>? configureApp = null,
         string? usePathBase = null,
-        string? serverPathBase = null)
+        string? serverPathBase = null,
+        bool useExplicitRouting = true,
+        bool map = true)
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.WebHost.UseTestServer(options =>
@@ -409,8 +603,8 @@ public class AddPasskeyEndpointsTests : LoggedTest
 
         if (serverPathBase is not null)
         {
-            // Startup filters run in registration order, so registering this one first makes the
-            // path base visible to the passkey endpoints middleware, as a server would.
+            // Startup filters run before the pipeline, so this one stands in for a server that
+            // populates the path base from a hosted virtual directory.
             builder.Services.AddSingleton<IStartupFilter>(new ServerPathBaseStartupFilter(serverPathBase));
         }
 
@@ -427,8 +621,11 @@ public class AddPasskeyEndpointsTests : LoggedTest
         {
             app.UsePathBase(usePathBase);
 
-            // Routing has to be added explicitly here so that it runs after UsePathBase.
-            app.UseRouting();
+            if (useExplicitRouting)
+            {
+                // Routing has to be added explicitly here so that it runs after UsePathBase.
+                app.UseRouting();
+            }
         }
 
         // UseAuthentication and UseAuthorization are deliberately not called. WebApplication injects
@@ -437,6 +634,11 @@ public class AddPasskeyEndpointsTests : LoggedTest
         // set the flags that suppress that injection, moving responsibility for their placement into
         // this helper for no benefit.
         configureApp?.Invoke(app);
+
+        if (map)
+        {
+            app.MapWellKnownPasskeyEndpoints();
+        }
 
         await app.StartAsync();
 

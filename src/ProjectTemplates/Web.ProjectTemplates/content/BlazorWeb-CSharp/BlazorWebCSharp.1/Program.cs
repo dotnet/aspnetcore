@@ -131,5 +131,8 @@ app.MapRazorComponents<App>();
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
+// Serves the well-known passkey endpoints document configured above.
+app.MapWellKnownPasskeyEndpoints();
+
 #endif
 app.Run();
