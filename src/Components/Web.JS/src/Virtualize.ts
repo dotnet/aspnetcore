@@ -47,7 +47,14 @@ function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): nu
   return (Number.isFinite(scale) && scale > 0) ? scale : 1;
 }
 
-function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, anchorMode = 1, rootMargin = 50): void {
+function init(
+  dotNetHelper: DotNet.DotNetObject,
+  spacerBefore: HTMLElement,
+  spacerAfter: HTMLElement,
+  anchorMode = 1,
+  suppressInitialSpacerCallbacks = false,
+  rootMargin = 50,
+): void {
   // If the component was disposed before the JS interop call completed, the element references may be null
   // or the elements may have been disconnected from the DOM. Return early to avoid errors.
   if (!spacerBefore || !spacerAfter || !spacerBefore.isConnected || !spacerAfter.isConnected) {
@@ -138,6 +145,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   mutationObserver.observe(spacerBefore, spacerObserverOptions);
   mutationObserver.observe(spacerAfter, spacerObserverOptions);
 
+  let suppressSpacerCallbacks = suppressInitialSpacerCallbacks;
+
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
     rootMargin: `${rootMargin}px`,
@@ -176,8 +185,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const anchoredItems: Map<Element, number> = new Map();
   let scrollTriggeredRender = false;
 
-  // After anchor restore, suppress spacer IO callbacks until the next user scroll.
-  let suppressSpacerCallbacks = false;
+  // After anchor restore or programmatic alignment, suppress spacer IO callbacks until the next user scroll.
   let ignoreAnchorScroll = false;
   const isViewportAtBottom = (): boolean =>
     scrollElement.scrollHeight <= scrollElement.clientHeight
@@ -870,5 +878,3 @@ function dispose(dotNetHelper: DotNet.DotNetObject): void {
   // even if init() returned early and no observers were created.
   dotNetHelper.dispose();
 }
-
-

@@ -458,7 +458,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (firstRender)
         {
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
-            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
+            var suppressSpacerCallbacks = InitialItemIndex > 0;
+            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode, suppressSpacerCallbacks);
             _lastRenderedAnchorMode = AnchorMode;
         }
 

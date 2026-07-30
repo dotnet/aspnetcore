@@ -45,6 +45,22 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
         Browser.True(() => GetRenderedItems(Browser.FindElement(By.Id("virtualize-webassembly"))).Contains("Item 50"));
     }
 
+    [Fact]
+    public void InitialItemIndex_IsAppliedOnPrerenderedInteractiveServerLoad()
+    {
+        Navigate($"{ServerPathBase}/interactivity/virtualization?test-initial-item-index=true");
+
+        Browser.True(() =>
+        {
+            var container = Browser.FindElement(By.Id("scroll-container"));
+            var target = container.FindElement(By.CssSelector(".item[data-index='500']"));
+            var scrollTop = double.Parse(container.GetDomProperty("scrollTop"), CultureInfo.InvariantCulture);
+
+            return scrollTop > 0 && Math.Abs(target.Location.Y - container.Location.Y) <= 1;
+        },
+            "Expected InitialItemIndex=500 to remain aligned after the initial spacer callback.");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

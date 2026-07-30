@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Virtualization;
@@ -1125,6 +1126,41 @@ public class VirtualizeTest
 
         Assert.NotNull(renderedVirtualize);
         Assert.Equal(42, renderedVirtualize.InitialItemIndex);
+    }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(42, true)]
+    public async Task InitialIndex_ControlsInitialSpacerCallbackSuppression(int initialItemIndex, bool expectedSuppression)
+    {
+        var jsRuntime = new Mock<IJSRuntime>(MockBehavior.Loose);
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(1, 100).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", initialItemIndex);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item)));
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => jsRuntime.Object)
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        jsRuntime.Verify(runtime => runtime.InvokeAsync<IJSVoidResult>(
+            "Blazor._internal.Virtualize.init",
+            It.Is<object[]>(arguments =>
+                arguments.Length == 5
+                && Equals(arguments[4], expectedSuppression))),
+            Times.Once);
     }
 
     [Fact]
