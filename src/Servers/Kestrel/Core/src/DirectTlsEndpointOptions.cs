@@ -85,7 +85,7 @@ public sealed class DirectTlsEndpointOptions
     /// </remarks>
     public int? WorkerCount
     {
-        get => _workerCount;
+        get;
         set
         {
             if (value is <= 0)
@@ -93,11 +93,9 @@ public sealed class DirectTlsEndpointOptions
                 throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(WorkerCount)} must be greater than zero when set.");
             }
 
-            _workerCount = value;
+            field = value;
         }
     }
-
-    private int? _workerCount;
 
     /// <summary>
     /// The maximum amount of time allowed for the TLS handshake to complete on a connection to this endpoint.
@@ -113,7 +111,7 @@ public sealed class DirectTlsEndpointOptions
     /// </remarks>
     public TimeSpan HandshakeTimeout
     {
-        get => _handshakeTimeout;
+        get;
         set
         {
             if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
@@ -121,11 +119,9 @@ public sealed class DirectTlsEndpointOptions
                 throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
             }
 
-            _handshakeTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
+            field = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
         }
-    }
-
-    private TimeSpan _handshakeTimeout = HttpsConnectionAdapterOptions.DefaultHandshakeTimeout;
+    } = HttpsConnectionAdapterOptions.DefaultHandshakeTimeout;
 
     /// <summary>
     /// The HTTP protocols (ALPN) advertised for this endpoint,

@@ -114,6 +114,8 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             _readyConnections.Writer, 
             _memoryPool,
             _options.NoDelay,
+            _options.MaxReadBufferSize ?? 0,
+            _options.MaxWriteBufferSize ?? 0,
             _clientHelloCallback);
 
         _logger?.LogInformation("DirectTls listener started with EPOLLEXCLUSIVE worker accept");

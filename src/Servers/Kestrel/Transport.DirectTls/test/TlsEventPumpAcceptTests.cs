@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Net.Sockets;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
@@ -23,7 +24,8 @@ public class TlsEventPumpAcceptTests
     private static SocketException Fatal()
         => new SocketException((int)SocketError.NotSocket);
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void AcceptConnections_DrainsBacklog_ThenStopsOnWouldBlock()
     {
         using var pump = new ScriptedAcceptPump(
@@ -41,7 +43,8 @@ public class TlsEventPumpAcceptTests
         Assert.Equal(3, pump.AcceptCallCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void AcceptConnections_StopsDrain_OnAcceptError()
     {
         // A non-WouldBlock accept error ends the current drain. epoll re-arms (level-triggered) if more
@@ -60,7 +63,8 @@ public class TlsEventPumpAcceptTests
         Assert.Equal(1, pump.AcceptCallCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void AcceptConnections_DoesNotSpin_OnRepeatedFatalErrors()
     {
         // A listen fd that always fails (never yields WouldBlock) must not tight-spin: a single accept
@@ -77,7 +81,8 @@ public class TlsEventPumpAcceptTests
         Assert.Equal(1, pump.AcceptCallCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void AcceptConnections_BreaksOnObjectDisposed()
     {
         using var pump = new ScriptedAcceptPump(
@@ -94,7 +99,8 @@ public class TlsEventPumpAcceptTests
         Assert.Equal(1, pump.AcceptCallCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void AcceptConnections_DoesNotEnterLoop_WhenListenFdCleared()
     {
         using var pump = new ScriptedAcceptPump(
@@ -107,7 +113,8 @@ public class TlsEventPumpAcceptTests
         Assert.Equal(0, pump.AcceptCallCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void AcceptConnections_DoesNotEnterLoop_WhenNotRunning()
     {
         using var pump = new ScriptedAcceptPump(
@@ -121,7 +128,8 @@ public class TlsEventPumpAcceptTests
         Assert.Equal(0, pump.AcceptCallCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void StopAccepting_ClearsListenFd_SoAcceptLoopBreaks()
     {
         using var pump = new ScriptedAcceptPump(
@@ -135,7 +143,8 @@ public class TlsEventPumpAcceptTests
         Assert.Equal(0, pump.AcceptCallCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void StopAccepting_IsIdempotent()
     {
         using var pump = new ScriptedAcceptPump(Array.Empty<Func<Socket>>());

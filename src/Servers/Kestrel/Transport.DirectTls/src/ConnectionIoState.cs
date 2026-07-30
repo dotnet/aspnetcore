@@ -205,7 +205,7 @@ internal class ConnectionIoState : IDisposable
         if (!_readAwaitable.IsActive)
         {
             _logger?.LogDebug("TryCompleteRead called but no read is pending");
-            return; // Race: cancelled or completed between check and call
+            return; // Race: canceled or completed between check and call
         }
 
         var status = TlsRead(_readBuffer.Span, out var read);
@@ -410,8 +410,12 @@ internal class ConnectionIoState : IDisposable
     /// </summary>
     internal void Cancel()
     {
-        _readAwaitable.TrySetCanceled();
-        _writeAwaitable.TrySetCanceled();
+        // Delegate to each awaitable's sticky cancellation. Whether a loop is currently parked on its
+        // awaitable or momentarily between operations (idle), Cancel() completes it now and makes every
+        // future Reset() return an already-cancelled result - so a loop that re-arms concurrently with
+        // disposal cannot park forever on an fd DisposeAsync is about to unregister from epoll.
+        _readAwaitable.Cancel();
+        _writeAwaitable.Cancel();
     }
 
     public void Dispose()

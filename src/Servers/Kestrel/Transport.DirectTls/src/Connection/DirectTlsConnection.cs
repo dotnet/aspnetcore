@@ -50,6 +50,8 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         EndPoint? localEndPoint,
         EndPoint? remoteEndPoint,
         MemoryPool<byte> memoryPool,
+        long maxReadBufferSize,
+        long maxWriteBufferSize,
         ILogger logger,
         SslApplicationProtocol negotiatedApplicationProtocol = default,
         X509Certificate2? clientCertificate = null)
@@ -91,22 +93,50 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         // This ensures we get notified even if no read/write is pending when peer disconnects
         _connectionState.OnFatalError = OnTlsFatalError;
 
-        // Create duplex pipe pair for Kestrel
+        // Create duplex pipe pair for Kestrel. MaxReadBufferSize / MaxWriteBufferSize become the writer
+        // backpressure thresholds so a slow app (input pipe) or a slow/blocked peer (output pipe) can't force
+        // unbounded server buffering - matching the sockets transport.
+        var (inputOptions, outputOptions) = CreatePipeOptions(memoryPool, maxReadBufferSize, maxWriteBufferSize);
+
+        var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+        Transport = pair.Transport;
+        Application = pair.Application;
+    }
+
+    /// <summary>
+    /// Builds the input/output <see cref="PipeOptions"/> for the connection's duplex pipe pair.
+    /// <paramref name="maxReadBufferSize"/> and <paramref name="maxWriteBufferSize"/> are applied as writer
+    /// backpressure thresholds - the writer pauses at the maximum and resumes once drained to half of it. A
+    /// size of 0 disables backpressure for that direction (unbounded buffering), matching the sockets
+    /// transport's <c>MaxReadBufferSize</c> / <c>MaxWriteBufferSize</c> semantics.
+    /// </summary>
+    /// <remarks>
+    /// The scheduler split matches the inline-transport sockets path: the input pipe (decrypted reads the app
+    /// consumes) dispatches reader continuations to the thread pool and writes inline on the pump thread; the
+    /// output pipe (app writes the pump encrypts) does the reverse.
+    /// </remarks>
+    internal static (PipeOptions InputOptions, PipeOptions OutputOptions) CreatePipeOptions(
+        MemoryPool<byte> memoryPool,
+        long maxReadBufferSize,
+        long maxWriteBufferSize)
+    {
         var inputOptions = new PipeOptions(
             pool: memoryPool,
             readerScheduler: PipeScheduler.ThreadPool,
             writerScheduler: PipeScheduler.Inline,
+            pauseWriterThreshold: maxReadBufferSize,
+            resumeWriterThreshold: maxReadBufferSize / 2,
             useSynchronizationContext: false);
 
         var outputOptions = new PipeOptions(
             pool: memoryPool,
             readerScheduler: PipeScheduler.Inline,
             writerScheduler: PipeScheduler.ThreadPool,
+            pauseWriterThreshold: maxWriteBufferSize,
+            resumeWriterThreshold: maxWriteBufferSize / 2,
             useSynchronizationContext: false);
 
-        var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
-        Transport = pair.Transport;
-        Application = pair.Application;
+        return (inputOptions, outputOptions);
     }
 
     public override MemoryPool<byte> MemoryPool => _memoryPool;
@@ -170,7 +200,6 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         {
             // Already disposed, ignore
         }
-        _connectionClosedTokenSource.Dispose();
 
         // A half-open handshake never reached mTLS validation, so _ownedClientCertificate is normally null
         // here; dispose defensively (no-op when null) to keep both teardown paths symmetric.

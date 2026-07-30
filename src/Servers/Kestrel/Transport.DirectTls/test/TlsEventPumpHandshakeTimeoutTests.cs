@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using Microsoft.AspNetCore.InternalTesting;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
 /// <summary>
@@ -14,7 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 /// </summary>
 public class TlsEventPumpHandshakeTimeoutTests
 {
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void ComputeHandshakeDeadline_FiniteTimeout_ReturnsNowPlusTimeout()
     {
         using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));
@@ -22,7 +25,8 @@ public class TlsEventPumpHandshakeTimeoutTests
         Assert.Equal(1_000 + 10_000, pump.ComputeHandshakeDeadline(1_000));
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void ComputeHandshakeDeadline_InfiniteTimeout_ReturnsMaxValue()
     {
         using var pump = new RecordingDropPump(Timeout.InfiniteTimeSpan);
@@ -30,7 +34,8 @@ public class TlsEventPumpHandshakeTimeoutTests
         Assert.Equal(long.MaxValue, pump.ComputeHandshakeDeadline(1_000));
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void ComputeHandshakeDeadline_MaxValueTimeout_TreatedAsInfinite()
     {
         // The options setter stores Timeout.InfiniteTimeSpan as TimeSpan.MaxValue; the pump must treat that
@@ -40,7 +45,8 @@ public class TlsEventPumpHandshakeTimeoutTests
         Assert.Equal(long.MaxValue, pump.ComputeHandshakeDeadline(1_000));
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void SweepExpiredHandshakes_DropsExpired_KeepsPending()
     {
         using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));
@@ -59,7 +65,8 @@ public class TlsEventPumpHandshakeTimeoutTests
         Assert.Single(pump.Handshakes);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void SweepExpiredHandshakes_NoneExpired_DropsNothing()
     {
         using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));
@@ -74,7 +81,8 @@ public class TlsEventPumpHandshakeTimeoutTests
         Assert.Equal(2, pump.Handshakes.Count);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void SweepExpiredHandshakes_InfiniteDeadline_NeverDropped_EvenAtMaxNow()
     {
         using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));
@@ -89,7 +97,8 @@ public class TlsEventPumpHandshakeTimeoutTests
         Assert.True(pump.IsHandshaking(301));
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void SweepExpiredHandshakes_EmptySet_ReturnsZero()
     {
         using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));

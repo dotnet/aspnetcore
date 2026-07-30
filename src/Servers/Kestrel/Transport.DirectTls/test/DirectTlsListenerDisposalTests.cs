@@ -6,6 +6,7 @@
 using System.Buffers;
 using System.Net;
 using System.Net.Security;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -41,7 +42,8 @@ public class DirectTlsListenerDisposalTests
             clientHelloCallback: null,
             ownedServerContexts: ownedServerContexts);
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task DisposeAsync_DisposesOwnedServerContexts()
     {
         using var bootstrap = TlsContext.CreateServer(new SslServerAuthenticationOptions());
@@ -53,7 +55,8 @@ public class DirectTlsListenerDisposalTests
         Assert.Equal(1, owned.DisposeCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task DisposeAsync_CalledTwice_DisposesOwnedServerContextsOnce()
     {
         using var bootstrap = TlsContext.CreateServer(new SslServerAuthenticationOptions());
@@ -66,7 +69,8 @@ public class DirectTlsListenerDisposalTests
         Assert.Equal(1, owned.DisposeCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task UnbindAsync_DoesNotDisposeOwnedServerContexts()
     {
         using var bootstrap = TlsContext.CreateServer(new SslServerAuthenticationOptions());
@@ -82,7 +86,8 @@ public class DirectTlsListenerDisposalTests
         Assert.Equal(1, owned.DisposeCount);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void ServerTlsContexts_Dispose_IsIdempotent()
     {
         var bootstrap = TlsContext.CreateServer(new SslServerAuthenticationOptions());

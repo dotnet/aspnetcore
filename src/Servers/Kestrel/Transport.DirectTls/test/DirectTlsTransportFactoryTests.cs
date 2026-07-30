@@ -35,7 +35,8 @@ public class DirectTlsTransportFactoryTests
         Assert.False(factory.CanBind(new IPEndPoint(IPAddress.Loopback, 0)));
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task BindAsync_NonDirectTlsEndpoint_Throws()
     {
         var factory = CreateFactory();
@@ -44,7 +45,8 @@ public class DirectTlsTransportFactoryTests
             () => factory.BindAsync(new IPEndPoint(IPAddress.Loopback, 0)).AsTask());
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task BindAsync_WithoutServerCertificate_Throws()
     {
         var factory = CreateFactory();
@@ -54,7 +56,8 @@ public class DirectTlsTransportFactoryTests
             () => factory.BindAsync(endpoint).AsTask());
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task BindAsync_DelayCertificateMode_Throws()
     {
         var factory = CreateFactory();

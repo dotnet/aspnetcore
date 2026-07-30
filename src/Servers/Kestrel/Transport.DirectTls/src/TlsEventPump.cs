@@ -54,6 +54,10 @@ internal class TlsEventPump : IDisposable
     private MemoryPool<byte>? _memoryPool;
     private ILoggerFactory? _loggerFactory;
     private bool _noDelay;
+    // Writer backpressure thresholds for the per-connection duplex pipes (0 = unbounded). Sourced from
+    // DirectTlsTransportOptions.MaxReadBufferSize / MaxWriteBufferSize and applied in the DirectTlsConnection ctor.
+    private long _maxReadBufferSize;
+    private long _maxWriteBufferSize;
 
     // Optional UseTlsClientHelloListener callback. When set, the raw parsed ClientHello record is
     // handed to it as early as possible - at NeedsTlsContext, right after the session parses the
@@ -120,6 +124,8 @@ internal class TlsEventPump : IDisposable
         MemoryPool<byte> memoryPool,
         ILoggerFactory loggerFactory,
         bool noDelay,
+        long maxReadBufferSize,
+        long maxWriteBufferSize,
         Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null)
     {
         _listenFd = listenFd;
@@ -130,6 +136,8 @@ internal class TlsEventPump : IDisposable
         _memoryPool = memoryPool;
         _loggerFactory = loggerFactory;
         _noDelay = noDelay;
+        _maxReadBufferSize = maxReadBufferSize;
+        _maxWriteBufferSize = maxWriteBufferSize;
         _clientHelloCallback = clientHelloCallback;
 
         // Cache loggers for connection creation
@@ -578,6 +586,8 @@ internal class TlsEventPump : IDisposable
                         _listenEndPoint,              // Cached - avoids getsockname syscall
                         conn.RemoteEndPoint,          // Captured from Socket.RemoteEndPoint at accept time
                         _memoryPool,
+                        _maxReadBufferSize,
+                        _maxWriteBufferSize,
                         _directTlsConnectionLogger!,
                         negotiatedApplicationProtocol: conn.Session.NegotiatedApplicationProtocol,
                         clientCertificate: clientCertificate);  // Non-null only when the peer presented a client cert (mTLS)
@@ -678,6 +688,8 @@ internal class TlsEventPump : IDisposable
                     _listenEndPoint,
                     conn.RemoteEndPoint,
                     _memoryPool,
+                    _maxReadBufferSize,
+                    _maxWriteBufferSize,
                     _directTlsConnectionLogger!);
                 conn.Connection = earlyConnection;
                 _handshaking[fd] = conn;

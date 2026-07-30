@@ -66,6 +66,32 @@ public sealed class DirectTlsTransportOptions
     internal int Backlog { get; set; } = 512;
 
     /// <summary>
+    /// Gets or sets the maximum number of unconsumed inbound (decrypted read) bytes the transport will buffer
+    /// before applying backpressure to the peer.
+    /// <para>
+    /// A value of <see langword="null"/> or 0 disables backpressure entirely, allowing unlimited buffering.
+    /// Unlimited server buffering is a security risk given untrusted clients.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// Defaults to 1 MiB.
+    /// </remarks>
+    internal long? MaxReadBufferSize { get; set; } = 1024 * 1024;
+
+    /// <summary>
+    /// Gets or sets the maximum number of outbound (encrypted write) bytes the transport will buffer before
+    /// applying write backpressure to the application.
+    /// <para>
+    /// A value of <see langword="null"/> or 0 disables backpressure entirely, allowing unlimited buffering.
+    /// Unlimited server buffering is a security risk given untrusted clients.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// Defaults to 64 KiB.
+    /// </remarks>
+    internal long? MaxWriteBufferSize { get; set; } = 64 * 1024;
+
+    /// <summary>
     /// A function used to create a new <see cref="Socket"/> to listen with. If
     /// not set, <see cref="CreateDefaultBoundListenSocket" /> is used.
     /// </summary>
