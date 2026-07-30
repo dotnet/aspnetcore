@@ -67,7 +67,6 @@ internal static class ValidationEndpointFilterFactory
                 }
 
                 var argument = context.Arguments[entry.Index];
-
                 validateContext ??= new ValidateContext
                 {
                     ValidationOptions = options,
