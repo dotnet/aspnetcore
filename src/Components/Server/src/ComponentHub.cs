@@ -161,7 +161,7 @@ internal sealed partial class ComponentHub : Hub
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
-            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize. See the server logs for more information.");
             Context.Abort();
             return null;
         }
@@ -417,7 +417,7 @@ internal sealed partial class ComponentHub : Hub
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
-            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize. See the server logs for more information.");
             Context.Abort();
             return null;
         }
