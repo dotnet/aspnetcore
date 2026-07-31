@@ -641,7 +641,53 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiSchema_GetOnlyNonNullableProperties_NotMarkedNullable()
+    {
+        // Get-only non-nullable properties must not be reported as nullable in the schema.
+        var builder = CreateBuilder();
+
+        builder.MapPost("/api", (GetOnlyPropertiesModel model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var schema = operation.RequestBody.Content.First().Value.Schema;
+
+            // Non-nullable get-only string property (inline schema)
+            var nameProperty = schema.Properties["name"];
+            Assert.False(nameProperty.Type?.HasFlag(JsonSchemaType.Null), "get-only non-nullable string should not be nullable");
+
+            // Non-nullable get-only collection property (inline schema)
+            var valuesProperty = schema.Properties["values"];
+            Assert.False(valuesProperty.Type?.HasFlag(JsonSchemaType.Null), "get-only non-nullable IEnumerable<string> should not be nullable");
+
+            // Nullable get-only property must still be marked nullable (inline schema)
+            var nullableNameProperty = schema.Properties["nullableName"];
+            Assert.True(nullableNameProperty.Type?.HasFlag(JsonSchemaType.Null), "get-only nullable string should be nullable");
+
+            // Non-nullable get-only complex property (componentized schema): exercises ShouldApplyNullablePropertySchema
+            var todoProperty = schema.Properties["todo"];
+            Assert.Null(todoProperty.OneOf); // should not have a oneOf with null
+
+            // Nullable get-only complex property (componentized schema): must still emit oneOf with null
+            var nullableTodoProperty = schema.Properties["nullableTodo"];
+            Assert.NotNull(nullableTodoProperty.OneOf);
+            Assert.Equal(2, nullableTodoProperty.OneOf.Count);
+            Assert.Contains(nullableTodoProperty.OneOf, item => item.Type == JsonSchemaType.Null);
+        });
+    }
+
 #nullable enable
+    private class GetOnlyPropertiesModel
+    {
+        public string Name { get; } = string.Empty;
+        public IEnumerable<string> Values { get; } = [];
+        public string? NullableName { get; }
+        public Todo Todo { get; } = new(1, "Test", false, DateTime.UtcNow);
+        public Todo? NullableTodo { get; }
+    }
+
     private class NullablePropertiesTestModel
     {
         public int? NullableInt { get; set; }
