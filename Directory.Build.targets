@@ -7,6 +7,19 @@
 
   <Import Project="eng\Baseline.Designer.props" />
 
+  <!--
+    Microsoft.Extensions.Configuration.Binder's source-generator analyzer targets a newer Microsoft.CodeAnalysis
+    than what's available in this branch's legacy toolchain, so CSC fails with CS8032 trying to load it
+    (both in the main build and when net46x test apps are built/run with the SDK's bundled MSBuild). NuGet's
+    analyzer resolution ignores IncludeAssets/ExcludeAssets/PrivateAssets, so the only reliable way to suppress
+    it is to strip it directly from the resolved @(Analyzer) items before compilation.
+  -->
+  <Target Name="RemoveIncompatibleConfigurationBinderAnalyzer" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.Extensions.Configuration.Binder.SourceGeneration'" />
+    </ItemGroup>
+  </Target>
+
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
     <!-- Always include framework metapackages in patch updates. -->
     <IsPackageInThisPatch Condition="'$(IsFrameworkMetapackage)' == 'true' OR '$(IsSharedSourcePackage)' == 'true' ">true</IsPackageInThisPatch>
