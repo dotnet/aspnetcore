@@ -322,6 +322,7 @@ public class ForwardedHeadersMiddlewareTests
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                        RequireKnownProxyAddress = true,
                     };
                     options.KnownProxies.Add(IPAddress.Parse("10.0.0.1"));
                     app.UseForwardedHeaders(options);
@@ -342,7 +343,7 @@ public class ForwardedHeadersMiddlewareTests
         // The forwarded header must be ignored because the peer cannot be attested as a known proxy.
         Assert.Null(context.Connection.RemoteIpAddress);
         Assert.Equal("11.111.111.11:12345", context.Request.Headers["X-Forwarded-For"].ToString());
-        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+        Assert.Equal(string.Empty, context.Request.Headers["X-Original-For"].ToString());
     }
 
     [Fact]
@@ -358,6 +359,7 @@ public class ForwardedHeadersMiddlewareTests
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                        RequireKnownProxyAddress = true,
                     };
                     options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
                     app.UseForwardedHeaders(options);
@@ -376,11 +378,10 @@ public class ForwardedHeadersMiddlewareTests
 
         Assert.Null(context.Connection.RemoteIpAddress);
         Assert.Equal("11.111.111.11:12345", context.Request.Headers["X-Forwarded-For"].ToString());
-        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
     }
 
     [Fact]
-    public async Task XForwardedForWithoutKnownProxiesStillAppliesWhenNoRemoteIp()
+    public async Task XForwardedForWithRequireKnownProxyAddressStillAppliesWhenPeerIsKnown()
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -389,14 +390,49 @@ public class ForwardedHeadersMiddlewareTests
                 .UseTestServer()
                 .Configure(app =>
                 {
-                    // No KnownProxies/KnownNetworks configured, so enforcement is not requested and the
-                    // forwarded header is applied even without a peer IP (unchanged behavior).
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                        RequireKnownProxyAddress = true,
                     };
-                    options.KnownProxies.Clear();
+                    options.KnownProxies.Add(IPAddress.Parse("10.0.0.1"));
                     app.UseForwardedHeaders(options);
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var context = await server.SendAsync(c =>
+        {
+            c.Request.Headers["X-Forwarded-For"] = "11.111.111.11:12345";
+            // The peer is a known proxy, so the forwarded header is applied even with enforcement enabled.
+            c.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
+            c.Connection.RemotePort = 99;
+        });
+
+        Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
+        Assert.Equal(12345, context.Connection.RemotePort);
+    }
+
+    [Fact]
+    public async Task XForwardedForWithoutRequireKnownProxyAddressStillAppliesWhenNoRemoteIp()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    // RequireKnownProxyAddress defaults to false, so the legacy allowance for a null peer IP
+                    // applies and the forwarded header is honored even though known-proxy enforcement is
+                    // active by default (KnownProxies contains the loopback address).
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                    });
                 });
             }).Build();
 
