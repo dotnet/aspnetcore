@@ -104,9 +104,11 @@ jobs:
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       name: $(DncEngPublicBuildPool)
+      os: linux
       demands: ImageOverride -equals build.azurelinux.3.amd64.open
     ${{ else }}:
       name: $(DncEngInternalBuildPool)
+      os: linux
       demands: ImageOverride -equals build.azurelinux.3.amd64
   steps:
   - checkout: self
@@ -198,12 +200,18 @@ jobs:
 
       # Fall back to Azure DevOps-provided environment variables when the caller did not
       # supply organization / repository explicitly. BUILD_REPOSITORY_NAME is typically
-      # 'owner/repo' for GitHub-backed builds.
+      # 'owner/repo' for GitHub-backed builds and 'owner-repo' for internal builds.
       if [ -z "$organization" ] || [ -z "$repository" ]; then
         buildRepoName="${BUILD_REPOSITORY_NAME:-}"
         if [ -n "$buildRepoName" ] && [[ "$buildRepoName" == */* ]]; then
           repoOwner="${buildRepoName%%/*}"
           repoName="${buildRepoName#*/}"
+        elif [ -n "$buildRepoName" ] && [[ "$buildRepoName" == *-* ]]; then
+          repoOwner="${buildRepoName%%-*}"
+          repoName="${buildRepoName#*-}"
+        fi
+
+        if [ -n "${repoOwner:-}" ] && [ -n "${repoName:-}" ]; then
           if [ -z "$organization" ]; then organization="$repoOwner"; fi
           if [ -z "$repository" ];   then repository="$repoName";   fi
         fi
