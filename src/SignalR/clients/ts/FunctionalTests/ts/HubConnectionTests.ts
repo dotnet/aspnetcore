@@ -634,6 +634,41 @@ describe("hubConnection", () => {
                 }
             });
 
+            it("can refresh hub authentication", async () => {
+                try {
+                    let jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken?user=stable-user&scope=first");
+
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub", {
+                        accessTokenFactory: () => jwtToken,
+                    })
+                        .withAuthenticationRefresh({ enableAutoRefresh: false })
+                        .build();
+
+                    const closePromise = new PromiseSource();
+                    hubConnection.onclose((error) => {
+                        expect(error).toBe(undefined);
+                        closePromise.resolve();
+                    });
+
+                    await hubConnection.start();
+                    expect(await hubConnection.invoke("GetUserNameIdentifier")).toBe("stable-user");
+                    expect(await hubConnection.invoke("GetUserClaim", "scope")).toBe("first");
+
+                    jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken?user=stable-user&scope=second");
+                    const tokenLifetimeInSeconds = await hubConnection.refreshAuthentication();
+
+                    expect(tokenLifetimeInSeconds).toBeGreaterThan(0);
+                    expect(await hubConnection.invoke("GetUserNameIdentifier")).toBe("stable-user");
+                    expect(await hubConnection.invoke("GetUserClaim", "scope")).toBe("second");
+
+                    await hubConnection.stop();
+
+                    await closePromise;
+                } catch (err) {
+                    fail(err);
+                }
+            });
+
             it("can get error from unauthorized hub connection", async () => {
                 try {
                     const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub").build();

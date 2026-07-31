@@ -14,7 +14,7 @@ public class TemporaryOpenApiProject : TemporaryCSharpProject
 
     protected override string Template =>
 @"<Project Sdk=""{2}"">
-  <Import Project=""build/Microsoft.Extensions.ApiDescription.Client.props"" />
+  <Import Project=""build/netstandard2.0/Microsoft.Extensions.ApiDescription.Client.props"" />
 
   <PropertyGroup>
     {0}
@@ -34,8 +34,8 @@ public class TemporaryOpenApiProject : TemporaryCSharpProject
         Condition="" '@(TypeScriptCompile)' != '' "" />
   </Target>
 
-  <Import Project=""build/Microsoft.Extensions.ApiDescription.Client.targets"" />
-  <Import Project=""build/Fakes.targets"" />
+  <Import Project=""build/netstandard2.0/Microsoft.Extensions.ApiDescription.Client.targets"" />
+  <Import Project=""build/netstandard2.0/Fakes.targets"" />
 </Project>";
 
     protected override void AddAdditionalAttributes(StringBuilder sb, TemporaryCSharpProject.ItemSpec item)

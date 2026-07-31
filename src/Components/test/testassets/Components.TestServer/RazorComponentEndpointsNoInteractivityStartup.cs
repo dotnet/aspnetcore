@@ -43,7 +43,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
             options.MaxFormMappingCollectionSize = 100;
         });
 
-        if (Configuration.GetValue<bool>("UseHybridCacheBoundaryStore"))
+        if (Configuration.GetValue<bool>("UseHybridCacheViewStore"))
         {
             services.AddHybridCache();
         }
