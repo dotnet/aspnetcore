@@ -7,6 +7,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,7 @@ public class SignInManager<TUser> where TUser : class
     private readonly IAuthenticationSchemeProvider _schemes;
     private readonly IUserConfirmation<TUser> _confirmation;
     private readonly IPasskeyHandler<TUser>? _passkeyHandler;
+    private readonly IdentityPasskeyOptions _passkeyOptions;
     private readonly SignInManagerMetrics? _metrics;
     private HttpContext? _context;
     private TwoFactorAuthenticationInfo? _twoFactorInfo;
@@ -70,6 +72,7 @@ public class SignInManager<TUser> where TUser : class
         // SignInManagerMetrics created from constructor because of difficulties registering internal type.
         _metrics = userManager.ServiceProvider?.GetService<IMeterFactory>() is { } factory ? new SignInManagerMetrics(factory) : null;
         _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
+        _passkeyOptions = userManager.ServiceProvider?.GetService<IOptions<IdentityPasskeyOptions>>()?.Value ?? new IdentityPasskeyOptions();
     }
 
     /// <summary>
@@ -541,6 +544,60 @@ public class SignInManager<TUser> where TUser : class
         var result = await _passkeyHandler.MakeRequestOptionsAsync(user, Context);
         await StorePasskeyAuthenticationInfoAsync(PasskeyOperations.Assertion, result.AssertionState);
         return result.RequestOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates the options used to signal the current state of a user's passkeys to authenticators.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON contains the arguments for both the <c>PublicKeyCredential.signalAllAcceptedCredentials()</c>
+    /// and <c>PublicKeyCredential.signalCurrentUserDetails()</c> JavaScript APIs, which let an authenticator
+    /// stop offering passkeys that were removed from the server and keep the user's details up to date.
+    /// </para>
+    /// <para>
+    /// Because these APIs reveal how many passkeys a user has, only call them when the user is authenticated.
+    /// The <paramref name="userEntity"/> must match the one passed to
+    /// <see cref="MakePasskeyCreationOptionsAsync(PasskeyUserEntity)"/> when the passkeys were created,
+    /// otherwise the authenticator will not recognize the user and the signal will have no effect.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose passkeys should be signaled.</param>
+    /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
+    /// <returns>A JSON string representing the passkey signal options.</returns>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// const { rpId, userId, allAcceptedCredentialIds, name, displayName } = signalOptions;
+    /// await PublicKeyCredential.signalAllAcceptedCredentials?.({ rpId, userId, allAcceptedCredentialIds });
+    /// await PublicKeyCredential.signalCurrentUserDetails?.({ rpId, userId, name, displayName });
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakePasskeySignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        if (!string.Equals(userId, userEntity.Id, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"The user entity ID '{userEntity.Id}' does not match the ID '{userId}' of the specified user.");
+        }
+
+        var passkeys = await UserManager.GetPasskeysAsync(user);
+        var options = new PasskeySignalOptions
+        {
+            RpId = PasskeyServerDomain.Resolve(_passkeyOptions, Context),
+            UserId = BufferSource.FromString(userEntity.Id),
+            AllAcceptedCredentialIds = [.. passkeys.Select(p => BufferSource.FromBytes(p.CredentialId))],
+            Name = userEntity.Name,
+            DisplayName = userEntity.DisplayName,
+        };
+        return JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PasskeySignalOptions);
     }
 
     /// <summary>

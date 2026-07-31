@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.Playwright;
 using Templates.Test.Helpers;
@@ -159,6 +160,22 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             Assert.True(result.HasValue);
             var authenticatorId = result.Value.GetProperty("authenticatorId").GetString();
 
+            // Record the WebAuthn signal calls made by each page so that we can assert on them later.
+            // We define the signal methods if they're missing so that the assertions don't depend on
+            // the browser version bundled with Playwright.
+            await page.AddInitScriptAsync("""
+                window.__passkeySignals = [];
+                if (window.PublicKeyCredential) {
+                    for (const name of ['signalAllAcceptedCredentials', 'signalCurrentUserDetails']) {
+                        const original = window.PublicKeyCredential[name];
+                        window.PublicKeyCredential[name] = function (options) {
+                            window.__passkeySignals.push({ name, options });
+                            return original ? original.call(this, options) : Promise.resolve();
+                        };
+                    }
+                }
+                """);
+
             await Task.WhenAll(
                 page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Login"));
@@ -246,6 +263,18 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 await page.WaitForSelectorAsync("text=Passkey updated successfully");
 
+                // The page signals the browser's passkey provider with the passkeys that are
+                // still valid, so that deleted ones stop being offered at sign-in.
+                var acceptedCredentials = await GetSignalledCredentialIdsAsync(page);
+                var storedCredentials = await GetAuthenticatorCredentialsAsync(cdpSession, authenticatorId);
+                Assert.Single(storedCredentials);
+                Assert.Equal(storedCredentials, acceptedCredentials);
+
+                var userDetails = await GetPasskeySignalAsync(page, "signalCurrentUserDetails");
+                Assert.Equal(new Uri(page.Url).Host, userDetails.GetProperty("rpId").GetString());
+                Assert.Equal(userName, userDetails.GetProperty("name").GetString());
+                Assert.Equal(userName, userDetails.GetProperty("displayName").GetString());
+
                 // Logout so that we can test the passkey login flow
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
@@ -286,6 +315,21 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 // Verify that we can visit the "Auth Required" page again
                 await page.ClickAsync("text=Auth Required");
                 await page.WaitForSelectorAsync("text=You are authenticated");
+
+                // Deleting the passkey signals the provider with an empty credential list,
+                // which is what removes the passkey from the sign-in options
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage\"]"));
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
+
+                await page.ClickAsync("button[value=\"delete\"]");
+                await page.WaitForSelectorAsync("text=Passkey deleted successfully");
+
+                Assert.Empty(await GetSignalledCredentialIdsAsync(page));
             }
         }
 
@@ -326,6 +370,31 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             Assert.Fail($"The counter did not increment after {MaxIncrementAttempts} attempts");
         }
+
+        static async Task<JsonElement> GetPasskeySignalAsync(IPage page, string name)
+        {
+            await page.WaitForFunctionAsync($"() => window.__passkeySignals.some(s => s.name === '{name}')");
+            return await page.EvaluateAsync<JsonElement>($"() => window.__passkeySignals.find(s => s.name === '{name}').options");
+        }
+
+        static async Task<string[]> GetSignalledCredentialIdsAsync(IPage page)
+        {
+            var options = await GetPasskeySignalAsync(page, "signalAllAcceptedCredentials");
+            return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id => NormalizeBase64(id.GetString()))];
+        }
+
+        static async Task<string[]> GetAuthenticatorCredentialsAsync(ICDPSession cdpSession, string authenticatorId)
+        {
+            var result = await cdpSession.SendAsync("WebAuthn.getCredentials", new Dictionary<string, object>
+            {
+                ["authenticatorId"] = authenticatorId,
+            });
+            return [.. result.Value.GetProperty("credentials").EnumerateArray().Select(c => NormalizeBase64(c.GetProperty("credentialId").GetString()))];
+        }
+
+        // The signal API uses base64url while CDP uses base64, so compare a canonical form.
+        static string NormalizeBase64(string value)
+            => value.Replace('+', '-').Replace('/', '_').TrimEnd('=');
     }
 
     protected void EnsureBrowserAvailable(BrowserKind browserKind)

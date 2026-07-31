@@ -16,7 +16,8 @@ public static class MockHelpers
 
     public static Mock<UserManager<TUser>> MockUserManager<TUser>(
         IMeterFactory meterFactory = null,
-        IPasskeyHandler<TUser> passkeyHandler = null)
+        IPasskeyHandler<TUser> passkeyHandler = null,
+        IdentityPasskeyOptions passkeyOptions = null)
         where TUser : class
     {
         var services = new ServiceCollection();
@@ -27,6 +28,10 @@ public static class MockHelpers
         if (passkeyHandler != null)
         {
             services.AddSingleton(passkeyHandler);
+        }
+        if (passkeyOptions != null)
+        {
+            services.AddSingleton(Options.Create(passkeyOptions));
         }
 
         var store = new Mock<IUserStore<TUser>>();

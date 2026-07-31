@@ -678,5 +678,5 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     }
 
     private string GetServerDomain(HttpContext httpContext)
-        => _options.ServerDomain ?? httpContext.Request.Host.Host;
+        => PasskeyServerDomain.Resolve(_options, httpContext);
 }

@@ -15,8 +15,14 @@
 
 <StatusMessage Message="@message" />
 
+@if (updatedUser is not null)
+{
+    <PasskeySignals User="updatedUser" />
+}
+
 @code {
     private string? message;
+    private ApplicationUser? updatedUser;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -70,6 +76,7 @@
         }
 
         await SignInManager.RefreshSignInAsync(user);
+        updatedUser = user;
         message = "Thank you for confirming your email change.";
     }
 }
