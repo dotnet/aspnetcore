@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Test;
@@ -4981,34 +4982,43 @@ public class RendererTest
         Assert.True(wasOnSyncContext);
     }
 
-    [Fact]
-    public async Task NoHotReloadListenersAreRegistered_WhenMetadataUpdatesAreNotSupported()
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void NoHotReloadListenersAreRegistered_WhenHotReloadIsDisabled()
     {
-        // Arrange
-        await using var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = false };
-        renderer.HotReloadManager = hotReloadManager;
-        var component = new TestComponent(builder =>
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Reflection.Metadata.MetadataUpdater.IsSupported", "false");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
-            builder.OpenElement(0, "h2");
-            builder.AddContent(1, "some text");
-            builder.CloseElement();
-        });
+            // Set the switch before any code triggers HotReloadManager type initialization.
+            AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", false);
 
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-        Assert.False(hotReloadManager.IsSubscribedTo);
+            await using var renderer = new TestRenderer();
+            var hotReloadManager = new HotReloadManager();
+            renderer.HotReloadManager = hotReloadManager;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "h2");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
 
-        await renderer.DisposeAsync();
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            Assert.False(hotReloadManager.IsSubscribedTo);
+
+            await renderer.DisposeAsync();
+        }, options);
     }
 
     [Fact]
     public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
     {
         // Arrange
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
         var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
+        var hotReloadManager = new HotReloadManager();
         renderer.HotReloadManager = hotReloadManager;
         var component = new TestComponent(builder =>
         {
@@ -5031,11 +5041,12 @@ public class RendererTest
     [Fact]
     public async Task HotReload_ReRenderPreservesAsyncLocalValues()
     {
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
+
         await using var renderer = new TestRenderer();
 
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
+        var hotReloadManager = new HotReloadManager();
         renderer.HotReloadManager = hotReloadManager;
-        HotReloadManager.Default.MetadataUpdateSupported = true;
 
         var component = new AsyncLocalCaptureComponent();
 
@@ -5060,6 +5071,48 @@ public class RendererTest
         thread.Join();
 
         Assert.Equal(expected, component.HotReloadValue);
+    }
+
+    [Fact]
+    public async Task HotReload_ShouldRenderBypassScopedToFirstRender_TerminatesCyclicRenderLoop()
+    {
+        // Arrange: two root components where each triggers the other's StateHasChanged inside
+        // BuildRenderTree. Both components return false from ShouldRender() to break the cycle during
+        // normal operation, but without the fix the hot-reload ShouldRender-bypass removes that
+        // brake for the entire pass, causing an unbounded re-render loop (OOM in production).
+
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
+
+        await using var renderer = new TestRenderer();
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+
+        CyclicHotReloadComponent compA = null;
+        CyclicHotReloadComponent compB = null;
+
+        // Each component triggers the other's StateHasChanged during BuildRenderTree.
+        compA = new CyclicHotReloadComponent("A", shouldRender: false, getSibling: () => compB);
+        compB = new CyclicHotReloadComponent("B", shouldRender: false, getSibling: () => compA);
+
+        var idA = renderer.AssignRootComponentId(compA);
+        var idB = renderer.AssignRootComponentId(compB);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(idA));
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(idB));
+
+        var batchCountAfterInitialRender = renderer.Batches.Count;
+        Assert.Equal(1, compA.RenderCount);
+        Assert.Equal(1, compB.RenderCount);
+
+        // Act: simulate a hot-reload delta; this must complete without looping.
+        var thread = new Thread(() => hotReloadManager.TriggerOnDeltaApplied());
+        thread.Start();
+        thread.Join();
+
+        // Assert: each component rendered exactly once more (the forced hot-reload re-render).
+        // Before the fix both components would loop indefinitely and throw after MaxRenderCount.
+        Assert.Equal(2, compA.RenderCount);
+        Assert.Equal(2, compB.RenderCount);
+        Assert.True(renderer.Batches.Count > batchCountAfterInitialRender, "Hot reload should have produced at least one new render batch.");
     }
 
     [Fact]
@@ -5223,7 +5276,7 @@ public class RendererTest
     {
         // C# variance only works with reference types. This test uses interface hierarchy.
         // IComparable<T> is contravariant, so we can demonstrate the concept
-        
+
         // Arrange - Create a fragment that accepts any IComparable
         RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
         {
@@ -5244,7 +5297,7 @@ public class RendererTest
     public void RenderFragmentContravariance_WorksWithObjectToPrimitiveWrapper()
     {
         // For value types, contravariance only works when going through object (boxing)
-        
+
         // Arrange - Create a fragment that accepts object
         RenderFragment<object> baseFragment = (object value) => builder =>
         {
@@ -5265,7 +5318,7 @@ public class RendererTest
     public void RenderFragmentContravariance_WorksWithComparableTypes()
     {
         // Demonstrating contravariance with reference types implementing IComparable
-        
+
         // Arrange - Create a fragment that accepts IComparable
         RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
         {
@@ -6332,7 +6385,7 @@ public class RendererTest
     private struct TestStructWithInterface : IComparable
     {
         public int Value { get; set; }
-        
+
         public int CompareTo(object obj)
         {
             if (obj is TestStructWithInterface other)
@@ -6349,5 +6402,49 @@ public class RendererTest
         Value1,
         Value2,
         Value3
+    }
+
+    /// <summary>
+    /// A <see cref="ComponentBase"/> subclass used by
+    /// <see cref="HotReload_ShouldRenderBypassScopedToFirstRender_TerminatesCyclicRenderLoop"/>.
+    /// During <see cref="BuildRenderTree"/> it synchronously calls
+    /// <see cref="TriggerStateHasChanged"/> on a sibling component to create the re-render cycle
+    /// that hot-reload's <c>ShouldRender</c> bypass previously made unbounded.
+    /// </summary>
+    private sealed class CyclicHotReloadComponent : ComponentBase
+    {
+        private const int MaxRenderCount = 10;
+
+        private readonly string _name;
+        private readonly bool _shouldRender;
+        private readonly Func<CyclicHotReloadComponent> _getSibling;
+
+        public int RenderCount { get; private set; }
+
+        public CyclicHotReloadComponent(string name, bool shouldRender, Func<CyclicHotReloadComponent> getSibling)
+        {
+            _name = name;
+            _shouldRender = shouldRender;
+            _getSibling = getSibling;
+        }
+
+        protected override bool ShouldRender() => _shouldRender;
+
+        public void TriggerStateHasChanged() => StateHasChanged();
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (++RenderCount > MaxRenderCount)
+            {
+                throw new InvalidOperationException(
+                    $"CyclicHotReloadComponent '{_name}' rendered more than {MaxRenderCount} times, " +
+                    "indicating an unbounded hot-reload re-render loop.");
+            }
+
+            builder.AddContent(0, $"{_name}:{RenderCount}");
+
+            // Synchronously trigger the sibling — this is the action that forms the cycle.
+            _getSibling()?.TriggerStateHasChanged();
+        }
     }
 }

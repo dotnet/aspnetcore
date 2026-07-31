@@ -38,7 +38,7 @@ public class WebWorkerTemplateTest : LoggedTest
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        await project.RunDotNetNewAsync("webworker");
+        await project.RunDotNetNewAsync("blazorwebworker");
 
         await project.RunDotNetPublishAsync();
 

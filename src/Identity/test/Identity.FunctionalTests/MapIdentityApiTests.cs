@@ -1410,7 +1410,7 @@ public class MapIdentityApiTests : LoggedTest
     private static string GetPasswordResetCode(TestEmail email)
     {
         // Update if we add more links to the email.
-        var confirmationMatch = Regex.Match(email.HtmlMessage, "code: (.*?)$");
+        var confirmationMatch = Regex.Match(email.HtmlMessage, "code: (.*?)(?:\\.|$)");
         Assert.True(confirmationMatch.Success);
         Assert.Equal(2, confirmationMatch.Groups.Count);
 

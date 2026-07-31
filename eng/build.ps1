@@ -200,6 +200,9 @@ param(
     # Intentionally lowercase as tools.ps1 depends on it
     [switch]$fromVMR,
 
+    # Passed through to tools.ps1 MSBuild function
+    [string]$warnNotAsError = '',
+
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
@@ -412,6 +415,23 @@ function LocateJava {
     if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
         Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
     }
+}
+
+function GetMSBuildBinaryLogCommandLineArgument($arguments) {
+  foreach ($argument in $arguments) {
+    if ($argument -ne $null) {
+      $arg = $argument.Trim()
+      if ($arg.StartsWith('/bl:', "OrdinalIgnoreCase")) {
+        return $arg.Substring('/bl:'.Length)
+      }
+
+      if ($arg.StartsWith('/binaryLogger:', 'OrdinalIgnoreCase')) {
+        return $arg.Substring('/binaryLogger:'.Length)
+      }
+    }
+  }
+
+  return $null
 }
 
 # Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks

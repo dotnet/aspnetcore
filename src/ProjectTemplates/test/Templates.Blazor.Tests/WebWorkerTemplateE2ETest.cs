@@ -15,6 +15,7 @@ namespace BlazorTemplates.Tests;
 
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66292")]
 public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
     public override string ProjectType => "blazorwasm";
@@ -42,7 +43,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanInvokeMethods(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -58,7 +58,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_HandlesErrors(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -74,7 +73,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanDisposeWorker(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -90,7 +88,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanInvokeMethodsAfterPublish(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndPublish(_sharedHostProject);
@@ -117,6 +114,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await AddWorkerLibReferenceAsync(hostProject);
         await hostProject.RunDotNetPublishAsync(noRestore: false);
 
+        LogBuildDiagnostics(hostProject, "publish");
+
         return new WorkerLibTestRun(workerLibDir, hostProject, Output);
     }
 
@@ -134,6 +133,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await CreateWebWorkerLibrary(workerLibDir);
         await AddWorkerLibReferenceAsync(hostProject);
         await hostProject.RunDotNetBuildAsync();
+
+        LogBuildDiagnostics(hostProject, "build");
 
         return new WorkerLibTestRun(workerLibDir, hostProject, Output);
     }
@@ -160,31 +161,17 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
     private async Task CreateWebWorkerLibrary(string workerLibDir)
     {
         var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
-        var args = $"new webworker {hiveArg} -n WorkerLib -o \"{workerLibDir}\"";
+        var args = $"new blazorwebworker {hiveArg} -n WorkerLib -o \"{workerLibDir}\"";
 
         using var result = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), args);
         await result.Exited;
-        Assert.True(result.ExitCode == 0, $"Failed to create webworker template: {result.Output}\n{result.Error}");
+        Assert.True(result.ExitCode == 0, $"Failed to create blazorwebworker template: {result.Output}\n{result.Error}");
 
-        ModifyWorkerLibProjectFile(workerLibDir);
+        CopyWorkerMethods(workerLibDir);
 
-        using var restoreResult = ProcessEx.Run(Output, workerLibDir, DotNetMuxer.MuxerPathOrDefault(), "restore");
+        using var restoreResult= ProcessEx.Run(Output, workerLibDir, DotNetMuxer.MuxerPathOrDefault(), "restore");
         await restoreResult.Exited;
-        Assert.True(restoreResult.ExitCode == 0, $"Failed to restore webworker library: {restoreResult.Output}\n{restoreResult.Error}");
-    }
-
-    private static void ModifyWorkerLibProjectFile(string workerLibDir)
-    {
-        var csprojPath = Path.Combine(workerLibDir, "WorkerLib.csproj");
-        var content = File.ReadAllText(csprojPath);
-
-        if (!content.Contains("AllowUnsafeBlocks"))
-        {
-            content = content.Replace(
-                "</PropertyGroup>",
-                "    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>\n  </PropertyGroup>");
-            File.WriteAllText(csprojPath, content);
-        }
+        Assert.True(restoreResult.ExitCode == 0, $"Failed to restore blazorwebworker library: {restoreResult.Output}\n{restoreResult.Error}");
     }
 
     private static void AddHostProjectSettings(Project hostProject)
@@ -194,13 +181,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         var settings = @"
   <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
-
-  <ItemGroup>
-    <SupportedPlatform Include=""browser"" />
-  </ItemGroup>
 ";
         content = content.Replace("</Project>", settings + "</Project>");
         File.WriteAllText(csprojPath, content);
@@ -230,9 +212,94 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         File.WriteAllText(
             Path.Combine(pagesDir, "WebWorkerTest.razor"),
             testComponentContent);
+    }
 
+    private static void CopyWorkerMethods(string workerLibDir)
+    {
         var workerMethodsSource = Path.Combine(TestAssetsPath, "TestWorkerMethods.cs");
-        File.Copy(workerMethodsSource, Path.Combine(hostProject.TemplateOutputDir, "TestWorkerMethods.cs"), overwrite: true);
+        File.Copy(workerMethodsSource, Path.Combine(workerLibDir, "TestWorkerMethods.cs"), overwrite: true);
+    }
+
+    private void LogBuildDiagnostics(Project hostProject, string buildKind)
+    {
+        // Log the processed index.html to check if fingerprints resolved correctly.
+        // The #[.{fingerprint}] placeholder should be replaced with an actual hash.
+        // If it resolves to empty, the script tag will reference the unfingerprinted
+        // 'blazor.webassembly.js' which returns 404 from the dev server.
+        var objDirectory = Path.Combine(hostProject.TemplateOutputDir, "obj");
+        var processedHtmlFiles = Array.Empty<string>();
+        if (!Directory.Exists(objDirectory))
+        {
+            Output.WriteLine($"[Diagnostics:{buildKind}] WARNING: Build obj directory not found at {objDirectory}");
+        }
+        else
+        {
+            processedHtmlFiles = Directory.GetFiles(objDirectory, "*.html", SearchOption.AllDirectories);
+        }
+
+        Output.WriteLine($"[Diagnostics:{buildKind}] Processed HTML files found: {processedHtmlFiles.Length}");
+        foreach (var htmlFile in processedHtmlFiles)
+        {
+            var scriptLines = File.ReadLines(htmlFile)
+                .Where(l => l.Contains("blazor.webassembly", StringComparison.OrdinalIgnoreCase))
+                .Select(l => l.Trim())
+                .ToList();
+            if (scriptLines.Count > 0)
+            {
+                Output.WriteLine($"[Diagnostics:{buildKind}] {htmlFile}");
+                foreach (var line in scriptLines)
+                {
+                    Output.WriteLine($"[Diagnostics:{buildKind}]   {line}");
+                }
+            }
+        }
+
+        // Log endpoints manifest routes for blazor.webassembly to verify route registration.
+        // Use TemplateBuildDir for build, TemplatePublishDir for publish to match actual output paths.
+        var outputDir = buildKind == "publish" ? hostProject.TemplatePublishDir : hostProject.TemplateBuildDir;
+        var endpointsManifest = Path.Combine(outputDir,
+            $"{hostProject.ProjectName}.staticwebassets.endpoints.json");
+        if (File.Exists(endpointsManifest))
+        {
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(endpointsManifest));
+                var endpoints = doc.RootElement.GetProperty("Endpoints");
+                Output.WriteLine($"[Diagnostics:{buildKind}] Endpoints manifest blazor.webassembly routes:");
+                foreach (var endpoint in endpoints.EnumerateArray())
+                {
+                    var route = endpoint.GetProperty("Route").GetString();
+                    if (route?.Contains("blazor.webassembly", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        var assetFile = endpoint.GetProperty("AssetFile").GetString();
+                        Output.WriteLine($"[Diagnostics:{buildKind}]   Route: {route} -> AssetFile: {assetFile}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Output.WriteLine($"[Diagnostics:{buildKind}] Failed to parse endpoints manifest: {ex}");
+            }
+        }
+        else
+        {
+            Output.WriteLine($"[Diagnostics:{buildKind}] WARNING: Endpoints manifest not found at {endpointsManifest}");
+        }
+
+        // Log the original index.html to check the raw source state.
+        var sourceHtml = Path.Combine(hostProject.TemplateOutputDir, "wwwroot", "index.html");
+        if (File.Exists(sourceHtml))
+        {
+            var scriptLines = File.ReadLines(sourceHtml)
+                .Where(l => l.Contains("blazor.webassembly", StringComparison.OrdinalIgnoreCase))
+                .Select(l => l.Trim())
+                .ToList();
+            Output.WriteLine($"[Diagnostics:{buildKind}] Source wwwroot/index.html blazor.webassembly references:");
+            foreach (var line in scriptLines)
+            {
+                Output.WriteLine($"[Diagnostics:{buildKind}]   {line}");
+            }
+        }
     }
 
     private async Task TestWebWorkerInteraction(BrowserKind browserKind, string baseUri, string clientRoute = null)

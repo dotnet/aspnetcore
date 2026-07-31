@@ -24,7 +24,12 @@ public class Program
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
         builder.Services.AddValidation();
+#pragma warning restore ASP0029
+
+        // Interactive host registers the gate so the async validation E2E tests control settling deterministically.
+        builder.Services.AddSingleton<BasicTestApp.FormsTest.AsyncValidationGate>();
 
         builder.RootComponents.Add<HeadOutlet>("head::after");
         builder.RootComponents.Add<Index>("root");
@@ -50,8 +55,8 @@ public class Program
 
         builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
-        builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(_ =>
-            new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"]));
+        builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>
+            new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"], s.GetService<IJSRuntime>()));
 
         var host = builder.Build();
         ConfigureCulture(host);

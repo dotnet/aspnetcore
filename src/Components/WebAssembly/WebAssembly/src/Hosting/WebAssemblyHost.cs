@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -45,6 +46,9 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         AsyncServiceScope scope,
         string? persistedState)
     {
+        // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
+        GC.KeepAlive(typeof(JSInteropMethods));
+
         _services = services;
         _scope = scope;
         _configuration = builder.Configuration;
@@ -131,14 +135,6 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         _started = true;
 
-        cultureProvider ??= WebAssemblyCultureProvider.Instance!;
-        cultureProvider.ThrowIfCultureChangeIsUnsupported();
-
-        // Application developers might have configured the culture based on some ambient state
-        // such as local storage, url etc as part of their Program.Main(Async).
-        // This is the earliest opportunity to fetch satellite assemblies for this selection.
-        await cultureProvider.LoadCurrentCultureResourcesAsync();
-
         var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
         var store = !string.IsNullOrEmpty(_persistedState) ?
             new PrerenderComponentApplicationStore(_persistedState) :
@@ -147,7 +143,21 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
         await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
 
-        // Start hosted services
+        cultureProvider ??= WebAssemblyCultureProvider.Instance!;
+        cultureProvider.ThrowIfCultureChangeIsUnsupported();
+
+        if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
+        {
+            cultureStateProvider.ApplyStoredCulture();
+        }
+
+        // Application developers might have configured the culture based on some ambient state
+        // such as local storage, url etc as part of their Program.Main(Async).
+        // This is the earliest opportunity to fetch satellite assemblies for this selection.
+        await cultureProvider.LoadCurrentCultureResourcesAsync();
+
+        // Start hosted services after culture is fully applied,
+        // so services that depend on culture see the correct values.
         _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
         await _hostedServiceExecutor.StartAsync(cancellationToken);
 
@@ -158,7 +168,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
             var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
             var collection = await collectionProvider.GetResourceCollection();
-            _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop);
+            var useOutOfProcessRenderer = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") == "true";
+            _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop, useOutOfProcessRenderer);
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 

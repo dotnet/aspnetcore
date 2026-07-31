@@ -356,8 +356,54 @@ internal static class JsonNodeSchemaExtensions
             schema.ApplyRouteConstraints(constraints);
         }
 
+        // Parameters sourced from query, path, header, and form are bound via Enum.TryParse,
+        // which only accepts the original C# member names — not names transformed by a JSON
+        // naming policy (e.g. KebabCaseLower). Replace the schema's enum values and default
+        // value with the original member names so the OpenAPI spec matches what the server
+        // actually accepts.
+        if (parameterDescription.Source is { } source && IsNonBodyBindingSource(source)
+            && parameterDescription.Type is { } paramType)
+        {
+            var enumType = Nullable.GetUnderlyingType(paramType) ?? paramType;
+            if (enumType.IsEnum && schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray)
+            {
+                var memberNames = Enum.GetNames(enumType);
+                var enumArray = new JsonArray();
+                foreach (var name in memberNames)
+                {
+                    enumArray.Add((JsonNode)name);
+                }
+                schema[OpenApiSchemaKeywords.EnumKeyword] = enumArray;
+
+                // Also fix the default value — it was serialized using the naming policy
+                // (e.g. "high-priority") but should use the original member name
+                // (e.g. "HighPriority") to match what Enum.TryParse accepts. The default
+                // may be stored in "default" or "x-ref-default" depending on whether the
+                // schema was tagged for componentization.
+                var defaultKey = schema[OpenApiConstants.RefDefaultAnnotation] is not null
+                    ? OpenApiConstants.RefDefaultAnnotation
+                    : OpenApiSchemaKeywords.DefaultKeyword;
+                if (jsonTypeInfo is not null
+                    && schema[defaultKey] is JsonNode defaultNode
+                    && defaultNode.GetValueKind() == JsonValueKind.String)
+                {
+                    var defaultValue = defaultNode.GetValue<string>();
+                    foreach (var memberName in memberNames)
+                    {
+                        var enumValue = Enum.Parse(enumType, memberName);
+                        var serialized = JsonSerializer.SerializeToNode(enumValue, jsonTypeInfo);
+                        if (serialized?.GetValue<string>() == defaultValue)
+                        {
+                            schema[defaultKey] = (JsonNode)memberName;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         if (parameterDescription.Source is { } bindingSource
-            && SupportsNullableProperty(bindingSource)
+            && DoesNotSupportNullValue(bindingSource)
             && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
             schemaTypes.HasFlag(JsonSchemaType.Null))
         {
@@ -366,7 +412,13 @@ internal static class JsonNodeSchemaExtensions
 
         // Parameters sourced from the header, query, route, and/or form cannot be nullable based on our binding
         // rules but can be optional.
-        static bool SupportsNullableProperty(BindingSource bindingSource) => bindingSource == BindingSource.Header
+        static bool DoesNotSupportNullValue(BindingSource bindingSource) => bindingSource == BindingSource.Header
+            || bindingSource == BindingSource.Query
+            || bindingSource == BindingSource.Path
+            || bindingSource == BindingSource.Form
+            || bindingSource == BindingSource.FormFile;
+
+        static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
             || bindingSource == BindingSource.Query
             || bindingSource == BindingSource.Path
             || bindingSource == BindingSource.Form
@@ -395,6 +447,7 @@ internal static class JsonNodeSchemaExtensions
             {
                 return;
             }
+            var baseSchemaReferenceId = createSchemaReferenceId(context.TypeInfo);
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
@@ -406,11 +459,15 @@ internal static class JsonNodeSchemaExtensions
                     // that we hardcode here. We could use `OpenApiReference` to construct the reference and
                     // serialize it but we use a hardcoded string here to avoid allocating a new object and
                     // working around Microsoft.OpenApi's serialization libraries.
-                    mappings[$"{discriminator}"] = $"{createSchemaReferenceId(context.TypeInfo)}{createSchemaReferenceId(jsonDerivedType)}";
+                    mappings[$"{discriminator}"] = $"{baseSchemaReferenceId}{createSchemaReferenceId(jsonDerivedType)}";
                 }
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
             schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
+            if (baseSchemaReferenceId is not null && IsNonAbstractTypeWithDerivedTypeReference(context))
+            {
+                schema[OpenApiSchemaKeywords.DiscriminatorDefaultMappingKeyword] = baseSchemaReferenceId;
+            }
         }
     }
 
@@ -425,6 +482,10 @@ internal static class JsonNodeSchemaExtensions
         if (createSchemaReferenceId(context.TypeInfo) is { } schemaReferenceId)
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
+        }
+        if (context.TypeInfo.Kind == JsonTypeInfoKind.Union)
+        {
+            schema[OpenApiConstants.SchemaIsUnion] = true;
         }
         // If the type is a non-abstract base class that is not one of the derived types then mark it as a base schema.
         if (context.BaseTypeInfo == context.TypeInfo &&
@@ -477,22 +538,57 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
+    /// Returns <see langword="true"/> if the current type is a non-abstract base class that is defined as its
+    /// own derived type with a discriminator.
+    /// </summary>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    private static bool IsNonAbstractTypeWithDerivedTypeReference(JsonSchemaExporterContext context)
+    {
+        return !context.TypeInfo.Type.IsAbstract
+            && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
+            && polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type && type.TypeDiscriminator is not null);
+    }
+
+    /// <summary>
     /// Support applying nullability status for reference types provided as a property or field.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="propertyInfo">The <see cref="JsonPropertyInfo" /> associated with the schema.</param>
     internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
     {
-        // Avoid setting explicit nullability annotations for `object` types so they continue to match on the catch
-        // all schema (no type, no format, no constraints).
-        if (propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable))
+        var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable);
+
+        // Work around a System.Text.Json schema export issue where get-only properties can report
+        // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602 
+        var shouldPruneNullFromReadOnlyProperty = propertyInfo.PropertyType != typeof(object) &&
+            propertyInfo.Set is null &&
+            !propertyInfo.IsGetNullable &&
+            propertyInfo.IsSetNullable;
+        if (shouldPruneNullFromReadOnlyProperty)
         {
-            if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
-                !schemaTypes.HasFlag(JsonSchemaType.Null))
+            shouldApplyNullableSchema = false;
+        }
+
+        if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes)
+        {
+            if (shouldApplyNullableSchema && !schemaTypes.HasFlag(JsonSchemaType.Null))
             {
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
             }
+            else if (shouldPruneNullFromReadOnlyProperty && schemaTypes.HasFlag(JsonSchemaType.Null))
+            {
+                var nonNullableSchemaTypes = schemaTypes & ~JsonSchemaType.Null;
+                if (nonNullableSchemaTypes != 0)
+                {
+                    schema[OpenApiSchemaKeywords.TypeKeyword] = nonNullableSchemaTypes.ToString();
+                }
+                else if (schema is JsonObject schemaObject)
+                {
+                    schemaObject.Remove(OpenApiSchemaKeywords.TypeKeyword);
+                }
+            }
         }
+
         if (schema.WillBeComponentized() &&
             propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
         {

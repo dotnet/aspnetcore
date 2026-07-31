@@ -79,6 +79,30 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Fact]
+    public void Error_File_DoesNotExist()
+    {
+        var filePath = Path.Combine(_fixture.GetTempSecretProject(), "does_not_exist.cs");
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("list", "--file", filePath);
+        Assert.Contains(SecretsHelpersResources.FormatError_File_NotFound(filePath), _console.GetOutput());
+    }
+
+    [Fact]
+    public void Error_File_InvalidExtension()
+    {
+        var filePath = Path.Combine(_fixture.GetTempSecretProject(), "foo.txt");
+        File.WriteAllText(filePath, string.Empty);
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("list", "--file", filePath);
+        var output = _console.GetOutput();
+
+        Assert.Contains(Resources.Error_FileInvalidExtension, output);
+        Assert.DoesNotContain(SecretsHelpersResources.FormatError_ProjectFailedToLoad(filePath), output);
+    }
+
+    [Fact]
     public void Error_InitFile()
     {
         var dir = _fixture.CreateFileBasedApp(null);
@@ -236,32 +260,35 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Fact]
+    public void List_Json_OptionIsWired()
+    {
+        string id;
+        var projectPath = _fixture.GetTempSecretProject(out id);
+        var secretManager = CreateProgram();
+        secretManager.RunInternal("set", "key1", "value1", "-p", projectPath);
+
+        _console.ClearOutput();
+        secretManager.RunInternal("list", "--id", id, "--json");
+
+        var stdout = _console.GetOutput();
+        Assert.Contains("//BEGIN", stdout);
+        Assert.Contains("\"key1\": \"value1\"", stdout);
+        Assert.Contains("//END", stdout);
+    }
+
+    [Fact]
     public void List_Flattens_Nested_Objects()
     {
         string secretId;
         var projectPath = _fixture.GetTempSecretProject(out secretId);
         var secretsFile = PathHelper.GetSecretsPathFromSecretsId(secretId);
         Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
-        File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
+        File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abc"" } }", Encoding.UTF8);
         var secretManager = CreateProgram();
-        secretManager.RunInternal("list", "-p", projectPath, "--verbose");
-        Assert.Contains("AzureAd:ClientSecret = abcdéƒ©˙î", _console.GetOutput());
-    }
 
-    [Fact]
-    public void List_Json()
-    {
-        string id;
-        var projectPath = _fixture.GetTempSecretProject(out id);
-        var secretsFile = PathHelper.GetSecretsPathFromSecretsId(id);
-        Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
-        File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
-        var secretManager = new Program(_console, Path.GetDirectoryName(projectPath));
-        secretManager.RunInternal("list", "--id", id, "--json");
-        var stdout = _console.GetOutput();
-        Assert.Contains("//BEGIN", stdout);
-        Assert.Contains(@"""AzureAd:ClientSecret"": ""abcdéƒ©˙î""", stdout);
-        Assert.Contains("//END", stdout);
+        secretManager.RunInternal("list", "-p", projectPath);
+
+        Assert.Contains("AzureAd:ClientSecret = abc", _console.GetOutput());
     }
 
     [Fact]
@@ -279,18 +306,9 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         Assert.Contains("AzureAd:ClientSecret = ¡™£¢∞", _console.GetOutput());
         var fileContents = File.ReadAllText(secretsFile, Encoding.UTF8);
         Assert.Equal(@"{
-    ""AzureAd:ClientSecret"": ""¡™£¢∞""
+    ""AzureAd:ClientSecret"": ""\u00A1\u2122\u00A3\u00A2\u221E""
 }",
             fileContents, ignoreLineEndingDifferences: true, ignoreWhiteSpaceDifferences: true);
-    }
-
-    [Fact]
-    public void List_Empty_Secrets_File()
-    {
-        var projectPath = _fixture.GetTempSecretProject();
-        var secretManager = CreateProgram();
-        secretManager.RunInternal("list", "-p", projectPath, "--verbose");
-        Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
     }
 
     [Theory]

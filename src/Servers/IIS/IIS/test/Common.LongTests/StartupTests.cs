@@ -460,7 +460,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65081")]
     public async Task StartupTimeoutIsApplied()
     {
         // From what we can tell, this failure is due to ungraceful shutdown.
@@ -1009,7 +1008,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58108")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdOutWrites")]
     public async Task CheckStdoutWithLargeWrites_LogFile(string mode)
@@ -1297,7 +1295,7 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewHandler]
     [RequiresNewShim]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2026.Pre.Scout.Open;" + "Windows.Amd64.VS2026.Pre.Scout;")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2026.Open;" + "Windows.Amd64.VS2026;")]
     public async Task ServerAddressesIncludesBaseAddress()
     {
         var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";

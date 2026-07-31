@@ -12,6 +12,9 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.Extensions.Configuration" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Views\Microsoft.AspNetCore.Mvc.Views.Microbenchmarks.csproj" />
     <Reference Include="BenchmarkDotNet" />
 

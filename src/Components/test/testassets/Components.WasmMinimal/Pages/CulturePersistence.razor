@@ -1,0 +1,19 @@
+﻿@page "/persist-culture-state"
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Web
+@rendermode RenderMode.InteractiveWebAssembly
+
+<h3>CulturePersistence</h3>
+
+<p id="culture-set">@CultureInfo.CurrentCulture</p>
+<p id="culture-ui-set">@CultureInfo.CurrentUICulture</p>
+
+@if(RendererInfo.IsInteractive)
+{
+    <p id="interactive">Interactive</p>
+}
+else
+{
+    <p id="prerender">Prerender</p>
+}
+

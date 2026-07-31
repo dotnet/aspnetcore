@@ -47,6 +47,9 @@ public class ServerRoutingTest : RoutingTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61080")]
     public override void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
         => base.NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation();
+
+    public override void CanNavigateToQueryStringPageWithNoQuery()
+        => base.CanNavigateToQueryStringPageWithNoQuery();
 }
 
 public class ServerCascadingValueTest : CascadingValueTest
@@ -96,13 +99,26 @@ public class ServerVirtualizationTest : VirtualizationTest
     {
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public override void CanRenderHtmlTable()
         => base.CanRenderHtmlTable();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
-    public override void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
-        => base.CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax();
+    public override void CancelsOutdatedRefreshes_Async()
+        => base.CancelsOutdatedRefreshes_Async();
+
+    public override void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+        => base.DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66119")]
+    public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+        => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66970")]
+    public override void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
+        => base.AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(variableHeight, useItemsProvider);
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68017")]
+    public override void QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(string anchorMode, bool useItemsProvider)
+        => base.QuickGrid_AnchorMode_Top_AppendKeepsViewportStable(anchorMode, useItemsProvider);
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

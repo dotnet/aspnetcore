@@ -61,4 +61,5 @@ internal static class LoggerEventIds
     public const int RequestParsingError = 54;
     public const int TlsListenerError = 55;
     public const int QueryTlsCipherSuiteError = 56;
+    public const int QueryRequestPropertyError = 57;
 }

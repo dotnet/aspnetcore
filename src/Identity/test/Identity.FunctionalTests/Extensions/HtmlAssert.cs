@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests;
 
@@ -48,7 +48,7 @@ public class HtmlAssert
     internal static IHtmlHtmlElement IsHtmlFragment(string htmlMessage)
     {
         var synteticNode = $"<div>{htmlMessage}</div>";
-        var fragment = Assert.Single(new HtmlParser().ParseFragment(htmlMessage, context: null));
+        var fragment = Assert.Single(new HtmlParser().ParseFragment(htmlMessage, contextElement: null));
         return Assert.IsAssignableFrom<IHtmlHtmlElement>(fragment);
     }
 }

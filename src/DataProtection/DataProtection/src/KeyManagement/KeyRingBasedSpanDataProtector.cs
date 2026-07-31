@@ -32,7 +32,7 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             // Perform the encryption operation using the current default encryptor.
             var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
             var defaultKeyId = currentKeyRing.DefaultKeyId;
-            var defaultEncryptor = (ISpanAuthenticatedEncryptor)currentKeyRing.DefaultAuthenticatedEncryptor!;
+            var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
             CryptoUtil.Assert(defaultEncryptor != null, "DefaultAuthenticatedEncryptor != null");
 
             if (_logger.IsDebugLevelEnabled())
@@ -61,7 +61,18 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             destination.Advance(preBufferSize);
 
             // Step 2: Perform encryption into the destination writer
-            defaultEncryptor.Encrypt(plaintext, aad, ref destination);
+            if (defaultEncryptor is ISpanAuthenticatedEncryptor spanEncryptor)
+            {
+                spanEncryptor.Encrypt(plaintext, aad, ref destination);
+            }
+            else
+            {
+                // If SpanDataProtector is used, but encryptor does not support span-based APIs, fall-back to the byte[] path.
+                var ciphertext = defaultEncryptor.Encrypt(plaintext.ToArray(), aad);
+                var resultSpan = destination.GetSpan(ciphertext.Length);
+                ciphertext.CopyTo(resultSpan);
+                destination.Advance(ciphertext.Length);
+            }
 
             // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
             // And we're done!
@@ -153,8 +164,19 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
 
             // At this point, actualCiphertext := { encryptorSpecificPayload },
             // so all that's left is to invoke the decryption routine directly.
-            var spanEncryptor = (ISpanAuthenticatedEncryptor)requestedEncryptor;
-            spanEncryptor.Decrypt(actualCiphertext, aad, ref destination);
+
+            if (requestedEncryptor is ISpanAuthenticatedEncryptor spanEncryptor)
+            {
+                spanEncryptor.Decrypt(actualCiphertext, aad, ref destination);
+            }
+            else
+            {
+                // If SpanDataProtector is used, but encryptor does not support span-based APIs, fall-back to the byte[] path.
+                var result = requestedEncryptor.Decrypt(actualCiphertext.ToArray(), aad.ToArray());
+                var span = destination.GetSpan(result.Length);
+                result.CopyTo(span);
+                destination.Advance(result.Length);
+            }
 
             // At this point, destination contains the decrypted plaintext
             // And we're done!

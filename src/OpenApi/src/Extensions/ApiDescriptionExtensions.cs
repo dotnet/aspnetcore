@@ -16,11 +16,22 @@ internal static class ApiDescriptionExtensions
     /// Maps the HTTP method of the ApiDescription to the HttpMethod.
     /// </summary>
     /// <param name="apiDescription">The ApiDescription to resolve an HttpMethod from.</param>
-    /// <returns>The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>, if known.</returns>
-    public static HttpMethod? GetHttpMethod(this ApiDescription apiDescription) =>
-        apiDescription.HttpMethod?.ToUpperInvariant() switch
+    /// <returns>
+    /// The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>, including custom methods
+    /// when the provided HTTP method token is valid. Returns <see langword="null"/> when the HTTP method is missing or invalid.
+    /// </returns>
+    public static HttpMethod? GetHttpMethod(this ApiDescription apiDescription)
+    {
+        var httpMethod = apiDescription.HttpMethod;
+        if (string.IsNullOrWhiteSpace(httpMethod))
         {
-            // Only add methods documented in the OpenAPI spec: https://spec.openapis.org/oas/v3.1.1.html#path-item-object
+            return null;
+        }
+
+        var normalizedHttpMethod = httpMethod.Trim();
+
+        return normalizedHttpMethod.ToUpperInvariant() switch
+        {
             "GET" => HttpMethod.Get,
             "POST" => HttpMethod.Post,
             "PUT" => HttpMethod.Put,
@@ -29,8 +40,22 @@ internal static class ApiDescriptionExtensions
             "HEAD" => HttpMethod.Head,
             "OPTIONS" => HttpMethod.Options,
             "TRACE" => HttpMethod.Trace,
-            _ => null,
+            "QUERY" => HttpMethod.Query,
+            _ => TryCreateHttpMethod(normalizedHttpMethod),
         };
+
+        static HttpMethod? TryCreateHttpMethod(string httpMethod)
+        {
+            try
+            {
+                return new HttpMethod(httpMethod);
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+        }
+    }
 
     /// <summary>
     /// Maps the relative path included in the ApiDescription to the path
