@@ -557,8 +557,11 @@ internal static class JsonNodeSchemaExtensions
     internal static void ApplyNullabilityContextInfo(this JsonNode schema, JsonPropertyInfo propertyInfo)
     {
         var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable);
+
+        // Work around a System.Text.Json schema export issue where get-only properties can report
+        // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602 
         var shouldPruneNullFromReadOnlyProperty = propertyInfo.PropertyType != typeof(object) &&
-            propertyInfo.AttributeProvider is PropertyInfo { SetMethod: null } &&
+            propertyInfo.Set is null &&
             !propertyInfo.IsGetNullable &&
             propertyInfo.IsSetNullable;
         if (shouldPruneNullFromReadOnlyProperty)
