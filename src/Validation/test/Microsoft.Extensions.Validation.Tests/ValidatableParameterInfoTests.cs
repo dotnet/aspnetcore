@@ -158,6 +158,37 @@ public class ValidatableParameterInfoTests : ValidationTestBase
         Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ValidationErrors_ReturnsImmutableCollections(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.RequiredParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
+
+        var errors = context.ValidationErrors;
+        Assert.NotNull(errors);
+
+        // The outer dictionary must not be castable to a mutable Dictionary
+        Assert.False(errors is Dictionary<string, IReadOnlyList<ValidationError>>);
+
+        // The value lists must not be castable to a mutable List<ValidationError>
+        var value = Assert.Single(errors).Value;
+        Assert.False(value is List<ValidationError>);
+
+        // Attempting to mutate the outer dictionary must throw
+        Assert.Throws<NotSupportedException>(() =>
+            ((IDictionary<string, IReadOnlyList<ValidationError>>)errors)["newKey"] = []);
+
+        // Attempting to mutate a value list must throw
+        Assert.Throws<NotSupportedException>(() =>
+            ((IList<ValidationError>)value).Add(new ValidationError { Name = "x", Path = "x", ErrorMessage = "x", Container = null }));
+    }
+
     private static ParameterInfo GetParameter(string methodName)
         => typeof(ParameterActions).GetMethod(methodName)!.GetParameters()[0];
 }
