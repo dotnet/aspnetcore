@@ -63,8 +63,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
     private readonly Lock _completionLock = new();
 
-    // Published under _completionLock by the abort that wins the completion-flag CAS. It is completed
-    // once that abort has finished running its (lock-free) side-effects. Request finalization waits on
+    // Published under _completionLock by the abort that first transitions the stream into the Aborted state. It is completed
+    // once that abort has finished running its side-effects (performed outside the lock). Request finalization waits on
     // it before pooling the stream so a late abort can't tear down a transport that has been reused.
     private TaskCompletionSource? _abortCompletedTcs;
 
