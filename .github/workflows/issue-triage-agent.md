@@ -115,27 +115,36 @@ is to analyze a newly opened issue and perform three tasks:
 
 Triage the issue that triggered this workflow.
 
-**Prefer the workflow event payload — the issue is already available there.** For
-`issues.opened` events the full issue is delivered in the event context, so you do
-**not** need to make any GitHub MCP call or network request to read it. Treat the
-values below as the source of truth for the title and body:
+You **must** obtain the real issue title and body before doing anything else. Two
+sources are available — use whichever is populated:
 
-- **Number:** #${{ github.event.issue.number }}
-- **Title:** ${{ steps.sanitized.outputs.title }}
-- **Body:**
+- **Number:** #${{ github.event.issue.number || github.event.inputs.issue_number }}
+- **Title (from payload):** ${{ steps.sanitized.outputs.title }}
+- **Body (from payload):**
 
 ${{ steps.sanitized.outputs.body }}
 
-If the title and body above are populated, use them directly and **skip the MCP
-fetch entirely.**
+**If both the title and body above are populated**, use them directly as the source
+of truth and **skip the MCP fetch entirely.**
 
-**Fallback — only when the payload is unavailable.** If the title/body above are
-empty (for example a `workflow_dispatch` run, which does not carry an issue
-payload), read the issue with the **github** MCP server's `issue_read` tool,
-providing the repository owner (`dotnet`), repository name (`aspnetcore`), and the
-issue number (`${{ github.event.issue.number || github.event.inputs.issue_number }}`).
-Do not fall back to `gh`, `curl`, `node`, or other shell commands to fetch the
-issue — use the `issue_read` MCP tool.
+**If the title or body above is empty, that is normal — not an error.** The payload
+is intentionally blank in two common cases: (a) `workflow_dispatch` runs, which do
+not carry an issue payload, and (b) issues opened by non-collaborators, whose
+content is deliberately withheld from the payload by a security sanitizer. Most
+issues that need triage fall into case (b), so an empty payload is expected and is
+your signal to fetch the issue yourself. In that case you **MUST** read the issue
+with the **github** MCP server's `issue_read` tool before proceeding:
+
+- Call `issue_read` with owner `dotnet`, repo `aspnetcore`, and issue number
+  `${{ github.event.issue.number || github.event.inputs.issue_number }}`.
+- This `issue_read` call is **required, not optional.** An empty payload is never a
+  reason to stop: do **not** report missing data, do **not** call `noop`, and do
+  **not** give up before you have successfully called `issue_read`.
+- You may only report that the issue could not be read if the `issue_read` MCP call
+  **itself** fails (returns an error or genuinely cannot retrieve the issue). A blank
+  payload alone is never sufficient justification.
+- Do not fall back to `gh`, `curl`, `node`, or other shell commands to fetch the
+  issue — use the `issue_read` MCP tool.
 
 ## Security Concerns Are Out of Scope
 
