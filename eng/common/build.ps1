@@ -23,6 +23,7 @@ Param(
   [switch] $clean,
   [switch][Alias('pb')]$productBuild,
   [switch]$fromVMR,
+  [switch]$disablePipelineSetResult,
   [switch][Alias('bl')]$binaryLog,
   [string][Alias('bln')]$binaryLogName = '',
   [switch][Alias('nobl')]$excludeCIBinarylog,
@@ -80,6 +81,7 @@ function Print-Usage() {
   Write-Host "  -nodeReuse <value>      Sets nodereuse msbuild parameter ('true' or 'false')"
   Write-Host "  -buildCheck             Sets /check msbuild parameter"
   Write-Host "  -fromVMR                Set when building from within the VMR"
+  Write-Host "  -disablePipelineSetResult Set to disable masking the actual exit code in the pipeline when the build fails"
   Write-Host ""
 
   Write-Host "Command line arguments not listed above are passed thru to msbuild."
