@@ -52,18 +52,15 @@ Microsoft.AspNetCore.Components.ConfigureBrowser
 Microsoft.AspNetCore.Components.ConfigureBrowser.ConfigureBrowser() -> void
 Microsoft.AspNetCore.Components.ConfigureBrowser.Options.get -> Microsoft.AspNetCore.Components.BrowserOptions!
 Microsoft.AspNetCore.Components.ConfigureBrowser.Options.set -> void
-Microsoft.AspNetCore.Components.ConfigureBrowser.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
-Microsoft.AspNetCore.Components.ConfigureBrowser.HttpContext.set -> void
-Microsoft.AspNetCore.Components.BrowserOptionsHttpContextExtensions
-static Microsoft.AspNetCore.Components.BrowserOptionsHttpContextExtensions.GetBrowserOptions(this Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Components.BrowserOptions!
 static Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions.WithBrowserOptions(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.BrowserOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
 Microsoft.AspNetCore.Components.BrowserOptions
 Microsoft.AspNetCore.Components.BrowserOptions.BrowserOptions() -> void
 Microsoft.AspNetCore.Components.BrowserOptions.LogLevel.get -> Microsoft.Extensions.Logging.LogLevel?
 Microsoft.AspNetCore.Components.BrowserOptions.LogLevel.set -> void
-Microsoft.AspNetCore.Components.BrowserOptions.Server.get -> Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions!
-Microsoft.AspNetCore.Components.BrowserOptions.Ssr.get -> Microsoft.AspNetCore.Components.SsrBrowserOptions!
-Microsoft.AspNetCore.Components.BrowserOptions.WebAssembly.get -> Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions!
+Microsoft.AspNetCore.Components.BrowserOptions.InteractiveServer.get -> Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions!
+Microsoft.AspNetCore.Components.BrowserOptions.StaticServer.get -> Microsoft.AspNetCore.Components.StaticServerBrowserOptions!
+Microsoft.AspNetCore.Components.BrowserOptions.InteractiveWebAssembly.get -> Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions!
+static Microsoft.AspNetCore.Components.BrowserOptions.GetBrowserOptions(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Components.BrowserOptions!
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.InteractiveServerBrowserOptions() -> void
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionDialogId.get -> string?
@@ -73,19 +70,19 @@ Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionMaxR
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionRetryInterval.get -> System.TimeSpan?
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionRetryInterval.set -> void
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.Extensions.get -> System.Collections.Generic.IDictionary<string!, System.Text.Json.JsonElement>!
-Microsoft.AspNetCore.Components.SsrBrowserOptions
-Microsoft.AspNetCore.Components.SsrBrowserOptions.SsrBrowserOptions() -> void
-Microsoft.AspNetCore.Components.SsrBrowserOptions.CircuitInactivityTimeout.get -> System.TimeSpan?
-Microsoft.AspNetCore.Components.SsrBrowserOptions.CircuitInactivityTimeout.set -> void
-Microsoft.AspNetCore.Components.SsrBrowserOptions.PreserveDom.get -> bool?
-Microsoft.AspNetCore.Components.SsrBrowserOptions.PreserveDom.set -> void
-Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions
-Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.WebAssemblyBrowserOptions() -> void
-Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.ApplicationCulture.get -> string?
-Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.ApplicationCulture.set -> void
-Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.get -> string?
-Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.set -> void
-Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentVariables.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.StaticServerBrowserOptions() -> void
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.CircuitInactivityTimeout.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.CircuitInactivityTimeout.set -> void
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.PreserveDom.get -> bool?
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.PreserveDom.set -> void
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.InteractiveWebAssemblyBrowserOptions() -> void
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.ApplicationCulture.get -> string?
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.ApplicationCulture.set -> void
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.EnvironmentName.get -> string?
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.EnvironmentName.set -> void
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.EnvironmentVariables.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.Components.Forms.ClientValidationRule
 Microsoft.AspNetCore.Components.Forms.ClientValidationRule.Name.get -> string!
 Microsoft.AspNetCore.Components.Forms.ClientValidationRule.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!

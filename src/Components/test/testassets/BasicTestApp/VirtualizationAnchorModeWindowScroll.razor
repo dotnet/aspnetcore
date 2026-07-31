@@ -27,6 +27,9 @@
         <button id="toggle-height" @onclick="ToggleVariableHeight">
             Heights: @(useVariableHeight ? "Variable (10-200px)" : "Fixed (50px)")
         </button>
+        <button id="toggle-delay" @onclick="ToggleDelay">
+            Provider Delay: @(useProviderDelay ? "500ms" : "None")
+        </button>
         <input id="scroll-target-index" type="number" @bind="scrollTargetIndex" style="width: 80px;" />
         <button id="scroll-to-item" @onclick="ScrollToTarget">Scroll To Item</button>
     </div>
@@ -67,6 +70,7 @@
     private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
+    private bool useProviderDelay = false;
     private Virtualize<DynamicItem> virtualizeRef;
     private int scrollTargetIndex = 100;
     private string scrollStatus = "Idle";
@@ -215,9 +219,19 @@
         statusMessage = useItemsProvider ? "Switched to ItemsProvider" : "Switched to Items";
     }
 
+    private void ToggleDelay()
+    {
+        useProviderDelay = !useProviderDelay;
+        statusMessage = useProviderDelay ? "Provider delay for Virtualize: 500ms" : "Provider delay for Virtualize: None";
+    }
+
     private async ValueTask<ItemsProviderResult<DynamicItem>> GetItemsAsync(ItemsProviderRequest request)
     {
         await Task.Yield();
+        if (useProviderDelay)
+        {
+            await Task.Delay(500);
+        }
 
         // Apply pending mutations inside the provider callback.
         if (_pendingPrepend != null)
