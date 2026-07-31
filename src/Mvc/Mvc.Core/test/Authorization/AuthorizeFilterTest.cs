@@ -568,6 +568,87 @@ public class AuthorizeFilterTest
         Assert.Equal(new[] { "Claim1", "Claim2" }, effectivePolicy.Requirements.Cast<ClaimsAuthorizationRequirement>().Select(c => c.ClaimType));
     }
 
+    [Fact]
+    public async Task GetEffectivePolicyAsync_CombinesRequirementDataFromEndpoint()
+    {
+        var filter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireClaim("Claim1").Build());
+        var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+
+        ActionContext.HttpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IAuthorizationPolicyProvider>(policyProvider)
+            .BuildServiceProvider();
+
+        ActionContext.HttpContext.SetEndpoint(new Endpoint(
+            _ => null,
+            new EndpointMetadataCollection(new NameIdentifierRequirementAttribute()),
+            "test"));
+        var context = new AuthorizationFilterContext(ActionContext, new[] { filter, });
+
+        var effectivePolicy = await filter.GetEffectivePolicyAsync(context);
+
+        var claimTypes = effectivePolicy.Requirements.OfType<ClaimsAuthorizationRequirement>().Select(r => r.ClaimType).ToArray();
+        Assert.Contains("Claim1", claimTypes);
+        Assert.Contains(ClaimTypes.NameIdentifier, claimTypes);
+    }
+
+    [Fact]
+    public async Task GetEffectivePolicyAsync_CombinesPolicyInstanceFromEndpoint()
+    {
+        var filter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireClaim("Claim1").Build());
+        var policyInstance = new AuthorizationPolicyBuilder().RequireClaim("Claim2").Build();
+        var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+
+        ActionContext.HttpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IAuthorizationPolicyProvider>(policyProvider)
+            .BuildServiceProvider();
+
+        ActionContext.HttpContext.SetEndpoint(new Endpoint(
+            _ => null,
+            new EndpointMetadataCollection(policyInstance),
+            "test"));
+        var context = new AuthorizationFilterContext(ActionContext, new[] { filter, });
+
+        var effectivePolicy = await filter.GetEffectivePolicyAsync(context);
+
+        Assert.Equal(new[] { "Claim1", "Claim2" }, effectivePolicy.Requirements.Cast<ClaimsAuthorizationRequirement>().Select(r => r.ClaimType));
+    }
+
+    [Fact]
+    public async Task RequirementDataFromEndpoint_IsEnforcedByAuthorizationService()
+    {
+        var filter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
+        var serviceProvider = new ServiceCollection()
+            .AddAuthorization()
+            .AddLogging()
+            .AddOptions()
+            .BuildServiceProvider();
+
+        ActionContext.HttpContext.RequestServices = serviceProvider;
+        ActionContext.HttpContext.SetEndpoint(new Endpoint(
+            _ => null,
+            new EndpointMetadataCollection(new NameIdentifierRequirementAttribute()),
+            "test"));
+        var context = new AuthorizationFilterContext(ActionContext, new[] { filter, });
+
+        var effectivePolicy = await filter.GetEffectivePolicyAsync(context);
+        var authorizationService = serviceProvider.GetRequiredService<IAuthorizationService>();
+
+        var authorizedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "id") }, "test"));
+        var unauthorizedUser = new ClaimsPrincipal(new ClaimsIdentity());
+
+        Assert.True((await authorizationService.AuthorizeAsync(authorizedUser, resource: null, effectivePolicy.Requirements)).Succeeded);
+        Assert.False((await authorizationService.AuthorizeAsync(unauthorizedUser, resource: null, effectivePolicy.Requirements)).Succeeded);
+    }
+
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
+    private sealed class NameIdentifierRequirementAttribute : Attribute, IAuthorizationRequirementData
+    {
+        public IEnumerable<IAuthorizationRequirement> GetRequirements()
+        {
+            yield return new ClaimsAuthorizationRequirement(ClaimTypes.NameIdentifier, allowedValues: null);
+        }
+    }
+
     private AuthorizationFilterContext GetAuthorizationContext(
         bool anonymous = false,
         Action<IServiceCollection> registerServices = null)

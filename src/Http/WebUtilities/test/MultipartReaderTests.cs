@@ -147,6 +147,21 @@ public class MultipartReaderTests
     }
 
     [Fact]
+    public async Task MultipartReader_HeaderLineSpanningMultipleBuffers_EnforcesHeadersLengthLimit()
+    {
+        // A single header line that is much larger than the internal read buffer (4 KiB) and
+        // the headers length limit (16 KiB), and is never terminated with a CRLF. The limit
+        // must be enforced while reading the line, before the whole payload is buffered in
+        // memory, rather than relying on the post-read length check.
+        var body = "--9051914041544843365972754266\r\n" + new string('a', 100_000);
+        var stream = MakeStream(body);
+        var reader = new MultipartReader(Boundary, stream);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
+        Assert.Equal("Line length limit 16384 exceeded.", exception.Message);
+    }
+
+    [Fact]
     public async Task MultipartReader_HeadersLengthExceeded_LargePreamble()
     {
         var body = $"preamble {new string('a', 17000)}\r\n" +
