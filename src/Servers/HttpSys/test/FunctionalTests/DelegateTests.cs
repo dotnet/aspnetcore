@@ -221,7 +221,6 @@ public class DelegateTests : LoggedTest
 
     [ConditionalFact]
     [DelegateSupportedCondition(true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60141")]
     public async Task DelegateAfterReceiverRestart()
     {
         var queueName = Guid.NewGuid().ToString();
