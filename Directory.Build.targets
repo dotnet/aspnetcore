@@ -5,6 +5,17 @@
     <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
   </PropertyGroup>
 
+  <!--
+    Newer Microsoft.Extensions.* packages (e.g. Microsoft.Extensions.Configuration.Binder 8.x) ship a
+    buildTransitive target that checks TFM compatibility using [MSBuild]::IsTargetFrameworkCompatible, a static
+    method not supported by the legacy MSBuild used to build/run net46x test apps in this branch (MSB4186).
+    That target (and its own compatible analyzer-removal logic below) is gated by this property, so setting it
+    skips the incompatible static-method calls entirely instead of relying on fragile NuGet asset exclusion.
+  -->
+  <PropertyGroup>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+
   <Import Project="eng\Baseline.Designer.props" />
 
   <!--

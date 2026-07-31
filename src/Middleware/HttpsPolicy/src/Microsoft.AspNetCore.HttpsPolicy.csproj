@@ -13,8 +13,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <!-- ExcludeAssets avoids MSB4186 from newer buildTransitive targets on the legacy MSBuild used to build/run net46x test apps. -->
-    <Reference Include="Microsoft.Extensions.Configuration.Binder" ExcludeAssets="buildTransitive" />
+    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" /> 
   </ItemGroup>
