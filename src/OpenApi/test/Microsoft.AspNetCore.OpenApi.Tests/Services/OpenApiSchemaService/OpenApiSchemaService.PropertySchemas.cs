@@ -641,6 +641,66 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiSchema_HandlesNullableConstructorBoundProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ConstructorBoundPropertyModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema;
+
+            var nullableProperty = schema.Properties["value"];
+            Assert.NotNull(nullableProperty.OneOf);
+            Assert.Equal(2, nullableProperty.OneOf.Count);
+            Assert.Collection(nullableProperty.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_DoesNotMarkNonNullableGetOnlyPropertyAsNullable()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ConstructorBoundPropertyModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema;
+
+            var valuesProperty = schema.Properties["values"];
+            if (valuesProperty.OneOf is not null)
+            {
+                Assert.DoesNotContain(valuesProperty.OneOf, item => item.Type is JsonSchemaType.Null);
+                var arraySchema = Assert.Single(valuesProperty.OneOf);
+                Assert.Equal(JsonSchemaType.Array, arraySchema.Type);
+                Assert.Equal(JsonSchemaType.String, arraySchema.Items?.Type);
+            }
+            else
+            {
+                Assert.True(valuesProperty.Type?.HasFlag(JsonSchemaType.Array));
+                Assert.False(valuesProperty.Type?.HasFlag(JsonSchemaType.Null));
+                Assert.Equal(JsonSchemaType.String, valuesProperty.Items?.Type);
+            }
+        });
+    }
+
 #nullable enable
     private class NullablePropertiesTestModel
     {
@@ -656,6 +716,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     {
         public Todo? NullableTodo { get; set; }
         public Account? NullableAccount { get; set; }
+    }
+
+    private class ConstructorBoundPropertyModel
+    {
+        public ConstructorBoundPropertyModel(Todo? value) => Value = value;
+        public Todo? Value { get; }
+        public IEnumerable<string> Values => [];
     }
 
     private class NullableCollectionPropertiesModel
