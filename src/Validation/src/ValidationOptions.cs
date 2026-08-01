@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -19,7 +20,6 @@ public class ValidationOptions
     /// Source-generated resolvers are typically inserted at the beginning of this list
     /// to ensure they are checked before any runtime-based resolvers.
     /// </remarks>
-    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public IList<IValidatableInfoResolver> Resolvers { get; } = [];
 
     /// <summary>
@@ -34,28 +34,28 @@ public class ValidationOptions
     public int MaxDepth { get; set; } = 32;
 
     /// <summary>
-    /// Gets or sets the <see cref="IValidationLocalizer"/> used by the validation pipeline to
-    /// resolve localized display names and error messages.
+    /// Gets or sets a delegate that resolves the <see cref="IStringLocalizer"/> used to localize
+    /// validation display names and error messages for a given declaring type.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// When <see langword="null"/> (the default), no localization is performed: literal display
-    /// names from <see cref="System.ComponentModel.DataAnnotations.DisplayAttribute.Name"/> and
-    /// <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/> are returned as-is,
-    /// and validation error messages fall back to the attribute's default message.
-    /// </para>
-    /// <para>
-    /// To enable the default <c>IStringLocalizer</c>-based implementation, add a reference to
-    /// <c>Microsoft.Extensions.Validation.Localization</c> and call
-    /// <c>services.AddValidationLocalization()</c> during DI configuration. Alternatively,
-    /// assign a custom <see cref="IValidationLocalizer"/> implementation directly.
-    /// </para>
-    /// <para>
-    /// This property is intended to be configured during application startup. Mutating it after
-    /// the validation pipeline has begun processing requests is not thread-safe.
-    /// </para>
+    /// The delegate receives the type used to resolve the localizer and the registered <see cref="IStringLocalizerFactory"/>.
+    /// The default <see cref="IValidatableInfoResolver"/> sets the type argument to the declaring type for a property,
+    /// the validated type itself for type-level validation, or the parameter's own type for a parameter.
     /// </remarks>
-    public IValidationLocalizer? Localizer { get; set; }
+    public Func<Type, IStringLocalizerFactory, IStringLocalizer> LocalizerProvider { get; set; }
+        = (type, factory) => factory.Create(type);
+
+    /// <summary>
+    /// Gets or sets a delegate that computes the resource key used to look up a localized validation
+    /// message.
+    /// </summary>
+    /// <remarks>
+    /// The provider supplies the lookup key by convention (for example, keyed by
+    /// <see cref="ValidationMessageKeyContext.ValidatorType"/>) for validators that do not specify an
+    /// explicit message. When a validator specifies an explicit message, that message is used as the
+    /// lookup key and the provider is not consulted.
+    /// </remarks>
+    public Func<ValidationMessageKeyContext, string?>? MessageKeyProvider { get; set; }
 
     /// <summary>
     /// Attempts to get validation information for the specified type.
@@ -64,7 +64,6 @@ public class ValidationOptions
     /// <param name="validatableTypeInfo">When this method returns, contains the validation information for the specified type,
     /// if the type was found; otherwise, <see langword="null" />.</param>
     /// <returns><see langword="true" /> if validation information was found for the specified type; otherwise, <see langword="false" />.</returns>
-    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
     {
         foreach (var resolver in Resolvers)
@@ -86,7 +85,6 @@ public class ValidationOptions
     /// <param name="validatableInfo">When this method returns, contains the validation information for the specified parameter,
     /// if validation information was found; otherwise, <see langword="null" />.</param>
     /// <returns><see langword="true" /> if validation information was found for the specified parameter; otherwise, <see langword="false" />.</returns>
-    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
     {
         foreach (var resolver in Resolvers)
