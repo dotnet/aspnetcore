@@ -3,16 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -61,6 +66,7 @@ public class HttpProtocolSelectionTests : TestApplicationErrorLoggerLoggedTest
         using var connection = server.CreateConnection();
         await connection.TransportConnection.WaitForReadTask;
         await connection.SendAll(preface[..splitPosition]);
+        await connection.TransportConnection.WaitForAdvanceTask.DefaultTimeout();
         await connection.SendAll(preface[splitPosition..]);
         await connection.Receive(Encoding.ASCII.GetString(GetExpectedHttp2SettingsBytes()));
     }
@@ -158,6 +164,75 @@ public class HttpProtocolSelectionTests : TestApplicationErrorLoggerLoggedTest
         await connection.Send("GET / HTTP/1.1\r\nHost:\r\n\r\n");
 
         await connection.Receive("HTTP/1.1 200 OK");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Server_Http1AndHttp2_Cleartext_SelectionReadFailureHasExpectedTelemetry(bool partialPreface)
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, KestrelMetrics.MeterName, "kestrel.connection.duration");
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
+        {
+            Scheduler = PipeScheduler.Inline
+        };
+        await using var server = CreateServer(testContext);
+        using var connection = server.CreateConnection();
+        await connection.TransportConnection.WaitForReadTask;
+
+        if (partialPreface)
+        {
+            await connection.SendAll("PRI");
+            await connection.TransportConnection.WaitForAdvanceTask.DefaultTimeout();
+        }
+
+        var exception = new IOException("selection read failed");
+        connection.TransportConnection.Input.Complete(exception);
+        connection.TransportConnection.OnClosed();
+
+        await connection.WaitForConnectionClose().DefaultTimeout();
+        var log = Assert.Single(LogMessages, message => ReferenceEquals(message.Exception, exception));
+        Assert.Equal(20, log.EventId.Id);
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), measurement =>
+        {
+            MetricsAssert.Equal(ConnectionEndReason.IOError, measurement.Tags);
+            Assert.DoesNotContain("network.protocol.name", measurement.Tags.Keys);
+            Assert.DoesNotContain("network.protocol.version", measurement.Tags.Keys);
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Server_Http1AndHttp2_Cleartext_SelectionResetIsNormalCompletion(bool partialPreface)
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, KestrelMetrics.MeterName, "kestrel.connection.duration");
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
+        {
+            Scheduler = PipeScheduler.Inline
+        };
+        await using var server = CreateServer(testContext);
+        using var connection = server.CreateConnection();
+        await connection.TransportConnection.WaitForReadTask;
+
+        if (partialPreface)
+        {
+            await connection.SendAll("PRI");
+            await connection.TransportConnection.WaitForAdvanceTask.DefaultTimeout();
+        }
+
+        connection.Reset();
+
+        await connection.WaitForConnectionClose().DefaultTimeout();
+        Assert.DoesNotContain(LogMessages, message => message.Exception is ConnectionResetException);
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), measurement =>
+        {
+            MetricsAssert.NoError(measurement.Tags);
+            Assert.DoesNotContain("network.protocol.name", measurement.Tags.Keys);
+            Assert.DoesNotContain("network.protocol.version", measurement.Tags.Keys);
+        });
     }
 
     [Fact]

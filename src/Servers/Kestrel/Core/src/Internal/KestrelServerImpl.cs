@@ -170,6 +170,8 @@ internal sealed class KestrelServerImpl : IServer
                     throw new InvalidOperationException("Unable to bind an HTTP/3 endpoint. This could be because QUIC has not been configured using UseQuic, or the platform doesn't support QUIC or HTTP/3.");
                 }
 
+                var effectiveProtocols = hasHttp3 ? options.Protocols : options.Protocols & ~HttpProtocols.Http3;
+
                 // Disable adding alt-svc header if endpoint has configured not to or there is no
                 // multiplexed transport factory, which happens if QUIC isn't supported.
                 var addAltSvcHeader = !options.DisableAltSvcHeader && _multiplexedTransportFactories.Count > 0;
@@ -188,10 +190,10 @@ internal sealed class KestrelServerImpl : IServer
 
                     if (!hasTls && hasHttp1 && hasHttp2 && !Options.DisableHttp2PriorKnowledge)
                     {
-                        options.UseHttp2PriorKnowledge(ServiceContext, options.Protocols);
+                        options.UseHttp2PriorKnowledge(ServiceContext, effectiveProtocols);
                     }
 
-                    options.UseHttpServer(ServiceContext, application, options.Protocols, addAltSvcHeader);
+                    options.UseHttpServer(ServiceContext, application, effectiveProtocols, addAltSvcHeader);
                     var connectionDelegate = options.Build();
 
                     // Add the connection limit middleware
@@ -210,7 +212,7 @@ internal sealed class KestrelServerImpl : IServer
                     }
                     else
                     {
-                        options.UseHttp3Server(ServiceContext, application, options.Protocols, addAltSvcHeader);
+                        options.UseHttp3Server(ServiceContext, application, effectiveProtocols, addAltSvcHeader);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         // Add the connection limit middleware
