@@ -34,6 +34,7 @@ internal class InMemoryTransportConnection : TransportConnection
         var wrapper = new ObservableDuplexPipe(pair.Transport);
         Transport = wrapper;
         WaitForReadTask = wrapper.WaitForReadTask;
+        WaitForAdvanceTask = wrapper.WaitForAdvanceTask;
 
         ConnectionClosed = _connectionClosedTokenSource.Token;
     }
@@ -43,6 +44,8 @@ internal class InMemoryTransportConnection : TransportConnection
     public PipeReader Output => Application.Input;
 
     public Task WaitForReadTask { get; }
+
+    public Task WaitForAdvanceTask { get; }
 
     public override MemoryPool<byte> MemoryPool { get; }
 
@@ -106,6 +109,8 @@ internal class InMemoryTransportConnection : TransportConnection
 
         public Task WaitForReadTask => _reader.WaitForReadTask;
 
+        public Task WaitForAdvanceTask => _reader.WaitForAdvanceTask;
+
         public PipeReader Input { get; }
 
         public PipeWriter Output { get; }
@@ -114,8 +119,11 @@ internal class InMemoryTransportConnection : TransportConnection
         {
             private readonly PipeReader _reader;
             private readonly TaskCompletionSource _tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource _advanceTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
             public Task WaitForReadTask => _tcs.Task;
+
+            public Task WaitForAdvanceTask => _advanceTcs.Task;
 
             public ObservablePipeReader(PipeReader reader)
             {
@@ -125,11 +133,13 @@ internal class InMemoryTransportConnection : TransportConnection
             public override void AdvanceTo(SequencePosition consumed)
             {
                 _reader.AdvanceTo(consumed);
+                _advanceTcs.TrySetResult();
             }
 
             public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
             {
                 _reader.AdvanceTo(consumed, examined);
+                _advanceTcs.TrySetResult();
             }
 
             public override void CancelPendingRead()

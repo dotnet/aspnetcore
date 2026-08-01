@@ -3,12 +3,14 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -152,6 +154,376 @@ public class Http2PrefaceConnectionMiddlewareTests
         Assert.Equal(1, timeProvider.Timer.ChangeCount);
     }
 
+    [Fact]
+    public async Task InFlightTimerCallbackCompletesBeforeNext()
+    {
+        var debugger = new BlockingDebugger();
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        var input = new ControllablePipeReader();
+        var connection = CreateConnection(input);
+        var nextCalled = false;
+        var middleware = new Http2PrefaceConnectionMiddleware(
+            _ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            },
+            serviceContext,
+            HttpProtocols.Http1AndHttp2,
+            debugger);
+
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+        var fireTask = Task.Run(timeProvider.Timer.Fire);
+        await debugger.Entered.Task.DefaultTimeout();
+        input.CompleteRead(new ReadResult(new ReadOnlySequence<byte>("G"u8.ToArray()), isCanceled: false, isCompleted: false));
+        await timeProvider.Timer.DisposeCalled.Task.DefaultTimeout();
+
+        Assert.False(nextCalled);
+        Assert.False(middlewareTask.IsCompleted);
+
+        debugger.Release.TrySetResult();
+        await fireTask.DefaultTimeout();
+        await middlewareTask.DefaultTimeout();
+        Assert.True(nextCalled);
+    }
+
+    [Fact]
+    public async Task QueuedTimerCallbackDoesNotRetainConnectionAfterSelection()
+    {
+        var scenario = await CreateQueuedTimerScenario();
+        try
+        {
+            Assert.True(scenario.TimeProvider.Timer.Disposed);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            Assert.False(scenario.Connection.IsAlive);
+        }
+        finally
+        {
+            scenario.Release.TrySetResult();
+            await scenario.FireTask.DefaultTimeout();
+            GC.KeepAlive(scenario.TimeProvider);
+        }
+    }
+
+    [Fact]
+    public async Task TimeoutWinningEmptyCompletedReadRecordsTimeout()
+    {
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        serviceContext.ServerOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(1);
+        var input = new ControllablePipeReader();
+        var connection = CreateConnection(input);
+        var tags = AddMetricsTagsFeature(connection);
+        var middleware = new Http2PrefaceConnectionMiddleware(_ => Task.CompletedTask, serviceContext, HttpProtocols.Http1AndHttp2);
+
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+        timeProvider.Advance(serviceContext.ServerOptions.Limits.KeepAliveTimeout);
+        timeProvider.Timer.Fire();
+        await input.CancelCalled.Task.DefaultTimeout();
+        input.CompleteRead(new ReadResult(default, isCanceled: false, isCompleted: true));
+        await middlewareTask.DefaultTimeout();
+
+        Assert.Contains(tags, tag => tag.Key == "error.type" && (string)tag.Value == "keep_alive_timeout");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TimeoutWinningReadFailureRecordsTimeout(bool connectionReset)
+    {
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        serviceContext.ServerOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(1);
+        var input = new ControllablePipeReader();
+        var connection = CreateConnection(input);
+        var tags = AddMetricsTagsFeature(connection);
+        var middleware = new Http2PrefaceConnectionMiddleware(_ => Task.CompletedTask, serviceContext, HttpProtocols.Http1AndHttp2);
+
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+        timeProvider.Advance(serviceContext.ServerOptions.Limits.KeepAliveTimeout);
+        timeProvider.Timer.Fire();
+        await input.CancelCalled.Task.DefaultTimeout();
+        input.FailRead(connectionReset ? new ConnectionResetException("reset") : new IOException("read failed"));
+        await middlewareTask.DefaultTimeout();
+
+        Assert.Contains(tags, tag => tag.Key == "error.type" && (string)tag.Value == "keep_alive_timeout");
+        Assert.DoesNotContain(tags, tag => tag.Key == "error.type" && (string)tag.Value == "io_error");
+    }
+
+    [Fact]
+    public async Task ShutdownWinningReadFailureDoesNotRecordIoError()
+    {
+        using var shutdown = new CancellationTokenSource();
+        var input = new ControllablePipeReader();
+        var connection = CreateConnection(input);
+        var lifetimeFeature = new Mock<IConnectionLifetimeNotificationFeature>();
+        lifetimeFeature.SetupGet(feature => feature.ConnectionClosedRequested).Returns(shutdown.Token);
+        connection.Features.Set(lifetimeFeature.Object);
+        var tags = AddMetricsTagsFeature(connection);
+        var middleware = new Http2PrefaceConnectionMiddleware(
+            _ => Task.CompletedTask,
+            new TestServiceContext(),
+            HttpProtocols.Http1AndHttp2);
+
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+        shutdown.Cancel();
+        await input.CancelCalled.Task.DefaultTimeout();
+        input.FailRead(new IOException("read failed"));
+        await middlewareTask.DefaultTimeout();
+
+        Assert.Empty(tags);
+    }
+
+    [Fact]
+    public async Task CancelPendingReadFailureIsPublishedBeforeTimeoutCompletes()
+    {
+        var expected = new InvalidOperationException("Cancel failed.");
+        var cancelEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCancel = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        serviceContext.ServerOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(1);
+        var input = new ControllablePipeReader
+        {
+            CancelPendingReadCallback = () =>
+            {
+                cancelEntered.TrySetResult();
+                releaseCancel.Task.GetAwaiter().GetResult();
+                throw expected;
+            }
+        };
+        var connection = CreateConnection(input);
+        var middleware = new Http2PrefaceConnectionMiddleware(_ => Task.CompletedTask, serviceContext, HttpProtocols.Http1AndHttp2);
+
+        var middlewareTask = Task.Run(() => middleware.OnConnectionAsync(connection));
+        await input.ReadStarted.Task.DefaultTimeout();
+        timeProvider.Advance(serviceContext.ServerOptions.Limits.KeepAliveTimeout);
+        var fireTask = Task.Run(timeProvider.Timer.Fire);
+        await cancelEntered.Task.DefaultTimeout();
+        input.CompleteRead(new ReadResult(new ReadOnlySequence<byte>("P"u8.ToArray()), isCanceled: false, isCompleted: false));
+
+        try
+        {
+            Assert.False(middlewareTask.IsCompleted);
+        }
+        finally
+        {
+            releaseCancel.TrySetResult();
+        }
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => middlewareTask);
+        Assert.Same(expected, actual);
+        await fireTask.DefaultTimeout();
+    }
+
+    [Fact]
+    public async Task CancelPendingReadFailureCompletesWithoutReadWakeUp()
+    {
+        var expected = new InvalidOperationException("Cancel failed.");
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        serviceContext.ServerOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(1);
+        var input = new ControllablePipeReader
+        {
+            CancelPendingReadCallback = () => throw expected
+        };
+        var connection = CreateConnection(input);
+        var middleware = new Http2PrefaceConnectionMiddleware(_ => Task.CompletedTask, serviceContext, HttpProtocols.Http1AndHttp2);
+
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+        timeProvider.Advance(serviceContext.ServerOptions.Limits.KeepAliveTimeout);
+        timeProvider.Timer.Fire();
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => middlewareTask.WaitAsync(TimeSpan.FromSeconds(1)));
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public async Task TimeoutWinningAdvanceFailureRecordsTimeout()
+    {
+        var advanceException = new InvalidOperationException("Advance failed.");
+        var cancelEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCancel = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        serviceContext.ServerOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(1);
+        var input = new ControllablePipeReader
+        {
+            AdvanceToCallback = () => throw advanceException,
+            CancelPendingReadCallback = () =>
+            {
+                cancelEntered.TrySetResult();
+                releaseCancel.Task.GetAwaiter().GetResult();
+            }
+        };
+        var connection = CreateConnection(input);
+        var tags = AddMetricsTagsFeature(connection);
+        var middleware = new Http2PrefaceConnectionMiddleware(_ => Task.CompletedTask, serviceContext, HttpProtocols.Http1AndHttp2);
+
+        var middlewareTask = Task.Run(() => middleware.OnConnectionAsync(connection));
+        await input.ReadStarted.Task.DefaultTimeout();
+        timeProvider.Advance(serviceContext.ServerOptions.Limits.KeepAliveTimeout);
+        var fireTask = Task.Run(timeProvider.Timer.Fire);
+        await cancelEntered.Task.DefaultTimeout();
+        input.CompleteRead(new ReadResult(new ReadOnlySequence<byte>("P"u8.ToArray()), isCanceled: false, isCompleted: false));
+
+        try
+        {
+            Assert.False(middlewareTask.IsCompleted);
+        }
+        finally
+        {
+            releaseCancel.TrySetResult();
+        }
+
+        await middlewareTask.DefaultTimeout();
+        await fireTask.DefaultTimeout();
+        Assert.Contains(tags, tag => tag.Key == "error.type" && (string)tag.Value == "keep_alive_timeout");
+    }
+
+    [Fact]
+    public async Task AdvanceFailureWithoutStopIsSurfaced()
+    {
+        var expected = new InvalidOperationException("Advance failed.");
+        var input = new ControllablePipeReader
+        {
+            AdvanceToCallback = () => throw expected
+        };
+        var connection = CreateConnection(input);
+        var middleware = new Http2PrefaceConnectionMiddleware(_ => Task.CompletedTask, new TestServiceContext(), HttpProtocols.Http1AndHttp2);
+
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+        input.CompleteRead(new ReadResult(new ReadOnlySequence<byte>("P"u8.ToArray()), isCanceled: false, isCompleted: false));
+
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => middlewareTask);
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public async Task DebuggerAttachedDefersExpiredTimeout()
+    {
+        var debugger = new TestDebugger { IsAttached = true };
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        serviceContext.ServerOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(1);
+        var input = new ControllablePipeReader();
+        var connection = CreateConnection(input);
+        var middleware = new Http2PrefaceConnectionMiddleware(
+            _ => Task.CompletedTask,
+            serviceContext,
+            HttpProtocols.Http1AndHttp2,
+            debugger);
+
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+        timeProvider.Advance(serviceContext.ServerOptions.Limits.KeepAliveTimeout);
+        timeProvider.Timer.Fire();
+
+        Assert.False(input.CancelCalled.Task.IsCompleted);
+        Assert.Equal(1, timeProvider.Timer.ChangeCount);
+
+        debugger.IsAttached = false;
+        timeProvider.Timer.Fire();
+        await input.CancelCalled.Task.DefaultTimeout();
+        input.CompleteRead(new ReadResult(default, isCanceled: true, isCompleted: false));
+        await middlewareTask.DefaultTimeout();
+    }
+
+    [Fact]
+    public async Task InfiniteKeepAliveDoesNotCreateTimer()
+    {
+        using var shutdown = new CancellationTokenSource();
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        serviceContext.ServerOptions.Limits.KeepAliveTimeout = Timeout.InfiniteTimeSpan;
+        Assert.Equal(TimeSpan.MaxValue, serviceContext.ServerOptions.Limits.KeepAliveTimeout);
+        var input = new ControllablePipeReader();
+        var connection = CreateConnection(input);
+        var lifetimeFeature = new Mock<IConnectionLifetimeNotificationFeature>();
+        lifetimeFeature.SetupGet(feature => feature.ConnectionClosedRequested).Returns(shutdown.Token);
+        connection.Features.Set(lifetimeFeature.Object);
+        var middleware = new Http2PrefaceConnectionMiddleware(_ => Task.CompletedTask, serviceContext, HttpProtocols.Http1AndHttp2);
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+
+        try
+        {
+            Assert.Null(timeProvider.Timer);
+        }
+        finally
+        {
+            shutdown.Cancel();
+            await input.CancelCalled.Task.DefaultTimeout();
+            input.CompleteRead(new ReadResult(default, isCanceled: true, isCompleted: false));
+            await middlewareTask.DefaultTimeout();
+        }
+    }
+
+    private static List<KeyValuePair<string, object>> AddMetricsTagsFeature(DefaultConnectionContext connection)
+    {
+        var tags = new List<KeyValuePair<string, object>>();
+        var metricsTagsFeature = new Mock<IConnectionMetricsTagsFeature>();
+        metricsTagsFeature.SetupGet(feature => feature.Tags).Returns(tags);
+        connection.Features.Set(metricsTagsFeature.Object);
+        return tags;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static async Task<(WeakReference Connection, TrackingTimeProvider TimeProvider, Task FireTask, TaskCompletionSource Release)> CreateQueuedTimerScenario()
+    {
+        var timeProvider = new TrackingTimeProvider();
+        var serviceContext = new TestServiceContext
+        {
+            TimeProvider = timeProvider
+        };
+        var input = new ControllablePipeReader();
+        var connection = CreateConnection(input);
+        var middleware = new Http2PrefaceConnectionMiddleware(_ => Task.CompletedTask, serviceContext, HttpProtocols.Http1AndHttp2);
+
+        var middlewareTask = middleware.OnConnectionAsync(connection);
+        await input.ReadStarted.Task.DefaultTimeout();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var fireTask = timeProvider.Timer.QueueFireAsync(release.Task);
+        await timeProvider.Timer.CallbackQueued.Task.DefaultTimeout();
+        input.CompleteRead(new ReadResult(new ReadOnlySequence<byte>("G"u8.ToArray()), isCanceled: false, isCompleted: false));
+        await middlewareTask.DefaultTimeout();
+
+        return (new WeakReference(connection), timeProvider, fireTask, release);
+    }
+
     private static DefaultConnectionContext CreateConnection()
         => CreateConnection(out _);
 
@@ -162,10 +534,106 @@ public class Http2PrefaceConnectionMiddlewareTests
         return new DefaultConnectionContext("test", pair.Transport, pair.Application);
     }
 
+    private static DefaultConnectionContext CreateConnection(PipeReader input)
+    {
+        var pipe = new Pipe();
+        var transport = new DuplexPipe(input, pipe.Writer);
+        return new DefaultConnectionContext("test", transport, transport);
+    }
+
+    private sealed class ControllablePipeReader : PipeReader
+    {
+        private readonly TaskCompletionSource<ReadResult> _readResult = new();
+        private CancellationTokenRegistration _readCancellationRegistration;
+
+        public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource CancelCalled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Action AdvanceToCallback { get; init; }
+
+        public Action CancelPendingReadCallback { get; init; }
+
+        public override void AdvanceTo(SequencePosition consumed)
+        {
+            AdvanceToCallback?.Invoke();
+        }
+
+        public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+        {
+            AdvanceToCallback?.Invoke();
+        }
+
+        public override void CancelPendingRead()
+        {
+            CancelCalled.TrySetResult();
+            CancelPendingReadCallback?.Invoke();
+        }
+
+        public override void Complete(Exception exception = null)
+        {
+            _readCancellationRegistration.Dispose();
+        }
+
+        public void CompleteRead(ReadResult result)
+        {
+            if (_readResult.TrySetResult(result))
+            {
+                _readCancellationRegistration.Dispose();
+            }
+        }
+
+        public void FailRead(Exception exception)
+        {
+            if (_readResult.TrySetException(exception))
+            {
+                _readCancellationRegistration.Dispose();
+            }
+        }
+
+        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            ReadStarted.TrySetResult();
+            _readCancellationRegistration = cancellationToken.UnsafeRegister(
+                static state => ((TaskCompletionSource<ReadResult>)state!).TrySetCanceled(),
+                _readResult);
+            return new ValueTask<ReadResult>(_readResult.Task);
+        }
+
+        public override bool TryRead(out ReadResult result)
+        {
+            result = default;
+            return false;
+        }
+    }
+
+    private sealed class BlockingDebugger : IDebugger
+    {
+        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public bool IsAttached
+        {
+            get
+            {
+                Entered.TrySetResult();
+                Release.Task.GetAwaiter().GetResult();
+                return false;
+            }
+        }
+    }
+
+    private sealed class TestDebugger : IDebugger
+    {
+        public bool IsAttached { get; set; }
+    }
+
     private sealed class TrackingTimeProvider : TimeProvider
     {
         private readonly Exception _changeException;
         private readonly bool _fireDuringCreate;
+        private long _timestamp;
 
         public TrackingTimeProvider(Exception changeException = null, bool fireDuringCreate = false)
         {
@@ -174,6 +642,12 @@ public class Http2PrefaceConnectionMiddlewareTests
         }
 
         public TrackingTimer Timer { get; private set; }
+
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public override long GetTimestamp() => Volatile.Read(ref _timestamp);
+
+        public void Advance(TimeSpan duration) => Interlocked.Add(ref _timestamp, duration.Ticks);
 
         public override ITimer CreateTimer(TimerCallback callback, object state, TimeSpan dueTime, TimeSpan period)
         {
@@ -201,9 +675,20 @@ public class Http2PrefaceConnectionMiddlewareTests
 
         public bool Disposed { get; private set; }
 
+        public TaskCompletionSource CallbackQueued { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource DisposeCalled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public int ChangeCount { get; private set; }
 
         public void Fire() => _callback(_state);
+
+        public async Task QueueFireAsync(Task release)
+        {
+            CallbackQueued.TrySetResult();
+            await release;
+            _callback(_state);
+        }
 
         public bool Change(TimeSpan dueTime, TimeSpan period)
         {
@@ -216,7 +701,11 @@ public class Http2PrefaceConnectionMiddlewareTests
             return true;
         }
 
-        public void Dispose() => Disposed = true;
+        public void Dispose()
+        {
+            Disposed = true;
+            DisposeCalled.TrySetResult();
+        }
 
         public ValueTask DisposeAsync()
         {
