@@ -1,4 +1,9 @@
 #nullable enable
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver
 Microsoft.AspNetCore.OpenApi.IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames() -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.OpenApi.IOpenApiDocumentInitializer
+Microsoft.AspNetCore.OpenApi.IOpenApiDocumentInitializer.InitializeAsync(Microsoft.OpenApi.OpenApiDocument! document, Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddDocumentInitializer(Microsoft.AspNetCore.OpenApi.IOpenApiDocumentInitializer! initializer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddDocumentInitializer(System.Func<Microsoft.OpenApi.OpenApiDocument!, Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! initializer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddDocumentInitializer<TInitializerType>() -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
 static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApiCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

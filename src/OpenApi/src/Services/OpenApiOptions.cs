@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 public sealed class OpenApiOptions
 {
+    internal readonly List<IOpenApiDocumentInitializer> DocumentInitializers = [];
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
     internal readonly List<IOpenApiOperationTransformer> OperationTransformers = [];
     internal readonly List<IOpenApiSchemaTransformer> SchemaTransformers = [];
@@ -55,6 +56,60 @@ public sealed class OpenApiOptions
     /// the provided delegate returns <see langword="null"/>, the schema associated with the <see cref="JsonTypeInfo"/> will always be inlined.
     /// </remarks>
     public Func<JsonTypeInfo, string?> CreateSchemaReferenceId { get; set; } = CreateDefaultSchemaReferenceId;
+
+    /// <summary>
+    /// Registers a new document initializer on the current <see cref="OpenApiOptions"/> instance.
+    /// </summary>
+    /// <typeparam name="TInitializerType">The type of the <see cref="IOpenApiDocumentInitializer"/> to instantiate.</typeparam>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    public OpenApiOptions AddDocumentInitializer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInitializerType>()
+        where TInitializerType : IOpenApiDocumentInitializer
+    {
+        DocumentInitializers.Add(new TypeBasedOpenApiDocumentInitializer(typeof(TInitializerType)));
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a given instance of <see cref="IOpenApiDocumentInitializer"/> on the current <see cref="OpenApiOptions"/> instance.
+    /// </summary>
+    /// <param name="initializer">The <see cref="IOpenApiDocumentInitializer"/> instance to use.</param>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    public OpenApiOptions AddDocumentInitializer(IOpenApiDocumentInitializer initializer)
+    {
+        ArgumentNullException.ThrowIfNull(initializer);
+
+        DocumentInitializers.Add(initializer);
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a given delegate as a document initializer that runs after the base document is initialized and before
+    /// paths, operations, and components are generated.
+    /// </summary>
+    /// <param name="initializer">The delegate representing the document initializer.</param>
+    /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
+    /// <example>
+    /// <code>
+    /// options.AddDocumentInitializer((document, context, cancellationToken) =>
+    /// {
+    ///     document.Tags ??= [];
+    ///     document.Tags.Add(new OpenApiTag
+    ///     {
+    ///         Name = "users",
+    ///         Summary = "User operations",
+    ///         Description = "Endpoints for user lifecycle."
+    ///     });
+    ///     return Task.CompletedTask;
+    /// });
+    /// </code>
+    /// </example>
+    public OpenApiOptions AddDocumentInitializer(Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task> initializer)
+    {
+        ArgumentNullException.ThrowIfNull(initializer);
+
+        DocumentInitializers.Add(new DelegateOpenApiDocumentInitializer(initializer));
+        return this;
+    }
 
     /// <summary>
     /// Registers a new document transformer on the current <see cref="OpenApiOptions"/> instance.

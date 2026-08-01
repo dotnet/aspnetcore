@@ -203,7 +203,7 @@ internal static class JsonNodeSchemaExtensions
     /// opposed to after the generated schemas have been mapped to OpenAPI schemas.
     /// </remarks>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <see paramref="schema"/>.</param>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the <paramref name="schema"/>.</param>
     /// <param name="createSchemaReferenceId">A delegate that generates the reference ID to create for a type.</param>
     internal static void ApplyPrimitiveTypesAndFormats(this JsonNode schema, JsonSchemaExporterContext context, Func<JsonTypeInfo, string?> createSchemaReferenceId)
     {
@@ -301,8 +301,8 @@ internal static class JsonNodeSchemaExtensions
     /// Applies parameter-specific customizations to the target schema.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    /// <param name="parameterDescription">The <see cref="ApiParameterDescription"/> associated with the <see paramref="schema"/>.</param>
-    /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the <see paramref="schema"/>.</param>
+    /// <param name="parameterDescription">The <see cref="ApiParameterDescription"/> associated with the <paramref name="schema"/>.</param>
+    /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the <paramref name="schema"/>.</param>
     internal static void ApplyParameterInfo(this JsonNode schema, ApiParameterDescription parameterDescription, JsonTypeInfo? jsonTypeInfo)
     {
         // This is special handling for parameters that are not bound from the body but represented in a complex type.
