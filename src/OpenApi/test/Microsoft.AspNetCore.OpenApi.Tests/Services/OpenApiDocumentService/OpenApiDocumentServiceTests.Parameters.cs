@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-
+using Microsoft.OpenApi;
+using System.Text.Json.Nodes;
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
     [Fact]
@@ -228,38 +229,68 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         builder.MapPost("/form", ([FromForm] FormWithDescription form) => { });
 
         // Assert
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[HttpMethod.Post];
-            Assert.NotNull(operation.RequestBody);
-            Assert.NotNull(operation.RequestBody.Content);
-            var content = operation.RequestBody.Content;
-
-            // Check multipart/form-data
-            Assert.Contains("multipart/form-data", content.Keys);
-            var multipartMediaType = content["multipart/form-data"];
-            Assert.NotNull(multipartMediaType.Schema);
-            Assert.NotNull(multipartMediaType.Schema.Properties);
-
-            Assert.Contains("name", multipartMediaType.Schema.Properties);
-            var nameProperty = multipartMediaType.Schema.Properties["name"];
-            Assert.Equal("The name of the item", nameProperty.Description);
-
-            Assert.Contains("file", multipartMediaType.Schema.Properties);
-            var fileProperty = multipartMediaType.Schema.Properties["file"];
-            Assert.Equal("The file to upload", fileProperty.Description);
-
-            // Check application/x-www-form-urlencoded
-            Assert.Contains("application/x-www-form-urlencoded", content.Keys);
-            var urlEncodedMediaType = content["application/x-www-form-urlencoded"];
-            Assert.NotNull(urlEncodedMediaType.Schema);
-            Assert.NotNull(urlEncodedMediaType.Schema.Properties);
-
-            Assert.Contains("name", urlEncodedMediaType.Schema.Properties);
-            var urlEncodedNameProperty = urlEncodedMediaType.Schema.Properties["name"];
-            Assert.Equal("The name of the item", urlEncodedNameProperty.Description);
-        });
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var expected = """
+            {
+              "openapi": "3.0.1",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "The name of the item"
+                              },
+                              "file": {
+                                "type": "string",
+                                "description": "The file to upload",
+                                "format": "binary"
+                              }
+                            }
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "The name of the item"
+                              },
+                              "file": {
+                                "type": "string",
+                                "description": "The file to upload",
+                                "format": "binary"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 
     [Fact]
@@ -272,23 +303,48 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         builder.MapPost("/form-param", ([FromForm, Description("The ID")] int id) => { });
 
         // Assert
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[HttpMethod.Post];
-            Assert.NotNull(operation.RequestBody);
-            Assert.NotNull(operation.RequestBody.Content);
-            var content = operation.RequestBody.Content;
-
-            var mediaType = content["multipart/form-data"];
-            Assert.NotNull(mediaType.Schema);
-            Assert.NotNull(mediaType.Schema.Properties);
-
-            Assert.Contains("id", mediaType.Schema.Properties);
-            var property = mediaType.Schema.Properties["id"];
-
-            Assert.Equal("The ID", property.Description);
-        });
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var expected = """
+            {
+              "openapi": "3.0.1",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-param": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "description": "The ID",
+                                "format": "int32"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 
     [Fact]
@@ -301,20 +357,60 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         builder.MapPost("/form-complex", ([FromForm, Description("The Complex Object")] FormWithDescription form) => { });
 
         // Assert
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[HttpMethod.Post];
-            Assert.NotNull(operation.RequestBody);
-            Assert.NotNull(operation.RequestBody.Content);
-            var content = operation.RequestBody.Content;
-
-            var mediaType = content["multipart/form-data"];
-            Assert.NotNull(mediaType.Schema);
-
-            // With x-ref-description approach, description is applied to the schema reference
-            Assert.Equal("The Complex Object", mediaType.Schema.Description);
-        });
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var expected = """
+            {
+              "openapi": "3.0.1",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-complex": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "$ref": "#/components/schemas/FormWithDescription",
+                            "description": "The Complex Object"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "FormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "The name of the item"
+                      },
+                      "file": {
+                        "type": "string",
+                        "description": "The file to upload",
+                        "format": "binary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 
     private class FormWithDescription
