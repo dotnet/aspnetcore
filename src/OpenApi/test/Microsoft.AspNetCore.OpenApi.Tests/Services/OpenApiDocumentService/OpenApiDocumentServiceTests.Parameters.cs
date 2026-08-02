@@ -233,7 +233,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
         var expected = """
             {
-              "openapi": "3.0.1",
+              "openapi": "3.0.4",
               "info": {
                 "title": "OpenApiDocumentServiceTests | Test",
                 "version": "1.0.0"
@@ -248,37 +248,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                       "content": {
                         "multipart/form-data": {
                           "schema": {
-                            "type": "object",
-                            "properties": {
-                              "name": {
-                                "type": "string",
-                                "description": "The name of the item"
-                              },
-                              "file": {
-                                "type": "string",
-                                "description": "The file to upload",
-                                "format": "binary"
-                              }
-                            }
+                            "$ref": "#/components/schemas/FormWithDescription"
                           }
                         },
                         "application/x-www-form-urlencoded": {
                           "schema": {
-                            "type": "object",
-                            "properties": {
-                              "name": {
-                                "type": "string",
-                                "description": "The name of the item"
-                              },
-                              "file": {
-                                "type": "string",
-                                "description": "The file to upload",
-                                "format": "binary"
-                              }
-                            }
+                            "$ref": "#/components/schemas/FormWithDescription"
                           }
                         }
-                      }
+                      },
+                      "required": true
                     },
                     "responses": {
                       "200": {
@@ -287,7 +266,34 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     }
                   }
                 }
-              }
+              },
+              "components": {
+                "schemas": {
+                  "FormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "The name of the item",
+                        "nullable": true
+                      },
+                      "file": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  "IFormFile": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
             }
             """;
         Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
@@ -307,7 +313,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
         var expected = """
             {
-              "openapi": "3.0.1",
+              "openapi": "3.0.4",
               "info": {
                 "title": "OpenApiDocumentServiceTests | Test",
                 "version": "1.0.0"
@@ -322,6 +328,24 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                       "content": {
                         "multipart/form-data": {
                           "schema": {
+                            "required": [
+                              "id"
+                            ],
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "description": "The ID",
+                                "format": "int32"
+                              }
+                            }
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "required": [
+                              "id"
+                            ],
                             "type": "object",
                             "properties": {
                               "id": {
@@ -332,7 +356,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                             }
                           }
                         }
-                      }
+                      },
+                      "required": true
                     },
                     "responses": {
                       "200": {
@@ -341,7 +366,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     }
                   }
                 }
-              }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
             }
             """;
         Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
@@ -361,7 +391,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
         var expected = """
             {
-              "openapi": "3.0.1",
+              "openapi": "3.0.4",
               "info": {
                 "title": "OpenApiDocumentServiceTests | Test",
                 "version": "1.0.0"
@@ -376,11 +406,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                       "content": {
                         "multipart/form-data": {
                           "schema": {
-                            "$ref": "#/components/schemas/FormWithDescription",
-                            "description": "The Complex Object"
+                            "$ref": "#/components/schemas/FormWithDescription"
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "$ref": "#/components/schemas/FormWithDescription"
                           }
                         }
-                      }
+                      },
+                      "required": true
                     },
                     "responses": {
                       "200": {
@@ -397,17 +432,26 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     "properties": {
                       "name": {
                         "type": "string",
-                        "description": "The name of the item"
+                        "description": "The name of the item",
+                        "nullable": true
                       },
                       "file": {
-                        "type": "string",
-                        "description": "The file to upload",
-                        "format": "binary"
+                        "$ref": "#/components/schemas/IFormFile"
                       }
                     }
+                  },
+                  "IFormFile": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
                   }
                 }
-              }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
             }
             """;
         Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
@@ -420,5 +464,105 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
         [Description("The file to upload")]
         public IFormFile File { get; set; }
+    }
+
+#nullable enable
+    private class NullableFormWithDescription
+    {
+        [Description("The name of the item")]
+        public string? Name { get; set; }
+
+        [Description("The file to upload")]
+        public IFormFile? File { get; set; }
+    }
+#nullable restore
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_RespectsDescriptionOnNullableFromFormProperty()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form-nullable", ([FromForm] NullableFormWithDescription form) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var expected = """
+            {
+              "openapi": "3.0.4",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/form-nullable": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "multipart/form-data": {
+                          "schema": {
+                            "$ref": "#/components/schemas/NullableFormWithDescription"
+                          }
+                        },
+                        "application/x-www-form-urlencoded": {
+                          "schema": {
+                            "$ref": "#/components/schemas/NullableFormWithDescription"
+                          }
+                        }
+                      },
+                      "required": true
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "IFormFile": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  },
+                  "NullableFormWithDescription": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "The name of the item",
+                        "nullable": true
+                      },
+                      "file": {
+                        "oneOf": [
+                          {
+                            "enum": [
+                              null
+                            ]
+                          },
+                          {
+                            "$ref": "#/components/schemas/IFormFile"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)), $"Actual: {actual}");
     }
 }
