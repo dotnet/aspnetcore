@@ -417,7 +417,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         {
             if (connection == null)
             {
-                // TODO: Need to handle other server going away while waiting for connection result
+                // Connection is on another server. Publish invocation and wait for result.
+                // If the remote server becomes unavailable, this may timeout waiting for a response.
                 var m = _protocol.WriteInvocation(methodName, args, invocationId, returnChannel: _channels.ReturnResults(_serverName));
                 var received = await PublishAsync(_channels.Connection(connectionId), m);
                 if (received < 1)
@@ -588,11 +589,11 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                     }
                 }));
 
-                // TODO: this isn't great
+                // Register callback to handle premature connection disconnection during result waiting
                 tokenRegistration = connection.ConnectionAborted.UnsafeRegister(_ =>
                 {
                     var invocationInfo = _clientResultsManager.RemoveInvocation(invocation.InvocationId);
-                    invocationInfo?.Completion(null!, CompletionMessage.WithError(invocation.InvocationId, "Connection disconnected."));
+                    invocationInfo?.Completion(null!, CompletionMessage.WithError(invocation.InvocationId, "Connection disconnected before result received."));
                 }, null);
             }
 
