@@ -99,6 +99,6 @@ internal static class TypeExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(propertyInfo);
-        return nullabilityInfo.WriteState == NullabilityState.Nullable;
+        return nullabilityInfo.WriteState == NullabilityState.Nullable || nullabilityInfo.ReadState == NullabilityState.Nullable;
     }
 }
