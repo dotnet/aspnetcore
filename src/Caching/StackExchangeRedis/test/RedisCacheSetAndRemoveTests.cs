@@ -13,7 +13,7 @@ public class RedisCacheSetAndRemoveTests
         "These tests require Redis server to be started on the machine. Make sure to change the value of" +
         "\"RedisTestConfig.RedisPort\" accordingly.";
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void GetMissingKeyReturnsNull()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -23,7 +23,7 @@ public class RedisCacheSetAndRemoveTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void SetAndGetReturnsObject()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -36,7 +36,7 @@ public class RedisCacheSetAndRemoveTests
         Assert.Equal(value, result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void SetAndGetWorksWithCaseSensitiveKeys()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -53,7 +53,7 @@ public class RedisCacheSetAndRemoveTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void SetAlwaysOverwrites()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -70,7 +70,7 @@ public class RedisCacheSetAndRemoveTests
         Assert.Equal(value2, result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void RemoveRemoves()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -86,7 +86,7 @@ public class RedisCacheSetAndRemoveTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void SetNullValueThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);

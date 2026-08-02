@@ -16,7 +16,7 @@ public class TimeExpirationTests
         "These tests require Redis server to be started on the machine. Make sure to change the value of" +
         "\"RedisTestConfig.RedisPort\" accordingly.";
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void AbsoluteExpirationInThePastThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -34,7 +34,7 @@ public class TimeExpirationTests
             expected);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void AbsoluteExpirationExpires()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -55,7 +55,7 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void AbsoluteSubSecondExpirationExpiresImmidately()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -68,7 +68,7 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void NegativeRelativeExpirationThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -84,7 +84,7 @@ public class TimeExpirationTests
         TimeSpan.FromMinutes(-1));
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void ZeroRelativeExpirationThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -101,7 +101,7 @@ public class TimeExpirationTests
             TimeSpan.Zero);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void RelativeExpirationExpires()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -121,7 +121,7 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void RelativeSubSecondExpirationExpiresImmediately()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -134,7 +134,7 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void NegativeSlidingExpirationThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -147,7 +147,7 @@ public class TimeExpirationTests
         }, nameof(DistributedCacheEntryOptions.SlidingExpiration), "The sliding expiration value must be positive.", TimeSpan.FromMinutes(-1));
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void ZeroSlidingExpirationThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -164,7 +164,7 @@ public class TimeExpirationTests
             TimeSpan.Zero);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void SlidingExpirationExpiresIfNotAccessed()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -182,7 +182,7 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void SlidingSubSecondExpirationExpiresImmediately()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -195,7 +195,7 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void SlidingExpirationRenewedByAccess()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -220,7 +220,7 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = SkipReason)]
+    [Fact]
     public void SlidingExpirationRenewedByAccessUntilAbsoluteExpiration()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
