@@ -14,7 +14,7 @@ internal sealed class AddCommand : BaseCommand
         : base(parent, CommandName, httpClient)
     {
         Commands.Add(new AddFileCommand(this, httpClient));
-        //TODO: Add AddprojectComand here: https://github.com/dotnet/aspnetcore/issues/12738
+        Commands.Add(new AddProjectCommand(this, httpClient));
         Commands.Add(new AddURLCommand(this, httpClient));
     }
 
