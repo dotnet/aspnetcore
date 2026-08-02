@@ -56,7 +56,7 @@ public class HtmlHelperTextBoxTest
         Assert.DoesNotContain(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
     }
 
-    public static TheoryData TextBoxFor_UsesModelValueForComplexExpressionsData
+    public static TheoryData<Expression<Func<ComplexModel, string>>, string> TextBoxFor_UsesModelValueForComplexExpressionsData
     {
         get
         {
@@ -103,7 +103,7 @@ public class HtmlHelperTextBoxTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    public static TheoryData TextBoxFor_UsesModelStateValueForComplexExpressionsData
+    public static TheoryData<Expression<Func<ComplexModel, string>>, string> TextBoxFor_UsesModelStateValueForComplexExpressionsData
     {
         get
         {

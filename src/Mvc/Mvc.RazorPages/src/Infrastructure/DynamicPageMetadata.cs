@@ -9,10 +9,7 @@ internal sealed class DynamicPageMetadata : IDynamicEndpointMetadata
 {
     public DynamicPageMetadata(RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         Values = values;
     }

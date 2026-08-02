@@ -316,5 +316,41 @@ public partial class HubConnection
 
         [LoggerMessage(86, LogLevel.Warning, "Result given for '{Target}' method but server is not expecting a result.", EventName = "ResultNotExpected")]
         public static partial void ResultNotExpected(ILogger logger, string target);
+
+        [LoggerMessage(87, LogLevel.Trace, "Completion message for stream '{StreamId}' was not sent because the connection is closed.", EventName = "CompletingStreamNotSent")]
+        public static partial void CompletingStreamNotSent(ILogger logger, string streamId);
+
+        [LoggerMessage(88, LogLevel.Warning, "Error returning result for invocation '{InvocationId}' for method '{Target}' because the underlying connection is closed.", EventName = "ErrorSendingInvocationResult")]
+        public static partial void ErrorSendingInvocationResult(ILogger logger, string invocationId, string target, Exception exception);
+
+        [LoggerMessage(89, LogLevel.Trace, "Error sending Completion message for stream '{StreamId}'.", EventName = "ErrorSendingStreamCompletion")]
+        public static partial void ErrorSendingStreamCompletion(ILogger logger, string streamId, Exception exception);
+
+        [LoggerMessage(90, LogLevel.Trace, "Dropping {MessageType} with ID '{InvocationId}'.", EventName = "DroppingMessage")]
+        public static partial void DroppingMessage(ILogger logger, string messageType, string? invocationId);
+
+        [LoggerMessage(91, LogLevel.Trace, "Received AckMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedAckMessage")]
+        public static partial void ReceivedAckMessage(ILogger logger, long sequenceId);
+
+        [LoggerMessage(92, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
+        public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
+
+        [LoggerMessage(93, LogLevel.Debug, "HubProtocol '{Protocol} v{Version}' does not support Stateful Reconnect. Disabling the feature.", EventName = "DisablingReconnect")]
+        public static partial void DisablingReconnect(ILogger logger, string protocol, int version);
+
+        [LoggerMessage(94, LogLevel.Error, "Failed to bind argument received in stream '{StreamId}'.", EventName = "StreamBindingFailure")]
+        public static partial void StreamBindingFailure(ILogger logger, string? streamId, Exception exception);
+
+        [LoggerMessage(95, LogLevel.Debug, "Starting authentication token refresh.", EventName = "AuthenticationRefreshStarting")]
+        public static partial void AuthenticationRefreshStarting(ILogger logger);
+
+        [LoggerMessage(96, LogLevel.Debug, "Authentication token refresh completed. New TTL: {TokenLifetime}.", EventName = "AuthenticationRefreshCompleted")]
+        public static partial void AuthenticationRefreshCompleted(ILogger logger, TimeSpan? tokenLifetime);
+
+        [LoggerMessage(97, LogLevel.Error, "Authentication token refresh failed.", EventName = "AuthenticationRefreshFailed")]
+        public static partial void AuthenticationRefreshFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(98, LogLevel.Error, "Authentication refresh user callback threw an exception.", EventName = "AuthenticationRefreshCallbackFailed")]
+        public static partial void AuthenticationRefreshCallbackFailed(ILogger logger, Exception exception);
     }
 }

@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Authentication.Twitter
 
-This project contains an implementation of OAuth 1a [Twitter Authentication](https://docs.microsoft.com/aspnet/core/security/authentication/social/twitter-logins) for ASP.NET Core.
+This project contains an implementation of OAuth 1a [Twitter Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/social/twitter-logins) for ASP.NET Core.
 
 ## Development Setup
 

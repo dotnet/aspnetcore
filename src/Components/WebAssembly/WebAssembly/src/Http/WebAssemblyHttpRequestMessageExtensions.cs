@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http;
 public static class WebAssemblyHttpRequestMessageExtensions
 {
     private static readonly HttpRequestOptionsKey<IDictionary<string, object>> FetchRequestOptionsKey = new HttpRequestOptionsKey<IDictionary<string, object>>("WebAssemblyFetchOptions");
+    private static readonly HttpRequestOptionsKey<bool> WebAssemblyEnableStreamingRequestKey = new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingRequest");
     private static readonly HttpRequestOptionsKey<bool> WebAssemblyEnableStreamingResponseKey = new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingResponse");
 
     /// <summary>
@@ -24,10 +25,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestCredentials(this HttpRequestMessage requestMessage, BrowserRequestCredentials requestCredentials)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         var stringOption = requestCredentials switch
         {
@@ -51,10 +49,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestCache(this HttpRequestMessage requestMessage, BrowserRequestCache requestCache)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         var stringOption = requestCache switch
         {
@@ -81,10 +76,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestMode(this HttpRequestMessage requestMessage, BrowserRequestMode requestMode)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         var stringOption = requestMode switch
         {
@@ -122,10 +114,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestOption(this HttpRequestMessage requestMessage, string name, object value)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         IDictionary<string, object> fetchOptions;
         if (requestMessage.Options.TryGetValue(FetchRequestOptionsKey, out var entry))
@@ -144,21 +133,38 @@ public static class WebAssemblyHttpRequestMessageExtensions
     }
 
     /// <summary>
+    /// Configures streaming request for the HTTP request.
+    /// </summary>
+    /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
+    /// <param name="streamingEnabled"><see langword="true"/> if streaming is enabled; otherwise <see langword="false"/>.</param>
+    /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
+    /// <remarks>
+    /// This API is only effective when the browser HTTP Fetch supports request streaming.
+    /// Requires HTTP/2 or higher server support.
+    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/Request"/>.
+    /// </remarks>
+    public static HttpRequestMessage SetBrowserRequestStreamingEnabled(this HttpRequestMessage requestMessage, bool streamingEnabled)
+    {
+        ArgumentNullException.ThrowIfNull(requestMessage);
+
+        requestMessage.Options.Set(WebAssemblyEnableStreamingRequestKey, streamingEnabled);
+
+        return requestMessage;
+    }
+
+    /// <summary>
     /// Configures streaming response for the HTTP request.
     /// </summary>
     /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
-    /// <param name="streamingEnabled"><see langword="true"/> if streaming is enabled; otherwise false.</param>
+    /// <param name="streamingEnabled"><see langword="true"/> if streaming is enabled; otherwise <see langword="false"/>.</param>
     /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
     /// <remarks>
-    /// This API is only effective when the browser HTTP Fetch supports streaming.
-    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream"/>.
+    /// This API is only effective when the browser HTTP Fetch supports response streaming.
+    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/Response"/>.
     /// </remarks>
     public static HttpRequestMessage SetBrowserResponseStreamingEnabled(this HttpRequestMessage requestMessage, bool streamingEnabled)
     {
-        if (requestMessage is null)
-        {
-            throw new ArgumentNullException(nameof(requestMessage));
-        }
+        ArgumentNullException.ThrowIfNull(requestMessage);
 
         requestMessage.Options.Set(WebAssemblyEnableStreamingResponseKey, streamingEnabled);
 

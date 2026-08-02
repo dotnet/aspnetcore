@@ -23,10 +23,7 @@ public class SuppressChildValidationMetadataProvider : IValidationMetadataProvid
     /// </param>
     public SuppressChildValidationMetadataProvider(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         Type = type;
     }
@@ -40,10 +37,7 @@ public class SuppressChildValidationMetadataProvider : IValidationMetadataProvid
     /// </param>
     public SuppressChildValidationMetadataProvider(string fullTypeName)
     {
-        if (fullTypeName == null)
-        {
-            throw new ArgumentNullException(nameof(fullTypeName));
-        }
+        ArgumentNullException.ThrowIfNull(fullTypeName);
 
         FullTypeName = fullTypeName;
     }
@@ -61,10 +55,7 @@ public class SuppressChildValidationMetadataProvider : IValidationMetadataProvid
     /// <inheritdoc />
     public void CreateValidationMetadata(ValidationMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (Type != null)
         {

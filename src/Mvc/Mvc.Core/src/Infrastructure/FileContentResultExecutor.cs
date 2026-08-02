@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 public partial class FileContentResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileContentResult>
 {
     /// <summary>
-    /// Intializes a new <see cref="FileContentResultExecutor"/>.
+    /// Initializes a new <see cref="FileContentResultExecutor"/>.
     /// </summary>
     /// <param name="loggerFactory">The factory used to create loggers.</param>
     public FileContentResultExecutor(ILoggerFactory loggerFactory)
@@ -25,15 +25,8 @@ public partial class FileContentResultExecutor : FileResultExecutorBase, IAction
     /// <inheritdoc />
     public virtual Task ExecuteAsync(ActionContext context, FileContentResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         Log.ExecutingFileResult(Logger, result);
 
@@ -62,15 +55,8 @@ public partial class FileContentResultExecutor : FileResultExecutorBase, IAction
     /// <param name="rangeLength">The length of the range.</param>
     protected virtual Task WriteFileAsync(ActionContext context, FileContentResult result, RangeItemHeaderValue? range, long rangeLength)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         if (range != null && rangeLength == 0)
         {

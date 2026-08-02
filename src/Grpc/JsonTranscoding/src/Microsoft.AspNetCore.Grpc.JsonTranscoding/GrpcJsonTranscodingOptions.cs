@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Google.Protobuf.Reflection;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding;
@@ -18,15 +19,18 @@ public sealed class GrpcJsonTranscodingOptions
     public GrpcJsonTranscodingOptions()
     {
         _unaryOptions = new Lazy<JsonSerializerOptions>(
-            () => JsonConverterHelper.CreateSerializerOptions(new JsonContext(JsonSettings, TypeRegistry)),
+            () => JsonConverterHelper.CreateSerializerOptions(new JsonContext(JsonSettings, TypeRegistry, DescriptorRegistry)),
             LazyThreadSafetyMode.ExecutionAndPublication);
         _serverStreamingOptions = new Lazy<JsonSerializerOptions>(
-            () => JsonConverterHelper.CreateSerializerOptions(new JsonContext(JsonSettings, TypeRegistry), isStreamingOptions: true),
+            () => JsonConverterHelper.CreateSerializerOptions(new JsonContext(JsonSettings, TypeRegistry, DescriptorRegistry), isStreamingOptions: true),
             LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
     internal JsonSerializerOptions UnarySerializerOptions => _unaryOptions.Value;
     internal JsonSerializerOptions ServerStreamingSerializerOptions => _serverStreamingOptions.Value;
+
+    // Registry is set by DI during startup.
+    internal DescriptorRegistry DescriptorRegistry { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the <see cref="Google.Protobuf.Reflection.TypeRegistry"/> used to lookup types from type names.

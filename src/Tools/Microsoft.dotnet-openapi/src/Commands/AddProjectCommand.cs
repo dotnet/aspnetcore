@@ -50,7 +50,8 @@ internal sealed class AddProjectCommand : BaseCommand
             }
         }
 
-        Ensure.NotNullOrEmpty(_sourceProjectArg.Value, SourceProjectArgName);
+        ArgumentException.ThrowIfNullOrEmpty(_sourceProjectArg.Value);
+
         return true;
     }
 }

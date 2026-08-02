@@ -11,6 +11,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
@@ -178,8 +179,8 @@ public class ResponseHeadersWritingBenchmark
     {
         _responseHeaders = new HttpResponseHeaders();
         _responseHeadersDict = _responseHeaders;
-        _dateHeaderValueManager = new DateHeaderValueManager();
-        _dateHeaderValueManager.OnHeartbeat(DateTimeOffset.Now);
+        _dateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
+        _dateHeaderValueManager.OnHeartbeat();
         _writer = new Writer();
     }
 

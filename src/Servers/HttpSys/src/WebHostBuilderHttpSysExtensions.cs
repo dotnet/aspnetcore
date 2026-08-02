@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -28,7 +30,12 @@ public static class WebHostBuilderHttpSysExtensions
     {
         return hostBuilder.ConfigureServices(services =>
         {
-            services.AddSingleton<IServer, MessagePump>();
+            services.AddSingleton<MessagePump>();
+            services.AddSingleton<IServer>(services => services.GetRequiredService<MessagePump>());
+            if (HttpApi.SupportsDelegation)
+            {
+                services.AddSingleton<IServerDelegationFeature>(services => services.GetRequiredService<MessagePump>());
+            }
             services.AddTransient<AuthenticationHandler>();
             services.AddSingleton<IServerIntegratedAuth>(services =>
             {
@@ -40,6 +47,8 @@ public static class WebHostBuilderHttpSysExtensions
                 };
             });
             services.AddAuthenticationCore();
+
+            services.TryAddSingleton<IMemoryPoolFactory<byte>, DefaultMemoryPoolFactory>();
         });
     }
 

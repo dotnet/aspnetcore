@@ -1,6 +1,6 @@
 module.exports = {
   extends: [
-    '../common/.eslintrc.json',
+    '../.eslintrc.json',
   ],
   ignorePatterns: ["scripts"],
   parserOptions: {

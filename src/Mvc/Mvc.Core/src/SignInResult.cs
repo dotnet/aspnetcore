@@ -77,14 +77,11 @@ public partial class SignInResult : ActionResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var httpContext = context.HttpContext;
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<SignInResult>();
+        var logger = loggerFactory.CreateLogger(typeof(SignInResult));
         Log.SignInResultExecuting(logger, AuthenticationScheme, Principal);
 
         return httpContext.SignInAsync(AuthenticationScheme, Principal, Properties);

@@ -24,10 +24,7 @@ public static class ReactDevelopmentServerMiddlewareExtensions
         this ISpaBuilder spaBuilder,
         string npmScript)
     {
-        if (spaBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(spaBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(spaBuilder);
 
         var spaOptions = spaBuilder.Options;
 

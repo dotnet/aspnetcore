@@ -3,20 +3,32 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Xml.Linq;
 using FormatterWebSite;
+using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class AsyncEnumerableTestBase : IClassFixture<MvcTestFixture<StartupWithJsonFormatter>>
+public class AsyncEnumerableTestBase : LoggedTest
 {
-    public AsyncEnumerableTestBase(MvcTestFixture<StartupWithJsonFormatter> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<StartupWithJsonFormatter>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<StartupWithJsonFormatter> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public Task AsyncEnumerableReturnedWorks() => AsyncEnumerableWorks("getallprojects");

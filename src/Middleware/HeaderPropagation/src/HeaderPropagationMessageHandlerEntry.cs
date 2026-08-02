@@ -22,15 +22,8 @@ public class HeaderPropagationMessageHandlerEntry
         string capturedHeaderName,
         string outboundHeaderName)
     {
-        if (capturedHeaderName == null)
-        {
-            throw new ArgumentNullException(nameof(capturedHeaderName));
-        }
-
-        if (outboundHeaderName == null)
-        {
-            throw new ArgumentNullException(nameof(outboundHeaderName));
-        }
+        ArgumentNullException.ThrowIfNull(capturedHeaderName);
+        ArgumentNullException.ThrowIfNull(outboundHeaderName);
 
         CapturedHeaderName = capturedHeaderName;
         OutboundHeaderName = outboundHeaderName;

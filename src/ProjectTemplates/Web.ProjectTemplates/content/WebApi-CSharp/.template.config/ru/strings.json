@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Веб-API ASP.NET Core",
+    "description": "Шаблон проекта для создания веб-API на основе REST с помощью контроллеров ASP.NET Core или минимальных API с необязательной поддержкой OpenAPI и проверки подлинности.",
+    "parameter.DisableOpenAPI.name": "Включить поддержку _OpenAPI",
+    "parameter.DisableOpenAPI.description": "Включает поддержку OpenAPI (Swagger)",
+    "parameter.UseMinimalAPIs.name": "Использовать контроллеры",
+    "parameter.UseMinimalAPIs.description": "Используйте контроллеры вместо минимальных API."
+  }
+}

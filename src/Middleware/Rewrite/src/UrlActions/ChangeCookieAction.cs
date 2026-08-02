@@ -18,13 +18,9 @@ internal sealed class ChangeCookieAction : UrlAction
     // for testing
     internal ChangeCookieAction(string name, Func<DateTimeOffset> timeSource)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         _timeSource = timeSource;
-
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
         Name = name;
     }
 
@@ -39,6 +35,7 @@ internal sealed class ChangeCookieAction : UrlAction
     public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {
         var options = GetOrCreateOptions();
+        // codeql[SM02373] - By design this emits the cookie exactly as the mod_rewrite rule author specified, including their chosen Secure flag.
         context.HttpContext.Response.Cookies.Append(Name, Value ?? string.Empty, options);
     }
 

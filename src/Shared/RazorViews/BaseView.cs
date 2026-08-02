@@ -98,10 +98,7 @@ internal abstract class BaseView
 
     protected virtual void PushWriter(TextWriter writer)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
         _textWriterStack.Push(Output);
         Output = writer;
@@ -161,7 +158,7 @@ internal abstract class BaseView
         Debug.Assert(AttributeValues != null);
         Debug.Assert(!string.IsNullOrEmpty(AttributeEnding));
 
-        var attributes = string.Join(" ", AttributeValues);
+        var attributes = string.Join(' ', AttributeValues);
         Output.Write(attributes);
         AttributeValues = null;
 
@@ -182,20 +179,9 @@ internal abstract class BaseView
         string trailer,
         params AttributeValue[] values)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (leader == null)
-        {
-            throw new ArgumentNullException(nameof(leader));
-        }
-
-        if (trailer == null)
-        {
-            throw new ArgumentNullException(nameof(trailer));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(leader);
+        ArgumentNullException.ThrowIfNull(trailer);
 
         WriteLiteral(leader);
         foreach (var value in values)
@@ -207,9 +193,9 @@ internal abstract class BaseView
             // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
             // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
             string? stringValue;
-            if (value.Value is bool)
+            if (value.Value is bool flag)
             {
-                if ((bool)value.Value)
+                if (flag)
                 {
                     stringValue = name;
                 }

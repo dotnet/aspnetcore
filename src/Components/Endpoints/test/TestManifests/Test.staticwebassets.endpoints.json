@@ -1,0 +1,17 @@
+{
+  "Version": 1,
+  "Endpoints": [
+    {
+      "Route": "named.css",
+      "AssetFile": "named.css",
+      "Selectors": [],
+      "EndpointProperties": [],
+      "ResponseHeaders": [
+        {
+          "Name": "ETag",
+          "Value": "\"Fake\""
+        }
+      ]
+    }
+  ]
+}

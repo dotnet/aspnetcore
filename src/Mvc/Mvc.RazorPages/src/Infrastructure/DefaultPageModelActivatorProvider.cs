@@ -18,10 +18,7 @@ internal sealed class DefaultPageModelActivatorProvider : IPageModelActivatorPro
     /// <inheritdoc />
     public Func<PageContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
     {
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
 
         var modelTypeInfo = actionDescriptor.ModelTypeInfo?.AsType();
         if (modelTypeInfo == null)
@@ -38,10 +35,7 @@ internal sealed class DefaultPageModelActivatorProvider : IPageModelActivatorPro
 
     public Action<PageContext, object>? CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
     {
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
 
         if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
         {
@@ -53,10 +47,7 @@ internal sealed class DefaultPageModelActivatorProvider : IPageModelActivatorPro
 
     public Func<PageContext, object, ValueTask>? CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
     {
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
 
         if (typeof(IAsyncDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
         {
@@ -73,30 +64,16 @@ internal sealed class DefaultPageModelActivatorProvider : IPageModelActivatorPro
 
     private static void Dispose(PageContext context, object page)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(page);
 
         ((IDisposable)page).Dispose();
     }
 
     private static ValueTask DisposeAsync(PageContext context, object page)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(page);
 
         return ((IAsyncDisposable)page).DisposeAsync();
     }

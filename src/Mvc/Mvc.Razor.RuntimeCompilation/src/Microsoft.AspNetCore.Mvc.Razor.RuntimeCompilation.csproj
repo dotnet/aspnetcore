@@ -9,10 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.CodeAnalysis.Razor" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
   </ItemGroup>
@@ -23,7 +32,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="targets\$(PackageId).targets" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\$(PackageId).targets" />
     <None Include="targets\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\$(DefaultNetCoreTargetFramework)\$(PackageId).targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
 </Project>

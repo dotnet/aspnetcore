@@ -17,10 +17,7 @@ public static class RazorCompiledItemExtensions
     /// <returns>A list of <see cref="IRazorSourceChecksumMetadata"/>.</returns>
     public static IReadOnlyList<IRazorSourceChecksumMetadata> GetChecksumMetadata(this RazorCompiledItem item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         return item.Metadata.OfType<IRazorSourceChecksumMetadata>().ToArray();
     }

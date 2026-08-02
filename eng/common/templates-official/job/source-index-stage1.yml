@@ -1,0 +1,7 @@
+jobs:
+- template: /eng/common/core-templates/job/source-index-stage1.yml
+  parameters:
+    is1ESPipeline: true
+
+    ${{ each parameter in parameters }}:
+      ${{ parameter.key }}: ${{ parameter.value }}

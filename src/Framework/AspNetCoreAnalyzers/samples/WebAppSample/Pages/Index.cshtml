@@ -1,0 +1,11 @@
+﻿@page "index/{id}"
+@using Microsoft.AspNetCore.Routing.Patterns;
+@using System.Text.RegularExpressions;
+@using WebAppSample.Pages;
+@model IndexModel
+
+@{
+    Regex.IsMatch("", "[a-z0-9_-]+");
+
+    RoutePatternFactory.Parse("index/{id}");
+}

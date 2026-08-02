@@ -15,6 +15,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
+    <DefineConstants>$(DefineConstants);MVC_VIEWFEATURES</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,23 +24,43 @@
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
 
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
-    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\ProtectedPrerenderComponentApplicationStore.cs" />
+    <Compile Include="$(SharedSourceRoot)\AntiforgeryMetadata.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)MiddlewareInvokedKeys.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)SafeHttpMethods.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)\Components\ResourceCollectionResolver.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Views.TestCommon" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

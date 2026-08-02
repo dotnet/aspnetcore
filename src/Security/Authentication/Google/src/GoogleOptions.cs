@@ -21,11 +21,13 @@ public class GoogleOptions : OAuthOptions
         AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint;
         TokenEndpoint = GoogleDefaults.TokenEndpoint;
         UserInformationEndpoint = GoogleDefaults.UserInformationEndpoint;
+        UsePkce = true;
         Scope.Add("openid");
         Scope.Add("profile");
         Scope.Add("email");
 
-        ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+        ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id"); // v2
+        ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub"); // v3
         ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
         ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
         ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");

@@ -24,42 +24,62 @@ public class ProjectFactoryFixture : IDisposable
         DiagnosticsMessageSink = diagnosticsMessageSink;
     }
 
-    public async Task<Project> GetOrCreateProject(string projectKey, ITestOutputHelper output)
+    public async Task<Project> CreateProject(ITestOutputHelper output)
     {
         await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
-        // Different tests may have different output helpers, so need to fix up the output to write to the correct log
-        if (_projects.TryGetValue(projectKey, out var project))
-        {
-            project.Output = output;
-            return project;
-        }
-        return _projects.GetOrAdd(
-            projectKey,
-            (key, outputHelper) =>
-            {
-                var project = new Project
-                {
-                    Output = outputHelper,
-                    DiagnosticsMessageSink = DiagnosticsMessageSink,
-                    ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
-                };
-                // Replace first character with a random letter if it's a digit to avoid random insertions of '_'
-                // into template namespace declarations (i.e. make it more stable for testing)
-                var projectNameSuffix = !char.IsLetter(project.ProjectGuid[0])
-                    ? string.Create(project.ProjectGuid.Length, project.ProjectGuid, (suffix, guid) =>
-                    {
-                        guid.AsSpan(1).CopyTo(suffix[1..]);
-                        suffix[0] = GetRandomLetter();
-                    })
-                    : project.ProjectGuid;
-                project.ProjectName = $"AspNet.{projectNameSuffix}";
 
-                var assemblyPath = GetType().Assembly;
-                var basePath = GetTemplateFolderBasePath(assemblyPath);
-                project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
-                return project;
-            },
-            output);
+        var project = CreateProjectImpl(output);
+
+        var projectKey = Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant();
+        if (!_projects.TryAdd(projectKey, project))
+        {
+            throw new InvalidOperationException($"Project key collision in {nameof(ProjectFactoryFixture)}.{nameof(CreateProject)}!");
+        }
+
+        return project;
+    }
+
+    public async Task<Project> CreateProject(ITestOutputHelper output, string projectName)
+    {
+        await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
+
+        var project = CreateProjectImpl(output, projectName);
+
+        var projectKey = Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant();
+        if (!_projects.TryAdd(projectKey, project))
+        {
+            throw new InvalidOperationException($"Project key collision in {nameof(ProjectFactoryFixture)}.{nameof(CreateProject)}!");
+        }
+
+        return project;
+    }
+
+    private Project CreateProjectImpl(ITestOutputHelper output, string projectName = null)
+    {
+        var project = new Project
+        {
+            Output = output,
+            DiagnosticsMessageSink = DiagnosticsMessageSink,
+            // Ensure first character is a letter to avoid random insertions of '_' into template namespace
+            // declarations (i.e. make it more stable for testing)
+            ProjectGuid = GetRandomLetter() + Path.GetRandomFileName().Replace(".", string.Empty)
+        };
+        
+        if (string.IsNullOrEmpty(projectName))
+        {
+            project.ProjectName = $"AspNet.{project.ProjectGuid}";
+        }
+        else
+        {
+            project.ProjectName = projectName;
+        }
+
+        var assemblyPath = GetType().Assembly;
+        var basePath = GetTemplateFolderBasePath(assemblyPath);
+        // Use ProjectGuid for directory to avoid filesystem issues with invalid characters in projectName
+        project.TemplateOutputDir = Path.Combine(basePath, $"AspNet.{project.ProjectGuid}");
+
+        return project;
     }
 
     private static char GetRandomLetter() => LetterChars[Random.Shared.Next(LetterChars.Length - 1)];

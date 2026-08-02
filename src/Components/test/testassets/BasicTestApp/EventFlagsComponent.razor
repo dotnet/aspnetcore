@@ -1,0 +1,117 @@
+<style>
+    button:focus {
+        background-color: yellow !important;
+    }
+</style>
+
+<h1>Event flags</h1>
+
+<div>
+    <h2>Test Controls</h2>
+    <button id="toggle-prevent-default" @onclick="TogglePreventDefault">
+        Toggle preventDefault: @preventDefaultEnabled
+    </button>
+    <button id="toggle-stop-propagation" @onclick="ToggleStopPropagation">
+        Toggle stopPropagation: @stopPropagationEnabled
+    </button>
+    <button id="toggle-handlers" @onclick="ToggleEventHandlers">
+        Toggle Event Handlers: @eventHandlersEnabled
+    </button>
+</div>
+
+@if (eventHandlersEnabled)
+{
+    <h2 @onmousedown="() => { }">OnMouseDown handler present</h2>
+    <h2 @onwheel="() => { }">OnWheel handler present</h2>
+}
+else
+{
+    <h2>OnMouseDown handler not present</h2>
+    <h2>OnWheel handler not present</h2>
+}
+
+<div>
+    <h2>Test Scenarios</h2>
+
+    <div id="mousedown-scenario">
+        <h3>Scenario 1: onmousedown:preventDefault</h3>
+        <button id="mousedown-test-button" @onmousedown:preventDefault="preventDefaultEnabled">
+            Should not focus when preventDefault is enabled
+        </button>
+    </div>
+
+    <div id="stoppropagation-scenario">
+        <h3>Scenario 2: onclick:stopPropagation</h3>
+        <div @onclick="OnParentMouseDown">
+            <p>Parent container</p>
+            <button id="stop-propagation-test-button" @onclick="OnChildMouseDown"
+                @onclick:stopPropagation="stopPropagationEnabled">
+                Should not propagate the Blazor event when stopPropagation is enabled
+            </button>
+        </div>
+    </div>
+
+    <div id="wheel-scenario">
+        <h3>Scenario 3: wheel preventDefault (passive vs active)</h3>
+        <div id="wheel-test-area" @onwheel:preventDefault="preventDefaultEnabled"
+            style="width: 400px; height: 200px; border: 2px solid black; overflow-y: scroll;">
+            <p>Try scrolling with mouse wheel in this area.</p>
+            <p>If preventDefault is true, scrolling should be blocked.</p>
+            <p>If preventDefault is false, scrolling should work normally.</p>
+            <div style="height: 500px;">
+                <p>This content makes the area scrollable</p>
+                <p style="margin-top: 200px;">More</p>
+                <p style="margin-top: 200px;">More</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<pre id="event-log">@eventLog</pre>
+
+
+@code {
+    private bool preventDefaultEnabled = true;
+    private bool stopPropagationEnabled = true;
+    private bool eventHandlersEnabled = true;
+
+    private string eventLog = string.Empty;
+
+    private void TogglePreventDefault()
+    {
+        preventDefaultEnabled = !preventDefaultEnabled;
+        StateHasChanged();
+    }
+
+    private void ToggleStopPropagation()
+    {
+        stopPropagationEnabled = !stopPropagationEnabled;
+        StateHasChanged();
+    }
+
+    private void ToggleEventHandlers()
+    {
+        eventHandlersEnabled = !eventHandlersEnabled;
+        StateHasChanged();
+    }
+
+    void LogEvent(string message)
+    {
+        if (eventLog != string.Empty)
+        {
+            eventLog += Environment.NewLine;
+        }
+
+        eventLog += message;
+    }
+
+    private void OnChildMouseDown()
+    {
+        LogEvent("mousedown handler called on child");
+    }
+
+    private void OnParentMouseDown()
+    {
+        LogEvent("mousedown handler called on parent");
+    }
+}

@@ -161,7 +161,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Null(authMetadata.Policy);
 
         var policy = Assert.IsAssignableFrom<AuthorizationPolicy>(endpointModel.Metadata[1]);
-        Assert.Equal(1, policy.Requirements.Count);
+        Assert.Single(policy.Requirements);
         Assert.Equal(requirement, policy.Requirements[0]);
     }
 
@@ -187,7 +187,7 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Equal(2, endpointModel.Metadata.Count);
         Assert.Equal(authorize, endpointModel.Metadata[0]);
         var policy = Assert.IsAssignableFrom<AuthorizationPolicy>(endpointModel.Metadata[1]);
-        Assert.Equal(1, policy.Requirements.Count);
+        Assert.Single(policy.Requirements);
         Assert.Equal(requirement, policy.Requirements[0]);
     }
 

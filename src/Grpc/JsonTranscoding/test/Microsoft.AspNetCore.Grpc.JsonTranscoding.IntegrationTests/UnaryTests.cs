@@ -10,7 +10,7 @@ using IntegrationTestsWebsite;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests;
@@ -221,5 +221,34 @@ public class UnaryTests : IntegrationTestBase
         Assert.Equal("application/json", response.Content.Headers.ContentType!.MediaType);
         Assert.Equal("utf-8", response.Content.Headers.ContentType!.CharSet);
         Assert.Contains(errorMessage, result.RootElement.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task Request_SendEnumString_Success()
+    {
+        // Arrange
+        Task<HelloReply> UnaryMethod(EnumHelloRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(new HelloReply { Message = $"Hello {request.Name}!" });
+        }
+        var method = Fixture.DynamicGrpc.AddUnaryMethod<EnumHelloRequest, HelloReply>(
+            UnaryMethod,
+            Greeter.Descriptor.FindMethodByName("SayHelloPostEnum"));
+
+        var client = new HttpClient(Fixture.Handler) { BaseAddress = new Uri("http://localhost") };
+
+        var requestMessage = new EnumHelloRequest { Name = NameOptions.Jane };
+        var content = new ByteArrayContent(Encoding.UTF8.GetBytes(requestMessage.ToString()));
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+
+        // Act
+        var response = await client.PostAsync("/v1/greeter_enum", content).DefaultTimeout();
+        var responseText = await response.Content.ReadAsStringAsync();
+        using var result = JsonDocument.Parse(responseText);
+
+        // Assert
+        Assert.Equal("application/json", response.Content.Headers.ContentType!.MediaType);
+        Assert.Equal("utf-8", response.Content.Headers.ContentType!.CharSet);
+        Assert.Equal("Hello Jane!", result.RootElement.GetProperty("message").GetString());
     }
 }

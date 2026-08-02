@@ -39,8 +39,8 @@ RemoveEntryList(
     IN PLIST_ENTRY Entry
     )
 {
-    PLIST_ENTRY Blink;
-    PLIST_ENTRY Flink;
+    PLIST_ENTRY Blink = nullptr;
+    PLIST_ENTRY Flink = nullptr;
 
     Flink = Entry->Flink;
     Blink = Entry->Blink;
@@ -55,8 +55,8 @@ RemoveHeadList(
     IN PLIST_ENTRY ListHead
     )
 {
-    PLIST_ENTRY Flink;
-    PLIST_ENTRY Entry;
+    PLIST_ENTRY Flink = nullptr;
+    PLIST_ENTRY Entry = nullptr;
 
     Entry = ListHead->Flink;
     Flink = Entry->Flink;
@@ -73,8 +73,8 @@ RemoveTailList(
     IN PLIST_ENTRY ListHead
     )
 {
-    PLIST_ENTRY Blink;
-    PLIST_ENTRY Entry;
+    PLIST_ENTRY Blink = nullptr;
+    PLIST_ENTRY Entry = nullptr;
 
     Entry = ListHead->Blink;
     Blink = Entry->Blink;
@@ -140,7 +140,7 @@ PopEntryList(
 {
     PSINGLE_LIST_ENTRY FirstEntry;
     FirstEntry = ListHead->Next;
-    if (FirstEntry != NULL) {
+    if (FirstEntry != nullptr) {
         ListHead->Next = FirstEntry->Next;
     }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -35,10 +36,7 @@ public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTwoFacto
     /// </remarks>
     public virtual async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
         var token = await manager.CreateSecurityTokenAsync(user).ConfigureAwait(false);
         var modifier = await GetUserModifierAsync(purpose, manager, user).ConfigureAwait(false);
 
@@ -60,10 +58,7 @@ public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTwoFacto
     /// </returns>
     public virtual async Task<bool> ValidateAsync(string purpose, string token, UserManager<TUser> manager, TUser user)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
         int code;
         if (!int.TryParse(token, out code))
         {
@@ -87,10 +82,7 @@ public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTwoFacto
     /// </returns>
     public virtual async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager, TUser user)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
         var userId = await manager.GetUserIdAsync(user).ConfigureAwait(false);
 
         return $"Totp:{purpose}:{userId}";

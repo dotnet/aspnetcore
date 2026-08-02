@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -174,6 +175,9 @@ public class HttpHeadersTests
     [InlineData(",, ", (int)(TransferCoding.None))]
     [InlineData(" , ,", (int)(TransferCoding.None))]
     [InlineData(" , , ", (int)(TransferCoding.None))]
+    [InlineData("c", (int)(TransferCoding.Other))]
+    [InlineData("z", (int)(TransferCoding.Other))]
+    [InlineData("chunk", (int)(TransferCoding.Other))]
     [InlineData("chunked,", (int)(TransferCoding.Chunked))]
     [InlineData("chunked,,", (int)(TransferCoding.Chunked))]
     [InlineData("chunked, ", (int)(TransferCoding.Chunked))]
@@ -191,6 +195,14 @@ public class HttpHeadersTests
     [InlineData("deflate, chunked", (int)(TransferCoding.Chunked))]
     [InlineData("gzip,chunked", (int)(TransferCoding.Chunked))]
     [InlineData("compress,,chunked", (int)(TransferCoding.Chunked))]
+    [InlineData("chunked,c", (int)(TransferCoding.Other))]
+    [InlineData("chunked,z", (int)(TransferCoding.Other))]
+    [InlineData("chunked,zz", (int)(TransferCoding.Other))]
+    [InlineData("chunked, z", (int)(TransferCoding.Other))]
+    [InlineData("chunked, zz", (int)(TransferCoding.Other))]
+    [InlineData("chunked,chunk", (int)(TransferCoding.Other))]
+    [InlineData("z,chunked", (int)(TransferCoding.Chunked))]
+    [InlineData("z, chunked", (int)(TransferCoding.Chunked))]
     [InlineData("chunkedchunked", (int)(TransferCoding.Other))]
     [InlineData("chunked2", (int)(TransferCoding.Other))]
     [InlineData("chunked 2", (int)(TransferCoding.Other))]
@@ -286,5 +298,13 @@ public class HttpHeadersTests
         Assert.False(headers.TryGetValue("Content-Length", out value));
         Assert.Null(httpHeaders.ContentLength);
         Assert.False(httpHeaders.ContentLength.HasValue);
+    }
+
+    [Fact]
+    public void KeysCompareShouldBeCaseInsensitive()
+    {
+        var httpHeaders = (IHeaderDictionary)new HttpRequestHeaders();
+        httpHeaders["Cache-Control"] = "no-cache";
+        Assert.True(httpHeaders.Keys.Contains("cache-control"));
     }
 }

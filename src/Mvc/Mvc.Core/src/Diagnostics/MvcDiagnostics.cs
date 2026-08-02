@@ -55,7 +55,7 @@ public sealed class BeforeActionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(HttpContext), HttpContext),
         2 => new KeyValuePair<string, object>(nameof(RouteData), RouteData),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -106,7 +106,7 @@ public sealed class AfterActionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(HttpContext), HttpContext),
         2 => new KeyValuePair<string, object>(nameof(RouteData), RouteData),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -157,7 +157,7 @@ public sealed class BeforeAuthorizationFilterOnAuthorizationEventData : EventDat
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(AuthorizationContext), AuthorizationContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -208,7 +208,7 @@ public sealed class AfterAuthorizationFilterOnAuthorizationEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(AuthorizationContext), AuthorizationContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -259,7 +259,7 @@ public sealed class BeforeResourceFilterOnResourceExecutionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResourceExecutingContext), ResourceExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -310,7 +310,7 @@ public sealed class AfterResourceFilterOnResourceExecutionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResourceExecutedContext), ResourceExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -361,7 +361,7 @@ public sealed class BeforeResourceFilterOnResourceExecutingEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResourceExecutingContext), ResourceExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -412,7 +412,7 @@ public sealed class AfterResourceFilterOnResourceExecutingEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResourceExecutingContext), ResourceExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -463,7 +463,7 @@ public sealed class BeforeResourceFilterOnResourceExecutedEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResourceExecutedContext), ResourceExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -514,7 +514,7 @@ public sealed class AfterResourceFilterOnResourceExecutedEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResourceExecutedContext), ResourceExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -565,7 +565,7 @@ public sealed class BeforeExceptionFilterOnException : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ExceptionContext), ExceptionContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -616,7 +616,7 @@ public sealed class AfterExceptionFilterOnExceptionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ExceptionContext), ExceptionContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -667,7 +667,7 @@ public sealed class BeforeActionFilterOnActionExecutionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ActionExecutingContext), ActionExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -718,7 +718,7 @@ public sealed class AfterActionFilterOnActionExecutionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ActionExecutedContext), ActionExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -769,7 +769,7 @@ public sealed class BeforeActionFilterOnActionExecutingEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ActionExecutingContext), ActionExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -820,7 +820,7 @@ public sealed class AfterActionFilterOnActionExecutingEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ActionExecutingContext), ActionExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -871,7 +871,7 @@ public sealed class BeforeActionFilterOnActionExecutedEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ActionExecutedContext), ActionExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -922,7 +922,7 @@ public sealed class AfterActionFilterOnActionExecutedEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ActionExecutedContext), ActionExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -973,7 +973,7 @@ public sealed class BeforeControllerActionMethodEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
         1 => new KeyValuePair<string, object>(nameof(ActionArguments), ActionArguments),
         2 => new KeyValuePair<string, object>(nameof(Controller), Controller),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1032,7 +1032,7 @@ public sealed class AfterControllerActionMethodEventData : EventData
         1 => new KeyValuePair<string, object>(nameof(Controller), Controller),
         2 => new KeyValuePair<string, object>(nameof(Controller), Controller),
         3 => new KeyValuePair<string, object>(nameof(Result), Result),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1083,7 +1083,7 @@ public sealed class BeforeResultFilterOnResultExecutionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResultExecutingContext), ResultExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1134,7 +1134,7 @@ public sealed class AfterResultFilterOnResultExecutionEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResultExecutedContext), ResultExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1185,7 +1185,7 @@ public sealed class BeforeResultFilterOnResultExecutingEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResultExecutingContext), ResultExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1236,7 +1236,7 @@ public sealed class AfterResultFilterOnResultExecutingEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResultExecutingContext), ResultExecutingContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1287,7 +1287,7 @@ public sealed class BeforeResultFilterOnResultExecutedEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResultExecutedContext), ResultExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1338,7 +1338,7 @@ public sealed class AfterResultFilterOnResultExecutedEventData : EventData
         0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
         1 => new KeyValuePair<string, object>(nameof(ResultExecutedContext), ResultExecutedContext),
         2 => new KeyValuePair<string, object>(nameof(Filter), Filter),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1381,7 +1381,7 @@ public sealed class BeforeActionResultEventData : EventData
     {
         0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
         1 => new KeyValuePair<string, object>(nameof(Result), Result),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }
 
@@ -1424,6 +1424,6 @@ public sealed class AfterActionResultEventData : EventData
     {
         0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
         1 => new KeyValuePair<string, object>(nameof(Result), Result),
-        _ => throw new IndexOutOfRangeException(nameof(index))
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 }

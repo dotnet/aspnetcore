@@ -108,7 +108,7 @@ public class DynamicSchemeTests
 
     private class TestHandler : AuthenticationHandler<TestOptions>
     {
-        public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+        public TestHandler(IOptionsMonitor<TestOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
         {
         }
 

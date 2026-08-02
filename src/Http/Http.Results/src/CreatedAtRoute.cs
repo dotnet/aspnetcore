@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,13 +17,14 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with status code Created (201) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider
+public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CreatedAtRoute"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     internal CreatedAtRoute(object? routeValues)
         : this(routeName: null, routeValues: routeValues)
     {
@@ -31,12 +36,24 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider
     /// </summary>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    internal CreatedAtRoute(string? routeName, object? routeValues)
+        : this(routeName, new RouteValueDictionary(routeValues))
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreatedAtRoute"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
     internal CreatedAtRoute(
         string? routeName,
-        object? routeValues)
+        RouteValueDictionary? routeValues)
     {
         RouteName = routeName;
-        RouteValues = new RouteValueDictionary(routeValues);
+        RouteValues = routeValues ?? new RouteValueDictionary();
     }
 
     /// <summary>
@@ -53,6 +70,8 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider
     /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
@@ -84,10 +103,12 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider
     }
 
     /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created, typeof(void)));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

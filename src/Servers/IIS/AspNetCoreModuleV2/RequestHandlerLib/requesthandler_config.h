@@ -32,8 +32,6 @@
 
 #define MAX_RAPID_FAILS_PER_MINUTE 100
 #define MILLISECONDS_IN_ONE_SECOND 1000
-#define MIN_PORT                   1025
-#define MAX_PORT                   48000
 
 #define TIMESPAN_IN_MILLISECONDS(x)  ((x)/((LONGLONG)(10000)))
 #define TIMESPAN_IN_SECONDS(x)       ((TIMESPAN_IN_MILLISECONDS(x))/((LONGLONG)(1000)))
@@ -238,7 +236,7 @@ protected:
     REQUESTHANDLER_CONFIG() :
         m_fStdoutLogEnabled(FALSE),
         m_hostingModel(HOSTING_UNKNOWN),
-        m_ppStrArguments(NULL)
+        m_ppStrArguments(nullptr)
     {
     }
 

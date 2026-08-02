@@ -16,10 +16,7 @@ internal sealed class ServiceBasedTagHelperActivator : ITagHelperActivator
     /// <inheritdoc />
     public TTagHelper Create<TTagHelper>(ViewContext context) where TTagHelper : ITagHelper
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.HttpContext.RequestServices.GetRequiredService<TTagHelper>();
     }

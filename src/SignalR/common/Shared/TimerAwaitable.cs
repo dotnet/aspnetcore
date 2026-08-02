@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Internal;
@@ -95,10 +96,7 @@ internal sealed class TimerAwaitable : IDisposable, ICriticalNotifyCompletion
         lock (_lockObj)
         {
             // Stop should be used to trigger the call to end the loop which disposes
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
 
             _running = false;
         }

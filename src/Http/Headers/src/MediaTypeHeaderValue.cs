@@ -25,7 +25,7 @@ public class MediaTypeHeaderValue
     private const char PeriodCharacter = '.';
     private const char PlusCharacter = '+';
 
-    private static readonly char[] PeriodCharacterArray = new char[] { PeriodCharacter };
+    private static readonly char[] PeriodCharacterArray = [PeriodCharacter];
 
     private static readonly HttpHeaderParser<MediaTypeHeaderValue> SingleValueParser
         = new GenericHeaderParser<MediaTypeHeaderValue>(false, GetMediaTypeLength);
@@ -511,7 +511,7 @@ public class MediaTypeHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out MediaTypeHeaderValue? parsedValue)
     {
         var index = 0;
-        return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
+        return SingleValueParser.TryParseValue(input, index, out _, out parsedValue!);
     }
 
     /// <summary>

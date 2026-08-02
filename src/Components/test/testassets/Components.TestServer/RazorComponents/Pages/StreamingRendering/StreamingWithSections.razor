@@ -1,0 +1,20 @@
+﻿@page "/streaming-with-sections"
+@using Microsoft.AspNetCore.Components.Sections
+
+<h1>Streaming with sections</h1>
+
+<p>
+    If a section outlet is rendered from a nonstreaming component, but the section content comes from a streaming component,
+    then we should still see streaming updates arriving in the section outlet.
+</p>
+
+<p>
+    This component is not streaming, but it has a child that does stream, and supplies content back here to the parent.
+</p>
+
+<fieldset>
+    <legend>Section outlet in nonstreaming component</legend>
+    <SectionOutlet SectionName="streaming-outlet" />
+</fieldset>
+
+<StreamingWithSectionsContentSupplier />

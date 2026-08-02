@@ -19,6 +19,7 @@ public class ClientProcess : IDisposable
     public ClientProcess(ITestOutputHelper output, string path, string serverPort, string testCase)
     {
         _output = new StringBuilder();
+        _startTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         _process = new Process();
         _process.StartInfo = new ProcessStartInfo
@@ -31,11 +32,11 @@ public class ClientProcess : IDisposable
         _process.EnableRaisingEvents = true;
         _process.OutputDataReceived += Process_OutputDataReceived;
         _process.ErrorDataReceived += Process_ErrorDataReceived;
+
+        output.WriteLine($"Starting process: {ProcessDebugHelper.GetDebugCommand(_process.StartInfo)}");
         _process.Start();
 
         _processEx = new ProcessEx(output, _process, timeout: Timeout.InfiniteTimeSpan);
-
-        _startTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public Task WaitForReadyAsync() => _startTcs.Task;
@@ -77,6 +78,11 @@ public class ClientProcess : IDisposable
             {
                 _output.AppendLine("ERROR: " + data);
             }
+        }
+
+        if (!IsReady)
+        {
+            _startTcs.TrySetException(new InvalidOperationException("Received error before application started."));
         }
     }
 

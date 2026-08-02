@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.AspNetCore.DataProtection.Extensions;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection;
 internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 {
     private const string MyPurposeString = "Microsoft.AspNetCore.DataProtection.TimeLimitedDataProtector.v1";
+    private const int ExpirationTimeHeaderSize = 8; // size of the expiration time header in bytes (64-bit UTC tick count)
 
     private readonly IDataProtector _innerProtector;
     private IDataProtector? _innerProtectorWithTimeLimitedPurpose; // created on-demand
@@ -27,10 +29,7 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     public ITimeLimitedDataProtector CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return new TimeLimitedDataProtector(_innerProtector.CreateProtector(purpose));
     }
@@ -47,45 +46,33 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         return retVal;
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public byte[] Protect(byte[] plaintext, DateTimeOffset expiration)
     {
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         // We prepend the expiration time (as a 64-bit UTC tick count) to the unprotected data.
-        byte[] plaintextWithHeader = new byte[checked(8 + plaintext.Length)];
+        byte[] plaintextWithHeader = new byte[checked(ExpirationTimeHeaderSize + plaintext.Length)];
         BitHelpers.WriteUInt64(plaintextWithHeader, 0, (ulong)expiration.UtcTicks);
-        Buffer.BlockCopy(plaintext, 0, plaintextWithHeader, 8, plaintext.Length);
+        Buffer.BlockCopy(plaintext, 0, plaintextWithHeader, ExpirationTimeHeaderSize, plaintext.Length);
 
         return GetInnerProtectorWithTimeLimitedPurpose().Protect(plaintextWithHeader);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public byte[] Unprotect(byte[] protectedData, out DateTimeOffset expiration)
     {
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         return UnprotectCore(protectedData, DateTimeOffset.UtcNow, out expiration);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     internal byte[] UnprotectCore(byte[] protectedData, DateTimeOffset now, out DateTimeOffset expiration)
     {
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         try
         {
             byte[] plaintextWithHeader = GetInnerProtectorWithTimeLimitedPurpose().Unprotect(protectedData);
-            if (plaintextWithHeader.Length < 8)
+            if (plaintextWithHeader.Length < ExpirationTimeHeaderSize)
             {
                 // header isn't present
                 throw new CryptographicException(Resources.TimeLimitedDataProtector_PayloadInvalid);
@@ -102,8 +89,8 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
             }
 
             // Not expired - split and return payload
-            byte[] retVal = new byte[plaintextWithHeader.Length - 8];
-            Buffer.BlockCopy(plaintextWithHeader, 8, retVal, 0, retVal.Length);
+            byte[] retVal = new byte[plaintextWithHeader.Length - ExpirationTimeHeaderSize];
+            Buffer.BlockCopy(plaintextWithHeader, ExpirationTimeHeaderSize, retVal, 0, retVal.Length);
             expiration = embeddedExpiration;
             return retVal;
         }
@@ -120,33 +107,22 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     IDataProtector IDataProtectionProvider.CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return CreateProtector(purpose);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] IDataProtector.Protect(byte[] plaintext)
     {
-        if (plaintext == null)
-        {
-            throw new ArgumentNullException(nameof(plaintext));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         // MaxValue essentially means 'no expiration'
         return Protect(plaintext, DateTimeOffset.MaxValue);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] IDataProtector.Unprotect(byte[] protectedData)
     {
-        if (protectedData == null)
-        {
-            throw new ArgumentNullException(nameof(protectedData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         return Unprotect(protectedData, out _);
     }

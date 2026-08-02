@@ -19,7 +19,7 @@ public class FileResultExecutorBase
     protected const int BufferSize = 64 * 1024;
 
     /// <summary>
-    /// Intializes a new <see cref="FileResultExecutorBase"/>.
+    /// Initializes a new <see cref="FileResultExecutorBase"/>.
     /// </summary>
     /// <param name="logger">The logger.</param>
     public FileResultExecutorBase(ILogger logger)
@@ -78,10 +78,7 @@ public class FileResultExecutorBase
     /// <returns>An <see cref="ILogger"/>.</returns>
     protected static ILogger CreateLogger<T>(ILoggerFactory factory)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.CreateLogger<T>();
     }

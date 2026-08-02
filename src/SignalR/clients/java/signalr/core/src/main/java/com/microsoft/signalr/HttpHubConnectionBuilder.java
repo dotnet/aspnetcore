@@ -16,13 +16,15 @@ public class HttpHubConnectionBuilder {
     private final String url;
     private Transport transport;
     private HttpClient httpClient;
-    private HubProtocol protocol = new JsonHubProtocol();
+    private HubProtocol protocol = new GsonHubProtocol();
     private boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private long handshakeResponseTimeout = 0;
     private Map<String, String> headers;
     private TransportEnum transportEnum;
     private Action1<OkHttpClient.Builder> configureBuilder;
+    private long serverTimeout = HubConnection.DEFAULT_SERVER_TIMEOUT;
+    private long keepAliveInterval = HubConnection.DEFAULT_KEEP_ALIVE_INTERVAL;
 
     HttpHubConnectionBuilder(String url) {
         this.url = url;
@@ -141,12 +143,34 @@ public class HttpHubConnectionBuilder {
     }
 
     /**
+     * Sets serverTimeout for the {@link HubConnection}.
+     *
+     * @param timeoutInMilliseconds The serverTimeout to be set.
+     * @return This instance of the HttpHubConnectionBuilder.
+     */
+    public HttpHubConnectionBuilder withServerTimeout(long timeoutInMilliseconds) {
+        this.serverTimeout = timeoutInMilliseconds;
+        return this;
+    }
+
+    /**
+     * Sets keepAliveInterval for the {@link HubConnection}.
+     *
+     * @param intervalInMilliseconds The keepAliveInterval to be set.
+     * @return This instance of the HttpHubConnectionBuilder.
+     */
+    public HttpHubConnectionBuilder withKeepAliveInterval(long intervalInMilliseconds) {
+        this.keepAliveInterval = intervalInMilliseconds;
+        return this;
+    }
+
+    /**
      * Builds a new instance of {@link HubConnection}.
      *
      * @return A new instance of {@link HubConnection}.
      */
     public HubConnection build() {
         return new HubConnection(url, transport, skipNegotiate, httpClient, protocol, accessTokenProvider,
-            handshakeResponseTimeout, headers, transportEnum, configureBuilder);
+            handshakeResponseTimeout, headers, transportEnum, configureBuilder, serverTimeout, keepAliveInterval);
     }
 }

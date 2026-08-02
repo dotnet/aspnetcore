@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR;
 /// <summary>
 /// Handles incoming connections and implements the SignalR Hub Protocol.
 /// </summary>
-public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
+public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : ConnectionHandler where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
     private readonly ILoggerFactory _loggerFactory;
@@ -29,9 +32,10 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
     private readonly bool _enableDetailedErrors;
     private readonly long? _maximumMessageSize;
     private readonly int _maxParallelInvokes;
+    private readonly long _statefulReconnectBufferSize;
 
     // Internal for testing
-    internal ISystemClock SystemClock { get; set; } = new SystemClock();
+    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionHandler{THub}"/> class.
@@ -71,6 +75,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
             disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServicesParameters;
+            _statefulReconnectBufferSize = _hubOptions.StatefulReconnectBufferSize;
 
             if (_hubOptions.HubFilters != null)
             {
@@ -83,6 +88,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
             disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServicesParameters;
+            _statefulReconnectBufferSize = _globalHubOptions.StatefulReconnectBufferSize;
 
             if (_globalHubOptions.HubFilters != null)
             {
@@ -120,13 +126,17 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
             StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
             MaximumReceiveMessageSize = _maximumMessageSize,
-            SystemClock = SystemClock,
+            TimeProvider = TimeProvider,
             MaximumParallelInvocations = _maxParallelInvokes,
+            StatefulReconnectBufferSize = _statefulReconnectBufferSize,
         };
 
         Log.ConnectedStarting(_logger);
 
-        var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory);
+        var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory)
+        {
+            OriginalActivity = Activity.Current,
+        };
 
         var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
         if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
@@ -136,6 +146,22 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
 
         // -- the connectionContext has been set up --
 
+        var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
+        IDisposable? userRefreshedRegistration = null;
+        if (userRefreshFeature is not null)
+        {
+            // Serializes authentication-refresh handling for this connection so concurrent refreshes don't race the re-key.
+            var authenticationRefreshLock = new SemaphoreSlim(1, 1);
+            userRefreshedRegistration = userRefreshFeature.OnUserRefreshed(static (user, state) =>
+            {
+                var userRefreshedState = (UserRefreshedState)state!;
+                userRefreshedState.Handler.OnUserRefreshed(
+                    userRefreshedState.Connection,
+                    user,
+                    userRefreshedState.AuthenticationRefreshLock);
+            }, new UserRefreshedState(this, connectionContext, authenticationRefreshLock));
+        }
+
         try
         {
             await _lifetimeManager.OnConnectedAsync(connectionContext);
@@ -143,11 +169,64 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         }
         finally
         {
+            userRefreshedRegistration?.Dispose();
+
             connectionContext.Cleanup();
 
             Log.ConnectedEnding(_logger);
             await _lifetimeManager.OnDisconnectedAsync(connectionContext);
         }
+    }
+
+    private void OnUserRefreshed(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
+    {
+        // Fire and forget; HandleUserRefreshedAsync serializes work per connection through authenticationRefreshLock.
+        _ = HandleUserRefreshedAsync(connection, user, authenticationRefreshLock);
+    }
+
+    private async Task HandleUserRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
+    {
+        await authenticationRefreshLock.WaitAsync();
+        try
+        {
+            // Recompute inside the lock so a concurrent refresh observes the latest principal and identifier.
+            var newUserId = connection.GetUserIdentifier(user, _userIdProvider);
+            if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
+            {
+                var previousUserId = connection.UserIdentifier;
+                Log.UserIdentifierChangedOnRefresh(_logger, previousUserId, newUserId);
+                connection.Abort();
+                return;
+            }
+
+            connection.ApplyUserState(user, newUserId);
+        }
+        catch (Exception ex)
+        {
+            Log.ErrorApplyingAuthenticationRefresh(_logger, ex);
+            connection.Abort();
+            return;
+        }
+        finally
+        {
+            authenticationRefreshLock.Release();
+        }
+
+        // Fire and forget; the dispatcher serializes through ActiveInvocationLimit so the work runs
+        // alongside other hub invocations subject to the configured MaximumParallelInvocations.
+        _ = _dispatcher.OnAuthenticationRefreshedAsync(connection);
+    }
+
+    private sealed class UserRefreshedState(
+        HubConnectionHandler<THub> handler,
+        HubConnectionContext connection,
+        SemaphoreSlim authenticationRefreshLock)
+    {
+        public HubConnectionHandler<THub> Handler { get; } = handler;
+
+        public HubConnectionContext Connection { get; } = connection;
+
+        public SemaphoreSlim AuthenticationRefreshLock { get; } = authenticationRefreshLock;
     }
 
     private async Task RunHubAsync(HubConnectionContext connection)
@@ -191,6 +270,20 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
 
     private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
     {
+        var disconnectException = exception;
+        if (connection.CloseMessage is not null)
+        {
+            // If client sent a CloseMessage we don't care about any internal exceptions that may have occurred.
+            // The CloseMessage indicates a graceful closure on the part of the client.
+            disconnectException = null;
+            exception = null;
+            if (connection.CloseMessage.Error is not null)
+            {
+                // A bit odd for the client to send an error along with a graceful close, but just in case we should surface it in OnDisconnectedAsync
+                disconnectException = new HubException(connection.CloseMessage.Error);
+            }
+        }
+
         // send close message before aborting the connection
         await SendCloseAsync(connection, exception, connection.AllowReconnect);
 
@@ -200,9 +293,12 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         // Ensure the connection is aborted before firing disconnect
         await connection.AbortAsync();
 
+        // If a client result is requested in OnDisconnectedAsync we want to avoid the SemaphoreFullException and get the better connection disconnected IOException
+        _ = connection.ActiveInvocationLimit.TryAcquire();
+
         try
         {
-            await _dispatcher.OnDisconnectedAsync(connection, exception);
+            await _dispatcher.OnDisconnectedAsync(connection, disconnectException);
         }
         catch (Exception ex)
         {

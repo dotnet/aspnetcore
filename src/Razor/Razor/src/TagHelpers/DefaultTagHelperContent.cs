@@ -89,16 +89,14 @@ public class DefaultTagHelperContent : TagHelperContent
             return AppendCore(null);
         }
 
+        // codeql[SM00430] - By contract the 'encoded' argument is already-encoded, trusted HTML; this is the HtmlString wrapping primitive, not an injection sink. codeql[SM02175] - By contract the 'encoded' argument is already-encoded, trusted HTML; this is the HtmlString wrapping primitive, not an injection sink. codeql[SM00431] - By contract the 'encoded' argument is already-encoded, trusted HTML; this is the HtmlString wrapping primitive, not an injection sink.
         return AppendCore(new HtmlString(encoded));
     }
 
     /// <inheritdoc />
     public override void CopyTo(IHtmlContentBuilder destination)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
 
         if (!_hasContent)
         {
@@ -121,10 +119,7 @@ public class DefaultTagHelperContent : TagHelperContent
     /// <inheritdoc />
     public override void MoveTo(IHtmlContentBuilder destination)
     {
-        if (destination == null)
-        {
-            throw new ArgumentNullException(nameof(destination));
-        }
+        ArgumentNullException.ThrowIfNull(destination);
 
         if (!_hasContent)
         {
@@ -184,15 +179,8 @@ public class DefaultTagHelperContent : TagHelperContent
     /// <inheritdoc />
     public override void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(encoder);
 
         if (!_hasContent)
         {

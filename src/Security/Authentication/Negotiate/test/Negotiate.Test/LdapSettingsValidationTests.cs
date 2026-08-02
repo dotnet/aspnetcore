@@ -13,7 +13,7 @@ public class LdapSettingsValidationTests
             EnableLdapClaimResolution = true
         };
 
-        Assert.Throws<ArgumentException>(() => settings.Validate());
+        Assert.Throws<ArgumentNullException>(() => settings.Validate());
     }
 
     [Fact]
@@ -25,6 +25,6 @@ public class LdapSettingsValidationTests
             MachineAccountPassword = "Passw0rd"
         };
 
-        Assert.Throws<ArgumentException>(() => settings.Validate());
+        Assert.Throws<ArgumentNullException>(() => settings.Validate());
     }
 }

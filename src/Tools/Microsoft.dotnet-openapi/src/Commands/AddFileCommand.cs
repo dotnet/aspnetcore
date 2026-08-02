@@ -31,9 +31,9 @@ internal sealed class AddFileCommand : BaseCommand
 
     protected override async Task<int> ExecuteCoreAsync()
     {
-        var projectFilePath = ResolveProjectFile(ProjectFileOption);
+        ArgumentException.ThrowIfNullOrEmpty(_sourceFileArg.Value);
 
-        Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceFileArgName);
+        var projectFilePath = ResolveProjectFile(ProjectFileOption);
         var codeGenerator = GetCodeGenerator(_codeGeneratorOption);
 
         foreach (var sourceFile in _sourceFileArg.Values)
@@ -60,7 +60,7 @@ internal sealed class AddFileCommand : BaseCommand
 
         try
         {
-            Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceFileArgName);
+            ArgumentException.ThrowIfNullOrEmpty(_sourceFileArg.Value);
         }
         catch (ArgumentException ex)
         {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.TestHost;
@@ -16,7 +17,9 @@ namespace Microsoft.AspNetCore.TestHost;
 /// </summary>
 public class TestServer : IServer
 {
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private readonly IWebHost? _hostInstance;
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
     private bool _disposed;
     private ApplicationWrapper? _application;
 
@@ -78,6 +81,7 @@ public class TestServer : IServer
     /// For use with IWebHostBuilder.
     /// </summary>
     /// <param name="builder"></param>
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     public TestServer(IWebHostBuilder builder)
         : this(builder, CreateTestFeatureCollection())
     {
@@ -88,12 +92,10 @@ public class TestServer : IServer
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="featureCollection"></param>
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     public TestServer(IWebHostBuilder builder, IFeatureCollection featureCollection)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
 
@@ -112,6 +114,7 @@ public class TestServer : IServer
     /// <summary>
     /// Gets the <see cref="IWebHost" /> instance associated with the test server.
     /// </summary>
+    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     public IWebHost Host
     {
         get
@@ -146,13 +149,30 @@ public class TestServer : IServer
         get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
     }
 
+    private PathString PathBase => BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
+
     /// <summary>
     /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with the test server.
     /// </summary>
     public HttpMessageHandler CreateHandler()
     {
-        var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-        return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
+        return new ClientHandler(PathBase, Application)
+        {
+            AllowSynchronousIO = AllowSynchronousIO,
+            PreserveExecutionContext = PreserveExecutionContext
+        };
+    }
+
+    /// <summary>
+    /// Creates a custom <see cref="HttpMessageHandler" /> for processing HTTP requests/responses with custom configuration with the test server.
+    /// </summary>
+    public HttpMessageHandler CreateHandler(Action<HttpContext> additionalContextConfiguration)
+    {
+        return new ClientHandler(PathBase, Application, additionalContextConfiguration)
+        {
+            AllowSynchronousIO = AllowSynchronousIO,
+            PreserveExecutionContext = PreserveExecutionContext
+        };
     }
 
     /// <summary>
@@ -192,10 +212,7 @@ public class TestServer : IServer
     /// <returns></returns>
     public async Task<HttpContext> SendAsync(Action<HttpContext> configureContext, CancellationToken cancellationToken = default)
     {
-        if (configureContext == null)
-        {
-            throw new ArgumentNullException(nameof(configureContext));
-        }
+        ArgumentNullException.ThrowIfNull(configureContext);
 
         var builder = new HttpContextBuilder(Application, AllowSynchronousIO, PreserveExecutionContext);
         builder.Configure((context, reader) =>
@@ -235,10 +252,7 @@ public class TestServer : IServer
     {
         _application = new ApplicationWrapper<TContext>(application, () =>
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         });
 
         return Task.CompletedTask;

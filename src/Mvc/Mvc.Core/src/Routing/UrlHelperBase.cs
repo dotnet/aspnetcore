@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Routing;
 
@@ -28,10 +29,7 @@ public abstract class UrlHelperBase : IUrlHelper
     /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
     protected UrlHelperBase(ActionContext actionContext)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
         ActionContext = actionContext;
         AmbientValues = actionContext.RouteData.Values;
@@ -47,7 +45,7 @@ public abstract class UrlHelperBase : IUrlHelper
     public ActionContext ActionContext { get; }
 
     /// <inheritdoc />
-    public virtual bool IsLocalUrl([NotNullWhen(true)] string? url) => CheckIsLocalUrl(url);
+    public virtual bool IsLocalUrl([NotNullWhen(true)][StringSyntax(StringSyntaxAttribute.Uri)] string? url) => CheckIsLocalUrl(url);
 
     /// <inheritdoc />
     [return: NotNullIfNotNull("contentPath")]
@@ -316,64 +314,7 @@ public abstract class UrlHelperBase : IUrlHelper
     }
 
     internal static bool CheckIsLocalUrl([NotNullWhen(true)] string? url)
-    {
-        if (string.IsNullOrEmpty(url))
-        {
-            return false;
-        }
-
-        // Allows "/" or "/foo" but not "//" or "/\".
-        if (url[0] == '/')
-        {
-            // url is exactly "/"
-            if (url.Length == 1)
-            {
-                return true;
-            }
-
-            // url doesn't start with "//" or "/\"
-            if (url[1] != '/' && url[1] != '\\')
-            {
-                return !HasControlCharacter(url.AsSpan(1));
-            }
-
-            return false;
-        }
-
-        // Allows "~/" or "~/foo" but not "~//" or "~/\".
-        if (url[0] == '~' && url.Length > 1 && url[1] == '/')
-        {
-            // url is exactly "~/"
-            if (url.Length == 2)
-            {
-                return true;
-            }
-
-            // url doesn't start with "~//" or "~/\"
-            if (url[2] != '/' && url[2] != '\\')
-            {
-                return !HasControlCharacter(url.AsSpan(2));
-            }
-
-            return false;
-        }
-
-        return false;
-
-        static bool HasControlCharacter(ReadOnlySpan<char> readOnlySpan)
-        {
-            // URLs may not contain ASCII control characters.
-            for (var i = 0; i < readOnlySpan.Length; i++)
-            {
-                if (char.IsControl(readOnlySpan[i]))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-    }
+        => SharedUrlHelper.IsLocalUrl(url);
 
     private static object CalculatePageName(ActionContext? context, RouteValueDictionary? ambientValues, string pageName)
     {
@@ -443,12 +384,12 @@ public abstract class UrlHelperBase : IUrlHelper
             {
                 builder.Append(pathBase.Value);
 
-                if (pathBase.Value.EndsWith("/", StringComparison.Ordinal))
+                if (pathBase.Value.EndsWith('/'))
                 {
                     builder.Length--;
                 }
 
-                if (!virtualPath.StartsWith("/", StringComparison.Ordinal))
+                if (!virtualPath.StartsWith('/'))
                 {
                     builder.Append('/');
                 }
@@ -483,7 +424,7 @@ public abstract class UrlHelperBase : IUrlHelper
                 url = "/";
                 return true;
             }
-            else if (virtualPath.StartsWith("/", StringComparison.Ordinal))
+            else if (virtualPath.StartsWith('/'))
             {
                 url = virtualPath;
                 return true;

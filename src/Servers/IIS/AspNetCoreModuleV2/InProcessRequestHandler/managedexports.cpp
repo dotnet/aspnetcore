@@ -11,50 +11,6 @@ extern std::string g_errorPageContent;
 extern IHttpServer* g_pHttpServer;
 
 //
-// Add support for certain HTTP/2.0 features like trailing headers
-// and GOAWAY or RST_STREAM frames.
-//
-
-class __declspec(uuid("1a2acc57-cae2-4f28-b4ab-00c8f96b12ec"))
-    IHttpResponse4 : public IHttpResponse3
-{
-public:
-    virtual
-        HRESULT
-        DeleteTrailer(
-            _In_ PCSTR  pszHeaderName
-        ) = 0;
-
-    virtual
-        PCSTR
-        GetTrailer(
-            _In_  PCSTR    pszHeaderName,
-            _Out_ USHORT* pcchHeaderValue = NULL
-        ) const = 0;
-
-    virtual
-        VOID
-        ResetStream(
-            _In_ ULONG errorCode
-        ) = 0;
-
-    virtual
-        VOID
-        SetNeedGoAway(
-            VOID
-        ) = 0;
-
-    virtual
-        HRESULT
-        SetTrailer(
-            _In_ PCSTR  pszHeaderName,
-            _In_ PCSTR  pszHeaderValue,
-            _In_ USHORT cchHeaderValue,
-            _In_ BOOL fReplace
-        ) = 0;
-};
-
-//
 // Initialization export
 //
 EXTERN_C __declspec(dllexport)
@@ -70,7 +26,7 @@ register_callbacks(
     _In_ VOID* pvShutdownHandlerContext
 )
 {
-    if (pInProcessApplication == NULL)
+    if (pInProcessApplication == nullptr)
     {
         return E_INVALIDARG;
     }
@@ -114,8 +70,10 @@ http_get_server_variable(
     _Out_ BSTR* pwszReturn
 )
 {
-    PCWSTR pszVariableValue;
-    DWORD cbLength;
+    PCWSTR pszVariableValue = nullptr;
+    DWORD cbLength = 0;
+
+    *pwszReturn = nullptr;
 
     HRESULT hr = pInProcessHandler
         ->QueryHttpContext()
@@ -128,7 +86,7 @@ http_get_server_variable(
 
     *pwszReturn = SysAllocString(pszVariableValue);
 
-    if (*pwszReturn == NULL)
+    if (*pwszReturn == nullptr)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
@@ -245,7 +203,7 @@ http_get_application_properties(
 )
 {
     auto pInProcessApplication = IN_PROCESS_APPLICATION::GetInstance();
-    if (pInProcessApplication == NULL)
+    if (pInProcessApplication == nullptr)
     {
         return E_FAIL;
     }
@@ -276,8 +234,9 @@ http_read_request_bytes(
 )
 {
     HRESULT hr = S_OK;
+    *pvBuffer = 0;
 
-    if (pInProcessHandler == NULL)
+    if (pInProcessHandler == nullptr)
     {
         return E_FAIL;
     }
@@ -480,6 +439,16 @@ http_close_connection(
 
 EXTERN_C __declspec(dllexport)
 HRESULT
+http_set_close(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler
+)
+{
+    pInProcessHandler->QueryHttpContext()->GetResponse()->SetNeedDisconnect();
+    return S_OK;
+}
+
+EXTERN_C __declspec(dllexport)
+HRESULT
 http_response_set_unknown_header(
     _In_ IN_PROCESS_HANDLER* pInProcessHandler,
     _In_ PCSTR pszHeaderName,
@@ -513,7 +482,13 @@ http_get_authentication_information(
 )
 {
     *pstrAuthType = SysAllocString(pInProcessHandler->QueryHttpContext()->GetUser()->GetAuthenticationType());
+    // prefer GetPrimaryToken over GetImpersonationToken as that's what we've been using since before .NET 10
+    // we'll fallback to GetImpersonationToken if GetPrimaryToken is not available
     *pvToken = pInProcessHandler->QueryHttpContext()->GetUser()->GetPrimaryToken();
+    if (*pvToken == nullptr)
+    {
+        *pvToken = pInProcessHandler->QueryHttpContext()->GetUser()->GetImpersonationToken();
+    }
 
     return S_OK;
 }
@@ -522,7 +497,7 @@ EXTERN_C __declspec(dllexport)
 HRESULT
 http_stop_calls_into_managed(_In_ IN_PROCESS_APPLICATION* pInProcessApplication)
 {
-    if (pInProcessApplication == NULL)
+    if (pInProcessApplication == nullptr)
     {
         return E_INVALIDARG;
     }
@@ -535,7 +510,7 @@ EXTERN_C __declspec(dllexport)
 HRESULT
 http_stop_incoming_requests(_In_ IN_PROCESS_APPLICATION* pInProcessApplication)
 {
-    if (pInProcessApplication == NULL)
+    if (pInProcessApplication == nullptr)
     {
         return E_INVALIDARG;
     }
@@ -610,5 +585,36 @@ http_response_set_need_goaway(
     IHttpResponse4* pHttpResponse = (IHttpResponse4*)pInProcessHandler->QueryHttpContext()->GetResponse();
     pHttpResponse->SetNeedGoAway();
     return 0;
+}
+
+EXTERN_C __declspec(dllexport)
+HRESULT
+http_query_request_property(
+    _In_ HTTP_OPAQUE_ID requestId,
+    _In_ HTTP_REQUEST_PROPERTY propertyId,
+    _In_reads_bytes_opt_(qualifierSize) PVOID pQualifier,
+    _In_ ULONG qualifierSize,
+    _Out_writes_bytes_to_opt_(outputBufferSize, *pcbBytesReturned) PVOID pOutput,
+    _In_ ULONG outputBufferSize,
+    _Out_opt_ PULONG pcbBytesReturned,
+    _In_ LPOVERLAPPED pOverlapped
+)
+{
+    IHttpServer3* httpServer3;
+    HRESULT hr = HttpGetExtendedInterface<IHttpServer, IHttpServer3>(g_pHttpServer, g_pHttpServer, &httpServer3);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+
+    return httpServer3->QueryRequestProperty(
+        requestId,
+        propertyId,
+        pQualifier,
+        qualifierSize,
+        pOutput,
+        outputBufferSize,
+        pcbBytesReturned,
+        pOverlapped);
 }
 // End of export

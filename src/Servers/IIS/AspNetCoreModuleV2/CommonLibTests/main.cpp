@@ -8,5 +8,5 @@ DECLARE_DEBUG_PRINT_OBJECT2("tests", ASPNETCORE_DEBUG_FLAG_INFO | ASPNETCORE_DEB
 int wmain(int argc, wchar_t* argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);
-    RUN_ALL_TESTS();
+    return RUN_ALL_TESTS();
 }

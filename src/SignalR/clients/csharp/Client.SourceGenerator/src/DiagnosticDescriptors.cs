@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
 
 internal static class DiagnosticDescriptors
 {
+    private const string SignalRClientSourceGeneratorCategory = "SignalR.Client.SourceGenerator";
+
     // Ranges
     // SSG0000-0099: HubServerProxyGenerator
     // SSG0100-0199: HubClientProxyGenerator
@@ -15,7 +17,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0000",
         title: "Non-interface generic type argument",
         messageFormat: "Only interfaces are accepted. '{0}' is not an interface.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -23,7 +25,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0001",
         title: "Unsupported return type",
         messageFormat: "'{0}' has a return type of '{1}' but only Task, ValueTask, Task<T> and ValueTask<T> are supported for source generation.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
@@ -31,7 +33,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0002",
         title: "Too many HubServerProxy attributed methods",
         messageFormat: "There can only be one HubServerProxy attributed method.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -39,7 +41,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0003",
         title: "HubServerProxy attributed method has bad accessibility",
         messageFormat: "HubServerProxy attributed method may only have an accessibility of public, internal, protected, protected internal or private.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -47,7 +49,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0004",
         title: "HubServerProxy attributed method is not partial",
         messageFormat: "HubServerProxy attributed method must be partial.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -55,7 +57,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0005",
         title: "HubServerProxy attributed method is not an extension method",
         messageFormat: "HubServerProxy attributed method must be an extension method for HubConnection.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -63,7 +65,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0006",
         title: "HubServerProxy attributed method has bad number of type arguments",
         messageFormat: "HubServerProxy attributed method must have exactly one type argument.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -71,7 +73,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0007",
         title: "HubServerProxy attributed method type argument and return type does not match",
         messageFormat: "HubServerProxy attributed method must have the same type argument and return type.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -79,7 +81,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0008",
         title: "HubServerProxy attributed method has bad number of arguments",
         messageFormat: "HubServerProxy attributed method must have exactly one argument which must be of type HubConnection.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -87,7 +89,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0009",
         title: "HubServerProxy attributed method has argument of wrong type",
         messageFormat: "HubServerProxy attributed method must have exactly one argument which must be of type HubConnection.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -97,7 +99,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0100",
         title: "Unsupported return type",
         messageFormat: "'{0}' has a return type of '{1}' but only void and Task are supported for callback methods.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
@@ -105,7 +107,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0102",
         title: "Too many HubClientProxy attributed methods",
         messageFormat: "There can only be one HubClientProxy attributed method.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -113,7 +115,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0103",
         title: "HubClientProxy attributed method has bad accessibility",
         messageFormat: "HubClientProxy attributed method may only have an accessibility of public, internal, protected, protected internal or private.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -121,7 +123,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0104",
         title: "HubClientProxy attributed method is not partial",
         messageFormat: "HubClientProxy attributed method must be partial.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -129,7 +131,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0105",
         title: "HubClientProxy attributed method is not an extension method",
         messageFormat: "HubClientProxy attributed method must be an extension method for HubConnection.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -137,7 +139,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0106",
         title: "HubClientProxy attributed method has bad number of type arguments",
         messageFormat: "HubClientProxy attributed method must have exactly one type argument.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -145,7 +147,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0107",
         title: "HubClientProxy attributed method type argument and return type does not match",
         messageFormat: "HubClientProxy attributed method must have the same type argument and return type.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -153,7 +155,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0108",
         title: "HubClientProxy attributed method has bad number of arguments",
         messageFormat: "HubClientProxy attributed method must have exactly two arguments.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -161,7 +163,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0109",
         title: "HubClientProxy attributed method has first argument of wrong type",
         messageFormat: "HubClientProxy attributed method must have its first argument type be HubConnection.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
@@ -169,7 +171,7 @@ internal static class DiagnosticDescriptors
         id: "SSG0110",
         title: "HubClientProxy attributed method has wrong return type",
         messageFormat: "HubClientProxy attributed method must have a return type of IDisposable.",
-        category: "SignalR.Client.SourceGenerator",
+        category: SignalRClientSourceGeneratorCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 }

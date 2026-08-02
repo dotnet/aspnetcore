@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net;
 using System.Net.Http;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -56,5 +58,52 @@ public class WindowsAuthTests : IISFunctionalTestBase
 
         Assert.StartsWith("Windows:", responseText);
         Assert.Contains(Environment.UserName, responseText);
+    }
+
+    [ConditionalTheory]
+    [RequiresIIS(IISCapability.WindowsAuthentication)]
+    [MemberData(nameof(TestVariants))]
+    public async Task WindowsAuthWithImpersonationLevelTest(TestVariant variant)
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
+        deploymentParameters.SetAnonymousAuth(enabled: false);
+        deploymentParameters.SetWindowsAuth();
+
+        // The default in hosting sets windows auth to true.
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var impersonationLevels = new TokenImpersonationLevel[]
+            {
+                TokenImpersonationLevel.None,
+                TokenImpersonationLevel.Identification,
+                TokenImpersonationLevel.Impersonation,
+                TokenImpersonationLevel.Delegation,
+                TokenImpersonationLevel.Anonymous
+            };
+
+        foreach (var impersonationLevel in impersonationLevels)
+        {
+            // TokenImpersonationLevel is not supported by HttpClient so we need to use HttpWebRequest to test it.
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
+            var request = HttpWebRequest.CreateHttp($"{deploymentResult.HttpClient.BaseAddress}Auth");
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
+            request.ImpersonationLevel = impersonationLevel;
+            request.Method = "GET";
+            request.UseDefaultCredentials = true;
+
+            using var response = request.GetResponse();
+            using var reader = new StreamReader(response.GetResponseStream());
+            var responseText = await reader.ReadToEndAsync();
+
+            try
+            {
+                Assert.StartsWith("Windows:", responseText);
+                Assert.Contains(Environment.UserName, responseText);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"'TokenImpersonationLevel.{impersonationLevel}' failed with: {ex.Message}");
+            }
+        }
     }
 }

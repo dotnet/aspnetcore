@@ -5,9 +5,11 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
@@ -117,7 +119,7 @@ public class SecurityStampTest
         var services = new ServiceCollection();
         services.AddSingleton(options.Object);
         services.AddSingleton(signInManager.Object);
-        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
+        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new LoggerFactory()));
         services.AddSingleton(authService.Object);
         httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
 
@@ -171,7 +173,7 @@ public class SecurityStampTest
         var services = new ServiceCollection();
         services.AddSingleton(options.Object);
         services.AddSingleton(signInManager);
-        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager, new SystemClock(), new LoggerFactory()));
+        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager, new LoggerFactory()));
         httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
 
         var tid = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
@@ -212,7 +214,7 @@ public class SecurityStampTest
         var services = new ServiceCollection();
         services.AddSingleton(options.Object);
         services.AddSingleton(signInManager.Object);
-        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
+        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new LoggerFactory()));
         services.AddSingleton(authService.Object);
         httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
         var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
@@ -250,7 +252,7 @@ public class SecurityStampTest
         var services = new ServiceCollection();
         services.AddSingleton(options.Object);
         services.AddSingleton(signInManager.Object);
-        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
+        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new LoggerFactory()));
         httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
         var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
         id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -270,13 +272,14 @@ public class SecurityStampTest
     public async Task OnValidateIdentityDoesNotExtendExpirationWhenSlidingIsDisabled()
     {
         var user = new PocoUser("test");
+        var timeProvider = new FakeTimeProvider();
         var httpContext = new Mock<HttpContext>();
         var userManager = MockHelpers.MockUserManager<PocoUser>();
         var identityOptions = new Mock<IOptions<IdentityOptions>>();
         identityOptions.Setup(a => a.Value).Returns(new IdentityOptions());
         var claimsManager = new Mock<IUserClaimsPrincipalFactory<PocoUser>>();
         var options = new Mock<IOptions<SecurityStampValidatorOptions>>();
-        options.Setup(a => a.Value).Returns(new SecurityStampValidatorOptions { ValidationInterval = TimeSpan.FromMinutes(1) });
+        options.Setup(a => a.Value).Returns(new SecurityStampValidatorOptions { ValidationInterval = TimeSpan.FromMinutes(1), TimeProvider = timeProvider });
         var contextAccessor = new Mock<IHttpContextAccessor>();
         contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
         var signInManager = new Mock<SignInManager<PocoUser>>(userManager.Object,
@@ -287,12 +290,7 @@ public class SecurityStampTest
         var services = new ServiceCollection();
         services.AddSingleton(options.Object);
         services.AddSingleton(signInManager.Object);
-        var clock = new TestClock()
-        {
-            // Second precision
-            UtcNow = new DateTimeOffset(2013, 6, 11, 12, 34, 56, 0, TimeSpan.Zero)
-        };
-        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, clock, new LoggerFactory()));
+        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new LoggerFactory()));
         httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
         var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
         id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -300,8 +298,8 @@ public class SecurityStampTest
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(id),
             new AuthenticationProperties
             {
-                IssuedUtc = clock.UtcNow - TimeSpan.FromDays(1),
-                ExpiresUtc = clock.UtcNow + TimeSpan.FromDays(1),
+                IssuedUtc = timeProvider.GetUtcNow() - TimeSpan.FromDays(1),
+                ExpiresUtc = timeProvider.GetUtcNow() + TimeSpan.FromDays(1),
             },
             IdentityConstants.ApplicationScheme);
         var context = new CookieValidatePrincipalContext(httpContext.Object, new AuthenticationSchemeBuilder(IdentityConstants.ApplicationScheme) { HandlerType = typeof(NoopHandler) }.Build(),
@@ -312,8 +310,10 @@ public class SecurityStampTest
         await SecurityStampValidator.ValidatePrincipalAsync(context);
 
         // Issued is moved forward, expires is not.
-        Assert.Equal(clock.UtcNow, context.Properties.IssuedUtc);
-        Assert.Equal(clock.UtcNow + TimeSpan.FromDays(1), context.Properties.ExpiresUtc);
+        var now = timeProvider.GetUtcNow();
+        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Offset); // Truncate to the nearest second.
+        Assert.Equal(now, context.Properties.IssuedUtc);
+        Assert.Equal(now + TimeSpan.FromDays(1), context.Properties.ExpiresUtc);
         Assert.NotNull(context.Principal);
     }
 
@@ -339,7 +339,7 @@ public class SecurityStampTest
         var services = new ServiceCollection();
         services.AddSingleton(options.Object);
         services.AddSingleton(signInManager.Object);
-        services.AddSingleton<ITwoFactorSecurityStampValidator>(new TwoFactorSecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
+        services.AddSingleton<ITwoFactorSecurityStampValidator>(new TwoFactorSecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new LoggerFactory()));
         services.AddSingleton(authService.Object);
         httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
 

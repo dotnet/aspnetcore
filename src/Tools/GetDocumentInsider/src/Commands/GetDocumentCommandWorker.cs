@@ -4,11 +4,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Tools.Internal;
+using Microsoft.OpenApi;
+#if NET7_0_OR_GREATER
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http.Features;
+#endif
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands;
 
@@ -20,18 +29,19 @@ internal sealed class GetDocumentCommandWorker
     private const string InvalidFilenameString = "..";
     private const string JsonExtension = ".json";
     private const string UnderscoreString = "_";
-    private static readonly char[] InvalidFilenameCharacters = Path.GetInvalidFileNameChars();
-    private static readonly Encoding UTF8EncodingWithoutBOM
+    private static readonly char[] _invalidFilenameCharacters = Path.GetInvalidFileNameChars();
+    private static readonly Encoding _utf8EncodingWithoutBOM
         = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
     private const string GetDocumentsMethodName = "GetDocumentNames";
-    private static readonly object[] GetDocumentsArguments = Array.Empty<object>();
-    private static readonly Type[] GetDocumentsParameterTypes = Type.EmptyTypes;
-    private static readonly Type GetDocumentsReturnType = typeof(IEnumerable<string>);
+    private static readonly object[] _getDocumentsArguments = Array.Empty<object>();
+    private static readonly Type[] _getDocumentsParameterTypes = Type.EmptyTypes;
+    private static readonly Type _getDocumentsReturnType = typeof(IEnumerable<string>);
 
     private const string GenerateMethodName = "GenerateAsync";
-    private static readonly Type[] GenerateMethodParameterTypes = new[] { typeof(string), typeof(TextWriter) };
-    private static readonly Type GenerateMethodReturnType = typeof(Task);
+    private static readonly Type[] _generateMethodParameterTypes = [typeof(string), typeof(TextWriter)];
+    private static readonly Type[] _generateWithVersionMethodParameterTypes = [typeof(string), typeof(TextWriter), typeof(OpenApiSpecVersion)];
+    private static readonly Type _generateMethodReturnType = typeof(Task);
 
     private readonly GetDocumentCommandContext _context;
     private readonly IReporter _reporter;
@@ -53,6 +63,95 @@ internal sealed class GetDocumentCommandWorker
             return 3;
         }
 
+#if NET7_0_OR_GREATER
+        // Register no-op implementations of IServer and IHostLifetime
+        // to prevent the application server from actually launching after build.
+        void ConfigureHostBuilder(object hostBuilder)
+        {
+            ((IHostBuilder)hostBuilder).ConfigureServices((context, services) =>
+            {
+                services.AddSingleton<IServer, NoopServer>();
+                services.AddSingleton<IHostLifetime, NoopHostLifetime>();
+            });
+        }
+
+        // Register a TCS to be invoked when the entrypoint (aka Program.Main)
+        // has finished running. For minimal APIs, this means that all app.X
+        // calls about the host has been built have been executed.
+        var waitForStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnEntryPointExit(Exception exception)
+        {
+            // If the entry point exited, we'll try to complete the wait
+            if (exception != null)
+            {
+                waitForStartTcs.TrySetException(exception);
+            }
+            else
+            {
+                waitForStartTcs.TrySetResult(null);
+            }
+        }
+
+        // Resolve the host factory, ensuring that we don't stop the
+        // application after the host has been built.
+        var factory = HostFactoryResolver.ResolveHostFactory(assembly,
+            stopApplication: false,
+            configureHostBuilder: ConfigureHostBuilder,
+            entrypointCompleted: OnEntryPointExit);
+
+        if (factory == null)
+        {
+            _reporter.WriteError(Resources.FormatMethodsNotFound(
+                HostFactoryResolver.BuildWebHost,
+                HostFactoryResolver.CreateHostBuilder,
+                HostFactoryResolver.CreateWebHostBuilder,
+                entryPointType));
+
+            return 8;
+        }
+
+        try
+        {
+            // Build the arguments array for the host factory
+            var hostArgs = new List<string> { $"--{HostDefaults.ApplicationKey}={assemblyName}" };
+            if (!string.IsNullOrEmpty(_context.Environment))
+            {
+                hostArgs.Add($"--{HostDefaults.EnvironmentKey}={_context.Environment}");
+            }
+
+            // Retrieve the service provider from the target host.
+            var services = ((IHost)factory(hostArgs.ToArray())).Services;
+            if (services == null)
+            {
+                _reporter.WriteError(Resources.FormatServiceProviderNotFound(
+                    typeof(IServiceProvider),
+                    HostFactoryResolver.BuildWebHost,
+                    HostFactoryResolver.CreateHostBuilder,
+                    HostFactoryResolver.CreateWebHostBuilder,
+                    entryPointType));
+
+                return 9;
+            }
+
+            // Wait for the application to start to ensure that all configurations
+            // on the WebApplicationBuilder have been processed.
+            var applicationLifetime = services.GetRequiredService<IHostApplicationLifetime>();
+            using (var registration = applicationLifetime.ApplicationStarted.Register(() => waitForStartTcs.TrySetResult(null)))
+            {
+                waitForStartTcs.Task.Wait();
+                var success = GetDocuments(services);
+                if (!success)
+                {
+                    return 10;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _reporter.WriteError(ex.ToString());
+            return 11;
+        }
+#else
         try
         {
             var serviceFactory = HostFactoryResolver.ResolveServiceProviderFactory(assembly);
@@ -67,7 +166,14 @@ internal sealed class GetDocumentCommandWorker
                 return 4;
             }
 
-            var services = serviceFactory(Array.Empty<string>());
+            // Build the arguments array for the service factory
+            var hostArgs = new List<string>();
+            if (!string.IsNullOrEmpty(_context.Environment))
+            {
+                hostArgs.Add($"--{HostDefaults.EnvironmentKey}={_context.Environment}");
+            }
+
+            var services = serviceFactory(hostArgs.ToArray());
             if (services == null)
             {
                 _reporter.WriteError(Resources.FormatServiceProviderNotFound(
@@ -91,6 +197,7 @@ internal sealed class GetDocumentCommandWorker
             _reporter.WriteError(ex.ToString());
             return 7;
         }
+#endif
 
         return 0;
     }
@@ -116,18 +223,39 @@ internal sealed class GetDocumentCommandWorker
         var getDocumentsMethod = GetMethod(
             GetDocumentsMethodName,
             serviceType,
-            GetDocumentsParameterTypes,
-            GetDocumentsReturnType);
+            _getDocumentsParameterTypes,
+            _getDocumentsReturnType);
         if (getDocumentsMethod == null)
         {
             return false;
         }
 
+        var generateWithVersionMethod = serviceType.GetMethod(
+            GenerateMethodName,
+            _generateWithVersionMethodParameterTypes);
+
+        if (generateWithVersionMethod is not null)
+        {
+            if (generateWithVersionMethod.IsStatic)
+            {
+                _reporter.WriteWarning(Resources.FormatMethodIsStatic(GenerateMethodName, serviceType));
+                generateWithVersionMethod = null;
+            }
+
+            if (!_generateMethodReturnType.IsAssignableFrom(generateWithVersionMethod.ReturnType))
+            {
+                _reporter.WriteWarning(
+                    Resources.FormatMethodReturnTypeUnsupported(GenerateMethodName, serviceType, generateWithVersionMethod.ReturnType, _generateMethodReturnType));
+                generateWithVersionMethod = null;
+
+            }
+        }
+
         var generateMethod = GetMethod(
             GenerateMethodName,
             serviceType,
-            GenerateMethodParameterTypes,
-            GenerateMethodReturnType);
+            _generateMethodParameterTypes,
+            _generateMethodReturnType);
         if (generateMethod == null)
         {
             return false;
@@ -140,9 +268,28 @@ internal sealed class GetDocumentCommandWorker
             return false;
         }
 
-        var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, GetDocumentsArguments);
+        // Get document names
+        var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
         if (documentNames == null)
         {
+            return false;
+        }
+
+        // If an explicit document name is provided, then generate only that document.
+        if (!string.IsNullOrEmpty(_context.DocumentName))
+        {
+            if (!documentNames.Contains(_context.DocumentName))
+            {
+                _reporter.WriteError(Resources.FormatDocumentNotFound(_context.DocumentName));
+                return false;
+            }
+
+            documentNames = [_context.DocumentName];
+        }
+
+        if (!string.IsNullOrWhiteSpace(_context.FileName) && !Regex.IsMatch(_context.FileName, "^([A-Za-z0-9-_]+)$"))
+        {
+            _reporter.WriteError(Resources.FileNameFormatInvalid);
             return false;
         }
 
@@ -150,14 +297,19 @@ internal sealed class GetDocumentCommandWorker
         var found = false;
         Directory.CreateDirectory(_context.OutputDirectory);
         var filePathList = new List<string>();
-        foreach (var documentName in documentNames)
+        var targetDocumentNames = string.IsNullOrEmpty(_context.DocumentName)
+            ? documentNames
+            : [_context.DocumentName];
+        foreach (var documentName in targetDocumentNames)
         {
             var filePath = GetDocument(
                 documentName,
                 _context.ProjectName,
                 _context.OutputDirectory,
                 generateMethod,
-                service);
+                service,
+                generateWithVersionMethod,
+                _context.FileName);
             if (filePath == null)
             {
                 return false;
@@ -185,15 +337,34 @@ internal sealed class GetDocumentCommandWorker
         string projectName,
         string outputDirectory,
         MethodInfo generateMethod,
-        object service)
+        object service,
+        MethodInfo? generateWithVersionMethod,
+        string fileName)
     {
         _reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
         using var stream = new MemoryStream();
-        using (var writer = new StreamWriter(stream, UTF8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
+        using (var writer = new InvariantStreamWriter(stream, _utf8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
         {
-            var arguments = new object[] { documentName, writer };
-            using var resultTask = (Task)InvokeMethod(generateMethod, service, arguments);
+            var targetMethod = generateWithVersionMethod ?? generateMethod;
+            object[] arguments = [documentName, writer];
+            if (generateWithVersionMethod != null)
+            {
+                _reporter.WriteInformation(Resources.VersionedGenerateMethod);
+                if (Enum.TryParse<OpenApiSpecVersion>(_context.OpenApiVersion, out var version))
+                {
+                    arguments = [documentName, writer, version];
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(_context.OpenApiVersion))
+                    {
+                        _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
+                    }
+                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_2];
+                }
+            }
+            using var resultTask = (Task)InvokeMethod(targetMethod, service, arguments);
             if (resultTask == null)
             {
                 return null;
@@ -215,7 +386,9 @@ internal sealed class GetDocumentCommandWorker
             return null;
         }
 
-        var filePath = GetDocumentPath(documentName, projectName, outputDirectory);
+        fileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : projectName;
+
+        var filePath = GetDocumentPath(documentName, fileName, outputDirectory);
         _reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
         try
         {
@@ -234,13 +407,14 @@ internal sealed class GetDocumentCommandWorker
         return filePath;
     }
 
-    private static string GetDocumentPath(string documentName, string projectName, string outputDirectory)
+    private static string GetDocumentPath(string documentName, string fileName, string outputDirectory)
     {
         string path;
+
         if (string.Equals(DefaultDocumentName, documentName, StringComparison.Ordinal))
         {
             // Leave default document name out of the filename.
-            path = projectName + JsonExtension;
+            path = fileName + JsonExtension;
         }
         else
         {
@@ -248,14 +422,14 @@ internal sealed class GetDocumentCommandWorker
             // characters such as '/' and '?' and the string "..". Do not treat slashes as folder separators.
             var sanitizedDocumentName = string.Join(
                 UnderscoreString,
-                documentName.Split(InvalidFilenameCharacters));
+                documentName.Split(_invalidFilenameCharacters));
 
             while (sanitizedDocumentName.Contains(InvalidFilenameString))
             {
                 sanitizedDocumentName = sanitizedDocumentName.Replace(InvalidFilenameString, DotString);
             }
 
-            path = $"{projectName}_{documentName}{JsonExtension}";
+            path = $"{fileName}_{documentName}{JsonExtension}";
         }
 
         if (!string.IsNullOrEmpty(outputDirectory))
@@ -303,4 +477,27 @@ internal sealed class GetDocumentCommandWorker
 
         return result;
     }
+
+    private sealed class InvariantStreamWriter(Stream stream, Encoding? encoding = null, int bufferSize = -1, bool leaveOpen = false)
+        : StreamWriter(stream, encoding, bufferSize, leaveOpen)
+    {
+        public override IFormatProvider FormatProvider => System.Globalization.CultureInfo.InvariantCulture;
+    }
+
+#if NET7_0_OR_GREATER
+    private sealed class NoopHostLifetime : IHostLifetime
+    {
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task WaitForStartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class NoopServer : IServer
+    {
+        public IFeatureCollection Features { get; } = new FeatureCollection();
+        public void Dispose() { }
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    }
+#endif
 }

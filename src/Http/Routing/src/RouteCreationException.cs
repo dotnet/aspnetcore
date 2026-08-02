@@ -1,12 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Routing;
 
+#if !COMPONENTS
 /// <summary>
 /// The exception that is thrown for invalid routes or constraints.
 /// </summary>
 public class RouteCreationException : Exception
+#else
+internal class RouteCreationException : Exception
+#endif
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="RouteCreationException"/> class with a specified error message.

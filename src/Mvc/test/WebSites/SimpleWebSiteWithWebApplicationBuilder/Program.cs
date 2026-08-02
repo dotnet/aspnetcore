@@ -7,16 +7,36 @@ using static Microsoft.AspNetCore.Http.Results;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var assertEarly = builder.Configuration["ASSERT_EARLY_DUMMY_CONFIGURATION_AVAILABLE"];
+if (assertEarly == "1")
+{
+    var source = builder.Configuration.Sources.Single(s => s.GetType().Name == "MyCustomConfigSource");
+    if (!source.Build(null!).TryGet("PingEarlyConfig", out var value) || value != "PongEarlyConfig")
+    {
+        throw new InvalidOperationException("Unexpected. MyCustomConfigSource should have provided the expected value");
+    }
+
+    if (builder.Configuration["PingEarlyConfig"] != "PongEarlyConfig")
+    {
+        throw new InvalidOperationException("Unexpected. MyCustomConfigSource is registered and should take effect.");
+    }
+}
+
 builder.Services.AddControllers();
+builder.Services.AddAntiforgery();
 
 var app = builder.Build();
 
 // just to make sure that it does not cause exceptions
 app.Urls.Add("http://localhost:8080");
 
+app.UseAntiforgery();
+
 app.MapControllers();
 
 app.MapGet("/", () => "Hello World");
+
+app.MapGet("/assert-early", () => assertEarly);
 
 app.MapGet("/json", () => Json(new Person("John", 42)));
 

@@ -29,6 +29,7 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+    [RuntimeAsyncMethodGeneration(false)]
     public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
     {
         VerifyIsNotReading();
@@ -246,7 +247,7 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
         var maxRequestBodySize = _context.MaxRequestBodySize;
         if (_contentLength > maxRequestBodySize)
         {
-            _context.DisableHttp1KeepAlive();
+            _context.DisableKeepAlive(ConnectionEndReason.MaxRequestBodySizeExceeded);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
         }
     }

@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
@@ -63,6 +64,8 @@ public class StaticWebAssetsLoader
         }
     }
 
+    [UnconditionalSuppressMessage("SingleFile", "IL3000:Assembly.Location",
+        Justification = "The code handles if the Assembly.Location is empty by calling AppContext.BaseDirectory. Workaround https://github.com/dotnet/runtime/issues/83607")]
     private static string? ResolveRelativeToAssembly(IWebHostEnvironment environment)
     {
         if (string.IsNullOrEmpty(environment.ApplicationName))
@@ -70,7 +73,8 @@ public class StaticWebAssetsLoader
             return null;
         }
         var assembly = Assembly.Load(environment.ApplicationName);
-        var basePath = string.IsNullOrEmpty(assembly.Location) ? AppContext.BaseDirectory : Path.GetDirectoryName(assembly.Location);
+        var assemblyLocation = assembly.Location;
+        var basePath = string.IsNullOrEmpty(assemblyLocation) ? AppContext.BaseDirectory : Path.GetDirectoryName(assemblyLocation);
         return Path.Combine(basePath!, $"{environment.ApplicationName}.staticwebassets.runtime.json");
     }
 }

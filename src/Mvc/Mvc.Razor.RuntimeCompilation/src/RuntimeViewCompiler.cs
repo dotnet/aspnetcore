@@ -39,30 +39,11 @@ internal partial class RuntimeViewCompiler : IViewCompiler
         IList<CompiledViewDescriptor> precompiledViews,
         ILogger logger)
     {
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
-
-        if (projectEngine == null)
-        {
-            throw new ArgumentNullException(nameof(projectEngine));
-        }
-
-        if (csharpCompiler == null)
-        {
-            throw new ArgumentNullException(nameof(csharpCompiler));
-        }
-
-        if (precompiledViews == null)
-        {
-            throw new ArgumentNullException(nameof(precompiledViews));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
+        ArgumentNullException.ThrowIfNull(projectEngine);
+        ArgumentNullException.ThrowIfNull(csharpCompiler);
+        ArgumentNullException.ThrowIfNull(precompiledViews);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _fileProvider = fileProvider;
         _projectEngine = projectEngine;
@@ -103,10 +84,7 @@ internal partial class RuntimeViewCompiler : IViewCompiler
 
     public Task<CompiledViewDescriptor> CompileAsync(string relativePath)
     {
-        if (relativePath == null)
-        {
-            throw new ArgumentNullException(nameof(relativePath));
-        }
+        ArgumentNullException.ThrowIfNull(relativePath);
 
         // Attempt to lookup the cache entry using the passed in path. This will succeed if the path is already
         // normalized and a cache entry exists.
@@ -442,12 +420,10 @@ internal partial class RuntimeViewCompiler : IViewCompiler
             if (startTimestamp != 0)
             {
                 var currentTimestamp = Stopwatch.GetTimestamp();
-                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+                var elapsed = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
                 GeneratedCodeToAssemblyCompilationEnd(logger, filePath, elapsed.TotalMilliseconds);
             }
         }
-
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         [LoggerMessage(3, LogLevel.Debug, "Initializing Razor view compiler with compiled view: '{ViewName}'.")]
         public static partial void ViewCompilerLocatedCompiledView(ILogger logger, string viewName);

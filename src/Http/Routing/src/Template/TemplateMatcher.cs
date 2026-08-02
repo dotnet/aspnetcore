@@ -27,10 +27,7 @@ public class TemplateMatcher
         RouteTemplate template,
         RouteValueDictionary defaults)
     {
-        if (template == null)
-        {
-            throw new ArgumentNullException(nameof(template));
-        }
+        ArgumentNullException.ThrowIfNull(template);
 
         Template = template;
         Defaults = defaults ?? new RouteValueDictionary();
@@ -83,10 +80,7 @@ public class TemplateMatcher
     /// <returns><see langword="true"/> if <paramref name="path"/> matches <see cref="Template"/>.</returns>
     public bool TryMatch(PathString path, RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         return _routePatternMatcher.TryMatch(path, values);
     }

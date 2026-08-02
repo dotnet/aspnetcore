@@ -19,15 +19,8 @@ public static class ServerSideBlazorBuilderExtensions
     /// <returns>The <see cref="IServerSideBlazorBuilder"/>.</returns>
     public static IServerSideBlazorBuilder AddCircuitOptions(this IServerSideBlazorBuilder builder, Action<CircuitOptions> configure)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure<CircuitOptions>(configure);
 
@@ -42,15 +35,8 @@ public static class ServerSideBlazorBuilderExtensions
     /// <returns>The <see cref="IServerSideBlazorBuilder"/>.</returns>
     public static IServerSideBlazorBuilder AddHubOptions(this IServerSideBlazorBuilder builder, Action<HubOptions> configure)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure<HubOptions<ComponentHub>>(configure);
 

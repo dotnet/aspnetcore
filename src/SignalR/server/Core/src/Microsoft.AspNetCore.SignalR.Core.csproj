@@ -7,6 +7,7 @@
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,18 +16,20 @@
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TaskCache.cs" Link="Internal\TaskCache.cs" />
-    <Compile Include="$(SignalRSharedSourceRoot)ISystemClock.cs" Link="Internal\ISystemClock.cs" />
-    <Compile Include="$(SignalRSharedSourceRoot)SystemClock.cs" Link="Internal\SystemClock.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)ClientResultsManager.cs" Link="Internal\ClientResultsManager.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)CreateLinkedToken.cs" Link="Internal\CreateLinkedToken.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)MessageBuffer.cs" Link="MessageBuffer.cs" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Diagnostics\ActivityCreator.cs" />
+    <Compile Include="$(SharedSourceRoot)ConnectionEndpointTags.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +37,7 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.FunctionalTests" />    
   </ItemGroup>
 
 </Project>

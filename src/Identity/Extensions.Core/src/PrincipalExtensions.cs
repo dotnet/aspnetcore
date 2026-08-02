@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Shared;
+
 namespace System.Security.Claims;
 
 /// <summary>
@@ -16,10 +18,7 @@ public static class PrincipalExtensions
     /// <returns>The value of the first instance of the specified claim type, or null if the claim is not present.</returns>
     public static string? FindFirstValue(this ClaimsPrincipal principal, string claimType)
     {
-        if (principal == null)
-        {
-            throw new ArgumentNullException(nameof(principal));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(principal);
         var claim = principal.FindFirst(claimType);
         return claim?.Value;
     }

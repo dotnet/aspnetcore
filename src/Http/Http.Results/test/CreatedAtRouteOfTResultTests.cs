@@ -2,12 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -55,7 +58,8 @@ public partial class CreatedAtRouteOfTResultTests
     {
         // Arrange
         var expectedUrl = "testAction";
-        var httpContext = GetHttpContext(expectedUrl);
+        var linkGenerator = new TestLinkGenerator { Url = expectedUrl };
+        var httpContext = GetHttpContext(linkGenerator);
 
         // Act
         var result = new CreatedAtRoute<object>(routeName: null, routeValues: values, value: null);
@@ -64,13 +68,15 @@ public partial class CreatedAtRouteOfTResultTests
         // Assert
         Assert.Equal(StatusCodes.Status201Created, httpContext.Response.StatusCode);
         Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
+        Assert.Equal(new RouteValueDictionary(values), linkGenerator.RouteValuesAddress.ExplicitValues);
     }
 
     [Fact]
     public async Task CreatedAtRouteResult_ThrowsOnNullUrl()
     {
         // Arrange
-        var httpContext = GetHttpContext(expectedUrl: null);
+        var linkGenerator = new TestLinkGenerator();
+        var httpContext = GetHttpContext(linkGenerator);
 
         var result = new CreatedAtRoute<object>(
             routeName: null,
@@ -88,59 +94,123 @@ public partial class CreatedAtRouteOfTResultTests
     {
         // Arrange
         CreatedAtRoute<Todo> MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
-        PopulateMetadata<CreatedAtRoute<Todo>>(context);
+        PopulateMetadata<CreatedAtRoute<Todo>>(((Delegate)MyApi).GetMethodInfo(), builder);
 
         // Assert
-        var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
+        var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
         Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public void PopulateMetadata_ProblemDetailsAddsProblemJsonMetadata()
+    {
+        // Arrange
+        CreatedAtRoute<ProblemDetails> MyApi() { throw new NotImplementedException(); }
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+
+        // Act
+        PopulateMetadata<CreatedAtRoute<ProblemDetails>>(((Delegate)MyApi).GetMethodInfo(), builder);
+
+        // Assert
+        var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(ProblemDetails), producesResponseTypeMetadata.Type);
+        Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/problem+json");
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new CreatedAtRoute<object>(null, null);
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     [Fact]
-    public void PopulateMetadata_ThrowsArgumentNullException_WhenContextIsNull()
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<CreatedAtRoute<object>>(null));
+        Assert.Throws<ArgumentNullException>("method", () => PopulateMetadata<CreatedAtRoute<object>>(null, new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0)));
+        Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<CreatedAtRoute<object>>(((Delegate)PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull).GetMethodInfo(), null));
     }
 
-    private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
-        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var rawResult = new CreatedAtRoute<object>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: null);
+
+        // Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(rawResult);
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+    }
+
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var rawResult = new CreatedAtRoute<string>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: value);
+
+        // Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(rawResult);
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var rawResult = new CreatedAtRoute<string>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: value);
+
+        // Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(rawResult);
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(method, builder);
 
     private record Todo(int Id, string Title);
 
-    private static HttpContext GetHttpContext(string expectedUrl)
+    private static HttpContext GetHttpContext(LinkGenerator linkGenerator)
     {
         var httpContext = new DefaultHttpContext();
         httpContext.Request.PathBase = new PathString("");
         httpContext.Response.Body = new MemoryStream();
-        httpContext.RequestServices = CreateServices(expectedUrl);
+        httpContext.RequestServices = CreateServices(linkGenerator);
         return httpContext;
     }
 
-    private static IServiceProvider CreateServices(string expectedUrl)
+    private static IServiceProvider CreateServices(LinkGenerator linkGenerator)
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-        services.AddSingleton<LinkGenerator>(new TestLinkGenerator
-        {
-            Url = expectedUrl
-        });
+        services.AddSingleton<LinkGenerator>(linkGenerator);
 
         return services.BuildServiceProvider();
     }

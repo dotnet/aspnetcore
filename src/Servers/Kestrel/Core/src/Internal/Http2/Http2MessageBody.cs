@@ -10,6 +10,14 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Exposes the bytes of an incoming request.
+/// </summary>
+/// <remarks>
+/// Owned by an <see cref="Http2Stream"/>.
+/// <para/>
+/// Reusable after calling <see cref="Reset"/>.
+/// </remarks>
 internal sealed class Http2MessageBody : MessageBody
 {
     private readonly Http2Stream _context;
@@ -19,6 +27,7 @@ internal sealed class Http2MessageBody : MessageBody
         : base(context)
     {
         _context = context;
+        ExtendedConnect = _context.IsExtendedConnectRequest;
     }
 
     protected override void OnReadStarting()
@@ -51,6 +60,7 @@ internal sealed class Http2MessageBody : MessageBody
     {
         base.Reset();
         _readResult = default;
+        ExtendedConnect = _context.IsExtendedConnectRequest;
     }
 
     public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
@@ -62,7 +72,12 @@ internal sealed class Http2MessageBody : MessageBody
 
         // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
         _context.OnDataRead((int)newlyExaminedBytes);
-        AddAndCheckObservedBytes(newlyExaminedBytes);
+
+        // Don't limit extended CONNECT requests to the MaxRequestBodySize.
+        if (!ExtendedConnect)
+        {
+            AddAndCheckObservedBytes(newlyExaminedBytes);
+        }
     }
 
     public override bool TryRead(out ReadResult readResult)
@@ -87,6 +102,7 @@ internal sealed class Http2MessageBody : MessageBody
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+    [RuntimeAsyncMethodGeneration(false)]
     public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
     {
         await TryStartAsync();

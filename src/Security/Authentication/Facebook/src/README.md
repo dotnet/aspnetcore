@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Authentication.Facebook
 
-This project contains an implementation of OAuth2 [Facebook Authentication](https://docs.microsoft.com/aspnet/core/security/authentication/social/facebook-logins) for ASP.NET Core.
+This project contains an implementation of OAuth2 [Facebook Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/social/facebook-logins) for ASP.NET Core.
 
 ## Development Setup
 

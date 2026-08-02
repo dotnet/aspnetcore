@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <RuntimeIdentifiers>$(RuntimeIdentifiers);win-x64;win-x86</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
     <Platforms>x64;x86</Platforms>
     <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
@@ -74,6 +75,10 @@
           Condition=" '$(InProcessTestSite)' == 'true' AND '$(UseIisNativeAssets)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           BeforeTargets="Publish"
           DependsOnTargets="GeneratePublishDependencyFile;CopyFilesToPublishDirectory;PrepareInjectionApp">
-    <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
+    <!-- Use $(PublishDir)$(ProjectDepsFileName) instead of $(PublishDepsFilePath) here until
+         https://github.com/dotnet/arcade/issues/13911 is fixed. This should be equivalent based on
+         https://github.com/dotnet/sdk/blob/b736f2e955a9167eda86cae79208a89a9e42bfe0/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets#L1059
+    -->
+    <Exec Command="$(InjectDepsApp) &quot;$(PublishDir)$(ProjectDepsFileName)&quot; $(RuntimeIdentifier) " />
   </Target>
 </Project>

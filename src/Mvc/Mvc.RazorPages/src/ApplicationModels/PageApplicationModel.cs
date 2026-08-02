@@ -54,10 +54,7 @@ public class PageApplicationModel
     /// <param name="other">The <see cref="PageApplicationModel"/> to copy from.</param>
     public PageApplicationModel(PageApplicationModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         ActionDescriptor = other.ActionDescriptor;
         HandlerType = other.HandlerType;

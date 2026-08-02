@@ -37,6 +37,7 @@ internal sealed partial class ServerSentEventsTransport
         [LoggerMessage(8, LogLevel.Debug, "Server-Sent Event Stream ended.", EventName = "EventStreamEnded")]
         public static partial void EventStreamEnded(ILogger logger);
 
+        // No longer used
         [LoggerMessage(9, LogLevel.Debug, "Received {Count} bytes. Parsing SSE frame.", EventName = "ParsingSSE")]
         public static partial void ParsingSSE(ILogger logger, long count);
     }

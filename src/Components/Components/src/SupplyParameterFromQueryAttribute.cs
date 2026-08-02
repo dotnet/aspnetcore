@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// current URL querystring. They may also supply further values if the URL querystring changes.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class SupplyParameterFromQueryAttribute : Attribute
+public sealed class SupplyParameterFromQueryAttribute : CascadingParameterAttributeBase
 {
     /// <summary>
     /// Gets or sets the name of the querystring parameter. If null, the querystring

@@ -1,5 +1,4 @@
 #nullable enable
-~Microsoft.AspNetCore.Rewrite.RewriteMiddleware.RewriteMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnvironment, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Rewrite.RewriteOptions!>! options) -> void
 Microsoft.AspNetCore.Builder.RewriteBuilderExtensions
 Microsoft.AspNetCore.Rewrite.ApacheModRewriteOptionsExtensions
 Microsoft.AspNetCore.Rewrite.IISUrlRewriteOptionsExtensions
@@ -17,6 +16,7 @@ Microsoft.AspNetCore.Rewrite.RewriteContext.StaticFileProvider.get -> Microsoft.
 Microsoft.AspNetCore.Rewrite.RewriteContext.StaticFileProvider.set -> void
 Microsoft.AspNetCore.Rewrite.RewriteMiddleware
 Microsoft.AspNetCore.Rewrite.RewriteMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Rewrite.RewriteMiddleware.RewriteMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnvironment, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Rewrite.RewriteOptions!>! options) -> void
 Microsoft.AspNetCore.Rewrite.RewriteOptions
 Microsoft.AspNetCore.Rewrite.RewriteOptions.RewriteOptions() -> void
 Microsoft.AspNetCore.Rewrite.RewriteOptions.Rules.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.IRule!>!

@@ -5,12 +5,14 @@
     <IsTestAssetProject>true</IsTestAssetProject>
     <!--
       Chrome in docker appears to run in to cache corruption issues when the cache is read multiple times over.
-      Clien caching isn't part of our performance measurement, so we'll skip it.
+      Client caching isn't part of our performance measurement, so we'll skip it.
     -->
     <BlazorCacheBootResources>false</BlazorCacheBootResources>
+    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
   </ItemGroup>
+
 </Project>

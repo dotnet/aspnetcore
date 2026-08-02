@@ -27,15 +27,13 @@ public class HeaderPropagationMiddleware
     /// </param>
     public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(values);
 
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        _next = next;
         _options = options.Value;
-
-        _values = values ?? throw new ArgumentNullException(nameof(values));
+        _values = values;
     }
 
     /// <summary>
@@ -44,7 +42,7 @@ public class HeaderPropagationMiddleware
     /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
     public Task Invoke(HttpContext context)
     {
-        // We need to intialize the headers because the message handler will use this to detect misconfiguration.
+        // We need to initialize the headers because the message handler will use this to detect misconfiguration.
         var headers = _values.Headers ??= new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
 
         // Perf: avoid foreach since we don't define a struct enumerator.

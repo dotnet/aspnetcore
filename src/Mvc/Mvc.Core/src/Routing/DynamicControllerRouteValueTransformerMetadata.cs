@@ -9,10 +9,7 @@ internal sealed class DynamicControllerRouteValueTransformerMetadata : IDynamicE
 {
     public DynamicControllerRouteValueTransformerMetadata(Type selectorType, object? state)
     {
-        if (selectorType == null)
-        {
-            throw new ArgumentNullException(nameof(selectorType));
-        }
+        ArgumentNullException.ThrowIfNull(selectorType);
 
         if (!typeof(DynamicRouteValueTransformer).IsAssignableFrom(selectorType))
         {

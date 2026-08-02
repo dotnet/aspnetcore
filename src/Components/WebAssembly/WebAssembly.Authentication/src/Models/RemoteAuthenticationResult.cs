@@ -17,10 +17,10 @@ public class RemoteAuthenticationResult<TRemoteAuthenticationState> where TRemot
     /// <summary>
     /// Gets or sets the error message of a failed authentication operation.
     /// </summary>
-    public string ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Gets or sets the preserved state of a successful authentication operation.
     /// </summary>
-    public TRemoteAuthenticationState State { get; set; }
+    public TRemoteAuthenticationState? State { get; set; }
 }

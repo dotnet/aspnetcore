@@ -25,15 +25,8 @@ public class ControllerModel : ICommonModel, IFilterModel, IApiExplorerModel
         TypeInfo controllerType,
         IReadOnlyList<object> attributes)
     {
-        if (controllerType == null)
-        {
-            throw new ArgumentNullException(nameof(controllerType));
-        }
-
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(controllerType);
+        ArgumentNullException.ThrowIfNull(attributes);
 
         ControllerType = controllerType;
 
@@ -53,10 +46,7 @@ public class ControllerModel : ICommonModel, IFilterModel, IApiExplorerModel
     /// <param name="other">The other controller model.</param>
     public ControllerModel(ControllerModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         ControllerName = other.ControllerName;
         ControllerType = other.ControllerType;

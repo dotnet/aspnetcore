@@ -43,10 +43,7 @@ public class RouteCollection : IRouteCollection
     /// <inheritdoc />
     public void Add(IRouter router)
     {
-        if (router == null)
-        {
-            throw new ArgumentNullException(nameof(router));
-        }
+        ArgumentNullException.ThrowIfNull(router);
 
         var namedRouter = router as INamedRouter;
         if (namedRouter != null)
@@ -176,7 +173,7 @@ public class RouteCollection : IRouteCollection
                 queryString = queryString.ToLowerInvariant();
             }
 
-            if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/", StringComparison.Ordinal))
+            if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith('/'))
             {
                 urlWithoutQueryString += "/";
             }

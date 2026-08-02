@@ -3,6 +3,10 @@
 # Obviously, don't actually use this to produce production certs
 #
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+ 'PSAvoidUsingConvertToSecureStringWithPlainText',
+ '',
+ Justification='this is creating a certificate for local testing')]
 param(
     [Parameter(Mandatory = $true)]
     $OutFile

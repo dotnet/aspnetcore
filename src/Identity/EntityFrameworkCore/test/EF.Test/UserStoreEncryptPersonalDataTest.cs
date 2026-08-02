@@ -25,6 +25,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequireUppercase = false;
             options.User.AllowedUserNameCharacters = null;
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
         })
         .AddDefaultTokenProviders()
         .AddEntityFrameworkStores<TestDbContext>()
@@ -133,7 +134,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
                 }
             }
         }
-        Assert.False(true, "Didn't find user");
+        Assert.Fail("Didn't find user");
         return false;
     }
 

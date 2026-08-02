@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package example.country;
+
+option csharp_namespace = "Example.Country";
+
+enum Alpha3CountryCode
+{
+  ALPHA_3_COUNTRY_CODE_UNSPECIFIED = 0;
+  ALPHA_3_COUNTRY_CODE_AFG = 4;
+}

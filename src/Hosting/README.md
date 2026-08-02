@@ -2,7 +2,7 @@
 
 Hosting provides the entry point for configuring and running your application.
 
-Documentation for Hosting can be found in the [ASP.NET Core Web Host](https://docs.microsoft.com/aspnet/core/fundamentals/host/web-host) and [.NET Generic Host in ASP.NET Core](https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host) docs.
+Documentation for Hosting can be found in the [ASP.NET Core Web Host](https://learn.microsoft.com/aspnet/core/fundamentals/host/web-host) and [.NET Generic Host in ASP.NET Core](https://learn.microsoft.com/aspnet/core/fundamentals/host/generic-host) docs.
 
 ## Description
 

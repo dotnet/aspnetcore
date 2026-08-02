@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;
 
@@ -209,7 +205,6 @@ public class BrowserManagerConfiguration
         Env = configuration.GetValue<Dictionary<string, string>>(nameof(BrowserTypeLaunchOptions.Env)),
         DownloadsPath = configuration.GetValue<string>(nameof(BrowserTypeLaunchOptions.DownloadsPath)),
         ExecutablePath = configuration.GetValue<string>(nameof(BrowserTypeLaunchOptions.ExecutablePath)),
-        Devtools = configuration.GetValue<bool?>(nameof(BrowserTypeLaunchOptions.Devtools)),
         Args = BindMultiValueMap(
             configuration.GetSection(nameof(BrowserTypeLaunchOptions.Args)),
             argsMap => argsMap.SelectMany(argNameValue => argNameValue.Value.Prepend(argNameValue.Key)).ToArray()),
@@ -346,7 +341,6 @@ public class BrowserManagerConfiguration
             Env = overrideOptions.Env != default ? overrideOptions.Env : defaultOptions.Env,
             DownloadsPath = overrideOptions.DownloadsPath != default ? overrideOptions.DownloadsPath : defaultOptions.DownloadsPath,
             ExecutablePath = overrideOptions.ExecutablePath != default ? overrideOptions.ExecutablePath : defaultOptions.ExecutablePath,
-            Devtools = overrideOptions.Devtools != default ? overrideOptions.Devtools : defaultOptions.Devtools,
             Args = overrideOptions.Args != default ? overrideOptions.Args : defaultOptions.Args,
             Headless = overrideOptions.Headless != default ? overrideOptions.Headless : defaultOptions.Headless,
             Timeout = overrideOptions.Timeout != default ? overrideOptions.Timeout : defaultOptions.Timeout,
@@ -354,4 +348,18 @@ public class BrowserManagerConfiguration
         };
 }
 
-public record BrowserOptions(BrowserKind BrowserKind, BrowserTypeLaunchOptions BrowserLaunchOptions, BrowserNewContextOptions DefaultContextOptions);
+public sealed class BrowserOptions
+{
+    public BrowserKind BrowserKind { get; }
+
+    public BrowserTypeLaunchOptions BrowserLaunchOptions { get; }
+
+    public BrowserNewContextOptions DefaultContextOptions { get; }
+
+    public BrowserOptions(BrowserKind browserKind, BrowserTypeLaunchOptions browserLaunchOptions, BrowserNewContextOptions defaultContextOptions)
+    {
+        BrowserKind = browserKind;
+        BrowserLaunchOptions = browserLaunchOptions;
+        DefaultContextOptions = defaultContextOptions;
+    }
+}

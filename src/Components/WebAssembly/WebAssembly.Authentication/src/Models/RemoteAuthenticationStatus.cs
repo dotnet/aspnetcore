@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
+
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 /// <summary>
 /// Represents the status of an authentication operation.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<RemoteAuthenticationStatus>))]
 public enum RemoteAuthenticationStatus
 {
     /// <summary>

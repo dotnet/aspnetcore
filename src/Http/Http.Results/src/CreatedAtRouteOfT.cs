@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Targets a registered route.
 /// </summary>
 /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
-public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
+public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CreatedAtRoute"/> class with the values
@@ -22,6 +26,7 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     internal CreatedAtRoute(object? routeValues, TValue? value)
         : this(routeName: null, routeValues: routeValues, value: value)
     {
@@ -34,14 +39,27 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    internal CreatedAtRoute(string? routeName, object? routeValues, TValue? value)
+        : this(routeName, new RouteValueDictionary(routeValues), value)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreatedAtRoute"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <param name="value">The value to format in the entity body.</param>
     internal CreatedAtRoute(
         string? routeName,
-        object? routeValues,
+        RouteValueDictionary? routeValues,
         TValue? value)
     {
         Value = value;
         RouteName = routeName;
-        RouteValues = new RouteValueDictionary(routeValues);
+        RouteValues = routeValues ?? new RouteValueDictionary();
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
@@ -49,6 +67,8 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// Gets the object result.
     /// </summary>
     public TValue? Value { get; }
+
+    object? IValueHttpResult.Value => Value;
 
     /// <summary>
     /// Gets the name of the route to use for generating the URL.
@@ -64,6 +84,8 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
@@ -98,10 +120,12 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     }
 
     /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status201Created, "application/json"));
+        builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status201Created, ContentTypeConstants.ApplicationJsonContentTypes));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

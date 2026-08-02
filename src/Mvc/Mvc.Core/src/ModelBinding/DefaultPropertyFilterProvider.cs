@@ -27,7 +27,7 @@ public class DefaultPropertyFilterProvider<TModel> : IPropertyFilterProvider
     /// Expressions which can be used to generate property filter which can filter model
     /// properties.
     /// </summary>
-    public virtual IEnumerable<Expression<Func<TModel, object>>>? PropertyIncludeExpressions => null;
+    public virtual IEnumerable<Expression<Func<TModel, object?>>>? PropertyIncludeExpressions => null;
 
     /// <inheritdoc />
     public virtual Func<ModelMetadata, bool> PropertyFilter
@@ -45,7 +45,7 @@ public class DefaultPropertyFilterProvider<TModel> : IPropertyFilterProvider
     }
 
     private static Func<ModelMetadata, bool> GetPropertyFilterFromExpression(
-        IEnumerable<Expression<Func<TModel, object>>> includeExpressions)
+        IEnumerable<Expression<Func<TModel, object?>>> includeExpressions)
     {
         var expression = ModelBindingHelper.GetPropertyFilterExpression(includeExpressions.ToArray());
         return expression.Compile();

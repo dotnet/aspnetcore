@@ -18,4 +18,15 @@ public readonly struct NavigationOptions
     /// If false, appends the new entry to the history stack.
     /// </summary>
     public bool ReplaceHistoryEntry { get; init; }
+
+    /// <summary>
+    /// Gets or sets the state to append to the history entry.
+    /// </summary>
+    public string? HistoryEntryState { get; init; }
+
+    /// <summary>
+    /// If true, resolves URIs relative to the current URI.
+    /// If false (default), resolves relative URIs relative to the base URI.
+    /// </summary>
+    public bool RelativeToCurrentUri { get; init; }
 }

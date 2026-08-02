@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.TestHost;
 
 namespace Microsoft.AspNetCore.Builder.Extensions;
 
@@ -12,7 +13,7 @@ public class UsePathBaseExtensionsTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("/")]
-    public void EmptyOrNullPathBase_DoNotAddMiddleware(string pathBase)
+    public void EmptyOrNullPathBase_DoNotAddMiddleware(string? pathBase)
     {
         // Arrange
         var useCalled = false;
@@ -53,7 +54,6 @@ public class UsePathBaseExtensionsTests
         public IFeatureCollection ServerFeatures => _wrappedBuilder.ServerFeatures;
         public RequestDelegate Build() => _wrappedBuilder.Build();
         public IApplicationBuilder New() => _wrappedBuilder.New();
-
     }
 
     [Theory]
@@ -138,6 +138,73 @@ public class UsePathBaseExtensionsTests
         return TestPathBase(registeredPathBase, pathBase, requestPath, expectedPathBase, expectedPath);
     }
 
+    [Fact]
+    public async Task PathBaseWorksAfterUseRoutingIfGlobalRouteBuilderUsed()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        app.UseRouting();
+
+        app.UsePathBase("/base");
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.Map("/path", context => context.Response.WriteAsync("Response"));
+        });
+
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("/base/path");
+
+        Assert.Equal("Response", response);
+    }
+
+    [Fact]
+    public async Task PathBaseWorksBeforeUseRoutingIfGlobalRouteBuilderUsed()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        app.UsePathBase("/base");
+
+        app.UseRouting();
+
+        app.MapGet("/path", context => context.Response.WriteAsync("Response"));
+
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("/base/path");
+
+        Assert.Equal("Response", response);
+    }
+
+    [Fact]
+    public async Task PathBaseWorksWithoutUseRoutingWithWebApplication()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        app.UsePathBase("/base");
+
+        app.MapGet("/path", context => context.Response.WriteAsync("Response"));
+
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+
+        var response = await server.CreateClient().GetStringAsync("/base/path");
+
+        Assert.Equal("Response", response);
+    }
+
     private static async Task TestPathBase(string registeredPathBase, string pathBase, string requestPath, string expectedPathBase, string expectedPath)
     {
         HttpContext requestContext = CreateRequest(pathBase, requestPath);
@@ -170,6 +237,28 @@ public class UsePathBaseExtensionsTests
 
     private static ApplicationBuilder CreateBuilder()
     {
-        return new ApplicationBuilder(serviceProvider: null!);
+        return new ApplicationBuilder(new DummyServiceProvider());
+    }
+
+    private class DummyServiceProvider : IServiceProvider
+    {
+        private readonly Dictionary<Type, object> _services = new Dictionary<Type, object>();
+
+        public void AddService(Type type, object value) => _services[type] = value;
+
+        public object? GetService(Type serviceType)
+        {
+            if (serviceType == typeof(IServiceProvider))
+            {
+                return this;
+            }
+
+            if (_services.TryGetValue(serviceType, out var value))
+            {
+                return value;
+            }
+
+            return null;
+        }
     }
 }

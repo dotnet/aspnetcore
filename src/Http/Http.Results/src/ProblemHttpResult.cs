@@ -4,6 +4,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -11,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on <see href="https://tools.ietf.org/html/rfc7807"/>
 /// </summary>
-public sealed class ProblemHttpResult : IResult
+public sealed class ProblemHttpResult : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IContentTypeHttpResult, IValueHttpResult, IValueHttpResult<ProblemDetails>
 {
     /// <summary>
     /// Creates a new <see cref="ProblemHttpResult"/> instance with
@@ -21,7 +24,7 @@ public sealed class ProblemHttpResult : IResult
     internal ProblemHttpResult(ProblemDetails problemDetails)
     {
         ProblemDetails = problemDetails;
-        HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: null);
+        ProblemDetailsDefaults.Apply(ProblemDetails, statusCode: null);
     }
 
     /// <summary>
@@ -29,23 +32,30 @@ public sealed class ProblemHttpResult : IResult
     /// </summary>
     public ProblemDetails ProblemDetails { get; }
 
+    object? IValueHttpResult.Value => ProblemDetails;
+
+    ProblemDetails? IValueHttpResult<ProblemDetails>.Value => ProblemDetails;
+
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header: <c>application/problem+json</c>
     /// </summary>
-    public string ContentType => "application/problem+json";
+    public string ContentType => ContentTypeConstants.ProblemDetailsContentType;
 
     /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
-    public int? StatusCode => ProblemDetails.Status;
+    public int StatusCode => ProblemDetails.Status!.Value;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
-    public Task ExecuteAsync(HttpContext httpContext)
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(ProblemHttpResult));
+        var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
 
         if (StatusCode is { } code)
         {
@@ -53,10 +63,22 @@ public sealed class ProblemHttpResult : IResult
             httpContext.Response.StatusCode = code;
         }
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        if (problemDetailsService is null || !await problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = ProblemDetails }))
+        {
+            await HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 value: ProblemDetails,
                 ContentType);
+        }
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

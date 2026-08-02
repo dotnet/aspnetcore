@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -12,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -26,12 +26,10 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+    [RequiresUnreferencedCode("Razor Pages does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcCoreBuilder AddRazorPages(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddRazorViewEngine();
 
@@ -50,15 +48,8 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<RazorPagesOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.AddRazorViewEngine();
 
@@ -77,15 +68,8 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
     /// <returns></returns>
     public static IMvcCoreBuilder WithRazorPagesRoot(this IMvcCoreBuilder builder, string rootDirectory)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (string.IsNullOrEmpty(rootDirectory))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(rootDirectory));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentException.ThrowIfNullOrEmpty(rootDirectory);
 
         builder.Services.Configure<RazorPagesOptions>(options => options.RootDirectory = rootDirectory);
         return builder;

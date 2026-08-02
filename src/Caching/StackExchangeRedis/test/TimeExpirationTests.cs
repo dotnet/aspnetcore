@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Xunit;
@@ -16,11 +17,11 @@ public class TimeExpirationTests
         "These tests require Redis server to be started on the machine. Make sure to change the value of" +
         "\"RedisTestConfig.RedisPort\" accordingly.";
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void AbsoluteExpirationInThePastThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         var expected = DateTimeOffset.Now - TimeSpan.FromMinutes(1);
@@ -34,11 +35,11 @@ public class TimeExpirationTests
             expected);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void AbsoluteExpirationExpires()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(1)));
@@ -55,11 +56,11 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact]
-    public void AbsoluteSubSecondExpirationExpiresImmidately()
+    [Fact(Skip = SkipReason)]
+    public void AbsoluteSubSecondExpirationExpiresImmediately()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(0.25)));
@@ -68,11 +69,11 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void NegativeRelativeExpirationThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         ExceptionAssert.ThrowsArgumentOutOfRange(() =>
@@ -84,11 +85,11 @@ public class TimeExpirationTests
         TimeSpan.FromMinutes(-1));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void ZeroRelativeExpirationThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         ExceptionAssert.ThrowsArgumentOutOfRange(
@@ -101,11 +102,11 @@ public class TimeExpirationTests
             TimeSpan.Zero);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void RelativeExpirationExpires()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(1)));
@@ -121,11 +122,11 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void RelativeSubSecondExpirationExpiresImmediately()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(0.25)));
@@ -134,11 +135,11 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void NegativeSlidingExpirationThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         ExceptionAssert.ThrowsArgumentOutOfRange(() =>
@@ -147,11 +148,11 @@ public class TimeExpirationTests
         }, nameof(DistributedCacheEntryOptions.SlidingExpiration), "The sliding expiration value must be positive.", TimeSpan.FromMinutes(-1));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void ZeroSlidingExpirationThrows()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         ExceptionAssert.ThrowsArgumentOutOfRange(
@@ -164,11 +165,11 @@ public class TimeExpirationTests
             TimeSpan.Zero);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void SlidingExpirationExpiresIfNotAccessed()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(1)));
@@ -176,17 +177,17 @@ public class TimeExpirationTests
         var result = cache.Get(key);
         Assert.Equal(value, result);
 
-        Thread.Sleep(TimeSpan.FromSeconds(3));
+        Thread.Sleep(TimeSpan.FromSeconds(3.5));
 
         result = cache.Get(key);
         Assert.Null(result);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void SlidingSubSecondExpirationExpiresImmediately()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(0.25)));
@@ -195,11 +196,11 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void SlidingExpirationRenewedByAccess()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(1)));
@@ -220,17 +221,18 @@ public class TimeExpirationTests
         Assert.Null(result);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public void SlidingExpirationRenewedByAccessUntilAbsoluteExpiration()
     {
         var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
-        var key = "myKey";
+        var key = GetNameAndReset(cache);
         var value = new byte[1];
 
         cache.Set(key, value, new DistributedCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromSeconds(1))
             .SetAbsoluteExpiration(TimeSpan.FromSeconds(3)));
 
+        var setTime = DateTime.Now;
         var result = cache.Get(key);
         Assert.Equal(value, result);
 
@@ -239,12 +241,22 @@ public class TimeExpirationTests
             Thread.Sleep(TimeSpan.FromSeconds(0.5));
 
             result = cache.Get(key);
+            Assert.NotNull(result);
             Assert.Equal(value, result);
         }
 
-        Thread.Sleep(TimeSpan.FromSeconds(.6));
+        while ((DateTime.Now - setTime).TotalSeconds < 4)
+        {
+            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+        }
 
         result = cache.Get(key);
         Assert.Null(result);
+    }
+
+    static string GetNameAndReset(IDistributedCache cache, [CallerMemberName] string caller = "")
+    {
+        cache.Remove(caller);
+        return caller;
     }
 }

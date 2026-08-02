@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -85,13 +87,20 @@ public partial class ResultsOfTTests
         }
     }
 
-    private static void PopulateMetadata<TTarget>(EndpointMetadataContext context) where TTarget : IEndpointMetadataProvider
+    private static void PopulateMetadata<TTarget>(MethodInfo method, EndpointBuilder builder) where TTarget : IEndpointMetadataProvider
     {
-        TTarget.PopulateMetadata(context);
+        TTarget.PopulateMetadata(method, builder);
     }
 
     private class ResultTypeProvidedMetadata
     {
         public string SourceTypeName { get; init; }
+    }
+
+    private class EmptyServiceProvider : IServiceProvider
+    {
+        public static IServiceProvider Instance { get; } = new EmptyServiceProvider();
+
+        public object GetService(Type serviceType) => null;
     }
 }

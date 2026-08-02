@@ -6,7 +6,7 @@ using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -30,11 +30,10 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void InputDateInteractsWithEditContext_NonNullableDateTime()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -42,32 +41,31 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // InputDate emits unmatched attributes
-        Browser.Equal("Enter the date", () => renewalDateInput.GetAttribute("placeholder"));
+        Browser.Equal("Enter the date", () => renewalDateInput.GetDomAttribute("placeholder"));
 
         // Validates on edit
-        Browser.Equal("valid", () => renewalDateInput.GetAttribute("class"));
-        renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
-        renewalDateInput.SendKeys("01/01/2000\t");
-        Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
+        Browser.Equal("valid", () => renewalDateInput.GetDomAttribute("class"));
+        ClearDate(renewalDateInput);
+        SetDate(renewalDateInput, "01/01/2000\t");
+        Browser.Equal("modified valid", () => renewalDateInput.GetDomAttribute("class"));
 
         // Can become invalid
-        renewalDateInput.SendKeys("11-11-11111\t");
-        Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
+        SetDate(renewalDateInput, "11-11-11111\t");
+        Browser.Equal("modified invalid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
         // Empty is invalid, because it's not nullable
-        renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
-        Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
+        ClearDate(renewalDateInput);
+        Browser.Equal("modified invalid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
         // Can become valid
-        renewalDateInput.SendKeys("01/01/01\t");
-        Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
+        SetDate(renewalDateInput, "01/01/01\t");
+        Browser.Equal("modified valid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void InputDateInteractsWithEditContext_NullableDateTimeOffset()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -75,23 +73,22 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // Validates on edit
-        Browser.Equal("valid", () => expiryDateInput.GetAttribute("class"));
-        expiryDateInput.SendKeys("01-01-2000\t");
-        Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
+        Browser.Equal("valid", () => expiryDateInput.GetDomAttribute("class"));
+        SetDate(expiryDateInput, "01-01-2000\t");
+        Browser.Equal("modified valid", () => expiryDateInput.GetDomAttribute("class"));
 
         // Can become invalid
-        expiryDateInput.SendKeys("11-11-11111\t");
-        Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
+        SetDate(expiryDateInput, "11-11-11111\t");
+        Browser.Equal("modified invalid", () => expiryDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
         // Empty is valid, because it's nullable
-        expiryDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
-        Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
+        ClearDate(expiryDateInput);
+        Browser.Equal("modified valid", () => expiryDateInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void InputDateInteractsWithEditContext_TimeInput()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -106,15 +103,15 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
 
         // Validates on edit
-        Browser.Equal("valid", () => departureTimeInput.GetAttribute("class"));
+        Browser.Equal("valid", () => departureTimeInput.GetDomAttribute("class"));
         departureTimeInput.SendKeys("06:43\t");
-        Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
 
         // Can become invalid
-        // Stricly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
+        // Strictly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
         // We don't know of any way to produce a different (non-empty-equivalent) state using UI gestures, so there's nothing else to test
-        departureTimeInput.SendKeys($"20{Keys.Backspace}\t");
-        Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
+        SetDate(departureTimeInput, $"20{Keys.Backspace}\t");
+        Browser.Equal("modified invalid", () => departureTimeInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
     }
 
@@ -133,20 +130,19 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
 
         // Input works with seconds value of zero and has the expected final value
-        Browser.Equal("valid", () => departureTimeInput.GetAttribute("class"));
+        Browser.Equal("valid", () => departureTimeInput.GetDomAttribute("class"));
         departureTimeInput.SendKeys("111111");
-        Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
-        Browser.Equal("11:11:11", () => departureTimeInput.GetAttribute("value"));
+        Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
+        Browser.Equal("11:11:11", () => departureTimeInput.GetDomProperty("value"));
 
         // Input works with non-zero seconds value
         // Move to the beginning of the input and put the new time
         departureTimeInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 3)) + "101010");
-        Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
-        Browser.Equal("10:10:10", () => departureTimeInput.GetAttribute("value"));
+        Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
+        Browser.Equal("10:10:10", () => departureTimeInput.GetDomProperty("value"));
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void InputDateInteractsWithEditContext_MonthInput()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -154,29 +150,28 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // Validates on edit
-        Browser.Equal("valid", () => visitMonthInput.GetAttribute("class"));
+        Browser.Equal("valid", () => visitMonthInput.GetDomAttribute("class"));
         visitMonthInput.SendKeys($"03{Keys.ArrowRight}2005\t");
-        Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => visitMonthInput.GetDomAttribute("class"));
 
         // Empty is invalid because it's not nullable
         visitMonthInput.Clear();
-        Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => visitMonthInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
         // Invalid year (11111)
         visitMonthInput.SendKeys($"11{Keys.ArrowRight}11111\t");
-        Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => visitMonthInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
         // Can become valid again
         visitMonthInput.Clear();
         visitMonthInput.SendKeys($"11{Keys.ArrowRight}1111\t");
-        Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => visitMonthInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void InputDateInteractsWithEditContext_DateTimeLocalInput()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -191,29 +186,28 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
 
         // Validates on edit and has the expected value
-        Browser.Equal("valid", () => appointmentInput.GetAttribute("class"));
+        Browser.Equal("valid", () => appointmentInput.GetDomAttribute("class"));
         appointmentInput.SendKeys($"01011970{Keys.ArrowRight}05421");
-        Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
 
         // Empty is invalid because it's not nullable
         appointmentInput.Clear();
-        Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
         // Invalid year (11111)
         appointmentInput.SendKeys($"111111111{Keys.ArrowRight}11111");
-        Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
         // Can become valid again
         appointmentInput.Clear();
         appointmentInput.SendKeys($"11111111{Keys.ArrowRight}11111");
-        Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void InputDateInteractsWithEditContext_DateTimeLocalInput_Step()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -228,22 +222,38 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
 
         // Input works with seconds value of zero (as in, starting from a zero value, which is the default) and has the expected final value
-        Browser.Equal("valid", () => appointmentInput.GetAttribute("class"));
+        Browser.Equal("valid", () => appointmentInput.GetDomAttribute("class"));
         appointmentInput.SendKeys($"11111970{Keys.ArrowRight}114216");
-        Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
-        Browser.Equal("1970-11-11T11:42:16", () => appointmentInput.GetAttribute("value"));
+        Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
+        Browser.Equal("1970-11-11T11:42:16", () => appointmentInput.GetDomProperty("value"));
 
         // Input works when starting with a non-zero seconds value
         // Move to the beginning of the input and put the new value
         appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
-        Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
-        Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetAttribute("value"));
+        Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
+        Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetDomProperty("value"));
+    }
+
+    private static void SetDate(IWebElement input, string keys)
+    {
+        input.Click();
+        input.SendKeys(Keys.ArrowLeft + Keys.ArrowLeft + Keys.ArrowLeft);
+        input.SendKeys(keys);
+    }
+
+    private static void ClearDate(IWebElement input)
+    {
+        input.Click();
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Delete);
+        input.SendKeys(Keys.Tab);
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
     {
         return () => appElement.FindElements(By.ClassName("validation-message"))
             .Select(x => x.Text)
+            .Where(text => !string.IsNullOrEmpty(text))
             .OrderBy(x => x)
             .ToArray();
     }

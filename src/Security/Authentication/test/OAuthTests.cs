@@ -32,6 +32,13 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
     }
 
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new OAuthOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task ThrowsIfClientIdMissing()
     {
         using var host = await CreateHost(
@@ -44,7 +51,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.AuthorizationEndpoint = "/";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ClientId", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ClientId", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -60,7 +67,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.AuthorizationEndpoint = "/";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ClientSecret", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ClientSecret", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -92,7 +99,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.SignInScheme = "eh";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("TokenEndpoint", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("TokenEndpoint", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -108,14 +115,14 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.SignInScheme = "eh";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("AuthorizationEndpoint", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("AuthorizationEndpoint", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
     public async Task RedirectToIdentityProvider_SetsCorrelationIdCookiePath_ToCallBackPath()
     {
         using var host = await CreateHost(
-            s => s.AddAuthentication().AddOAuth(
+            s => s.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddOAuth(
                 "Weblie",
                 opt =>
                 {
@@ -142,7 +149,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
     public async Task RedirectToAuthorizeEndpoint_CorrelationIdCookieOptions_CanBeOverriden()
     {
         using var host = await CreateHost(
-            s => s.AddAuthentication().AddOAuth(
+            s => s.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddOAuth(
                 "Weblie",
                 opt =>
                 {
@@ -170,7 +177,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
     public async Task RedirectToAuthorizeEndpoint_HasScopeAsConfigured()
     {
         using var host = await CreateHost(
-            s => s.AddAuthentication().AddOAuth(
+            s => s.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddOAuth(
                 "Weblie",
                 opt =>
                 {
@@ -194,10 +201,36 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
     }
 
     [Fact]
+    public async Task RedirectToAuthorizeEndpoint_HasAdditionalAuthorizationParametersAsConfigured()
+    {
+        using var host = await CreateHost(
+            s => s.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddOAuth(
+                "Weblie",
+                opt =>
+                {
+                    ConfigureDefaults(opt);
+                    opt.AdditionalAuthorizationParameters.Add("prompt", "login");
+                    opt.AdditionalAuthorizationParameters.Add("audience", "https://api.example.com");
+                }),
+            async ctx =>
+            {
+                await ctx.ChallengeAsync("Weblie");
+                return true;
+            });
+
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync("https://www.example.com/challenge");
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+        Assert.Contains("prompt=login&audience=https%3A%2F%2Fapi.example.com", res.Headers.Location.Query);
+    }
+
+    [Fact]
     public async Task RedirectToAuthorizeEndpoint_HasScopeAsOverwritten()
     {
         using var host = await CreateHost(
-            s => s.AddAuthentication().AddOAuth(
+            s => s.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddOAuth(
                 "Weblie",
                 opt =>
                 {
@@ -226,7 +259,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
     public async Task RedirectToAuthorizeEndpoint_HasScopeAsOverwrittenWithBaseAuthenticationProperties()
     {
         using var host = await CreateHost(
-            s => s.AddAuthentication().AddOAuth(
+            s => s.AddAuthentication(o => o.DisableAutoDefaultScheme = true).AddOAuth(
                 "Weblie",
                 opt =>
                 {
@@ -437,7 +470,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 }));
 
         using var server = host.GetTestServer();
-        var exception = await Assert.ThrowsAsync<Exception>(
+        var exception = await Assert.ThrowsAsync<AuthenticationFailureException>(
             () => server.SendAsync("https://www.example.com/oauth-callback?code=random_code&state=protected_state", ".AspNetCore.Correlation.correlationId=N"));
     }
 
@@ -478,7 +511,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 }));
 
         using var server = host.GetTestServer();
-        var exception = await Assert.ThrowsAsync<Exception>(
+        var exception = await Assert.ThrowsAsync<AuthenticationFailureException>(
             () => server.SendAsync("https://www.example.com/oauth-callback?code=random_code&state=protected_state", ".AspNetCore.Correlation.correlationId=N"));
     }
 

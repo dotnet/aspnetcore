@@ -44,10 +44,7 @@ public class CompositeValueProvider :
     /// </returns>
     public static async Task<CompositeValueProvider> CreateAsync(ControllerContext controllerContext)
     {
-        if (controllerContext == null)
-        {
-            throw new ArgumentNullException(nameof(controllerContext));
-        }
+        ArgumentNullException.ThrowIfNull(controllerContext);
 
         var factories = controllerContext.ValueProviderFactories;
 
@@ -147,10 +144,7 @@ public class CompositeValueProvider :
     /// <inheritdoc />
     protected override void InsertItem(int index, IValueProvider item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         base.InsertItem(index, item);
     }
@@ -158,10 +152,7 @@ public class CompositeValueProvider :
     /// <inheritdoc />
     protected override void SetItem(int index, IValueProvider item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         base.SetItem(index, item);
     }
@@ -169,10 +160,7 @@ public class CompositeValueProvider :
     /// <inheritdoc />
     public IValueProvider? Filter(BindingSource bindingSource)
     {
-        if (bindingSource == null)
-        {
-            throw new ArgumentNullException(nameof(bindingSource));
-        }
+        ArgumentNullException.ThrowIfNull(bindingSource);
 
         var shouldFilter = false;
         for (var i = 0; i < Count; i++)

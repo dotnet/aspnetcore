@@ -67,10 +67,7 @@ public class UrlPrefix
             throw new ArgumentOutOfRangeException(nameof(scheme), scheme, Resources.Exception_UnsupportedScheme);
         }
 
-        if (string.IsNullOrWhiteSpace(host))
-        {
-            throw new ArgumentNullException(nameof(host));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(host);
 
         string port;
         if (!portValue.HasValue)
@@ -88,7 +85,7 @@ public class UrlPrefix
         {
             path = "/";
         }
-        else if (!path.EndsWith("/", StringComparison.Ordinal))
+        else if (!path.EndsWith('/'))
         {
             path += "/";
         }
@@ -115,23 +112,23 @@ public class UrlPrefix
         }
         var hostDelimiterStart = schemeDelimiterEnd + Uri.SchemeDelimiter.Length;
 
-        var pathDelimiterStart = whole.IndexOf("/", hostDelimiterStart, StringComparison.Ordinal);
+        var pathDelimiterStart = whole.IndexOf('/', hostDelimiterStart);
         if (pathDelimiterStart < 0)
         {
             pathDelimiterStart = whole.Length;
         }
-        var hostDelimiterEnd = whole.LastIndexOf(":", pathDelimiterStart - 1, pathDelimiterStart - hostDelimiterStart, StringComparison.Ordinal);
+        var hostDelimiterEnd = whole.LastIndexOf(':', pathDelimiterStart - 1, pathDelimiterStart - hostDelimiterStart);
         if (hostDelimiterEnd < 0)
         {
             hostDelimiterEnd = pathDelimiterStart;
         }
 
         scheme = whole.Substring(0, schemeDelimiterEnd);
-        var portString = whole.Substring(hostDelimiterEnd, pathDelimiterStart - hostDelimiterEnd); // The leading ":" is included
+        var portString = whole.AsSpan(hostDelimiterEnd, pathDelimiterStart - hostDelimiterEnd); // The leading ":" is included
         int portValue;
-        if (!string.IsNullOrEmpty(portString))
+        if (!portString.IsEmpty)
         {
-            var portValueString = portString.Substring(1); // Trim the leading ":"
+            var portValueString = portString.Slice(1); // Trim the leading ":"
             if (int.TryParse(portValueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out portValue))
             {
                 host = whole.Substring(hostDelimiterStart, hostDelimiterEnd - hostDelimiterStart);

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.Linq;
 using System.Text;
 
@@ -10,7 +11,8 @@ internal sealed class DictionaryJumpTable : JumpTable
 {
     private readonly int _defaultDestination;
     private readonly int _exitDestination;
-    private readonly Dictionary<string, int> _dictionary;
+    private readonly FrozenDictionary<string, int> _dictionary;
+    private readonly FrozenDictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> _lookup;
 
     public DictionaryJumpTable(
         int defaultDestination,
@@ -20,11 +22,8 @@ internal sealed class DictionaryJumpTable : JumpTable
         _defaultDestination = defaultDestination;
         _exitDestination = exitDestination;
 
-        _dictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < entries.Length; i++)
-        {
-            _dictionary.Add(entries[i].text, entries[i].destination);
-        }
+        _dictionary = entries.ToFrozenDictionary(e => e.text, e => e.destination, StringComparer.OrdinalIgnoreCase);
+        _lookup = _dictionary.GetAlternateLookup<ReadOnlySpan<char>>();
     }
 
     public override int GetDestination(string path, PathSegment segment)
@@ -34,8 +33,8 @@ internal sealed class DictionaryJumpTable : JumpTable
             return _exitDestination;
         }
 
-        var text = path.Substring(segment.Start, segment.Length);
-        if (_dictionary.TryGetValue(text, out var destination))
+        var text = path.AsSpan(segment.Start, segment.Length);
+        if (_lookup.TryGetValue(text, out var destination))
         {
             return destination;
         }

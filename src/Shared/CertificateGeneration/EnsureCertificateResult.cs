@@ -10,8 +10,12 @@ internal enum EnsureCertificateResult
     ErrorCreatingTheCertificate,
     ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore,
     ErrorExportingTheCertificate,
+    ErrorExportingTheCertificateToNonExistentDirectory,
     FailedToTrustTheCertificate,
+    PartiallyFailedToTrustTheCertificate,
     UserCancelledTrustStep,
     FailedToMakeKeyAccessible,
+    ExistingHttpsCertificateTrusted,
+    NewHttpsCertificateTrusted
 }
 

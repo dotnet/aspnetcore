@@ -16,10 +16,7 @@ internal sealed class CookieActionFactory
     /// <returns>The action</returns>
     public static ChangeCookieAction Create(string flagValue)
     {
-        if (string.IsNullOrEmpty(flagValue))
-        {
-            throw new ArgumentNullException(nameof(flagValue));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(flagValue);
 
         var i = 0;
         var separator = ':';

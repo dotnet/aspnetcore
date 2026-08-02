@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 internal static unsafe class XmlEncryptionExtensions
 {
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static XElement DecryptElement(this XElement element, IActivator activator)
     {
         // If no decryption necessary, return original element.
@@ -49,7 +48,7 @@ internal static unsafe class XmlEncryptionExtensions
             // the decryptor should be the child of the 'encryptedSecret' element.
             var clonedElementWhichRequiresDecryption = new XElement(elementWhichRequiresDecryption);
             string decryptorTypeName = (string)clonedElementWhichRequiresDecryption.Attribute(XmlConstants.DecryptorTypeAttributeName)!;
-            var decryptorInstance = activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
+            var decryptorInstance = CreateDecryptor(activator, decryptorTypeName);
             var decryptedElement = decryptorInstance.Decrypt(clonedElementWhichRequiresDecryption.Elements().Single());
 
             // Put a placeholder into the original document so that we can continue our
@@ -66,6 +65,37 @@ internal static unsafe class XmlEncryptionExtensions
             entry.Key.ReplaceWith(entry.Value);
         }
         return doc.Root!;
+    }
+
+    private static IXmlDecryptor CreateDecryptor(IActivator activator, string decryptorTypeName)
+    {
+        // typeNameToMatch will be used for matching against known types but not passed to the activator.
+        // The activator will do its own forwarding.
+        var typeNameToMatch = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
+            ? forwardedTypeName
+            : decryptorTypeName;
+
+        // Note: ITypeNameResolver is only implemented on the activator in tests. In production, it's always DefaultTypeNameResolver.
+        var typeNameResolver = activator as ITypeNameResolver ?? DefaultTypeNameResolver.Instance;
+
+        if (typeof(DpapiNGXmlDecryptor).MatchName(typeNameToMatch, typeNameResolver))
+        {
+            return activator.CreateInstance<DpapiNGXmlDecryptor>(decryptorTypeName);
+        }
+        else if (typeof(DpapiXmlDecryptor).MatchName(typeNameToMatch, typeNameResolver))
+        {
+            return activator.CreateInstance<DpapiXmlDecryptor>(decryptorTypeName);
+        }
+        else if (typeof(EncryptedXmlDecryptor).MatchName(typeNameToMatch, typeNameResolver))
+        {
+            return activator.CreateInstance<EncryptedXmlDecryptor>(decryptorTypeName);
+        }
+        else if (typeof(NullXmlDecryptor).MatchName(typeNameToMatch, typeNameResolver))
+        {
+            return activator.CreateInstance<NullXmlDecryptor>(decryptorTypeName);
+        }
+
+        return activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
     }
 
     public static XElement? EncryptIfNecessary(this IXmlEncryptor encryptor, XElement element)
@@ -143,7 +173,7 @@ internal static unsafe class XmlEncryptionExtensions
             }
             finally
             {
-                Array.Clear(underlyingBuffer, 0, underlyingBuffer.Length);
+                CryptoUtil.ZeroMemory(underlyingBuffer);
             }
         }
     }
@@ -164,7 +194,7 @@ internal static unsafe class XmlEncryptionExtensions
             }
             finally
             {
-                Array.Clear(plaintextSecret, 0, plaintextSecret.Length);
+                CryptoUtil.ZeroMemory(plaintextSecret);
             }
         }
     }

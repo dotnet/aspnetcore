@@ -25,21 +25,15 @@ public partial class FormFileModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public FormFileModelBinder(ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        _logger = loggerFactory.CreateLogger<FormFileModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(FormFileModelBinder));
     }
 
     /// <inheritdoc />
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 

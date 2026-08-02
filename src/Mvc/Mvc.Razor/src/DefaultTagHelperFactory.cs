@@ -29,10 +29,7 @@ internal sealed class DefaultTagHelperFactory : ITagHelperFactory
     /// </param>
     public DefaultTagHelperFactory(ITagHelperActivator activator)
     {
-        if (activator == null)
-        {
-            throw new ArgumentNullException(nameof(activator));
-        }
+        ArgumentNullException.ThrowIfNull(activator);
 
         _activator = activator;
         _injectActions = new ConcurrentDictionary<Type, PropertyActivator<ViewContext>[]>();
@@ -52,10 +49,7 @@ internal sealed class DefaultTagHelperFactory : ITagHelperFactory
     public TTagHelper CreateTagHelper<TTagHelper>(ViewContext context)
         where TTagHelper : ITagHelper
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var tagHelper = _activator.Create<TTagHelper>(context);
 

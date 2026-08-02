@@ -29,20 +29,9 @@ public class DefaultFilesMiddleware
     /// <param name="options">The configuration options for this middleware.</param>
     public DefaultFilesMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<DefaultFilesOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (hostingEnv == null)
-        {
-            throw new ArgumentNullException(nameof(hostingEnv));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(hostingEnv);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _options = options.Value;
@@ -59,7 +48,7 @@ public class DefaultFilesMiddleware
     /// <returns></returns>
     public Task Invoke(HttpContext context)
     {
-        if (context.GetEndpoint() == null
+        if (context.GetEndpoint()?.RequestDelegate is null
             && Helpers.IsGetOrHeadMethod(context.Request.Method)
             && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
         {

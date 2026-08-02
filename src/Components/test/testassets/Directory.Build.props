@@ -2,6 +2,19 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
+    <!-- TypeScript here is built via npm/rollup; block the MSBuild TypeScript toolchain. -->
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <WasmPreloadAssets>false</WasmPreloadAssets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <BlazorCacheBootResources>false</BlazorCacheBootResources>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <!-- Enable RespectRequiredConstructorParametersDefault to test compatibility -->
+    <RuntimeHostConfigurationOption Include="System.Text.Json.Serialization.RespectRequiredConstructorParametersDefault" Value="true" />
+  </ItemGroup>
 </Project>

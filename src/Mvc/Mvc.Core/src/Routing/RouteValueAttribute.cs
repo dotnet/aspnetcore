@@ -30,15 +30,8 @@ public abstract class RouteValueAttribute : Attribute, IRouteValueProvider
         string routeKey,
         string routeValue)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (routeValue == null)
-        {
-            throw new ArgumentNullException(nameof(routeValue));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(routeValue);
 
         RouteKey = routeKey;
         RouteValue = routeValue;

@@ -49,7 +49,7 @@ public class HealthCheckOptions
 
     private static IDictionary<HealthStatus, int> ValidateStatusCodesMapping(IDictionary<HealthStatus, int> mapping)
     {
-        var missingHealthStatus = ((HealthStatus[])Enum.GetValues(typeof(HealthStatus))).Except(mapping.Keys).ToList();
+        var missingHealthStatus = Enum.GetValues<HealthStatus>().Except(mapping.Keys).ToList();
         if (missingHealthStatus.Count > 0)
         {
             var missing = string.Join(", ", missingHealthStatus.Select(status => $"{nameof(HealthStatus)}.{status}"));

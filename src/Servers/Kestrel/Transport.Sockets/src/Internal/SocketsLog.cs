@@ -31,6 +31,17 @@ internal static partial class SocketsLog
         }
     }
 
+    [LoggerMessage(8, LogLevel.Debug, @"Connection id ""{ConnectionId}"" sending RST because: ""{Reason}""", EventName = "ConnectionWriteRst", SkipEnabledCheck = true)]
+    private static partial void ConnectionWriteRstCore(ILogger logger, string connectionId, string reason);
+
+    public static void ConnectionWriteRst(ILogger logger, SocketConnection connection, string reason)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            ConnectionWriteRstCore(logger, connection.ConnectionId, reason);
+        }
+    }
+
     // Reserved: Event ID 11, EventName = ConnectionWrite
 
     // Reserved: Event ID 12, EventName = ConnectionWriteCallback

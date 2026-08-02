@@ -16,15 +16,15 @@ public class RemoteAuthenticationUserOptions
     /// <summary>
     /// Gets or sets the claim type to use for the user roles.
     /// </summary>
-    public string RoleClaim { get; set; }
+    public string? RoleClaim { get; set; }
 
     /// <summary>
     /// Gets or sets the claim type to use for the user scopes.
     /// </summary>
-    public string ScopeClaim { get; set; }
+    public string? ScopeClaim { get; set; }
 
     /// <summary>
     /// Gets or sets the value to use for the <see cref="System.Security.Claims.ClaimsIdentity.AuthenticationType"/>.
     /// </summary>
-    public string AuthenticationType { get; set; }
+    public string? AuthenticationType { get; set; }
 }

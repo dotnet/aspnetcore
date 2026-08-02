@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -72,6 +72,7 @@ public partial class HttpConnectionTests
                 });
             // Fail safe in case the code is modified and some requests don't execute as a result
             Assert.True(requestsExecuted);
+            Assert.Equal(1, callCount);
         }
 
         [Theory]
@@ -275,7 +276,7 @@ public partial class HttpConnectionTests
 
                     var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
                         () => connection.Transport.Output.WriteAsync(new byte[0]).DefaultTimeout());
-                    Assert.Equal(nameof(HttpConnection), exception.ObjectName);
+                    Assert.Equal(typeof(HttpConnection).FullName, exception.ObjectName);
                 });
         }
 
@@ -309,6 +310,315 @@ public partial class HttpConnectionTests
 
                     Assert.Equal(TransferFormat.Text, transport.Format);
                 });
+        }
+
+        [Fact]
+        public async Task HttpConnectionFailsOnNegotiateWhenAuthFails()
+        {
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var accessTokenCallCount = 0;
+            var negotiateCount = 0;
+
+            testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            {
+                negotiateCount++;
+                return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
+            });
+
+            Task<string> AccessTokenProvider()
+            {
+                accessTokenCallCount++;
+                return Task.FromResult(accessTokenCallCount.ToString(CultureInfo.InvariantCulture));
+            }
+
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler, transportType: HttpTransportType.ServerSentEvents, accessTokenProvider: AccessTokenProvider),
+                async (connection) =>
+                {
+                    await Assert.ThrowsAsync<HttpRequestException>(async () => await connection.StartAsync().DefaultTimeout());
+                });
+            Assert.Equal(1, negotiateCount);
+            Assert.Equal(1, accessTokenCallCount);
+        }
+
+        [Fact]
+        public async Task HttpConnectionRetriesAccessTokenProviderWhenAuthFailsLongPolling()
+        {
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var requestsExecuted = false;
+            var accessTokenCallCount = 0;
+            var pollCount = 0;
+
+            testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+            });
+
+            var startSendTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var longPollTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var messageFragments = new[] { "This ", "is ", "a ", "test" };
+            testHttpHandler.OnLongPoll(async _ =>
+            {
+                // fail every other request
+                if (pollCount % 2 == 0)
+                {
+                    pollCount++;
+                    return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+                if (pollCount / 2 >= messageFragments.Length)
+                {
+                    startSendTcs.SetResult();
+                    await longPollTcs.Task;
+                    return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
+                }
+
+                var resp = ResponseUtils.CreateResponse(HttpStatusCode.OK, messageFragments[pollCount / 2]);
+                pollCount++;
+                return resp;
+            });
+
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            testHttpHandler.OnRequest((request, next, token) =>
+            {
+                if (!requestsExecuted)
+                {
+                    requestsExecuted = true;
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized));
+                }
+
+                Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
+
+                Assert.Equal(accessTokenCallCount.ToString(CultureInfo.InvariantCulture), request.Headers.Authorization.Parameter);
+
+                tcs.SetResult();
+
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.OK));
+            });
+
+            Task<string> AccessTokenProvider()
+            {
+                accessTokenCallCount++;
+                return Task.FromResult(accessTokenCallCount.ToString(CultureInfo.InvariantCulture));
+            }
+
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler, transportType: HttpTransportType.LongPolling, accessTokenProvider: AccessTokenProvider),
+                async (connection) =>
+                {
+                    await connection.StartAsync().DefaultTimeout();
+                    var message = await connection.Transport.Input.ReadAtLeastAsync(14);
+                    Assert.Equal("This is a test", Encoding.UTF8.GetString(message.Buffer));
+                    await startSendTcs.Task;
+                    await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
+                    await tcs.Task;
+                    longPollTcs.SetResult();
+                });
+            // 1 negotiate + 4 (number of polls) + 1 for last poll + 1 for send
+            Assert.Equal(7, accessTokenCallCount);
+        }
+
+        [Fact]
+        public async Task HttpConnectionFailsAfterFirstRetryFailsLongPolling()
+        {
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var accessTokenCallCount = 0;
+
+            testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+            });
+
+            testHttpHandler.OnLongPoll(_ =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
+            });
+
+            Task<string> AccessTokenProvider()
+            {
+                accessTokenCallCount++;
+                return Task.FromResult(accessTokenCallCount.ToString(CultureInfo.InvariantCulture));
+            }
+
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler, transportType: HttpTransportType.LongPolling, accessTokenProvider: AccessTokenProvider),
+                async (connection) =>
+                {
+                    await connection.StartAsync().DefaultTimeout();
+                    await Assert.ThrowsAsync<HttpRequestException>(async () => await connection.Transport.Input.ReadAllAsync());
+                });
+
+            // 1 negotiate + 1 retry initial poll
+            Assert.Equal(2, accessTokenCallCount);
+        }
+
+        [Fact]
+        public async Task HttpConnectionRetriesAccessTokenProviderWhenAuthFailsServerSentEvents()
+        {
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var requestsExecuted = false;
+            var accessTokenCallCount = 0;
+
+            testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+            });
+
+            var sendRequestExecuted = false;
+            var sendFinishedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            testHttpHandler.OnSocketSend((_, _) =>
+            {
+                if (!sendRequestExecuted)
+                {
+                    sendRequestExecuted = true;
+                    return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+                sendFinishedTcs.SetResult();
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+            });
+
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var stream = new BlockingStream(tcs);
+            testHttpHandler.OnRequest((request, next, token) =>
+            {
+                if (!requestsExecuted)
+                {
+                    requestsExecuted = true;
+                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized));
+                }
+
+                Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
+
+                Assert.Equal(accessTokenCallCount.ToString(CultureInfo.InvariantCulture), request.Headers.Authorization.Parameter);
+
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.OK, new StreamContent(stream)));
+            });
+
+            Task<string> AccessTokenProvider()
+            {
+                accessTokenCallCount++;
+                return Task.FromResult(accessTokenCallCount.ToString(CultureInfo.InvariantCulture));
+            }
+
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler, transportType: HttpTransportType.ServerSentEvents, accessTokenProvider: AccessTokenProvider),
+                async (connection) =>
+                {
+                    await connection.StartAsync().DefaultTimeout();
+                    await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
+                    await sendFinishedTcs.Task;
+                    tcs.TrySetResult();
+                    await connection.Transport.Input.ReadAllAsync();
+                });
+            // 1 negotiate + 1 retry stream request + 1 retry send
+            Assert.Equal(3, accessTokenCallCount);
+        }
+
+        [Fact]
+        public async Task HttpConnectionFailsAfterFirstRetryFailsServerSentEvents()
+        {
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var accessTokenCallCount = 0;
+
+            testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+            });
+
+            testHttpHandler.OnSocketSend((_, _) =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.Unauthorized);
+            });
+
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var stream = new BlockingStream(tcs);
+            testHttpHandler.OnRequest((request, next, token) =>
+            {
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.OK, new StreamContent(stream)));
+            });
+
+            Task<string> AccessTokenProvider()
+            {
+                accessTokenCallCount++;
+                return Task.FromResult(accessTokenCallCount.ToString(CultureInfo.InvariantCulture));
+            }
+
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler, transportType: HttpTransportType.ServerSentEvents, accessTokenProvider: AccessTokenProvider),
+                async (connection) =>
+                {
+                    await connection.StartAsync().DefaultTimeout();
+                    await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
+                    await Assert.ThrowsAsync<HttpRequestException>(async () => await connection.Transport.Input.ReadAllAsync());
+                });
+            // 1 negotiate + 1 retry stream request
+            Assert.Equal(2, accessTokenCallCount);
+        }
+
+        private class BlockingStream : Stream
+        {
+            private readonly TaskCompletionSource _tcs;
+            private bool _ignoreFirstWrite = true;
+
+            public BlockingStream(TaskCompletionSource tcs)
+            {
+                _tcs = tcs;
+            }
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => true;
+            public override long Length => throw new NotImplementedException();
+            public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+            public override void Flush()
+            {
+            }
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+            public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                cancellationToken.Register(() => _tcs.TrySetResult());
+                await _tcs.Task;
+                return 0;
+            }
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+            public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                if (_ignoreFirstWrite)
+                {
+                    // SSE does an initial write of :\r\n that we want to ignore in testing
+                    _ignoreFirstWrite = false;
+                    return;
+                }
+                await _tcs.Task;
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                if (_ignoreFirstWrite)
+                {
+                    // SSE does an initial write of :\r\n that we want to ignore in testing
+                    _ignoreFirstWrite = false;
+                    return;
+                }
+                await _tcs.Task;
+                cancellationToken.ThrowIfCancellationRequested();
+            }
         }
     }
 }

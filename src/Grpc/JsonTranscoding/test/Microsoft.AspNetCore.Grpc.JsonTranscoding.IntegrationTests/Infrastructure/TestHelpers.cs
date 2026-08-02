@@ -5,6 +5,8 @@ using System.Net;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
 using Grpc.Core.Interceptors;
+using Grpc.Shared;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -57,16 +59,17 @@ internal static class TestHelpers
 
     public static CallHandlerDescriptorInfo CreateDescriptorInfo(
         FieldDescriptor? responseBodyDescriptor = null,
-        Dictionary<string, List<FieldDescriptor>>? routeParameterDescriptors = null,
+        Dictionary<string, RouteParameter>? routeParameterDescriptors = null,
         MessageDescriptor? bodyDescriptor = null,
         bool? bodyDescriptorRepeated = null,
-        List<FieldDescriptor>? bodyFieldDescriptors = null)
+        FieldDescriptor? bodyFieldDescriptor = null)
     {
         return new CallHandlerDescriptorInfo(
             responseBodyDescriptor,
             bodyDescriptor,
             bodyDescriptorRepeated ?? false,
-            bodyFieldDescriptors,
-            routeParameterDescriptors ?? new Dictionary<string, List<FieldDescriptor>>());
+            bodyFieldDescriptor,
+            routeParameterDescriptors ?? new Dictionary<string, RouteParameter>(),
+            JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")));
     }
 }

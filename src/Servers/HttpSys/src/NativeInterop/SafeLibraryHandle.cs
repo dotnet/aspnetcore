@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 /// <summary>
 /// Represents a handle to a Windows module (DLL).
 /// </summary>
-internal sealed unsafe class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
+internal sealed unsafe partial class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
     // Called by P/Invoke when returning SafeHandles
-    private SafeLibraryHandle()
+    public SafeLibraryHandle()
         : base(ownsHandle: true)
     {
     }
@@ -70,25 +70,25 @@ internal sealed unsafe class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInval
     }
 
     [SuppressUnmanagedCodeSecurity]
-    private static class UnsafeNativeMethods
+    private static partial class UnsafeNativeMethods
     {
         // http://msdn.microsoft.com/en-us/library/ms683152(v=vs.85).aspx
         [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("kernel32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-        internal static extern bool FreeLibrary(IntPtr hModule);
+        [LibraryImport("kernel32.dll")]
+        internal static partial bool FreeLibrary(IntPtr hModule);
 
         // http://msdn.microsoft.com/en-us/library/ms683212(v=vs.85).aspx
-        [DllImport("kernel32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        internal static extern IntPtr GetProcAddress(
-            [In] SafeLibraryHandle hModule,
-            [In, MarshalAs(UnmanagedType.LPStr)] string lpProcName);
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        internal static partial IntPtr GetProcAddress(
+            SafeLibraryHandle hModule,
+            [MarshalAs(UnmanagedType.LPStr)] string lpProcName);
 
         // http://msdn.microsoft.com/en-us/library/windows/desktop/ms684179(v=vs.85).aspx
-        [DllImport("kernel32.dll", EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-        internal static extern SafeLibraryHandle LoadLibraryEx(
-            [In, MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
-            [In] IntPtr hFile,
-            [In] uint dwFlags);
+        [LibraryImport("kernel32.dll", EntryPoint = "LoadLibraryExW", SetLastError = true)]
+        internal static partial SafeLibraryHandle LoadLibraryEx(
+            [MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
+            IntPtr hFile,
+            uint dwFlags);
 
         internal static void ThrowExceptionForLastWin32Error()
         {

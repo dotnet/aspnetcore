@@ -463,7 +463,7 @@ public class SessionTests
                         else if (context.Request.Path == new PathString("/AccessSessionData"))
                         {
                             var value = context.Session.GetInt32("Key");
-                            responseData = (value == null) ? "No value found in session." : value.ToString();
+                            responseData = (value == null) ? "No value found in session." : value.Value.ToString(CultureInfo.InvariantCulture);
                         }
                         else if (context.Request.Path == new PathString("/DoNotAccessSessionData"))
                         {
@@ -1014,7 +1014,7 @@ public class SessionTests
         Assert.Contains("Session stored", sessionLogMessages[1].State.ToString());
         Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
 
-        Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
+        Assert.DoesNotContain(sink.Writes, message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1078,7 +1078,7 @@ public class SessionTests
         Assert.Contains("Session stored", sessionLogMessages[1].State.ToString());
         Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
 
-        Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
+        Assert.DoesNotContain(sink.Writes, message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal));
     }
 
     [Fact]

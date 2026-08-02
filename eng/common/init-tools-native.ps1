@@ -83,36 +83,37 @@ try {
                     Select-Object -Expand 'native-tools' -ErrorAction SilentlyContinue
   if ($NativeTools) {
     if ($PathPromotion -eq $True) {
-      if ($env:SYSTEM_TEAMPROJECT) { # check to see if we're in an Azure pipelines build
+      $ArcadeToolsDirectory = "$env:SYSTEMDRIVE\arcade-tools"
+      if (Test-Path $ArcadeToolsDirectory) { # if this directory exists, we should use native tools on machine
         $NativeTools.PSObject.Properties | ForEach-Object {
           $ToolName = $_.Name
           $ToolVersion = $_.Value
+          $InstalledTools = @{}
 
           if ((Get-Command "$ToolName" -ErrorAction SilentlyContinue) -eq $null) {
             if ($ToolVersion -eq "latest") {
               $ToolVersion = ""
             }
-            $ArcadeToolsDirectory = "C:\arcade-tools"
-            if (Test-Path $ArcadeToolsDirectory -eq $False) {
-              Write-Error "Arcade tools directory '$ArcadeToolsDirectory' was not found; artifacts were not properly installed."
-              exit 1
-            }
-            $ToolDirectory = (Get-ChildItem -Path "$ArcadeToolsDirectory" -Filter "$ToolName-$ToolVersion*" | Sort-Object -Descending)[0]
-            if ([string]::IsNullOrWhiteSpace($ToolDirectory)) {
+            $ToolDirectories = (Get-ChildItem -Path "$ArcadeToolsDirectory" -Filter "$ToolName-$ToolVersion*" | Sort-Object -Descending)
+            if ($ToolDirectories -eq $null) {
               Write-Error "Unable to find directory for $ToolName $ToolVersion; please make sure the tool is installed on this image."
               exit 1
             }
+            $ToolDirectory = $ToolDirectories[0]
             $BinPathFile = "$($ToolDirectory.FullName)\binpath.txt"
-            if (Test-Path -Path "$BinPathFile" -eq $False) {
+            if (-not (Test-Path -Path "$BinPathFile")) {
               Write-Error "Unable to find binpath.txt in '$($ToolDirectory.FullName)' ($ToolName $ToolVersion); artifact is either installed incorrectly or is not a bootstrappable tool."
               exit 1
             }
             $BinPath = Get-Content "$BinPathFile"
-            Write-Host "Adding $ToolName to the path ($(Convert-Path -Path $BinPath))..."
-            Write-Host "##vso[task.prependpath]$(Convert-Path -Path $BinPath)"
+            $ToolPath = Convert-Path -Path $BinPath
+            Write-Host "Adding $ToolName to the path ($ToolPath)..."
+            Write-Host "##vso[task.prependpath]$ToolPath"
+            $env:PATH = "$ToolPath;$env:PATH"
+            $InstalledTools += @{ $ToolName = $ToolDirectory.FullName }
           }
         }
-        exit 0
+        return $InstalledTools
       } else {
         $NativeTools.PSObject.Properties | ForEach-Object {
           $ToolName = $_.Name
@@ -120,6 +121,7 @@ try {
 
           if ((Get-Command "$ToolName" -ErrorAction SilentlyContinue) -eq $null) {
             Write-PipelineTelemetryError -Category 'NativeToolsBootstrap' -Message "$ToolName not found on path. Please install $ToolName $ToolVersion before proceeding."
+            Write-PipelineTelemetryError -Category 'NativeToolsBootstrap' -Message "If this is running on a build machine, the arcade-tools directory was not found, which means there's an error with the image."
           }
         }
         exit 0
@@ -188,7 +190,7 @@ try {
     Write-Host "##vso[task.prependpath]$(Convert-Path -Path $InstallBin)"
     return $InstallBin
   }
-  else {
+  elseif (-not ($PathPromotion)) {
     Write-PipelineTelemetryError -Category 'NativeToolsBootstrap' -Message 'Native tools install directory does not exist, installation failed'
     exit 1
   }

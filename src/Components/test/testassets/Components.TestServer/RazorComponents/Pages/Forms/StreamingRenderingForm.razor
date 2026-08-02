@@ -1,0 +1,47 @@
+﻿@page "/forms/streaming-rendering/{OperationId}"
+@attribute [StreamRendering]
+@inject AsyncOperationService AsyncOperation
+@inject NavigationManager Navigation;
+@using Components.TestServer.Services;
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Mvc;
+
+<h2>Streaming rendering async form</h2>
+
+<EditForm Enhance EditContext="_editContext" method="POST" OnValidSubmit="HandleSubmit" FormName="someform">
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitting)
+{
+    <p id="progress">Form submitting!</p>
+}
+else if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code {
+    bool _submitted = false;
+    bool _submitting = false;
+    EditContext _editContext = new EditContext(new object());
+    [Parameter] public string? OperationId { get; set; }
+
+    public async Task HandleSubmit()
+    {
+        _submitting = true;
+        await AsyncOperation.Start(OperationId);
+        _submitting = false;
+        _submitted = true;
+    }
+
+    public static void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapPost(
+            "/forms/streaming-rendering/complete/{operationId}",
+            ([FromServices] AsyncOperationService asyncOperation, [FromRoute] string operationId) =>
+            {
+                asyncOperation.Complete(operationId);
+            });
+    }
+}

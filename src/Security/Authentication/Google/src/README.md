@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Authentication.Google
 
-This project contains an implementation of OAuth2 [Google Authentication](https://docs.microsoft.com/aspnet/core/security/authentication/social/google-logins) for ASP.NET Core.
+This project contains an implementation of OAuth2 [Google Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/social/google-logins) for ASP.NET Core.
 
 ## Development Setup
 

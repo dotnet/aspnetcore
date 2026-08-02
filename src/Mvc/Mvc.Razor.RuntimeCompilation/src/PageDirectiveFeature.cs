@@ -31,10 +31,7 @@ internal static partial class PageDirectiveFeature
 
     public static bool TryGetPageDirective(ILogger logger, RazorProjectItem projectItem, [NotNullWhen(true)] out string? template)
     {
-        if (projectItem == null)
-        {
-            throw new ArgumentNullException(nameof(projectItem));
-        }
+        ArgumentNullException.ThrowIfNull(projectItem);
 
         var codeDocument = PageDirectiveEngine.Process(projectItem);
 

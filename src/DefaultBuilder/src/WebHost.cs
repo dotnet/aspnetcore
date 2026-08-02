@@ -1,15 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,6 +24,7 @@ namespace Microsoft.AspNetCore;
 /// <summary>
 /// Provides convenience methods for creating instances of <see cref="IWebHost"/> and <see cref="IWebHostBuilder"/> with pre-configured defaults.
 /// </summary>
+[Obsolete("WebHost is obsolete. Use HostBuilder or WebApplicationBuilder instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
 public static class WebHost
 {
     /// <summary>
@@ -37,7 +43,7 @@ public static class WebHost
     /// <param name="url">The URL the hosted application will listen on.</param>
     /// <param name="app">A delegate that handles requests to the application.</param>
     /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-    public static IWebHost Start(string url, RequestDelegate app)
+    public static IWebHost Start([StringSyntax(StringSyntaxAttribute.Uri)] string url, RequestDelegate app)
     {
         var startupAssemblyName = app.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
         return StartWith(url: url, configureServices: null, app: appBuilder => appBuilder.Run(app), applicationName: startupAssemblyName);
@@ -59,7 +65,7 @@ public static class WebHost
     /// <param name="url">The URL the hosted application will listen on.</param>
     /// <param name="routeBuilder">A delegate that configures the router for handling requests to the application.</param>
     /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-    public static IWebHost Start(string url, Action<IRouteBuilder> routeBuilder)
+    public static IWebHost Start([StringSyntax(StringSyntaxAttribute.Uri)] string url, Action<IRouteBuilder> routeBuilder)
     {
         var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
         return StartWith(url, services => services.AddRouting(), appBuilder => appBuilder.UseRouter(routeBuilder), applicationName: startupAssemblyName);
@@ -81,7 +87,7 @@ public static class WebHost
     /// <param name="url">The URL the hosted application will listen on.</param>
     /// <param name="app">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
     /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-    public static IWebHost StartWith(string url, Action<IApplicationBuilder> app) =>
+    public static IWebHost StartWith([StringSyntax(StringSyntaxAttribute.Uri)] string url, Action<IApplicationBuilder> app) =>
         StartWith(url: url, configureServices: null, app: app, applicationName: null);
 
     private static IWebHost StartWith(string? url, Action<IServiceCollection>? configureServices, Action<IApplicationBuilder> app, string? applicationName)
@@ -152,7 +158,9 @@ public static class WebHost
     /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder CreateDefaultBuilder(string[] args)
     {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         var builder = new WebHostBuilder();
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         if (string.IsNullOrEmpty(builder.GetSetting(WebHostDefaults.ContentRootKey)))
         {
@@ -221,11 +229,32 @@ public static class WebHost
                 StaticWebAssetsLoader.UseStaticWebAssets(ctx.HostingEnvironment, ctx.Configuration);
             }
         });
-        builder.UseKestrel((builderContext, options) =>
-        {
-            options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
-        })
-        .ConfigureServices((hostingContext, services) =>
+
+        ConfigureWebDefaultsWorker(
+            builder.UseKestrel(ConfigureKestrel),
+            services =>
+            {
+                services.AddRouting();
+            });
+
+        builder
+            .UseIIS()
+            .UseIISIntegration();
+    }
+
+    internal static void ConfigureWebDefaultsSlim(IWebHostBuilder builder)
+    {
+        ConfigureWebDefaultsWorker(builder.UseKestrelCore().ConfigureKestrel(ConfigureKestrel), configureRouting: null);
+    }
+
+    private static void ConfigureKestrel(WebHostBuilderContext builderContext, KestrelServerOptions options)
+    {
+        options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
+    }
+
+    private static void ConfigureWebDefaultsWorker(IWebHostBuilder builder, Action<IServiceCollection>? configureRouting)
+    {
+        builder.ConfigureServices((hostingContext, services) =>
         {
             // Fallback
             services.PostConfigure<HostFilteringOptions>(options =>
@@ -246,10 +275,21 @@ public static class WebHost
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
-            services.AddRouting();
-        })
-        .UseIIS()
-        .UseIISIntegration();
+            // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation).
+            services.TryAddSingleton<ICsrfProtection, DefaultCsrfProtection>();
+
+            // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
+            // A lambda is used here because we don't want to reference AddRouting directly because of trimming.
+            // This avoids the overhead of calling AddRoutingCore multiple times on app startup.
+            if (configureRouting == null)
+            {
+                services.AddRoutingCore();
+            }
+            else
+            {
+                configureRouting(services);
+            }
+        });
     }
 
     /// <summary>
@@ -269,6 +309,6 @@ public static class WebHost
     /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
     /// <param name="args">The command line args.</param>
     /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
-    public static IWebHostBuilder CreateDefaultBuilder<TStartup>(string[] args) where TStartup : class =>
+    public static IWebHostBuilder CreateDefaultBuilder<[DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] TStartup>(string[] args) where TStartup : class =>
         CreateDefaultBuilder(args).UseStartup<TStartup>();
 }

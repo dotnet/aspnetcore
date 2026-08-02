@@ -8,7 +8,11 @@ namespace Microsoft.AspNetCore.Routing.Template;
 /// <summary>
 /// The parsed representation of an inline constraint in a route parameter.
 /// </summary>
+#if !COMPONENTS
 public class InlineConstraint
+#else
+internal class InlineConstraint
+#endif
 {
     /// <summary>
     /// Creates a new instance of <see cref="InlineConstraint"/>.
@@ -16,10 +20,7 @@ public class InlineConstraint
     /// <param name="constraint">The constraint text.</param>
     public InlineConstraint(string constraint)
     {
-        if (constraint == null)
-        {
-            throw new ArgumentNullException(nameof(constraint));
-        }
+        ArgumentNullException.ThrowIfNull(constraint);
 
         Constraint = constraint;
     }
@@ -30,10 +31,7 @@ public class InlineConstraint
     /// <param name="other">A <see cref="RoutePatternParameterPolicyReference"/> instance.</param>
     public InlineConstraint(RoutePatternParameterPolicyReference other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Constraint = other.Content!;
     }

@@ -16,10 +16,7 @@ public class ApplicationModelProviderContext
     /// <param name="controllerTypes">The discovered controller <see cref="TypeInfo"/> instances.</param>
     public ApplicationModelProviderContext(IEnumerable<TypeInfo> controllerTypes)
     {
-        if (controllerTypes == null)
-        {
-            throw new ArgumentNullException(nameof(controllerTypes));
-        }
+        ArgumentNullException.ThrowIfNull(controllerTypes);
 
         ControllerTypes = controllerTypes;
     }

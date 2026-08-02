@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.JsonPatch.Operations;
 
@@ -16,15 +17,8 @@ public class Operation<TModel> : Operation where TModel : class
     public Operation(string op, string path, string from, object value)
         : base(op, path, from)
     {
-        if (op == null)
-        {
-            throw new ArgumentNullException(nameof(op));
-        }
-
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(op);
+        ArgumentNullThrowHelper.ThrowIfNull(path);
 
         this.value = value;
     }
@@ -32,27 +26,14 @@ public class Operation<TModel> : Operation where TModel : class
     public Operation(string op, string path, string from)
         : base(op, path, from)
     {
-        if (op == null)
-        {
-            throw new ArgumentNullException(nameof(op));
-        }
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(op);
+        ArgumentNullThrowHelper.ThrowIfNull(path);
     }
 
     public void Apply(TModel objectToApplyTo, IObjectAdapter adapter)
     {
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
-
-        if (adapter == null)
-        {
-            throw new ArgumentNullException(nameof(adapter));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
+        ArgumentNullThrowHelper.ThrowIfNull(adapter);
 
         switch (OperationType)
         {

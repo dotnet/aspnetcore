@@ -19,35 +19,43 @@ internal sealed class Http3FrameReader
         |                       Frame Payload (*)                     ...
         +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     */
-    internal static bool TryReadFrame(ref ReadOnlySequence<byte> readableBuffer, Http3RawFrame frame, out ReadOnlySequence<byte> framePayload)
+    // Reads and returns partial frames, don't rely on the frame being complete when using this method
+    // Set isContinuedFrame to true when expecting to read more of the previous frame
+    internal static bool TryReadFrame(ref ReadOnlySequence<byte> readableBuffer, Http3RawFrame frame, bool isContinuedFrame, out ReadOnlySequence<byte> framePayload)
     {
         framePayload = ReadOnlySequence<byte>.Empty;
-        SequencePosition consumed;
+        SequencePosition consumed = readableBuffer.Start;
+        var length = frame.RemainingLength;
 
-        var type = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out _);
-        if (type == -1)
+        if (!isContinuedFrame)
         {
-            return false;
-        }
+            if (!VariableLengthIntegerHelper.TryGetInteger(readableBuffer, out consumed, out var type))
+            {
+                return false;
+            }
 
-        var firstLengthBuffer = readableBuffer.Slice(consumed);
+            var firstLengthBuffer = readableBuffer.Slice(consumed);
 
-        var length = VariableLengthIntegerHelper.GetInteger(firstLengthBuffer, out consumed, out _);
+            if (!VariableLengthIntegerHelper.TryGetInteger(firstLengthBuffer, out consumed, out length))
+            {
+                return false;
+            }
 
-        // Make sure the whole frame is buffered
-        if (length == -1)
-        {
-            return false;
+            frame.RemainingLength = length;
+            frame.Type = (Http3FrameType)type;
         }
 
         var startOfFramePayload = readableBuffer.Slice(consumed);
-        if (startOfFramePayload.Length < length)
+
+        // Get all the available bytes or the rest of the frame whichever is less
+        length = Math.Min(startOfFramePayload.Length, length);
+
+        // If we were expecting a non-empty payload, but haven't received any of it yet,
+        // there is nothing to process until we wait for more data.
+        if (length == 0 && frame.RemainingLength != 0)
         {
             return false;
         }
-
-        frame.Length = length;
-        frame.Type = (Http3FrameType)type;
 
         // The remaining payload minus the extra fields
         framePayload = startOfFramePayload.Slice(0, length);

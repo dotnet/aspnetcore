@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
 public sealed class DockerOnlyAttribute : Attribute, ITestCondition
@@ -31,7 +31,7 @@ public sealed class DockerOnlyAttribute : Attribute, ITestCondition
 
             var lines = File.ReadAllLines(procFile);
             // typically the last line in the file is "1:name=openrc:/docker"
-            return lines.Reverse().Any(l => l.EndsWith("name=openrc:/docker", StringComparison.Ordinal));
+            return Enumerable.Reverse(lines).Any(l => l.EndsWith("name=openrc:/docker", StringComparison.Ordinal));
         }
     }
 }

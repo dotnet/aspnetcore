@@ -45,10 +45,7 @@ public class ProblemDetailsWrapper : IXmlSerializable, IUnwrappable
     /// <inheritdoc />
     public virtual void ReadXml(XmlReader reader)
     {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         if (reader.IsEmptyElement)
         {
@@ -75,10 +72,7 @@ public class ProblemDetailsWrapper : IXmlSerializable, IUnwrappable
     /// <param name="name">The name of the node.</param>
     protected virtual void ReadValue(XmlReader reader, string name)
     {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         var value = reader.ReadInnerXml();
 
@@ -177,10 +171,7 @@ public class ProblemDetailsWrapper : IXmlSerializable, IUnwrappable
 
     object IUnwrappable.Unwrap(Type declaredType)
     {
-        if (declaredType == null)
-        {
-            throw new ArgumentNullException(nameof(declaredType));
-        }
+        ArgumentNullException.ThrowIfNull(declaredType);
 
         return ProblemDetails;
     }

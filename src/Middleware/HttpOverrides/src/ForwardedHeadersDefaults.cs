@@ -25,6 +25,11 @@ public static class ForwardedHeadersDefaults
     public static string XForwardedProtoHeaderName { get; } = "X-Forwarded-Proto";
 
     /// <summary>
+    /// X-Forwarded-Prefix
+    /// </summary>
+    public static string XForwardedPrefixHeaderName { get; } = "X-Forwarded-Prefix";
+
+    /// <summary>
     /// X-Original-For
     /// </summary>
     public static string XOriginalForHeaderName { get; } = "X-Original-For";
@@ -38,4 +43,9 @@ public static class ForwardedHeadersDefaults
     /// X-Original-Proto
     /// </summary>
     public static string XOriginalProtoHeaderName { get; } = "X-Original-Proto";
+
+    /// <summary>
+    /// X-Original-Prefix
+    /// </summary>
+    public static string XOriginalPrefixHeaderName { get; } = "X-Original-Prefix";
 }

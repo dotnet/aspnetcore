@@ -11,8 +11,8 @@ namespace System.Net.Http.HPack
     {
         // HPack static huffman code. see: https://httpwg.org/specs/rfc7541.html#huffman.code
         // Stored into two tables to optimize its initialization and memory consumption.
-        private static readonly uint[] s_encodingTableCodes = new uint[257]
-        {
+        private static ReadOnlySpan<uint> EncodingTableCodes => // 257
+        [
             0b11111111_11000000_00000000_00000000,
             0b11111111_11111111_10110000_00000000,
             0b11111111_11111111_11111110_00100000,
@@ -270,10 +270,10 @@ namespace System.Net.Http.HPack
             0b11111111_11111111_11111110_00000000,
             0b11111111_11111111_11111011_10000000,
             0b11111111_11111111_11111111_11111100,
-        };
+        ];
 
-        private static ReadOnlySpan<byte> EncodingTableBitLengths => new byte[257]
-        {
+        private static ReadOnlySpan<byte> EncodingTableBitLengths => // 257
+        [
             13,
             23,
             28,
@@ -531,13 +531,13 @@ namespace System.Net.Http.HPack
             27,
             26,
             30
-        };
+        ];
 
         private static readonly ushort[] s_decodingTree = GenerateDecodingLookupTree();
 
         public static (uint encoded, int bitLength) Encode(int data)
         {
-            return (s_encodingTableCodes[data], EncodingTableBitLengths[data]);
+            return (EncodingTableCodes[data], EncodingTableBitLengths[data]);
         }
 
         private static ushort[] GenerateDecodingLookupTree()
@@ -574,7 +574,7 @@ namespace System.Net.Http.HPack
             // it is guaranteed that for this huffman code generated decoding lookup tree MUST consist of exactly 15 lookup tables
             var decodingTree = new ushort[15 * 256];
 
-            uint[] encodingTableCodes = s_encodingTableCodes;
+            ReadOnlySpan<uint> encodingTableCodes = EncodingTableCodes;
             ReadOnlySpan<byte> encodingTableBitLengths = EncodingTableBitLengths;
 
             int allocatedLookupTableIndex = 0;
@@ -677,7 +677,7 @@ namespace System.Net.Http.HPack
             // see comments in GenerateDecodingLookupTree() describing decoding table
 
             Span<byte> dst = dstArray;
-            Debug.Assert(dst != null && dst.Length > 0);
+            Debug.Assert(dst.Length > 0);
 
             ushort[] decodingTree = s_decodingTree;
 

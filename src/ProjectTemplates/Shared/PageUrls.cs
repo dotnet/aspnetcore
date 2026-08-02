@@ -8,7 +8,7 @@ public static class PageUrls
     public const string HomeUrl = "/";
     public const string PrivacyUrl = "/Privacy";
     public const string PrivacyFullUrl = "/Home/Privacy";
-    public const string DocsUrl = "https://docs.microsoft.com/aspnet/core";
+    public const string DocsUrl = "https://learn.microsoft.com/aspnet/core";
     public const string LoginUrl = "/Identity/Account/Login";
     public const string RegisterUrl = "/Identity/Account/Register";
     public const string ForgotPassword = "/Identity/Account/ForgotPassword";

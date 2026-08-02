@@ -16,10 +16,7 @@ internal struct CopyOnWriteDictionaryHolder<TKey, TValue> where TKey : notnull
 
     public CopyOnWriteDictionaryHolder(Dictionary<TKey, TValue> source)
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         _source = source;
         _copy = null;

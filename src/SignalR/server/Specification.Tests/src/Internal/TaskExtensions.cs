@@ -4,10 +4,10 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
-// Copied from https://github.com/dotnet/extensions/blob/master/src/TestingUtils/Microsoft.AspNetCore.Testing/src/TaskExtensions.cs
-// Required because Microsoft.AspNetCore.Testing is not shipped
+// Copied from https://github.com/dotnet/extensions/blob/master/src/TestingUtils/Microsoft.AspNetCore.InternalTesting/src/TaskExtensions.cs
+// Required because Microsoft.AspNetCore.InternalTesting is not shipped
 internal static class TaskExtensions
 {
     public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout,

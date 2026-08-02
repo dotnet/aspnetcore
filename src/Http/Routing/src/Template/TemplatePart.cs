@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Patterns;
 
@@ -84,10 +85,7 @@ public class TemplatePart
         object? defaultValue,
         IEnumerable<InlineConstraint>? inlineConstraints)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         return new TemplatePart()
         {
@@ -107,6 +105,7 @@ public class TemplatePart
     /// <summary>
     /// <see langword="true"/> if the route part is represents a literal value.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(Text))]
     public bool IsLiteral { get; private set; }
     /// <summary>
     /// <see langword="true"/> if the route part represents a parameterized value.
@@ -117,7 +116,7 @@ public class TemplatePart
     /// </summary>
     public bool IsOptional { get; private set; }
     /// <summary>
-    /// <see langword="true"/> if the route part represents an optional seperator.
+    /// <see langword="true"/> if the route part represents an optional separator.
     /// </summary>
     public bool IsOptionalSeperator { get; set; }
     /// <summary>
@@ -125,7 +124,7 @@ public class TemplatePart
     /// </summary>
     public string? Name { get; private set; }
     /// <summary>
-    /// The textual representation of the route parameter. Can be null. Used to represent route seperators and literal parts.
+    /// The textual representation of the route parameter. Can be null. Used to represent route separators and literal parts.
     /// </summary>
     public string? Text { get; private set; }
     /// <summary>

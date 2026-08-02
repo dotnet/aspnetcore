@@ -7,14 +7,16 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 /// <summary>
-/// A conext for <see cref="OpenIdConnectEvents.AuthenticationFailed"/>.
+/// A context for <see cref="OpenIdConnectEvents.AuthenticationFailed"/>.
 /// </summary>
 public class AuthenticationFailedContext : RemoteAuthenticationContext<OpenIdConnectOptions>
 {
     /// <summary>
     /// Initializes a new instance of <see cref="AuthenticationFailedContext"/>.
     /// </summary>
-    /// <inheritdoc />
+    /// <param name="context">The HTTP request context.</param>
+    /// <param name="scheme">The authentication scheme.</param>
+    /// <param name="options">The OpenID Connect authentication options.</param>
     public AuthenticationFailedContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options)
         : base(context, scheme, options, new AuthenticationProperties())
     { }

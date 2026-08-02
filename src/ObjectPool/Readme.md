@@ -1,6 +1,6 @@
 # Object Pool
 
-This directory contains sources for [`Microsoft.Extensions.ObjectPool`](https://www.nuget.org/packages/Microsoft.Extensions.ObjectPool). This package provides types that enable object reuse. You can find additional information in the [ASP.NET Core Documentation](https://docs.microsoft.com/aspnet/core/performance/objectpool).
+This directory contains sources for [`Microsoft.Extensions.ObjectPool`](https://www.nuget.org/packages/Microsoft.Extensions.ObjectPool). This package provides types that enable object reuse. You can find additional information in the [ASP.NET Core Documentation](https://learn.microsoft.com/aspnet/core/performance/objectpool).
 
 ## Description
 
@@ -11,7 +11,7 @@ This project contains abstractions and default implementations for pooling objec
 `ObjectPoolProvider` - This represents a provider of `ObjectPool<T>`. This is used to create object pools based on an `IPooledObjectPolicy<T>`.
 
 
-For a full list of the types defined in this project, see [the namespace documentation](https://docs.microsoft.com/dotnet/api/microsoft.extensions.objectpool).
+For a full list of the types defined in this project, see [the namespace documentation](https://learn.microsoft.com/dotnet/api/microsoft.extensions.objectpool).
 
 ## Development Setup
 

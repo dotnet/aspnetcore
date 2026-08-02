@@ -10,15 +10,31 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
+/// <summary>
+/// The `DefaultProblemDetailsFactory` is a concrete implementation of the `ProblemDetailsFactory` abstract class.
+/// It provides methods to create instances of `ProblemDetails` and `ValidationProblemDetails` with default settings.
+/// This class uses the provided `ApiBehaviorOptions` for client error mapping and an optional custom configuration action to further customize the problem details.
+/// </summary>
+public sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
 {
     private readonly ApiBehaviorOptions _options;
+    private readonly Action<ProblemDetailsContext>? _configure;
 
-    public DefaultProblemDetailsFactory(IOptions<ApiBehaviorOptions> options)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DefaultProblemDetailsFactory"/> class.
+    /// </summary>
+    /// <param name="options">The options for API behavior.</param>
+    /// <param name="problemDetailsOptions">The options for customizing problem details.</param>
+    public DefaultProblemDetailsFactory(
+        IOptions<ApiBehaviorOptions> options,
+        IOptions<ProblemDetailsOptions>? problemDetailsOptions = null)
     {
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _configure = problemDetailsOptions?.Value?.CustomizeProblemDetails;
     }
 
+    
+    /// <inheritdoc />
     public override ProblemDetails CreateProblemDetails(
         HttpContext httpContext,
         int? statusCode = null,
@@ -43,6 +59,7 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
         return problemDetails;
     }
 
+    /// <inheritdoc />
     public override ValidationProblemDetails CreateValidationProblemDetails(
         HttpContext httpContext,
         ModelStateDictionary modelStateDictionary,
@@ -52,10 +69,7 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
         string? detail = null,
         string? instance = null)
     {
-        if (modelStateDictionary == null)
-        {
-            throw new ArgumentNullException(nameof(modelStateDictionary));
-        }
+        ArgumentNullException.ThrowIfNull(modelStateDictionary);
 
         statusCode ??= 400;
 
@@ -93,5 +107,7 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
         {
             problemDetails.Extensions["traceId"] = traceId;
         }
+
+        _configure?.Invoke(new() { HttpContext = httpContext!, ProblemDetails = problemDetails });
     }
 }

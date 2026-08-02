@@ -3,26 +3,37 @@
 
 using System.Net.Http;
 using System.Reflection;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class UrlResolutionTest :
-    IClassFixture<MvcTestFixture<RazorWebSite.Startup>>,
-    IClassFixture<MvcEncodedTestFixture<RazorWebSite.Startup>>
+public class UrlResolutionTest : LoggedTest
 {
     private static readonly Assembly _resourcesAssembly = typeof(UrlResolutionTest).GetTypeInfo().Assembly;
 
-    public UrlResolutionTest(
-        MvcTestFixture<RazorWebSite.Startup> fixture,
-        MvcEncodedTestFixture<RazorWebSite.Startup> encodedFixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
-        EncodedClient = encodedFixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<RazorWebSite.Startup>(LoggerFactory);
+        EncodedFactory = new MvcEncodedTestFixture<RazorWebSite.Startup>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
+        EncodedClient = EncodedFactory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        EncodedFactory.Dispose();
+        base.Dispose();
+    }
 
-    public HttpClient EncodedClient { get; }
+    public MvcTestFixture<RazorWebSite.Startup> Factory { get; private set; }
+    public MvcEncodedTestFixture<RazorWebSite.Startup> EncodedFactory { get; private set; }
+    public HttpClient Client { get; private set; }
+
+    public HttpClient EncodedClient { get; private set; }
 
     [Fact]
     public async Task AppRelativeUrlsAreResolvedCorrectly()

@@ -21,6 +21,9 @@ public readonly struct RenderHandle
         _componentId = componentId;
     }
 
+    internal ComponentsMetrics? ComponentMetrics => _renderer?.ComponentMetrics;
+    internal ComponentsActivitySource? ComponentActivitySource => _renderer?.ComponentActivitySource;
+
     /// <summary>
     /// Gets the <see cref="Components.Dispatcher" /> associated with the component.
     /// </summary>
@@ -46,10 +49,45 @@ public readonly struct RenderHandle
     /// <summary>
     /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a metadata update (hot-reload) change.
     /// </summary>
-    public bool IsRenderingOnMetadataUpdate => HotReloadManager.Default.MetadataUpdateSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
+    public bool IsRenderingOnMetadataUpdate => HotReloadManager.IsSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
+
+    internal bool IsFirstHotReloadRender() => IsRenderingOnMetadataUpdate && _renderer?.IsFirstHotReloadRender(_componentId) == true;
 
     internal bool IsRendererDisposed => _renderer?.Disposed
         ?? throw new InvalidOperationException("No renderer has been initialized.");
+
+    /// <summary>
+    /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
+    /// </summary>
+    public RendererInfo RendererInfo => _renderer?.RendererInfo ?? throw new InvalidOperationException("No renderer has been initialized.");
+
+    /// <summary>
+    /// Retrieves the <see cref="IComponentRenderMode"/> assigned to the component.
+    /// </summary>
+    /// <returns>The <see cref="IComponentRenderMode"/> assigned to the component.</returns>
+    public IComponentRenderMode? RenderMode
+    {
+        get
+        {
+            if (_renderer == null)
+            {
+                throw new InvalidOperationException("No renderer has been initialized.");
+            }
+
+            return _renderer.GetComponentRenderMode(_componentId);
+        }
+    }
+
+    /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> associated with the <see cref="Renderer"/>.
+    /// </summary>
+    public ResourceAssetCollection Assets
+    {
+        get
+        {
+            return _renderer?.Assets ?? throw new InvalidOperationException("No renderer has been initialized.");
+        }
+    }
 
     /// <summary>
     /// Notifies the renderer that the component should be rendered.
@@ -63,6 +101,18 @@ public readonly struct RenderHandle
         }
 
         _renderer.AddToRenderQueue(_componentId, renderFragment);
+    }
+
+    /// <summary>
+    /// Dispatches an <see cref="Exception"/> to the <see cref="Renderer"/>.
+    /// </summary>
+    /// <param name="exception">The <see cref="Exception"/> that will be dispatched to the renderer.</param>
+    /// <returns>A <see cref="Task"/> that will be completed when the exception has finished dispatching.</returns>
+    public Task DispatchExceptionAsync(Exception exception)
+    {
+        var renderer = _renderer;
+        var componentId = _componentId;
+        return Dispatcher.InvokeAsync(() => renderer!.HandleComponentException(exception, componentId));
     }
 
     [DoesNotReturn]

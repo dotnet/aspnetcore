@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -10,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -132,11 +133,11 @@ public class ServerTests
 
         var options = new HttpSysOptions();
         options.UrlPrefixes.Add(address1);
-        using var listener = new HttpSysListener(options, new LoggerFactory());
+        using var listener = new HttpSysListener(options, new DefaultMemoryPoolFactory(), new LoggerFactory());
 
         var exception = Assert.Throws<HttpSysException>(() => listener.Start());
 
-        Assert.Equal((int)UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS, exception.ErrorCode);
+        Assert.Equal((int)ErrorCodes.ERROR_ALREADY_EXISTS, exception.ErrorCode);
         Assert.Contains($"The prefix '{address1}' is already registered.", exception.Message);
     }
 

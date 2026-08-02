@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -15,6 +15,46 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener;
 
 public class RequestHeaderTests
 {
+    [ConditionalFact]
+    public async Task RequestHeaders_RemoveHeaders_Success()
+    {
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
+        {
+            string[] customValues = new string[] { "custom1, and custom测试2", "custom3" };
+            Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.UTF8);
+
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            var requestHeaders = context.Request.Headers;
+
+            var headers = context.Request.Headers;
+            bool removed = headers.Remove("Connection");
+            Assert.False(headers.TryGetValue("Connection", out _));
+            Assert.True(StringValues.IsNullOrEmpty(headers["Connection"]));
+            Assert.True(StringValues.IsNullOrEmpty(headers.Connection));
+
+            removed = headers.Remove("Custom-Header");
+            Assert.True(removed);
+            Assert.False(headers.TryGetValue("Custom-Header", out _));
+            Assert.True(StringValues.IsNullOrEmpty(headers["Custom-Header"]));
+
+            headers["Connection"] = "foo";
+            Assert.True(headers.TryGetValue("Connection", out var connectionValue));
+            Assert.Equal("foo", connectionValue);
+            Assert.Equal("foo", headers["Connection"]);
+
+            bool removedAfterAssignValue = headers.Remove("Connection");
+            bool removedAgain = headers.Remove("Connection");
+
+            Assert.True(removed);
+            Assert.True(removedAfterAssignValue);
+            Assert.False(removedAgain);
+
+            context.Dispose();
+
+            await responseTask;
+        }
+    }
 
     [ConditionalFact]
     public async Task RequestHeaders_ClientSendsUtf8Headers_Success()

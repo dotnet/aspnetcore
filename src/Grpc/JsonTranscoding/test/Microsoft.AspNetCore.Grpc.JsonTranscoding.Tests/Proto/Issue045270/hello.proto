@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "Proto/Issue045270/country.proto";
+
+package example.hello;
+
+option csharp_namespace = "Example.Hello";
+
+service HelloService {
+  rpc Say(SayRequest) returns (SayResponse) {
+    option (google.api.http) = {
+      post: "/say",
+      body: "*"
+    };
+  };
+}
+
+message SayRequest {
+  string name = 1;
+  country.Alpha3CountryCode country = 2;
+}
+
+message SayResponse {
+  string message = 1;
+  country.Alpha3CountryCode country = 2;
+}

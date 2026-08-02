@@ -4,6 +4,7 @@
 using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test;
 
@@ -23,7 +24,14 @@ public class ScratchDatabaseFixture : IDisposable
     }
 
     private DbContext CreateEmptyContext()
-        => new DbContext(new DbContextOptionsBuilder().UseSqlite(_connection).Options);
+    {
+        var services = new ServiceCollection();
+        services.Configure<IdentityOptions>(options => options.Stores.SchemaVersion = IdentitySchemaVersions.Version3);
+        return new DbContext(new DbContextOptionsBuilder()
+            .UseSqlite(_connection)
+            .UseApplicationServiceProvider(services.BuildServiceProvider())
+            .Options);
+    }
 
     public DbConnection Connection => _connection;
 

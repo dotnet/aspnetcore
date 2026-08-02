@@ -33,7 +33,8 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private readonly GrpcServiceOptions _globalOptions;
     private readonly GrpcServiceOptions<TService> _serviceOptions;
     private readonly IGrpcServiceActivator<TService> _serviceActivator;
-    private readonly GrpcJsonTranscodingOptions _JsonTranscodingOptions;
+    private readonly GrpcJsonTranscodingOptions _jsonTranscodingOptions;
+    private readonly InterceptorActivators _interceptorActivators;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
 
@@ -45,7 +46,8 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         GrpcServiceOptions<TService> serviceOptions,
         ILoggerFactory loggerFactory,
         IGrpcServiceActivator<TService> serviceActivator,
-        GrpcJsonTranscodingOptions JsonTranscodingOptions)
+        GrpcJsonTranscodingOptions jsonTranscodingOptions,
+        InterceptorActivators interceptorActivators)
     {
         _context = context;
         _invokerResolver = invokerResolver;
@@ -53,12 +55,13 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         _globalOptions = globalOptions;
         _serviceOptions = serviceOptions;
         _serviceActivator = serviceActivator;
-        _JsonTranscodingOptions = JsonTranscodingOptions;
+        _jsonTranscodingOptions = jsonTranscodingOptions;
+        _interceptorActivators = interceptorActivators;
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<JsonTranscodingProviderServiceBinder<TService>>();
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ClientStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ClientStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor) &&
             ServiceDescriptorHelpers.TryGetHttpRule(methodDescriptor, out _))
@@ -67,7 +70,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, DuplexStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, DuplexStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor) &&
             ServiceDescriptorHelpers.TryGetHttpRule(methodDescriptor, out _))
@@ -76,7 +79,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ServerStreamingServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ServerStreamingServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor))
         {
@@ -97,7 +100,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         }
     }
 
-    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, UnaryServerMethod<TRequest, TResponse> handler)
+    public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, UnaryServerMethod<TRequest, TResponse>? handler)
     {
         if (TryGetMethodDescriptor(method.Name, out var methodDescriptor))
         {
@@ -162,12 +165,12 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             httpRule,
             methodDescriptor);
 
-        var methodInvoker = new UnaryServerMethodInvoker<TService, TRequest, TResponse>(invoker, method, methodOptions, _serviceActivator);
+        var methodInvoker = new UnaryServerMethodInvoker<TService, TRequest, TResponse>(invoker, method, methodOptions, _serviceActivator, _interceptorActivators);
         var callHandler = new UnaryServerCallHandler<TService, TRequest, TResponse>(
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.UnarySerializerOptions);
+            _jsonTranscodingOptions.UnarySerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }
@@ -189,12 +192,12 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             httpRule,
             methodDescriptor);
 
-        var methodInvoker = new ServerStreamingServerMethodInvoker<TService, TRequest, TResponse>(invoker, method, methodOptions, _serviceActivator);
+        var methodInvoker = new ServerStreamingServerMethodInvoker<TService, TRequest, TResponse>(invoker, method, methodOptions, _serviceActivator, _interceptorActivators);
         var callHandler = new ServerStreamingServerCallHandler<TService, TRequest, TResponse>(
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.ServerStreamingSerializerOptions);
+            _jsonTranscodingOptions.ServerStreamingSerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }
@@ -228,39 +231,26 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
 
     private static (RoutePattern routePattern, CallHandlerDescriptorInfo descriptorInfo) ParseRoute(string pattern, string body, string responseBody, MethodDescriptor methodDescriptor)
     {
-        if (!pattern.StartsWith('/'))
-        {
-            // This validation is consistent with grpc-gateway code generation.
-            // We should match their validation to be a good member of the eco-system.
-            throw new InvalidOperationException($"Path template '{pattern}' must start with a '/'.");
-        }
+        var httpRoutePattern = HttpRoutePattern.Parse(pattern);
+        var adapter = JsonTranscodingRouteAdapter.Parse(httpRoutePattern);
 
-        var routePattern = RoutePatternFactory.Parse(pattern);
-        return (RoutePatternFactory.Parse(pattern), CreateDescriptorInfo(body, responseBody, methodDescriptor, routePattern));
+        return (RoutePatternFactory.Parse(adapter.ResolvedRouteTemplate), CreateDescriptorInfo(body, responseBody, methodDescriptor, adapter));
     }
 
-    private static CallHandlerDescriptorInfo CreateDescriptorInfo(string body, string responseBody, MethodDescriptor methodDescriptor, RoutePattern routePattern)
+    private static CallHandlerDescriptorInfo CreateDescriptorInfo(string body, string responseBody, MethodDescriptor methodDescriptor, JsonTranscodingRouteAdapter routeAdapter)
     {
-        var routeParameterDescriptors = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(routePattern, methodDescriptor.InputType);
+        var routeParameterDescriptors = ServiceDescriptorHelpers.ResolveRouteParameterDescriptors(routeAdapter.HttpRoutePattern.Variables, methodDescriptor.InputType);
 
         var bodyDescriptor = ServiceDescriptorHelpers.ResolveBodyDescriptor(body, typeof(TService), methodDescriptor);
-
-        FieldDescriptor? responseBodyDescriptor = null;
-        if (!string.IsNullOrEmpty(responseBody))
-        {
-            responseBodyDescriptor = methodDescriptor.OutputType.FindFieldByName(responseBody);
-            if (responseBodyDescriptor == null)
-            {
-                throw new InvalidOperationException($"Couldn't find matching field for response body '{responseBody}' on {methodDescriptor.OutputType.Name}.");
-            }
-        }
+        var responseBodyDescriptor = ServiceDescriptorHelpers.ResolveResponseBodyDescriptor(responseBody, methodDescriptor);
 
         var descriptorInfo = new CallHandlerDescriptorInfo(
             responseBodyDescriptor,
             bodyDescriptor?.Descriptor,
             bodyDescriptor?.IsDescriptorRepeated ?? false,
-            bodyDescriptor?.FieldDescriptors,
-            routeParameterDescriptors);
+            bodyDescriptor?.FieldDescriptor,
+            routeParameterDescriptors,
+            routeAdapter);
         return descriptorInfo;
     }
 

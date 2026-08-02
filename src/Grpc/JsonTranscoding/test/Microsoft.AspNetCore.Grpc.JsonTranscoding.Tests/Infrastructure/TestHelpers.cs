@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Reflection;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
 using Grpc.Core.Interceptors;
+using Grpc.Shared;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -16,10 +19,7 @@ internal static class TestHelpers
 {
     public static DefaultHttpContext CreateHttpContext(CancellationToken cancellationToken = default, Stream? bodyStream = null)
     {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton<JsonTranscodingGreeterService>();
-        serviceCollection.AddSingleton(typeof(IGrpcInterceptorActivator<>), typeof(TestInterceptorActivator<>));
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider();
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Host = new HostString("localhost");
         httpContext.RequestServices = serviceProvider;
@@ -27,6 +27,31 @@ internal static class TestHelpers
         httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
         httpContext.Features.Set<IHttpRequestLifetimeFeature>(new HttpRequestLifetimeFeature(cancellationToken));
         return httpContext;
+    }
+
+    public static IServiceProvider CreateServiceProvider()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<JsonTranscodingGreeterService>();
+        serviceCollection.AddSingleton(typeof(IGrpcInterceptorActivator<>), typeof(TestInterceptorActivator<>));
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceProvider;
+    }
+
+    internal static MessageDescriptor GetMessageDescriptor(Type typeToConvert)
+    {
+        var property = typeToConvert.GetProperty("Descriptor", BindingFlags.Static | BindingFlags.Public, binder: null, typeof(MessageDescriptor), Type.EmptyTypes, modifiers: null);
+        if (property == null)
+        {
+            throw new InvalidOperationException("Couldn't find Descriptor property on message type: " + typeToConvert);
+        }
+
+        var descriptor = property.GetValue(null, null) as MessageDescriptor;
+        if (descriptor == null)
+        {
+            throw new InvalidOperationException("Couldn't resolve MessageDescriptor for message type: " + typeToConvert);
+        }
+        return descriptor;
     }
 
     private class TestInterceptorActivator<T> : IGrpcInterceptorActivator<T> where T : Interceptor
@@ -58,16 +83,17 @@ internal static class TestHelpers
 
     public static CallHandlerDescriptorInfo CreateDescriptorInfo(
         FieldDescriptor? responseBodyDescriptor = null,
-        Dictionary<string, List<FieldDescriptor>>? routeParameterDescriptors = null,
+        Dictionary<string, RouteParameter>? routeParameterDescriptors = null,
         MessageDescriptor? bodyDescriptor = null,
         bool? bodyDescriptorRepeated = null,
-        List<FieldDescriptor>? bodyFieldDescriptors = null)
+        FieldDescriptor? bodyFieldDescriptor = null)
     {
         return new CallHandlerDescriptorInfo(
             responseBodyDescriptor,
             bodyDescriptor,
             bodyDescriptorRepeated ?? false,
-            bodyFieldDescriptors,
-            routeParameterDescriptors ?? new Dictionary<string, List<FieldDescriptor>>());
+            bodyFieldDescriptor,
+            routeParameterDescriptors ?? new Dictionary<string, RouteParameter>(),
+            JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")));
     }
 }

@@ -30,10 +30,7 @@ public class HttpMethodActionConstraint : IActionConstraint
     /// </param>
     public HttpMethodActionConstraint(IEnumerable<string> httpMethods)
     {
-        if (httpMethods == null)
-        {
-            throw new ArgumentNullException(nameof(httpMethods));
-        }
+        ArgumentNullException.ThrowIfNull(httpMethods);
 
         var methods = new List<string>();
 
@@ -41,7 +38,7 @@ public class HttpMethodActionConstraint : IActionConstraint
         {
             if (string.IsNullOrEmpty(method))
             {
-                throw new ArgumentException("httpMethod cannot be null or empty");
+                throw new ArgumentException($"{nameof(httpMethods)} cannot contain null or empty strings.");
             }
 
             methods.Add(method);
@@ -61,10 +58,7 @@ public class HttpMethodActionConstraint : IActionConstraint
     /// <inheritdoc />
     public virtual bool Accept(ActionConstraintContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (_httpMethods.Count == 0)
         {

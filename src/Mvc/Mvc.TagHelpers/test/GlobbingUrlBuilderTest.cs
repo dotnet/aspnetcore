@@ -47,7 +47,7 @@ public class GlobbingUrlBuilderTest
             url => Assert.Equal("/blank.css", url));
     }
 
-    public static TheoryData OrdersGlobbedMatchResultsCorrectly_Data
+    public static TheoryData<string, FileNode, string[]> OrdersGlobbedMatchResultsCorrectly_Data
     {
         get
         {
@@ -295,7 +295,7 @@ public class GlobbingUrlBuilderTest
         Mock.Get(cache).VerifyAll();
     }
 
-    public static TheoryData CommaSeparatedPatternData
+    public static TheoryData<string, string[]> CommaSeparatedPatternData
     {
         get
         {
@@ -457,7 +457,7 @@ public class GlobbingUrlBuilderTest
     {
         if (rootNode.Children == null || !rootNode.Children.Any())
         {
-            throw new ArgumentNullException(nameof(rootNode));
+            throw new ArgumentException($"{nameof(rootNode)} must have children.", nameof(rootNode));
         }
 
         var fileProvider = new Mock<IFileProvider>(MockBehavior.Strict);

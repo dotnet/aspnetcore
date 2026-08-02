@@ -34,10 +34,7 @@ internal sealed class HandleOptionsRequestsPageFilter : IPageFilter, IOrderedFil
 
     public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.HandlerMethod == null &&
             context.Result == null &&

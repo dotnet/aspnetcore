@@ -15,10 +15,7 @@ public class DistributedCacheTagHelperFormatter : IDistributedCacheTagHelperForm
     /// <inheritdoc />
     public Task<byte[]> SerializeAsync(DistributedCacheTagHelperFormattingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.Html == null)
         {
@@ -35,10 +32,7 @@ public class DistributedCacheTagHelperFormatter : IDistributedCacheTagHelperForm
     /// <inheritdoc />
     public Task<HtmlString> DeserializeAsync(byte[] value)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         var content = Encoding.UTF8.GetString(value);
         return Task.FromResult(new HtmlString(content));

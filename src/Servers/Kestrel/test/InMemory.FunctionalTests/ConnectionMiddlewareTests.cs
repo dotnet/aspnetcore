@@ -13,9 +13,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -95,6 +97,39 @@ public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
 
     [Theory]
     [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task CanReadWriteThroughAsyncConnectionMiddleware(RequestDelegate requestDelegate)
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions =>
+        {
+            listenOptions.UseConnectionLogging();
+            listenOptions.Use((context, next) =>
+            {
+                return new AsyncConnectionMiddleware(next).OnConnectionAsync(context);
+            });
+            listenOptions.UseConnectionLogging();
+        }))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "POST / HTTP/1.0",
+                    "Content-Length: 12",
+                    "",
+                    "Hello World?");
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Connection: close",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "Hello World!");
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(EchoAppRequestDelegates))]
     public async Task ImmediateFinAfterOnConnectionAsyncClosesGracefully(RequestDelegate requestDelegate)
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -117,10 +152,13 @@ public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
     [MemberData(nameof(EchoAppRequestDelegates))]
     public async Task ImmediateFinAfterThrowingClosesGracefully(RequestDelegate requestDelegate)
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
         listenOptions.Use(next => context => throw new InvalidOperationException());
 
-        var serviceContext = new TestServiceContext(LoggerFactory);
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
         {
@@ -131,6 +169,11 @@ public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
                 await connection.WaitForConnectionClose();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(typeof(InvalidOperationException).FullName, m.Tags[KestrelMetrics.ErrorTypeAttributeName]);
+        });
     }
 
     [Theory]

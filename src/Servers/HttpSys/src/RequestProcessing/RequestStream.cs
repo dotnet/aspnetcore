@@ -4,8 +4,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Windows.Win32;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -77,10 +77,12 @@ internal sealed partial class RequestStream : Stream
 
     public override void SetLength(long value) => throw new NotSupportedException(Resources.Exception_NoSeek);
 
-    public override void Flush() => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+    public override void Flush()
+    {
+        // No-op
+    }
 
-    public override Task FlushAsync(CancellationToken cancellationToken)
-        => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     internal void SwitchToOpaqueMode()
     {
@@ -94,22 +96,6 @@ internal sealed partial class RequestStream : Stream
         _requestContext.Abort();
     }
 
-    private static void ValidateReadBuffer(byte[] buffer, int offset, int size)
-    {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-        if ((uint)offset > (uint)buffer.Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-        }
-        if ((uint)size > (uint)(buffer.Length - offset))
-        {
-            throw new ArgumentOutOfRangeException(nameof(size), size, string.Empty);
-        }
-    }
-
     public override unsafe int Read([In, Out] byte[] buffer, int offset, int size)
     {
         if (!RequestContext.AllowSynchronousIO)
@@ -117,7 +103,7 @@ internal sealed partial class RequestStream : Stream
             throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
         }
 
-        ValidateReadBuffer(buffer, offset, size);
+        ValidateBufferArguments(buffer, offset, size);
         CheckSizeLimit();
         if (_closed)
         {
@@ -134,41 +120,29 @@ internal sealed partial class RequestStream : Stream
 
         if (_dataChunkIndex == -1 && dataRead == 0)
         {
-            uint statusCode = 0;
-            uint extraDataRead = 0;
-
             // the http.sys team recommends that we limit the size to 128kb
             if (size > MaxReadSize)
             {
                 size = MaxReadSize;
             }
 
-            fixed (byte* pBuffer = buffer)
-            {
-                // issue unmanaged blocking call
+            uint flags = 0;
+            var statusCode = PInvoke.HttpReceiveRequestEntityBody(
+                RequestQueueHandle,
+                RequestId,
+                flags,
+                buffer.AsSpan(offset, size),
+                out var extraDataRead);
 
-                uint flags = 0;
-
-                statusCode =
-                    HttpApi.HttpReceiveRequestEntityBody(
-                        RequestQueueHandle,
-                        RequestId,
-                        flags,
-                        (IntPtr)(pBuffer + offset),
-                        (uint)size,
-                        out extraDataRead,
-                        SafeNativeOverlapped.Zero);
-
-                dataRead += extraDataRead;
-            }
+            dataRead += extraDataRead;
 
             // Zero-byte reads
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA && size == 0)
+            if (statusCode == ErrorCodes.ERROR_MORE_DATA && size == 0)
             {
                 // extraDataRead returns 1 to let us know there's data available. Don't count it against the request body size yet.
                 dataRead = 0;
             }
-            else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+            else if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_HANDLE_EOF)
             {
                 Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                 Log.ErrorWhileRead(Logger, exception);
@@ -188,22 +162,22 @@ internal sealed partial class RequestStream : Stream
 
     internal void UpdateAfterRead(uint statusCode, uint dataRead)
     {
-        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF
-            || statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA && dataRead == 0)
+        if (statusCode == ErrorCodes.ERROR_HANDLE_EOF
+            || statusCode != ErrorCodes.ERROR_MORE_DATA && dataRead == 0)
         {
             Dispose();
         }
     }
 
     public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback? callback, object? state)
-        => TaskToApm.Begin(ReadAsync(buffer, offset, size, CancellationToken.None), callback, state);
+        => TaskToAsyncResult.Begin(ReadAsync(buffer, offset, size, CancellationToken.None), callback, state);
 
     public override int EndRead(IAsyncResult asyncResult)
-        => TaskToApm.End<int>(asyncResult);
+        => TaskToAsyncResult.End<int>(asyncResult);
 
     public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
     {
-        ValidateReadBuffer(buffer, offset, size);
+        ValidateBufferArguments(buffer, offset, size);
         CheckSizeLimit();
         if (_closed)
         {
@@ -224,7 +198,7 @@ internal sealed partial class RequestStream : Stream
             dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
             if (dataRead > 0)
             {
-                UpdateAfterRead(UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS, dataRead);
+                UpdateAfterRead(ErrorCodes.ERROR_SUCCESS, dataRead);
                 if (TryCheckSizeLimit((int)dataRead, out var exception))
                 {
                     return Task.FromException<int>(exception);
@@ -275,10 +249,10 @@ internal sealed partial class RequestStream : Stream
             throw;
         }
 
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+        if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
         {
             asyncResult.Dispose();
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+            if (statusCode == ErrorCodes.ERROR_HANDLE_EOF)
             {
                 uint totalRead = dataRead + bytesReturned;
                 UpdateAfterRead(statusCode, totalRead);
@@ -297,7 +271,7 @@ internal sealed partial class RequestStream : Stream
                 throw exception;
             }
         }
-        else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
+        else if (statusCode == ErrorCodes.ERROR_SUCCESS &&
                     HttpSysListener.SkipIOCPCallbackOnSuccess)
         {
             // IO operation completed synchronously - callback won't be called to signal completion.

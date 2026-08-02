@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -29,13 +30,20 @@ public class HttpsConnectionAdapterOptions
 
     /// <summary>
     /// <para>
-    /// Specifies the server certificate used to authenticate HTTPS connections. This is ignored if ServerCertificateSelector is set.
+    /// Specifies the server certificate information presented when an https connection is initiated. This is ignored if ServerCertificateSelector is set.
     /// </para>
     /// <para>
     /// If the server certificate has an Extended Key Usage extension, the usages must include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
     /// </para>
     /// </summary>
     public X509Certificate2? ServerCertificate { get; set; }
+
+    /// <summary>
+    /// <para>
+    /// Specifies the full server certificate chain presented when an https connection is initiated
+    /// </para>
+    /// </summary>
+    public X509Certificate2Collection? ServerCertificateChain { get; set; }
 
     /// <summary>
     /// <para>
@@ -47,6 +55,11 @@ public class HttpsConnectionAdapterOptions
     /// </para>
     /// </summary>
     public Func<ConnectionContext?, string?, X509Certificate2?>? ServerCertificateSelector { get; set; }
+
+    /// <summary>
+    /// Convenient shorthand for a common check.
+    /// </summary>
+    internal bool HasServerCertificateOrSelector => ServerCertificate is not null || ServerCertificateSelector is not null;
 
     /// <summary>
     /// Specifies the client certificate requirements for a HTTPS connection. Defaults to <see cref="ClientCertificateMode.NoCertificate"/>.
@@ -66,12 +79,6 @@ public class HttpsConnectionAdapterOptions
     public SslProtocols SslProtocols { get; set; }
 
     /// <summary>
-    /// The protocols enabled on this endpoint.
-    /// </summary>
-    /// <remarks>Defaults to HTTP/1.x only.</remarks>
-    internal HttpProtocols HttpProtocols { get; set; }
-
-    /// <summary>
     /// Specifies whether the certificate revocation list is checked during authentication.
     /// </summary>
     public bool CheckCertificateRevocation { get; set; }
@@ -89,6 +96,19 @@ public class HttpsConnectionAdapterOptions
     /// This is called after all of the other settings have already been applied.
     /// </summary>
     public Action<ConnectionContext, SslServerAuthenticationOptions>? OnAuthenticate { get; set; }
+
+    /// <summary>
+    /// A callback to be invoked to get the TLS client hello bytes. The client hello bytes are still wrapped in the record layer fragment.
+    /// Null by default.
+    /// If you want to store the bytes from the <see cref="ReadOnlySequence{T}"/>,
+    /// copy them into a buffer that you control rather than keeping a reference to the <see cref="ReadOnlySequence{T}"/> or <see cref="ReadOnlyMemory{T}"/> instances.
+    /// </summary>
+    /// <remarks>
+    /// If a client hello spans multiple record fragments then this callback only gets the first fragment.
+    /// Use <see cref="Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseTlsClientHelloListener"/> instead.
+    /// </remarks>
+    [Obsolete("Use ListenOptions.UseTlsClientHelloListener() instead.", error: false)]
+    public Action<ConnectionContext, ReadOnlySequence<byte>>? TlsClientHelloBytesCallback { get; set; }
 
     /// <summary>
     /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive

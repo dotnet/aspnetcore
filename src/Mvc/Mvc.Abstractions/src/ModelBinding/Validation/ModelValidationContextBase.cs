@@ -19,20 +19,9 @@ public class ModelValidationContextBase
         ModelMetadata modelMetadata,
         IModelMetadataProvider metadataProvider)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
-
-        if (modelMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadata));
-        }
-
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
+        ArgumentNullException.ThrowIfNull(modelMetadata);
+        ArgumentNullException.ThrowIfNull(metadataProvider);
 
         ActionContext = actionContext;
         ModelMetadata = modelMetadata;

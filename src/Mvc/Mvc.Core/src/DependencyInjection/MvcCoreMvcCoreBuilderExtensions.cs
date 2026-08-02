@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -29,15 +28,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<MvcOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;
@@ -53,15 +45,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<JsonOptions> configure)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure(configure);
         return builder;
@@ -174,15 +159,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddApplicationPart(this IMvcCoreBuilder builder, Assembly assembly)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(assembly);
 
         builder.ConfigureApplicationPartManager(manager =>
         {
@@ -207,15 +185,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<ApplicationPartManager> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         setupAction(builder.PartManager);
 
@@ -232,38 +203,12 @@ public static class MvcCoreMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<ApiBehaviorOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
 
         return builder;
     }
 
-    /// <summary>
-    /// Sets the <see cref="CompatibilityVersion"/> for ASP.NET Core MVC for the application.
-    /// </summary>
-    /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
-    /// <param name="version">The <see cref="CompatibilityVersion"/> value to configure.</param>
-    /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-    [Obsolete("This API is obsolete and will be removed in a future version. Consider removing usages.",
-        DiagnosticId = "ASP5001",
-        UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
-    public static IMvcCoreBuilder SetCompatibilityVersion(this IMvcCoreBuilder builder, CompatibilityVersion version)
-    {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        builder.Services.Configure<MvcCompatibilityOptions>(o => o.CompatibilityVersion = version);
-        return builder;
-    }
 }

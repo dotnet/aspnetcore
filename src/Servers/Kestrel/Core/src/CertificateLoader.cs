@@ -48,7 +48,7 @@ public static class CertificateLoader
                     // Pick the first one if there's no exact match as a fallback to substring default.
                     foundCertificate ??= certificate;
 
-                    if (certificate.GetNameInfo(X509NameType.SimpleName, true).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+                    if (certificate.GetNameInfo(X509NameType.SimpleName, forIssuer: false).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
                     {
                         foundCertificate = certificate;
                         break;
@@ -105,6 +105,9 @@ public static class CertificateLoader
 
     internal static bool DoesCertificateHaveAnAccessiblePrivateKey(X509Certificate2 certificate)
         => certificate.HasPrivateKey;
+
+    internal static bool DoesCertificateHaveASubjectAlternativeName(X509Certificate2 certificate)
+        => certificate.Extensions.OfType<X509SubjectAlternativeNameExtension>().Any();
 
     private static void DisposeCertificates(X509Certificate2Collection? certificates, X509Certificate2? except)
     {

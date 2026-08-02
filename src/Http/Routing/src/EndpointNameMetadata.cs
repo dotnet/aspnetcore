@@ -1,7 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -12,6 +14,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// Endpoint names must be unique within an application, and can be used to unambiguously
 /// identify a desired endpoint for URI generation using <see cref="LinkGenerator"/>.
 /// </remarks>
+[DebuggerDisplay("{ToString(),nq}")]
 public class EndpointNameMetadata : IEndpointNameMetadata
 {
     /// <summary>
@@ -20,10 +23,7 @@ public class EndpointNameMetadata : IEndpointNameMetadata
     /// <param name="endpointName">The endpoint name.</param>
     public EndpointNameMetadata(string endpointName)
     {
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         EndpointName = endpointName;
     }
@@ -32,4 +32,10 @@ public class EndpointNameMetadata : IEndpointNameMetadata
     /// Gets the endpoint name.
     /// </summary>
     public string EndpointName { get; }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return DebuggerHelpers.GetDebugText(nameof(EndpointName), EndpointName);
+    }
 }

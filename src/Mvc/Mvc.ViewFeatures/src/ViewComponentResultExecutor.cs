@@ -49,30 +49,11 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
         ITempDataDictionaryFactory tempDataDictionaryFactory,
         IHttpResponseStreamWriterFactory writerFactory)
     {
-        if (mvcHelperOptions == null)
-        {
-            throw new ArgumentNullException(nameof(mvcHelperOptions));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (htmlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(htmlEncoder));
-        }
-
-        if (modelMetadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadataProvider));
-        }
-
-        if (tempDataDictionaryFactory == null)
-        {
-            throw new ArgumentNullException(nameof(tempDataDictionaryFactory));
-        }
+        ArgumentNullException.ThrowIfNull(mvcHelperOptions);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(htmlEncoder);
+        ArgumentNullException.ThrowIfNull(modelMetadataProvider);
+        ArgumentNullException.ThrowIfNull(tempDataDictionaryFactory);
 
         _htmlHelperOptions = mvcHelperOptions.Value.HtmlHelperOptions;
         _logger = loggerFactory.CreateLogger<ViewComponentResult>();
@@ -85,15 +66,8 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
     /// <inheritdoc />
     public virtual async Task ExecuteAsync(ActionContext context, ViewComponentResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         var response = context.HttpContext.Response;
 
@@ -162,10 +136,7 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
     private static void OnExecuting(ViewContext viewContext)
     {
         var viewDataValuesProvider = viewContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
-        if (viewDataValuesProvider != null)
-        {
-            viewDataValuesProvider.ProvideViewDataValues(viewContext.ViewData);
-        }
+        viewDataValuesProvider?.ProvideViewDataValues(viewContext.ViewData);
     }
 
     private static Task<IHtmlContent> GetViewComponentResult(IViewComponentHelper viewComponentHelper, ILogger logger, ViewComponentResult result)

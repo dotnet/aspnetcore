@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection;
@@ -23,10 +24,7 @@ public static class DataProtectionProvider
     /// applications on the machine.</param>
     public static IDataProtectionProvider Create(string applicationName)
     {
-        if (string.IsNullOrEmpty(applicationName))
-        {
-            throw new ArgumentNullException(nameof(applicationName));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(applicationName);
 
         return CreateProvider(
             keyDirectory: null,
@@ -41,10 +39,7 @@ public static class DataProtectionProvider
     /// represent a directory on a local disk or a UNC share.</param>
     public static IDataProtectionProvider Create(DirectoryInfo keyDirectory)
     {
-        if (keyDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(keyDirectory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(keyDirectory);
 
         return CreateProvider(keyDirectory, setupAction: builder => { }, certificate: null);
     }
@@ -61,14 +56,8 @@ public static class DataProtectionProvider
         DirectoryInfo keyDirectory,
         Action<IDataProtectionBuilder> setupAction)
     {
-        if (keyDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(keyDirectory));
-        }
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(keyDirectory);
+        ArgumentNullThrowHelper.ThrowIfNull(setupAction);
 
         return CreateProvider(keyDirectory, setupAction, certificate: null);
     }
@@ -82,14 +71,8 @@ public static class DataProtectionProvider
     /// <param name="certificate">The <see cref="X509Certificate2"/> to be used for encryption.</param>
     public static IDataProtectionProvider Create(string applicationName, X509Certificate2 certificate)
     {
-        if (string.IsNullOrEmpty(applicationName))
-        {
-            throw new ArgumentNullException(nameof(applicationName));
-        }
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(applicationName);
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         return CreateProvider(
             keyDirectory: null,
@@ -108,14 +91,8 @@ public static class DataProtectionProvider
         DirectoryInfo keyDirectory,
         X509Certificate2 certificate)
     {
-        if (keyDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(keyDirectory));
-        }
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(keyDirectory);
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         return CreateProvider(keyDirectory, setupAction: builder => { }, certificate: certificate);
     }
@@ -134,18 +111,9 @@ public static class DataProtectionProvider
         Action<IDataProtectionBuilder> setupAction,
         X509Certificate2 certificate)
     {
-        if (keyDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(keyDirectory));
-        }
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(keyDirectory);
+        ArgumentNullThrowHelper.ThrowIfNull(setupAction);
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         return CreateProvider(keyDirectory, setupAction, certificate);
     }

@@ -19,15 +19,8 @@ internal sealed class MvcCoreBuilder : IMvcCoreBuilder
         IServiceCollection services,
         ApplicationPartManager manager)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(manager);
 
         Services = services;
         PartManager = manager;

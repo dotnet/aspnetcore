@@ -23,9 +23,53 @@ internal static class ComponentsApi
         public const string MetadataName = FullTypeName;
     }
 
+    public static class SupplyParameterFromFormAttribute
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class ComponentBase
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.ComponentBase";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class PersistentStateAttribute
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.PersistentStateAttribute";
+        public const string MetadataName = FullTypeName;
+    }
+
     public static class IComponent
     {
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class AuthenticationStateProvider
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider";
+        public const string MetadataName = FullTypeName;
+        public const string AuthenticationStateChanged = "AuthenticationStateChanged";
+        public const string GetAuthenticationStateAsync = "GetAuthenticationStateAsync";
+    }
+
+    public static class BindConverter
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.BindConverter";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class EventCallbackFactory
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.EventCallbackFactory";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class RenderTreeBuilder
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
         public const string MetadataName = FullTypeName;
     }
 }

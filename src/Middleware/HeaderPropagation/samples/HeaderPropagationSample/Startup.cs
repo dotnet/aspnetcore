@@ -64,7 +64,7 @@ public class Startup
             {
                 foreach (var header in context.Request.Headers)
                 {
-                    await context.Response.WriteAsync($"'/' Got Header '{header.Key}': {string.Join(", ", header.Value)}\r\n");
+                    await context.Response.WriteAsync($"'/' Got Header '{header.Key}': {string.Join(", ", (string[])header.Value)}\r\n");
                 }
 
                 var clientNames = new[] { "test", "another" };
@@ -90,7 +90,7 @@ public class Startup
             {
                 foreach (var header in context.Request.Headers)
                 {
-                    await context.Response.WriteAsync($"'/forwarded' Got Header '{header.Key}': {string.Join(", ", header.Value)}\r\n");
+                    await context.Response.WriteAsync($"'/forwarded' Got Header '{header.Key}': {string.Join(", ", (string[])header.Value)}\r\n");
                 }
             });
         });

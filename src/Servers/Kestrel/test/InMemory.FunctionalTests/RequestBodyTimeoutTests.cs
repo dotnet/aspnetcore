@@ -1,17 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
-using Xunit;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -20,9 +19,11 @@ public class RequestBodyTimeoutTests : LoggedTest
     [Fact]
     public async Task RequestTimesOutWhenRequestBodyNotReceivedAtSpecifiedMinimumRate()
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var gracePeriod = TimeSpan.FromSeconds(5);
-        var serviceContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -31,22 +32,22 @@ public class RequestBodyTimeoutTests : LoggedTest
             context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
                 new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
 
-            // The server must call Request.Body.ReadAsync() *before* the test sets systemClock.UtcNow (which is triggered by the
-            // server calling appRunningEvent.SetResult(null)).  If systemClock.UtcNow is set first, it's possible for the test to fail
+            // The server must call Request.Body.ReadAsync() *before* the test sets timeProvider.UtcNow (which is triggered by the
+            // server calling appRunningEvent.SetResult(null)).  If timeProvider.UtcNow is set first, it's possible for the test to fail
             // due to the following race condition:
             //
-            // 1. [test]    systemClock.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
+            // 1. [test]    timeProvider.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
             // 2. [server]  Heartbeat._timer is triggered, which calls HttpConnection.Tick()
             // 3. [server]  HttpConnection.Tick() calls HttpConnection.CheckForReadDataRateTimeout()
             // 4. [server]  HttpConnection.CheckForReadDataRateTimeout() is a no-op, since _readTimingEnabled is false,
             //              since Request.Body.ReadAsync() has not been called yet
             // 5. [server]  HttpConnection.Tick() sets _lastTimestamp = timestamp
             // 6. [server]  Request.Body.ReadAsync() is called
-            // 6. [test]    systemClock.UtcNow is never updated again, so server timestamp is never updated,
+            // 6. [test]    timeProvider.UtcNow is never updated again, so server timestamp is never updated,
             //              so HttpConnection.CheckForReadDataRateTimeout() is always a no-op until test fails
             //
             // This is a pretty tight race, since the once-per-second Heartbeat._timer needs to fire between the test updating
-            // systemClock.UtcNow and the server calling Request.Body.ReadAsync().  But it happened often enough to cause
+            // timeProvider.UtcNow and the server calling Request.Body.ReadAsync().  But it happened often enough to cause
             // test flakiness in our CI (https://github.com/aspnet/KestrelHttpServer/issues/2539).
             //
             // For verification, I was able to induce the race by adding a sleep in the RequestDelegate:
@@ -70,11 +71,11 @@ public class RequestBodyTimeoutTests : LoggedTest
 
                 await appRunningEvent.Task.DefaultTimeout();
 
-                // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
+                // Advance the timeProvider gracePeriod + TimeSpan.FromSeconds(1)
                 for (var i = 0; i < 6; i++)
                 {
-                    serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-                    heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                    serviceContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(1));
+                    serviceContext.ConnectionManager.OnHeartbeat();
                 }
 
                 await connection.Receive(
@@ -88,19 +89,24 @@ public class RequestBodyTimeoutTests : LoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, m.Tags));
     }
 
     [Fact]
     public async Task RequestTimesOutWhenNotDrainedWithinDrainTimeoutPeriod()
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         // This test requires a real clock since we can't control when the drain timeout is set
-        var serviceContext = new TestServiceContext(LoggerFactory);
         serviceContext.InitializeHeartbeat();
 
         // Ensure there's still a constant date header value.
-        var clock = new MockSystemClock();
-        var date = new DateHeaderValueManager();
-        date.OnHeartbeat(clock.UtcNow);
+        var timeProvider = new FakeTimeProvider();
+        var date = new DateHeaderValueManager(timeProvider);
+        date.OnHeartbeat();
         serviceContext.DateHeaderValueManager = date;
 
         var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -136,14 +142,18 @@ public class RequestBodyTimeoutTests : LoggedTest
 
         Assert.Contains(TestSink.Writes, w => w.EventId.Id == 32 && w.LogLevel == LogLevel.Information);
         Assert.Contains(TestSink.Writes, w => w.EventId.Id == 33 && w.LogLevel == LogLevel.Information);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.ServerTimeout, m.Tags));
     }
 
     [Fact]
     public async Task ConnectionClosedEvenIfAppSwallowsException()
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var gracePeriod = TimeSpan.FromSeconds(5);
-        var serviceContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         var appRunningTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var exceptionSwallowedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -190,8 +200,8 @@ public class RequestBodyTimeoutTests : LoggedTest
                 // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
                 for (var i = 0; i < 6; i++)
                 {
-                    serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-                    heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                    serviceContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(1));
+                    serviceContext.ConnectionManager.OnHeartbeat();
                 }
 
                 await exceptionSwallowedTcs.Task.DefaultTimeout();
@@ -206,5 +216,7 @@ public class RequestBodyTimeoutTests : LoggedTest
                     "hello, world");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, m.Tags));
     }
 }

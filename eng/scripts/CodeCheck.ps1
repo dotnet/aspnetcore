@@ -26,12 +26,16 @@ function LogError {
         [Parameter(Mandatory = $true, Position = 0)]
         [string]$message,
         [string]$FilePath,
+        [string]$LineNumber, # Ignored if -FilePath not specified.
         [string]$Code
     )
     if ($env:TF_BUILD) {
         $prefix = "##vso[task.logissue type=error"
         if ($FilePath) {
             $prefix = "${prefix};sourcepath=$FilePath"
+            if ($LineNumber) {
+                $prefix = "${prefix};linenumber=$LineNumber"
+            }
         }
         if ($Code) {
             $prefix = "${prefix};code=$Code"
@@ -40,7 +44,11 @@ function LogError {
     }
     $fullMessage = "error ${Code}: $message"
     if ($FilePath) {
-        $fullMessage += " [$FilePath]"
+        $fullMessage += " [$FilePath"
+        if ($LineNumber) {
+            $fullMessage += ":$LineNumber"
+        }
+        $fullMessage += "]"
     }
     Write-Host -f Red $fullMessage
     $script:errors += $fullMessage
@@ -68,7 +76,10 @@ try {
     # Ignore duplicates in submodules. These should be isolated from the rest of the build.
     # Ignore duplicates in the .ref folder. This is expected.
     Get-ChildItem -Recurse "$repoRoot/src/*.*proj" |
-    Where-Object { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } |
+    Where-Object {
+        $_.FullName -NotLike '*\submodules\*' -and $_.FullName -NotLike '*\node_modules\*' -and
+        $_.FullName -NotLike '*\bin\*' -and $_.FullName -NotLike '*\src\ProjectTemplates\*\content\*'
+    } |
     Where-Object { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } |
     ForEach-Object {
         $fileName = [io.path]::GetFileNameWithoutExtension($_)
@@ -80,64 +91,24 @@ try {
     }
 
     #
-    # Versions.props and Version.Details.xml
+    # Check for unexpected (not from dotnet-public-npm) npm resolutions in lock files.
     #
 
-    Write-Host "Checking that Versions.props and Version.Details.xml match"
-    [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
-    [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
-    $globalJson = Get-Content $repoRoot/global.json | ConvertFrom-Json
-
-    $versionVars = New-Object 'System.Collections.Generic.HashSet[string]'
-    foreach ($vars in $versionProps.SelectNodes("//PropertyGroup[`@Label=`"Automated`"]/*")) {
-        $versionVars.Add($vars.Name) | Out-Null
-    }
-
-    foreach ($dep in $versionDetails.SelectNodes('//Dependency')) {
-        Write-Verbose "Found $dep"
-
-        $expectedVersion = $dep.Version
-
-        if ($dep.Name -in $globalJson.'msbuild-sdks'.PSObject.Properties.Name) {
-            $actualVersion = $globalJson.'msbuild-sdks'.($dep.Name)
-
-            if ($expectedVersion -ne $actualVersion) {
-                LogError -filepath "$repoRoot\global.json" `
-                    ("MSBuild SDK version '$($dep.Name)' in global.json does not match the value in " +
-                     "Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'")
-            }
-        }
-        else {
-            $varName = $dep.Name -replace '\.',''
-            $varName = $varName -replace '\-',''
-            $varName = "${varName}Version"
-
-            $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
-            $actualVersion = $versionVar.InnerText
-            $versionVars.Remove($varName) | Out-Null
-
-            if (-not $versionVar) {
-                LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
-                continue
-            }
-
-            if ($expectedVersion -ne $actualVersion) {
-                LogError -filepath "$repoRoot\eng\Versions.props" `
-                    ("Version variable '$varName' does not match the value in Version.Details.xml. " +
-                     "Expected '$expectedVersion', actual '$actualVersion'")
-            }
-        }
-    }
-
-    foreach ($unexpectedVar in $versionVars) {
-        LogError -Filepath "$repoRoot\eng\Versions.props" `
-            ("Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. " +
-             "See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions " +
-             "on how to add a new dependency.")
+    $registry = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/'
+    Get-ChildItem src\package-lock.json -Recurse |
+    ForEach-Object FullName |
+    Where-Object {$_ -NotLike '*\node_modules\*'} |
+    ForEach-Object {
+        # -List to limit complaints to one per file.
+        Select-String '^  resolved ' $_ | Select-String -List -NotMatch $registry
+    } |
+    ForEach-Object {
+        LogError -filePath "${_.Path}" -lineNumber $_.LineNumber `
+            "Packages in package-lock.json file resolved from wrong registry. All dependencies must be resolved from $registry"
     }
 
     # ComponentsWebAssembly-CSharp.sln is used by the templating engine; MessagePack.sln is irrelevant (in submodule).
-    $solution = Get-ChildItem "$repoRoot/AspNetCore.sln"
+    $solution = Get-ChildItem "$repoRoot/AspNetCore.slnx"
     $solutionFile = Split-Path -Leaf $solution
 
     Write-Host "Checking that $solutionFile is up to date"
@@ -178,11 +149,6 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
-    Write-Host "  Re-generating package baselines"
-    Invoke-Block {
-        & dotnet run --project "$repoRoot/eng/tools/BaselineGenerator/"
-    }
-
     Write-Host "Running git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
@@ -190,7 +156,7 @@ try {
 
     # Temporary: Disable check for blazor js file and nuget.config (updated automatically for
     # internal builds)
-    $changedFilesExclusions = @("src/Components/Web.JS/dist/Release/blazor.server.js", "NuGet.config")
+    $changedFilesExclusions = @("src/Components/Web.JS/dist/Release/blazor.server.js", "src/Components/Web.JS/dist/Release/blazor.web.js", "NuGet.config")
 
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
@@ -216,6 +182,26 @@ try {
         $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
         $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
+        # Use the target branch's actual PreReleaseVersionLabel instead of its name to detect an
+        # API-frozen (rtm or servicing) branch. A branch can be named like "release/11.0" long
+        # before it reaches 'rtm' or 'servicing', and API surface is still expected to change
+        # until then.
+        $targetVersionsPropsContent = git show "origin/${targetBranch}:eng/Versions.props" 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Unable to read eng/Versions.props from origin/${targetBranch}: $targetVersionsPropsContent"
+        }
+        $targetVersionsProps = [xml]($targetVersionsPropsContent | Out-String)
+        $preReleaseVersionLabelNode = $targetVersionsProps.SelectSingleNode('/Project/PropertyGroup/PreReleaseVersionLabel')
+        if (!$preReleaseVersionLabelNode) {
+            throw "eng/Versions.props on origin/${targetBranch} does not define PreReleaseVersionLabel"
+        }
+        $preReleaseVersionLabel = $preReleaseVersionLabelNode.InnerText.Trim()
+        $validPreReleaseVersionLabels = @('alpha', 'preview', 'rc', 'rtm', 'servicing')
+        if ($preReleaseVersionLabel -notin $validPreReleaseVersionLabels) {
+            throw "eng/Versions.props on origin/${targetBranch} has an unrecognized PreReleaseVersionLabel: '$preReleaseVersionLabel'"
+        }
+        $isRtmOrServicing = $preReleaseVersionLabel -in @('rtm', 'servicing')
+
         if ($changedFilesFromTarget) {
             foreach ($file in $changedFilesFromTarget) {
                 # Check for changes in Shipped in all branches
@@ -224,8 +210,8 @@ try {
                         $changedAPIBaselines.Add($file)
                     }
                 }
-                # Check for changes in Unshipped in servicing branches
-                if ($targetBranch -like 'release*' -and $targetBranch -notlike '*preview*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                # Check for changes in Unshipped once the branch has reached rtm or servicing
+                if ($isRtmOrServicing -and $file -like '*PublicAPI.Unshipped.txt') {
                     $changedAPIBaselines.Add($file)
                 }
             }
@@ -235,10 +221,127 @@ try {
 
         if ($changedAPIBaselines.count -gt 0) {
             LogError ("Detected modification to baseline API files. PublicAPI.Shipped.txt files should only " +
-                "be updated after a major release. See /docs/APIBaselines.md for more information.")
+                "be updated after a major release, and PublicAPI.Unshipped.txt files should not " +
+                "be updated in release branches. See /docs/APIBaselines.md for more information.")
             LogError "Modified API baseline files:"
             foreach ($file in $changedAPIBaselines) {
                 LogError $file
+            }
+        }
+
+        # Check that the Dependabot discovery project stays in sync with eng/Dependencies.props, but
+        # only for packages that aren't excluded from DependabotDiscovery.csproj (i.e. aren't Maestro-
+        # managed, IdentityModel-managed, mapped to an in-repo ProjectReferenceProvider, or one of the
+        # two hard-coded exclusions - see eng/tools/DependabotDiscovery/README.md for details on each).
+        # Renaming a Maestro-managed package (e.g. #68014) shows up as an add + remove in
+        # eng/Dependencies.props but doesn't need a DependabotDiscovery.csproj update.
+        $allChangedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only
+        $dependencyDiscoveryProject = "eng/tools/DependabotDiscovery/DependabotDiscovery.csproj"
+
+        # Reads a file's content from the target branch, failing loudly (rather than silently reading
+        # an empty/missing file) if the path doesn't exist there.
+        function Get-TargetBranchFileContent([string]$relativePath) {
+            $content = git show "origin/${targetBranch}:${relativePath}" 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                throw "Unable to read ${relativePath} from origin/${targetBranch}: $content"
+            }
+            return $content
+        }
+
+        # Returns unique, sorted package names as a plain string array. Joins the file content into a
+        # single string first so an Include/Version pair split across lines is still matched. Always
+        # wrap calls to this function in @(...) at the call site — PowerShell can otherwise unwrap a
+        # single-element (or empty) array result into a scalar (or $null).
+        function Get-LatestPackageReferenceNames([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<LatestPackageReference\b[^<>]*?\bInclude="([^"]+)"') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Returns the set of "FooVersion" property names defined (i.e. given a value) in an
+        # eng/Version.Details.props-like file. As above, always wrap calls in @(...) at the call site.
+        function Get-DefinedVersionProperties([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<(\w+Version)\b[^<>]*>') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Returns the set of "FooVersion" property names whose value is exactly $(IdentityModelVersion)
+        # in an eng/Versions.props-like file. As above, always wrap calls in @(...) at the call site.
+        function Get-IdentityModelManagedVersionProperties([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<(\w+Version)>\s*\$\(IdentityModelVersion\)\s*</\1>') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Returns the set of names mapped to an in-repo project via ProjectReferenceProvider (see
+        # eng/ProjectReferences.props) - these aren't real external packages and have no version to
+        # bump. As above, always wrap calls in @(...) at the call site.
+        function Get-ProjectReferenceProviderNames([string[]]$fileContent) {
+            $text = $fileContent -join "`n"
+            return [regex]::Matches($text, '<ProjectReferenceProvider\b[^<>]*?\bInclude="([^"]+)"') |
+                ForEach-Object { $_.Groups[1].Value } |
+                Sort-Object -Unique
+        }
+
+        # Packages excluded from DependabotDiscovery.csproj for reasons unrelated to Maestro or
+        # IdentityModel - see eng/tools/DependabotDiscovery/README.md for why each is hard-coded here.
+        $hardCodedDiscoveryExclusions = @('NETStandard.Library', 'Microsoft.CodeAnalysis.PublicApiAnalyzers')
+
+        if ($allChangedFilesFromTarget -contains "eng/Dependencies.props") {
+            $oldPackageNames = @(Get-LatestPackageReferenceNames (Get-TargetBranchFileContent "eng/Dependencies.props"))
+            $newPackageNames = @(Get-LatestPackageReferenceNames (Get-Content "$repoRoot/eng/Dependencies.props"))
+
+            # Packages added or removed (a rename shows up as one of each) since the target branch.
+            $changedPackageNames = @(Compare-Object -ReferenceObject $oldPackageNames -DifferenceObject $newPackageNames -PassThru)
+
+            if ($changedPackageNames.Count -gt 0) {
+                # Union of both sides (target branch and current tree) of both files, so a rename
+                # into or out of a managed name is recognized regardless of which side you check.
+                $managedVersionProperties = @(Get-DefinedVersionProperties (Get-TargetBranchFileContent "eng/Version.Details.props")) +
+                    @(Get-DefinedVersionProperties (Get-Content "$repoRoot/eng/Version.Details.props")) +
+                    @(Get-IdentityModelManagedVersionProperties (Get-TargetBranchFileContent "eng/Versions.props")) +
+                    @(Get-IdentityModelManagedVersionProperties (Get-Content "$repoRoot/eng/Versions.props"))
+
+                $projectReferenceProviderNames = @(Get-ProjectReferenceProviderNames (Get-TargetBranchFileContent "eng/ProjectReferences.props")) +
+                    @(Get-ProjectReferenceProviderNames (Get-Content "$repoRoot/eng/ProjectReferences.props"))
+
+                $unmanagedPackageNames = @($changedPackageNames | Where-Object {
+                    $versionProperty = "$($_.Replace('.', ''))Version"
+                    ($managedVersionProperties -notcontains $versionProperty) -and
+                        ($projectReferenceProviderNames -notcontains $_) -and
+                        ($hardCodedDiscoveryExclusions -notcontains $_)
+                })
+
+                if ($unmanagedPackageNames.Count -gt 0 -and ($allChangedFilesFromTarget -notcontains $dependencyDiscoveryProject)) {
+                    LogError ("eng/Dependencies.props changed but $dependencyDiscoveryProject was not updated. " +
+                        "The following added or removed packages aren't excluded from $dependencyDiscoveryProject " +
+                        "(not Maestro- or IdentityModel-managed, not a ProjectReferenceProvider, not hard-coded): " +
+                        "$($unmanagedPackageNames -join ', '). Update $dependencyDiscoveryProject to match. " +
+                        "See eng/tools/DependabotDiscovery/README.md for details.")
+                }
+            }
+        }
+
+        # Check for relevant changes to SignalR typescript files
+        $tsChanges = $changedFilesFromTarget | Where-Object { $_ -like "src/SignalR/clients/ts/*" -and $_ -ne "src/SignalR/clients/ts/CHANGELOG.md" }
+        $changelogChanged = $changedFilesFromTarget -contains "src/SignalR/clients/ts/CHANGELOG.md"
+        $signalrChangelogOverrideMarker = "[no changelog]"
+
+        # Only enforce changelog rule if there are relevant TS changes
+        if ($tsChanges.Count -gt 0 -and -not $changelogChanged) {
+            # Check if the override marker exists in recent commit messages
+            $hasOverride = git log origin/$targetBranch..HEAD --pretty=%B | Select-String -Pattern $signalrChangelogOverrideMarker -Quiet
+
+            if (-not $hasOverride) {
+                LogError "Changes were made to 'src/SignalR/clients/ts/', but no update to 'CHANGELOG.md' was found."
+                LogError "Either update 'src/SignalR/clients/ts/CHANGELOG.md' or include '$signalrChangelogOverrideMarker' in your commit message."
+                exit 1
+            } else {
+                Write-Host "SignalR Changelog update skipped due to override marker in commit message."
             }
         }
     }

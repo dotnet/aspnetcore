@@ -9,7 +9,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -66,7 +66,7 @@ public class MultiApplicationTests : IISFunctionalTestBase
             Assert.Contains("500.35", await result2.Content.ReadAsStringAsync());
         }
 
-        EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
     }
 
     [ConditionalTheory]
@@ -93,7 +93,7 @@ public class MultiApplicationTests : IISFunctionalTestBase
             Assert.Contains("500.34", await result2.Content.ReadAsStringAsync());
         }
 
-        EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(result, "Mixed hosting model is not supported.", Logger);
     }
 
     private void SetHostingModel(string directory, HostingModel model)
@@ -113,7 +113,7 @@ public class MultiApplicationTests : IISFunctionalTestBase
         var siteElement = config
             .RequiredElement("system.applicationHost")
             .RequiredElement("sites")
-            .RequiredElement("site");
+            .Elements("site").Last();
 
         var application = siteElement
             .RequiredElement("application");

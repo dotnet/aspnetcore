@@ -63,12 +63,10 @@ internal class InMemoryTransportConnection : TransportConnection
 
     public void OnClosed()
     {
-        if (_isClosed)
+        if (Interlocked.CompareExchange(ref _isClosed, true, false) == true)
         {
             return;
         }
-
-        _isClosed = true;
 
         ThreadPool.UnsafeQueueUserWorkItem(state =>
         {

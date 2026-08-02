@@ -1,13 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Represents the outgoing side of an individual HTTP request.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(HttpResponseDebugView))]
 public abstract class HttpResponse
 {
     private static readonly Func<object, Task> _callbackDelegate = callback => ((Func<Task>)callback)();
@@ -126,7 +132,7 @@ public abstract class HttpResponse
     /// </summary>
     /// <param name="location">The URL to redirect the client to. This must be properly encoded for use in http headers
     /// where only ASCII characters are allowed.</param>
-    public virtual void Redirect(string location) => Redirect(location, permanent: false);
+    public virtual void Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string location) => Redirect(location, permanent: false);
 
     /// <summary>
     /// Returns a redirect response (HTTP 301 or HTTP 302) to the client.
@@ -134,7 +140,7 @@ public abstract class HttpResponse
     /// <param name="location">The URL to redirect the client to. This must be properly encoded for use in http headers
     /// where only ASCII characters are allowed.</param>
     /// <param name="permanent"><c>True</c> if the redirect is permanent (301), otherwise <c>false</c> (302).</param>
-    public abstract void Redirect(string location, bool permanent);
+    public abstract void Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string location, bool permanent);
 
     /// <summary>
     /// Starts the response by calling OnStarting() and making headers unmodifiable.
@@ -148,4 +154,28 @@ public abstract class HttpResponse
     /// </summary>
     /// <returns></returns>
     public virtual Task CompleteAsync() { throw new NotImplementedException(); }
+
+    internal string DebuggerToString()
+    {
+        return HttpContextDebugFormatter.ResponseToString(this, reasonPhrase: null);
+    }
+
+    private sealed class HttpResponseDebugView(HttpResponse response)
+    {
+        private readonly HttpResponse _response = response;
+
+        public int StatusCode => _response.StatusCode;
+        public IHeaderDictionary Headers => _response.Headers;
+        public IHeaderDictionary? Trailers
+        {
+            get
+            {
+                var feature = _response.HttpContext.Features.Get<IHttpResponseTrailersFeature>();
+                return feature?.Trailers;
+            }
+        }
+        public long? ContentLength => _response.ContentLength;
+        public string? ContentType => _response.ContentType;
+        public bool HasStarted => _response.HasStarted;
+    }
 }

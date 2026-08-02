@@ -207,6 +207,26 @@ internal class TestWebSocketConnectionFeature : IHttpWebSocketFeature, IDisposab
             cancellationToken);
         }
 
+        public async Task<WebSocketMessage> GetNextMessageAsync()
+        {
+            while (await _input.WaitToReadAsync())
+            {
+                if (_input.TryRead(out var message))
+                {
+                    return message;
+                }
+            }
+
+            return new WebSocketMessage()
+            {
+                Buffer = Array.Empty<byte>(),
+                MessageType = WebSocketMessageType.Close,
+                EndOfMessage = true,
+                CloseStatus = WebSocketCloseStatus.InternalServerError,
+                CloseStatusDescription = string.Empty
+            };
+        }
+
         public async Task<WebSocketConnectionSummary> ExecuteAndCaptureFramesAsync()
         {
             var frames = new List<WebSocketMessage>();

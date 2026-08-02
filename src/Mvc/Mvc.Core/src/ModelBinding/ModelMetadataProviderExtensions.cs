@@ -25,20 +25,9 @@ public static class ModelMetadataProviderExtensions
         Type containerType,
         string propertyName)
     {
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
-
-        if (containerType == null)
-        {
-            throw new ArgumentNullException(nameof(containerType));
-        }
-
-        if (propertyName == null)
-        {
-            throw new ArgumentNullException(nameof(propertyName));
-        }
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(containerType);
+        ArgumentNullException.ThrowIfNull(propertyName);
 
         var containerMetadata = provider.GetMetadataForType(containerType);
 

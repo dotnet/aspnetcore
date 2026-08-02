@@ -11,10 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Features" />
-    <Reference Include="Microsoft.Extensions.Primitives" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="System.IO.Pipelines" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

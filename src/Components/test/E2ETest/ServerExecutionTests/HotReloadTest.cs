@@ -29,13 +29,19 @@ public class HotReloadTest : ServerTestBase<BasicTestAppServerSiteFixture<HotRel
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<RenderOnHotReload>();
     }
 
     [Fact]
     public async Task InvokingRender_CausesComponentToRender()
     {
+        if (_serverFixture.TestTrimmedApps)
+        {
+            // In published app, metrics are trimmed
+            return;
+        }
+
         Browser.Equal("This component was rendered 1 time(s).", () => Browser.Exists(By.TagName("h2")).Text);
         Browser.Equal("Initial title", () => Browser.Exists(By.TagName("h3")).Text);
         Browser.Equal("Component with ShouldRender=false was rendered 1 time(s).", () => Browser.Exists(By.TagName("h4")).Text);

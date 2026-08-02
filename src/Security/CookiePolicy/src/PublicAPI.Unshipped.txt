@@ -1,7 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options) -> void
-*REMOVED*~Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! factory) -> void
-Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options) -> void
-Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! factory) -> void
-Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookieValue.get -> string!
-Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookieValue.set -> void

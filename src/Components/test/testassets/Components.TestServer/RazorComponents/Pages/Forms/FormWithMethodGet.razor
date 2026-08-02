@@ -1,0 +1,30 @@
+﻿@page "/forms/method-get"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Form with method=get</h2>
+
+<form data-enhance method="get" autocomplete="off">
+    <p>
+        Enter a string: <InputText id="mystring" @bind-Value="MyString" />
+        [<span id="mystring-value">@MyString</span>]
+    </p>
+    <p>
+        Enter a bool: <InputCheckbox id="mybool" @bind-Value="MyBool" />
+        [<span id="mybool-value">@MyBool</span>]
+    </p>
+
+    <button id="submit-get-form" type="submit">Submit</button>
+</form>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string MyString { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool MyBool { get; set; }
+
+    protected override void OnInitialized()
+    {
+        MyString ??= "Initial value";
+    }
+}

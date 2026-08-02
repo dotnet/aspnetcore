@@ -1,31 +1,41 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using FormatterWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public abstract class JsonOutputFormatterTestBase<TStartup> : IClassFixture<MvcTestFixture<TStartup>> where TStartup : class
+public abstract class JsonOutputFormatterTestBase<TStartup> : LoggedTest where TStartup : class
 {
-    protected JsonOutputFormatterTestBase(MvcTestFixture<TStartup> fixture)
-    {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = Factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<TStartup>();
 
-    public WebApplicationFactory<TStartup> Factory { get; }
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<TStartup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<TStartup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public virtual async Task SerializableErrorIsReturnedInExpectedFormat()
@@ -177,7 +187,7 @@ public abstract class JsonOutputFormatterTestBase<TStartup> : IClassFixture<MvcT
         await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
 
         var obj = JObject.Parse(await response.Content.ReadAsStringAsync());
-        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", obj.Value<string>("type"));
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", obj.Value<string>("type"));
         Assert.Equal("Not Found", obj.Value<string>("title"));
         Assert.Equal("404", obj.Value<string>("status"));
         Assert.NotNull(obj.Value<string>("traceId"));

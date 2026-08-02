@@ -1,0 +1,89 @@
+@page "/not-found-index"
+
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject NavigationManager NavigationManager
+
+<h1 id="test-info">List of Not Found test pages</h1>
+
+<h2>Link navigation (enhanced nav passed in Headers)</h2>
+<ul>
+    <li><a href="@PostNotFoundNoStreaming">@PostNotFoundNoStreamingText</a></li>
+    <li><a href="@PostNotFoundNoStreamingReexecution">@PostNotFoundNoStreamingReexecutionText</a></li>
+
+    <li><a href="@PostNotFoundStreaming">@PostNotFoundStreamingText</a></li>
+    <li><a href="@PostNotFoundStreamingReexecution">@PostNotFoundStreamingReexecutionText</a></li>
+
+    <li><a href="@SetNotFoundNoStreaming">@SetNotFoundNoStreamingText</a></li>
+    <li><a href="@SetNotFoundNoStreamingReexecution">@SetNotFoundNoStreamingReexecutionText</a></li>
+
+    <li><a href="@SetNotFoundStreaming">@SetNotFoundStreamingText</a></li>
+    <li><a href="@SetNotFoundStreamingReexecution">@SetNotFoundStreamingReexecutionText</a></li>
+</ul>
+
+<h2>Programmatic navigation in a form (enhanced nav not passed in Headers)</h2>
+<form method="post" @onsubmit="() => NavigateTo(PostNotFoundNoStreaming)" @formname="ProgrammaticPostNotFoundNoStreamingForm">
+    <AntiforgeryToken />
+    <button type="submit">Programmatic navigate to @PostNotFoundNoStreamingText</button>
+</form>
+<form method="post" @onsubmit="() => NavigateTo(PostNotFoundNoStreamingReexecution)" @formname="ProgrammaticPostNotFoundNoStreamingReexecutionForm">
+    <AntiforgeryToken />
+    <button type="submit">Programmatic navigate to @PostNotFoundNoStreamingReexecutionText</button>
+</form>
+
+<form method="post" @onsubmit="() => NavigateTo(PostNotFoundStreaming)" @formname="ProgrammaticPostNotFoundStreamingForm">
+    <AntiforgeryToken />
+    <button type="submit">Programmatic navigate to @PostNotFoundStreamingText</button>
+</form>
+<form method="post" @onsubmit="() => NavigateTo(PostNotFoundStreamingReexecution)" @formname="ProgrammaticPostNotFoundStreamingReexecutionForm">
+    <AntiforgeryToken />
+    <button type="submit">Programmatic navigate to @PostNotFoundStreamingReexecutionText</button>
+</form>
+
+<form method="post" @onsubmit="() => NavigateTo(SetNotFoundNoStreaming)" @formname="ProgrammaticSetNotFoundNoStreamingForm">
+    <AntiforgeryToken />
+    <button type="submit">Programmatic navigate to @SetNotFoundNoStreamingText</button>
+</form>
+<form method="post" @onsubmit="() => NavigateTo(SetNotFoundNoStreamingReexecution)" @formname="ProgrammaticSetNotFoundNoStreamingReexecutionForm">
+    <AntiforgeryToken />
+    <button type="submit">Programmatic navigate to @SetNotFoundNoStreamingReexecutionText</button>
+</form>
+
+<form method="post" @onsubmit="() => NavigateTo(SetNotFoundStreaming)" @formname="ProgrammaticSetNotFoundStreamingForm">
+    <AntiforgeryToken />
+    <button type="submit">Programmatic navigate to @SetNotFoundStreamingText</button>
+</form>
+<form method="post" @onsubmit="() => NavigateTo(SetNotFoundStreamingReexecution)" @formname="ProgrammaticSetNotFoundStreamingReexecutionForm">
+    <AntiforgeryToken />
+    <button type="submit">Programmatic navigate to @SetNotFoundStreamingReexecutionText</button>
+</form>
+
+@code {
+    [SupplyParameterFromQuery]
+    public bool useCustomNotFoundPage { get; set; }
+
+    private string AppendQuery(string url) => $"{url}?useCustomNotFoundPage={useCustomNotFoundPage}";
+
+    private string PostNotFoundNoStreaming => AppendQuery("post-not-found-ssr");
+    private string PostNotFoundNoStreamingReexecution => AppendQuery($"reexecution/post-not-found-ssr");
+    private string PostNotFoundStreaming => AppendQuery("post-not-found-ssr-streaming");
+    private string PostNotFoundStreamingReexecution => AppendQuery($"reexecution/post-not-found-ssr-streaming");
+    private string SetNotFoundNoStreaming => AppendQuery("set-not-found-ssr");
+    private string SetNotFoundNoStreamingReexecution => AppendQuery($"reexecution/set-not-found-ssr");
+    private string SetNotFoundStreaming => AppendQuery("set-not-found-ssr-streaming");
+    private string SetNotFoundStreamingReexecution => AppendQuery($"reexecution/set-not-found-ssr-streaming");
+
+    private const string PostNotFoundNoStreamingText = "PageThatPostsNotFound-no-streaming";
+    private const string PostNotFoundNoStreamingReexecutionText = $"{PostNotFoundNoStreamingText} with reexecution";
+    private const string PostNotFoundStreamingText = "PageThatPostsNotFound-streaming";
+    private const string PostNotFoundStreamingReexecutionText = $"{PostNotFoundStreamingText} with reexecution";
+    private const string SetNotFoundNoStreamingText = "PageThatSetsNotFound-no-streaming";
+    private const string SetNotFoundNoStreamingReexecutionText = $"{SetNotFoundNoStreamingText} with reexecution";
+    private const string SetNotFoundStreamingText = "PageThatSetsNotFound-streaming";
+    private const string SetNotFoundStreamingReexecutionText = $"{SetNotFoundStreamingText} with reexecution";
+
+    private void NavigateTo(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
+}

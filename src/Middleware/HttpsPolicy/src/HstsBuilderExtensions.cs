@@ -16,10 +16,7 @@ public static class HstsBuilderExtensions
     /// <param name="app">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
     public static IApplicationBuilder UseHsts(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<HstsMiddleware>();
     }

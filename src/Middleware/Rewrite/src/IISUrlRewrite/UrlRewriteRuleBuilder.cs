@@ -75,10 +75,7 @@ internal sealed class UrlRewriteRuleBuilder
         {
             throw new InvalidOperationException($"You must first configure condition behavior by calling {nameof(ConfigureConditionBehavior)}");
         }
-        if (condition == null)
-        {
-            throw new ArgumentNullException(nameof(condition));
-        }
+        ArgumentNullException.ThrowIfNull(condition);
         _conditions.Add(condition);
     }
 

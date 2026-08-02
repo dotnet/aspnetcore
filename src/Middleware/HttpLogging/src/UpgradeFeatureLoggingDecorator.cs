@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
@@ -10,17 +9,20 @@ namespace Microsoft.AspNetCore.HttpLogging;
 internal sealed class UpgradeFeatureLoggingDecorator : IHttpUpgradeFeature
 {
     private readonly IHttpUpgradeFeature _innerUpgradeFeature;
-    private readonly HttpResponse _response;
+    private readonly HttpLoggingInterceptorContext _logContext;
     private readonly HttpLoggingOptions _options;
+    private readonly IHttpLoggingInterceptor[] _interceptors;
     private readonly ILogger _logger;
 
     private bool _isUpgraded;
 
-    public UpgradeFeatureLoggingDecorator(IHttpUpgradeFeature innerUpgradeFeature, HttpResponse response, HttpLoggingOptions options, ILogger logger)
+    public UpgradeFeatureLoggingDecorator(IHttpUpgradeFeature innerUpgradeFeature, HttpLoggingInterceptorContext logContext, HttpLoggingOptions options,
+        IHttpLoggingInterceptor[] interceptors, ILogger logger)
     {
         _innerUpgradeFeature = innerUpgradeFeature ?? throw new ArgumentNullException(nameof(innerUpgradeFeature));
-        _response = response ?? throw new ArgumentNullException(nameof(response));
+        _logContext = logContext ?? throw new ArgumentNullException(nameof(logContext));
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _interceptors = interceptors;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -31,10 +33,9 @@ internal sealed class UpgradeFeatureLoggingDecorator : IHttpUpgradeFeature
     public async Task<Stream> UpgradeAsync()
     {
         var upgradeStream = await _innerUpgradeFeature.UpgradeAsync();
-
         _isUpgraded = true;
 
-        HttpLoggingMiddleware.LogResponseHeaders(_response, _options, _logger);
+        await HttpLoggingMiddleware.LogResponseHeadersAsync(_logContext, _options, _interceptors, _logger);
 
         return upgradeStream;
     }

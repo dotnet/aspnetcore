@@ -18,7 +18,7 @@ using Serilog.Extensions.Logging;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class AssemblyTestLog : IAcceptFailureReports, IDisposable
 {
@@ -225,7 +225,7 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
             {
                 var stackTrace = Environment.StackTrace;
                 if (!stackTrace.Contains(
-                    "Microsoft.AspNetCore.Testing"
+                    "Microsoft.AspNetCore.InternalTesting"
 #if NETCOREAPP
                     , StringComparison.Ordinal
 #endif
@@ -286,7 +286,11 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
             .Enrich.FromLogContext()
             .Enrich.With(new AssemblyLogTimestampOffsetEnricher(logStart))
             .MinimumLevel.Verbose()
-            .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
+            .WriteTo.File(fileName,
+                outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}",
+                flushToDiskInterval: TimeSpan.FromSeconds(1),
+                shared: true,
+                formatProvider: CultureInfo.InvariantCulture)
             .CreateLogger();
 
         return new SerilogLoggerProvider(serilogger, dispose: true);

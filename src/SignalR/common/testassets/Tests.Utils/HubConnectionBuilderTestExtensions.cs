@@ -12,10 +12,7 @@ public static class HubConnectionBuilderTestExtensions
     // https://github.com/aspnet/Logging/blob/671af986ec3b46dc81e28e4a6c37a9d0ee283c65/src/Microsoft.Extensions.Logging.Testing/AssemblyTestLog.cs#L130
     public static IHubConnectionBuilder WithLoggerFactory(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         hubConnectionBuilder.Services.AddSingleton(loggerFactory);
         return hubConnectionBuilder;

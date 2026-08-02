@@ -29,10 +29,7 @@ internal sealed class RangeAttributeAdapter : AttributeAdapterBase<RangeAttribut
 
     public override void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
         MergeAttribute(context.Attributes, "data-val-range", GetErrorMessage(context));
@@ -43,10 +40,7 @@ internal sealed class RangeAttributeAdapter : AttributeAdapterBase<RangeAttribut
     /// <inheritdoc />
     public override string GetErrorMessage(ModelValidationContextBase validationContext)
     {
-        if (validationContext == null)
-        {
-            throw new ArgumentNullException(nameof(validationContext));
-        }
+        ArgumentNullException.ThrowIfNull(validationContext);
 
         return GetErrorMessage(
             validationContext.ModelMetadata,

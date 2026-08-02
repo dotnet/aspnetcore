@@ -25,10 +25,7 @@ internal sealed class CustomMemoryForTest<T> : IMemoryOwner<T>
     {
         get
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(CustomMemoryForTest<T>));
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
             return new Memory<T>(_array, _offset, _length);
         }
     }

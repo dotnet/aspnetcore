@@ -69,6 +69,9 @@ internal sealed class ControllerActionInvokerCache
                 _mvcOptions);
 
             var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
+            var filterExecutor = actionDescriptor.FilterDelegate is not null
+                ? ActionMethodExecutor.GetFilterExecutor(actionDescriptor)
+                : null;
 
             cacheEntry = new ControllerActionInvokerCacheEntry(
                 filterFactoryResult.CacheableFilters,
@@ -76,6 +79,7 @@ internal sealed class ControllerActionInvokerCache
                 controllerReleaser,
                 propertyBinderFactory,
                 objectMethodExecutor,
+                filterExecutor ?? actionMethodExecutor,
                 actionMethodExecutor);
 
             actionDescriptor.CacheEntry = cacheEntry;

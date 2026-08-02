@@ -32,6 +32,24 @@ public class InferParameterBindingInfoConventionTest
     }
 
     [Fact]
+    public void Apply_DoesNotInferBindingSourceFor_ComplexType_WithPropertiesWithBindingSource()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.CompositeComplexTypeModel);
+        var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+        var convention = GetConvention(modelMetadataProvider);
+        var action = GetActionModel(typeof(ParameterBindingController), actionName);
+
+        // Act
+        convention.Apply(action);
+
+        // Assert
+        var parameterModel = Assert.Single(action.Parameters);
+        Assert.NotNull(parameterModel.BindingInfo);
+        Assert.Null(parameterModel.BindingInfo.BindingSource);
+    }
+
+    [Fact]
     public void InferParameterBindingSources_Throws_IfMultipleParametersAreInferredAsBodyBound()
     {
         // Arrange
@@ -544,6 +562,21 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
+    public void InferBindingSourceForParameter_ReturnsBodyForIEnumerableOfSimpleTypes()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.IEnumerableOfSimpleTypes);
+        var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
+        var convention = GetConvention();
+
+        // Act
+        var result = convention.InferBindingSourceForParameter(parameter);
+
+        // Assert
+        Assert.Same(BindingSource.Body, result);
+    }
+
+    [Fact]
     public void InferBindingSourceForParameter_ReturnsBodyForCollectionOfComplexTypes()
     {
         // Arrange
@@ -559,10 +592,43 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
+    public void InferBindingSourceForParameter_ReturnsBodyForIEnumerableOfComplexTypes()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.IEnumerableOfComplexTypes);
+        var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
+        var convention = GetConvention();
+
+        // Act
+        var result = convention.InferBindingSourceForParameter(parameter);
+
+        // Assert
+        Assert.Same(BindingSource.Body, result);
+    }
+
+    [Fact]
     public void InferBindingSourceForParameter_ReturnsServicesForComplexTypesRegisteredInDI()
     {
         // Arrange
         var actionName = nameof(ParameterBindingController.ServiceParameter);
+        var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
+        // Using any built-in type defined in the Test action
+        var serviceProvider = Mock.Of<IServiceProviderIsService>(s => s.IsService(typeof(IApplicationModelProvider)) == true);
+        var convention = GetConvention(serviceProviderIsService: serviceProvider);
+
+        // Act
+        var result = convention.InferBindingSourceForParameter(parameter);
+
+        // Assert
+        Assert.True(convention.IsInferForServiceParametersEnabled);
+        Assert.Same(BindingSource.Services, result);
+    }
+
+    [Fact]
+    public void InferBindingSourceForParameter_ReturnsServicesForIEnumerableOfComplexTypesRegisteredInDI()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.IEnumerableServiceParameter);
         var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
         // Using any built-in type defined in the Test action
         var serviceProvider = Mock.Of<IServiceProviderIsService>(s => s.IsService(typeof(IApplicationModelProvider)) == true);
@@ -905,6 +971,9 @@ Environment.NewLine + "int b";
         public IActionResult ComplexTypeModel(TestModel model) => null;
 
         [HttpPut("put-action/{id}")]
+        public IActionResult CompositeComplexTypeModel(CompositeTestModel model) => null;
+
+        [HttpPut("put-action/{id}")]
         public IActionResult SimpleTypeModel(ConvertibleFromString model) => null;
 
         [HttpPost("form-file")]
@@ -982,9 +1051,15 @@ Environment.NewLine + "int b";
 
         public IActionResult CollectionOfSimpleTypes(IList<int> parameter) => null;
 
+        public IActionResult IEnumerableOfSimpleTypes(IEnumerable<int> parameter) => null;
+
         public IActionResult CollectionOfComplexTypes(IList<TestModel> parameter) => null;
 
+        public IActionResult IEnumerableOfComplexTypes(IEnumerable<TestModel> parameter) => null;
+
         public IActionResult ServiceParameter(IApplicationModelProvider parameter) => null;
+
+        public IActionResult IEnumerableServiceParameter(IEnumerable<IApplicationModelProvider> parameter) => null;
     }
 
     [ApiController]
@@ -1039,6 +1114,14 @@ Environment.NewLine + "int b";
     }
 
     private class TestModel { }
+
+    private class CompositeTestModel
+    {
+        [FromQuery]
+        public int Id { get; set; }
+
+        public TestModel TestModel { get; set; }
+    }
 
     [TypeConverter(typeof(ConvertibleFromStringConverter))]
     private class ConvertibleFromString { }

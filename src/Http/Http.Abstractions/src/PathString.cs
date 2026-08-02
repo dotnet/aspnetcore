@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
@@ -14,8 +16,12 @@ namespace Microsoft.AspNetCore.Http;
 /// Provides correct escaping for Path and PathBase values when needed to reconstruct a request or redirect URI string
 /// </summary>
 [TypeConverter(typeof(PathStringConverter))]
+[DebuggerDisplay("{Value}")]
 public readonly struct PathString : IEquatable<PathString>
 {
+    private static readonly SearchValues<char> s_validPathChars =
+        SearchValues.Create("!$&'()*+,-./0123456789:;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~");
+
     internal const int StackAllocThreshold = 128;
 
     /// <summary>
@@ -28,11 +34,14 @@ public readonly struct PathString : IEquatable<PathString>
     /// PathString.FromUriComponent(value) if you have a path value which is in an escaped format.
     /// </summary>
     /// <param name="value">The unescaped path to be assigned to the Value property.</param>
+    /// <remarks>
+    /// The value, when non-empty, must begin with either a forward slash ('/') or a backslash ('\').
+    /// </remarks>
     public PathString(string? value)
     {
-        if (!string.IsNullOrEmpty(value) && value[0] != '/')
+        if (!string.IsNullOrEmpty(value) && value[0] is not '/' and not '\\')
         {
-            throw new ArgumentException(Resources.FormatException_PathMustStartWithSlash(nameof(value)), nameof(value));
+            throw new ArgumentException(Resources.FormatException_PathMustStartWithSlashOrBackslash(nameof(value)), nameof(value));
         }
         Value = value;
     }
@@ -66,27 +75,18 @@ public readonly struct PathString : IEquatable<PathString>
     /// <returns>The escaped path value</returns>
     public string ToUriComponent()
     {
-        if (!HasValue)
+        var value = Value;
+
+        if (string.IsNullOrEmpty(value))
         {
             return string.Empty;
         }
 
-        var value = Value;
-        var i = 0;
-        for (; i < value.Length; i++)
-        {
-            if (!PathStringHelper.IsValidPathChar(value[i]) || PathStringHelper.IsPercentEncodedChar(value, i))
-            {
-                break;
-            }
-        }
+        var indexOfInvalidChar = value.AsSpan().IndexOfAnyExcept(s_validPathChars);
 
-        if (i < value.Length)
-        {
-            return ToEscapedUriComponent(value, i);
-        }
-
-        return value;
+        return indexOfInvalidChar < 0
+            ? value
+            : ToEscapedUriComponent(value, indexOfInvalidChar);
     }
 
     private static string ToEscapedUriComponent(string value, int i)
@@ -97,16 +97,16 @@ public readonly struct PathString : IEquatable<PathString>
         var count = i;
         var requiresEscaping = false;
 
-        while (i < value.Length)
+        while ((uint)i < (uint)value.Length)
         {
-            var isPercentEncodedChar = PathStringHelper.IsPercentEncodedChar(value, i);
-            if (PathStringHelper.IsValidPathChar(value[i]) || isPercentEncodedChar)
+            var isPercentEncodedChar = false;
+            if (s_validPathChars.Contains(value[i]) || (isPercentEncodedChar = Uri.IsHexEncoding(value, i)))
             {
                 if (requiresEscaping)
                 {
                     // the current segment requires escape
                     buffer ??= new StringBuilder(value.Length * 3);
-                    buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
+                    buffer.Append(Uri.EscapeDataString(value.AsSpan(start, count)));
 
                     requiresEscaping = false;
                     start = i;
@@ -120,8 +120,18 @@ public readonly struct PathString : IEquatable<PathString>
                 }
                 else
                 {
-                    count++;
-                    i++;
+                    // We just saw a character we don't want to escape. It's likely there are more, do a vectorized search.
+                    var charsToSkip = value.AsSpan(i).IndexOfAnyExcept(s_validPathChars);
+
+                    if (charsToSkip < 0)
+                    {
+                        // Only valid characters remain
+                        count += value.Length - i;
+                        break;
+                    }
+
+                    count += charsToSkip;
+                    i += charsToSkip;
                 }
             }
             else
@@ -148,21 +158,19 @@ public readonly struct PathString : IEquatable<PathString>
         }
         else
         {
-            if (count > 0)
-            {
-                buffer ??= new StringBuilder(value.Length * 3);
+            Debug.Assert(count > 0);
+            Debug.Assert(buffer is not null);
 
-                if (requiresEscaping)
-                {
-                    buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
-                }
-                else
-                {
-                    buffer.Append(value, start, count);
-                }
+            if (requiresEscaping)
+            {
+                buffer.Append(Uri.EscapeDataString(value.AsSpan(start, count)));
+            }
+            else
+            {
+                buffer.Append(value, start, count);
             }
 
-            return buffer?.ToString() ?? string.Empty;
+            return buffer.ToString();
         }
     }
 
@@ -193,10 +201,7 @@ public readonly struct PathString : IEquatable<PathString>
     /// <returns>The resulting PathString</returns>
     public static PathString FromUriComponent(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
         var uriComponent = uri.GetComponents(UriComponents.Path, UriFormat.UriEscaped);
         Span<char> pathBuffer = uriComponent.Length < StackAllocThreshold ? stackalloc char[StackAllocThreshold] : new char[uriComponent.Length + 1];
         pathBuffer[0] = '/';
@@ -210,6 +215,15 @@ public readonly struct PathString : IEquatable<PathString>
     /// </summary>
     /// <param name="other">The <see cref="PathString"/> to compare.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a".
+    /// </remarks>
     public bool StartsWithSegments(PathString other)
     {
         return StartsWithSegments(other, StringComparison.OrdinalIgnoreCase);
@@ -222,13 +236,22 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="other">The <see cref="PathString"/> to compare.</param>
     /// <param name="comparisonType">One of the enumeration values that determines how this <see cref="PathString"/> and value are compared.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a".
+    /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType)
     {
         var value1 = Value ?? string.Empty;
         var value2 = other.Value ?? string.Empty;
         if (value1.StartsWith(value2, comparisonType))
         {
-            return value1.Length == value2.Length || value1[value2.Length] == '/';
+            return value1.Length == value2.Length || value1[value2.Length] is '/' or '\\';
         }
         return false;
     }
@@ -240,6 +263,16 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="other">The <see cref="PathString"/> to compare.</param>
     /// <param name="remaining">The remaining segments after the match.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a", and <paramref name="remaining"/> will be "\b"
+    /// (the original character is preserved, not normalized).
+    /// </remarks>
     public bool StartsWithSegments(PathString other, out PathString remaining)
     {
         return StartsWithSegments(other, StringComparison.OrdinalIgnoreCase, out remaining);
@@ -253,13 +286,23 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="comparisonType">One of the enumeration values that determines how this <see cref="PathString"/> and value are compared.</param>
     /// <param name="remaining">The remaining segments after the match.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a", and <paramref name="remaining"/> will be "\b"
+    /// (the original character is preserved, not normalized).
+    /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType, out PathString remaining)
     {
         var value1 = Value ?? string.Empty;
         var value2 = other.Value ?? string.Empty;
         if (value1.StartsWith(value2, comparisonType))
         {
-            if (value1.Length == value2.Length || value1[value2.Length] == '/')
+            if (value1.Length == value2.Length || value1[value2.Length] is '/' or '\\')
             {
                 remaining = new PathString(value1[value2.Length..]);
                 return true;
@@ -277,6 +320,16 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="matched">The matched segments with the original casing in the source value.</param>
     /// <param name="remaining">The remaining segments after the match.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a", and <paramref name="remaining"/> will be "\b"
+    /// (the original character is preserved, not normalized).
+    /// </remarks>
     public bool StartsWithSegments(PathString other, out PathString matched, out PathString remaining)
     {
         return StartsWithSegments(other, StringComparison.OrdinalIgnoreCase, out matched, out remaining);
@@ -291,13 +344,23 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="matched">The matched segments with the original casing in the source value.</param>
     /// <param name="remaining">The remaining segments after the match.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a", and <paramref name="remaining"/> will be "\b"
+    /// (the original character is preserved, not normalized).
+    /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType, out PathString matched, out PathString remaining)
     {
         var value1 = Value ?? string.Empty;
         var value2 = other.Value ?? string.Empty;
         if (value1.StartsWith(value2, comparisonType))
         {
-            if (value1.Length == value2.Length || value1[value2.Length] == '/')
+            if (value1.Length == value2.Length || value1[value2.Length] is '/' or '\\')
             {
                 matched = new PathString(value1.Substring(0, value2.Length));
                 remaining = new PathString(value1[value2.Length..]);
@@ -313,14 +376,21 @@ public readonly struct PathString : IEquatable<PathString>
     /// Adds two PathString instances into a combined PathString value.
     /// </summary>
     /// <returns>The combined PathString value</returns>
+    /// <remarks>
+    /// If this <see cref="PathString"/> ends with a separator ('/' or '\') and <paramref name="other"/>
+    /// begins with the same separator, one of them is trimmed to avoid duplicating the boundary.
+    /// Mixed separators (e.g. trailing '/' followed by leading '\') are preserved as-is so that the
+    /// original characters are not silently normalized away.
+    /// </remarks>
     public PathString Add(PathString other)
     {
         if (HasValue &&
             other.HasValue &&
-            Value[^1] == '/')
+            Value[^1] is '/' or '\\' &&
+            Value[^1] == other.Value[0])
         {
-            // If the path string has a trailing slash and the other string has a leading slash, we need
-            // to trim one of them.
+            // If the path string has a trailing separator and the other string has a leading
+            // separator of the same kind, we need to trim one of them.
             var combined = string.Concat(Value.AsSpan(), other.Value.AsSpan(1));
             return new PathString(combined);
         }
@@ -484,10 +554,7 @@ internal sealed class PathStringConverter : TypeConverter
     public override object? ConvertTo(ITypeDescriptorContext? context,
        CultureInfo? culture, object? value, Type destinationType)
     {
-        if (destinationType == null)
-        {
-            throw new ArgumentNullException(nameof(destinationType));
-        }
+        ArgumentNullException.ThrowIfNull(destinationType);
 
         return destinationType == typeof(string)
             ? value?.ToString() ?? string.Empty

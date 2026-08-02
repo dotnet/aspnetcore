@@ -44,10 +44,7 @@ public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHel
     {
         get
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentNullException.ThrowIfNull(name);
 
             // Perf: Avoid allocating enumerator
             var items = Items;
@@ -96,10 +93,7 @@ public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHel
     /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
     public bool TryGetAttribute(string name, out TagHelperAttribute attribute)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         attribute = this[name];
 
@@ -119,10 +113,7 @@ public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHel
     /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
     public bool TryGetAttributes(string name, out IReadOnlyList<TagHelperAttribute> attributes)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         // Perf: Avoid allocating enumerator
         List<TagHelperAttribute> matchedAttributes = null;
@@ -157,10 +148,7 @@ public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHel
     /// if found; otherwise, -1.</returns>
     public int IndexOfName(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var items = Items;
         // Read interface .Count once rather than per iteration
@@ -186,10 +174,7 @@ public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHel
     /// <see cref="TagHelperAttribute.Name"/>.</returns>
     protected static bool NameEquals(string name, TagHelperAttribute attribute)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         return string.Equals(name, attribute.Name, StringComparison.OrdinalIgnoreCase);
     }

@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -44,6 +44,41 @@ public class ApiConventionMethodAttributeTest
             () => new ApiConventionMethodAttribute(typeof(object), nameof(object.ToString)),
             "conventionType",
             expected);
+    }
+
+    public static class ConventionWithNullableContextAttribute
+    {
+#nullable enable
+        public static void Get(Foo? foo) { }
+#nullable restore
+    }
+
+    public class Foo { }
+
+    [Fact]
+    public void Convention_With_NullableContextAttribute_Has_NullableContextAttribute_On_Get_Method()
+    {
+        // Arrange
+        var type = typeof(ConventionWithNullableContextAttribute);
+        var method = type.GetMethod(nameof(ConventionWithNullableContextAttribute.Get));
+        var attributes = method.GetCustomAttributes(false);
+
+        // Act & Assert
+        Assert.Contains(attributes, (a) =>
+        {
+            var attributeType = a.GetType();
+            return attributeType.FullName == "System.Runtime.CompilerServices.NullableContextAttribute";
+        });
+    }
+
+    [Fact]
+    public void Convention_With_NullableContextAttribute_With_NullableContextAttribute_On_Get_Method_Does_Not_Throw()
+    {
+        // Arrange
+        var methodName = typeof(ConventionWithNullableContextAttribute).FullName + '.' + nameof(ConventionWithNullableContextAttribute.Get);
+        var attribute = typeof(ProducesAttribute);
+
+        new ApiConventionMethodAttribute(typeof(ConventionWithNullableContextAttribute), nameof(ConventionWithNullableContextAttribute.Get));
     }
 
     [Fact]

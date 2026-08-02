@@ -17,5 +17,17 @@ internal partial class RequestContext
 
         [LoggerMessage(LoggerEventIds.ChannelBindingRetrieved, LogLevel.Debug, "Channel binding retrieved.", EventName = "ChannelBindingRetrieved")]
         public static partial void ChannelBindingRetrieved(ILogger logger);
+
+        [LoggerMessage(LoggerEventIds.RequestParsingError, LogLevel.Debug, "Failed to parse request.", EventName = "RequestParsingError")]
+        public static partial void RequestParsingError(ILogger logger, Exception exception);
+
+        [LoggerMessage(LoggerEventIds.TlsListenerError, LogLevel.Debug, "Failed to invoke QueryTlsClientHello; RequestId: {RequestId}; Win32 Error code: {Win32Error}", EventName = "TlsClientHelloRetrieveError")]
+        public static partial void TlsClientHelloRetrieveError(ILogger logger, ulong requestId, uint win32Error);
+
+        [LoggerMessage(LoggerEventIds.QueryRequestPropertyError, LogLevel.Debug, "Failed to invoke HttpQueryRequestProperty; RequestId: {RequestId}; Win32 Error code: {Win32Error}", EventName = "QueryRequestPropertyError")]
+        public static partial void QueryRequestPropertyError(ILogger logger, ulong requestId, uint win32Error);
+
+        [LoggerMessage(LoggerEventIds.QueryTlsCipherSuiteError, LogLevel.Debug, "Failed to invoke QueryTlsCipherSuite; RequestId: {RequestId}; Win32 Error code: {Win32Error}", EventName = "QueryTlsCipherSuiteError")]
+        public static partial void QueryTlsCipherSuiteError(ILogger logger, ulong requestId, uint win32Error);
     }
 }

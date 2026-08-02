@@ -26,15 +26,8 @@ public static class HtmlHelperPartialExtensions
         this IHtmlHelper htmlHelper,
         string partialViewName)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
-
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
     }
@@ -56,15 +49,8 @@ public static class HtmlHelperPartialExtensions
         string partialViewName,
         ViewDataDictionary viewData)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
-
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
     }
@@ -86,15 +72,8 @@ public static class HtmlHelperPartialExtensions
         string partialViewName,
         object model)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
-
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.PartialAsync(partialViewName, model, viewData: null);
     }
@@ -183,15 +162,8 @@ public static class HtmlHelperPartialExtensions
         object model,
         ViewDataDictionary viewData)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
-
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         var result = htmlHelper.PartialAsync(partialViewName, model, viewData);
         return result.GetAwaiter().GetResult();
@@ -265,15 +237,8 @@ public static class HtmlHelperPartialExtensions
         object model,
         ViewDataDictionary viewData)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
-
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         var result = htmlHelper.RenderPartialAsync(partialViewName, model, viewData);
         result.GetAwaiter().GetResult();
@@ -294,15 +259,8 @@ public static class HtmlHelperPartialExtensions
         this IHtmlHelper htmlHelper,
         string partialViewName)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
-
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
     }
@@ -324,15 +282,8 @@ public static class HtmlHelperPartialExtensions
         string partialViewName,
         ViewDataDictionary viewData)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
-
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
     }
@@ -354,15 +305,8 @@ public static class HtmlHelperPartialExtensions
         string partialViewName,
         object model)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
-
-        if (partialViewName == null)
-        {
-            throw new ArgumentNullException(nameof(partialViewName));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(partialViewName);
 
         return htmlHelper.RenderPartialAsync(partialViewName, model, viewData: null);
     }

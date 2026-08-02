@@ -22,10 +22,7 @@ internal static class CachedExpressionCompiler
     public static Func<TModel, object> Process<TModel, TResult>(
         Expression<Func<TModel, TResult>> expression)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         return Compiler<TModel, TResult>.Compile(expression);
     }

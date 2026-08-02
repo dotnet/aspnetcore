@@ -87,10 +87,7 @@ internal partial class DefaultViewCompiler : IViewCompiler
     /// <inheritdoc />
     public Task<CompiledViewDescriptor> CompileAsync(string relativePath)
     {
-        if (relativePath == null)
-        {
-            throw new ArgumentNullException(nameof(relativePath));
-        }
+        ArgumentNullException.ThrowIfNull(relativePath);
 
         EnsureCompiledViews(_logger);
 

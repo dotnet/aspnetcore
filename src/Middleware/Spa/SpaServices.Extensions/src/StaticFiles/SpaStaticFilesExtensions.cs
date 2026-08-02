@@ -61,15 +61,8 @@ public static class SpaStaticFilesExtensions
     /// <param name="options">Specifies options for serving the static files.</param>
     public static void UseSpaStaticFiles(this IApplicationBuilder applicationBuilder, StaticFileOptions options)
     {
-        if (applicationBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(applicationBuilder));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(applicationBuilder);
+        ArgumentNullException.ThrowIfNull(options);
 
         UseSpaStaticFilesInternal(applicationBuilder,
             staticFileOptions: options,
@@ -81,10 +74,7 @@ public static class SpaStaticFilesExtensions
         StaticFileOptions staticFileOptions,
         bool allowFallbackOnServingWebRootFiles)
     {
-        if (staticFileOptions == null)
-        {
-            throw new ArgumentNullException(nameof(staticFileOptions));
-        }
+        ArgumentNullException.ThrowIfNull(staticFileOptions);
 
         // If the file provider was explicitly supplied, that takes precedence over any other
         // configured file provider. This is most useful if the application hosts multiple SPAs

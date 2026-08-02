@@ -25,10 +25,7 @@ public class DelegatingEnumerator<TWrapped, TDeclared> : IEnumerator<TWrapped>
     /// <param name="wrapperProvider">The wrapper provider to wrap individual elements.</param>
     public DelegatingEnumerator(IEnumerator<TDeclared> inner, IWrapperProvider? wrapperProvider)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
 
         _inner = inner;
         _wrapperProvider = wrapperProvider;

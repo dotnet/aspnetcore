@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -32,29 +33,23 @@ public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
     /// <returns>A <see cref="Task{TResult}"/> that represents the <see cref="IdentityResult"/> of the asynchronous validation.</returns>
     public virtual async Task<IdentityResult> ValidateAsync(RoleManager<TRole> manager, TRole role)
     {
-        if (manager == null)
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
+        ArgumentNullThrowHelper.ThrowIfNull(role);
+        var errors = await ValidateRoleName(manager, role).ConfigureAwait(false);
+        if (errors?.Count > 0)
         {
-            throw new ArgumentNullException(nameof(manager));
-        }
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
-        var errors = new List<IdentityError>();
-        await ValidateRoleName(manager, role, errors).ConfigureAwait(false);
-        if (errors.Count > 0)
-        {
-            return IdentityResult.Failed(errors.ToArray());
+            return IdentityResult.Failed(errors);
         }
         return IdentityResult.Success;
     }
 
-    private async Task ValidateRoleName(RoleManager<TRole> manager, TRole role,
-        ICollection<IdentityError> errors)
+    private async Task<List<IdentityError>?> ValidateRoleName(RoleManager<TRole> manager, TRole role)
     {
+        List<IdentityError>? errors = null;
         var roleName = await manager.GetRoleNameAsync(role).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(roleName))
         {
+            errors ??= new List<IdentityError>();
             errors.Add(Describer.InvalidRoleName(roleName));
         }
         else
@@ -63,8 +58,11 @@ public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
             if (owner != null &&
                 !string.Equals(await manager.GetRoleIdAsync(owner).ConfigureAwait(false), await manager.GetRoleIdAsync(role).ConfigureAwait(false)))
             {
+                errors ??= new List<IdentityError>();
                 errors.Add(Describer.DuplicateRoleName(roleName));
             }
         }
+
+        return errors;
     }
 }

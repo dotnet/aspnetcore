@@ -18,10 +18,7 @@ internal sealed class MvcCoreRouteOptionsSetup : IConfigureOptions<RouteOptions>
     /// <param name="options">The <see cref="RouteOptions"/>.</param>
     public void Configure(RouteOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.ConstraintMap.Add("exists", typeof(KnownRouteValueConstraint));
     }

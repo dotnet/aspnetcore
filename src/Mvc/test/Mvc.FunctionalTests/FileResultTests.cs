@@ -4,18 +4,31 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Testing;
+using System.Reflection;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class FileResultTests : IClassFixture<MvcTestFixture<FilesWebSite.Startup>>
+public class FileResultTests : LoggedTest
 {
-    public FileResultTests(MvcTestFixture<FilesWebSite.Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<FilesWebSite.Startup>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<FilesWebSite.Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [ConditionalFact]
     // https://github.com/aspnet/Mvc/issues/2727
@@ -288,7 +301,8 @@ public class FileResultTests : IClassFixture<MvcTestFixture<FilesWebSite.Startup
         Assert.Equal("attachment; filename=downloadName.txt; filename*=UTF-8''downloadName.txt", contentDisposition);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows)] // Creating symlinks requires special permissions on Windows
     public async Task FileFromDisk_ReturnsFileFromSymlink()
     {
         // Arrange & Act

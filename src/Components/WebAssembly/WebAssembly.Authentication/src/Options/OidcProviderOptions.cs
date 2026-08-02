@@ -13,18 +13,18 @@ public class OidcProviderOptions
     /// <summary>
     /// Gets or sets the authority of the OpenID Connect (OIDC) identity provider.
     /// </summary>
-    public string Authority { get; set; }
+    public string? Authority { get; set; }
 
     /// <summary>
     /// Gets or sets the metadata URL of the OpenID Connect (OIDC) provider.
     /// </summary>
-    public string MetadataUrl { get; set; }
+    public string? MetadataUrl { get; set; }
 
     /// <summary>
     /// Gets or sets the client of the application.
     /// </summary>
     [JsonPropertyName("client_id")]
-    public string ClientId { get; set; }
+    public string? ClientId { get; set; }
 
     /// <summary>
     /// Gets or sets the list of scopes to request when signing in.
@@ -37,26 +37,26 @@ public class OidcProviderOptions
     /// process from the identity provider.
     /// </summary>
     [JsonPropertyName("redirect_uri")]
-    public string RedirectUri { get; set; }
+    public string? RedirectUri { get; set; }
 
     /// <summary>
     /// Gets or sets the post logout redirect URI for the application. The application will be redirected here after the user has completed the sign out
     /// process from the identity provider.
     /// </summary>
     [JsonPropertyName("post_logout_redirect_uri")]
-    public string PostLogoutRedirectUri { get; set; }
+    public string? PostLogoutRedirectUri { get; set; }
 
     /// <summary>
     /// Gets or sets the response type to use on the authorization flow. The valid values are specified by the identity provider metadata.
     /// </summary>
     [JsonPropertyName("response_type")]
-    public string ResponseType { get; set; }
+    public string? ResponseType { get; set; }
 
     /// <summary>
     /// Gets or sets the response mode to use in the authorization flow.
     /// </summary>
     [JsonPropertyName("response_mode")]
-    public string ResponseMode { get; set; }
+    public string? ResponseMode { get; set; }
 
     /// <summary>
     /// Gets or sets the additional provider parameters to use on the authorization flow.

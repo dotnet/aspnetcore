@@ -38,9 +38,9 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<GracefulTermination>();
-        Browser.Equal("Graceful Termination", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Graceful Termination", () => Browser.Exists(By.Id("graceful-termination-title")).Text);
 
         GracefulDisconnectCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();

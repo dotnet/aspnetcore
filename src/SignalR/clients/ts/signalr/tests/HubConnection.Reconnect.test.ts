@@ -768,10 +768,10 @@ describe("auto reconnect", () => {
             const connection = new TestConnection();
             const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), new DefaultReconnectPolicy());
             try {
-                let isClosed = false;
+                const p = new PromiseSource<void>();
                 let closeError: Error | undefined;
                 hubConnection.onclose((e) => {
-                    isClosed = true;
+                    p.resolve();
                     closeError = e;
                 });
 
@@ -782,7 +782,7 @@ describe("auto reconnect", () => {
                     type: MessageType.Close,
                 });
 
-                expect(isClosed).toEqual(true);
+                await p;
                 expect(closeError!.message).toEqual("Server returned an error on close: Error!");
             } finally {
                 await hubConnection.stop();

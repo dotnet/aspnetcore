@@ -14,10 +14,7 @@ internal partial class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAutho
 
     public ValidateAntiforgeryTokenAuthorizationFilter(IAntiforgery antiforgery, ILoggerFactory loggerFactory)
     {
-        if (antiforgery == null)
-        {
-            throw new ArgumentNullException(nameof(antiforgery));
-        }
+        ArgumentNullException.ThrowIfNull(antiforgery);
 
         _antiforgery = antiforgery;
         _logger = loggerFactory.CreateLogger(GetType());
@@ -25,10 +22,7 @@ internal partial class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAutho
 
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!context.IsEffectivePolicy<IAntiforgeryPolicy>(this))
         {
@@ -52,10 +46,7 @@ internal partial class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAutho
 
     protected virtual bool ShouldValidate(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return true;
     }

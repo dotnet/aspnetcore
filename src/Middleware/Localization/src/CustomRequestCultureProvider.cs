@@ -18,10 +18,7 @@ public class CustomRequestCultureProvider : RequestCultureProvider
     /// <param name="provider">The provider delegate.</param>
     public CustomRequestCultureProvider(Func<HttpContext, Task<ProviderCultureResult?>> provider)
     {
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
+        ArgumentNullException.ThrowIfNull(provider);
 
         _provider = provider;
     }
@@ -29,10 +26,7 @@ public class CustomRequestCultureProvider : RequestCultureProvider
     /// <inheritdoc />
     public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         return _provider(httpContext);
     }

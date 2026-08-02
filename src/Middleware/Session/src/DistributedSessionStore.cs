@@ -22,15 +22,8 @@ public class DistributedSessionStore : ISessionStore
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public DistributedSessionStore(IDistributedCache cache, ILoggerFactory loggerFactory)
     {
-        if (cache == null)
-        {
-            throw new ArgumentNullException(nameof(cache));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _cache = cache;
         _loggerFactory = loggerFactory;
@@ -39,15 +32,8 @@ public class DistributedSessionStore : ISessionStore
     /// <inheritdoc />
     public ISession Create(string sessionKey, TimeSpan idleTimeout, TimeSpan ioTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
     {
-        if (string.IsNullOrEmpty(sessionKey))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionKey));
-        }
-
-        if (tryEstablishSession == null)
-        {
-            throw new ArgumentNullException(nameof(tryEstablishSession));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(sessionKey);
+        ArgumentNullException.ThrowIfNull(tryEstablishSession);
 
         return new DistributedSession(_cache, sessionKey, idleTimeout, ioTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
     }

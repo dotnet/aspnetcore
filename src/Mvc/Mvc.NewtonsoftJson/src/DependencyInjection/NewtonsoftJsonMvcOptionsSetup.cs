@@ -30,25 +30,10 @@ internal sealed class NewtonsoftJsonMvcOptionsSetup : IConfigureOptions<MvcOptio
         ArrayPool<char> charPool,
         ObjectPoolProvider objectPoolProvider)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (jsonOptions == null)
-        {
-            throw new ArgumentNullException(nameof(jsonOptions));
-        }
-
-        if (charPool == null)
-        {
-            throw new ArgumentNullException(nameof(charPool));
-        }
-
-        if (objectPoolProvider == null)
-        {
-            throw new ArgumentNullException(nameof(objectPoolProvider));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(jsonOptions);
+        ArgumentNullException.ThrowIfNull(charPool);
+        ArgumentNullException.ThrowIfNull(objectPoolProvider);
 
         _loggerFactory = loggerFactory;
         _jsonOptions = jsonOptions.Value;
@@ -65,7 +50,7 @@ internal sealed class NewtonsoftJsonMvcOptionsSetup : IConfigureOptions<MvcOptio
         // Register JsonPatchInputFormatter before JsonInputFormatter, otherwise
         // JsonInputFormatter would consume "application/json-patch+json" requests
         // before JsonPatchInputFormatter gets to see them.
-        var jsonInputPatchLogger = _loggerFactory.CreateLogger<NewtonsoftJsonPatchInputFormatter>();
+        var jsonInputPatchLogger = _loggerFactory.CreateLogger(typeof(NewtonsoftJsonPatchInputFormatter));
         options.InputFormatters.Add(new NewtonsoftJsonPatchInputFormatter(
             jsonInputPatchLogger,
             _jsonOptions.SerializerSettings,
@@ -74,7 +59,7 @@ internal sealed class NewtonsoftJsonMvcOptionsSetup : IConfigureOptions<MvcOptio
             options,
             _jsonOptions));
 
-        var jsonInputLogger = _loggerFactory.CreateLogger<NewtonsoftJsonInputFormatter>();
+        var jsonInputLogger = _loggerFactory.CreateLogger(typeof(NewtonsoftJsonInputFormatter));
         options.InputFormatters.Add(new NewtonsoftJsonInputFormatter(
             jsonInputLogger,
             _jsonOptions.SerializerSettings,

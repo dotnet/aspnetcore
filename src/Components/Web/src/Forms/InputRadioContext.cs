@@ -8,21 +8,19 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 internal sealed class InputRadioContext
 {
+    private readonly IInputRadioValueProvider _valueProvider;
+
     public InputRadioContext? ParentContext { get; }
     public EventCallback<ChangeEventArgs> ChangeEventCallback { get; }
+    public object? CurrentValue => _valueProvider.CurrentValue;
 
     // Mutable properties that may change any time an InputRadioGroup is rendered
     public string? GroupName { get; set; }
-    public object? CurrentValue { get; set; }
     public string? FieldClass { get; set; }
 
-    /// <summary>
-    /// Instantiates a new <see cref="InputRadioContext" />.
-    /// </summary>
-    /// <param name="parentContext">The parent context, if any.</param>
-    /// <param name="changeEventCallback">The event callback to be invoked when the selected value is changed.</param>
-    public InputRadioContext(InputRadioContext? parentContext, EventCallback<ChangeEventArgs> changeEventCallback)
+    public InputRadioContext(IInputRadioValueProvider valueProvider, InputRadioContext? parentContext, EventCallback<ChangeEventArgs> changeEventCallback)
     {
+        _valueProvider = valueProvider;
         ParentContext = parentContext;
         ChangeEventCallback = changeEventCallback;
     }

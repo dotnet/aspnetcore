@@ -23,6 +23,9 @@ internal sealed class TestOutputLogger : ITestOutputHelper
 
     public void WriteLine(string format, params object[] args)
     {
-        _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, format, args));
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation(string.Format(CultureInfo.InvariantCulture, format, args));
+        }
     }
 }

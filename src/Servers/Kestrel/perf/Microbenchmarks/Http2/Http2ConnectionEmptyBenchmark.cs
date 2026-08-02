@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
 public class Http2ConnectionBenchmark : Http2ConnectionBenchmarkBase
 {
-    [Params(0, 128, 1024)]
+    [Params(0)]
     public int ResponseDataLength { get; set; }
 
     private string _responseData;

@@ -23,8 +23,7 @@ public class DataProtectionAdvancedExtensionsTests
         mockDataProtector.Setup(o => o.Protect(plaintextAsBytes, expiration)).Returns(new byte[] { 0x01, 0x02 });
 
         // Act
-        var plainText = "this is plaintext";
-        string protectedPayload = mockDataProtector.Object.Protect(plainText, expiration);
+        string protectedPayload = mockDataProtector.Object.Protect("this is plaintext", expiration);
 
         // Assert
         Assert.Equal(SampleEncodedString, protectedPayload);
@@ -87,8 +86,7 @@ public class DataProtectionAdvancedExtensionsTests
         mockDataProtector.Setup(o => o.Unprotect(new byte[] { 0x01, 0x02 }, out controlExpiration)).Returns(Encoding.UTF8.GetBytes("this is plaintext"));
 
         // Act
-        var sampleEncodedString = SampleEncodedString;
-        string unprotectedPayload = mockDataProtector.Object.Unprotect(sampleEncodedString, out var testExpiration);
+        string unprotectedPayload = mockDataProtector.Object.Unprotect(SampleEncodedString, out var testExpiration);
 
         // Assert
         Assert.Equal("this is plaintext", unprotectedPayload);

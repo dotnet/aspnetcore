@@ -22,10 +22,7 @@ public class ExcludeBindingMetadataProvider : IBindingMetadataProvider
     /// </param>
     public ExcludeBindingMetadataProvider(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         _type = type;
     }
@@ -33,10 +30,7 @@ public class ExcludeBindingMetadataProvider : IBindingMetadataProvider
     /// <inheritdoc />
     public void CreateBindingMetadata(BindingMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // No-op if the metadata is not for the target type
         if (!_type.IsAssignableFrom(context.Key.ModelType))

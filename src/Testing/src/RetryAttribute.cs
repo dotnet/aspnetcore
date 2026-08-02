@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Runs a test multiple times when it fails

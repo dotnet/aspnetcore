@@ -4,6 +4,7 @@
 using System.Net;
 using System.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -16,6 +17,7 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
     /// Adds middleware needed for debugging Blazor WebAssembly applications
     /// inside Chromium dev tools.
     /// </summary>
+    [Obsolete(Obsoletions.UseWebAssemblyDebuggingMessage, DiagnosticId = Obsoletions.UseWebAssemblyDebuggingDiagId, UrlFormat = Obsoletions.AspNetCoreDeprecate011Url)]
     public static void UseWebAssemblyDebugging(this IApplicationBuilder app)
     {
         app.Map("/_framework/debug", app =>
@@ -31,8 +33,12 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
                     browserUrl = new Uri(browserParam);
                     devToolsHost = $"http://{browserUrl.Host}:{browserUrl.Port}";
                 }
-
-                var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices, devToolsHost);
+                var isFirefox = string.IsNullOrEmpty(queryParams.Get("isFirefox")) ? false : true;
+                if (isFirefox)
+                {
+                    devToolsHost = "localhost:6000";
+                }
+                var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices, devToolsHost, isFirefox);
                 var requestPath = context.Request.Path.ToString();
                 if (requestPath == string.Empty)
                 {
@@ -43,7 +49,14 @@ public static class WebAssemblyNetDebugProxyAppBuilderExtensions
                 {
                     case "/":
                         var targetPickerUi = new TargetPickerUi(debugProxyBaseUrl, devToolsHost);
-                        await targetPickerUi.Display(context);
+                        if (isFirefox)
+                        {
+                            await targetPickerUi.DisplayFirefox(context);
+                        }
+                        else
+                        {
+                            await targetPickerUi.Display(context);
+                        }
                         break;
                     case "/ws-proxy":
                         context.Response.Redirect($"{debugProxyBaseUrl}{browserUrl!.PathAndQuery}");

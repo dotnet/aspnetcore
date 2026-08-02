@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.StaticWebAssets;
@@ -30,6 +31,8 @@ public abstract class WebViewManager : IAsyncDisposable
     // Each time a web page connects, we establish a new per-page context
     private PageContext _currentPageContext;
     private bool _disposed;
+
+    internal PageContext CurrentPageContext => _currentPageContext;
 
     /// <summary>
     /// Constructs an instance of <see cref="WebViewManager"/>.
@@ -62,7 +65,7 @@ public abstract class WebViewManager : IAsyncDisposable
     /// client-side routing.
     /// </summary>
     /// <param name="url">The URL, which may be absolute or relative to the application root.</param>
-    public void Navigate(string url)
+    public void Navigate([StringSyntax(StringSyntaxAttribute.Uri)] string url)
         => NavigateCore(new Uri(_appBaseUri, url));
 
     /// <summary>
@@ -162,6 +165,38 @@ public abstract class WebViewManager : IAsyncDisposable
                 _ipcSender.NotifyUnhandledException(ex);
                 throw;
             }
+        });
+    }
+
+    /// <summary>
+    /// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
+    /// This method will not throw any exceptions if it is unable to call the specified <paramref name="workItem"/>, but if it does call it, then exceptions may still be thrown by the <paramref name="workItem"/> itself.
+    /// </summary>
+    /// <param name="workItem">The action to call.</param>
+    /// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
+    public async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+    {
+        ArgumentNullException.ThrowIfNull(workItem);
+
+        var capturedCurrentPageContext = _currentPageContext;
+
+        if (capturedCurrentPageContext is null)
+        {
+            return false;
+        }
+
+        return await capturedCurrentPageContext.Renderer.Dispatcher.InvokeAsync(() =>
+        {
+            if (capturedCurrentPageContext != _currentPageContext)
+            {
+                // If the captured context doesn't match the current context, that means that there was something like
+                // a navigation event that caused the original page to be detached and a new one attached. Thus, we
+                // cancel out of the operation and return failure.
+                return false;
+            }
+            workItem(_currentPageContext.ServiceProvider);
+            return true;
         });
     }
 

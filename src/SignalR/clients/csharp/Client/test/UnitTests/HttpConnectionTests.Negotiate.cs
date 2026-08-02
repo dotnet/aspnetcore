@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Newtonsoft.Json;
@@ -63,6 +63,9 @@ public partial class HttpConnectionTests
         [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/negotiate?negotiateVersion=1")]
         [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/negotiate?negotiateVersion=1")]
         [InlineData("http://fakeuri.org/endpoint?q=1/0", "http://fakeuri.org/endpoint/negotiate?q=1/0&negotiateVersion=1")]
+        [InlineData("http://fakeuri.org/?x=negotiateVersion", "http://fakeuri.org/negotiate?x=negotiateVersion&negotiateVersion=1")]
+        [InlineData("http://fakeuri.org/?negotiateVersion=42", "http://fakeuri.org/negotiate?negotiateVersion=42")]
+        [InlineData("http://fakeuri.org/?q=negotiateVersionValue&negotiateVersion=42", "http://fakeuri.org/negotiate?q=negotiateVersionValue&negotiateVersion=42")]
         public async Task CorrectlyHandlesQueryStringWhenAppendingNegotiateToUrl(string requestedUrl, string expectedNegotiate)
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -456,6 +459,7 @@ public partial class HttpConnectionTests
 
             testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
 
+            EndPoint connectedEndpoint = null;
             using (var noErrorScope = new VerifyNoErrorsScope())
             {
                 await WithConnectionAsync(
@@ -463,6 +467,7 @@ public partial class HttpConnectionTests
                     async (connection) =>
                     {
                         await connection.StartAsync().DefaultTimeout();
+                        connectedEndpoint = connection.RemoteEndPoint;
                     });
             }
 
@@ -471,6 +476,7 @@ public partial class HttpConnectionTests
             Assert.Equal("https://another.domain.url/chat?negotiateVersion=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
             Assert.Equal("https://another.domain.url/chat?negotiateVersion=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
             Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
+            Assert.Equal("https://another.domain.url/chat", connectedEndpoint.ToString());
         }
 
         [Fact]
@@ -508,7 +514,7 @@ public partial class HttpConnectionTests
 
             var transportFactory = new Mock<ITransportFactory>(MockBehavior.Strict);
 
-            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling))
+            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling, false))
                 .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
 
             using (var noErrorScope = new VerifyNoErrorsScope())
@@ -523,7 +529,7 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task StartSkipsOverTransportsThatDoNotSupportTheRequredTransferFormat()
+        public async Task StartSkipsOverTransportsThatDoNotSupportTheRequiredTransferFormat()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
 
@@ -557,7 +563,7 @@ public partial class HttpConnectionTests
 
             var transportFactory = new Mock<ITransportFactory>(MockBehavior.Strict);
 
-            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling))
+            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling, false))
                 .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
 
             await WithConnectionAsync(
@@ -593,7 +599,7 @@ public partial class HttpConnectionTests
                     CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
                     async (connection) =>
                     {
-                        var exception = await Assert.ThrowsAsync<Exception>(() => connection.StartAsync().DefaultTimeout());
+                        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync().DefaultTimeout());
                         Assert.Equal("Test error.", exception.Message);
                     });
             }

@@ -17,7 +17,7 @@ public static class TwitterExtensions
     /// Adds Twitter OAuth-based authentication to <see cref="AuthenticationBuilder"/> using the default scheme.
     /// The default scheme is specified by <see cref="TwitterDefaults.AuthenticationScheme"/>.
     /// <para>
-    /// Facebook authentication allows application users to sign in with their Facebook account.
+    /// Twitter authentication allows application users to sign in with their Twitter account.
     /// </para>
     /// </summary>
     /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
@@ -29,7 +29,7 @@ public static class TwitterExtensions
     /// Adds Twitter OAuth-based authentication to <see cref="AuthenticationBuilder"/> using the default scheme.
     /// The default scheme is specified by <see cref="TwitterDefaults.AuthenticationScheme"/>.
     /// <para>
-    /// Facebook authentication allows application users to sign in with their Facebook account.
+    /// Twitter authentication allows application users to sign in with their Twitter account.
     /// </para>
     /// </summary>
     /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
@@ -42,7 +42,7 @@ public static class TwitterExtensions
     /// Adds Twitter OAuth-based authentication to <see cref="AuthenticationBuilder"/> using the default scheme.
     /// The default scheme is specified by <see cref="TwitterDefaults.AuthenticationScheme"/>.
     /// <para>
-    /// Facebook authentication allows application users to sign in with their Facebook account.
+    /// Twitter authentication allows application users to sign in with their Twitter account.
     /// </para>
     /// </summary>
     /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
@@ -56,7 +56,7 @@ public static class TwitterExtensions
     /// Adds Twitter OAuth-based authentication to <see cref="AuthenticationBuilder"/> using the default scheme.
     /// The default scheme is specified by <see cref="TwitterDefaults.AuthenticationScheme"/>.
     /// <para>
-    /// Facebook authentication allows application users to sign in with their Facebook account.
+    /// Twitter authentication allows application users to sign in with their Twitter account.
     /// </para>
     /// </summary>
     /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>

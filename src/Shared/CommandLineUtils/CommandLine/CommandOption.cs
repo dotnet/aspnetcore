@@ -100,6 +100,35 @@ internal sealed class CommandOption
         return HasValue() ? Values[0] : null;
     }
 
+    public string GetDisplayText()
+    {
+        var parts = new List<string>();
+
+        if (!string.IsNullOrEmpty(SymbolName))
+        {
+            parts.Add($"-{SymbolName}");
+        }
+        
+        if (!string.IsNullOrEmpty(ShortName))
+        {
+            parts.Add($"-{ShortName}");
+        }
+        
+        if (!string.IsNullOrEmpty(LongName))
+        {
+            parts.Add($"--{LongName}");
+        }
+
+        var result = string.Join(", ", parts);
+        
+        if (!string.IsNullOrEmpty(ValueName))
+        {
+            result += $" <{ValueName}>";
+        }
+
+        return result;
+    }
+
     private static bool IsEnglishLetter(char c)
     {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');

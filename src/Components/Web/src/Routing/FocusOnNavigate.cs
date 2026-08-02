@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Routing;
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public class FocusOnNavigate : ComponentBase
 {
+    private const string CustomElementName = "blazor-focus-on-navigate";
+
     private Type? _lastNavigatedPageType = typeof(NonMatchingType);
     private bool _focusAfterRender;
 
@@ -48,6 +51,24 @@ public class FocusOnNavigate : ComponentBase
             _lastNavigatedPageType = RouteData!.PageType;
             _focusAfterRender = true;
         }
+    }
+
+    /// <inheritdoc/>
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (AssignedRenderMode is not null)
+        {
+            // When interactivity is enabled, functionality is handled via JS interop.
+            // We don't need to render anything to the page in that case.
+            // In non-interactive scenarios, a custom element is rendered so that
+            // JS logic can find it and focus the element matching the specified
+            // selector.
+            return;
+        }
+
+        builder.OpenElement(0, CustomElementName);
+        builder.AddAttribute(1, "selector", Selector);
+        builder.CloseElement();
     }
 
     /// <inheritdoc />

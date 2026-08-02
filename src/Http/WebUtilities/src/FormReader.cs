@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -60,10 +59,7 @@ public class FormReader : IDisposable
     /// <param name="charPool">The <see cref="ArrayPool{T}"/> to use.</param>
     public FormReader(string data, ArrayPool<char> charPool)
     {
-        if (data == null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
+        ArgumentNullException.ThrowIfNull(data);
 
         _buffer = charPool.Rent(_rentedCharPoolLength);
         _charPool = charPool;
@@ -97,15 +93,8 @@ public class FormReader : IDisposable
     /// <param name="charPool">The <see cref="ArrayPool{T}"/> to use.</param>
     public FormReader(Stream stream, Encoding encoding, ArrayPool<char> charPool)
     {
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         _buffer = charPool.Rent(_rentedCharPoolLength);
         _charPool = charPool;
@@ -265,12 +254,10 @@ public class FormReader : IDisposable
     // '+' un-escapes to ' ', %HH un-escapes as ASCII (or utf-8?)
     private string BuildWord()
     {
+        _builder.Replace('+', ' ');
         var result = _builder.ToString();
         _builder.Clear();
-
-        var bytes = Encoding.UTF8.GetBytes(result);
-        var decodedLength = UrlDecoder.DecodeInPlace(bytes, isFormEncoding: true);
-        return Encoding.UTF8.GetString(bytes, 0, decodedLength);
+        return Uri.UnescapeDataString(result); // TODO: Replace this, it's not completely accurate.
     }
 
     private void Buffer()

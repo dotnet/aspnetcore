@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -89,7 +89,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
         var result = await client.GetAsync("/Authenticate");
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
         Assert.Equal("Negotiate", result.Headers.WwwAuthenticate.ToString());
-        Assert.Equal(version, result.Version);
+        Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades to HTTP/1.1 for Windows auth (dotnet/runtime#123827).
     }
 
     [ConditionalTheory]

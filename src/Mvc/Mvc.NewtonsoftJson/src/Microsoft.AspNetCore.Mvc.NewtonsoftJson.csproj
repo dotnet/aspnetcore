@@ -15,8 +15,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.JsonPatch" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="Newtonsoft.Json.Bson" />
   </ItemGroup>
@@ -24,5 +30,13 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="..\..\Mvc.Core\src\Infrastructure\AsyncEnumerableReader.cs" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.IntegrationTests" />
   </ItemGroup>
 </Project>

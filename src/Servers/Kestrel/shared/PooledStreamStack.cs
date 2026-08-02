@@ -8,13 +8,26 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel;
 
+/// <summary>
+/// A pooled HTTP/2 or HTTP/3 stream.
+/// </summary>
 internal interface IPooledStream
 {
-    long PoolExpirationTicks { get; }
+    long PoolExpirationTimestamp { get; }
     void DisposeCore();
 }
 
-// See https://github.com/dotnet/runtime/blob/da9b16f2804e87c9c1ca9dcd9036e7b53e724f5d/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
+/// <summary>
+/// A pool of <see cref="IPooledStream"/> instances.
+/// </summary>
+/// <typeparam name="TValue">The type of stream.</typeparam>
+/// <remarks>
+/// Inspired by https://github.com/dotnet/runtime/blob/da9b16f2804e87c9c1ca9dcd9036e7b53e724f5d/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
+/// <para/>
+/// We seem to have chosen a stack for its quick insertion and removal, rather than for LIFO semantics.
+/// <para/>
+/// Owned by an Http2Connection or QuicConnectionContext.
+/// </remarks>
 internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
 {
     // Internal for testing
@@ -87,12 +100,12 @@ internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
         _size++;
     }
 
-    public void RemoveExpired(long now)
+    public void RemoveExpired(long timestamp)
     {
         int size = _size;
         StreamAsValueType[] array = _array;
 
-        var removeCount = CalculateRemoveCount(now, size, array);
+        var removeCount = CalculateRemoveCount(timestamp, size, array);
         if (removeCount == 0)
         {
             return;
@@ -108,26 +121,20 @@ internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
         }
 
         // Move remaining streams
-        for (var i = 0; i < newSize; i++)
-        {
-            array[i] = array[i + removeCount];
-        }
+        array.AsSpan(removeCount, newSize).CopyTo(array);
 
         // Clear unused array indexes
-        for (var i = newSize; i < size; i++)
-        {
-            array[i] = default;
-        }
+        array.AsSpan(newSize, size - newSize).Clear();
 
         _size = newSize;
     }
 
-    private static int CalculateRemoveCount(long now, int size, StreamAsValueType[] array)
+    private static int CalculateRemoveCount(long timestamp, int size, StreamAsValueType[] array)
     {
         for (var i = 0; i < size; i++)
         {
             TValue stream = array[i];
-            if (stream.PoolExpirationTicks >= now)
+            if (stream.PoolExpirationTimestamp >= timestamp)
             {
                 // Stream is still valid. All streams after this will have a later expiration.
                 // No reason to keep checking. Return count of streams to remove.

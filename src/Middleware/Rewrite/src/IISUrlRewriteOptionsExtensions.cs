@@ -20,18 +20,11 @@ public static class IISUrlRewriteOptionsExtensions
     /// <param name="fileProvider">The <see cref="IFileProvider"/> </param>
     /// <param name="filePath">The path to the file containing UrlRewrite rules.</param>
     /// <param name="alwaysUseManagedServerVariables">Server variables are by default sourced from the server if it supports the <see cref="IServerVariablesFeature"/> feature. Use <c>true</c> to disable that behavior</param>
-    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required for backwards compatability")]
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required for backwards compatibility")]
     public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath, bool alwaysUseManagedServerVariables = false)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(fileProvider);
 
         var file = fileProvider.GetFileInfo(filePath);
 
@@ -50,15 +43,8 @@ public static class IISUrlRewriteOptionsExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "<Pending>")]
     public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader, bool alwaysUseManagedServerVariables = false)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(reader);
 
         var rules = new UrlRewriteFileParser().Parse(reader, alwaysUseManagedServerVariables);
 

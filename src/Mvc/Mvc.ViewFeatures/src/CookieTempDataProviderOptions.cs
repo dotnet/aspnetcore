@@ -33,21 +33,21 @@ public class CookieTempDataProviderOptions
     };
 
     /// <summary>
-    /// <para>
     /// Determines the settings used to create the cookie in <see cref="CookieTempDataProvider"/>.
-    /// </para>
-    /// <para>
-    /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>. Setting this to
-    /// <see cref="SameSiteMode.Strict"/> may cause browsers to not send back the cookie to the server in an
-    /// OAuth login flow.
-    /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest" />.
-    /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
-    /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>false</c>, This property is only considered when a
-    /// user opts into the CookiePolicyMiddleware. If you are using this middleware and want to use
-    /// <see cref="CookieTempDataProvider"/>, then either set this property to <c>true</c> or
-    /// request user consent for non-essential cookies.
-    /// </para>
     /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item><description><see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>. Setting this to
+    /// <see cref="SameSiteMode.Strict"/> may cause browsers to not send back the cookie to the server in an
+    /// OAuth login flow.</description></item>
+    /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest" />.</description></item>
+    /// <item><description><see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.</description></item>
+    /// <item><description><see cref="CookieBuilder.IsEssential"/> defaults to <c>false</c>. This property is only considered when a
+    /// user opts into the CookiePolicyMiddleware. If you are using the CookiePolicyMiddleware middleware together with 
+    /// <see cref="CookieTempDataProvider"/>, then either set this property to <c>true</c> or
+    /// request user consent for non-essential cookies.</description></item>
+    /// </list>
+    /// </remarks>
     public CookieBuilder Cookie
     {
         get => _cookieBuilder;

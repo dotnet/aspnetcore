@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// </para>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-[DebuggerDisplay("TypeFilter: Type={ImplementationType} Order={Order}")]
+[DebuggerDisplay("Type = {ImplementationType}, Order = {Order}")]
 public class TypeFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
 {
     private ObjectFactory? _factory;
@@ -59,10 +59,7 @@ public class TypeFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     /// <inheritdoc />
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         if (_factory == null)
         {

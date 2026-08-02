@@ -21,6 +21,9 @@ public static class HttpContextServerVariableExtensions
     /// </returns>
     public static string? GetServerVariable(this HttpContext context, string variableName)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(variableName);
+        
         var feature = context.Features.Get<IServerVariablesFeature>();
 
         if (feature == null)

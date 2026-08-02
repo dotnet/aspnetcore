@@ -23,10 +23,7 @@ public class ResourceExecutingContext : FilterContext
         IList<IValueProviderFactory> valueProviderFactories)
         : base(actionContext, filters)
     {
-        if (valueProviderFactories == null)
-        {
-            throw new ArgumentNullException(nameof(valueProviderFactories));
-        }
+        ArgumentNullException.ThrowIfNull(valueProviderFactories);
 
         ValueProviderFactories = valueProviderFactories;
     }

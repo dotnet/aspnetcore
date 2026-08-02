@@ -25,9 +25,13 @@
     <UseSharedCompilation>true</UseSharedCompilation>
   </PropertyGroup>
 
-  <!-- Workaround continued use of netcoreapp2.1. -->
   <PropertyGroup>
-    <NoWarn>$(NoWarn);NETSDK1138;CS8969</NoWarn>
+    <NoWarn>$(NoWarn);CS8969</NoWarn>
+  </PropertyGroup>
+
+  <!-- Workaround obsolete X509Certificate ctor: https://github.com/dotnet/docs/issues/41662 -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);SYSLIB0057</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -40,12 +44,6 @@
        around this issue. -->
   <PropertyGroup>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
-
-  <!-- Trim analyzers are automatically enabled by IsTrimming=true. They currently break when run on aspnetcore.
-       Remove when trimming analyzers are fixed: https://github.com/dotnet/aspnetcore/issues/41016 -->
-  <PropertyGroup>
-    <EnableTrimAnalyzer Condition=" '$(EnableTrimAnalyzer)' == ''">false</EnableTrimAnalyzer>
   </PropertyGroup>
 
 </Project>

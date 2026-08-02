@@ -40,7 +40,7 @@
     </DefineConstants>
   </PropertyGroup>
 
- <ItemGroup Condition="'$(BuildNative)' == 'true'">
+ <ItemGroup Condition="'$(BuildNative)' == 'true' AND ('$(DotNetBuild)' != 'true' OR '$(DotNetBuildPass)' == '2') ">
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
       <Name>AspNetCoreV2</Name>
       <Private>True</Private>
@@ -84,6 +84,23 @@
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SetPlatform>Platform=ARM64</SetPlatform>
+    </ProjectReference>
+  </ItemGroup>
+
+ <ItemGroup Condition="'$(BuildNative)' == 'true' AND '$(DotNetBuild)' == 'true' AND '$(DotNetBuildPass)' != '2' ">
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
+      <Name>AspNetCoreV2</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
+      <Name>AspNetCoreV2Handler</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
     </ProjectReference>
   </ItemGroup>
 

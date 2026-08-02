@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpe
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -262,7 +262,7 @@ public class MigrationsEndPointMiddlewareTest
                 await server.CreateClient().PostAsync("http://localhost" + MigrationsEndPointOptions.DefaultPath, formData));
 
             Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_Exception", typeof(BloggingContextWithSnapshotThatThrows)), ex.Message);
-            Assert.Equal("Welcome to the invalid migration!", ex.InnerException.Message);
+            Assert.Equal("Welcome to the invalid snapshot!", ex.InnerException.Message);
         }
     }
 }

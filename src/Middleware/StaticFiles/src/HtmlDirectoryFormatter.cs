@@ -25,10 +25,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
     /// <param name="encoder">The character encoding representation to use.</param>
     public HtmlDirectoryFormatter(HtmlEncoder encoder)
     {
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(encoder);
         _htmlEncoder = encoder;
     }
 
@@ -37,14 +34,8 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
     /// </summary>
     public virtual Task GenerateContentAsync(HttpContext context, IEnumerable<IFileInfo> contents)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-        if (contents == null)
-        {
-            throw new ArgumentNullException(nameof(contents));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(contents);
 
         context.Response.ContentType = TextHtmlUtf8;
 
@@ -88,7 +79,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
         vertical-align: bottom;
         padding: 10px 5px 5px 5px;
         font-weight: 400;
-        color: #a0a0a0;
+        color: #737373;
         text-align: center; }
     #index td { padding: 3px 10px; }
     #index th, #index td {
@@ -100,7 +91,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
     #index th:last-child, #index td:last-child {
         border-right: 1px transparent solid; }
     #index td.length, td.modified { text-align:right; }
-    a { color:#1ba1e2;text-decoration:none; }
+    a { color:#127aac;text-decoration:none; }
     a:hover { color:#13709e;text-decoration:underline; }
   </style>
 </head>
@@ -112,7 +103,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
     <header><h1>{0} <a href=""/"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
 
         string cumulativePath = "/";
-        foreach (var segment in requestPath.Value!.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var segment in requestPath.Value!.Split('/', StringSplitOptions.RemoveEmptyEntries))
         {
             cumulativePath = cumulativePath + segment + "/";
             builder.AppendFormat(

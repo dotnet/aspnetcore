@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Authentication.WsFederation
 
-This project contains an implementation of interactive [WsFederation authentication](https://docs.microsoft.com/aspnet/core/security/authentication/ws-federation) for ASP.NET Core.
+This project contains an implementation of interactive [WsFederation authentication](https://learn.microsoft.com/aspnet/core/security/authentication/ws-federation) for ASP.NET Core.
 
 ## Development Setup
 

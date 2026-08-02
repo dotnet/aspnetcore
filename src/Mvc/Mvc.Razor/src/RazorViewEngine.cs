@@ -106,15 +106,8 @@ public partial class RazorViewEngine : IRazorViewEngine
     /// <inheritdoc />
     public RazorPageResult FindPage(ActionContext context, string pageName)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         if (IsApplicationRelativePath(pageName) || IsRelativePath(pageName))
         {
@@ -137,10 +130,7 @@ public partial class RazorViewEngine : IRazorViewEngine
     /// <inheritdoc />
     public RazorPageResult GetPage(string executingFilePath, string pagePath)
     {
-        if (string.IsNullOrEmpty(pagePath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pagePath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pagePath);
 
         if (!(IsApplicationRelativePath(pagePath) || IsRelativePath(pagePath)))
         {
@@ -163,15 +153,9 @@ public partial class RazorViewEngine : IRazorViewEngine
     /// <inheritdoc />
     public ViewEngineResult FindView(ActionContext context, string viewName, bool isMainPage)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (string.IsNullOrEmpty(viewName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(viewName);
 
         if (IsApplicationRelativePath(viewName) || IsRelativePath(viewName))
         {
@@ -186,10 +170,7 @@ public partial class RazorViewEngine : IRazorViewEngine
     /// <inheritdoc />
     public ViewEngineResult GetView(string? executingFilePath, string viewPath, bool isMainPage)
     {
-        if (string.IsNullOrEmpty(viewPath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(viewPath);
 
         if (!(IsApplicationRelativePath(viewPath) || IsRelativePath(viewPath)))
         {

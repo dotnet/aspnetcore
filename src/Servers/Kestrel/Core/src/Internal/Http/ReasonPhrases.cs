@@ -64,6 +64,7 @@ internal static class ReasonPhrases
     private static readonly byte[] _bytesStatus429 = CreateStatusBytes(StatusCodes.Status429TooManyRequests);
     private static readonly byte[] _bytesStatus431 = CreateStatusBytes(StatusCodes.Status431RequestHeaderFieldsTooLarge);
     private static readonly byte[] _bytesStatus451 = CreateStatusBytes(StatusCodes.Status451UnavailableForLegalReasons);
+    private static readonly byte[] _bytesStatus499 = CreateStatusBytes(StatusCodes.Status499ClientClosedRequest);
 
     private static readonly byte[] _bytesStatus500 = CreateStatusBytes(StatusCodes.Status500InternalServerError);
     private static readonly byte[] _bytesStatus501 = CreateStatusBytes(StatusCodes.Status501NotImplemented);
@@ -149,6 +150,7 @@ internal static class ReasonPhrases
             StatusCodes.Status429TooManyRequests => _bytesStatus429,
             StatusCodes.Status431RequestHeaderFieldsTooLarge => _bytesStatus431,
             StatusCodes.Status451UnavailableForLegalReasons => _bytesStatus451,
+            StatusCodes.Status499ClientClosedRequest => _bytesStatus499,
 
             StatusCodes.Status500InternalServerError => _bytesStatus500,
             StatusCodes.Status501NotImplemented => _bytesStatus501,

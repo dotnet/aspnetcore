@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Authorization;
@@ -11,11 +12,15 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationResult
 {
+    private static readonly AuthorizationResult _succeededResult = new() { Succeeded = true };
+    private static readonly AuthorizationResult _failedResult = new() { Failure = AuthorizationFailure.ExplicitFail() };
+
     private AuthorizationResult() { }
 
     /// <summary>
     /// True if authorization was successful.
     /// </summary>
+    [MemberNotNullWhen(false, nameof(Failure))]
     public bool Succeeded { get; private set; }
 
     /// <summary>
@@ -27,7 +32,7 @@ public class AuthorizationResult
     /// Returns a successful result.
     /// </summary>
     /// <returns>A successful result.</returns>
-    public static AuthorizationResult Success() => new AuthorizationResult { Succeeded = true };
+    public static AuthorizationResult Success() => _succeededResult;
 
     /// <summary>
     /// Creates a failed authorization result.
@@ -40,5 +45,5 @@ public class AuthorizationResult
     /// Creates a failed authorization result.
     /// </summary>
     /// <returns>The <see cref="AuthorizationResult"/>.</returns>
-    public static AuthorizationResult Failed() => new AuthorizationResult { Failure = AuthorizationFailure.ExplicitFail() };
+    public static AuthorizationResult Failed() => _failedResult;
 }

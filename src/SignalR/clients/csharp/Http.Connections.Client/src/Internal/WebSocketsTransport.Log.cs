@@ -72,5 +72,11 @@ internal sealed partial class WebSocketsTransport
         [LoggerMessage(20, LogLevel.Warning, $"Configuring request headers using {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Headers)} is not supported when using websockets transport " +
                 "on the browser platform.", EventName = "HeadersNotSupported")]
         public static partial void HeadersNotSupported(ILogger logger);
+
+        [LoggerMessage(21, LogLevel.Debug, "Receive loop errored.", EventName = "ReceiveErrored")]
+        public static partial void ReceiveErrored(ILogger logger, Exception exception);
+
+        [LoggerMessage(22, LogLevel.Debug, "Send loop errored.", EventName = "SendErrored")]
+        public static partial void SendErrored(ILogger logger, Exception exception);
     }
 }

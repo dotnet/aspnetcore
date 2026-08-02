@@ -16,9 +16,6 @@ public class TooManyModelErrorsException : Exception
     public TooManyModelErrorsException(string message)
         : base(message)
     {
-        if (message == null)
-        {
-            throw new ArgumentNullException(nameof(message));
-        }
+        ArgumentNullException.ThrowIfNull(message);
     }
 }

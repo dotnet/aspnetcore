@@ -1,0 +1,34 @@
+﻿@page "/brief-streaming"
+@attribute [StreamRendering]
+
+<h3 id="brief-streaming">Brief streaming</h3>
+
+<p>
+    At one point there was a bug whereby, if streaming was enabled but only waited
+    for a very short period, it could insert the SSR framing markers in the wrong place,
+    making the output corrupt and causing the UI to be replace with a blank page.
+</p>
+<p>
+    The test loads this page via enhanced nav many times, validating it always loads.
+</p>
+
+<a href="brief-streaming">Load this page</a>
+
+@if (isLoaded)
+{
+    <p>
+        Load counter: <span id="load-count">@loadCount</span>
+    </p>
+}
+
+@code {
+    static int loadCount;
+    bool isLoaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        loadCount++;
+        isLoaded = true;
+    }
+}

@@ -19,10 +19,7 @@ internal sealed class DefaultSpaStaticFileProvider : ISpaStaticFileProvider
         IServiceProvider serviceProvider,
         SpaStaticFilesOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (string.IsNullOrEmpty(options.RootPath))
         {

@@ -62,7 +62,7 @@ public class Program
             .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
                 .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
         #if (GenerateApi)
-                    .AddDownstreamWebApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
+                    .AddDownstreamApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
         #endif
         #if (GenerateGraph)
                     .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamApi"))
@@ -80,7 +80,7 @@ public class Program
         #if (GenerateApi)
             .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"))
                 .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
-                    .AddDownstreamWebApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
+                    .AddDownstreamApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
                     .AddInMemoryTokenCaches();
         #else
             .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"));
@@ -127,7 +127,7 @@ public class Program
         #endif
         {
             app.UseExceptionHandler("/Error");
-        #if (RequiresHttps)
+        #if (HasHttpsProfile)
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
@@ -136,16 +136,14 @@ public class Program
         #else
         }
         #endif
-        app.UseStaticFiles();
 
         app.UseRouting();
 
-        #if (OrganizationalAuth || IndividualAuth || WindowsAuth)
-        app.UseAuthentication();
-        #endif
         app.UseAuthorization();
 
-        app.MapRazorPages();
+        app.MapStaticAssets();
+        app.MapRazorPages()
+           .WithStaticAssets();
         #if (IndividualB2CAuth || OrganizationalAuth)
         app.MapControllers();
         #endif

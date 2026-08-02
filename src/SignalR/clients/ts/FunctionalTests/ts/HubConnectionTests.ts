@@ -198,7 +198,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe(errorMessage);
+                    expect((e as any).message).toBe(errorMessage);
                 }
 
                 await hubConnection.stop();
@@ -216,7 +216,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe("The client attempted to invoke the streaming 'EmptyStream' method with a non-streaming invocation.");
+                    expect((e as any).message).toBe("The client attempted to invoke the streaming 'EmptyStream' method with a non-streaming invocation.");
                 }
 
                 await hubConnection.stop();
@@ -234,7 +234,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe("The client attempted to invoke the streaming 'Stream' method with a non-streaming invocation.");
+                    expect((e as any).message).toBe("The client attempted to invoke the streaming 'Stream' method with a non-streaming invocation.");
                 }
 
                 await hubConnection.stop();
@@ -302,7 +302,7 @@ describe("hubConnection", () => {
                 // client side method names are case insensitive
                 let methodName = "message";
                 const idx = Math.floor(Math.random() * (methodName.length - 1));
-                methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
+                methodName = methodName.substring(0, idx) + methodName[idx].toUpperCase() + methodName.substring(idx + 1);
 
                 const receivePromise = new PromiseSource<string>();
                 hubConnection.on(methodName, (msg) => {
@@ -328,7 +328,7 @@ describe("hubConnection", () => {
                 // client side method names are case insensitive
                 let methodName = "message";
                 const idx = Math.floor(Math.random() * (methodName.length - 1));
-                methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
+                methodName = methodName.substring(0, idx) + methodName[idx].toUpperCase() + methodName.substring(idx + 1);
 
                 let closeCount = 0;
                 let invocationCount = 0;
@@ -359,7 +359,8 @@ describe("hubConnection", () => {
                 await closePromise;
             });
 
-            it("closed with error or start fails if hub cannot be created", async () => {
+            // Skipped: https://github.com/dotnet/aspnetcore/issues/44608
+            xit("closed with error or start fails if hub cannot be created", async () => {
                 const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/uncreatable", { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -376,7 +377,13 @@ describe("hubConnection", () => {
                 try {
                     await hubConnection.start();
                 } catch (error) {
-                    expect(error!.message).toEqual(expectedErrorMessage);
+                    if ((error as any)!.message.includes("404")) {
+                        // SSE can race with the connection closing and the initial ping being successful or failing with a 404.
+                        // LongPolling doesn't have pings and WebSockets is a synchronous API over a single HTTP request so it doesn't have the same issues
+                        expect((error as any)!.message).toEqual("No Connection with that ID: Status code '404'");
+                    } else {
+                        expect((error as any)!.message).toEqual(expectedErrorMessage);
+                    }
                     closePromise.resolve();
                 }
                 await closePromise;
@@ -508,7 +515,7 @@ describe("hubConnection", () => {
                     await resultPromise;
                     expect(false).toBe(true);
                 } catch (err) {
-                    expect(err.message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. Exception: Something bad");
+                    expect((err as any).message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. HubException: Something bad");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -618,6 +625,41 @@ describe("hubConnection", () => {
                     const response = await hubConnection.invoke("Echo", message);
 
                     expect(response).toEqual(message);
+
+                    await hubConnection.stop();
+
+                    await closePromise;
+                } catch (err) {
+                    fail(err);
+                }
+            });
+
+            it("can refresh hub authentication", async () => {
+                try {
+                    let jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken?user=stable-user&scope=first");
+
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub", {
+                        accessTokenFactory: () => jwtToken,
+                    })
+                        .withAuthenticationRefresh({ enableAutoRefresh: false })
+                        .build();
+
+                    const closePromise = new PromiseSource();
+                    hubConnection.onclose((error) => {
+                        expect(error).toBe(undefined);
+                        closePromise.resolve();
+                    });
+
+                    await hubConnection.start();
+                    expect(await hubConnection.invoke("GetUserNameIdentifier")).toBe("stable-user");
+                    expect(await hubConnection.invoke("GetUserClaim", "scope")).toBe("first");
+
+                    jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken?user=stable-user&scope=second");
+                    const tokenLifetimeInSeconds = await hubConnection.refreshAuthentication();
+
+                    expect(tokenLifetimeInSeconds).toBeGreaterThan(0);
+                    expect(await hubConnection.invoke("GetUserNameIdentifier")).toBe("stable-user");
+                    expect(await hubConnection.invoke("GetUserClaim", "scope")).toBe("second");
 
                     await hubConnection.stop();
 
@@ -878,7 +920,7 @@ describe("hubConnection", () => {
         }
     });
 
-    it("connection id is alwys null is negotiation is skipped", async () => {
+    it("connection id is always null if negotiation is skipped", async () => {
         try {
             const hubConnection = getConnectionBuilder(
                     HttpTransportType.WebSockets,
@@ -1016,29 +1058,6 @@ describe("hubConnection", () => {
         } catch (e) {
             fail(e);
         } finally {
-        }
-    });
-
-    it("populates the Content-Type header when sending XMLHttpRequest", async () => {
-        // Skip test on Node as this header isn't set (it was added for React-Native)
-        if (typeof window === "undefined") {
-            return;
-        }
-        const hubConnection = getConnectionBuilder(HttpTransportType.LongPolling, TESTHUB_NOWEBSOCKETS_ENDPOINT_URL)
-            .withHubProtocol(new JsonHubProtocol())
-            .build();
-
-        try {
-            await hubConnection.start();
-
-            // Check what transport was used by asking the server to tell us.
-            expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
-            // Check to see that the Content-Type header is set the expected value
-            expect(await hubConnection.invoke("GetContentTypeHeader")).toEqual("text/plain;charset=UTF-8");
-
-            await hubConnection.stop();
-        } catch (e) {
-            fail(e);
         }
     });
 

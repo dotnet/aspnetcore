@@ -23,7 +23,7 @@ extern "C" {
 
 // No-op value for the Context1,2,3 parameters of WriteRefTraceLogEx
 //#define REF_TRACE_EMPTY_CONTEXT ((PVOID) -1)
-#define REF_TRACE_EMPTY_CONTEXT NULL
+#define REF_TRACE_EMPTY_CONTEXT nullptr
 
 
 //

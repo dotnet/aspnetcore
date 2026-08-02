@@ -19,10 +19,7 @@ public class HtmlLocalizerFactory : IHtmlLocalizerFactory
     /// <param name="localizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
     public HtmlLocalizerFactory(IStringLocalizerFactory localizerFactory)
     {
-        if (localizerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(localizerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(localizerFactory);
 
         _factory = localizerFactory;
     }
@@ -34,10 +31,7 @@ public class HtmlLocalizerFactory : IHtmlLocalizerFactory
     /// <returns>The <see cref="HtmlLocalizer"/>.</returns>
     public virtual IHtmlLocalizer Create(Type resourceSource)
     {
-        if (resourceSource == null)
-        {
-            throw new ArgumentNullException(nameof(resourceSource));
-        }
+        ArgumentNullException.ThrowIfNull(resourceSource);
 
         return new HtmlLocalizer(_factory.Create(resourceSource));
     }
@@ -50,15 +44,8 @@ public class HtmlLocalizerFactory : IHtmlLocalizerFactory
     /// <returns>The <see cref="HtmlLocalizer"/>.</returns>
     public virtual IHtmlLocalizer Create(string baseName, string location)
     {
-        if (baseName == null)
-        {
-            throw new ArgumentNullException(nameof(baseName));
-        }
-
-        if (location == null)
-        {
-            throw new ArgumentNullException(nameof(location));
-        }
+        ArgumentNullException.ThrowIfNull(baseName);
+        ArgumentNullException.ThrowIfNull(location);
 
         var localizer = _factory.Create(baseName, location);
         return new HtmlLocalizer(localizer);

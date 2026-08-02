@@ -1,0 +1,27 @@
+﻿<p>
+    <button class="increment" type="button" @onclick="IncrementCount">Click me</button>
+    Count: <span class="count">@_count</span>
+</p>
+
+<p>
+    Is interactive: <span class="is-interactive">@_isInteractive</span>
+</p>
+
+@code {
+    private int _count = 0;
+    private bool _isInteractive;
+
+    private void IncrementCount()
+    {
+        _count++;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInteractive = true;
+            StateHasChanged();
+        }
+    }
+}

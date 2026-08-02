@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Mvc.Core;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 
@@ -25,7 +25,7 @@ public static class MvcAreaRouteBuilderExtensions
         this IRouteBuilder routeBuilder,
         string name,
         string areaName,
-        string? template)
+        [StringSyntax("Route")] string? template)
     {
         MapAreaRoute(routeBuilder, name, areaName, template, defaults: null, constraints: null, dataTokens: null);
         return routeBuilder;
@@ -49,7 +49,7 @@ public static class MvcAreaRouteBuilderExtensions
         this IRouteBuilder routeBuilder,
         string name,
         string areaName,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults)
     {
         MapAreaRoute(routeBuilder, name, areaName, template, defaults, constraints: null, dataTokens: null);
@@ -78,7 +78,7 @@ public static class MvcAreaRouteBuilderExtensions
         this IRouteBuilder routeBuilder,
         string name,
         string areaName,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults,
         object? constraints)
     {
@@ -112,20 +112,13 @@ public static class MvcAreaRouteBuilderExtensions
         this IRouteBuilder routeBuilder,
         string name,
         string areaName,
-        string? template,
+        [StringSyntax("Route")] string? template,
         object? defaults,
         object? constraints,
         object? dataTokens)
     {
-        if (routeBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(routeBuilder));
-        }
-
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentNullException.ThrowIfNull(routeBuilder);
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
         var defaultsDictionary = new RouteValueDictionary(defaults);
         defaultsDictionary["area"] = defaultsDictionary["area"] ?? areaName;

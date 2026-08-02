@@ -1,0 +1,27 @@
+﻿@page "/forms/disappears-before-dispatching"
+@using Components.TestServer.RazorComponents
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Form disappears before dispatching</h2>
+
+@if (!_ready)
+{
+    <ComponentWithFormInside>
+    </ComponentWithFormInside>
+}
+
+@* Just here so that the test can dispatch the event. *@
+<form data-enhance method="post" enctype="application/x-www-form-urlencoded" id="test-form">
+    <AntiforgeryToken />
+    <input id="test-send" type="submit" value="test-send" />
+</form>
+
+@code
+{
+    private bool _ready;
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _ready = true;
+    }
+}

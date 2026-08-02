@@ -1,24 +1,7 @@
 {
-  "$schema": "http://json.schemastore.org/vs-2017.3.host",
+  "$schema": "https://json.schemastore.org/ide.host",
   "order": 201,
-  "icon": "ide/WebAPI.png",
+  "icon": "ide/icon.ico",
   "supportsDocker": true,
-  "supportedAuthentications": [
-    {
-      "auth": "None",
-      "authenticationType": "NoAuth",
-      "allowUnsecured": true
-    }
-  ],
-  "ports": [
-    {
-      "name": "HttpPort",
-      "useHttps": false
-    },
-    {
-      "name": "HttpsPort",
-      "useHttps": true
-    }
-  ],
   "disableHttpsSymbol": "NoHttps"
 }

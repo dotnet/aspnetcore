@@ -15,7 +15,6 @@ public interface IDataProtector : IDataProtectionProvider
     /// </summary>
     /// <param name="plaintext">The plaintext data to protect.</param>
     /// <returns>The protected form of the plaintext data.</returns>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] Protect(byte[] plaintext);
 
     /// <summary>
@@ -26,6 +25,5 @@ public interface IDataProtector : IDataProtectionProvider
     /// <exception cref="System.Security.Cryptography.CryptographicException">
     /// Thrown if the protected data is invalid or malformed.
     /// </exception>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] Unprotect(byte[] protectedData);
 }

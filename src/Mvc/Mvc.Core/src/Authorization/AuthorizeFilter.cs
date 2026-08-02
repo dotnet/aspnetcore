@@ -18,6 +18,10 @@ namespace Microsoft.AspNetCore.Mvc.Authorization;
 /// <see cref="AuthorizationPolicy"/>. MVC recognizes the <see cref="AuthorizeAttribute"/> and adds an instance of
 /// this filter to the associated action or controller.
 /// </summary>
+/// <remarks>
+/// An authorize filter is not meant to be used in combination with <see cref="AuthorizationOptions.FallbackPolicy"/>. 
+/// The fallback policy takes precedence over an authorize filter.
+/// </remarks>
 public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
 {
     /// <summary>
@@ -34,10 +38,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     /// <param name="policy">Authorization policy to be used.</param>
     public AuthorizeFilter(AuthorizationPolicy policy)
     {
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
         Policy = policy;
     }
@@ -50,10 +51,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     public AuthorizeFilter(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
         : this(authorizeData)
     {
-        if (policyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(policyProvider));
-        }
+        ArgumentNullException.ThrowIfNull(policyProvider);
 
         PolicyProvider = policyProvider;
     }
@@ -64,10 +62,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     /// <param name="authorizeData">The <see cref="IAuthorizeData"/> to combine into an <see cref="IAuthorizeData"/>.</param>
     public AuthorizeFilter(IEnumerable<IAuthorizeData> authorizeData)
     {
-        if (authorizeData == null)
-        {
-            throw new ArgumentNullException(nameof(authorizeData));
-        }
+        ArgumentNullException.ThrowIfNull(authorizeData);
 
         AuthorizeData = authorizeData;
     }
@@ -144,13 +139,12 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
         {
             // When doing endpoint routing, MVC does not create filters for any authorization specific metadata i.e [Authorize] does not
             // get translated into AuthorizeFilter. Consequently, there are some rough edges when an application uses a mix of AuthorizeFilter
-            // explicilty configured by the user (e.g. global auth filter), and uses endpoint metadata.
+            // explicitly configured by the user (e.g. global auth filter), and uses endpoint metadata.
             // To keep the behavior of AuthFilter identical to pre-endpoint routing, we will gather auth data from endpoint metadata
             // and produce a policy using this. This would mean we would have effectively run some auth twice, but it maintains compat.
             var policyProvider = PolicyProvider ?? context.HttpContext.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>();
-            var endpointAuthorizeData = endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
 
-            var endpointPolicy = await AuthorizationPolicy.CombineAsync(policyProvider, endpointAuthorizeData);
+            var endpointPolicy = await AuthorizationPolicy.CombineAsync(policyProvider, endpoint.Metadata);
             if (endpointPolicy != null)
             {
                 builder.Combine(endpointPolicy);
@@ -163,10 +157,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     /// <inheritdoc />
     public virtual async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!context.IsEffectivePolicy(this))
         {

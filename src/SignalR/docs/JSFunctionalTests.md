@@ -13,7 +13,7 @@ Our JavaScript client functional tests are written using [Jasmine](https://jasmi
 
 ### Iterating
 
-The `npm test` command will take a while, because it will build the `clients\ts\signalr`, `clients\ts\signalr-protocol-msgpack` and `clients\ts\FunctionalTests` folders as well as `dotnet build` the `clients\ts\FunctionalTests` folder (to build the server-side components). If you are making changes, it's nice to be able to build only the things you need to build. To skip all the optional build steps, you can run `yarn run test:inner` in `clients\ts\FunctionalTests`. This will skip building `clients\ts\signalr` and `clients\signalr-protocol-msgpack` (it will still build the `clients\ts\FunctionalTests` folder). If you make changes to those libraries, you have to manually build those directories.
+The `npm test` command will take a while, because it will build the `clients\ts\signalr`, `clients\ts\signalr-protocol-msgpack` and `clients\ts\FunctionalTests` folders as well as `dotnet build` the `clients\ts\FunctionalTests` folder (to build the server-side components). If you are making changes, it's nice to be able to build only the things you need to build. To skip all the optional build steps, you can run `npm run test:inner` in `clients\ts\FunctionalTests`. This will skip building `clients\ts\signalr` and `clients\signalr-protocol-msgpack` (it will still build the `clients\ts\FunctionalTests` folder). If you make changes to those libraries, you have to manually build those directories.
 
 ## Running tests from the browser
 

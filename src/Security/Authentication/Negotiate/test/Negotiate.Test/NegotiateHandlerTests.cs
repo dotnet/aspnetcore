@@ -21,6 +21,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 public class NegotiateHandlerTests
 {
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new NegotiateOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task Anonymous_MissingConnectionFeatures_ThrowsNotSupported()
     {
         using var host = await CreateHostAsync();
@@ -102,7 +109,7 @@ public class NegotiateHandlerTests
         var server = host.GetTestServer();
 
         var ex = await Assert.ThrowsAsync<TrueException>(() => SendAsync(server, "/404", new TestConnection(), "Negotiate ClientNtlmBlob2"));
-        Assert.Equal("Stage1Complete", ex.UserMessage);
+        Assert.Equal("Stage1Complete", ex.Message);
     }
 
     [Theory]
@@ -208,7 +215,7 @@ public class NegotiateHandlerTests
     public async Task RBACClaimsRetrievedFromCacheAfterKerberosCompleted()
     {
         var claimsCache = new MemoryCache(new MemoryCacheOptions());
-        claimsCache.Set("name", new string[] { "CN=Domain Admins,CN=Users,DC=domain,DC=net" });
+        claimsCache.Set("name@domain.NET", new string[] { "CN=Domain Admins,CN=Users,DC=domain,DC=net" });
         NegotiateOptions negotiateOptions = null;
         using var host = await CreateHostAsync(options =>
             {
@@ -255,7 +262,7 @@ public class NegotiateHandlerTests
     {
         var builder = new HostBuilder()
             .ConfigureServices(services => services
-                .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                .AddAuthentication()
                 .AddNegotiate(options =>
                 {
                     options.StateFactory = new TestNegotiateStateFactory();
@@ -382,7 +389,7 @@ public class NegotiateHandlerTests
         var builder = new HostBuilder()
             .ConfigureServices(services => services
                 .AddRouting()
-                .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                .AddAuthentication()
                 .AddNegotiate(options =>
                 {
                     options.StateFactory = new TestNegotiateStateFactory();
@@ -547,7 +554,7 @@ public class NegotiateHandlerTests
             {
                 throw new InvalidOperationException("Authentication is not complete.");
             }
-            return new GenericIdentity("name", _protocol);
+            return new GenericIdentity("name@domain.NET", _protocol);
         }
 
         public string GetOutgoingBlob(string incomingBlob, out BlobErrorType errorType, out Exception ex)

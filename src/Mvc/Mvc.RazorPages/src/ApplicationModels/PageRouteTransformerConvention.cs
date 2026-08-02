@@ -20,10 +20,7 @@ public class PageRouteTransformerConvention : IPageRouteModelConvention
     /// <param name="parameterTransformer">The <see cref="IOutboundParameterTransformer"/> to use resolve page routes.</param>
     public PageRouteTransformerConvention(IOutboundParameterTransformer parameterTransformer)
     {
-        if (parameterTransformer == null)
-        {
-            throw new ArgumentNullException(nameof(parameterTransformer));
-        }
+        ArgumentNullException.ThrowIfNull(parameterTransformer);
 
         _parameterTransformer = parameterTransformer;
     }

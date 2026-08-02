@@ -41,6 +41,7 @@
 #define ASPNETCORE_EVENT_HOSTFXR_DLL_INVALID_VERSION_MSG     L"Hostfxr version used does not support 'hostfxr_get_native_search_directories', update the version of hostfxr to a higher version. Path to hostfxr: '%s'."
 #define ASPNETCORE_EVENT_HOSTFXR_DLL_UNABLE_TO_LOAD_MSG      L"Unable to load '%s'. This might be caused by a bitness mismatch between IIS application pool and published application."
 #define ASPNETCORE_EVENT_HOSTFXR_FAILURE_MSG                 L"Unable to locate application dependencies. Ensure that the versions of Microsoft.NetCore.App and Microsoft.AspNetCore.App targeted by the application are installed."
+#define ASPNETCORE_EVENT_HOSTFXR_BAD_APPLICATION_FAILURE_MSG L"Provided application path does not exist, or isn't a .dll or .exe."
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION_MSG      L"Application '%s' with physical root '%s' hit unexpected managed exception, exception code = '0x%x'. Please check the stderr logs for more information."
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION_STDOUT_MSG L"Application '%s' with physical root '%s' hit unexpected managed exception, exception code = '0x%x'. First 30KB characters of captured stdout and stderr logs:\r\n%s"
 #define ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG              L"Could not find 'aspnetcorev2_inprocess.dll'. Exception message:\r\n%s"

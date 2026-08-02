@@ -1,0 +1,21 @@
+﻿@page "/forms/form-with-method-and-submit-button-with-formmethod/{method}/{formmethod?}"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>Form with method and Submit Button with formaction</h1>
+
+<form id="form" data-enhance method="@Method" @onsubmit="() => _submitted = true" @formname="someform">
+    <AntiforgeryToken />
+    <input id="submit-button" type="submit" formmethod="@Formmethod" />
+</form>
+
+@if (_submitted)
+{
+    <p id="submitted">Form submitted!</p>
+}
+
+@code {
+    bool _submitted = false;
+
+    [Parameter] public string Method { get; set; }
+    [Parameter] public string? Formmethod { get; set; }
+}

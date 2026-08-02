@@ -3,8 +3,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.AspNetCore.Components.Web.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -17,8 +19,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// </summary>
 public abstract class WebRenderer : Renderer
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly DotNetObjectReference<WebRendererInteropMethods> _interopMethodsReference;
+    private readonly int _rendererId;
 
     /// <summary>
     /// Constructs an instance of <see cref="WebRenderer"/>.
@@ -34,25 +36,34 @@ public abstract class WebRenderer : Renderer
         JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory)
     {
-        _serviceProvider = serviceProvider;
         _interopMethodsReference = DotNetObjectReference.Create(
             new WebRendererInteropMethods(this, jsonOptions, jsComponentInterop));
+        _rendererId = GetWebRendererId();
 
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
-        var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
-        jsRuntime.InvokeVoidAsync(
-            "Blazor._internal.attachWebRendererInterop",
-            RendererId,
-            _interopMethodsReference,
-            jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
-            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
+        var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
+        AttachWebRendererInterop(jsRuntime, jsonOptions, jsComponentInterop);
     }
 
     /// <summary>
     /// Gets the identifier for the renderer.
     /// </summary>
-    protected int RendererId { get; init; } // Only used on WebAssembly. Will be zero in other cases.
+    protected int RendererId
+    {
+        get => _rendererId;
+    }
+
+    /// <summary>
+    /// Allocates an identifier for the renderer.
+    /// </summary>
+    protected virtual int GetWebRendererId()
+    {
+        // We return '0' by default, which is reserved so that classes deriving from this
+        // type don't need to worry about allocating an ID unless they're using multiple renderers.
+        // As soon as multiple renderers are used, this needs to return a unique identifier.
+        return 0;
+    }
 
     /// <summary>
     /// Instantiates a root component and attaches it to the browser within the specified element.
@@ -75,7 +86,10 @@ public abstract class WebRenderer : Renderer
     /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
     protected abstract void AttachRootComponentToBrowser(int componentId, string domElementSelector);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Releases the resources used by the current <see cref="WebRenderer"/> instance.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> to release managed resources; otherwise, <see langword="false"/>.</param>
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -84,6 +98,44 @@ public abstract class WebRenderer : Renderer
         }
 
         base.Dispose(disposing);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    private void AttachWebRendererInterop(IJSRuntime jsRuntime, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
+    {
+        const string JSMethodIdentifier = "Blazor._internal.attachWebRendererInterop";
+
+        // These arguments should be kept in sync with WebRendererSerializerContext
+        object[] args = [
+            _rendererId,
+            _interopMethodsReference,
+            jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
+            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer,
+        ];
+
+        if (jsRuntime is IInternalWebJSInProcessRuntime inProcessRuntime)
+        {
+            // Fast path for WebAssembly: Rather than using the JSRuntime to serialize
+            // parameters, we utilize the source-generated WebRendererSerializerContext
+            // for a faster JsonTypeInfo resolution.
+
+            // We resolve a JsonTypeInfo for DotNetObjectReference<WebRendererInteropMethods> from
+            // the JS runtime's JsonConverters. This is because adding DotNetObjectReference<T> as
+            // a supported type in the JsonSerializerContext generates unnecessary code to produce
+            // JsonTypeInfo for all the types referenced by both DotNetObjectReference<T> and its
+            // generic type argument.
+
+            var newJsonOptions = new JsonSerializerOptions(jsonOptions);
+            newJsonOptions.TypeInfoResolverChain.Clear();
+            newJsonOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
+            newJsonOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
+            var argsJson = JsonSerializer.Serialize(args, newJsonOptions);
+            inProcessRuntime.InvokeJS(JSMethodIdentifier, argsJson, JSCallResultType.JSVoidResult, 0);
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync(JSMethodIdentifier, args).Preserve();
+        }
     }
 
     /// <summary>
@@ -128,3 +180,11 @@ public abstract class WebRenderer : Renderer
             => _jsComponentInterop.RemoveRootComponent(componentId);
     }
 }
+
+// This should be kept in sync with the argument types in the call to
+// 'Blazor._internal.attachWebRendererInterop'
+[JsonSerializable(typeof(object[]))]
+[JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
+[JsonSerializable(typeof(Dictionary<string, List<string>>))]
+internal sealed partial class WebRendererSerializerContext : JsonSerializerContext;

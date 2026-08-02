@@ -23,14 +23,8 @@ public class HttpMethodOverrideMiddleware
     /// <param name="options">The <see cref="HttpMethodOverrideOptions"/> for configuring the middleware.</param>
     public HttpMethodOverrideMiddleware(RequestDelegate next, IOptions<HttpMethodOverrideOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
         _next = next;
         _options = options.Value;
     }

@@ -1,0 +1,185 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<script>
+    "use strict";
+
+    window.getDocumentTitle = function () {
+        return document.title;
+    }
+
+    window.setDocumentTitle = function (title) {
+        document.title = title;
+    };
+
+    window.logDefault = function () {
+        console.log("This is a default log message");
+    }
+
+    window.logMessage = function (message) {
+        console.log(message);
+    }
+
+    window.testObject = {
+        num: 10,
+        text: "Hello World",
+        log: function () {
+            console.log(this.text);
+        },
+        get getOnlyProperty() {
+            return this.num;
+        },
+        set setOnlyProperty(value) {
+            this.num = value;
+        }
+    }
+
+    window.getTestObject = function () {
+        return window.testObject;
+    }
+
+    window.Cat = class {
+        constructor(name) {
+            this.name = name;
+        }
+
+        meow() {
+            const text = `${this.name} says Meow!`;
+            console.log(text);
+            return text;
+        }
+    }
+
+    window.Dog = function (name) {
+        this.name = name;
+    }
+
+    window.Dog.prototype.bark = function () {
+        const text = `${this.name} says Woof!`;
+        console.log(text);
+        return text;
+    }
+</script>
+
+<h3>DotNetToJSInterop</h3>
+
+<div style="margin-top: 2em">
+    <button onclick="console.log('Logged from inline JS')">Log with inline JS</button>
+</div>
+
+<div style="margin-top: 2em">
+    Message: <input type="text" @bind="Message" />
+    <button @onclick="() => LogMessageWithInvoke(Message)">Log with InvokeAsync</button>
+</div>
+
+<div style="margin-top: 2em">
+    Title: <input type="text" @bind="NewTitle" />
+    <button @onclick="() => SetDocumentTitleWithInvoke(NewTitle)">Change document.title with InvokeAsync</button>
+    <button @onclick="() => SetDocumentTitleWithSetValue(NewTitle)">Change document.title with SetValueAsync</button>
+</div>
+
+<div style="margin-top: 2em">
+    <button @onclick="GetDocumentTitleWithGetValue">Get document.title</button>
+    <span>@CurrentTitle</span>
+</div>
+
+<div style="margin-top: 2em">
+    <span>@TestObjectDisplay</span> <br />
+    <button @onclick="GetObjectModelWithInvoke">Get object model with InvokeAsync</button>
+    <button @onclick="GetObjectPropertiesWithGetValue">Get individual object properties with GetValue</button>
+</div>
+
+<div style="margin-top: 2em">
+    <button @onclick="CreateInstanceByConstructorFunction">Call constructor function InvokeConstructorAsync</button>
+    <button @onclick="CreateInstanceByClassConstructor">Call class constructor with InvokeConstructorAsync</button>
+    <button @onclick="ChangeInstanceMethodWithFunctionReference">Change instance method with function reference</button>
+    <span>@InstanceMessage</span>
+</div>
+
+<div style="margin-top: 2em">
+    <button @onclick="GetInvalid">Access set-only property with GetValueAsync</button>
+    <button @onclick="SetInvalid">Access get-only property with SetValueAsync</button>
+    <span>@ErrorMessage</span>
+</div>
+
+@code {
+    private string Message { get; set; }
+    private string CurrentTitle { get; set; }
+    private string NewTitle { get; set; }
+    private string TestObjectDisplay { get; set; }
+    private string InstanceMessage { get; set; }
+    private string ErrorMessage { get; set; }
+
+    private async Task LogMessageWithInvoke(string message)
+    {
+        await JSRuntime.InvokeVoidAsync("logMessage", message);
+    }
+
+    private async Task SetDocumentTitleWithInvoke(string title)
+    {
+        await JSRuntime.InvokeVoidAsync("setDocumentTitle", title);
+    }
+
+    private async Task SetDocumentTitleWithSetValue(string title)
+    {
+        await JSRuntime.SetValueAsync("document.title", title);
+    }
+
+    private async Task GetDocumentTitleWithGetValue()
+    {
+        CurrentTitle = await JSRuntime.GetValueAsync<string>("document.title");
+    }
+
+    private async Task GetObjectModelWithInvoke()
+    {
+        var model = await JSRuntime.InvokeAsync<TestObjectModel>("getTestObject");
+        TestObjectDisplay = $"State loaded from model with Invoke: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
+    }
+
+    private async Task GetObjectPropertiesWithGetValue()
+    {
+        var objectRef = await JSRuntime.InvokeAsync<IJSObjectReference>("getTestObject");
+        var numValue = await objectRef.GetValueAsync<int>("num");
+        var textValue = await objectRef.GetValueAsync<string>("text");
+        var getOnlyProperty = await objectRef.GetValueAsync<int>("getOnlyProperty");
+        TestObjectDisplay = $"State loaded from properties with GetValue: {numValue} | {textValue} | {getOnlyProperty}";
+    }
+
+    private async Task CreateInstanceByConstructorFunction()
+    {
+        var dogRef = await JSRuntime.InvokeConstructorAsync("Dog", "A dog");
+        InstanceMessage = await dogRef.InvokeAsync<string>("bark");
+    }
+
+    private async Task CreateInstanceByClassConstructor()
+    {
+        var catRef = await JSRuntime.InvokeConstructorAsync("Cat", "A cat");
+        InstanceMessage = await catRef.InvokeAsync<string>("meow");
+    }
+
+    private async Task GetInvalid(MouseEventArgs args)
+    {
+        var value = await JSRuntime.GetValueAsync<int>("testObject.setOnlyProperty");
+    }
+
+    private async Task SetInvalid(MouseEventArgs args)
+    {
+        await JSRuntime.SetValueAsync<int>("testObject.getOnlyProperty", 123);
+    }
+
+    private async Task ChangeInstanceMethodWithFunctionReference()
+    {
+        var dogRef = await JSRuntime.InvokeConstructorAsync("Dog", "A dog");
+        var dogFuncRef = await dogRef.GetValueAsync<IJSObjectReference>("bark");
+        var catRef = await JSRuntime.InvokeConstructorAsync("Cat", "A cat");
+        await catRef.SetValueAsync("meow", dogFuncRef);
+        InstanceMessage = await catRef.InvokeAsync<string>("meow");
+    }
+
+    class TestObjectModel
+    {
+        public int Num { get; set; }
+        public string Text { get; set; }
+        public int GetOnlyProperty { get; set; }
+    }
+}

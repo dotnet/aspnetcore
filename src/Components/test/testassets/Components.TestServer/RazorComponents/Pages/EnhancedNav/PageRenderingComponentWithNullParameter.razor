@@ -1,0 +1,24 @@
+﻿@page "/nav/null-parameter/{mode}"
+@using TestContentPackage
+
+@* https://github.com/dotnet/aspnetcore/issues/52434 *@
+
+<h1>Page rendering component with null parameter</h1>
+
+@if (Mode == "server")
+{
+    <ComponentAcceptingNullParameter @rendermode="RenderMode.InteractiveServer" Value="@null" />
+}
+else if (Mode == "wasm")
+{
+    <ComponentAcceptingNullParameter @rendermode="RenderMode.InteractiveWebAssembly" Value="@null" />
+}
+else
+{
+    <p>Expected a render mode of 'server' or 'wasm', but got '@Mode'.</p>
+}
+
+@code {
+    [Parameter]
+    public string? Mode { get; set; }
+}

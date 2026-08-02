@@ -20,7 +20,7 @@ internal interface IHttp3Stream
     /// 2. Between when the request delegate is complete and the transport draining.
     ///    Value is driven by <see cref="KestrelServerLimits.MinResponseDataRate"/>.
     /// </summary>
-    long StreamTimeoutTicks { get; set; }
+    long StreamTimeoutTimestamp { get; set; }
 
     /// <summary>
     /// The stream is receiving the header frame.
@@ -30,11 +30,20 @@ internal interface IHttp3Stream
     bool IsReceivingHeader { get; }
 
     /// <summary>
+    /// The stream is receiving a trailer HEADERS frame that spans multiple reads.
+    /// </summary>
+    bool IsReceivingTrailerHeaders { get; }
+
+    /// <summary>
     /// The stream request delegate is complete and the transport is draining.
     /// </summary>
     bool IsDraining { get; }
 
     bool IsRequestStream { get; }
+
+    bool EndStreamReceived { get; }
+    bool IsAborted { get; }
+    bool IsCompleted { get; }
 
     string TraceIdentifier { get; }
 

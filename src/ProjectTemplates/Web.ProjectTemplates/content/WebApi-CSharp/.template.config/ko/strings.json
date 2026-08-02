@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "ASP.NET Core 웹 API",
+    "description": "ASP.NET Core 컨트롤러 또는 최소 API를 사용하여 RESTful Web API를 만들기 위한 프로젝트 템플릿으로, OpenAPI 및 인증을 선택적으로 지원합니다.",
+    "parameter.DisableOpenAPI.name": "OpenAPI 지원 사용(_O)",
+    "parameter.DisableOpenAPI.description": "OpenAPI(Swagger) 지원 사용",
+    "parameter.UseMinimalAPIs.name": "컨트롤러 사용",
+    "parameter.UseMinimalAPIs.description": "최소 API 대신 컨트롤러를 사용합니다."
+  }
+}

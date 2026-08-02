@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC コントローラー",
+  "description": "読み取り/書き込みアクションの有無にかかわらない MVC コントローラー",
+  "symbols/namespace/description": "生成されたコードの名前空間",
+  "symbols/actions/description": "読み取り/書き込みアクションを使用してコントローラーを作成する",
+  "symbols/actions/displayName": "読み取り/書き込みアクションを追加する",
+  "postActions/openInEditor/description": "エディターで作成されたコントローラーを開きます"
+}

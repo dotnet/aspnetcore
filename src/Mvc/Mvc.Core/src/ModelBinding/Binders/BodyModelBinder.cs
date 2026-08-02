@@ -70,20 +70,13 @@ public partial class BodyModelBinder : IModelBinder
         ILoggerFactory? loggerFactory,
         MvcOptions? options)
     {
-        if (formatters == null)
-        {
-            throw new ArgumentNullException(nameof(formatters));
-        }
-
-        if (readerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(readerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(formatters);
+        ArgumentNullException.ThrowIfNull(readerFactory);
 
         _formatters = formatters;
         _readerFactory = readerFactory.CreateReader;
 
-        _logger = loggerFactory?.CreateLogger<BodyModelBinder>() ?? NullLogger<BodyModelBinder>.Instance;
+        _logger = loggerFactory?.CreateLogger(typeof(BodyModelBinder)) ?? NullLogger<BodyModelBinder>.Instance;
 
         _options = options;
     }
@@ -93,10 +86,7 @@ public partial class BodyModelBinder : IModelBinder
     /// <inheritdoc />
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 

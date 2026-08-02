@@ -70,6 +70,22 @@
     <button class="throw-in-errorcontent" @onclick="@(() => throwInErrorContent = true)">Throw in error content (causing infinite error loop)</button>
 </div>
 
+<hr/>
+<h2>Two errors in child</h2>
+<div id="multiple-errors-at-once-test">
+    @if (twoErrorsInChild) {
+        <ErrorBoundary>
+            <ChildContent>
+                <MultipleErrorsChild />
+            </ChildContent>
+            <ErrorContent>
+                <p class="error-message">@context.Message</p>
+            </ErrorContent>
+        </ErrorBoundary>
+    }
+    <button class="throw-multiple-errors" @onclick="@(() => twoErrorsInChild = true)">Throw multiple errors in child</button>
+</div>
+
 <hr />
 <h2>Errors after disposal</h2>
 <p>Long-running tasks could fail after the component has been removed from the tree. We still want these failures to be captured by the error boundary they were inside when the task began, even if that error boundary itself has also since been disposed. Otherwise, error handling would behave differently based on whether the user has navigated away while processing was in flight, which would be very unexpected and hard to handle.</p>
@@ -99,6 +115,14 @@
     <button class="throw-in-children" @onclick="@(() => { multipleChildrenBeginDelayedError = true; })">Cause multiple errors</button>
 </div>
 
+<hr />
+<h2>Dispatch exception to renderer</h2>
+<p>Use DispatchExceptionAsync to see if exceptions are correctly dispatched to the renderer.</p>
+<div id="exception-dispatch-async">
+    <button id="dispatch-sync-exception" @onclick=SyncExceptionDispatch>Cause exception from sync context</button>
+    <button id="dispatch-async-exception" @onclick=AsyncExceptionDispatch>Cause exception from async context</button>
+</div>
+
 @code {
     private bool throwInOnParametersSet;
     private bool throwInOnParametersSetAsync;
@@ -114,6 +138,7 @@
     private bool disposalTestRemoveErrorBoundary;
     private bool disposalTestBeginDelayedError;
     private bool multipleChildrenBeginDelayedError;
+    private bool twoErrorsInChild;
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");
@@ -142,5 +167,16 @@
 
         // Before it completes, dispose its enclosing error boundary
         disposalTestRemoveErrorBoundary = true;
+    }
+
+    async Task SyncExceptionDispatch()
+    {
+        await DispatchExceptionAsync(new InvalidTimeZoneException("Synchronous exception in SyncExceptionDispatch"));
+    }
+
+    async Task AsyncExceptionDispatch()
+    {
+        await Task.Yield();
+        await DispatchExceptionAsync(new InvalidTimeZoneException("Asynchronous exception in AsyncExceptionDispatch"));
     }
 }

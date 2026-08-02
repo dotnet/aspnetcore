@@ -5,10 +5,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Internal;
 
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 internal sealed class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
 {
     private readonly IDictionary<TKey, TValue> _sourceDictionary;
@@ -19,15 +23,8 @@ internal sealed class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TV
         IDictionary<TKey, TValue> sourceDictionary,
         IEqualityComparer<TKey> comparer)
     {
-        if (sourceDictionary == null)
-        {
-            throw new ArgumentNullException(nameof(sourceDictionary));
-        }
-
-        if (comparer == null)
-        {
-            throw new ArgumentNullException(nameof(comparer));
-        }
+        ArgumentNullException.ThrowIfNull(sourceDictionary);
+        ArgumentNullException.ThrowIfNull(comparer);
 
         _sourceDictionary = sourceDictionary;
         _comparer = comparer;

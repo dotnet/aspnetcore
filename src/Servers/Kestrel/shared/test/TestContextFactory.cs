@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -20,7 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 internal static class TestContextFactory
 {
@@ -28,7 +24,7 @@ internal static class TestContextFactory
         KestrelServerOptions serverOptions,
         IHttpParser<Http1ParsingHandler> httpParser = null,
         PipeScheduler scheduler = null,
-        ISystemClock systemClock = null,
+        TimeProvider timeProvider = null,
         DateHeaderValueManager dateHeaderValueManager = null,
         ConnectionManager connectionManager = null,
         Heartbeat heartbeat = null)
@@ -38,11 +34,12 @@ internal static class TestContextFactory
             Log = new KestrelTrace(NullLoggerFactory.Instance),
             Scheduler = scheduler,
             HttpParser = httpParser,
-            SystemClock = systemClock,
+            TimeProvider = timeProvider,
             DateHeaderValueManager = dateHeaderValueManager,
             ConnectionManager = connectionManager,
             Heartbeat = heartbeat,
-            ServerOptions = serverOptions
+            ServerOptions = serverOptions,
+            Metrics = new KestrelMetrics(new TestMeterFactory())
         };
 
         return context;
@@ -56,7 +53,8 @@ internal static class TestContextFactory
         MemoryPool<byte> memoryPool = null,
         IPEndPoint localEndPoint = null,
         IPEndPoint remoteEndPoint = null,
-        ITimeoutControl timeoutControl = null)
+        ITimeoutControl timeoutControl = null,
+        ConnectionMetricsContext metricsContext = null)
     {
         var context = new HttpConnectionContext(
             "TestConnectionId",
@@ -67,7 +65,8 @@ internal static class TestContextFactory
             connectionFeatures,
             memoryPool ?? MemoryPool<byte>.Shared,
             localEndPoint,
-            remoteEndPoint);
+            remoteEndPoint,
+            metricsContext ?? CreateMetricsContext(connectionContext));
         context.TimeoutControl = timeoutControl;
         context.Transport = transport;
 
@@ -81,19 +80,26 @@ internal static class TestContextFactory
         MemoryPool<byte> memoryPool = null,
         IPEndPoint localEndPoint = null,
         IPEndPoint remoteEndPoint = null,
-        ITimeoutControl timeoutControl = null)
+        ITimeoutControl timeoutControl = null,
+        ConnectionMetricsContext metricsContext = null)
     {
+        connectionContext ??= new TestMultiplexedConnectionContext { ConnectionId = "TEST" };
+        metricsContext ??= new ConnectionMetricsContext { ConnectionContext = connectionContext };
+
         var http3ConnectionContext = new HttpMultiplexedConnectionContext(
             "TEST",
             HttpProtocols.Http3,
             altSvcHeader: null,
-            connectionContext ?? new TestMultiplexedConnectionContext { ConnectionId = "TEST" },
+            connectionContext,
             serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
             connectionFeatures ?? new FeatureCollection(),
-            memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
+            memoryPool ?? TestMemoryPoolFactory.Create(),
             localEndPoint,
-            remoteEndPoint);
-        http3ConnectionContext.TimeoutControl = timeoutControl;
+            remoteEndPoint,
+            metricsContext)
+        {
+            TimeoutControl = timeoutControl
+        };
 
         return http3ConnectionContext;
     }
@@ -143,11 +149,13 @@ internal static class TestContextFactory
         InputFlowControl connectionInputFlowControl = null,
         ITimeoutControl timeoutControl = null)
     {
+        var connectionContext = new DefaultConnectionContext();
         var context = new Http2StreamContext
         (
             connectionId: connectionId ?? "TestConnectionId",
             protocols: HttpProtocols.Http2,
             altSvcHeader: null,
+            connectionContext: connectionContext,
             serviceContext: serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
             connectionFeatures: connectionFeatures ?? new FeatureCollection(),
             memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
@@ -158,7 +166,8 @@ internal static class TestContextFactory
             clientPeerSettings: clientPeerSettings ?? new Http2PeerSettings(),
             serverPeerSettings: serverPeerSettings ?? new Http2PeerSettings(),
             frameWriter: frameWriter,
-            connectionInputFlowControl: connectionInputFlowControl
+            connectionInputFlowControl: connectionInputFlowControl,
+            metricsContext: CreateMetricsContext(connectionContext)
         );
         context.TimeoutControl = timeoutControl;
 
@@ -177,7 +186,21 @@ internal static class TestContextFactory
         ITimeoutControl timeoutControl = null,
         IHttp3StreamLifetimeHandler streamLifetimeHandler = null)
     {
-        var context = new Http3StreamContext
+        var http3ConnectionContext = CreateHttp3ConnectionContext(
+            new TestMultiplexedConnectionContext(),
+            serviceContext,
+            connectionFeatures,
+            memoryPool,
+            localEndPoint,
+            remoteEndPoint,
+            timeoutControl);
+
+        var http3Conection = new Http3Connection(http3ConnectionContext)
+        {
+            _streamLifetimeHandler = streamLifetimeHandler
+        };
+
+        return new Http3StreamContext
         (
             connectionId: connectionId ?? "TestConnectionId",
             protocols: HttpProtocols.Http3,
@@ -188,15 +211,18 @@ internal static class TestContextFactory
             memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
             localEndPoint: localEndPoint,
             remoteEndPoint: remoteEndPoint,
-            streamLifetimeHandler: streamLifetimeHandler,
             streamContext: new DefaultConnectionContext(),
-            clientPeerSettings: new Http3PeerSettings(),
-            serverPeerSettings: null
-        );
-        context.TimeoutControl = timeoutControl;
-        context.Transport = transport;
+            connection: http3Conection
+        )
+        {
+            TimeoutControl = timeoutControl,
+            Transport = transport,
+        };
+    }
 
-        return context;
+    public static ConnectionMetricsContext CreateMetricsContext(BaseConnectionContext connectionContext)
+    {
+        return new ConnectionMetricsContext { ConnectionContext = connectionContext };
     }
 
     private class TestHttp2StreamLifetimeHandler : IHttp2StreamLifetimeHandler

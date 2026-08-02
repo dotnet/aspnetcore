@@ -48,25 +48,10 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
         MvcOptions options,
         MvcNewtonsoftJsonOptions jsonOptions)
     {
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
-
-        if (serializerSettings == null)
-        {
-            throw new ArgumentNullException(nameof(serializerSettings));
-        }
-
-        if (charPool == null)
-        {
-            throw new ArgumentNullException(nameof(charPool));
-        }
-
-        if (objectPoolProvider == null)
-        {
-            throw new ArgumentNullException(nameof(objectPoolProvider));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(serializerSettings);
+        ArgumentNullException.ThrowIfNull(charPool);
+        ArgumentNullException.ThrowIfNull(objectPoolProvider);
 
         _logger = logger;
         SerializerSettings = serializerSettings;
@@ -110,15 +95,8 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
         InputFormatterContext context,
         Encoding encoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var httpContext = context.HttpContext;
         var request = httpContext.Request;
@@ -130,7 +108,7 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
         if (readStream.CanSeek)
         {
             // The most common way of getting here is the user has request buffering on.
-            // However, request buffering isn't eager, and consequently it will peform pass-thru synchronous
+            // However, request buffering isn't eager, and consequently it will perform pass-thru synchronous
             // reads as part of the deserialization.
             // To avoid this, drain and reset the stream.
             var position = request.Body.Position;
@@ -408,10 +386,14 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
             else
             {
                 // At start of "property", "property." or "property[0]".
-                var endIndex = path.IndexOfAny(new[] { '.', '[' }, index);
-                if (endIndex == -1)
+                var endIndex = path.AsSpan(index).IndexOfAny('.', '[');
+                if (endIndex < 0)
                 {
                     endIndex = path.Length;
+                }
+                else
+                {
+                    endIndex += index;
                 }
 
                 var propertyName = path.Substring(index, endIndex - index);

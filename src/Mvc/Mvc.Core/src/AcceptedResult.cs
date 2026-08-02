@@ -46,10 +46,7 @@ public class AcceptedResult : ObjectResult
     public AcceptedResult(Uri locationUri, [ActionResultObjectValue] object? value)
         : base(value)
     {
-        if (locationUri == null)
-        {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
+        ArgumentNullException.ThrowIfNull(locationUri);
 
         if (locationUri.IsAbsoluteUri)
         {
@@ -71,10 +68,7 @@ public class AcceptedResult : ObjectResult
     /// <inheritdoc />
     public override void OnFormatting(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         base.OnFormatting(context);
 

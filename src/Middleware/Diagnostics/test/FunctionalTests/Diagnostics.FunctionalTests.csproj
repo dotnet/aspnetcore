@@ -4,10 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <SignAssembly>false</SignAssembly>
     <AssemblyName>Diagnostics.FunctionalTests</AssemblyName>
-    <TestDependsOnMssql>true</TestDependsOnMssql>
-    
-    <!-- https://github.com/dotnet/aspnetcore/issues/38819 LocalDb sometimes hangs on win11 helix queue -->
-    <BuildHelixPayload>false</BuildHelixPayload>    
+    <TestDependsOnMssql>true</TestDependsOnMssql> 
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
   </ItemGroup>

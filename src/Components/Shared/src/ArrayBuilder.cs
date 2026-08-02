@@ -11,6 +11,8 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.AspNetCore.Components.WebView;
 #elif COMPONENTS_SERVER
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
+#elif COMPONENTS_WEBASSEMBLY
+namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 #elif JS_INTEROP
 namespace Microsoft.JSInterop.Infrastructure;
 #else
@@ -174,10 +176,7 @@ internal class ArrayBuilder<T> : IDisposable
         // If someone tries to do something that would require non-zero storage then
         // this is a use-after-free. Throwing here is an easy way to prevent that without
         // introducing overhead to every method.
-        if (_disposed)
-        {
-            ThrowObjectDisposedException();
-        }
+        ObjectDisposedException.ThrowIf(_disposed, null);
 
         var newCapacity = Math.Max(desiredCapacity, _minCapacity);
         Debug.Assert(newCapacity > _items.Length);
@@ -215,10 +214,5 @@ internal class ArrayBuilder<T> : IDisposable
     private static void ThrowIndexOutOfBoundsException()
     {
         throw new ArgumentOutOfRangeException("index");
-    }
-
-    private static void ThrowObjectDisposedException()
-    {
-        throw new ObjectDisposedException(objectName: null);
     }
 }

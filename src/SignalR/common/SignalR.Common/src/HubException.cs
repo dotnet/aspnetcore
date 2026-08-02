@@ -49,6 +49,11 @@ public class HubException : Exception
     /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="info"/> parameter is <c>null</c>.</exception>
     /// <exception cref="SerializationException">The class name is <c>null</c> or <see cref="Exception.HResult"/> is zero (0).</exception>
+#if NET8_0_OR_GREATER
+    [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#else
+    [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.")]
+#endif
     public HubException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
     }

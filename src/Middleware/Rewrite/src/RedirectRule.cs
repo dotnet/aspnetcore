@@ -16,15 +16,8 @@ internal sealed class RedirectRule : IRule
     public int StatusCode { get; }
     public RedirectRule(string regex, string replacement, int statusCode)
     {
-        if (string.IsNullOrEmpty(regex))
-        {
-            throw new ArgumentNullException(nameof(regex));
-        }
-
-        if (string.IsNullOrEmpty(replacement))
-        {
-            throw new ArgumentNullException(nameof(replacement));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(regex);
+        ArgumentException.ThrowIfNullOrEmpty(replacement);
 
         InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);
         Replacement = replacement;
@@ -50,6 +43,7 @@ internal sealed class RedirectRule : IRule
         if (initMatchResults.Success)
         {
             var newPath = initMatchResults.Result(Replacement);
+            newPath = UrlNormalizer.CollapseLeadingSlashes(newPath);
             var response = context.HttpContext.Response;
 
             response.StatusCode = StatusCode;
@@ -65,8 +59,10 @@ internal sealed class RedirectRule : IRule
             {
                 var host = default(HostString);
                 var schemeSplit = newPath.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+                string scheme = request.Scheme;
                 if (schemeSplit >= 0)
                 {
+                    scheme = newPath.Substring(0, schemeSplit);
                     schemeSplit += Uri.SchemeDelimiter.Length;
                     var pathSplit = newPath.IndexOf('/', schemeSplit);
 
@@ -97,7 +93,7 @@ internal sealed class RedirectRule : IRule
                 }
 
                 encodedPath = host.HasValue
-                    ? UriHelper.BuildAbsolute(request.Scheme, host, pathBase, resolvedPath, resolvedQuery, default)
+                    ? UriHelper.BuildAbsolute(scheme, host, pathBase, resolvedPath, resolvedQuery, default)
                     : UriHelper.BuildRelative(pathBase, resolvedPath, resolvedQuery, default);
             }
 

@@ -1,4 +1,8 @@
-﻿[CmdletBinding()]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+ 'PSAvoidUsingConvertToSecureStringWithPlainText',
+ '',
+ Justification='$accountPassword is a script parameter so it needs to be plain-text')]
+[CmdletBinding()]
 param(
 	[Parameter(Mandatory=$true)]
 	[string]$serverName,
@@ -58,7 +62,7 @@ else
 
 Remove-PSSession $psSession
 
-# NOTE: Currenty there is no straight forward way to get the exit code from a remotely executing session, so
+# NOTE: Currently there is no straight forward way to get the exit code from a remotely executing session, so
 # we print out the exit code in the remote script and capture it's output to get the exit code.
 if($remoteResult.Length > 0)
 {

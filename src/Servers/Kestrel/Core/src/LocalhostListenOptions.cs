@@ -9,6 +9,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 
 internal sealed class LocalhostListenOptions : ListenOptions
 {
+    private readonly string? _hostPrefix;
+
+    internal LocalhostListenOptions(int port, string hostPrefix)
+        : this(port)
+    {
+        _hostPrefix = hostPrefix ?? throw new ArgumentNullException(nameof(hostPrefix));
+    }
+
     internal LocalhostListenOptions(int port)
         : base(new IPEndPoint(IPAddress.Loopback, port))
     {
@@ -23,7 +31,8 @@ internal sealed class LocalhostListenOptions : ListenOptions
     /// </summary>
     internal override string GetDisplayName()
     {
-        return $"{Scheme}://localhost:{IPEndPoint!.Port}";
+        var host = _hostPrefix is { } prefix ? $"{prefix}.localhost" : "localhost";
+        return $"{Scheme}://{host}:{IPEndPoint!.Port}";
     }
 
     internal override async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
@@ -37,7 +46,10 @@ internal sealed class LocalhostListenOptions : ListenOptions
         }
         catch (Exception ex) when (!(ex is IOException or OperationCanceledException))
         {
-            context.Logger.LogInformation(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv4 loopback", ex.Message);
+            if (context.Logger.IsEnabled(LogLevel.Information))
+            {
+                context.Logger.LogInformation(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv4 loopback", ex.Message);
+            }
             exceptions.Add(ex);
         }
 
@@ -48,7 +60,10 @@ internal sealed class LocalhostListenOptions : ListenOptions
         }
         catch (Exception ex) when (!(ex is IOException or OperationCanceledException))
         {
-            context.Logger.LogInformation(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv6 loopback", ex.Message);
+            if (context.Logger.IsEnabled(LogLevel.Information))
+            {
+                context.Logger.LogInformation(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv6 loopback", ex.Message);
+            }
             exceptions.Add(ex);
         }
 
@@ -60,23 +75,5 @@ internal sealed class LocalhostListenOptions : ListenOptions
         // If StartLocalhost doesn't throw, there is at least one listener.
         // The port cannot change for "localhost".
         context.Addresses.Add(GetDisplayName());
-    }
-
-    // used for cloning to two IPEndpoints
-    internal ListenOptions Clone(IPAddress address)
-    {
-        var options = new ListenOptions(new IPEndPoint(address, IPEndPoint!.Port))
-        {
-            KestrelServerOptions = KestrelServerOptions,
-            Protocols = Protocols,
-            DisableAltSvcHeader = DisableAltSvcHeader,
-            IsTls = IsTls,
-            HttpsOptions = HttpsOptions,
-            EndpointConfig = EndpointConfig
-        };
-
-        options._middleware.AddRange(_middleware);
-        options._multiplexedMiddleware.AddRange(_multiplexedMiddleware);
-        return options;
     }
 }

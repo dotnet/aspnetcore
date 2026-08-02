@@ -43,7 +43,7 @@ TEST(PassUnexpandedEnvString, LongStringExpandsResults)
 }
 
 
-TEST(GetEnvironmentVariableValue, ReturnsCorrectLenght)
+TEST(GetEnvironmentVariableValue, ReturnsCorrectLength)
 {
     SetEnvironmentVariable(L"RANDOM_ENV_VAR_1", L"test");
 
@@ -72,4 +72,30 @@ TEST(CheckStringHelpers, FormatWithoutContentDoesNotIncreaseSizeWstring)
     std::wstring testString = L"test";
     auto result = format(testString);
     EXPECT_EQ(testString.size(), result.size());
+}
+
+TEST(CheckStringHelpers, IsChunkedTransferEncodingMatchesFinalCoding)
+{
+    EXPECT_TRUE(isChunkedTransferEncoding("chunked"));
+    EXPECT_TRUE(isChunkedTransferEncoding("Chunked"));
+    EXPECT_TRUE(isChunkedTransferEncoding("CHUNKED"));
+    EXPECT_TRUE(isChunkedTransferEncoding("gzip, chunked"));
+    EXPECT_TRUE(isChunkedTransferEncoding("gzip,chunked"));
+    EXPECT_TRUE(isChunkedTransferEncoding(" chunked "));
+
+    EXPECT_TRUE(isChunkedTransferEncoding("chunked,"));
+    EXPECT_TRUE(isChunkedTransferEncoding("chunked, "));
+    EXPECT_TRUE(isChunkedTransferEncoding("gzip, chunked,"));
+}
+
+TEST(CheckStringHelpers, IsChunkedTransferEncodingRejectsNonFinalOrPartialCoding)
+{
+    EXPECT_FALSE(isChunkedTransferEncoding(""));
+    EXPECT_FALSE(isChunkedTransferEncoding("gzip"));
+    EXPECT_FALSE(isChunkedTransferEncoding("identity"));
+    EXPECT_FALSE(isChunkedTransferEncoding("chunkedX"));
+    EXPECT_FALSE(isChunkedTransferEncoding("xchunked"));
+
+    // "chunked" must be the final coding, not somewhere in the middle.
+    EXPECT_FALSE(isChunkedTransferEncoding("chunked, gzip"));
 }

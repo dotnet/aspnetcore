@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
@@ -46,6 +48,9 @@ public class SecretsStore
 
     public int Count => _secrets.Count;
 
+    // For testing.
+    internal string SecretsFilePath => _secretsFilePath;
+
     public bool ContainsKey(string key) => _secrets.ContainsKey(key);
 
     public IEnumerable<KeyValuePair<string, string>> AsEnumerable() => _secrets;
@@ -66,16 +71,16 @@ public class SecretsStore
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
 
-        var contents = new JObject();
-        if (_secrets != null)
+        var contents = Serialize(_secrets);
+
+        // Create a temp file with the correct Unix file mode before moving it to the expected _filePath.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            foreach (var secret in _secrets.AsEnumerable())
-            {
-                contents[secret.Key] = secret.Value;
-            }
+            var tempFilename = Path.GetTempFileName();
+            File.Move(tempFilename, _secretsFilePath, overwrite: true);
         }
 
-        File.WriteAllText(_secretsFilePath, contents.ToString(), Encoding.UTF8);
+        File.WriteAllText(_secretsFilePath, contents, Encoding.UTF8);
     }
 
     protected virtual IDictionary<string, string> Load(string userSecretsId)
@@ -87,4 +92,15 @@ public class SecretsStore
             .Where(i => i.Value != null)
             .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
     }
+
+    internal static string Serialize(IDictionary<string, string> secrets)
+    {
+        return JsonSerializer.Serialize(secrets, SecretManagerJsonSerializerContext.Default.IDictionaryStringString);
+    }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(IDictionary<string, string>))]
+internal sealed partial class SecretManagerJsonSerializerContext : JsonSerializerContext
+{
 }

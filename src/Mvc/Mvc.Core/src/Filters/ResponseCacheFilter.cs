@@ -81,10 +81,7 @@ internal sealed partial class ResponseCacheFilter : IActionFilter, IResponseCach
     /// <inheritdoc />
     public void OnActionExecuting(ActionExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // If there are more filters which can override the values written by this filter,
         // then skip execution of this filter.

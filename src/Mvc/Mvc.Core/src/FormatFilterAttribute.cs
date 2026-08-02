@@ -24,10 +24,7 @@ public class FormatFilterAttribute : Attribute, IFilterFactory
     /// <returns>An instance of <see cref="FormatFilter"/>.</returns>
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         return serviceProvider.GetRequiredService<FormatFilter>();
     }

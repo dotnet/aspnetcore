@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Localization;
@@ -81,30 +82,11 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
         IResourceNamesCache resourceNamesCache,
         ILogger logger)
     {
-        if (resourceManager == null)
-        {
-            throw new ArgumentNullException(nameof(resourceManager));
-        }
-
-        if (resourceStringProvider == null)
-        {
-            throw new ArgumentNullException(nameof(resourceStringProvider));
-        }
-
-        if (baseName == null)
-        {
-            throw new ArgumentNullException(nameof(baseName));
-        }
-
-        if (resourceNamesCache == null)
-        {
-            throw new ArgumentNullException(nameof(resourceNamesCache));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(resourceManager);
+        ArgumentNullThrowHelper.ThrowIfNull(resourceStringProvider);
+        ArgumentNullThrowHelper.ThrowIfNull(baseName);
+        ArgumentNullThrowHelper.ThrowIfNull(resourceNamesCache);
+        ArgumentNullThrowHelper.ThrowIfNull(logger);
 
         _resourceStringProvider = resourceStringProvider;
         _resourceManager = resourceManager;
@@ -118,10 +100,7 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
     {
         get
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(name);
 
             var value = GetStringSafely(name, null);
 
@@ -134,10 +113,7 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
     {
         get
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(name);
 
             var format = GetStringSafely(name, null);
             var value = string.Format(CultureInfo.CurrentCulture, format ?? name, arguments);
@@ -158,10 +134,7 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
     /// <returns>The strings.</returns>
     protected IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures, CultureInfo culture)
     {
-        if (culture == null)
-        {
-            throw new ArgumentNullException(nameof(culture));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(culture);
 
         var resourceNames = includeParentCultures
             ? GetResourceNamesFromCultureHierarchy(culture)
@@ -183,10 +156,7 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
     /// <returns>The resource string, or <c>null</c> if none was found.</returns>
     protected string? GetStringSafely(string name, CultureInfo? culture)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         var keyCulture = culture ?? CultureInfo.CurrentUICulture;
 

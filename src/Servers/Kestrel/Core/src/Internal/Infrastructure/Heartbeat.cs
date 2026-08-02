@@ -7,23 +7,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal sealed class Heartbeat : IDisposable
 {
+    // Interval used by Kestrel server.
     public static readonly TimeSpan Interval = TimeSpan.FromSeconds(1);
 
     private readonly IHeartbeatHandler[] _callbacks;
-    private readonly ISystemClock _systemClock;
+    private readonly TimeProvider _timeProvider;
     private readonly IDebugger _debugger;
     private readonly KestrelTrace _trace;
     private readonly TimeSpan _interval;
     private readonly Thread _timerThread;
-    private volatile bool _stopped;
+    private readonly ManualResetEventSlim _stopEvent;
 
-    public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, KestrelTrace trace)
+    public Heartbeat(IHeartbeatHandler[] callbacks, TimeProvider timeProvider, IDebugger debugger, KestrelTrace trace, TimeSpan interval)
     {
         _callbacks = callbacks;
-        _systemClock = systemClock;
+        _timeProvider = timeProvider;
         _debugger = debugger;
         _trace = trace;
-        _interval = Interval;
+        _interval = interval;
+        // Wait time is long, so don't try to spin to exit early. Spinning would waste CPU time.
+        _stopEvent = new ManualResetEventSlim(false, spinCount: 0);
         _timerThread = new Thread(state => ((Heartbeat)state!).TimerLoop())
         {
             Name = "Kestrel Timer",
@@ -39,24 +42,22 @@ internal sealed class Heartbeat : IDisposable
 
     internal void OnHeartbeat()
     {
-        var now = _systemClock.UtcNow;
+        var now = _timeProvider.GetTimestamp();
 
         try
         {
             foreach (var callback in _callbacks)
             {
-                callback.OnHeartbeat(now);
+                callback.OnHeartbeat();
             }
 
             if (!_debugger.IsAttached)
             {
-                var after = _systemClock.UtcNow;
-
-                var duration = TimeSpan.FromTicks(after.Ticks - now.Ticks);
+                var duration = _timeProvider.GetElapsedTime(now);
 
                 if (duration > _interval)
                 {
-                    _trace.HeartbeatSlow(duration, _interval, now);
+                    _trace.HeartbeatSlow(duration, _interval, _timeProvider.GetUtcNow());
                 }
             }
         }
@@ -68,17 +69,26 @@ internal sealed class Heartbeat : IDisposable
 
     private void TimerLoop()
     {
-        while (!_stopped)
+        // Starting the heartbeat immediately triggers OnHeartbeat.
+        // Initial delay to avoid running heartbeat again from timer thread.
+        while (!_stopEvent.Wait(_interval))
         {
-            Thread.Sleep(_interval);
-
             OnHeartbeat();
         }
     }
 
     public void Dispose()
     {
-        _stopped = true;
-        // Don't block waiting for the thread to exit
+        // Stop heart beat and immediately exit wait interval.
+        _stopEvent.Set();
+
+        // Wait for heartbeat thread to finish.
+        // Should either be immediate or a short delay while heartbeat callbacks complete.
+        if (_timerThread.IsAlive)
+        {
+            _timerThread.Join();
+        }
+
+        _stopEvent.Dispose();
     }
 }

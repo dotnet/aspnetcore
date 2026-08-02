@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -13,7 +11,7 @@ internal sealed class WebAssemblyNavigationInterception : INavigationInterceptio
 
     public Task EnableNavigationInterceptionAsync()
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.EnableNavigationInterception);
+        InternalJSImportMethods.Instance.NavigationManager_EnableNavigationInterception((int)WebRendererId.WebAssembly);
         return Task.CompletedTask;
     }
 }

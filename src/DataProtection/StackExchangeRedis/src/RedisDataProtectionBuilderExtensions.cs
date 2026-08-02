@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -25,14 +26,8 @@ public static class StackExchangeRedisDataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, Func<IDatabase> databaseFactory, RedisKey key)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-        if (databaseFactory == null)
-        {
-            throw new ArgumentNullException(nameof(databaseFactory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(databaseFactory);
         return PersistKeysToStackExchangeRedisInternal(builder, databaseFactory, key);
     }
 
@@ -56,14 +51,8 @@ public static class StackExchangeRedisDataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, IConnectionMultiplexer connectionMultiplexer, RedisKey key)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-        if (connectionMultiplexer == null)
-        {
-            throw new ArgumentNullException(nameof(connectionMultiplexer));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(connectionMultiplexer);
         return PersistKeysToStackExchangeRedisInternal(builder, () => connectionMultiplexer.GetDatabase(), key);
     }
 

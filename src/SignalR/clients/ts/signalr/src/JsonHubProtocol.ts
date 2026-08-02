@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, StreamItemMessage } from "./IHubProtocol";
+import { AckMessage, CompletionMessage, HubMessage, IHubProtocol, InvocationMessage, MessageType, SequenceMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { TransferFormat } from "./ITransport";
 import { NullLogger } from "./Loggers";
@@ -15,7 +15,7 @@ export class JsonHubProtocol implements IHubProtocol {
     /** @inheritDoc */
     public readonly name: string = JSON_HUB_PROTOCOL_NAME;
     /** @inheritDoc */
-    public readonly version: number = 1;
+    public readonly version: number = 2;
 
     /** @inheritDoc */
     public readonly transferFormat: TransferFormat = TransferFormat.Text;
@@ -64,6 +64,12 @@ export class JsonHubProtocol implements IHubProtocol {
                 case MessageType.Close:
                     // All optional values, no need to validate
                     break;
+                case MessageType.Ack:
+                    this._isAckMessage(parsedMessage);
+                    break;
+                case MessageType.Sequence:
+                    this._isSequenceMessage(parsedMessage);
+                    break;
                 default:
                     // Future protocol changes can add message types, old clients can ignore them
                     logger.log(LogLevel.Information, "Unknown message type '" + parsedMessage.type + "' ignored.");
@@ -110,6 +116,18 @@ export class JsonHubProtocol implements IHubProtocol {
         }
 
         this._assertNotEmptyString(message.invocationId, "Invalid payload for Completion message.");
+    }
+
+    private _isAckMessage(message: AckMessage): void {
+        if (typeof message.sequenceId !== 'number') {
+            throw new Error("Invalid SequenceId for Ack message.");
+        }
+    }
+
+    private _isSequenceMessage(message: SequenceMessage): void {
+        if (typeof message.sequenceId !== 'number') {
+            throw new Error("Invalid SequenceId for Sequence message.");
+        }
     }
 
     private _assertNotEmptyString(value: any, errorMessage: string): void {

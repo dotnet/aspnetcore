@@ -19,10 +19,7 @@ public class ServicesModelBinder : IModelBinder
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         var requestServices = bindingContext.HttpContext.RequestServices;
         var model = IsOptional ?

@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks;
 
 public class ServerSentEventsBenchmark
 {
-    private ServerSentEventsMessageParser _parser;
-    private byte[] _sseFormattedData;
     private ReadOnlySequence<byte> _rawData;
 
     [Params(Message.NoArguments, Message.FewArguments, Message.ManyArguments, Message.LargeArguments)]
@@ -57,24 +55,9 @@ public class ServerSentEventsBenchmark
                 break;
         }
 
-        _parser = new ServerSentEventsMessageParser();
         _rawData = new ReadOnlySequence<byte>(protocol.GetMessageBytes(hubMessage));
         var ms = new MemoryStream();
         ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, ms, default).GetAwaiter().GetResult();
-        _sseFormattedData = ms.ToArray();
-    }
-
-    [Benchmark]
-    public void ReadSingleMessage()
-    {
-        var buffer = new ReadOnlySequence<byte>(_sseFormattedData);
-
-        if (_parser.ParseMessage(buffer, out _, out _, out _) != ServerSentEventsMessageParser.ParseResult.Completed)
-        {
-            throw new InvalidOperationException("Parse failed!");
-        }
-
-        _parser.Reset();
     }
 
     [Benchmark]

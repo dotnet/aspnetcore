@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -29,10 +30,7 @@ public class AttributeRouteModel
     /// <param name="templateProvider">The <see cref="IRouteTemplateProvider"/>.</param>
     public AttributeRouteModel(IRouteTemplateProvider templateProvider)
     {
-        if (templateProvider == null)
-        {
-            throw new ArgumentNullException(nameof(templateProvider));
-        }
+        ArgumentNullException.ThrowIfNull(templateProvider);
 
         Attribute = templateProvider;
         Template = templateProvider.Template;
@@ -46,10 +44,7 @@ public class AttributeRouteModel
     /// <param name="other">The <see cref="AttributeRouteModel"/> to copy.</param>
     public AttributeRouteModel(AttributeRouteModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Attribute = other.Attribute;
         Name = other.Name;
@@ -67,6 +62,7 @@ public class AttributeRouteModel
     /// <summary>
     /// Gets or sets the attribute route template.
     /// </summary>
+    [StringSyntax("Route")]
     public string? Template { get; set; }
 
     /// <summary>
@@ -140,7 +136,7 @@ public class AttributeRouteModel
     /// <param name="prefix">The prefix.</param>
     /// <param name="template">The route template.</param>
     /// <returns>The combined pattern.</returns>
-    public static string? CombineTemplates(string? prefix, string? template)
+    public static string? CombineTemplates([StringSyntax("Route")] string? prefix, [StringSyntax("Route")] string? template)
     {
         var result = CombineCore(prefix, template);
         return CleanTemplate(result);
@@ -154,11 +150,11 @@ public class AttributeRouteModel
     /// <remarks>
     /// Route templates starting with "~/" or "/" can be used to override the prefix.
     /// </remarks>
-    public static bool IsOverridePattern(string? template)
+    public static bool IsOverridePattern([StringSyntax("Route")] string? template)
     {
         return template != null &&
             (template.StartsWith("~/", StringComparison.Ordinal) ||
-            template.StartsWith("/", StringComparison.Ordinal));
+            template.StartsWith('/'));
     }
 
     private static string? ChooseName(
@@ -190,7 +186,7 @@ public class AttributeRouteModel
             return right;
         }
 
-        if (left!.EndsWith("/", StringComparison.Ordinal))
+        if (left!.EndsWith('/'))
         {
             return left + right;
         }
@@ -223,7 +219,7 @@ public class AttributeRouteModel
         }
 
         var startIndex = 0;
-        if (result.StartsWith("/", StringComparison.Ordinal))
+        if (result.StartsWith('/'))
         {
             startIndex = 1;
         }
@@ -239,7 +235,7 @@ public class AttributeRouteModel
         }
 
         var subStringLength = result.Length - startIndex;
-        if (result.EndsWith("/", StringComparison.Ordinal))
+        if (result.EndsWith('/'))
         {
             subStringLength--;
         }
@@ -253,7 +249,7 @@ public class AttributeRouteModel
     /// <param name="template">The template.</param>
     /// <param name="values">The token values to use.</param>
     /// <returns>A new string with the replaced values.</returns>
-    public static string ReplaceTokens(string template, IDictionary<string, string?> values)
+    public static string ReplaceTokens([StringSyntax("Route")] string template, IDictionary<string, string?> values)
     {
         return ReplaceTokens(template, values, routeTokenTransformer: null);
     }
@@ -265,7 +261,7 @@ public class AttributeRouteModel
     /// <param name="values">The token values to use.</param>
     /// <param name="routeTokenTransformer">The route token transformer.</param>
     /// <returns>A new string with the replaced values.</returns>
-    public static string ReplaceTokens(string template, IDictionary<string, string?> values, IOutboundParameterTransformer? routeTokenTransformer)
+    public static string ReplaceTokens([StringSyntax("Route")] string template, IDictionary<string, string?> values, IOutboundParameterTransformer? routeTokenTransformer)
     {
         var builder = new StringBuilder();
         var state = TemplateParserState.Plaintext;

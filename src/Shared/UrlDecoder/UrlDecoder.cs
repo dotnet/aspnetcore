@@ -603,8 +603,8 @@ internal sealed class UrlDecoder
         return (uint)c >= (uint)CharToHexLookup.Length ? -1 : CharToHexLookup[c];
     }
 
-    private static ReadOnlySpan<sbyte> CharToHexLookup => new sbyte[]
-    {
+    private static ReadOnlySpan<sbyte> CharToHexLookup =>
+    [
              -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 15
              -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 31
              -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 47
@@ -621,5 +621,5 @@ internal sealed class UrlDecoder
              -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 223
              -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, // 239
              -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1  // 255
-    };
+    ];
 }

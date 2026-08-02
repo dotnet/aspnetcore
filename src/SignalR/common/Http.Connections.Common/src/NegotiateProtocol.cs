@@ -34,8 +34,11 @@ public static class NegotiateProtocol
     private static readonly JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
     private const string NegotiateVersionPropertyName = "negotiateVersion";
     private static readonly JsonEncodedText NegotiateVersionPropertyNameBytes = JsonEncodedText.Encode(NegotiateVersionPropertyName);
+    private const string StatefulReconnectPropertyName = "useStatefulReconnect";
+    private static readonly JsonEncodedText StatefulReconnectPropertyNameBytes = JsonEncodedText.Encode(StatefulReconnectPropertyName);
+    private const string TokenLifetimePropertyName = "tokenLifetimeSeconds";
+    private static readonly JsonEncodedText TokenLifetimePropertyNameBytes = JsonEncodedText.Encode(TokenLifetimePropertyName);
 
-    // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
     // Used to detect ASP.NET SignalR Server connection attempt
     private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => "ProtocolVersion"u8;
 
@@ -64,6 +67,11 @@ public static class NegotiateProtocol
                 return;
             }
 
+            if (response.UseStatefulReconnect)
+            {
+                writer.WriteBoolean(StatefulReconnectPropertyNameBytes, true);
+            }
+
             writer.WriteNumber(NegotiateVersionPropertyNameBytes, response.Version);
 
             if (!string.IsNullOrEmpty(response.Url))
@@ -84,6 +92,11 @@ public static class NegotiateProtocol
             if (response.Version > 0 && !string.IsNullOrEmpty(response.ConnectionToken))
             {
                 writer.WriteString(ConnectionTokenPropertyNameBytes, response.ConnectionToken);
+            }
+
+            if (response.TokenLifetime is { } tokenLifetime && tokenLifetime > TimeSpan.Zero)
+            {
+                writer.WriteNumber(TokenLifetimePropertyNameBytes, (int)Math.Min(tokenLifetime.TotalSeconds, int.MaxValue));
             }
 
             writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
@@ -153,6 +166,8 @@ public static class NegotiateProtocol
             List<AvailableTransport>? availableTransports = null;
             string? error = null;
             int version = 0;
+            bool useStatefulReconnect = false;
+            TimeSpan? tokenLifetime = null;
 
             var completed = false;
             while (!completed && reader.CheckRead())
@@ -206,6 +221,14 @@ public static class NegotiateProtocol
                         {
                             throw new InvalidOperationException("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                         }
+                        else if (reader.ValueTextEquals(StatefulReconnectPropertyNameBytes.EncodedUtf8Bytes))
+                        {
+                            useStatefulReconnect = reader.ReadAsBoolean(StatefulReconnectPropertyName);
+                        }
+                        else if (reader.ValueTextEquals(TokenLifetimePropertyNameBytes.EncodedUtf8Bytes))
+                        {
+                            tokenLifetime = TimeSpan.FromSeconds(reader.ReadAsInt32(TokenLifetimePropertyName).GetValueOrDefault());
+                        }
                         else
                         {
                             reader.Skip();
@@ -249,7 +272,9 @@ public static class NegotiateProtocol
                 AccessToken = accessToken,
                 AvailableTransports = availableTransports,
                 Error = error,
-                Version = version
+                Version = version,
+                UseStatefulReconnect = useStatefulReconnect,
+                TokenLifetime = tokenLifetime,
             };
         }
         catch (Exception ex)

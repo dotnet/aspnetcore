@@ -20,10 +20,7 @@ public class TagHelperRunner
     /// <paramref name="executionContext"/>'s <see cref="ITagHelper"/>s.</returns>
     public Task RunAsync(TagHelperExecutionContext executionContext)
     {
-        if (executionContext == null)
-        {
-            throw new ArgumentNullException(nameof(executionContext));
-        }
+        ArgumentNullException.ThrowIfNull(executionContext);
 
         var tagHelperContext = executionContext.Context;
         var tagHelpers = CollectionsMarshal.AsSpan(executionContext.TagHelperList);

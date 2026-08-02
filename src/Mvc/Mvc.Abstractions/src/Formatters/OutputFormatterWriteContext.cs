@@ -21,10 +21,7 @@ public class OutputFormatterWriteContext : OutputFormatterCanWriteContext
     public OutputFormatterWriteContext(HttpContext httpContext, Func<Stream, Encoding, TextWriter> writerFactory, Type? objectType, object? @object)
         : base(httpContext)
     {
-        if (writerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(writerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(writerFactory);
 
         WriterFactory = writerFactory;
         ObjectType = objectType;

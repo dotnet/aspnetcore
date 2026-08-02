@@ -52,6 +52,7 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
                 { ".atom", "application/atom+xml" },
                 { ".au", "audio/basic" },
                 { ".avi", "video/x-msvideo" },
+                { ".avif", "image/avif" },
                 { ".axs", "application/olescript" },
                 { ".bas", "text/plain" },
                 { ".bcpio", "application/x-bcpio" },
@@ -414,10 +415,7 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
     /// <param name="mapping"></param>
     public FileExtensionContentTypeProvider(IDictionary<string, string> mapping)
     {
-        if (mapping == null)
-        {
-            throw new ArgumentNullException(nameof(mapping));
-        }
+        ArgumentNullException.ThrowIfNull(mapping);
         Mappings = mapping;
     }
 

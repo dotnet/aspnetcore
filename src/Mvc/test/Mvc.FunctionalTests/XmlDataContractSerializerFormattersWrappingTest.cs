@@ -8,21 +8,30 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using XmlFormattersWebSite;
+using System.Reflection;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class XmlDataContractSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<Startup>>
+public class XmlDataContractSerializerFormattersWrappingTest : LoggedTest
 {
-    public XmlDataContractSerializerFormattersWrappingTest(MvcTestFixture<Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(builder => builder.UseStartup<Startup>());
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<Startup>(LoggerFactory);
         Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
-    public WebApplicationFactory<Startup> Factory { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public HttpClient Client { get; private set; }
+    public WebApplicationFactory<Startup> Factory { get; private set; }
 
     [ConditionalTheory]
     // Mono issue - https://github.com/aspnet/External/issues/18
@@ -228,7 +237,7 @@ public class XmlDataContractSerializerFormattersWrappingTest : IClassFixture<Mvc
             var root = XDocument.Parse(content).Root;
             Assert.Equal("404", root.Element(root.Name.Namespace.GetName("status"))?.Value);
             Assert.Equal("Not Found", root.Element(root.Name.Namespace.GetName("title"))?.Value);
-            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", root.Element(root.Name.Namespace.GetName("type"))?.Value);
+            Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", root.Element(root.Name.Namespace.GetName("type"))?.Value);
             // Activity is not null
             Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
         }

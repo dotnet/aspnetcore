@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Shared;
 using Type = System.Type;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
@@ -43,7 +44,7 @@ internal sealed class FieldMaskConverter<TMessage> : SettingsConverterBase<TMess
         var firstInvalid = paths.FirstOrDefault(p => !Legacy.IsPathValid(p));
         if (firstInvalid == null)
         {
-            writer.WriteStringValue(string.Join(",", paths.Select(Legacy.ToJsonName)));
+            writer.WriteStringValue(Legacy.GetFieldMaskText(paths));
         }
         else
         {

@@ -19,15 +19,8 @@ public static class ApacheModRewriteOptionsExtensions
     /// <param name="filePath">The path to the file containing mod_rewrite rules.</param>
     public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(fileProvider);
 
         var fileInfo = fileProvider.GetFileInfo(filePath);
         using (var stream = fileInfo.CreateReadStream())
@@ -43,15 +36,8 @@ public static class ApacheModRewriteOptionsExtensions
     /// <param name="reader">A stream of mod_rewrite rules.</param>
     public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, TextReader reader)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(reader);
         var rules = FileParser.Parse(reader);
 
         foreach (var rule in rules)

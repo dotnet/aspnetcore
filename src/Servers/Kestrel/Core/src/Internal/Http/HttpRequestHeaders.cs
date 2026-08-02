@@ -4,7 +4,6 @@
 using System.Buffers.Text;
 using System.Collections;
 using System.Globalization;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -46,6 +45,15 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         // there is no point in holding on to them, so clear them now,
         // to allow them to get collected by the GC.
         Clear(headersToClear);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void MergeCookies()
+    {
+        if (HasCookie && _headers._Cookie.Count > 1)
+        {
+            _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray());
+        }
     }
 
     protected override void ClearFast()
@@ -90,7 +98,13 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
         }
 
-        if (!Utf8Parser.TryParse(value, out long parsed, out var consumed) ||
+        // Per RFC 9110 §8.6, Content-Length is 1*DIGIT: only ASCII digits are allowed.
+        // https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6
+        // Utf8Parser.TryParse accepts a leading '+' or '-' sign, so ensure the first byte is a digit.
+        long parsed = 0;
+        if (value.IsEmpty ||
+            value[0] is < (byte)'0' or > (byte)'9' ||
+            !Utf8Parser.TryParse(value, out parsed, out var consumed) ||
             parsed < 0 ||
             consumed != value.Length)
         {
@@ -102,7 +116,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [SkipLocalsInit]
-    private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding customEncoding)
+    private unsafe void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding customEncoding)
     {
         if (_contentLength.HasValue)
         {
@@ -114,8 +128,11 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         var numChars = customEncoding.GetChars(value, decodedChars);
         long parsed = -1;
 
+        // Per RFC 9110 §8.6, Content-Length is 1*DIGIT. NumberStyles.None
+        // https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6
+        // disallows leading signs and whitespace that NumberStyles.Integer would accept.
         if (numChars > 19 ||
-            !long.TryParse(decodedChars.Slice(0, numChars), NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed) ||
+            !long.TryParse(decodedChars.Slice(0, numChars), NumberStyles.None, CultureInfo.InvariantCulture, out parsed) ||
             parsed < 0)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector, checkForNewlineChars: false));
@@ -139,7 +156,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private unsafe void AppendUnknownHeaders(string name, string valueString)
+    private void AppendUnknownHeaders(string name, string valueString)
     {
         name = GetInternedHeaderName(name);
         Unknown.TryGetValue(name, out var existing);
@@ -235,7 +252,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         {
             _collection = collection;
             _currentBits = collection._bits;
-            _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
+            _next = GetNext(_currentBits, collection.ContentLength.HasValue);
             _current = default;
             _hasUnknown = collection.MaybeUnknown != null;
             _unknownEnumerator = _hasUnknown
@@ -254,7 +271,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         public void Reset()
         {
             _currentBits = _collection._bits;
-            _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
+            _next = GetNext(_currentBits, _collection.ContentLength.HasValue);
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Buffers;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
-internal interface IAsyncIOEngine
+internal interface IAsyncIOEngine : IDisposable
 {
     ValueTask<int> ReadAsync(Memory<byte> memory);
     ValueTask<int> WriteAsync(ReadOnlySequence<byte> data);

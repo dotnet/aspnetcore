@@ -502,12 +502,12 @@ public class CacheControlHeaderValue
     /// </summary>
     /// <param name="input">The value to parse.</param>
     /// <param name="parsedValue">The parsed value.</param>
-    /// <returns><see langword="true"/> if input is a valid <see cref="SetCookieHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if input is a valid <see cref="CacheControlHeaderValue"/>, otherwise <see langword="false"/>.</returns>
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CacheControlHeaderValue? parsedValue)
     {
         var index = 0;
         // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
-        if (Parser.TryParseValue(input, ref index, out parsedValue) && parsedValue != null)
+        if (Parser.TryParseValue(input, index, out _, out parsedValue) && parsedValue != null)
         {
             return true;
         }
@@ -532,10 +532,12 @@ public class CacheControlHeaderValue
         var nameValueList = new List<NameValueHeaderValue>();
         while (current < input.Length)
         {
-            if (!NameValueHeaderValue.MultipleValueParser.TryParseValue(input, ref current, out var nameValue))
+            if (!NameValueHeaderValue.MultipleValueParser.TryParseValue(input, current, out var consumed, out var nameValue))
             {
                 return 0;
             }
+
+            current += consumed;
 
             if (nameValue != null)
             {

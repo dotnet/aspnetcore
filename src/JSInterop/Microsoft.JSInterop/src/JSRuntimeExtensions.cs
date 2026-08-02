@@ -21,10 +21,7 @@ public static class JSRuntimeExtensions
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
     public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
-        if (jsRuntime is null)
-        {
-            throw new ArgumentNullException(nameof(jsRuntime));
-        }
+        ArgumentNullException.ThrowIfNull(jsRuntime);
 
         await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, args);
     }
@@ -43,10 +40,7 @@ public static class JSRuntimeExtensions
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
-        if (jsRuntime is null)
-        {
-            throw new ArgumentNullException(nameof(jsRuntime));
-        }
+        ArgumentNullException.ThrowIfNull(jsRuntime);
 
         return jsRuntime.InvokeAsync<TValue>(identifier, args);
     }
@@ -65,10 +59,7 @@ public static class JSRuntimeExtensions
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
-        if (jsRuntime is null)
-        {
-            throw new ArgumentNullException(nameof(jsRuntime));
-        }
+        ArgumentNullException.ThrowIfNull(jsRuntime);
 
         return jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
     }
@@ -86,10 +77,7 @@ public static class JSRuntimeExtensions
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
     public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
-        if (jsRuntime is null)
-        {
-            throw new ArgumentNullException(nameof(jsRuntime));
-        }
+        ArgumentNullException.ThrowIfNull(jsRuntime);
 
         await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
     }
@@ -104,10 +92,7 @@ public static class JSRuntimeExtensions
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
     public static async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
-        if (jsRuntime is null)
-        {
-            throw new ArgumentNullException(nameof(jsRuntime));
-        }
+        ArgumentNullException.ThrowIfNull(jsRuntime);
 
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
@@ -125,14 +110,98 @@ public static class JSRuntimeExtensions
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
     public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
-        if (jsRuntime is null)
-        {
-            throw new ArgumentNullException(nameof(jsRuntime));
-        }
+        ArgumentNullException.ThrowIfNull(jsRuntime);
 
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
         await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
+    }
+
+    /// <summary>
+    /// Invokes the specified JavaScript constructor function asynchronously. The function is invoked with the <c>new</c> operator.
+    /// </summary>
+    /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
+    /// <param name="identifier">An identifier for the constructor function to invoke. For example, the value <c>"someScope.SomeClass"</c> will invoke the constructor <c>window.someScope.SomeClass</c>.</param>
+    /// <param name="args">JSON-serializable arguments.</param>
+    /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        ArgumentNullException.ThrowIfNull(jsRuntime);
+
+        return jsRuntime.InvokeConstructorAsync(identifier, args);
+    }
+
+    /// <summary>
+    /// Invokes the specified JavaScript constructor function asynchronously. The function is invoked with the <c>new</c> operator.
+    /// </summary>
+    /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
+    /// <param name="identifier">An identifier for the constructor function to invoke. For example, the value <c>"someScope.SomeClass"</c> will invoke the constructor <c>window.someScope.SomeClass</c>.</param>
+    /// <param name="cancellationToken">
+    /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
+    /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
+    /// </param>
+    /// <param name="args">JSON-serializable arguments.</param>
+    /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        ArgumentNullException.ThrowIfNull(jsRuntime);
+
+        return jsRuntime.InvokeConstructorAsync(identifier, cancellationToken, args);
+    }
+
+    /// <summary>
+    /// Invokes the specified JavaScript constructor function asynchronously. The function is invoked with the <c>new</c> operator.
+    /// </summary>
+    /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
+    /// <param name="identifier">An identifier for the constructor function to invoke. For example, the value <c>"someScope.SomeClass"</c> will invoke the constructor <c>window.someScope.SomeClass</c>.</param>
+    /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
+    /// <param name="args">JSON-serializable arguments.</param>
+    /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
+    public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, object?[]? args)
+    {
+        ArgumentNullException.ThrowIfNull(jsRuntime);
+
+        using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
+        var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
+
+        return jsRuntime.InvokeConstructorAsync(identifier, cancellationToken, args);
+    }
+
+    /// <summary>
+    /// Reads the value of the specified JavaScript property asynchronously.
+    /// </summary>
+    /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
+    /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
+    /// <param name="identifier">An identifier for the property to read. For example, the value <c>"someScope.someProp"</c> will read the value of the property <c>window.someScope.someProp</c>.</param>
+    /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
+    /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    public static ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout)
+    {
+        ArgumentNullException.ThrowIfNull(jsRuntime);
+
+        using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
+        var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
+
+        return jsRuntime.GetValueAsync<TValue>(identifier, cancellationToken);
+    }
+
+        /// <summary>
+    /// Updates the value of the specified JavaScript property asynchronously. If the property is not defined on the target object, it will be created.
+    /// </summary>
+    /// <typeparam name="TValue">JSON-serializable argument type.</typeparam>
+    /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
+    /// <param name="identifier">An identifier for the property to set. For example, the value <c>"someScope.someProp"</c> will update the property <c>window.someScope.someProp</c>.</param>
+    /// <param name="value">JSON-serializable value.</param>
+    /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
+    /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
+    public static ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, TValue value, TimeSpan timeout)
+    {
+        ArgumentNullException.ThrowIfNull(jsRuntime);
+
+        using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
+        var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
+
+        return jsRuntime.SetValueAsync<TValue>(identifier, value, cancellationToken);
     }
 }

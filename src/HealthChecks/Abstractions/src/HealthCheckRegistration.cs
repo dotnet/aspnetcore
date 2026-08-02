@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -54,15 +55,8 @@ public sealed class HealthCheckRegistration
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
     public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (instance == null)
-        {
-            throw new ArgumentNullException(nameof(instance));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(instance);
 
         if (timeout <= TimeSpan.Zero && timeout != System.Threading.Timeout.InfiniteTimeSpan)
         {
@@ -113,15 +107,8 @@ public sealed class HealthCheckRegistration
         IEnumerable<string>? tags,
         TimeSpan? timeout)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(name);
+        ArgumentNullThrowHelper.ThrowIfNull(factory);
 
         if (timeout <= TimeSpan.Zero && timeout != System.Threading.Timeout.InfiniteTimeSpan)
         {
@@ -143,10 +130,7 @@ public sealed class HealthCheckRegistration
         get => _factory;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(value);
 
             _factory = value;
         }
@@ -175,6 +159,18 @@ public sealed class HealthCheckRegistration
     }
 
     /// <summary>
+    /// Gets or sets the individual delay applied to the health check after the application starts before executing
+    /// <see cref="IHealthCheckPublisher"/> instances. The delay is applied once at startup, and does
+    /// not apply to subsequent iterations.
+    /// </summary>
+    public TimeSpan? Delay { get; set; }
+
+    /// <summary>
+    /// Gets or sets the individual period used for the check.
+    /// </summary>
+    public TimeSpan? Period { get; set; }
+
+    /// <summary>
     /// Gets or sets the health check name.
     /// </summary>
     public string Name
@@ -182,10 +178,7 @@ public sealed class HealthCheckRegistration
         get => _name;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(value);
 
             _name = value;
         }

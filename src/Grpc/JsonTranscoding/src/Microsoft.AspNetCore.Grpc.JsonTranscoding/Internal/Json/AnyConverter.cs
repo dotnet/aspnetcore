@@ -35,6 +35,10 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
             throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'.");
         }
 
+        // Ensure the payload descriptor is registered. It's possible the payload type isn't in a proto referenced by the service, and is only in the user-specified TypeRegistry.
+        // There isn't a way to enumerate the contents of the TypeRegistry so we have to ensure the descriptor is present every time.
+        Context.DescriptorRegistry.RegisterFileDescriptor(descriptor.File);
+
         IMessage data;
         if (ServiceDescriptorHelpers.IsWellKnownType(descriptor))
         {
@@ -67,6 +71,11 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
         {
             throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'.");
         }
+
+        // Ensure the payload descriptor is registered. It's possible the payload type isn't in a proto referenced by the service, and is only in the user-specified TypeRegistry.
+        // There isn't a way to enumerate the contents of the TypeRegistry so we have to ensure the descriptor is present every time.
+        Context.DescriptorRegistry.RegisterFileDescriptor(descriptor.File);
+        
         var valueMessage = descriptor.Parser.ParseFrom(data);
         writer.WriteStartObject();
         writer.WriteString(AnyTypeUrlField, typeUrl);
@@ -86,9 +95,27 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
         }
         else
         {
-            MessageConverter<Any>.WriteMessageFields(writer, valueMessage, Context.Settings, options);
+            WriteMessageFields(writer, valueMessage, Context.Settings, options);
         }
 
         writer.WriteEndObject();
+    }
+
+    internal static void WriteMessageFields(Utf8JsonWriter writer, IMessage message, GrpcJsonSettings settings, JsonSerializerOptions options)
+    {
+        var fields = message.Descriptor.Fields;
+
+        foreach (var field in fields.InFieldNumberOrder())
+        {
+            var accessor = field.Accessor;
+            var value = accessor.GetValue(message);
+            if (!JsonConverterHelper.ShouldFormatFieldValue(message, field, value, !settings.IgnoreDefaultValues))
+            {
+                continue;
+            }
+
+            writer.WritePropertyName(accessor.Descriptor.JsonName);
+            JsonSerializer.Serialize(writer, value, value.GetType(), options);
+        }
     }
 }

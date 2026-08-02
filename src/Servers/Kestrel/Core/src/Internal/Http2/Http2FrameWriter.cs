@@ -14,13 +14,64 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Encodes HTTP/2 stream responses as frames and sends them over the wire.
+/// </summary>
+/// <remarks>
+/// Owned by <see cref="Http2Connection"/>.
+/// <para/>
+/// Since a connection has multiple streams, this class maintains a <see cref="Channel{T}"/> (i.e. bounded queue)
+/// of <see cref="Http2OutputProducer"/> instances (each of which is owned by a stream) that want to write frames.
+/// <para/>
+/// Reuses a single <see cref="Http2Frame"/>, which it populates based on the next <see cref="Http2OutputProducer"/>
+/// (and corresponding <see cref="Http2Stream{TContext}"/>) and then serializes to binary in
+/// <see cref="WriteToOutputPipe"/>.
+/// <para/>
+/// Tracks the outgoing connection window size while <see cref="Http2OutputProducer"/> tracks the stream window size.
+/// </remarks>
 internal sealed class Http2FrameWriter
 {
     // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
-    // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-    private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
+    private static ReadOnlySpan<byte> ContinueBytes => [0x08, 0x03, (byte)'1', (byte)'0', (byte)'0'];
 
-    private readonly object _writeLock = new object();
+    /// Increase this value to be more lenient (disconnect fewer clients).
+    /// A non-positive value will disable the limit.
+    /// In practice, the default size is 4 * the maximum number of tracked streams per connection,
+    /// which is double the maximum number of concurrent streams per connection, which is 100.
+    /// That is, the default value is 800, unless <see cref="Http2Limits.MaxStreamsPerConnection"/> is modified.
+    /// Choosing a value lower than the maximum number of tracked streams doesn't make sense,
+    /// so such values will be adjusted upward.
+    /// TODO (https://github.com/dotnet/aspnetcore/issues/51309): eliminate this limit.
+    private const string MaximumFlowControlQueueSizeProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxConnectionFlowControlQueueSize";
+
+    private const int HeaderBufferSizeMultiplier = 2;
+
+    private static readonly int? AppContextMaximumFlowControlQueueSize = GetAppContextMaximumFlowControlQueueSize();
+
+    private static int? GetAppContextMaximumFlowControlQueueSize()
+    {
+        var data = AppContext.GetData(MaximumFlowControlQueueSizeProperty);
+
+        // Programmatically-configured values are usually ints
+        if (data is int count)
+        {
+            return count;
+        }
+
+        // msbuild-configured values are usually strings
+        if (data is string countStr && int.TryParse(countStr, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private readonly int _maximumFlowControlQueueSize;
+
+    private bool IsFlowControlQueueLimitEnabled => _maximumFlowControlQueueSize > 0;
+
+    private readonly Lock _writeLock = new();
     private readonly Http2Frame _outgoingFrame;
     private readonly Http2HeadersEnumerator _headersEnumerator = new Http2HeadersEnumerator();
     private readonly ConcurrentPipeWriter _outputWriter;
@@ -37,14 +88,18 @@ internal sealed class Http2FrameWriter
     // This is only set to true by tests.
     private readonly bool _scheduleInline;
 
-    private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
+    private int _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
     private byte[] _headerEncodingBuffer;
+
+    // Keep track of the high-water mark of _headerEncodingBuffer's size so we don't have to grow
+    // through intermediate sizes repeatedly.
+    private int _headersEncodingLargeBufferSize = Http2PeerSettings.MinAllowedMaxFrameSize * HeaderBufferSizeMultiplier;
     private long _unflushedBytes;
 
     private bool _completed;
     private bool _aborted;
 
-    private readonly object _windowUpdateLock = new();
+    private readonly Lock _windowUpdateLock = new();
     private long _connectionWindow;
     private readonly Queue<Http2OutputProducer> _waitingForMoreConnectionWindow = new();
     // This is the stream that consumed the last set of connection window
@@ -76,13 +131,22 @@ internal sealed class Http2FrameWriter
         _headerEncodingBuffer = new byte[_maxFrameSize];
 
         _scheduleInline = serviceContext.Scheduler == PipeScheduler.Inline;
-
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
+
+        _maximumFlowControlQueueSize = AppContextMaximumFlowControlQueueSize is null
+            ? 4 * maxStreamsPerConnection // 4 is a magic number to give us some padding above the expected maximum size
+            : (int)AppContextMaximumFlowControlQueueSize;
+
+        if (IsFlowControlQueueLimitEnabled && _maximumFlowControlQueueSize < maxStreamsPerConnection)
+        {
+            _log.Http2FlowControlQueueMaximumTooLow(_connectionContext.ConnectionId, maxStreamsPerConnection, _maximumFlowControlQueueSize);
+            _maximumFlowControlQueueSize = maxStreamsPerConnection;
+        }
 
         // This is bounded by the maximum number of concurrent Http2Streams per Http2Connection.
         // This isn't the same as SETTINGS_MAX_CONCURRENT_STREAMS, but typically double (with a floor of 100)
         // which is the max number of Http2Streams that can end up in the Http2Connection._streams dictionary.
-        // 
+        //
         // Setting a lower limit of SETTINGS_MAX_CONCURRENT_STREAMS might be sufficient because a stream shouldn't
         // be rescheduling itself after being completed or canceled, but we're going with the more conservative limit
         // in case there's some logic scheduling completed or canceled streams unnecessarily.
@@ -101,10 +165,11 @@ internal sealed class Http2FrameWriter
     {
         if (!_channel.Writer.TryWrite(producer))
         {
-            // It should not be possible to exceed the bound of the channel.
+            // This can happen if a client resets streams faster than we can clear them out - we end up with a backlog
+            // exceeding the channel size.  Disconnecting seems appropriate in this case.
             var ex = new ConnectionAbortedException("HTTP/2 connection exceeded the output operations maximum queue size.");
             _log.Http2QueueOperationsExceeded(_connectionId, ex);
-            _http2Connection.Abort(ex);
+            _http2Connection.Abort(ex, Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.OutputQueueSizeExceeded);
         }
     }
 
@@ -132,6 +197,17 @@ internal sealed class Http2FrameWriter
 
                     // Now check the connection window
                     actual = CheckConnectionWindow(actual);
+
+                    // actual is negative means window size has become negative
+                    // this can usually happen if the receiver decreases window size before receiving the previous data frame
+                    // in this case, reset to 0 and continue, no data will be sent but will wait for window update
+                    // RFC 9113 section 6.9.2 specifically calls out that the window size can go negative.  As required,
+                    // we continue to track the negative value but use 0 for the remainder of this write to avoid 
+                    // out-of-range errors.
+                    if (actual < 0)
+                    {
+                        actual = 0;
+                    }
 
                     // Write what we can
                     if (actual < buffer.Length)
@@ -161,10 +237,8 @@ internal sealed class Http2FrameWriter
 
                     FlushResult flushResult = default;
 
-                    // There are 2 cases where we abort:
-                    // 1. We're not complete but we got the abort.
-                    // 2. We're complete and there's no more response data to be written.
-                    if ((aborted && !completed) || (aborted && completed && actual == 0 && stream.ResponseTrailers is null or { Count: 0 }))
+                    // We're not complete but we got the abort.
+                    if (aborted && !completed)
                     {
                         // Response body is aborted, complete reader for this output producer.
                         if (flushHeaders)
@@ -175,10 +249,17 @@ internal sealed class Http2FrameWriter
 
                         if (actual > 0)
                         {
+                            // actual > int.MaxValue should never be possible because it would exceed Http2PeerSettings.MaxWindowSize
+                            // which is a protocol-defined limit. There's no way Kestrel would try to write more than that in one go.
+                            Debug.Assert(actual <= int.MaxValue);
+
                             // If we got here it means we're going to cancel the write. Restore any consumed bytes to the connection window.
-                            lock (_windowUpdateLock)
+                            if (!TryUpdateConnectionWindow((int)actual))
                             {
-                                _connectionWindow += actual;
+                                // This branch can only ever be taken given both a buggy client and aborting streams mid-write. Even then, we're much more likely catch the
+                                // error in Http2Connection.ProcessFrameAsync() before catching it here. This branch is technically possible though, so we defend against it.
+                                await HandleFlowControlErrorAsync();
+                                return;
                             }
                         }
                     }
@@ -196,6 +277,8 @@ internal sealed class Http2FrameWriter
                     }
                     else if (completed && producer.AppCompletedWithNoResponseBodyOrTrailers)
                     {
+                        Debug.Assert(flushHeaders, "The app completed successfully without flushing headers!");
+
                         if (buffer.Length != 0)
                         {
                             _log.Http2UnexpectedDataRemaining(stream.StreamId, _connectionId);
@@ -204,8 +287,7 @@ internal sealed class Http2FrameWriter
                         {
                             stream.DecrementActiveClientStreamCount();
 
-                            // Headers have already been written and there is no other content to write
-                            flushResult = await FlushAsync(stream, flushHeaders, outputAborter: null, cancellationToken: default);
+                            flushResult = await FlushEndOfStreamHeadersAsync(stream);
                         }
                     }
                     else
@@ -265,6 +347,21 @@ internal sealed class Http2FrameWriter
         _log.Http2ConnectionQueueProcessingCompleted(_connectionId);
     }
 
+    private async Task HandleFlowControlErrorAsync()
+    {
+        const ConnectionEndReason reason = ConnectionEndReason.InvalidWindowUpdateSize;
+        const Http2ErrorCode http2ErrorCode = Http2ErrorCode.FLOW_CONTROL_ERROR;
+
+        var connectionError = new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, http2ErrorCode, reason);
+        _log.Http2ConnectionError(_connectionId, connectionError);
+        await WriteGoAwayAsync(int.MaxValue, http2ErrorCode);
+
+        // Prevent Abort() from writing an INTERNAL_ERROR GOAWAY frame after our FLOW_CONTROL_ERROR.
+        Complete();
+        // Stop processing any more requests and immediately close the connection.
+        _http2Connection.Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, connectionError), http2ErrorCode, reason);
+    }
+
     private bool TryQueueProducerForConnectionWindowUpdate(long actual, Http2OutputProducer producer)
     {
         lock (_windowUpdateLock)
@@ -286,7 +383,7 @@ internal sealed class Http2FrameWriter
                 }
                 else
                 {
-                    _waitingForMoreConnectionWindow.Enqueue(producer);
+                    EnqueueWaitingForMoreConnectionWindow(producer);
                 }
 
                 return true;
@@ -304,31 +401,51 @@ internal sealed class Http2FrameWriter
         }
     }
 
-    public void UpdateMaxFrameSize(uint maxFrameSize)
+    public void UpdateMaxFrameSize(int maxFrameSize)
     {
         lock (_writeLock)
         {
             if (_maxFrameSize != maxFrameSize)
             {
+                // Safe multiply, MaxFrameSize is limited to 2^24-1 bytes by the protocol and by Http2PeerSettings.
+                // Ref: https://datatracker.ietf.org/doc/html/rfc7540#section-4.2
+                _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize, maxFrameSize * HeaderBufferSizeMultiplier);
                 _maxFrameSize = maxFrameSize;
                 _headerEncodingBuffer = new byte[_maxFrameSize];
             }
         }
     }
 
+    /// <summary>
+    /// Call while in the <see cref="_writeLock"/>.
+    /// </summary>
+    /// <returns><c>true</c> if already completed.</returns>
+    private bool CompleteUnsynchronized()
+    {
+        if (_completed)
+        {
+            return true;
+        }
+
+        _completed = true;
+        _outputWriter.Abort();
+
+        return false;
+    }
+
     public void Complete()
     {
         lock (_writeLock)
         {
-            if (_completed)
+            if (CompleteUnsynchronized())
             {
                 return;
             }
-
-            _completed = true;
-            AbortConnectionFlowControl();
-            _outputWriter.Abort();
         }
+
+        // Call outside of _writeLock as this can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+        // which is not the desired lock order
+        AbortConnectionFlowControl();
     }
 
     public Task ShutdownAsync()
@@ -350,11 +467,18 @@ internal sealed class Http2FrameWriter
             _aborted = true;
             _connectionContext.Abort(error);
 
-            Complete();
+            if (CompleteUnsynchronized())
+            {
+                return;
+            }
         }
+
+        // Call outside of _writeLock as this can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+        // which is not the desired lock order
+        AbortConnectionFlowControl();
     }
 
-    private ValueTask<FlushResult> FlushAsync(Http2Stream stream, bool writeHeaders, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
+    private ValueTask<FlushResult> FlushEndOfStreamHeadersAsync(Http2Stream stream)
     {
         lock (_writeLock)
         {
@@ -363,16 +487,12 @@ internal sealed class Http2FrameWriter
                 return default;
             }
 
-            if (writeHeaders)
-            {
-                // write headers
-                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
-            }
+            WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
 
             var bytesWritten = _unflushedBytes;
             _unflushedBytes = 0;
 
-            return _flusher.FlushAsync(_minResponseDataRate, bytesWritten, outputAborter, cancellationToken);
+            return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
         }
     }
 
@@ -424,18 +544,19 @@ internal sealed class Http2FrameWriter
     {
         try
         {
+            // In the case of the headers, there is always a status header to be returned, so BeginEncodeHeaders will not return BufferTooSmall.
             _headersEnumerator.Initialize(headers);
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
-            var buffer = _headerEncodingBuffer.AsSpan();
-            var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
-            FinishWritingHeaders(streamId, payloadLength, done);
+            var writeResult = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, _headerEncodingBuffer, out var payloadLength);
+            Debug.Assert(writeResult != HeaderWriteResult.BufferTooSmall, "This always writes the status as the first header, and it should never be an over the buffer size.");
+            FinishWritingHeadersUnsynchronized(streamId, payloadLength, writeResult);
         }
         // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
         // Since we allow custom header encoders we don't know what type of exceptions to expect.
         catch (Exception ex)
         {
             _log.HPackEncodingError(_connectionId, streamId, ex);
-            _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+            _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex), Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.ErrorWritingHeaders);
         }
     }
 
@@ -465,50 +586,120 @@ internal sealed class Http2FrameWriter
 
             try
             {
-                _headersEnumerator.Initialize(headers);
+                // In the case of the trailers, there is no status header to be written, so even the first call to BeginEncodeHeaders can return BufferTooSmall.
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
-                var buffer = _headerEncodingBuffer.AsSpan();
-                var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
-                FinishWritingHeaders(streamId, payloadLength, done);
+                _headersEnumerator.Initialize(headers);
+                var writeResult = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, _headerEncodingBuffer, out var payloadLength);
+                FinishWritingHeadersUnsynchronized(streamId, payloadLength, writeResult);
             }
             // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
             // Since we allow custom header encoders we don't know what type of exceptions to expect.
             catch (Exception ex)
             {
                 _log.HPackEncodingError(_connectionId, streamId, ex);
-                _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+                _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex), Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.ErrorWritingHeaders);
             }
 
             return TimeFlushUnsynchronizedAsync();
         }
     }
 
-    private void FinishWritingHeaders(int streamId, int payloadLength, bool done)
+    private void SplitHeaderAcrossFrames(int streamId, ReadOnlySpan<byte> dataToFrame, bool endOfHeaders, bool isFramePrepared)
     {
-        var buffer = _headerEncodingBuffer.AsSpan();
-        _outgoingFrame.PayloadLength = payloadLength;
-        if (done)
+        var shouldPrepareFrame = !isFramePrepared;
+        while (dataToFrame.Length > 0)
         {
-            _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
-        }
-
-        WriteHeaderUnsynchronized();
-        _outputWriter.Write(buffer.Slice(0, payloadLength));
-
-        while (!done)
-        {
-            _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
-
-            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
-            _outgoingFrame.PayloadLength = payloadLength;
-
-            if (done)
+            if (shouldPrepareFrame)
             {
-                _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
+                _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
+            }
+
+            // Should prepare continuation frames.
+            shouldPrepareFrame = true;
+            var currentSize = Math.Min(dataToFrame.Length, _maxFrameSize);
+            _outgoingFrame.PayloadLength = currentSize;
+            if (endOfHeaders && dataToFrame.Length == currentSize)
+            {
+                _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
             }
 
             WriteHeaderUnsynchronized();
-            _outputWriter.Write(buffer.Slice(0, payloadLength));
+            _outputWriter.Write(dataToFrame[..currentSize]);
+            dataToFrame = dataToFrame.Slice(currentSize);
+        }
+    }
+
+    private void FinishWritingHeadersUnsynchronized(int streamId, int payloadLength, HeaderWriteResult writeResult)
+    {
+        Debug.Assert(payloadLength <= _maxFrameSize, "The initial payload lengths is written to _headerEncodingBuffer with size of _maxFrameSize");
+        byte[]? largeHeaderBuffer = null;
+        Span<byte> buffer;
+        if (writeResult == HeaderWriteResult.Done)
+        {
+            // Fast path, only a single HEADER frame.
+            _outgoingFrame.PayloadLength = payloadLength;
+            _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
+            WriteHeaderUnsynchronized();
+            _outputWriter.Write(_headerEncodingBuffer.AsSpan(0, payloadLength));
+            return;
+        }
+        else if (writeResult == HeaderWriteResult.MoreHeaders)
+        {
+            _outgoingFrame.PayloadLength = payloadLength;
+            WriteHeaderUnsynchronized();
+            _outputWriter.Write(_headerEncodingBuffer.AsSpan(0, payloadLength));
+        }
+        else
+        {
+            // This may happen in case of the TRAILERS after the initial encode operation.
+            // The _maxFrameSize sized _headerEncodingBuffer was too small.
+            while (writeResult == HeaderWriteResult.BufferTooSmall)
+            {
+                Debug.Assert(payloadLength == 0, "Payload written even though buffer is too small");
+                largeHeaderBuffer = ArrayPool<byte>.Shared.Rent(_headersEncodingLargeBufferSize);
+                buffer = largeHeaderBuffer.AsSpan(0, _headersEncodingLargeBufferSize);
+                writeResult = HPackHeaderWriter.RetryBeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
+                if (writeResult != HeaderWriteResult.BufferTooSmall)
+                {
+                    SplitHeaderAcrossFrames(streamId, buffer[..payloadLength], endOfHeaders: writeResult == HeaderWriteResult.Done, isFramePrepared: true);
+                }
+                else
+                {
+                    _headersEncodingLargeBufferSize = checked(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier);
+                }
+                ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
+                largeHeaderBuffer = null;
+            }
+            if (writeResult == HeaderWriteResult.Done)
+            {
+                return;
+            }
+        }
+
+        // HEADERS and zero or more CONTINUATIONS sent - all subsequent frames are (unprepared) CONTINUATIONs
+        buffer = _headerEncodingBuffer;
+        while (writeResult != HeaderWriteResult.Done)
+        {
+            writeResult = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
+            if (writeResult == HeaderWriteResult.BufferTooSmall)
+            {
+                if (largeHeaderBuffer != null)
+                {
+                    ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
+                    _headersEncodingLargeBufferSize = checked(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier);
+                }
+                largeHeaderBuffer = ArrayPool<byte>.Shared.Rent(_headersEncodingLargeBufferSize);
+                buffer = largeHeaderBuffer.AsSpan(0, _headersEncodingLargeBufferSize);
+            }
+            else
+            {
+                // In case of Done or MoreHeaders: write to output.
+                SplitHeaderAcrossFrames(streamId, buffer[..payloadLength], endOfHeaders: writeResult == HeaderWriteResult.Done, isFramePrepared: false);
+            }
+        }
+        if (largeHeaderBuffer != null)
+        {
+            ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
         }
     }
 
@@ -875,6 +1066,11 @@ internal sealed class Http2FrameWriter
         }
     }
 
+    /// <summary>
+    /// Do not call this method under the _writeLock.
+    /// This method can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+    /// which is not the desired lock order
+    /// </summary>
     private void AbortConnectionFlowControl()
     {
         lock (_windowUpdateLock)
@@ -884,7 +1080,7 @@ internal sealed class Http2FrameWriter
                 _lastWindowConsumer = null;
 
                 // Put the consumer of the connection window last
-                _waitingForMoreConnectionWindow.Enqueue(producer);
+                EnqueueWaitingForMoreConnectionWindow(producer);
             }
 
             while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
@@ -913,7 +1109,7 @@ internal sealed class Http2FrameWriter
                 _lastWindowConsumer = null;
 
                 // Put the consumer of the connection window last
-                _waitingForMoreConnectionWindow.Enqueue(producer);
+                EnqueueWaitingForMoreConnectionWindow(producer);
             }
 
             while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
@@ -922,5 +1118,17 @@ internal sealed class Http2FrameWriter
             }
         }
         return true;
+    }
+
+    private void EnqueueWaitingForMoreConnectionWindow(Http2OutputProducer producer)
+    {
+        _waitingForMoreConnectionWindow.Enqueue(producer);
+        // This is re-entrant because abort will cause a final enqueue.
+        // Easier to check for that condition than to make each enqueuer reason about what to call.
+        if (!_aborted && IsFlowControlQueueLimitEnabled && _waitingForMoreConnectionWindow.Count > _maximumFlowControlQueueSize)
+        {
+            _log.Http2FlowControlQueueOperationsExceeded(_connectionId, _maximumFlowControlQueueSize);
+            _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."), Http2ErrorCode.INTERNAL_ERROR, ConnectionEndReason.FlowControlQueueSizeExceeded);
+        }
     }
 }

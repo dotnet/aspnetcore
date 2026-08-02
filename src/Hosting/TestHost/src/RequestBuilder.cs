@@ -35,10 +35,7 @@ public class RequestBuilder
     /// <returns>This <see cref="RequestBuilder"/> for chaining.</returns>
     public RequestBuilder And(Action<HttpRequestMessage> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         configure(_req);
         return this;

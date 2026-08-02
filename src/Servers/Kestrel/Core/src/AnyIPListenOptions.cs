@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 internal sealed class AnyIPListenOptions : ListenOptions
 {
     internal AnyIPListenOptions(int port)
-        : base(new IPEndPoint(IPAddress.IPv6Any, port))
+        : base(new IPEndPoint(Socket.OSSupportsIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port))
     {
     }
 
@@ -24,9 +25,18 @@ internal sealed class AnyIPListenOptions : ListenOptions
         {
             await base.BindAsync(context, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (!(ex is IOException))
+        catch (Exception ex) when (ex is not IOException
+            // HttpsConnectionMiddleware.CreateHttp3Options, Http3 doesn't support OnAuthenticate.
+            && ex is not NotSupportedException)
         {
-            context.Logger.LogDebug(CoreStrings.FormatFallbackToIPv4Any(IPEndPoint.Port));
+            if (context.Logger.IsEnabled(LogLevel.Trace))
+            {
+                context.Logger.LogTrace(ex, CoreStrings.FailedToBindToIPv6Any, IPEndPoint.Port);
+            }
+            if (context.Logger.IsEnabled(LogLevel.Debug))
+            {
+                context.Logger.LogDebug(CoreStrings.FallbackToIPv4Any, IPEndPoint.Port, IPEndPoint.Port);
+            }
 
             // for machines that do not support IPv6
             EndPoint = new IPEndPoint(IPAddress.Any, IPEndPoint.Port);

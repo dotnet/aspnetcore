@@ -32,8 +32,8 @@ public class RangeHelperTests
     }
 
     [Theory]
-    [InlineData(0, null, 0, 2)]
-    [InlineData(0, 0, 0, 0)]
+    [InlineData(0L, null, 0L, 2L)]
+    [InlineData(0L, 0L, 0L, 0L)]
     public void NormalizeRange_ReturnsNormalizedRange(long? start, long? end, long? normalizedStart, long? normalizedEnd)
     {
         // Arrange & Act

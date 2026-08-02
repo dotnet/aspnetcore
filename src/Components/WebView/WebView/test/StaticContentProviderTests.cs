@@ -45,10 +45,7 @@ public class StaticContentProviderTests
     {
         public InMemoryFileProvider(IDictionary<string, string> filePathsAndContents)
         {
-            if (filePathsAndContents is null)
-            {
-                throw new ArgumentNullException(nameof(filePathsAndContents));
-            }
+            ArgumentNullException.ThrowIfNull(filePathsAndContents);
 
             FilePathsAndContents = filePathsAndContents;
         }

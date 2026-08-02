@@ -40,7 +40,7 @@ public class ComplexObjectModelBinderProviderTest
             }
             else
             {
-                Assert.False(true, "Not the right model type");
+                Assert.Fail("Not the right model type");
                 return null;
             }
         });
@@ -67,7 +67,7 @@ public class ComplexObjectModelBinderProviderTest
             }
             else
             {
-                Assert.False(true, "Not the right model type");
+                Assert.Fail("Not the right model type");
                 return null;
             }
         });

@@ -6,11 +6,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.SignalR.Client;
 
 /// <summary>
-/// Extension methods for <see cref="HubConnectionExtensions"/>.
+/// Extension methods for <see cref="HubConnection"/>.
 /// </summary>
 public static partial class HubConnectionExtensions
 {
@@ -270,15 +271,12 @@ public static partial class HubConnectionExtensions
     /// </returns>
     public static async Task<ChannelReader<TResult>> StreamAsChannelCoreAsync<TResult>(this HubConnection hubConnection, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        if (hubConnection == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnection));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnection);
 
         var inputChannel = await hubConnection.StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cancellationToken).ConfigureAwait(false);
         var outputChannel = Channel.CreateUnbounded<TResult>();
 
-        // Intentionally avoid passing the CancellationToken to RunChannel. The token is only meant to cancel the intial setup, not the enumeration.
+        // Intentionally avoid passing the CancellationToken to RunChannel. The token is only meant to cancel the initial setup, not the enumeration.
         _ = RunChannel(inputChannel, outputChannel);
 
         return outputChannel.Reader;
@@ -304,9 +302,6 @@ public static partial class HubConnectionExtensions
                     }
                 }
             }
-
-            // Manifest any errors in the completion task
-            await inputChannel.Completion.ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -316,6 +311,9 @@ public static partial class HubConnectionExtensions
         {
             // This will safely no-op if the catch block above ran.
             outputChannel.Writer.TryComplete();
+
+            // Needed to avoid UnobservedTaskExceptions
+            _ = inputChannel.Completion.Exception;
         }
     }
 }

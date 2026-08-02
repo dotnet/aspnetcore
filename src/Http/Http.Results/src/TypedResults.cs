@@ -1,14 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Net.ServerSentEvents;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -132,6 +138,16 @@ public static class TypedResults
         => Text(content, contentType, contentEncoding, null);
 
     /// <summary>
+    /// Writes the <paramref name="utf8Content"/> UTF8 text content to the HTTP response.
+    /// </summary>
+    /// <param name="utf8Content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="Utf8ContentHttpResult"/> object for the response.</returns>
+    public static Utf8ContentHttpResult Text(ReadOnlySpan<byte> utf8Content, string? contentType = null, int? statusCode = null)
+        => new Utf8ContentHttpResult(utf8Content, contentType, statusCode);
+
+    /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
     /// This is an alias for <see cref="Content(string?, string?, Encoding?, int?)"/>.
@@ -179,11 +195,49 @@ public static class TypedResults
     /// <param name="statusCode">The status code to set on the response.</param>
     /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
     /// as JSON format for the response.</returns>
+    [RequiresUnreferencedCode(JsonHttpResultTrimmerWarning.SerializationUnreferencedCodeMessage)]
+    [RequiresDynamicCode(JsonHttpResultTrimmerWarning.SerializationRequiresDynamicCodeMessage)]
     public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
-        => new(data, statusCode, options)
+        => new(data, options, statusCode, contentType);
+
+    /// <summary>
+    /// Creates a <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonTypeInfo<TValue> jsonTypeInfo, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+    {
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+        return new(data, statusCode, contentType) { JsonTypeInfo = jsonTypeInfo };
+    }
+
+    /// <summary>
+    /// Creates a <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="context">A metadata provider for serializable types.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static JsonHttpResult<TValue> Json<TValue>(TValue? data, JsonSerializerContext context, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return new(data, statusCode, contentType)
         {
-            ContentType = contentType,
+            JsonTypeInfo = context.GetRequiredTypeInfo(typeof(TValue))
         };
+    }
 
     /// <summary>
     /// Writes the byte-array content to the response.
@@ -201,9 +255,7 @@ public static class TypedResults
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
     /// <returns>The created <see cref="FileContentHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static FileContentHttpResult File(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         byte[] fileContents,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -238,9 +290,7 @@ public static class TypedResults
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
     /// <returns>The created <see cref="FileContentHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static FileContentHttpResult Bytes(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         byte[] contents,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -273,9 +323,7 @@ public static class TypedResults
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
     /// <returns>The created <see cref="FileContentHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static FileContentHttpResult Bytes(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         ReadOnlyMemory<byte> contents,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -305,16 +353,14 @@ public static class TypedResults
     /// </remarks>
     /// <param name="fileStream">The <see cref="System.IO.Stream"/> with the contents of the file.</param>
     /// <param name="contentType">The Content-Type of the file.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
     /// and perform conditional requests.</param>
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <returns>The created <see cref="FileStreamHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static FileStreamHttpResult File(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         Stream fileStream,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -348,16 +394,14 @@ public static class TypedResults
     /// </remarks>
     /// <param name="stream">The <see cref="System.IO.Stream"/> to write to the response.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
     /// and perform conditional requests.</param>
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <returns>The created <see cref="FileStreamHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static FileStreamHttpResult Stream(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         Stream stream,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -388,16 +432,14 @@ public static class TypedResults
     /// </remarks>
     /// <param name="pipeReader">The <see cref="System.IO.Pipelines.PipeReader"/> to write to the response.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
     /// and perform conditional requests.</param>
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <returns>The created <see cref="FileStreamHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static FileStreamHttpResult Stream(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         PipeReader pipeReader,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -418,22 +460,16 @@ public static class TypedResults
 
     /// <summary>
     /// Allows writing directly to the response body.
-    /// <para>
-    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
-    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
-    /// </para>
     /// </summary>
     /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
     /// and perform conditional requests.</param>
     /// <returns>The created <see cref="PushStreamHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static PushStreamHttpResult Stream(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         Func<Stream, Task> streamWriterCallback,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -464,9 +500,7 @@ public static class TypedResults
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <returns>The created <see cref="PhysicalFileHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static PhysicalFileHttpResult PhysicalFile(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         string path,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -474,10 +508,7 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(path));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         return new(path, contentType)
         {
@@ -502,9 +533,7 @@ public static class TypedResults
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <returns>The created <see cref="VirtualFileHttpResult"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static VirtualFileHttpResult VirtualFile(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         string path,
         string? contentType = null,
         string? fileDownloadName = null,
@@ -512,10 +541,7 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(path));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         return new(path, contentType)
         {
@@ -529,9 +555,9 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified <paramref name="url"/>.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
     /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
     /// </list>
     /// </summary>
@@ -539,12 +565,9 @@ public static class TypedResults
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
-    public static RedirectHttpResult Redirect(string url, bool permanent = false, bool preserveMethod = false)
+    public static RedirectHttpResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent = false, bool preserveMethod = false)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new(url, permanent, preserveMethod);
     }
@@ -552,9 +575,9 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified <paramref name="localUrl"/>.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
     /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
     /// </list>
     /// </summary>
@@ -562,12 +585,9 @@ public static class TypedResults
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
-    public static RedirectHttpResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
+    public static RedirectHttpResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent = false, bool preserveMethod = false)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
     }
@@ -575,10 +595,10 @@ public static class TypedResults
     /// <summary>
     /// Redirects to the specified route.
     /// <list type="bullet">
-    /// <item>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</item>
-    /// <item>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</item>
-    /// <item>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</item>
-    /// <item>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</item>
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
+    /// <item><description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description></item>
     /// </list>
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
@@ -587,7 +607,33 @@ public static class TypedResults
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
     /// <returns>The created <see cref="RedirectToRouteHttpResult"/> for the response.</returns>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     public static RedirectToRouteHttpResult RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null)
+        => new(
+            routeName: routeName,
+            routeValues: routeValues,
+            permanent: permanent,
+            preserveMethod: preserveMethod,
+            fragment: fragment);
+
+    /// <summary>
+    /// Redirects to the specified route.
+    /// <list type="bullet">
+    /// <item><description>When <paramref name="permanent"/> and <paramref name="preserveMethod"/> are set, sets the <see cref="StatusCodes.Status308PermanentRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="preserveMethod"/> is set, sets the <see cref="StatusCodes.Status307TemporaryRedirect"/> status code.</description></item>
+    /// <item><description>When <paramref name="permanent"/> is set, sets the <see cref="StatusCodes.Status301MovedPermanently"/> status code.</description></item>
+    /// <item><description>Otherwise, configures <see cref="StatusCodes.Status302Found"/>.</description></item>
+    /// </list>
+    /// </summary>
+    /// <param name="routeName">The name of the route.</param>
+    /// <param name="routeValues">The parameters for a route.</param>
+    /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
+    /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
+    /// <param name="fragment">The fragment to add to the URL.</param>
+    /// <returns>The created <see cref="RedirectToRouteHttpResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static RedirectToRouteHttpResult RedirectToRoute(string? routeName, RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => new(
             routeName: routeName,
             routeValues: routeValues,
@@ -686,6 +732,20 @@ public static class TypedResults
     public static UnprocessableEntity<TValue> UnprocessableEntity<TValue>(TValue? error) => new(error);
 
     /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="HttpResults.InternalServerError"/> for the response.</returns>
+    public static InternalServerError InternalServerError() => ResultsCache.InternalServerError;
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <typeparam name="TValue">The type of error object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="error">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="HttpResults.InternalServerError{TValue}"/> for the response.</returns>
+    public static InternalServerError<TValue> InternalServerError<TValue>(TValue? error) => new(error);
+
+    /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
     /// </summary>
     /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
@@ -696,12 +756,35 @@ public static class TypedResults
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="ProblemHttpResult"/> for the response.</returns>
     public static ProblemHttpResult Problem(
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+    {
+        return Problem(detail, instance, statusCode, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="ProblemHttpResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static ProblemHttpResult Problem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         var problemDetails = new ProblemDetails
         {
@@ -712,13 +795,7 @@ public static class TypedResults
             Type = type,
         };
 
-        if (extensions is not null)
-        {
-            foreach (var extension in extensions)
-            {
-                problemDetails.Extensions.Add(extension);
-            }
-        }
+        CopyExtensions(extensions, problemDetails);
 
         return new(problemDetails);
     }
@@ -747,11 +824,34 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.ValidationProblem"/> for the response.</returns>
     public static ValidationProblem ValidationProblem(
         IDictionary<string, string[]> errors,
+        string? detail,
+        string? instance,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+    {
+        return ValidationProblem(errors, detail, instance, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response with an <see cref="HttpValidationProblemDetails"/> value.
+    /// </summary>
+    /// <param name="errors">One or more validation errors.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />. Defaults to "One or more validation errors occurred."</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="HttpResults.ValidationProblem"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static ValidationProblem ValidationProblem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         ArgumentNullException.ThrowIfNull(errors);
 
@@ -764,15 +864,31 @@ public static class TypedResults
 
         problemDetails.Title = title ?? problemDetails.Title;
 
+        CopyExtensions(extensions, problemDetails);
+
+        return new(problemDetails);
+    }
+
+    private static void CopyExtensions(IEnumerable<KeyValuePair<string, object?>>? extensions, ProblemDetails problemDetails)
+    {
         if (extensions is not null)
         {
             foreach (var extension in extensions)
             {
-                problemDetails.Extensions.Add(extension);
+                // Use the indexer so duplicate keys overwrite earlier values instead of throwing,
+                // consistent with ControllerBase.Problem and ControllerBase.ValidationProblem.
+                problemDetails.Extensions[extension.Key] = extension.Value;
             }
         }
+    }
 
-        return new(problemDetails);
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
+    public static Created Created()
+    {
+        return new(default(string));
     }
 
     /// <summary>
@@ -780,13 +896,8 @@ public static class TypedResults
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
-    public static Created Created(string uri)
+    public static Created Created(string? uri)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(uri));
-        }
-
         return new(uri);
     }
 
@@ -797,13 +908,8 @@ public static class TypedResults
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.Created{TValue}"/> for the response.</returns>
-    public static Created<TValue> Created<TValue>(string uri, TValue? value)
+    public static Created<TValue> Created<TValue>(string? uri, TValue? value)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(uri));
-        }
-
         return new(uri, value);
     }
 
@@ -812,10 +918,8 @@ public static class TypedResults
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
-    public static Created Created(Uri uri)
+    public static Created Created(Uri? uri)
     {
-        ArgumentNullException.ThrowIfNull(uri);
-
         return new(uri);
     }
 
@@ -826,10 +930,8 @@ public static class TypedResults
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.Created{TValue}"/> for the response.</returns>
-    public static Created<TValue> Created<TValue>(Uri uri, TValue? value)
+    public static Created<TValue> Created<TValue>(Uri? uri, TValue? value)
     {
-        ArgumentNullException.ThrowIfNull(uri);
-
         return new(uri, value);
     }
 
@@ -839,9 +941,19 @@ public static class TypedResults
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <returns>The created <see cref="HttpResults.CreatedAtRoute"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static CreatedAtRoute CreatedAtRoute(string? routeName = null, object? routeValues = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        => new(routeName, routeValues);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <returns>The created <see cref="HttpResults.CreatedAtRoute"/> for the response.</returns>
+    public static CreatedAtRoute CreatedAtRoute(string? routeName, RouteValueDictionary? routeValues)
         => new(routeName, routeValues);
 
     /// <summary>
@@ -852,9 +964,21 @@ public static class TypedResults
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.CreatedAtRoute{TValue}"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static CreatedAtRoute<TValue> CreatedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        => new(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="HttpResults.CreatedAtRoute{TValue}"/> for the response.</returns>
+    public static CreatedAtRoute<TValue> CreatedAtRoute<TValue>(TValue? value, string? routeName, RouteValueDictionary? routeValues)
         => new(routeName, routeValues, value);
 
     /// <summary>
@@ -907,9 +1031,19 @@ public static class TypedResults
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <returns>The created <see cref="HttpResults.AcceptedAtRoute"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static AcceptedAtRoute AcceptedAtRoute(string? routeName = null, object? routeValues = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        => new(routeName, routeValues);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <returns>The created <see cref="HttpResults.AcceptedAtRoute"/> for the response.</returns>
+    public static AcceptedAtRoute AcceptedAtRoute(string? routeName, RouteValueDictionary? routeValues)
         => new(routeName, routeValues);
 
     /// <summary>
@@ -920,13 +1054,74 @@ public static class TypedResults
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.AcceptedAtRoute{TValue}"/> for the response.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         => new(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
+    /// </summary>
+    /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="HttpResults.AcceptedAtRoute{TValue}"/> for the response.</returns>
+    public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName, RouteValueDictionary? routeValues)
+        => new(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{TValue}"/> response.
+    /// </summary>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <param name="eventType">The event type to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{TValue}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static ServerSentEventsResult<string> ServerSentEvents(IAsyncEnumerable<string> values, string? eventType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(values, eventType);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{T}"/> response.
+    /// </summary>
+    /// <typeparam name="T">The type of object that will be serialized to the response body.</typeparam>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <param name="eventType">The event type to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{T}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// Other types are serialized using the configured JSON serializer options.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static ServerSentEventsResult<T> ServerSentEvents<T>(IAsyncEnumerable<T> values, string? eventType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(values, eventType);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{T}"/> response.
+    /// </summary>
+    /// <typeparam name="T">The type of object that will be serialized to the response body.</typeparam>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{T}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// Other types are serialized using the configured JSON serializer options.
+    /// </remarks>
+    public static ServerSentEventsResult<T> ServerSentEvents<T>(IAsyncEnumerable<SseItem<T>> values)
+        => new(values);
 
     /// <summary>
     /// Produces an empty result response, that when executed will do nothing.
     /// </summary>
-    public static EmptyHttpResult Empty { get; } = EmptyHttpResult.Instance;
+    public static EmptyHttpResult Empty => EmptyHttpResult.Instance;
+
+    /// <summary>
+    /// Provides a container for external libraries to extend
+    /// the default `TypedResults` set with their own samples.
+    /// </summary>
+    public static IResultExtensions Extensions { get; } = new ResultExtensions();
 }

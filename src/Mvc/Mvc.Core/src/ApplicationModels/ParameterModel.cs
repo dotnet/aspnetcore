@@ -8,9 +8,9 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 /// <summary>
-/// A type that represents a paramater.
+/// A type that represents a parameter.
 /// </summary>
-[DebuggerDisplay("ParameterModel: Name={ParameterName}")]
+[DebuggerDisplay("Type = {GetType().Name}, Name = {ParameterName}")]
 public class ParameterModel : ParameterModelBase, ICommonModel
 {
     /// <summary>
@@ -33,10 +33,7 @@ public class ParameterModel : ParameterModelBase, ICommonModel
     public ParameterModel(ParameterModel other)
         : base(other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Action = other.Action;
         ParameterInfo = other.ParameterInfo;

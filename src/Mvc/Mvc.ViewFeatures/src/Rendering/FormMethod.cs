@@ -16,5 +16,10 @@ public enum FormMethod
     /// <summary>
     /// Post form method.
     /// </summary>
-    Post
+    Post,
+    
+    /// <summary>
+    /// Dialog form method.
+    /// </summary>
+    Dialog
 }

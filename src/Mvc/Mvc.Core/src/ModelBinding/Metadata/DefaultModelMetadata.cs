@@ -62,25 +62,10 @@ public class DefaultModelMetadata : ModelMetadata
         DefaultModelBindingMessageProvider modelBindingMessageProvider)
         : base(details.Key)
     {
-        if (provider == null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
-
-        if (detailsProvider == null)
-        {
-            throw new ArgumentNullException(nameof(detailsProvider));
-        }
-
-        if (details == null)
-        {
-            throw new ArgumentNullException(nameof(details));
-        }
-
-        if (modelBindingMessageProvider == null)
-        {
-            throw new ArgumentNullException(nameof(modelBindingMessageProvider));
-        }
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(detailsProvider);
+        ArgumentNullException.ThrowIfNull(details);
+        ArgumentNullException.ThrowIfNull(modelBindingMessageProvider);
 
         _provider = provider;
         _detailsProvider = detailsProvider;

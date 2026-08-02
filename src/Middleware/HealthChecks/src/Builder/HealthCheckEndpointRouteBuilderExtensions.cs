@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,12 +25,9 @@ public static class HealthCheckEndpointRouteBuilderExtensions
     /// <returns>A convention routes for the health checks endpoint.</returns>
     public static IEndpointConventionBuilder MapHealthChecks(
        this IEndpointRouteBuilder endpoints,
-       string pattern)
+       [StringSyntax("Route")] string pattern)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         return MapHealthChecksCore(endpoints, pattern, null);
     }
@@ -43,22 +41,17 @@ public static class HealthCheckEndpointRouteBuilderExtensions
     /// <returns>A convention routes for the health checks endpoint.</returns>
     public static IEndpointConventionBuilder MapHealthChecks(
        this IEndpointRouteBuilder endpoints,
-       string pattern,
+       [StringSyntax("Route")] string pattern,
        HealthCheckOptions options)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(options);
 
         return MapHealthChecksCore(endpoints, pattern, options);
     }
 
+    [UnconditionalSuppressMessage("Trimmer", "IL2026",
+        Justification = "MapHealthChecksCore only RequireUnreferencedCode if the RequestDelegate has a Task<T> return type which is not the case here.")]
     private static IEndpointConventionBuilder MapHealthChecksCore(IEndpointRouteBuilder endpoints, string pattern, HealthCheckOptions? options)
     {
         if (endpoints.ServiceProvider.GetService(typeof(HealthCheckService)) == null)

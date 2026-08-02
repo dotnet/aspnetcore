@@ -8,6 +8,7 @@ Microsoft.AspNetCore.Components.WebView.WebViewManager.DisposeAsync() -> System.
 Microsoft.AspNetCore.Components.WebView.WebViewManager.MessageReceived(System.Uri! sourceUri, string! message) -> void
 Microsoft.AspNetCore.Components.WebView.WebViewManager.Navigate(string! url) -> void
 Microsoft.AspNetCore.Components.WebView.WebViewManager.RemoveRootComponentAsync(string! selector) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.WebView.WebViewManager.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Components.WebView.WebViewManager.TryGetResponseContent(string! uri, bool allowFallbackOnHostPage, out int statusCode, out string! statusMessage, out System.IO.Stream! content, out System.Collections.Generic.IDictionary<string!, string!>! headers) -> bool
 Microsoft.AspNetCore.Components.WebView.WebViewManager.WebViewManager(System.IServiceProvider! provider, Microsoft.AspNetCore.Components.Dispatcher! dispatcher, System.Uri! appBaseUri, Microsoft.Extensions.FileProviders.IFileProvider! fileProvider, Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! jsComponents, string! hostPageRelativePath) -> void
 Microsoft.Extensions.DependencyInjection.ComponentsWebViewServiceCollectionExtensions

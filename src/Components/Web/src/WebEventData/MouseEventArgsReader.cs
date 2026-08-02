@@ -18,6 +18,8 @@ internal static class MouseEventArgsReader
     private static readonly JsonEncodedText OffsetY = JsonEncodedText.Encode("offsetY");
     private static readonly JsonEncodedText PageX = JsonEncodedText.Encode("pageX");
     private static readonly JsonEncodedText PageY = JsonEncodedText.Encode("pageY");
+    private static readonly JsonEncodedText MovementX = JsonEncodedText.Encode("movementX");
+    private static readonly JsonEncodedText MovementY = JsonEncodedText.Encode("movementY");
     private static readonly JsonEncodedText Button = JsonEncodedText.Encode("button");
     private static readonly JsonEncodedText Buttons = JsonEncodedText.Encode("buttons");
     private static readonly JsonEncodedText CtrlKey = JsonEncodedText.Encode("ctrlKey");
@@ -73,6 +75,14 @@ internal static class MouseEventArgsReader
         else if (property.NameEquals(PageY.EncodedUtf8Bytes))
         {
             eventArgs.PageY = property.Value.GetDouble();
+        }
+        else if (property.NameEquals(MovementX.EncodedUtf8Bytes))
+        {
+            eventArgs.MovementX = property.Value.GetDouble();
+        }
+        else if (property.NameEquals(MovementY.EncodedUtf8Bytes))
+        {
+            eventArgs.MovementY = property.Value.GetDouble();
         }
         else if (property.NameEquals(Button.EncodedUtf8Bytes))
         {

@@ -12,21 +12,14 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
         HttpContext httpContext,
         CandidateSet candidateSet)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (candidateSet == null)
-        {
-            throw new ArgumentNullException(nameof(candidateSet));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(candidateSet);
 
         Select(httpContext, candidateSet.Candidates);
         return Task.CompletedTask;
     }
 
-    internal static void Select(HttpContext httpContext, CandidateState[] candidateState)
+    internal static void Select(HttpContext httpContext, Span<CandidateState> candidateState)
     {
         // Fast path: We can specialize for trivial numbers of candidates since there can
         // be no ambiguities
@@ -62,7 +55,7 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
 
     private static void ProcessFinalCandidates(
         HttpContext httpContext,
-        CandidateState[] candidateState)
+        Span<CandidateState> candidateState)
     {
         Endpoint? endpoint = null;
         RouteValueDictionary? values = null;
@@ -111,7 +104,7 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
         }
     }
 
-    private static void ReportAmbiguity(CandidateState[] candidateState)
+    private static void ReportAmbiguity(Span<CandidateState> candidateState)
     {
         // If we get here it's the result of an ambiguity - we're OK with this
         // being a littler slower and more allocatey.

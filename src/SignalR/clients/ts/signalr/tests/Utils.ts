@@ -47,7 +47,7 @@ export class PromiseSource<T = void> implements Promise<T> {
         });
     }
 
-    public [Symbol.toStringTag]: string;
+    public [Symbol.toStringTag]: string = "";
 
     // @ts-ignore: onfinally not used
     public finally(onfinally?: (() => void) | null): Promise<T> {

@@ -1,0 +1,16 @@
+﻿@page "/interactivity/virtualization"
+@using TestContentPackage;
+
+<h3>Server</h3>
+
+<VirtualizedItemList @rendermode="@RenderMode.InteractiveServer" Id="virtualize-server" Items="_items" />
+
+<h3>WebAssembly</h3>
+
+<VirtualizedItemList @rendermode="@RenderMode.InteractiveWebAssembly" Id="virtualize-webassembly" Items="_items" />
+
+@code {
+    private readonly string[] _items = Enumerable.Range(1, 50)
+        .Select(i => $"Item {i}")
+        .ToArray();
+}

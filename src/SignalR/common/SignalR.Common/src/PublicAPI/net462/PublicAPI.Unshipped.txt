@@ -1,4 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.SignalR.Protocol.RawResult
-Microsoft.AspNetCore.SignalR.Protocol.RawResult.RawResult(System.Buffers.ReadOnlySequence<byte> rawBytes) -> void
-Microsoft.AspNetCore.SignalR.Protocol.RawResult.RawSerializedData.get -> System.Buffers.ReadOnlySequence<byte>

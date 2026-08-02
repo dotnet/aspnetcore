@@ -59,6 +59,7 @@ public class DynamicComponent : IComponent
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "We expect that types used with DynamicComponent will be defined in assemblies that don't get trimmed.")]
     public Task SetParametersAsync(ParameterView parameters)
     {
         // This manual parameter assignment logic will be marginally faster than calling
@@ -97,7 +98,7 @@ public class DynamicComponent : IComponent
         {
             foreach (var entry in Parameters)
             {
-                builder.AddAttribute(1, entry.Key, entry.Value);
+                builder.AddComponentParameter(1, entry.Key, entry.Value);
             }
         }
 

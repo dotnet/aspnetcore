@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor ビュー",
+  "description": "空の Razor ビュー",
+  "postActions/openInEditor/description": "エディターで作成されたビューを開きます"
+}

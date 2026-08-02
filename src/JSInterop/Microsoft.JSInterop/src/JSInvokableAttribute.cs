@@ -35,10 +35,7 @@ public sealed class JSInvokableAttribute : Attribute
     /// <param name="identifier">An identifier for the method, which must be unique within the scope of the assembly.</param>
     public JSInvokableAttribute(string identifier)
     {
-        if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentException("Cannot be null or empty", nameof(identifier));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
 
         Identifier = identifier;
     }

@@ -1,0 +1,83 @@
+﻿@page "/forms/default-form-bound-collection-parameter"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form with dictionary bound parameter</h2>
+
+<EditForm Enhance Model="Model" method="POST" OnValidSubmit="DisplayCustomer" FormName="someform">
+    <ValidationSummary />
+    @for(var i = 0; i< Model.Count;i++)
+    {
+        var index = i;
+        <h3>Customer @Model[index].Id</h3>
+        <input type="hidden" name="Model[@index].Id" value="@Model[index].Id" />
+        <div>
+            <label for="Model.Name">
+                Name:
+                <InputText @bind-Value="@Model[index].Name" />
+            </label>
+            <ValidationMessage For="@(() => Model[index].Name)" />
+        </div>
+        <div>
+            <label for="Model.Email">
+                Email:
+                <InputText @bind-Value="@Model[index].Email" />
+            </label>
+            <ValidationMessage For="@(() => Model[index].Email)" />
+        </div>
+        <div>
+            <label for="Model.IsPreferred">
+                Preferred:
+                <InputCheckbox @bind-Value="@Model[index].IsPreferred" />
+            </label>
+            <ValidationMessage data-index="@index" For="@(() => Model[index].IsPreferred)" />
+        </div>
+    }
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_shouldDisplayCustomers)
+{
+    for (int i = 0; i < Model.Count; i++)
+    {
+        var index = i;
+        <h1>Id: @Model[index].Id</h1>
+        <p id="name[@index]">Name: @Model[index].Name</p>
+        <p id="email[@index]">Email: @Model[index].Email</p>
+        <p id="preferred[@index]">Preferred: @Model[index].IsPreferred</p>
+    }
+}
+
+@code {
+
+    bool _shouldDisplayCustomers = false;
+
+    public void DisplayCustomer() => _shouldDisplayCustomers = true;
+
+    [SupplyParameterFromForm] public List<Customer> Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new List<Customer>
+    {
+        new Customer
+        {
+            Id = 1,
+            Name = "john",
+            Email = "john@example.com",
+            IsPreferred = false,
+        },
+        new Customer
+        {
+            Id = 2,
+            Name = "john2",
+            Email = "john2@example.com",
+            IsPreferred = true,
+        },
+    };
+
+    public class Customer
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public bool IsPreferred { get; set; }
+    }
+}

@@ -21,10 +21,7 @@ internal sealed class DisableCorsAuthorizationFilter : ICorsAuthorizationFilter
     /// <inheritdoc />
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var accessControlRequestMethod =
                     context.HttpContext.Request.Headers[CorsConstants.AccessControlRequestMethod];

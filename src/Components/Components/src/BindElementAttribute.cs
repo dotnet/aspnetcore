@@ -18,20 +18,9 @@ public sealed class BindElementAttribute : Attribute
     /// <param name="changeAttribute">The name of an attribute that will register an associated change event.</param>
     public BindElementAttribute(string element, string? suffix, string valueAttribute, string changeAttribute)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
-
-        if (valueAttribute == null)
-        {
-            throw new ArgumentNullException(nameof(valueAttribute));
-        }
-
-        if (changeAttribute == null)
-        {
-            throw new ArgumentNullException(nameof(changeAttribute));
-        }
+        ArgumentNullException.ThrowIfNull(element);
+        ArgumentNullException.ThrowIfNull(valueAttribute);
+        ArgumentNullException.ThrowIfNull(changeAttribute);
 
         Element = element;
         ValueAttribute = valueAttribute;

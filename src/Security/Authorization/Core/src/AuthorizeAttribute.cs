@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -9,6 +11,7 @@ namespace Microsoft.AspNetCore.Authorization;
 /// Specifies that the class or method that this attribute is applied to requires the specified authorization.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+[DebuggerDisplay("{ToString(),nq}")]
 public class AuthorizeAttribute : Attribute, IAuthorizeData
 {
     /// <summary>
@@ -39,4 +42,13 @@ public class AuthorizeAttribute : Attribute, IAuthorizeData
     /// Gets or sets a comma delimited list of schemes from which user information is constructed.
     /// </summary>
     public string? AuthenticationSchemes { get; set; }
+
+    /// <summary>
+    /// Returns a string that represents the current attribute.
+    /// </summary>
+    /// <returns>A string that describes the configured authorization data.</returns>
+    public override string ToString()
+    {
+        return DebuggerHelpers.GetDebugText(nameof(Policy), Policy, nameof(Roles), Roles, nameof(AuthenticationSchemes), AuthenticationSchemes, includeNullValues: false, prefix: "Authorize");
+    }
 }

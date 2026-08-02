@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "name": "@microsoft/microsoft.components.customelements",
+  "scripts": {
+    "clean": "rimraf ./dist/Debug ./dist/Release",
+    "prebuild": "npm run clean",
+    "build": "npm run build:debug && npm run build:production",
+    "build:debug": "rollup -c --environment development --forceExit",
+    "build:production": "rollup -c --environment production --forceExit"
+  }
+}

@@ -12,9 +12,6 @@ internal sealed class FileParser
         var builder = new RuleBuilder();
         var lineNum = 0;
 
-        // parsers
-        var flagsParser = new FlagParser();
-
         while ((line = input.ReadLine()) != null)
         {
             lineNum++;
@@ -48,7 +45,7 @@ internal sealed class FileParser
                         var flags = new Flags();
                         if (tokens.Count == 4)
                         {
-                            flags = flagsParser.Parse(tokens[3]);
+                            flags = FlagParser.Parse(tokens[3]);
                         }
 
                         builder.AddConditionFromParts(pattern, condActionParsed, flags);
@@ -67,7 +64,7 @@ internal sealed class FileParser
                         Flags flags;
                         if (tokens.Count == 4)
                         {
-                            flags = flagsParser.Parse(tokens[3]);
+                            flags = FlagParser.Parse(tokens[3]);
                         }
                         else
                         {

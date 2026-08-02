@@ -18,15 +18,17 @@ public static class AuthenticationServiceCollectionExtensions
     /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
     public static AuthenticationBuilder AddAuthentication(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddAuthenticationCore();
         services.AddDataProtection();
         services.AddWebEncoders();
+        services.TryAddSingleton(TimeProvider.System);
+#pragma warning disable CS0618 // Type or member is obsolete
         services.TryAddSingleton<ISystemClock, SystemClock>();
+#pragma warning restore CS0618 // Type or member is obsolete
+        services.TryAddSingleton<IAuthenticationConfigurationProvider, DefaultAuthenticationConfigurationProvider>();
+
         return new AuthenticationBuilder(services);
     }
 
@@ -48,15 +50,8 @@ public static class AuthenticationServiceCollectionExtensions
     /// <returns>A <see cref="AuthenticationBuilder"/> that can be used to further configure authentication.</returns>
     public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         var builder = services.AddAuthentication();
         services.Configure(configureOptions);

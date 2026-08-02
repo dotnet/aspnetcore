@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -124,7 +124,7 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         if (i == 10)
         {
             // Didn't restart after 10 retries
-            Assert.False(true);
+            Assert.Fail();
         }
 
         // Shutdown again
@@ -142,7 +142,7 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         }
 
         // Test failure if this happens.
-        Assert.False(true);
+        Assert.Fail();
     }
 
     private static int GetUnusedRandomPort()

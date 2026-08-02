@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
@@ -93,6 +88,10 @@ public abstract class JsonHubProtocolTestsBase
             new JsonProtocolTestData("CloseMessage_HasErrorWithCamelCase", new CloseMessage("Error!"), true, true, "{\"type\":7,\"error\":\"Error!\"}"),
             new JsonProtocolTestData("CloseMessage_HasAllowReconnect", new CloseMessage(error: null, allowReconnect: true), true, true, "{\"type\":7,\"allowReconnect\":true}"),
             new JsonProtocolTestData("CloseMessage_HasErrorAndAllowReconnect", new CloseMessage("Error!", allowReconnect: true), true, true, "{\"type\":7,\"error\":\"Error!\",\"allowReconnect\":true}"),
+
+            new JsonProtocolTestData("AckMessage", new AckMessage(102020), true, true, "{\"type\":8,\"sequenceId\":102020}"),
+
+            new JsonProtocolTestData("SequenceMessage", new SequenceMessage(98764321), true, true, "{\"type\":9,\"sequenceId\":98764321}"),
 
         }.ToDictionary(t => t.Name);
 
@@ -184,6 +183,10 @@ public abstract class JsonHubProtocolTestsBase
     [InlineData("{\"type\":4,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":{}}", "Expected 'arguments' to be of type Array.")]
 
     [InlineData("{\"type\":3,\"invocationId\":\"42\",\"error\":\"foo\",\"result\":true}", "The 'error' and 'result' properties are mutually exclusive.")]
+
+    [InlineData("{\"type\":8}", "Missing required property 'sequenceId'.")]
+
+    [InlineData("{\"type\":9}", "Missing required property 'sequenceId'.")]
     public void InvalidMessages(string input, string expectedMessage)
     {
         input = Frame(input);
@@ -458,6 +461,38 @@ public abstract class JsonHubProtocolTestsBase
         {
             MemoryBufferWriter.Return(writer);
         }
+    }
+
+    [Theory]
+    [InlineData("{\"type\":3,\"result\":1,\"invocationId\":\"1\"}")]
+    [InlineData("{\"result\":1,\"type\":3,\"invocationId\":\"1\"}")]
+    public void UnexpectedClientResultGivesEmptyCompletionMessage(string input)
+    {
+        var binder = new TestBinder();
+        var message = Frame(input);
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(message));
+        Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.Null(completion.Error);
+        Assert.Equal("1", completion.InvocationId);
+    }
+
+    [Theory]
+    [InlineData("{\"type\":3,\"result\":\"string\",\"invocationId\":\"1\"}")]
+    [InlineData("{\"result\":\"string\",\"type\":3,\"invocationId\":\"1\"}")]
+    public void WrongTypeForClientResultGivesErrorCompletionMessage(string input)
+    {
+        var binder = new TestBinder(paramTypes: null, returnType: typeof(int));
+        var message = Frame(input);
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(message));
+        Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.StartsWith("Error trying to deserialize result to Int32.", completion.Error);
+        Assert.Equal("1", completion.InvocationId);
     }
 
     public static string Frame(string input)

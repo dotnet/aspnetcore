@@ -3,6 +3,7 @@
 
 using System;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -21,15 +22,8 @@ public sealed class XmlSerializedDescriptorInfo
     /// method can be used to deserialize <paramref name="serializedDescriptorElement"/>.</param>
     public XmlSerializedDescriptorInfo(XElement serializedDescriptorElement, Type deserializerType)
     {
-        if (serializedDescriptorElement == null)
-        {
-            throw new ArgumentNullException(nameof(serializedDescriptorElement));
-        }
-
-        if (deserializerType == null)
-        {
-            throw new ArgumentNullException(nameof(deserializerType));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(serializedDescriptorElement);
+        ArgumentNullThrowHelper.ThrowIfNull(deserializerType);
 
         if (!typeof(IAuthenticatedEncryptorDescriptorDeserializer).IsAssignableFrom(deserializerType))
         {

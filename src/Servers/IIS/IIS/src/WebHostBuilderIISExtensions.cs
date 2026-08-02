@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -22,10 +24,7 @@ public static class WebHostBuilderIISExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseIIS(this IWebHostBuilder hostBuilder)
     {
-        if (hostBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(hostBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(hostBuilder);
 
         // Check if in process
         if (OperatingSystem.IsWindows() && NativeMethods.IsAspNetCoreModuleLoaded())
@@ -40,7 +39,7 @@ public static class WebHostBuilderIISExtensions
                     services.AddSingleton(new IISNativeApplication(new NativeSafeHandle(iisConfigData.pNativeApplication)));
                     services.AddSingleton<IServer, IISHttpServer>();
                     services.AddTransient<IISServerAuthenticationHandlerInternal>();
-                    services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
+                    services.AddSingleton<IStartupFilter, IISServerSetupFilter>();
                     services.AddAuthenticationCore();
                     services.AddSingleton<IServerIntegratedAuth>(_ => new ServerIntegratedAuth()
                     {
@@ -56,6 +55,9 @@ public static class WebHostBuilderIISExtensions
                             options.IisMaxRequestSizeLimit = iisConfigData.maxRequestBodySize;
                         }
                     );
+
+                    services.TryAddSingleton<IMemoryPoolFactory<byte>, DefaultMemoryPoolFactory>();
+                    services.TryAddSingleton<MemoryPoolMetrics>();
                 });
         }
 

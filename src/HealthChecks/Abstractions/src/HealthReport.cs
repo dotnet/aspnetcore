@@ -66,13 +66,13 @@ public sealed class HealthReport
             if (currentValue > entry.Status)
             {
                 currentValue = entry.Status;
-            }
 
-            if (currentValue == HealthStatus.Unhealthy)
-            {
-                // Game over, man! Game over!
-                // (We hit the worst possible status, so there's no need to keep iterating)
-                return currentValue;
+                if (currentValue == HealthStatus.Unhealthy)
+                {
+                    // Game over, man! Game over!
+                    // (We hit the worst possible status, so there's no need to keep iterating)
+                    return currentValue;
+                }
             }
         }
 

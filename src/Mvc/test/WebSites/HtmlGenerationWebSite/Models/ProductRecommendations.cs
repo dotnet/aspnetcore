@@ -7,10 +7,7 @@ public class ProductRecommendations
 {
     public ProductRecommendations(params Product[] products)
     {
-        if (products == null)
-        {
-            throw new ArgumentNullException(nameof(products));
-        }
+        ArgumentNullException.ThrowIfNull(products);
 
         Products = products;
     }

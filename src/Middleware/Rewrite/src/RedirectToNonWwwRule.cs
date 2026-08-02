@@ -20,10 +20,7 @@ internal sealed class RedirectToNonWwwRule : IRule
 
     public RedirectToNonWwwRule(int statusCode, params string[] domains)
     {
-        if (domains == null)
-        {
-            throw new ArgumentNullException(nameof(domains));
-        }
+        ArgumentNullException.ThrowIfNull(domains);
 
         if (domains.Length < 1)
         {
@@ -46,7 +43,7 @@ internal sealed class RedirectToNonWwwRule : IRule
             return;
         }
 
-        if (!request.Host.Value.StartsWith(WwwDot, StringComparison.OrdinalIgnoreCase))
+        if (!request.Host.HasValue || !request.Host.Value.StartsWith(WwwDot, StringComparison.OrdinalIgnoreCase))
         {
             context.Result = RuleResult.ContinueRules;
             return;

@@ -132,8 +132,8 @@
   <data name="Exception_UseMiddleMutlipleInvokes" xml:space="preserve">
     <value>Multiple public '{0}' or '{1}' methods are available.</value>
   </data>
-  <data name="Exception_PathMustStartWithSlash" xml:space="preserve">
-    <value>The path in '{0}' must start with '/'.</value>
+  <data name="Exception_PathMustStartWithSlashOrBackslash" xml:space="preserve">
+    <value>The path in '{0}' must start with '/' or '\'.</value>
   </data>
   <data name="Exception_InvokeMiddlewareNoService" xml:space="preserve">
     <value>Unable to resolve service for type '{0}' while attempting to Invoke middleware '{1}'.</value>
@@ -161,5 +161,8 @@
   </data>
   <data name="RouteValueDictionary_DuplicatePropertyName" xml:space="preserve">
     <value>The type '{0}' defines properties '{1}' and '{2}' which differ only by casing. This is not supported by {3} which uses case-insensitive comparisons.</value>
+  </data>
+  <data name="Exception_KeyedServicesNotSupported" xml:space="preserve">
+    <value>This service provider doesn't support keyed services.</value>
   </data>
 </root>

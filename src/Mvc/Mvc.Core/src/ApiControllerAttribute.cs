@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,10 @@ namespace Microsoft.AspNetCore.Mvc;
 /// </para>
 /// <para>
 /// When decorated on an assembly, all controllers in the assembly will be treated as controllers with API behavior.
-/// For more information, see <see href="https://docs.microsoft.com/aspnet/core/web-api/#apicontroller-attribute">ApiController attribute</see>.
+/// For more information, see <see href="https://learn.microsoft.com/aspnet/core/web-api/#apicontroller-attribute">ApiController attribute</see>.
 /// </para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-public class ApiControllerAttribute : ControllerAttribute, IApiBehaviorMetadata
+public class ApiControllerAttribute : ControllerAttribute, IApiBehaviorMetadata, IDisableCookieRedirectMetadata
 {
 }

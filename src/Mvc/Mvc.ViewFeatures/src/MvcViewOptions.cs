@@ -27,10 +27,7 @@ public class MvcViewOptions : IEnumerable<ICompatibilitySwitch>
         get => _htmlHelperOptions;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _htmlHelperOptions = value;
         }

@@ -1,0 +1,48 @@
+﻿@using Microsoft.JSInterop
+
+<button class="invoke-callback" @onclick="InvokeCallbackAsync">Invoke callback</button><br />
+<strong>@nameof(StringParam)</strong>: <span class="string-param">@StringParam</span><br />
+<strong>@nameof(BoolParam)</strong>: <span class="bool-param">@BoolParam</span><br />
+<strong>@nameof(IntParam)</strong>: <span class="int-param">@IntParam</span><br />
+<strong>@nameof(LongParam)</strong>: <span class="long-param">@LongParam</span><br />
+<strong>@nameof(FloatParam)</strong>: <span class="float-param">@FloatParam</span><br />
+<strong>@nameof(DoubleParam)</strong>: <span class="double-param">@DoubleParam</span><br />
+<strong>@nameof(DecimalParam)</strong>: <span class="decimal-param">@DecimalParam</span><br />
+<strong>@nameof(NullableBoolParam)</strong>: <span class="nullable-bool-param">@(NullableBoolParam?.ToString() ?? "null")</span><br />
+<strong>@nameof(NullableIntParam)</strong>: <span class="nullable-int-param">@(NullableIntParam?.ToString() ?? "null")</span><br />
+<strong>@nameof(NullableLongParam)</strong>: <span class="nullable-long-param">@(NullableLongParam?.ToString() ?? "null")</span><br />
+<strong>@nameof(NullableFloatParam)</strong>: <span class="nullable-float-param">@(NullableFloatParam?.ToString() ?? "null")</span><br />
+<strong>@nameof(NullableDoubleParam)</strong>: <span class="nullable-double-param">@(NullableDoubleParam?.ToString() ?? "null")</span><br />
+<strong>@nameof(NullableDecimalParam)</strong>: <span class="nullable-decimal-param">@(NullableDecimalParam?.ToString() ?? "null")</span><br />
+<strong>@nameof(ComplexTypeParam)</strong>: <span class="complex-type-param">@ComplexTypeParam</span><br />
+
+@code {
+    [Parameter] public string StringParam { get; set; }
+    [Parameter] public bool BoolParam { get; set; }
+    [Parameter] public int IntParam { get; set; }
+    [Parameter] public long LongParam { get; set; }
+    [Parameter] public float FloatParam { get; set; }
+    [Parameter] public double DoubleParam { get; set; }
+    [Parameter] public decimal DecimalParam { get; set; }
+    [Parameter] public bool? NullableBoolParam { get; set; }
+    [Parameter] public int? NullableIntParam { get; set; }
+    [Parameter] public long? NullableLongParam { get; set; }
+    [Parameter] public float? NullableFloatParam { get; set; }
+    [Parameter] public double? NullableDoubleParam { get; set; }
+    [Parameter] public decimal? NullableDecimalParam { get; set; }
+    [Parameter] public MyComplexType ComplexTypeParam { get; set; }
+    [Parameter] public EventCallback CallbackParam { get; set; }
+
+    private async Task InvokeCallbackAsync()
+    {
+        await CallbackParam.InvokeAsync();
+    }
+
+    public class MyComplexType
+    {
+        public string Property { get; set; }
+
+        public override string ToString()
+            => $@"{{ {nameof(Property)} = ""{Property}"" }}";
+    }
+}

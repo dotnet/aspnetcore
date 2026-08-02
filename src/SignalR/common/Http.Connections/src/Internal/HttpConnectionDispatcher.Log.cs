@@ -56,5 +56,21 @@ internal sealed partial class HttpConnectionDispatcher
 
         [LoggerMessage(16, LogLevel.Debug, "The client requested an invalid protocol version '{queryStringVersionValue}'", EventName = "InvalidNegotiateProtocolVersion")]
         public static partial void InvalidNegotiateProtocolVersion(ILogger logger, string queryStringVersionValue);
+
+        // EventId 17 (previously "UserNameChanged") is retired and must not be reused.
+
+        [LoggerMessage(18, LogLevel.Debug, "Exception from IStatefulReconnectFeature.NotifyOnReconnect callback.", EventName = "NotifyOnReconnectError")]
+        public static partial void NotifyOnReconnectError(ILogger logger, Exception ex);
+
+        [LoggerMessage(19, LogLevel.Debug, "Authentication refresh for connection '{ConnectionId}' was rejected by OnAuthenticationRefresh callback.", EventName = "AuthenticationRefreshRejectedByCallback")]
+        public static partial void AuthenticationRefreshRejectedByCallback(ILogger logger, string connectionId);
+
+        [LoggerMessage(20, LogLevel.Warning, "Rejecting the request because the name of the user changed from '{PreviousUserName}' to '{CurrentUserName}' for an existing connection.", EventName = "UserNameChangedRejected")]
+        private static partial void UserNameChangedRejectedInternal(ILogger logger, string previousUserName, string currentUserName);
+
+        public static void UserNameChangedRejected(ILogger logger, string? previousUserName, string? currentUserName)
+        {
+            UserNameChangedRejectedInternal(logger, previousUserName ?? "(null)", currentUserName ?? "(null)");
+        }
     }
 }

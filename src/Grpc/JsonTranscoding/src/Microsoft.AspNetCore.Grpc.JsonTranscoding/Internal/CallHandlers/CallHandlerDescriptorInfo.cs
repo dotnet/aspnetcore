@@ -3,8 +3,8 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Google.Protobuf.Reflection;
+using Grpc.Shared;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 
@@ -14,27 +14,33 @@ internal sealed class CallHandlerDescriptorInfo
         FieldDescriptor? responseBodyDescriptor,
         MessageDescriptor? bodyDescriptor,
         bool bodyDescriptorRepeated,
-        List<FieldDescriptor>? bodyFieldDescriptors,
-        Dictionary<string, List<FieldDescriptor>> routeParameterDescriptors)
+        FieldDescriptor? bodyFieldDescriptor,
+        Dictionary<string, RouteParameter> routeParameterDescriptors,
+        JsonTranscodingRouteAdapter routeAdapter)
     {
         ResponseBodyDescriptor = responseBodyDescriptor;
         BodyDescriptor = bodyDescriptor;
         BodyDescriptorRepeated = bodyDescriptorRepeated;
-        BodyFieldDescriptors = bodyFieldDescriptors;
+        BodyFieldDescriptor = bodyFieldDescriptor;
         RouteParameterDescriptors = routeParameterDescriptors;
-        if (BodyFieldDescriptors != null)
+        RouteAdapter = routeAdapter;
+        PathDescriptorsCache = new ConcurrentDictionary<string, List<FieldDescriptor>>();
+
+        var jsonPaths = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var routeParameter in routeParameterDescriptors.Values)
         {
-            BodyFieldDescriptorsPath = string.Join('.', BodyFieldDescriptors.Select(d => d.Name));
+            jsonPaths.Add(routeParameter.JsonPath);
         }
-        PathDescriptorsCache = new ConcurrentDictionary<string, List<FieldDescriptor>?>();
+        RouteParameterJsonPaths = jsonPaths;
     }
 
     public FieldDescriptor? ResponseBodyDescriptor { get; }
     public MessageDescriptor? BodyDescriptor { get; }
-    [MemberNotNullWhen(true, nameof(BodyFieldDescriptors), nameof(BodyFieldDescriptorsPath))]
+    [MemberNotNullWhen(true, nameof(BodyFieldDescriptor))]
     public bool BodyDescriptorRepeated { get; }
-    public List<FieldDescriptor>? BodyFieldDescriptors { get; }
-    public Dictionary<string, List<FieldDescriptor>> RouteParameterDescriptors { get; }
-    public ConcurrentDictionary<string, List<FieldDescriptor>?> PathDescriptorsCache { get; }
-    public string? BodyFieldDescriptorsPath { get; }
+    public FieldDescriptor? BodyFieldDescriptor { get; }
+    public Dictionary<string, RouteParameter> RouteParameterDescriptors { get; }
+    public JsonTranscodingRouteAdapter RouteAdapter { get; }
+    public HashSet<string> RouteParameterJsonPaths { get; }
+    public ConcurrentDictionary<string, List<FieldDescriptor>> PathDescriptorsCache { get; }
 }

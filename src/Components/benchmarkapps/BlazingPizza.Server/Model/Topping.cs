@@ -1,13 +1,14 @@
-﻿namespace BlazingPizza
+using System.Globalization;
+
+namespace BlazingPizza.Server.Model;
+
+public class Topping
 {
-    public class Topping
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public decimal Price { get; set; }
+    public decimal Price { get; set; }
 
-        public string GetFormattedPrice() => Price.ToString("0.00");
-    }
+    public string GetFormattedPrice() => Price.ToString("0.00", CultureInfo.CurrentCulture);
 }

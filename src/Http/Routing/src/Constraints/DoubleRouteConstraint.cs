@@ -2,33 +2,39 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constrains a route parameter to represent only 64-bit floating-point values.
 /// </summary>
-public class DoubleRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class DoubleRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
+#else
+internal class DoubleRouteConstraint : IRouteConstraint
+#endif
 {
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
         string routeKey,
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        string routeKey,
+        RouteValueDictionary values)
+#endif
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)
         {
@@ -53,8 +59,10 @@ public class DoubleRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatc
             out _);
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return CheckConstraintCore(literal);
     }
+#endif
 }

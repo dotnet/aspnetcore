@@ -174,6 +174,41 @@ public class MiddlewareTests
         Assert.Equal(expectedUrl, response.Headers.Location.OriginalString);
     }
 
+    [Theory]
+    [InlineData("(.*)", "//example.com", "anything")]
+    [InlineData("(.*)", "///example.com", "anything")]
+    [InlineData("(.*)", @"/\example.com", "anything")]
+    [InlineData("(.*)", "//////example.com", "anything")]
+    [InlineData("legacy/(.*)", "/$1", "legacy//example.com")]
+    [InlineData("legacy/(.*)", "/$1", "legacy///example.com")]
+    [InlineData("legacy/(.*)", "/$1", @"legacy/\example.com")]
+    [InlineData("(.*)", @"\example.com", "anything")]
+    [InlineData("(.*)", @"\\example.com", "anything")]
+    [InlineData("(.*)", @"\/\example.com", "anything")]
+    [InlineData("legacy/(.*)", "/$1", @"legacy\\example.com")]
+    public async Task CheckRedirect_CollapsesSchemeRelativeTarget(string pattern, string replacement, string requestUrl)
+    {
+        var options = new RewriteOptions().AddRedirect(pattern, replacement, statusCode: StatusCodes.Status302Found);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var response = await server.CreateClient().GetAsync(requestUrl);
+
+        Assert.Equal("/example.com", response.Headers.Location.OriginalString);
+    }
+
     [Fact]
     public async Task RewriteRulesCanComeFromConfigureOptions()
     {
@@ -327,6 +362,36 @@ public class MiddlewareTests
         var response = await server.CreateClient().GetAsync(new Uri("http://" + hostPathAndQuery));
 
         Assert.Equal("https://" + expectedHostPathAndQuery, response.Headers.Location.OriginalString);
+    }
+
+    [Theory]
+    [InlineData("http://example.com/test", "http://www.example.com/")]
+    [InlineData("http://example.com/test", "https://www.example.com/")]
+    [InlineData("https://example.com/test", "http://www.example.com/")]
+    [InlineData("https://example.com/test", "https://www.example.com/")]
+    public async Task CheckRedirectUsesConfiguredScheme(string hostSchemePathAndQuery, string redirectReplacement)
+    {
+        var options = new RewriteOptions().AddRedirect("test", redirectReplacement);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        server.BaseAddress = new Uri("http://example.com");
+        var response = await server.CreateClient().GetAsync(new Uri(hostSchemePathAndQuery));
+
+        // Regardless of whether we GET with http or https, the redirect should honor
+        // the scheme specified in the configuration.
+        Assert.Equal(redirectReplacement, response.Headers.Location.OriginalString);
     }
 
     [Fact]
@@ -638,7 +703,7 @@ public class MiddlewareTests
 
         var response = await server.CreateClient().GetStringAsync("foo");
 
-        Assert.Equal("/foo HTTP: GET from /foos", response);
+        Assert.Equal("HTTP: GET /foo from /foos", response);
     }
 
     [Fact]

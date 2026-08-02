@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -323,6 +324,13 @@ public class MvcCoreServiceCollectionExtensionsTest
                             typeof(DynamicControllerEndpointMatcherPolicy),
                         }
                     },
+                    {
+                        typeof(IProblemDetailsWriter),
+                        new Type[]
+                        {
+                            typeof(DefaultApiProblemDetailsWriter),
+                        }
+                    },
                 };
         }
     }
@@ -354,15 +362,11 @@ public class MvcCoreServiceCollectionExtensionsTest
 
         if (matches.Length == 0)
         {
-            Assert.True(
-                false,
-                $"Could not find an instance of {implementationType} registered as {serviceType}");
+            Assert.Fail($"Could not find an instance of {implementationType} registered as {serviceType}");
         }
         else if (matches.Length > 1)
         {
-            Assert.True(
-                false,
-                $"Found multiple instances of {implementationType} registered as {serviceType}");
+            Assert.Fail($"Found multiple instances of {implementationType} registered as {serviceType}");
         }
     }
 }

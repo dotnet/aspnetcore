@@ -18,10 +18,7 @@ public class TagHelperInitializer<TTagHelper> : ITagHelperInitializer<TTagHelper
     /// <param name="action">The initialization delegate.</param>
     public TagHelperInitializer(Action<TTagHelper, ViewContext> action)
     {
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         _initializeDelegate = action;
     }
@@ -34,10 +31,7 @@ public class TagHelperInitializer<TTagHelper> : ITagHelperInitializer<TTagHelper
             throw new ArgumentNullException(nameof(helper));
         }
 
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         _initializeDelegate(helper, context);
     }

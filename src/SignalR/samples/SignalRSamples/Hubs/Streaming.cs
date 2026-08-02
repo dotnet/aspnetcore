@@ -14,7 +14,7 @@ public class Streaming : Hub
         for (var i = 0; i < count; i++)
         {
             yield return i;
-            await Task.Delay((int)delay);
+            await Task.Delay(TimeSpan.FromMilliseconds(delay));
         }
     }
 
@@ -27,7 +27,7 @@ public class Streaming : Hub
         return observable.AsChannelReader(Context.ConnectionAborted);
     }
 
-    public ChannelReader<int> ChannelCounter(int count, int delay)
+    public ChannelReader<int> ChannelCounter(int count, double delay)
     {
         var channel = Channel.CreateUnbounded<int>();
 
@@ -36,7 +36,7 @@ public class Streaming : Hub
             for (var i = 0; i < count; i++)
             {
                 await channel.Writer.WriteAsync(i);
-                await Task.Delay(delay);
+                await Task.Delay(TimeSpan.FromMilliseconds(delay));
             }
 
             channel.Writer.TryComplete();

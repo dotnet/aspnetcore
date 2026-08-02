@@ -54,14 +54,11 @@ internal sealed class ResponseCacheFilterExecutor
 
     public void Execute(FilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        if (!NoStore)
+        if (!(NoStore || _cacheProfile.Location == ResponseCacheLocation.None || _cacheLocation == ResponseCacheLocation.None))
         {
-            // Duration MUST be set (either in the cache profile or in this filter) unless NoStore is true.
+            // Duration MUST be set (either in the cache profile or in this filter) unless NoStore is true or Location is ResponseCacheLocation.None.
             if (_cacheProfile.Duration == null && _cacheDuration == null)
             {
                 throw new InvalidOperationException(
@@ -106,24 +103,24 @@ internal sealed class ResponseCacheFilterExecutor
         else
         {
             string? cacheControlValue;
-            switch (Location)
+
+            if (Location == ResponseCacheLocation.None && _cacheProfile.Duration == null && _cacheDuration == null)
             {
-                case ResponseCacheLocation.Any:
-                    cacheControlValue = "public,";
-                    break;
-                case ResponseCacheLocation.Client:
-                    cacheControlValue = "private,";
-                    break;
-                case ResponseCacheLocation.None:
-                    cacheControlValue = "no-cache,";
-                    headers.Pragma = "no-cache";
-                    break;
-                default:
-                    cacheControlValue = null;
-                    break;
+                cacheControlValue = "no-cache";
+                headers.Pragma = "no-cache";
+            }
+            else
+            {
+                cacheControlValue = Location switch
+                {
+                    ResponseCacheLocation.Any => "public",
+                    ResponseCacheLocation.Client => "private",
+                    ResponseCacheLocation.None => "no-cache",
+                    _ => null
+                };
+                cacheControlValue = $"{cacheControlValue},max-age={Duration}";
             }
 
-            cacheControlValue = $"{cacheControlValue}max-age={Duration}";
             headers.CacheControl = cacheControlValue;
         }
     }

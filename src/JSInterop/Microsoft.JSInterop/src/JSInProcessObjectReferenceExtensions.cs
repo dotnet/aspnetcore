@@ -20,10 +20,7 @@ public static class JSInProcessObjectReferenceExtensions
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The method returns void, so nothing is deserialized.")]
     public static void InvokeVoid(this IJSInProcessObjectReference jsObjectReference, string identifier, params object?[]? args)
     {
-        if (jsObjectReference == null)
-        {
-            throw new ArgumentNullException(nameof(jsObjectReference));
-        }
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         jsObjectReference.Invoke<IJSVoidResult>(identifier, args);
     }

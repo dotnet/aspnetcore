@@ -5,7 +5,7 @@ using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
@@ -95,7 +95,7 @@ public class DirectoryBrowserMiddlewareTests
     }
 
     [Fact]
-    public async Task Endpoint_PassesThrough()
+    public async Task Endpoint_With_RequestDelegate_PassesThrough()
     {
         using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
         {
@@ -132,6 +132,45 @@ public class DirectoryBrowserMiddlewareTests
             var response = await server.CreateRequest("/").GetAsync();
             Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
             Assert.Equal("Hi from endpoint.", await response.Content.ReadAsStringAsync());
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_With_Null_RequestDelegate_Does_Not_PassThrough()
+    {
+        using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+        {
+            using var host = await StaticFilesTestServer.Create(
+                app =>
+                {
+                    app.UseRouting();
+
+                    app.Use(next => context =>
+                    {
+                        // Assign an endpoint with a null RequestDelegate, the directory browser should still run
+                        context.SetEndpoint(new Endpoint(requestDelegate: null,
+                        new EndpointMetadataCollection(),
+                        "test"));
+
+                        return next(context);
+                    });
+
+                    app.UseDirectoryBrowser(new DirectoryBrowserOptions
+                    {
+                        RequestPath = new PathString(""),
+                        FileProvider = fileProvider
+                    });
+
+                    app.UseEndpoints(endpoints => { });
+                },
+                services => { services.AddDirectoryBrowser(); services.AddRouting(); });
+            using var server = host.GetTestServer();
+
+            var response = await server.CreateRequest("/").GetAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            Assert.True(response.Content.Headers.ContentLength > 0);
+            Assert.Equal(response.Content.Headers.ContentLength, (await response.Content.ReadAsByteArrayAsync()).Length);
         }
     }
 

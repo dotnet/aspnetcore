@@ -19,10 +19,7 @@ internal class BarebonesMatcher : Matcher
 
     public override Task MatchAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var path = httpContext.Request.Path.Value;
         for (var i = 0; i < Matchers.Length; i++)

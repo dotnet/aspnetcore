@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
@@ -247,6 +241,33 @@ public class MessagePackHubProtocolTests : MessagePackHubProtocolTestBase
         {
             MemoryBufferWriter.Return(writer);
         }
+    }
+
+    [Fact]
+    public void UnexpectedClientResultGivesEmptyCompletionMessage()
+    {
+        var binder = new TestBinder();
+        var input = Frame(Convert.FromBase64String("lQOAo3h5egPA"));
+        var data = new ReadOnlySequence<byte>(input);
+        Assert.True(HubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.Equal("xyz", completion.InvocationId);
+    }
+
+    [Fact]
+    public void WrongTypeForClientResultGivesErrorCompletionMessage()
+    {
+        var binder = new TestBinder(paramTypes: null, returnType: typeof(int));
+        var input = Frame(Convert.FromBase64String("lQOAo3h5egOmc3RyaW5n"));
+        var data = new ReadOnlySequence<byte>(input);
+        Assert.True(HubProtocol.TryParseMessage(ref data, binder, out var hubMessage));
+
+        var completion = Assert.IsType<CompletionMessage>(hubMessage);
+        Assert.Null(completion.Result);
+        Assert.StartsWith("Error trying to deserialize result to Int32.", completion.Error);
+        Assert.Equal("xyz", completion.InvocationId);
     }
 
     public class ClientResultTestData

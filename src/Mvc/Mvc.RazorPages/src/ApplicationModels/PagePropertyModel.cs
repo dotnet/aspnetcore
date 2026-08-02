@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// Represents a property in a <see cref="PageApplicationModel"/>.
 /// </summary>
-[DebuggerDisplay("PagePropertyModel: Name={PropertyName}")]
+[DebuggerDisplay("Type = {GetType().Name}, Name = {PropertyName}")]
 public class PagePropertyModel : ParameterModelBase, ICommonModel
 {
     /// <summary>
@@ -33,10 +33,7 @@ public class PagePropertyModel : ParameterModelBase, ICommonModel
     public PagePropertyModel(PagePropertyModel other)
         : base(other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Page = other.Page;
         BindingInfo = other.BindingInfo == null ? null : new BindingInfo(other.BindingInfo);

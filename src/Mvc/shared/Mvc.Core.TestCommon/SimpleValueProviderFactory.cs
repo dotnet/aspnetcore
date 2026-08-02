@@ -14,10 +14,7 @@ public class SimpleValueProviderFactory : IValueProviderFactory
 
     public SimpleValueProviderFactory(IValueProvider valueProvider)
     {
-        if (valueProvider == null)
-        {
-            throw new ArgumentNullException(nameof(valueProvider));
-        }
+        ArgumentNullException.ThrowIfNull(valueProvider);
 
         _valueProvider = valueProvider;
     }

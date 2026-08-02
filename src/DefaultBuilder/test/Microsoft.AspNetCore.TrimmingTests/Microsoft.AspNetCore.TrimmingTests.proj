@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault;System.Diagnostics.Debugger.IsSupported</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="UseHttpsDoesDependOnX509Test.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault;System.Diagnostics.Debugger.IsSupported</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+  </ItemGroup>
+
+</Project>

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Google.Api;
 using Grpc.Core;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
@@ -40,10 +41,7 @@ internal sealed class HttpContextStreamWriter<TResponse> : IServerStreamWriter<T
 
     private async Task WriteAsyncCore(TResponse message, CancellationToken cancellationToken)
     {
-        if (message == null)
-        {
-            throw new ArgumentNullException(nameof(message));
-        }
+        ArgumentNullException.ThrowIfNull(message);
 
         // Register cancellation token early to ensure request is canceled if cancellation is requested.
         CancellationTokenRegistration? registration = null;
@@ -85,7 +83,17 @@ internal sealed class HttpContextStreamWriter<TResponse> : IServerStreamWriter<T
 
     private async Task WriteMessageAndDelimiter(TResponse message, CancellationToken cancellationToken)
     {
-        await JsonRequestHelpers.SendMessage(_context, _serializerOptions, message, cancellationToken);
+        if (message is HttpBody httpBody)
+        {
+            _context.EnsureResponseHeaders(httpBody.ContentType);
+            await _context.HttpContext.Response.Body.WriteAsync(httpBody.Data.Memory, cancellationToken);
+        }
+        else
+        {
+            _context.EnsureResponseHeaders();
+            await JsonRequestHelpers.SendMessage(_context, _serializerOptions, message, cancellationToken);
+        }
+
         await _context.HttpContext.Response.Body.WriteAsync(GrpcProtocolConstants.StreamingDelimiter, cancellationToken);
     }
 

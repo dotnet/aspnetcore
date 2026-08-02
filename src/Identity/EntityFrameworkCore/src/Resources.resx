@@ -133,8 +133,4 @@
     <value>Role {0} does not exist.</value>
     <comment>error when a role does not exist</comment>
   </data>
-  <data name="ValueCannotBeNullOrEmpty" xml:space="preserve">
-    <value>Value cannot be null or empty.</value>
-    <comment>error when something cannot be null or empty</comment>
-  </data>
 </root>

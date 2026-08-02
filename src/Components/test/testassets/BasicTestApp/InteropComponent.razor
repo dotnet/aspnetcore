@@ -51,6 +51,9 @@
     <h2>@nameof(JSObjectReferenceInvokeNonFunctionException)</h2>
     <p id="@nameof(JSObjectReferenceInvokeNonFunctionException)">@JSObjectReferenceInvokeNonFunctionException?.Message</p>
 </div>
+
+<p @ref="element">Element reference.</p>
+
 @if (DoneWithInterop)
 {
     <p id="done-with-interop">Done with interop.</p>
@@ -69,6 +72,8 @@
     public IDictionary<string, object> ReceiveDotNetObjectByRefAsyncResult { get; set; } = new Dictionary<string, object>();
 
     public bool DoneWithInterop { get; set; }
+
+    public ElementReference element;
 
     public async Task InvokeInteropAsync()
     {
@@ -138,17 +143,43 @@
             ReturnValues["returnPrimitive"] = ((IJSInProcessRuntime)JSRuntime).Invoke<int>("returnPrimitive").ToString();
             ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
         }
-        
+
         try
         {
-            // Triger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
-            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown. 
+            // Trigger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown.
             await JSRuntime.InvokeVoidAsync("eval", "window");
             ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = "Success";
         }
         catch (Exception ex)
         {
             ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            // Trigger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeAsync should serialize return values, and thus there should be an exception thrown.
+            var circularStructure = await JSRuntime.InvokeAsync<object>("eval", "window");
+            ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = circularStructure is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var elementReference = await JSRuntime.InvokeAsync<ElementReference>("returnElementReference", element);
+            ReturnValues["elementReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["elementReference"] = $"Failure: {ex.Message}";
         }
 
         var jsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnJSObjectReference");
@@ -159,7 +190,7 @@
         try
         {
             // Fetch a non-serializable Window (https://developer.mozilla.org/en-US/docs/Web/API/Window)
-            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown. 
+            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown.
             await jsObjectReference.InvokeVoidAsync("getWindow");
             ReturnValues["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success";
         }
@@ -177,12 +208,22 @@
             JSObjectReferenceInvokeNonFunctionException = e;
         }
 
+        try
+        {
+            await jsObjectReference.DisposeAsync();
+            ReturnValues["disposeJSObjectReferenceAsync"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["disposeJSObjectReferenceAsync"] = $"Failure: {ex.Message}";
+        }
+
         var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/testmodule.js");
         ReturnValues["jsObjectReferenceModule"] = await module.InvokeAsync<string>("identity", "Returned from module!");
 
         if (shouldSupportSyncInterop)
         {
-            await InvokeInProcessJSInterop();
+            InvokeInProcessJSInterop();
         }
 
         var byteArray = new byte[] { 1, 5, 7, 15, 35, 200 };
@@ -225,7 +266,42 @@
 
         var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
         ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
-        
+
+        await GetValueAsyncTests();
+
+        if (shouldSupportSyncInterop)
+        {
+            GetValueSyncTests();
+        }
+
+        await SetValueAsyncTests();
+
+        if (shouldSupportSyncInterop)
+        {
+            SetValueTests();
+        }
+
+        await InvokeConstructorAsyncTests();
+
+        if (shouldSupportSyncInterop)
+        {
+            InvokeConstructorTests();
+        }
+
+        await FunctionReferenceAsyncTests();
+
+        if (shouldSupportSyncInterop)
+        {
+            FunctionReferenceTests();
+        }
+
+        await JSObjectReferenceAsyncTests();
+
+        if (shouldSupportSyncInterop)
+        {
+            JSObjectReferenceTests();
+        }
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
@@ -280,11 +356,11 @@
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
     }
 
-    public async Task InvokeInProcessJSInterop()
+    public void InvokeInProcessJSInterop()
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
-         try
+        try
         {
             // Fetch a non-serializable Window (https://developer.mozilla.org/en-US/docs/Web/API/Window)
             // InvokeVoid shouldn't serialize return values, and thus there shouldn't be any exception thrown.
@@ -294,6 +370,22 @@
         catch (Exception ex)
         {
             ReturnValues["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            // Trigger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // Invoke should serialize return values, and thus there should be an exception thrown.
+            var circularStructure = inProcRuntime.Invoke<object>("eval", "window");
+            ReturnValues["invokeThrowsSerializingCircularStructure"] = circularStructure is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeThrowsSerializingCircularStructure"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeThrowsSerializingCircularStructure"] = $"Failure: {ex.Message}";
         }
 
         var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
@@ -310,28 +402,312 @@
         {
             ReturnValues["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = $"Failure: {ex.Message}";
         }
+    }
 
-        // we should be able to downcast a IJSInProcessObjectReference as a IJSUnmarshalledObjectReference
-        var unmarshalledCast = (IJSUnmarshalledObjectReference)jsInProcObjectReference;
-        ReturnValues["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = unmarshalledCast.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
+    private async Task GetValueAsyncTests()
+    {
+        ReturnValues["getValueFromDataPropertyAsync"] = (await JSRuntime.GetValueAsync<int>("jsInteropTests.testObject.num")).ToString();
+        ReturnValues["getValueFromGetterAsync"] = (await JSRuntime.GetValueAsync<int>("jsInteropTests.testObject.getOnlyProperty")).ToString();
+
+        try
         {
-            Message = "Sent from .NET",
-            NumberField = 41,
-        }).ToString();
-
-
-        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JSRuntime;
-        var jsUnmarshalledReference = unmarshalledRuntime.InvokeUnmarshalled<IJSUnmarshalledObjectReference>("returnJSObjectReference");
-        ReturnValues["jsUnmarshalledObjectReference.unmarshalledFunction"] = jsUnmarshalledReference.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
+            var _ = await JSRuntime.GetValueAsync<int>("jsInteropTests.testObject.setOnlyProperty");
+        }
+        catch (JSException)
         {
-            Message = "Sent from .NET",
-            NumberField = 42,
-        }).ToString();
+            ReturnValues["getValueFromSetterAsync"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["getValueFromSetterAsync"] = $"Failure: {ex.Message}";
+        }
 
+        try
+        {
+            var _ = await JSRuntime.GetValueAsync<int>("jsInteropTests.testObject.undefinedProperty");
+        }
+        catch (JSException)
+        {
+            ReturnValues["getValueFromUndefinedPropertyAsync"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["getValueFromUndefinedPropertyAsync"] = $"Failure: {ex.Message}";
+        }
+    }
 
-        var dataReference = unmarshalledRuntime.InvokeUnmarshalled<IJSStreamReference>("jsToDotNetStreamReturnValue");
-        using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
-        await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueUnmarshalled", dataReferenceStream);
+    private void GetValueSyncTests()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        ReturnValues["getValueFromDataProperty"] = inProcRuntime.GetValue<int>("jsInteropTests.testObject.num").ToString();
+        ReturnValues["getValueFromGetter"] = inProcRuntime.GetValue<int>("jsInteropTests.testObject.getOnlyProperty").ToString();
+
+        try
+        {
+            var _ = inProcRuntime.GetValue<int>("jsInteropTests.testObject.setOnlyProperty");
+        }
+        catch (JSException)
+        {
+            ReturnValues["getValueFromSetter"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["getValueFromSetter"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var _ = inProcRuntime.GetValue<int>("jsInteropTests.testObject.undefinedProperty");
+        }
+        catch (JSException)
+        {
+            ReturnValues["getValueFromUndefinedProperty"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["getValueFromUndefinedProperty"] = $"Failure: {ex.Message}";
+        }
+    }
+
+    private async Task SetValueAsyncTests()
+    {
+        ReturnValues["getValueFromGetterAsync"] = (await JSRuntime.GetValueAsync<int>("jsInteropTests.testObject.getOnlyProperty")).ToString();
+
+        await JSRuntime.SetValueAsync("jsInteropTests.testObject.num", 30);
+        ReturnValues["setValueToDataPropertyAsync"] = (await JSRuntime.GetValueAsync<int>("jsInteropTests.testObject.num")).ToString();
+
+        await JSRuntime.SetValueAsync("jsInteropTests.testObject.setOnlyProperty", 40);
+        ReturnValues["setValueToSetterAsync"] = (await JSRuntime.GetValueAsync<int>("jsInteropTests.testObject.num")).ToString();
+
+        await JSRuntime.SetValueAsync("jsInteropTests.testObject.newProperty", 50);
+        ReturnValues["setValueToUndefinedPropertyAsync"] = (await JSRuntime.GetValueAsync<int>("jsInteropTests.testObject.newProperty")).ToString();
+
+        try
+        {
+            await JSRuntime.SetValueAsync("jsInteropTests.testObject.getOnlyProperty", 50);
+        }
+        catch (JSException)
+        {
+            ReturnValues["setValueToGetterAsync"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["setValueToGetterAsync"] = $"Failure: {ex.Message}";
+        }
+    }
+
+    private void SetValueTests()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        ReturnValues["getValueFromGetter"] = inProcRuntime.GetValue<int>("jsInteropTests.testObject.getOnlyProperty").ToString();
+
+        inProcRuntime.SetValue("jsInteropTests.testObject.num", 30);
+        ReturnValues["setValueToDataProperty"] = inProcRuntime.GetValue<int>("jsInteropTests.testObject.num").ToString();
+
+        inProcRuntime.SetValue("jsInteropTests.testObject.setOnlyProperty", 40);
+        ReturnValues["setValueToSetter"] = inProcRuntime.GetValue<int>("jsInteropTests.testObject.num").ToString();
+
+        inProcRuntime.SetValue("jsInteropTests.testObject.newProperty", 50);
+        ReturnValues["setValueToUndefinedProperty"] = inProcRuntime.GetValue<int>("jsInteropTests.testObject.newProperty").ToString();
+
+        try
+        {
+            inProcRuntime.SetValue("jsInteropTests.testObject.getOnlyProperty", 60);
+        }
+        catch (JSException)
+        {
+            ReturnValues["setValueToGetter"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["setValueToGetter"] = $"Failure: {ex.Message}";
+        }
+    }
+
+    private async Task InvokeConstructorAsyncTests()
+    {
+        var testClassRef = await JSRuntime.InvokeConstructorAsync("jsInteropTests.TestClass", "abraka");
+
+        ReturnValues["invokeConstructorWithClassConstructorAsync"] = testClassRef is IJSObjectReference ? "Success" : "Failure";
+        ReturnValues["invokeConstructorWithClassConstructorAsync.dataProperty"] = await testClassRef.GetValueAsync<string>("text");
+        ReturnValues["invokeConstructorWithClassConstructorAsync.function"] = (await testClassRef.InvokeAsync<int>("getTextLength")).ToString();
+
+        try
+        {
+            var nonConstructorRef = await JSRuntime.InvokeConstructorAsync("jsInteropTests.nonConstructorFunction");
+            ReturnValues["invokeConstructorWithNonConstructorAsync"] = nonConstructorRef is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeConstructorWithNonConstructorAsync"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeConstructorWithNonConstructorAsync"] = $"Failure: {ex.Message}";
+        }
+    }
+
+    private void InvokeConstructorTests()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        var testClassRef = inProcRuntime.InvokeConstructor("jsInteropTests.TestClass", "abraka");
+
+        ReturnValues["invokeConstructorWithClassConstructor"] = testClassRef is IJSInProcessObjectReference ? "Success" : "Failure";
+        ReturnValues["invokeConstructorWithClassConstructor.dataProperty"] = testClassRef.GetValue<string>("text");
+        ReturnValues["invokeConstructorWithClassConstructor.function"] = testClassRef.Invoke<int>("getTextLength").ToString();
+
+        try
+        {
+            var nonConstructorRef = inProcRuntime.InvokeConstructor("jsInteropTests.nonConstructorFunction");
+            ReturnValues["invokeConstructorWithNonConstructor"] = nonConstructorRef is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeConstructorWithNonConstructor"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeConstructorWithNonConstructor"] = $"Failure: {ex.Message}";
+        }
+    }
+
+    private async Task FunctionReferenceAsyncTests()
+    {
+        var funcRef = await JSRuntime.GetValueAsync<IJSObjectReference>("jsInteropTests.nonConstructorFunction");
+        var testClassRef = await JSRuntime.InvokeConstructorAsync("jsInteropTests.TestClass", "abraka");
+        await testClassRef.SetValueAsync("getTextLength", funcRef);
+        ReturnValues["changeFunctionViaObjectReferenceAsync"] = (await testClassRef.InvokeAsync<int>("getTextLength")).ToString();
+    }
+
+    private void FunctionReferenceTests()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        var funcRef = inProcRuntime.GetValue<IJSObjectReference>("jsInteropTests.nonConstructorFunction");
+        var testClassRef = inProcRuntime.InvokeConstructor("jsInteropTests.TestClass", "abraka");
+        testClassRef.SetValue("getTextLength", funcRef);
+        ReturnValues["changeFunctionViaObjectReference"] = testClassRef.Invoke<int>("getTextLength").ToString();
+    }
+
+    private async Task JSObjectReferenceAsyncTests()
+    {
+        try
+        {
+            var undefinedJsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("jsInteropTests.returnUndefined");
+            ReturnValues["invokeAsyncUndefinedJSObjectReference"] = undefinedJsObjectReference is null ? "Success" : $"Failure: not null (type: {undefinedJsObjectReference.GetType().FullName})";
+        }
+        catch (JSException ex)
+        {
+            ReturnValues["invokeAsyncUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var nullJsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("jsInteropTests.returnNull");
+            ReturnValues["invokeAsyncNullJSObjectReference"] = nullJsObjectReference is null ? "Success" : $"Failure: not null (type: {nullJsObjectReference.GetType().FullName})";
+        }
+        catch (JSException ex)
+        {
+            ReturnValues["invokeAsyncNullJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncNullJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var nullVariableJsObjectReference = await JSRuntime.GetValueAsync<IJSObjectReference>("jsInteropTests.testObject.nullProperty");
+            ReturnValues["invokeAsyncNullFromVariableJSObjectReference"] = nullVariableJsObjectReference is null ? "Success" : $"Failure: not null (type: {nullVariableJsObjectReference.GetType().FullName})";
+        }
+        catch (JSException ex)
+        {
+            ReturnValues["invokeAsyncNullFromVariableJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncNullFromVariableJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+        await JSRuntime.GetValueAsync<IJSObjectReference>("nonexistend");
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeAsyncNonExistentJSObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncNonExistentJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+    }
+
+    private void JSObjectReferenceTests()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+        
+        try
+        {
+            var undefinedJsObjectReference = inProcRuntime.Invoke<IJSObjectReference>("returnUndefined");
+            ReturnValues["invokeUndefinedJSObjectReference"] = undefinedJsObjectReference is null ? "Success" : $"Failure: not null (type: {undefinedJsObjectReference.GetType().FullName})";
+        }
+        catch (JSException ex)
+        {
+            ReturnValues["invokeUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var nullJsObjectReference = inProcRuntime.Invoke<IJSObjectReference>("returnNull");
+            ReturnValues["invokeNullJSObjectReference"] = nullJsObjectReference is null ? "Success" : $"Failure: not null (type: {nullJsObjectReference.GetType().FullName})";
+        }
+        catch (JSException ex)
+        {
+            ReturnValues["invokeNullJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeNullJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var nullVariableJsObjectReference = inProcRuntime.GetValue<IJSObjectReference>("jsInteropTests.testObject.nullProperty");
+            ReturnValues["invokeNullFromVariableJSObjectReference"] = nullVariableJsObjectReference is null ? "Success" : $"Failure: not null (type: {nullVariableJsObjectReference.GetType().FullName})";
+        }
+        catch (JSException ex)
+        {
+            ReturnValues["invokeNullFromVariableJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeNullFromVariableJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            inProcRuntime.GetValue<IJSObjectReference>("nonexistend");
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeNonExistentJSObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeNonExistentJSObjectReference"] = $"Failure: {ex.Message}";
+        }
     }
 
     public class PassDotNetObjectByRefArgs

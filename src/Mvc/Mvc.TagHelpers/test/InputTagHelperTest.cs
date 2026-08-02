@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers.Testing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
@@ -833,6 +833,75 @@ public class InputTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
+    [Theory]
+    [InlineData("SomeProperty", "SomeProperty", true)]
+    [InlineData("SomeProperty", "[0].SomeProperty", true)]
+    [InlineData("SomeProperty", "[0].SomeProperty", false)]
+    public void Process_GeneratesInvariantCultureMetadataInput_WhenValueUsesInvariantFormatting(string propertyName, string nameAttributeValue, bool usesInvariantFormatting)
+    {
+        // Arrange
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+        var model = false;
+        var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(bool), model);
+        var modelExpression = new ModelExpression(name: string.Empty, modelExplorer: modelExplorer);
+        var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator.Object, metadataProvider);
+        var tagHelper = new InputTagHelper(htmlGenerator.Object)
+        {
+            For = modelExpression,
+            InputTypeName = "text",
+            Name = propertyName,
+            ViewContext = viewContext,
+        };
+
+        var tagBuilder = new TagBuilder("input")
+        {
+            TagRenderMode = TagRenderMode.SelfClosing,
+            Attributes =
+            {
+                { "name", nameAttributeValue },
+            },
+        };
+
+        htmlGenerator
+            .Setup(mock => mock.GenerateTextBox(
+                tagHelper.ViewContext,
+                tagHelper.For.ModelExplorer,
+                tagHelper.For.Name,
+                modelExplorer.Model,
+                null,                   // format
+                It.IsAny<object>()))    // htmlAttributes
+            .Returns(tagBuilder)
+            .Callback(() => viewContext.FormContext.InvariantField(tagBuilder.Attributes["name"], usesInvariantFormatting))
+            .Verifiable();
+
+        var expectedPostElement = usesInvariantFormatting
+            ? $"<input name=\"__Invariant\" type=\"hidden\" value=\"{tagBuilder.Attributes["name"]}\" />"
+            : string.Empty;
+
+        var attributes = new TagHelperAttributeList
+            {
+                { "name", propertyName },
+                { "type", "text" },
+            };
+        var context = new TagHelperContext(attributes, new Dictionary<object, object>(), "test");
+        var output = new TagHelperOutput(
+            "input",
+            new TagHelperAttributeList(),
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(result: null))
+        {
+            TagMode = TagMode.SelfClosing,
+        };
+
+        // Act
+        tagHelper.Process(context, output);
+
+        // Assert
+        htmlGenerator.Verify();
+
+        Assert.Equal(expectedPostElement, output.PostElement.GetContent());
+    }
+
     [Fact]
     public async Task ProcessAsync_GenerateCheckBox_WithHiddenInputRenderModeNone()
     {
@@ -1248,6 +1317,69 @@ public class InputTagHelperTest
         Assert.Equal(expectedContent, output.Content.GetContent());
         Assert.Equal(expectedPostContent, output.PostContent.GetContent());
         Assert.Equal(expectedTagName, output.TagName);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_GenerateCheckBox_WithHiddenInputExpectedFormAttribute()
+    {
+        var propertyName = "-expression-";
+        var expectedTagName = "input";
+        var formName = "form-name";
+        var expectedEndOfFormContent = $"<input form=\"HtmlEncode[[{formName}]]\" name=\"HtmlEncode[[{propertyName}]]\" " +
+            "type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" />";
+        var inputTypeName = "checkbox";
+        var expectedAttributes = new TagHelperAttributeList
+            {
+                { "name",  propertyName },
+                { "type", inputTypeName },
+                { "form", formName },
+                { "value", "true" },
+            };
+
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+        var model = false;
+        var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(bool), model);
+        var modelExpression = new ModelExpression(name: string.Empty, modelExplorer: modelExplorer);
+        var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
+        viewContext.FormContext.CanRenderAtEndOfForm = true;
+        viewContext.CheckBoxHiddenInputRenderMode = CheckBoxHiddenInputRenderMode.EndOfForm;
+
+        var tagHelper = new InputTagHelper(htmlGenerator)
+        {
+            For = modelExpression,
+            InputTypeName = inputTypeName,
+            Name = propertyName,
+            FormName = formName,
+            ViewContext = viewContext,
+        };
+
+        var attributes = new TagHelperAttributeList
+            {
+                { "name", propertyName },
+                { "type", inputTypeName },
+                { "form", formName}
+            };
+
+        var context = new TagHelperContext(attributes, new Dictionary<object, object>(), "test");
+        var output = new TagHelperOutput(
+            expectedTagName,
+            new TagHelperAttributeList(),
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(result: null))
+        {
+            TagMode = TagMode.SelfClosing,
+        };
+
+        // Act
+        await tagHelper.ProcessAsync(context, output);
+
+        // Assert
+        Assert.Equal(expectedAttributes, output.Attributes);
+        Assert.False(output.IsContentModified);
+        Assert.Equal(expectedTagName, output.TagName);
+
+        Assert.Equal(expectedEndOfFormContent, string.Join("", viewContext.FormContext.EndOfFormContent.Select(html => HtmlContentUtilities.HtmlContentToString(html))));
+        Assert.True(string.IsNullOrEmpty(HtmlContentUtilities.HtmlContentToString(output.PostElement)));
     }
 
     [Theory]
@@ -1750,11 +1882,84 @@ public class InputTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
+    [Fact]
+    public async Task ProcessAsync_CallsGenerateTextBox_InputTypeDateOnly_RendersAsDate()
+    {
+        // Arrange
+        var expectedAttributes = new TagHelperAttributeList
+            {
+                { "type", "date" },                   // Calculated; not passed to HtmlGenerator.
+            };
+        var expectedTagName = "not-input";
+
+        var context = new TagHelperContext(
+            tagName: "input",
+            allAttributes: new TagHelperAttributeList()
+            {
+                    {"type", "date" }
+            },
+            items: new Dictionary<object, object>(),
+            uniqueId: "test");
+
+        var output = new TagHelperOutput(
+            expectedTagName,
+            attributes: new TagHelperAttributeList(),
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                new DefaultTagHelperContent()))
+        {
+            TagMode = TagMode.SelfClosing,
+        };
+
+        var htmlAttributes = new Dictionary<string, object>
+            {
+                { "type", "date" }
+            };
+
+        var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
+        var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+        var tagHelper = GetTagHelper(
+            htmlGenerator.Object,
+            model: null,
+            propertyName: "DateOnly",
+            metadataProvider: metadataProvider);
+        tagHelper.ViewContext.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
+        tagHelper.InputTypeName = "date";
+        var tagBuilder = new TagBuilder("input");
+        htmlGenerator
+            .Setup(mock => mock.GenerateTextBox(
+                tagHelper.ViewContext,
+                tagHelper.For.ModelExplorer,
+                tagHelper.For.Name,
+                null,                                   // value
+                @"{0:yyyy-MM-dd}",
+                htmlAttributes))                    // htmlAttributes
+            .Returns(tagBuilder)
+            .Verifiable();
+
+        // Act
+        await tagHelper.ProcessAsync(context, output);
+
+        // Assert
+        htmlGenerator.Verify();
+
+        Assert.Equal(TagMode.SelfClosing, output.TagMode);
+        Assert.Equal(expectedAttributes, output.Attributes);
+        Assert.Empty(output.PreContent.GetContent());
+        Assert.Equal(string.Empty, output.Content.GetContent());
+        Assert.Empty(output.PostContent.GetContent());
+        Assert.Equal(expectedTagName, output.TagName);
+    }
+
     [Theory]
     [InlineData("Date", Html5DateRenderingMode.CurrentCulture, "{0:d}", "date")]    // Format from [DataType].
     [InlineData("Date", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
     [InlineData("DateTime", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
     [InlineData("DateTime", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fff}", "datetime-local")]
+    [InlineData("DateOnlyDate", Html5DateRenderingMode.CurrentCulture, "{0:d}", "date")]    // Format from [DataType].
+    [InlineData("DateOnlyDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
+    [InlineData("DateOnly", Html5DateRenderingMode.CurrentCulture, null, "text")]    // Format from [DataType].
+    [InlineData("DateOnly", Html5DateRenderingMode.Rfc3339, null, "text")]
     [InlineData("DateTimeOffset", Html5DateRenderingMode.CurrentCulture, null, "text")]
     [InlineData("DateTimeOffset", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fffK}", "text")]
     [InlineData("DateTimeLocal", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
@@ -1767,6 +1972,8 @@ public class InputTagHelperTest
     [InlineData("Week", Html5DateRenderingMode.Rfc3339, null, "week")]
     [InlineData("NullableDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
     [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fff}", "datetime-local")]
+    [InlineData("NullableDateOnlyDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
+    [InlineData("NullableDateOnly", Html5DateRenderingMode.Rfc3339, null, "text")]
     [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fffK}", "text")]
     public async Task ProcessAsync_CallsGenerateTextBox_AddsExpectedAttributesForRfc3339(
         string propertyName,
@@ -1904,6 +2111,63 @@ public class InputTagHelperTest
         Assert.Equal(expectedType, output.TagName);
     }
 
+    // Html5DateRenderingMode.Rfc3339 is enabled by default.
+    [Theory]
+    [InlineData("DateOnlyDate", "2000-01-02", "date")]
+    [InlineData("DateOnly", "02/01/2000", "text")]
+    [ReplaceCulture]
+    public async Task ProcessAsync_CallsGenerateTextBox_ProducesExpectedValue_ForDateOnly(
+        string propertyName,
+        string expectedValue,
+        string expectedType)
+    {
+        // Arrange
+        var expectedAttributes = new TagHelperAttributeList
+            {
+                { "type", expectedType },
+                { "id", propertyName },
+                { "name", propertyName },
+                { "value", expectedValue },
+            };
+
+        var context = new TagHelperContext(
+            tagName: "input",
+            allAttributes: new TagHelperAttributeList(
+                Enumerable.Empty<TagHelperAttribute>()),
+            items: new Dictionary<object, object>(),
+            uniqueId: "test");
+
+        var output = new TagHelperOutput(
+            expectedType,
+            attributes: new TagHelperAttributeList(),
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                new DefaultTagHelperContent()))
+        {
+            TagMode = TagMode.SelfClosing,
+        };
+
+        var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+        var model = new DateOnly(
+            year: 2000,
+            month: 1,
+            day: 2);
+
+        var htmlGenerator = HtmlGeneratorUtilities.GetHtmlGenerator(metadataProvider);
+        var tagHelper = GetTagHelper(
+            htmlGenerator,
+            model: model,
+            propertyName: propertyName,
+            metadataProvider: metadataProvider);
+        tagHelper.ViewContext.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
+
+        // Act
+        await tagHelper.ProcessAsync(context, output);
+
+        // Assert
+        Assert.Equal(expectedAttributes, output.Attributes);
+        Assert.Equal(expectedType, output.TagName);
+    }
+
     // Html5DateRenderingMode.Rfc3339 can be disabled.
     [Theory]
     [InlineData("Date", null, "02/01/2000", "date")]
@@ -1961,6 +2225,67 @@ public class InputTagHelperTest
             second: 5,
             millisecond: 60,
             kind: DateTimeKind.Utc);
+
+        var htmlGenerator = HtmlGeneratorUtilities.GetHtmlGenerator(metadataProvider);
+        var tagHelper = GetTagHelper(
+            htmlGenerator,
+            model: model,
+            propertyName: propertyName,
+            metadataProvider: metadataProvider);
+        tagHelper.ViewContext.Html5DateRenderingMode = Html5DateRenderingMode.CurrentCulture;
+        tagHelper.Format = editFormatString;
+
+        // Act
+        await tagHelper.ProcessAsync(context, output);
+
+        // Assert
+        Assert.Equal(expectedAttributes, output.Attributes);
+        Assert.Equal(expectedType, output.TagName);
+    }
+
+    // Html5DateRenderingMode.Rfc3339 can be disabled.
+    [Theory]
+    [InlineData("DateOnlyDate", null, "02/01/2000", "date")]
+    [InlineData("DateOnlyDate", "{0:d}", "02/01/2000", "date")]
+    [InlineData("DateOnly", null, "02/01/2000", "text")]
+    [ReplaceCulture]
+    public async Task ProcessAsync_CallsGenerateTextBox_ProducesExpectedValue_ForDateOnlyNotRfc3339(
+        string propertyName,
+        string editFormatString,
+        string expectedValue,
+        string expectedType)
+    {
+        // Arrange
+        var expectedAttributes = new TagHelperAttributeList
+            {
+                { "type", expectedType },
+                { "id", propertyName },
+                { "name", propertyName },
+                { "value", expectedValue },
+            };
+
+        var context = new TagHelperContext(
+            tagName: "input",
+            allAttributes: new TagHelperAttributeList(
+                Enumerable.Empty<TagHelperAttribute>()),
+            items: new Dictionary<object, object>(),
+            uniqueId: "test");
+
+        var output = new TagHelperOutput(
+            expectedType,
+            attributes: new TagHelperAttributeList(),
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                new DefaultTagHelperContent()))
+        {
+            TagMode = TagMode.SelfClosing,
+        };
+
+        var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
+        var model = new DateOnly(
+            year: 2000,
+            month: 1,
+            day: 2);
 
         var htmlGenerator = HtmlGeneratorUtilities.GetHtmlGenerator(metadataProvider);
         var tagHelper = GetTagHelper(
@@ -2115,12 +2440,22 @@ public class InputTagHelperTest
 
         public DateTime DateTime { get; set; }
 
+        [DataType(DataType.Date)]
+        public DateOnly DateOnlyDate { get; set; }
+
+        public DateOnly DateOnly { get; set; }
+
         public DateTimeOffset DateTimeOffset { get; set; }
 
         [DataType(DataType.Date)]
         public DateTime? NullableDate { get; set; }
 
         public DateTime? NullableDateTime { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateOnly? NullableDateOnlyDate { get; set; }
+
+        public DateOnly? NullableDateOnly { get; set; }
 
         public DateTimeOffset? NullableDateTimeOffset { get; set; }
 

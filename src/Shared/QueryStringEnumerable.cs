@@ -3,10 +3,13 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if NET
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+#endif
 
 #if QueryStringEnumerable_In_WebUtilities
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -90,11 +93,24 @@ internal
 
         private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
         {
-            // If the value is short, it's cheap to check up front if it really needs decoding. If it doesn't,
-            // then we can save some allocations.
-            return chars.Length < 16 && chars.Span.IndexOfAny('%', '+') < 0
-                ? chars
-                : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(chars.Span)).AsMemory();
+            ReadOnlySpan<char> source = chars.Span;
+#if NET
+            if (!source.ContainsAny('%', '+'))
+            {
+                return chars;
+            }
+            var buffer = new char[source.Length];
+            source.Replace(buffer, '+', ' ');
+            var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
+            Debug.Assert(success);
+            return buffer.AsMemory(0, unescapedLength);
+#else
+            if (source.IndexOf('%') < 0 && source.IndexOf('+') < 0)
+            {
+                return chars;
+            }
+            return Uri.UnescapeDataString(chars.ToString().Replace('+', ' ')).AsMemory();
+#endif
         }
     }
 
@@ -158,59 +174,6 @@ internal
 
             Current = default;
             return false;
-        }
-    }
-
-    private static class SpanHelper
-    {
-        private static readonly SpanAction<char, IntPtr> s_replacePlusWithSpace = ReplacePlusWithSpaceCore;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe string ReplacePlusWithSpace(ReadOnlySpan<char> span)
-        {
-            fixed (char* ptr = &MemoryMarshal.GetReference(span))
-            {
-                return string.Create(span.Length, (IntPtr)ptr, s_replacePlusWithSpace);
-            }
-        }
-
-        private static unsafe void ReplacePlusWithSpaceCore(Span<char> buffer, IntPtr state)
-        {
-            fixed (char* ptr = &MemoryMarshal.GetReference(buffer))
-            {
-                var input = (ushort*)state.ToPointer();
-                var output = (ushort*)ptr;
-
-                var i = (nint)0;
-                var n = (nint)(uint)buffer.Length;
-
-                if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
-                {
-                    var vecPlus = Vector128.Create((ushort)'+');
-                    var vecSpace = Vector128.Create((ushort)' ');
-
-                    do
-                    {
-                        var vec = Sse2.LoadVector128(input + i);
-                        var mask = Sse2.CompareEqual(vec, vecPlus);
-                        var res = Sse41.BlendVariable(vec, vecSpace, mask);
-                        Sse2.Store(output + i, res);
-                        i += Vector128<ushort>.Count;
-                    } while (i <= n - Vector128<ushort>.Count);
-                }
-
-                for (; i < n; ++i)
-                {
-                    if (input[i] != '+')
-                    {
-                        output[i] = input[i];
-                    }
-                    else
-                    {
-                        output[i] = ' ';
-                    }
-                }
-            }
         }
     }
 }

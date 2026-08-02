@@ -23,18 +23,18 @@ function getChunkFromArrayBufferView(data: ArrayBufferView, position: number, ne
   return nextChunkData;
 }
 
-const transmittingDotNetToJSStreams = new Map<number, ReadableStreamController<any>>();
-export function receiveDotNetDataStream(streamId: number, data: Uint8Array, bytesRead: number, errorMessage: string): void {
+const transmittingDotNetToJSStreams = new Map<number, ReadableStreamDefaultController<Uint8Array>>();
+export function receiveDotNetDataStream(dispatcher: DotNet.ICallDispatcher, streamId: number, data: Uint8Array, bytesRead: number, errorMessage: string): void {
   let streamController = transmittingDotNetToJSStreams.get(streamId);
   if (!streamController) {
-    const readableStream = new ReadableStream({
+    const readableStream = new ReadableStream<Uint8Array>({
       start(controller) {
         transmittingDotNetToJSStreams.set(streamId, controller);
         streamController = controller;
       },
     });
 
-    DotNet.jsCallDispatcher.supplyDotNetStream(streamId, readableStream);
+    dispatcher.supplyDotNetStream(streamId, readableStream);
   }
 
   if (errorMessage) {
@@ -44,6 +44,7 @@ export function receiveDotNetDataStream(streamId: number, data: Uint8Array, byte
     streamController!.close();
     transmittingDotNetToJSStreams.delete(streamId);
   } else {
-    streamController!.enqueue(data.length === bytesRead ? data : data.subarray(0, bytesRead));
+    const chunk = data.length === bytesRead ? data : new Uint8Array(data.buffer, data.byteOffset, bytesRead);
+    streamController!.enqueue(chunk);
   }
 }

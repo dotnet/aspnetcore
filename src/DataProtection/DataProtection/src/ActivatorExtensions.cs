@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection;
@@ -18,14 +19,10 @@ internal static class ActivatorExtensions
     /// Creates an instance of <paramref name="implementationTypeName"/> and ensures
     /// that it is assignable to <typeparamref name="T"/>.
     /// </summary>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
-    public static T CreateInstance<T>(this IActivator activator, string implementationTypeName)
+    public static T CreateInstance<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IActivator activator, string implementationTypeName)
         where T : class
     {
-        if (implementationTypeName == null)
-        {
-            throw new ArgumentNullException(nameof(implementationTypeName));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(implementationTypeName);
 
         return activator.CreateInstance(typeof(T), implementationTypeName) as T
             ?? CryptoUtil.Fail<T>("CreateInstance returned null.");

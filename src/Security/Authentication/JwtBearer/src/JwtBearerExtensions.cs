@@ -25,6 +25,18 @@ public static class JwtBearerExtensions
         => builder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, _ => { });
 
     /// <summary>
+    /// Enables JWT-bearer authentication using a pre-defined scheme.
+    /// <para>
+    /// JWT bearer authentication performs authentication by extracting and validating a JWT token from the <c>Authorization</c> request header.
+    /// </para>
+    /// </summary>
+    /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+    /// <param name="authenticationScheme">The authentication scheme.</param>
+    /// <returns>A reference to <paramref name="builder"/> after the operation has completed.</returns>
+    public static AuthenticationBuilder AddJwtBearer(this AuthenticationBuilder builder, string authenticationScheme)
+        => builder.AddJwtBearer(authenticationScheme, _ => { });
+
+    /// <summary>
     /// Enables JWT-bearer authentication using the default scheme <see cref="JwtBearerDefaults.AuthenticationScheme"/>.
     /// <para>
     /// JWT bearer authentication performs authentication by extracting and validating a JWT token from the <c>Authorization</c> request header.
@@ -62,6 +74,7 @@ public static class JwtBearerExtensions
     /// <returns>A reference to <paramref name="builder"/> after the operation has completed.</returns>
     public static AuthenticationBuilder AddJwtBearer(this AuthenticationBuilder builder, string authenticationScheme, string? displayName, Action<JwtBearerOptions> configureOptions)
     {
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JwtBearerOptions>, JwtBearerConfigureOptions>());
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, JwtBearerPostConfigureOptions>());
         return builder.AddScheme<JwtBearerOptions, JwtBearerHandler>(authenticationScheme, displayName, configureOptions);
     }

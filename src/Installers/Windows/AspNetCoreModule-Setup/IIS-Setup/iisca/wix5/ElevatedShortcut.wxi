@@ -1,0 +1,23 @@
+﻿<!--
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the MIT license.
+-->
+
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment Id="Fragment.IIS.OOB.Common.ElevatedShortcut">
+    <CustomAction Id="ScheduleMakeShortcutElevated" DllEntry="ScheduleMakeShortcutElevatedCA" Execute="immediate" Return="check" BinaryRef="IISCustomActionDll" />
+    
+    <!-- Deferred custom actions scheduled by the immediate actions above -->
+    <CustomAction Id="ExecuteMakeShortcutElevated" DllEntry="ExecuteMakeShortcutElevatedCA" Execute="deferred" Return="check" Impersonate="no" BinaryRef="IISCustomActionDll" />
+    
+    <CustomTable Id="IISElevatedShortcut">
+      <!--<Column Id='Name' Type='string' PrimaryKey='yes' />-->
+      <Column Id="Shortcut_" Type="string" PrimaryKey="yes" KeyTable="Shortcut" KeyColumn="1" Category="identifier" Width="72" />
+    </CustomTable>
+    
+    <InstallExecuteSequence>
+      <Custom Action="ScheduleMakeShortcutElevated" After="CreateShortcuts" Condition="NOT SKIPMAKESHORTCUTELEVATED" />
+    </InstallExecuteSequence>
+  </Fragment>
+</Include>  
+

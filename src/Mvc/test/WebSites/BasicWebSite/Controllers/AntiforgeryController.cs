@@ -44,7 +44,7 @@ public class AntiforgeryController : Controller
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    [TypeFilter(typeof(RedirectAntiforgeryValidationFailedResultFilter))]
+    [TypeFilter<RedirectAntiforgeryValidationFailedResultFilter>]
     public string LoginWithRedirectResultFilter(LoginViewModel model)
     {
         return "Ok";

@@ -20,6 +20,8 @@ internal sealed class SocketSenderPool : IDisposable
         _scheduler = scheduler;
     }
 
+    public PipeScheduler Scheduler => _scheduler;
+
     public SocketSender Rent()
     {
         if (_queue.TryDequeue(out var sender))

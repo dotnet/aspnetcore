@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -24,8 +23,17 @@ public class FacebookHandler : OAuthHandler<FacebookOptions>
     /// Initializes a new instance of <see cref="FacebookHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="FacebookHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <inheritdoc />
@@ -61,12 +69,7 @@ public class FacebookHandler : OAuthHandler<FacebookOptions>
         var key = Encoding.ASCII.GetBytes(Options.AppSecret);
         var tokenBytes = Encoding.ASCII.GetBytes(accessToken);
         var hash = HMACSHA256.HashData(key, tokenBytes);
-        var builder = new StringBuilder();
-        for (int i = 0; i < hash.Length; i++)
-        {
-            builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
-        }
-        return builder.ToString();
+        return Convert.ToHexStringLower(hash);
     }
 
     /// <inheritdoc />

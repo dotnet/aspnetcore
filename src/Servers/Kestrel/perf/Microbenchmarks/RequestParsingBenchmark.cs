@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -24,14 +24,14 @@ public class RequestParsingBenchmark
     [IterationSetup]
     public void Setup()
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
 
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
             httpParser: new HttpParser<Http1ParsingHandler>(),
-            dateHeaderValueManager: new DateHeaderValueManager());
+            dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System));
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
@@ -39,7 +39,7 @@ public class RequestParsingBenchmark
             transport: pair.Transport,
             memoryPool: _memoryPool,
             connectionFeatures: new FeatureCollection(),
-            timeoutControl: new TimeoutControl(timeoutHandler: null));
+            timeoutControl: new TimeoutControl(timeoutHandler: null, TimeProvider.System));
 
         var http1Connection = new Http1Connection(connectionContext);
 

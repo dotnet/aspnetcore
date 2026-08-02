@@ -21,7 +21,7 @@ internal sealed class DefaultApiAuthorizationOptionsConfiguration : IPostConfigu
         options.UserOptions.AuthenticationType ??= _applicationName;
     }
 
-    public void PostConfigure(string name, RemoteAuthenticationOptions<ApiAuthorizationProviderOptions> options)
+    public void PostConfigure(string? name, RemoteAuthenticationOptions<ApiAuthorizationProviderOptions> options)
     {
         if (string.Equals(name, Options.DefaultName))
         {

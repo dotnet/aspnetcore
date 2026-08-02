@@ -12,7 +12,9 @@ internal class TestRazorReferenceManager : RazorReferenceManager
     public TestRazorReferenceManager()
         : base(
             new ApplicationPartManager(),
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
             Options.Create(new MvcRazorRuntimeCompilationOptions()))
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     {
         CompilationReferences = Array.Empty<MetadataReference>();
     }

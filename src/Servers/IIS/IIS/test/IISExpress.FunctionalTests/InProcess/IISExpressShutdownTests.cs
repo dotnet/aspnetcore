@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
@@ -36,6 +36,10 @@ public class IISExpressShutdownTests : IISFunctionalTestBase
         {
             // Server might close a connection before request completes
         }
+        finally
+        {
+            deploymentResult.HttpClient.Dispose();
+        }
 
         deploymentResult.AssertWorkerProcessStop();
     }
@@ -60,6 +64,10 @@ public class IISExpressShutdownTests : IISFunctionalTestBase
         catch (HttpRequestException ex) when (ex.InnerException is IOException | ex.InnerException is SocketException)
         {
             // Server might close a connection before request completes
+        }
+        finally
+        {
+            deploymentResult.HttpClient.Dispose();
         }
 
         deploymentResult.AssertWorkerProcessStop();

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [
     "Common",
@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating a worker service.",
   "groupIdentity": "Microsoft.Worker.Empty",
-  "precedence": "9000",
-  "identity": "Microsoft.Worker.Empty.CSharp.7.0",
+  "precedence": "11000",
+  "identity": "Microsoft.Worker.Empty.CSharp.11.0",
   "shortName": "worker",
   "tags": {
     "language": "C#",
@@ -62,12 +62,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net7.0",
-          "description": "Target net7.0"
+          "choice": "net11.0"
         }
       ],
-      "replaces": "net7.0",
-      "defaultValue": "net7.0"
+      "replaces": "net11.0",
+      "defaultValue": "net11.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -87,8 +86,15 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "displayName": "Do not use top-level statements",
+      "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    },
+    "NativeAot" : {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Enable _native AOT publish",
+      "description": "Whether to enable the project for publishing as native AOT."
     }
   },
   "primaryOutputs": [

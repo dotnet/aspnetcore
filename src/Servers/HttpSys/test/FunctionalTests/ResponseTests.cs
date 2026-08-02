@@ -11,12 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class ResponseTests
+public class ResponseTests : LoggedTest
 {
     [ConditionalFact]
     public async Task Response_ServerSendsDefaultResponse_ServerProvidesStatusCodeAndReasonPhrase()
@@ -27,7 +28,7 @@ public class ResponseTests
             Assert.Equal(200, httpContext.Response.StatusCode);
             Assert.False(httpContext.Response.HasStarted);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -46,7 +47,7 @@ public class ResponseTests
             httpContext.Response.StatusCode = 201;
             // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(201, (int)response.StatusCode);
@@ -66,7 +67,7 @@ public class ResponseTests
             httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "CustomReasonPhrase"; // TODO?
                                                                                                   // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(201, (int)response.StatusCode);
@@ -84,12 +85,56 @@ public class ResponseTests
         {
             httpContext.Response.StatusCode = 901;
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(901, (int)response.StatusCode);
             Assert.Equal(string.Empty, response.ReasonPhrase);
             Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+        }
+    }
+
+    [ConditionalTheory]
+    [InlineData("Injected\r\nHeader: value")]
+    [InlineData("Has\rCarriageReturn")]
+    [InlineData("Has\nLineFeed")]
+    [InlineData("Has\0Null")]
+    [InlineData("Control\u001FChar")]
+    [InlineData("Del\u007FChar")]
+    [InlineData("Non-ASCII\u0080Char")]
+    [InlineData("Caf\u00E9")]
+    public async Task Response_ReasonPhraseWithControlCharacters_Throws(string reasonPhrase)
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = reasonPhrase);
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            HttpResponseMessage response = await SendRequestAsync(address);
+            Assert.Equal(200, (int)response.StatusCode);
+        }
+    }
+
+    [ConditionalTheory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("OK")]
+    [InlineData("Custom Reason")]
+    [InlineData("Includes\tHTAB")]
+    public async Task Response_ValidReasonPhrase_Accepted(string reasonPhrase)
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = reasonPhrase;
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            HttpResponseMessage response = await SendRequestAsync(address);
+            Assert.Equal(200, (int)response.StatusCode);
         }
     }
 
@@ -101,7 +146,7 @@ public class ResponseTests
         {
             httpContext.Response.StatusCode = 100;
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(500, (int)response.StatusCode);
@@ -116,7 +161,7 @@ public class ResponseTests
         {
             httpContext.Response.StatusCode = 0;
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -144,7 +189,7 @@ public class ResponseTests
                 return Task.CompletedTask;
             }, httpContext);
             return Task.CompletedTask;
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -173,7 +218,7 @@ public class ResponseTests
                 return Task.CompletedTask;
             }, httpContext);
             return Task.CompletedTask;
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -203,7 +248,7 @@ public class ResponseTests
             }, httpContext);
             Assert.Throws<InvalidTimeZoneException>(() => httpContext.Response.Body.Write(new byte[10], 0, 10));
             return Task.CompletedTask;
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -248,7 +293,7 @@ public class ResponseTests
             }
 
             readCompleted.SetResult();
-        });
+        }, LoggerFactory);
 
         // Send a request without the body.
         var uri = new Uri(address);

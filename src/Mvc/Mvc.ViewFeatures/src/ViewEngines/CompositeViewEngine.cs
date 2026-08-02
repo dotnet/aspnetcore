@@ -27,15 +27,8 @@ public class CompositeViewEngine : ICompositeViewEngine
     /// <inheritdoc />
     public ViewEngineResult FindView(ActionContext context, string viewName, bool isMainPage)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (string.IsNullOrEmpty(viewName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewName));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentException.ThrowIfNullOrEmpty(viewName);
 
         if (ViewEngines.Count == 0)
         {
@@ -84,10 +77,7 @@ public class CompositeViewEngine : ICompositeViewEngine
     /// <inheritdoc />
     public ViewEngineResult GetView(string? executingFilePath, string viewPath, bool isMainPage)
     {
-        if (string.IsNullOrEmpty(viewPath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(viewPath);
 
         if (ViewEngines.Count == 0)
         {

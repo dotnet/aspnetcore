@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Hosting;
 
 internal sealed class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object?>>
 {
-    private const string LogPreamble = "Request starting ";
+    private const string OriginalFormat = "Request starting {Protocol} {Method} {Scheme}://{Host}{PathBase}{Path}{QueryString} - {ContentType} {ContentLength}";
     private const string EmptyEntry = "-";
 
     internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HostingRequestStartingLog)state).ToString();
@@ -18,7 +18,7 @@ internal sealed class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<str
 
     private string? _cachedToString;
 
-    public int Count => 9;
+    public int Count => 10;
 
     public KeyValuePair<string, object?> this[int index] => index switch
     {
@@ -31,7 +31,8 @@ internal sealed class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<str
         6 => new KeyValuePair<string, object?>(nameof(_request.PathBase), _request.PathBase.Value),
         7 => new KeyValuePair<string, object?>(nameof(_request.Path), _request.Path.Value),
         8 => new KeyValuePair<string, object?>(nameof(_request.QueryString), _request.QueryString.Value),
-        _ => throw new IndexOutOfRangeException(nameof(index)),
+        9 => new KeyValuePair<string, object?>("{OriginalFormat}", OriginalFormat),
+        _ => throw new ArgumentOutOfRangeException(nameof(index)),
     };
 
     public HostingRequestStartingLog(HttpContext httpContext)
@@ -44,7 +45,7 @@ internal sealed class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<str
         if (_cachedToString == null)
         {
             var request = _request;
-            _cachedToString = $"{LogPreamble}{request.Protocol} {request.Method} {request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{request.QueryString.Value} {EscapedValueOrEmptyMarker(request.ContentType)} {ValueOrEmptyMarker(request.ContentLength)}"; ;
+            _cachedToString = $"Request starting {request.Protocol} {request.Method} {request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{request.QueryString.Value} - {EscapedValueOrEmptyMarker(request.ContentType)} {ValueOrEmptyMarker(request.ContentLength)}";
         }
 
         return _cachedToString;
@@ -62,9 +63,6 @@ internal sealed class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<str
     {
         return GetEnumerator();
     }
-
-    internal string ToStringWithoutPreamble()
-        => ToString().Substring(LogPreamble.Length);
 
     internal static string EscapedValueOrEmptyMarker(string? potentialValue)
         // Encode space as +

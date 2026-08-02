@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles;
 internal class LocalAllocHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
     // Called by P/Invoke when returning SafeHandles
-    protected LocalAllocHandle()
+    public LocalAllocHandle()
         : base(ownsHandle: true) { }
 
     // Do not provide a finalizer - SafeHandle's critical finalizer will call ReleaseHandle for you.

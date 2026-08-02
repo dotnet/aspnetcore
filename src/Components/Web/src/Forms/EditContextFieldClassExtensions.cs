@@ -46,10 +46,7 @@ public static class EditContextFieldClassExtensions
     /// <param name="fieldCssClassProvider">The <see cref="FieldCssClassProvider"/>.</param>
     public static void SetFieldCssClassProvider(this EditContext editContext, FieldCssClassProvider fieldCssClassProvider)
     {
-        if (fieldCssClassProvider is null)
-        {
-            throw new ArgumentNullException(nameof(fieldCssClassProvider));
-        }
+        ArgumentNullException.ThrowIfNull(fieldCssClassProvider);
 
         editContext.Properties[FieldCssClassProviderKey] = fieldCssClassProvider;
     }

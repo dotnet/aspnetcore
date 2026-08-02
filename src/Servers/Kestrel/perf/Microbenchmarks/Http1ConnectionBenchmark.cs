@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
@@ -27,7 +27,7 @@ public class Http1ConnectionBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        var memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        var memoryPool = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
 
@@ -39,7 +39,7 @@ public class Http1ConnectionBenchmark
             serviceContext: serviceContext,
             connectionContext: null,
             transport: pair.Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, TimeProvider.System),
             memoryPool: memoryPool,
             connectionFeatures: new FeatureCollection());
 

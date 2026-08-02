@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 public abstract class RazorPageBase : IRazorPage
 {
     private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
+    private readonly IDictionary<string, RenderAsyncDelegate> _sectionWriters = new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
     private StringWriter? _valueBuffer;
     private ITagHelperFactory? _tagHelperFactory;
     private IViewBufferScope? _bufferScope;
@@ -32,6 +33,14 @@ public abstract class RazorPageBase : IRazorPage
     private AttributeInfo _attributeInfo;
     private TagHelperAttributeInfo _tagHelperAttributeInfo;
     private IUrlHelper? _urlHelper;
+
+    // These fields back properties that are hidden from debugging with DebuggerBrowsableState.Never.
+    // Using a field instead of an auto-property allows the value to be seen in the debugger by expanding the "Non-Public members" option.
+    private bool _isLayoutBeingRendered;
+    private IHtmlContent? _bodyContent;
+    private IDictionary<string, RenderAsyncDelegate> _previousSectionWriters = default!;
+    private DiagnosticSource _diagnosticSource = default!;
+    private HtmlEncoder _htmlEncoder = default!;
 
     /// <inheritdoc/>
     public virtual ViewContext ViewContext { get; set; } = default!;
@@ -45,6 +54,7 @@ public abstract class RazorPageBase : IRazorPage
     /// <summary>
     /// Gets the <see cref="TextWriter"/> that the page is writing output to.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public virtual TextWriter Output
     {
         get
@@ -63,8 +73,8 @@ public abstract class RazorPageBase : IRazorPage
     public string Path { get; set; } = default!;
 
     /// <inheritdoc />
-    public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; } =
-        new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public IDictionary<string, RenderAsyncDelegate> SectionWriters => _sectionWriters;
 
     /// <summary>
     /// Gets the dynamic view data dictionary.
@@ -72,26 +82,51 @@ public abstract class RazorPageBase : IRazorPage
     public dynamic ViewBag => ViewContext?.ViewBag!;
 
     /// <inheritdoc />
-    public bool IsLayoutBeingRendered { get; set; }
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public bool IsLayoutBeingRendered
+    {
+        get => _isLayoutBeingRendered;
+        set => _isLayoutBeingRendered = value;
+    }
 
     /// <inheritdoc />
-    public IHtmlContent? BodyContent { get; set; }
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public IHtmlContent? BodyContent
+    {
+        get => _bodyContent;
+        set => _bodyContent = value;
+    }
 
     /// <inheritdoc />
-    public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; } = default!;
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters
+    {
+        get => _previousSectionWriters;
+        set => _previousSectionWriters = value;
+    }
 
     /// <summary>
     /// Gets or sets a <see cref="System.Diagnostics.DiagnosticSource"/> instance used to instrument the page execution.
     /// </summary>
     [RazorInject]
-    public DiagnosticSource DiagnosticSource { get; set; } = default!;
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public DiagnosticSource DiagnosticSource
+    {
+        get => _diagnosticSource;
+        set => _diagnosticSource = value;
+    }
 
     /// <summary>
     /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
     /// handles non-<see cref="IHtmlContent"/> C# expressions.
     /// </summary>
     [RazorInject]
-    public HtmlEncoder HtmlEncoder { get; set; } = default!;
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    public HtmlEncoder HtmlEncoder
+    {
+        get => _htmlEncoder;
+        set => _htmlEncoder = value;
+    }
 
     /// <summary>
     /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
@@ -285,10 +320,7 @@ public abstract class RazorPageBase : IRazorPage
     // Internal for unit testing.
     protected internal virtual void PushWriter(TextWriter writer)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
         var viewContext = ViewContext;
         _textWriterStack.Push(viewContext.Writer);
@@ -315,10 +347,7 @@ public abstract class RazorPageBase : IRazorPage
     /// <returns>The href for the contentPath.</returns>
     public virtual string Href(string contentPath)
     {
-        if (contentPath == null)
-        {
-            throw new ArgumentNullException(nameof(contentPath));
-        }
+        ArgumentNullException.ThrowIfNull(contentPath);
 
         if (_urlHelper == null)
         {
@@ -350,15 +379,8 @@ public abstract class RazorPageBase : IRazorPage
     /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
     public virtual void DefineSection(string name, RenderAsyncDelegate section)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (section == null)
-        {
-            throw new ArgumentNullException(nameof(section));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(section);
 
         if (SectionWriters.ContainsKey(name))
         {
@@ -467,15 +489,8 @@ public abstract class RazorPageBase : IRazorPage
         int suffixOffset,
         int attributeValuesCount)
     {
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
-
-        if (suffix == null)
-        {
-            throw new ArgumentNullException(nameof(suffix));
-        }
+        ArgumentNullException.ThrowIfNull(prefix);
+        ArgumentNullException.ThrowIfNull(suffix);
 
         _attributeInfo = new AttributeInfo(name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
 
@@ -654,7 +669,7 @@ public abstract class RazorPageBase : IRazorPage
     }
 
     /// <summary>
-    /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Output"/> and <see cref="m:Stream.FlushAsync"/>
+    /// Invokes <see cref="TextWriter.FlushAsync()"/> on <see cref="Output"/> and <see cref="m:Stream.FlushAsync"/>
     /// on the response stream, writing out any buffered content to the <see cref="HttpResponse.Body"/>.
     /// </summary>
     /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on

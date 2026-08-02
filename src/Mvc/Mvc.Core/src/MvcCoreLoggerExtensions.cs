@@ -283,10 +283,7 @@ internal static partial class MvcCoreLoggerExtensions
 
         public ActionLogScope(ActionDescriptor action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            ArgumentNullException.ThrowIfNull(action);
 
             _action = action;
         }
@@ -303,7 +300,7 @@ internal static partial class MvcCoreLoggerExtensions
                 {
                     return new KeyValuePair<string, object>("ActionName", _action.DisplayName ?? string.Empty);
                 }
-                throw new IndexOutOfRangeException(nameof(index));
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
         }
 

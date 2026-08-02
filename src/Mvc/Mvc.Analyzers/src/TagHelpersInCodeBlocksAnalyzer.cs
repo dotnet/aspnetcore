@@ -14,11 +14,8 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
 {
     public TagHelpersInCodeBlocksAnalyzer()
     {
-        TagHelperInCodeBlockDiagnostic = DiagnosticDescriptors.MVC1006_FunctionsContainingTagHelpersMustBeAsyncAndReturnTask;
-        SupportedDiagnostics = ImmutableArray.Create(new[] { TagHelperInCodeBlockDiagnostic });
+        SupportedDiagnostics = ImmutableArray.Create(DiagnosticDescriptors.MVC1006_FunctionsContainingTagHelpersMustBeAsyncAndReturnTask);
     }
-
-    private DiagnosticDescriptor TagHelperInCodeBlockDiagnostic { get; }
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
 
@@ -39,7 +36,7 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private void InitializeWorker(CompilationStartAnalysisContext context, SymbolCache symbolCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext context, SymbolCache symbolCache)
     {
         context.RegisterOperationBlockStartAction(startBlockContext =>
         {
@@ -97,7 +94,7 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
                 foreach (var location in capturedDiagnosticLocations)
                 {
                     context.ReportDiagnostic(
-                        Diagnostic.Create(TagHelperInCodeBlockDiagnostic, location));
+                        Diagnostic.Create(DiagnosticDescriptors.MVC1006_FunctionsContainingTagHelpersMustBeAsyncAndReturnTask, location));
                 }
             });
         });

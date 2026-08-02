@@ -16,13 +16,4 @@ internal static class Ensure
         }
         return obj;
     }
-
-    public static string NotNullOrEmpty(string obj, string paramName)
-    {
-        if (string.IsNullOrEmpty(obj))
-        {
-            throw new ArgumentException("Value cannot be null or an empty string.", paramName);
-        }
-        return obj;
-    }
 }

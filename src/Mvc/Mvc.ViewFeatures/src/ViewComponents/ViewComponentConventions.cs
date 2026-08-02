@@ -22,10 +22,7 @@ public static class ViewComponentConventions
     /// <returns></returns>
     public static string GetComponentName(TypeInfo componentType)
     {
-        if (componentType == null)
-        {
-            throw new ArgumentNullException(nameof(componentType));
-        }
+        ArgumentNullException.ThrowIfNull(componentType);
 
         var attribute = componentType.GetCustomAttribute<ViewComponentAttribute>();
         if (attribute != null && !string.IsNullOrEmpty(attribute.Name))
@@ -52,10 +49,7 @@ public static class ViewComponentConventions
     /// <returns>The full name of the component.</returns>
     public static string GetComponentFullName(TypeInfo componentType)
     {
-        if (componentType == null)
-        {
-            throw new ArgumentNullException(nameof(componentType));
-        }
+        ArgumentNullException.ThrowIfNull(componentType);
 
         var attribute = componentType.GetCustomAttribute<ViewComponentAttribute>();
         if (!string.IsNullOrEmpty(attribute?.Name))
@@ -97,10 +91,7 @@ public static class ViewComponentConventions
     /// <returns>If the type is a component.</returns>
     public static bool IsComponent(TypeInfo typeInfo)
     {
-        if (typeInfo == null)
-        {
-            throw new ArgumentNullException(nameof(typeInfo));
-        }
+        ArgumentNullException.ThrowIfNull(typeInfo);
 
         if (!typeInfo.IsClass ||
             !typeInfo.IsPublic ||

@@ -20,10 +20,7 @@ internal sealed class MaxLengthAttributeAdapter : AttributeAdapterBase<MaxLength
 
     public override void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
         MergeAttribute(context.Attributes, "data-val-maxlength", GetErrorMessage(context));
@@ -33,10 +30,7 @@ internal sealed class MaxLengthAttributeAdapter : AttributeAdapterBase<MaxLength
     /// <inheritdoc />
     public override string GetErrorMessage(ModelValidationContextBase validationContext)
     {
-        if (validationContext == null)
-        {
-            throw new ArgumentNullException(nameof(validationContext));
-        }
+        ArgumentNullException.ThrowIfNull(validationContext);
 
         return GetErrorMessage(
             validationContext.ModelMetadata,

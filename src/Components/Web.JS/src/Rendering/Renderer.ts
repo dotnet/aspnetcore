@@ -11,8 +11,15 @@ import { getAndRemovePendingRootComponentContainer } from './JSRootComponents';
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
 }
+
+export enum ScrollResetSchedule {
+  None,
+  AfterBatch, // Reset scroll after interactive components finish rendering (interactive navigation)
+  AfterDocumentUpdate, // Reset scroll after enhanced navigation updates the DOM (enhanced navigation)
+}
+
 const browserRenderers: BrowserRendererRegistry = {};
-let shouldResetScrollAfterNextBatch = false;
+let pendingScrollResetTiming: ScrollResetSchedule = ScrollResetSchedule.None;
 
 export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number, appendContent: boolean): void {
   let browserRenderer = browserRenderers[browserRendererId];
@@ -24,7 +31,7 @@ export function attachRootComponentToLogicalElement(browserRendererId: number, l
   browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement, appendContent);
 }
 
-export function attachRootComponentToElement(elementSelector: string, componentId: number, browserRendererId?: number): void {
+export function attachRootComponentToElement(elementSelector: string, componentId: number, browserRendererId: number): void {
   const afterElementSelector = '::after';
   const beforeElementSelector = '::before';
   let appendContent = false;
@@ -44,10 +51,10 @@ export function attachRootComponentToElement(elementSelector: string, componentI
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   // Only client-side Blazor supplies a browser renderer ID
-  attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
+  attachRootComponentToLogicalElement(browserRendererId, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
 }
 
-export function getRendererer(browserRendererId: number): BrowserRenderer {
+export function getRendererer(browserRendererId: number): BrowserRenderer | undefined {
   return browserRenderers[browserRendererId];
 }
 
@@ -88,19 +95,28 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
     browserRenderer.disposeEventHandler(eventHandlerId);
   }
 
-  resetScrollIfNeeded();
+  resetScrollIfNeeded(ScrollResetSchedule.AfterBatch);
 }
 
-export function resetScrollAfterNextBatch(): void {
-  shouldResetScrollAfterNextBatch = true;
-}
-
-function resetScrollIfNeeded() {
-  if (shouldResetScrollAfterNextBatch) {
-    shouldResetScrollAfterNextBatch = false;
-
-    // This assumes the scroller is on the window itself. There isn't a general way to know
-    // if some other element is playing the role of the primary scroll region.
-    window.scrollTo && window.scrollTo(0, 0);
+export function scheduleScrollReset(timing: ScrollResetSchedule): void {
+  if (timing !== ScrollResetSchedule.AfterBatch) {
+    pendingScrollResetTiming = timing;
+    return;
   }
+
+  if (pendingScrollResetTiming !== ScrollResetSchedule.AfterDocumentUpdate) {
+    pendingScrollResetTiming = ScrollResetSchedule.AfterBatch;
+  }
+}
+
+export function resetScrollIfNeeded(triggerTiming: ScrollResetSchedule) {
+  if (pendingScrollResetTiming !== triggerTiming) {
+    return;
+  }
+
+  pendingScrollResetTiming = ScrollResetSchedule.None;
+
+  // This assumes the scroller is on the window itself. There isn't a general way to know
+  // if some other element is playing the role of the primary scroll region.
+  window.scrollTo && window.scrollTo(0, 0);
 }

@@ -3,9 +3,11 @@
 
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
@@ -49,6 +51,7 @@ public class AcceptedAtRouteResultTests
         // Assert
         Assert.Equal(StatusCodes.Status202Accepted, httpContext.Response.StatusCode);
         Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
+        Assert.Equal(new RouteValueDictionary(values), linkGenerator.RouteValuesAddress.ExplicitValues);
     }
 
     [Fact]
@@ -74,37 +77,48 @@ public class AcceptedAtRouteResultTests
     {
         // Arrange
         AcceptedAtRoute MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
-        PopulateMetadata<AcceptedAtRoute>(context);
+        PopulateMetadata<AcceptedAtRoute>(((Delegate)MyApi).GetMethodInfo(), builder);
 
         // Assert
-        var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
+        var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
         Assert.Equal(StatusCodes.Status202Accepted, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new AcceptedAtRoute(null);
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     [Fact]
-    public void PopulateMetadata_ThrowsArgumentNullException_WhenContextIsNull()
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<AcceptedAtRoute>(null));
+        Assert.Throws<ArgumentNullException>("method", () => PopulateMetadata<AcceptedAtRoute>(null, new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0)));
+        Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<AcceptedAtRoute>(((Delegate)PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull).GetMethodInfo(), null));
     }
 
-    private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
-        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
+    [Fact]
+    public void AcceptedAtRouteResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new AcceptedAtRoute(null));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(method, builder);
 
     private static HttpContext GetHttpContext(LinkGenerator linkGenerator)
     {

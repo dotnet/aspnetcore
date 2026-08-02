@@ -17,10 +17,7 @@ public static class ValueProviderFactoryExtensions
     /// <typeparam name="TValueProviderFactory">The type to remove.</typeparam>
     public static void RemoveType<TValueProviderFactory>(this IList<IValueProviderFactory> list) where TValueProviderFactory : IValueProviderFactory
     {
-        if (list == null)
-        {
-            throw new ArgumentNullException(nameof(list));
-        }
+        ArgumentNullException.ThrowIfNull(list);
 
         RemoveType(list, typeof(TValueProviderFactory));
     }
@@ -32,15 +29,8 @@ public static class ValueProviderFactoryExtensions
     /// <param name="type">The type to remove.</param>
     public static void RemoveType(this IList<IValueProviderFactory> list, Type type)
     {
-        if (list == null)
-        {
-            throw new ArgumentNullException(nameof(list));
-        }
-
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(list);
+        ArgumentNullException.ThrowIfNull(type);
 
         for (var i = list.Count - 1; i >= 0; i--)
         {

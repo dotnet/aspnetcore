@@ -6,7 +6,7 @@
 #include "ShuttingDownApplication.h"
 #include "ntassert.h"
 
-ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = NULL;
+ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = nullptr;
 
 IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
     _In_ std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> pApplication,
@@ -25,7 +25,8 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
    m_pRequestHandlerContext(pRequestHandlerContext),
    m_pAsyncCompletionHandler(pAsyncCompletion),
    m_pDisconnectHandler(pDisconnectHandler),
-   m_disconnectFired(false)
+   m_disconnectFired(false),
+   m_queueNotified(false)
 {
     InitializeSRWLock(&m_srwDisconnectLock);
 }
@@ -36,7 +37,7 @@ IN_PROCESS_HANDLER::ExecuteRequestHandler()
 {
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_START>(m_pW3Context, nullptr);
 
-    if (m_pRequestHandler == NULL)
+    if (m_pRequestHandler == nullptr)
     {
         ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_COMPLETION>(m_pW3Context, nullptr, RQ_NOTIFICATION_FINISH_REQUEST);
         return RQ_NOTIFICATION_FINISH_REQUEST;
@@ -88,6 +89,7 @@ REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage() const
     return ShuttingDownHandler::ServerShutdownMessage(m_pW3Context);
 }
 
+// Called from native IIS
 VOID
 IN_PROCESS_HANDLER::NotifyDisconnect()
 {
@@ -111,22 +113,55 @@ IN_PROCESS_HANDLER::NotifyDisconnect()
         m_disconnectFired = true;
     }
 
+    // This could be null if the request is completed before the http context is set
+    // for example this can happen when the client cancels the request very quickly after making it
     if (pManagedHttpContext != nullptr)
     {
         m_pDisconnectHandler(pManagedHttpContext);
     }
+
+    // Make sure we unblock any potential current or future m_queueCheck.wait(...) calls
+    // We could make this conditional, but it would need to be duplicated in SetManagedHttpContext
+    // to avoid a race condition where the http context is null but we called disconnect which could make IndicateManagedRequestComplete hang
+    // It's more future proof to just always do this even if nothing will be waiting on the conditional_variable
+    {
+        // lock before notifying, this prevents the condition where m_queueNotified is already checked but
+        // the condition_variable isn't waiting yet, which would cause notify_all to NOOP and block
+        // IndicateManagedRequestComplete until a spurious wakeup
+        std::lock_guard<std::mutex> lock(m_lockQueue);
+        m_queueNotified = true;
+    }
+    m_queueCheck.notify_all();
 }
 
+// Called from managed server
 VOID
 IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
     VOID
 )
 {
+    bool disconnectFired = false;
     {
         SRWExclusiveLock lock(m_srwDisconnectLock);
         m_fManagedRequestComplete = TRUE;
         m_pManagedHttpContext = nullptr;
+        disconnectFired = m_disconnectFired;
     }
+
+    if (disconnectFired)
+    {
+        // Block until we know NotifyDisconnect completed
+        // this is because the caller of IndicateManagedRequestComplete will dispose the
+        // GCHandle pointing at m_pManagedHttpContext, and a new GCHandle could use the same address
+        // for the next request, this could cause an in-progress NotifyDisconnect call to disconnect the new request
+        std::unique_lock<std::mutex> lock(m_lockQueue);
+        // loop to handle spurious wakeups
+        while (!m_queueNotified)
+        {
+            m_queueCheck.wait(lock);
+        }
+    }
+
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_MANAGED_REQUEST_COMPLETION>(m_pW3Context, nullptr);
 }
 
@@ -138,6 +173,7 @@ IN_PROCESS_HANDLER::SetAsyncCompletionStatus(
     m_requestNotificationStatus = requestNotificationStatus;
 }
 
+// Called from managed server
 VOID
 IN_PROCESS_HANDLER::SetManagedHttpContext(
     PVOID pManagedHttpContext
@@ -153,6 +189,8 @@ IN_PROCESS_HANDLER::SetManagedHttpContext(
 
     if (disconnectFired && pManagedHttpContext != nullptr)
     {
+        // Safe to call, managed code is waiting on SetManagedHttpContext in the process request loop and doesn't dispose
+        // the GCHandle until after the request loop completes
         m_pDisconnectHandler(pManagedHttpContext);
     }
 }
@@ -160,10 +198,10 @@ IN_PROCESS_HANDLER::SetManagedHttpContext(
 // static
 void * IN_PROCESS_HANDLER::operator new(size_t)
 {
-    DBG_ASSERT(sm_pAlloc != NULL);
-    if (sm_pAlloc == NULL)
+    DBG_ASSERT(sm_pAlloc != nullptr);
+    if (sm_pAlloc == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
     return sm_pAlloc->Alloc();
 }
@@ -171,8 +209,8 @@ void * IN_PROCESS_HANDLER::operator new(size_t)
 // static
 void IN_PROCESS_HANDLER::operator delete(void * pMemory)
 {
-    DBG_ASSERT(sm_pAlloc != NULL);
-    if (sm_pAlloc != NULL)
+    DBG_ASSERT(sm_pAlloc != nullptr);
+    if (sm_pAlloc != nullptr)
     {
         sm_pAlloc->Free(pMemory);
     }
@@ -196,7 +234,7 @@ HRESULT
     HRESULT                         hr = S_OK;
 
     sm_pAlloc = new ALLOC_CACHE_HANDLER;
-    if (sm_pAlloc == NULL)
+    if (sm_pAlloc == nullptr)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
@@ -217,9 +255,9 @@ Finished:
 void
 IN_PROCESS_HANDLER::StaticTerminate(VOID)
 {
-    if (sm_pAlloc != NULL)
+    if (sm_pAlloc != nullptr)
     {
         delete sm_pAlloc;
-        sm_pAlloc = NULL;
+        sm_pAlloc = nullptr;
     }
 }

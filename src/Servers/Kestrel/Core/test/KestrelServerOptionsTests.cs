@@ -28,7 +28,7 @@ public class KestrelServerOptionsTests
         var options = new KestrelServerOptions();
         options.ListenLocalhost(5000);
 
-        Assert.Equal(HttpProtocols.Http1AndHttp2, options.CodeBackedListenOptions[0].Protocols);
+        Assert.Equal(ListenOptions.DefaultHttpProtocols, options.CodeBackedListenOptions[0].Protocols);
 
         options.ConfigureEndpointDefaults(opt =>
         {
@@ -84,6 +84,7 @@ public class KestrelServerOptionsTests
         serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
         options.ApplicationServices = serviceCollection.BuildServiceProvider();
 
         options.Configure();

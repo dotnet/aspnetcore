@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -16,6 +17,8 @@ public class AspNetSiteServerFixture : WebHostServerFixture
     public Assembly ApplicationAssembly { get; set; }
 
     public BuildWebHost BuildWebHostMethod { get; set; }
+
+    public Action<IServiceProvider> UpdateHostServices { get; set; }
 
     public GetContentRoot GetContentRootMethod { get; set; } = DefaultGetContentRoot;
 
@@ -32,7 +35,7 @@ public class AspNetSiteServerFixture : WebHostServerFixture
         }
 
         var assembly = ApplicationAssembly ?? BuildWebHostMethod.Method.DeclaringType.Assembly;
-        var sampleSitePath = DefaultGetContentRoot(assembly);
+        var sampleSitePath = GetContentRootMethod(assembly);
 
         var host = "127.0.0.1";
         if (E2ETestOptions.Instance.SauceTest)
@@ -40,12 +43,16 @@ public class AspNetSiteServerFixture : WebHostServerFixture
             host = E2ETestOptions.Instance.Sauce.HostName;
         }
 
-        return BuildWebHostMethod(new[]
+        var result = BuildWebHostMethod(new[]
         {
                 "--urls", $"http://{host}:0",
                 "--contentroot", sampleSitePath,
                 "--environment", Environment.ToString(),
             }.Concat(AdditionalArguments).ToArray());
+
+        UpdateHostServices?.Invoke(result.Services);
+
+        return result;
     }
 
     private static string DefaultGetContentRoot(Assembly assembly)

@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
@@ -27,10 +27,11 @@ public class NewShimTests : IISFunctionalTestBase
         {
             if (handle.ModuleName == "aspnetcorev2_inprocess.dll")
             {
-                Assert.Equal("12.2.18316.0", handle.FileVersionInfo.FileVersion);
+                Assert.Equal("12.2.19169.6", handle.FileVersionInfo.FileVersion);
                 return;
             }
         }
+
         throw new XunitException($"Could not find aspnetcorev2_inprocess.dll loaded in process {result.HostProcess.ProcessName}");
     }
 }

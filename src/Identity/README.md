@@ -1,12 +1,11 @@
 # Identity
 
-ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user. You can find additional information in the [ASP.NET Core Documentation](https://docs.microsoft.com/aspnet/core/security/authentication/identity).
+ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user. You can find additional information in the [ASP.NET Core Documentation](https://learn.microsoft.com/aspnet/core/security/authentication/identity).
 
 ## Description
 
 The following contains a description of each sub-directory in the `Identity` directory.
 
-* `ApiAuthorization.IdentityServer`: Contains IdentityServer based support for API Authorization.
 * `Core`: Contains the main abstractions and types for providing support for Identity in ASP.NET Core applications.
 * `EntityFrameworkCore`: Contains implementations for Identity stores based on EntityFrameworkCore.
 * `Extensions.Core`: Contains the abstractions and types for general Identity concerns.
@@ -40,7 +39,10 @@ The previous versions of Identity for MVC5 and lower, previously available on Co
 **IMPORTANT:** Extensions are built by a variety of sources and not maintained as part of the ASP.NET Identity project. When considering a third party provider, be sure to evaluate quality, licensing, compatibility, support, etc. to ensure they meet your requirements.
 
 * [ASP.NET Identity Azure Table Storage Provider](https://dlmelendez.github.io/identityazuretable/)
-* [ASP.NET Identity CosmosDB SQL Provider](https://github.com/dlmelendez/identitycosmosdb)
+* ASP.NET Identity Cosmos DB Providers:
+  * [By Dave Melendez](https://github.com/dlmelendez/identitycosmosdb)
+  * [By Eric Kauffman](https://github.com/CosmosSoftware/AspNetCore.Identity.CosmosDb)
+  * [By Piero De Tomi](https://github.com/pierodetomi/efcore-identity-cosmos)
 * ASP.NET Identity MongoDB Providers:
   * [By Tugberk Ugurlu](https://github.com/tugberkugurlu/AspNetCore.Identity.MongoDB)
   * [By Alexandre Spieser](https://github.com/alexandre-spieser/AspNetCore.Identity.MongoDbCore)

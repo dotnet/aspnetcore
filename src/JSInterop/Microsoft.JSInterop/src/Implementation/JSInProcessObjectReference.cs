@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices.JavaScript;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop.Implementation;
@@ -9,12 +11,12 @@ namespace Microsoft.JSInterop.Implementation;
 /// <summary>
 /// Implements functionality for <see cref="IJSInProcessObjectReference"/>.
 /// </summary>
-public class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectReference
+public partial class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectReference
 {
     private readonly JSInProcessRuntime _jsRuntime;
 
     /// <summary>
-    /// Inititializes a new <see cref="JSInProcessObjectReference"/> instance.
+    /// Initializes a new <see cref="JSInProcessObjectReference"/> instance.
     /// </summary>
     /// <param name="jsRuntime">The <see cref="JSInProcessRuntime"/> used for invoking JS interop calls.</param>
     /// <param name="id">The unique identifier.</param>
@@ -29,7 +31,34 @@ public class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectR
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.Invoke<TValue>(identifier, Id, args);
+        return _jsRuntime.Invoke<TValue>(identifier, Id, JSCallType.FunctionCall, args);
+    }
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    public IJSInProcessObjectReference InvokeConstructor(string identifier, object?[]? args)
+    {
+        ThrowIfDisposed();
+
+        return _jsRuntime.Invoke<IJSInProcessObjectReference>(identifier, Id, JSCallType.ConstructorCall, args);
+    }
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    public TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+    {
+        ThrowIfDisposed();
+
+        return _jsRuntime.Invoke<TValue>(identifier, Id, JSCallType.GetValue);
+    }
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    public void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+    {
+        ThrowIfDisposed();
+
+        _jsRuntime.Invoke<TValue>(identifier, Id, JSCallType.SetValue, value);
     }
 
     /// <inheritdoc />
@@ -39,7 +68,13 @@ public class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectR
         {
             Disposed = true;
 
-            _jsRuntime.InvokeVoid("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", Id);
+            if (OperatingSystem.IsBrowser())
+            {
+                DisposeJSObjectReferenceById(Id);
+            }
         }
     }
+
+    [JSImport("globalThis.DotNet.disposeJSObjectReferenceById")]
+    private static partial void DisposeJSObjectReferenceById([JSMarshalAs<JSType.Number>] long id);
 }

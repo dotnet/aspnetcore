@@ -9,12 +9,12 @@ internal interface ITimeoutControl
 {
     TimeoutReason TimerReason { get; }
 
-    void SetTimeout(long ticks, TimeoutReason timeoutReason);
-    void ResetTimeout(long ticks, TimeoutReason timeoutReason);
+    void SetTimeout(TimeSpan timeout, TimeoutReason timeoutReason);
+    void ResetTimeout(TimeSpan timeout, TimeoutReason timeoutReason);
     void CancelTimeout();
 
     void InitializeHttp2(InputFlowControl connectionInputFlowControl);
-    void Tick(DateTimeOffset now);
+    void Tick(long timestamp);
 
     void StartRequestBody(MinDataRate minRate);
     void StopRequestBody();
@@ -25,5 +25,5 @@ internal interface ITimeoutControl
     void StartTimingWrite();
     void StopTimingWrite();
     void BytesWrittenToBuffer(MinDataRate minRate, long count);
-    long GetResponseDrainDeadline(long ticks, MinDataRate minRate);
+    long GetResponseDrainDeadline(long timestamp, MinDataRate minRate);
 }

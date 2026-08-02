@@ -19,25 +19,10 @@ internal sealed class DefaultViewComponentInvokerFactory : IViewComponentInvoker
         DiagnosticListener diagnosticListener,
         ILoggerFactory loggerFactory)
     {
-        if (viewComponentFactory == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentFactory));
-        }
-
-        if (viewComponentInvokerCache == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentInvokerCache));
-        }
-
-        if (diagnosticListener == null)
-        {
-            throw new ArgumentNullException(nameof(diagnosticListener));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(viewComponentFactory);
+        ArgumentNullException.ThrowIfNull(viewComponentInvokerCache);
+        ArgumentNullException.ThrowIfNull(diagnosticListener);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _viewComponentFactory = viewComponentFactory;
         _diagnosticListener = diagnosticListener;
@@ -52,10 +37,7 @@ internal sealed class DefaultViewComponentInvokerFactory : IViewComponentInvoker
     // considering that possibility.
     public IViewComponentInvoker CreateInstance(ViewComponentContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return new DefaultViewComponentInvoker(
             _viewComponentFactory,

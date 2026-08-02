@@ -21,16 +21,9 @@ public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter, ISkipSta
     /// <inheritdoc />
     public void OnResourceExecuting(ResourceExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
-        var statusCodeFeature = context.HttpContext.Features.Get<IStatusCodePagesFeature>();
-        if (statusCodeFeature != null)
-        {
-            // Turn off the StatusCodePages feature.
-            statusCodeFeature.Enabled = false;
-        }
+        // Turn off the StatusCodePages feature.
+        context.HttpContext.Features.Get<IStatusCodePagesFeature>()?.Enabled = false;
     }
 }

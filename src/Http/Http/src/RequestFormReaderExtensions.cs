@@ -21,14 +21,8 @@ public static class RequestFormReaderExtensions
     public static Task<IFormCollection> ReadFormAsync(this HttpRequest request, FormOptions options,
         CancellationToken cancellationToken = new CancellationToken())
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(options);
 
         if (!request.HasFormContentType)
         {

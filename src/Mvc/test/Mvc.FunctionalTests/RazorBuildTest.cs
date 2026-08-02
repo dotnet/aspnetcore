@@ -3,21 +3,30 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Startup>>
+// These tests test razor caching which is affected if the site is built by another test class
+// Use a named Collection to avoid the test classes running in parallel
+[Collection("RazorBuildWebSite")]
+public class RazorBuildTest : LoggedTest
 {
-    public RazorBuildTest(MvcTestFixture<RazorBuildWebSite.Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<RazorBuildWebSite.Startup>());
-        factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
-
-        Client = factory.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
+        Factory = new MvcTestFixture<RazorBuildWebSite.Startup>(LoggerFactory)
+            .WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
 
         static void ConfigureRuntimeCompilationOptions(MvcRazorRuntimeCompilationOptions options)
         {
@@ -28,9 +37,18 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
                 options.AdditionalReferencePaths.Add(path);
             }
         }
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<RazorBuildWebSite.Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task Rzc_LocalPageWithDifferentContent_IsUsed()
@@ -83,6 +101,8 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
     }
 
     [Fact]
+    [LogLevel(LogLevel.Trace)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorViews_AreUpdatedOnChange()
     {
         // Arrange
@@ -120,6 +140,8 @@ public class RazorBuildTest : IClassFixture<MvcTestFixture<RazorBuildWebSite.Sta
     }
 
     [Fact]
+    [LogLevel(LogLevel.Trace)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorPages_AreUpdatedOnChange()
     {
         // Arrange

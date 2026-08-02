@@ -19,7 +19,7 @@ internal sealed partial class DisableRequestSizeLimitFilter : IAuthorizationFilt
     /// </summary>
     public DisableRequestSizeLimitFilter(ILoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<DisableRequestSizeLimitFilter>();
+        _logger = loggerFactory.CreateLogger(typeof(DisableRequestSizeLimitFilter));
     }
 
     /// <summary>
@@ -31,10 +31,7 @@ internal sealed partial class DisableRequestSizeLimitFilter : IAuthorizationFilt
     /// the <see cref="DisableRequestSizeLimitAttribute"/> is not applied.</remarks>
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var effectivePolicy = context.FindEffectivePolicy<IRequestSizePolicy>();
         if (effectivePolicy != null && effectivePolicy != this)

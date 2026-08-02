@@ -1,18 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
-using Grpc.Gateway.Runtime;
 using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -23,12 +23,11 @@ internal static class JsonRequestHelpers
     public const string JsonContentType = "application/json";
     public const string JsonContentTypeWithCharset = "application/json; charset=utf-8";
 
+    public const string StatusDetailsTrailerName = "grpc-status-details-bin";
+
     public static bool HasJsonContentType(HttpRequest request, out StringSegment charset)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mt))
         {
@@ -85,7 +84,7 @@ internal static class JsonRequestHelpers
         }
     }
 
-    public static async Task SendErrorResponse(HttpResponse response, Encoding encoding, Status status, JsonSerializerOptions options)
+    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Metadata trailers, Status status, JsonSerializerOptions options)
     {
         if (!response.HasStarted)
         {
@@ -93,14 +92,31 @@ internal static class JsonRequestHelpers
             response.ContentType = MediaType.ReplaceEncoding("application/json", encoding);
         }
 
-        var e = new Error
+        var e = GetStatusDetails(trailers) ?? new Google.Rpc.Status
         {
-            Error_ = status.Detail,
             Message = status.Detail,
             Code = (int)status.StatusCode
         };
 
         await WriteResponseMessage(response, encoding, e, options, CancellationToken.None);
+
+        static Google.Rpc.Status? GetStatusDetails(Metadata trailers)
+        {
+            var statusDetails = trailers.Get(StatusDetailsTrailerName);
+            if (statusDetails?.IsBinary == true)
+            {
+                try
+                {
+                    return Google.Rpc.Status.Parser.ParseFrom(statusDetails.ValueBytes);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Error when parsing the '{StatusDetailsTrailerName}' trailer.", ex);
+                }
+            }
+
+            return null;
+        }
     }
 
     public static int MapStatusCodeToHttpStatus(StatusCode statusCode)
@@ -147,7 +163,7 @@ internal static class JsonRequestHelpers
         return StatusCodes.Status500InternalServerError;
     }
 
-    public static async Task WriteResponseMessage(HttpResponse response, Encoding encoding, object responseBody, JsonSerializerOptions options, CancellationToken cancellationToken)
+    public static async ValueTask WriteResponseMessage(HttpResponse response, Encoding encoding, object responseBody, JsonSerializerOptions options, CancellationToken cancellationToken)
     {
         var (stream, usesTranscodingStream) = GetStream(response.Body, encoding);
 
@@ -164,7 +180,7 @@ internal static class JsonRequestHelpers
         }
     }
 
-    public static async Task<TRequest> ReadMessage<TRequest>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions) where TRequest : class
+    public static async ValueTask<TRequest> ReadMessage<TRequest>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions) where TRequest : class
     {
         try
         {
@@ -173,65 +189,87 @@ internal static class JsonRequestHelpers
             IMessage requestMessage;
             if (serverCallContext.DescriptorInfo.BodyDescriptor != null)
             {
-                if (!serverCallContext.IsJsonRequestContent)
+                Type type;
+                object bodyContent;
+
+                if (serverCallContext.DescriptorInfo.BodyDescriptor.FullName == HttpBody.Descriptor.FullName)
                 {
-                    GrpcServerLog.UnsupportedRequestContentType(serverCallContext.Logger, serverCallContext.HttpContext.Request.ContentType);
-                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Request content-type of application/json is required."));
+                    type = typeof(HttpBody);
+
+                    bodyContent = await ReadHttpBodyAsync(serverCallContext);
                 }
-
-                var (stream, usesTranscodingStream) = GetStream(serverCallContext.HttpContext.Request.Body, serverCallContext.RequestEncoding);
-
-                try
+                else
                 {
-                    if (serverCallContext.DescriptorInfo.BodyDescriptorRepeated)
+                    if (!serverCallContext.IsJsonRequestContent)
                     {
-                        requestMessage = (IMessage)Activator.CreateInstance<TRequest>();
-
-                        // TODO: JsonSerializer currently doesn't support deserializing values onto an existing object or collection.
-                        // Either update this to use new functionality in JsonSerializer or improve work-around perf.
-                        var type = JsonConverterHelper.GetFieldType(serverCallContext.DescriptorInfo.BodyFieldDescriptors.Last());
-                        var listType = typeof(List<>).MakeGenericType(type);
-
-                        GrpcServerLog.DeserializingMessage(serverCallContext.Logger, listType);
-                        var repeatedContent = (IList)(await JsonSerializer.DeserializeAsync(stream, listType, serializerOptions))!;
-
-                        ServiceDescriptorHelpers.RecursiveSetValue(requestMessage, serverCallContext.DescriptorInfo.BodyFieldDescriptors, repeatedContent);
+                        GrpcServerLog.UnsupportedRequestContentType(serverCallContext.Logger, serverCallContext.HttpContext.Request.ContentType);
+                        throw new InvalidOperationException($"Unable to read the request as JSON because the request content type '{serverCallContext.HttpContext.Request.ContentType}' is not a known JSON content type.");
                     }
-                    else
+
+                    var (stream, usesTranscodingStream) = GetStream(serverCallContext.HttpContext.Request.Body, serverCallContext.RequestEncoding);
+
+                    try
                     {
-                        IMessage bodyContent;
-
-                        try
-                        {
-                            GrpcServerLog.DeserializingMessage(serverCallContext.Logger, serverCallContext.DescriptorInfo.BodyDescriptor.ClrType);
-                            bodyContent = (IMessage)(await JsonSerializer.DeserializeAsync(stream, serverCallContext.DescriptorInfo.BodyDescriptor.ClrType, serializerOptions))!;
-                        }
-                        catch (JsonException)
-                        {
-                            throw new RpcException(new Status(StatusCode.InvalidArgument, "Request JSON payload is not correctly formatted."));
-                        }
-                        catch (Exception exception)
-                        {
-                            throw new RpcException(new Status(StatusCode.InvalidArgument, exception.Message));
-                        }
-
-                        if (serverCallContext.DescriptorInfo.BodyFieldDescriptors != null)
+                        if (serverCallContext.DescriptorInfo.BodyDescriptorRepeated)
                         {
                             requestMessage = (IMessage)Activator.CreateInstance<TRequest>();
-                            ServiceDescriptorHelpers.RecursiveSetValue(requestMessage, serverCallContext.DescriptorInfo.BodyFieldDescriptors, bodyContent!); // TODO - check nullability
+
+                            // TODO: JsonSerializer currently doesn't support deserializing values onto an existing object or collection.
+                            // Either update this to use new functionality in JsonSerializer or improve work-around perf.
+                            type = JsonConverterHelper.GetFieldType(serverCallContext.DescriptorInfo.BodyFieldDescriptor);
+
+                            var args = type.GetGenericArguments();
+                            if (serverCallContext.DescriptorInfo.BodyFieldDescriptor.IsMap)
+                            {
+                                type = typeof(Dictionary<,>).MakeGenericType(args[0], args[1]);
+                            }
+                            else
+                            {
+                                type = typeof(List<>).MakeGenericType(args[0]);
+                            }
+
+                            GrpcServerLog.DeserializingMessage(serverCallContext.Logger, type);
+
+                            bodyContent = (await JsonSerializer.DeserializeAsync(stream, type, serializerOptions))!;
+
+                            if (bodyContent == null)
+                            {
+                                throw new InvalidOperationException($"Unable to deserialize null to {type.Name}.");
+                            }
                         }
                         else
                         {
-                            requestMessage = bodyContent;
+                            type = serverCallContext.DescriptorInfo.BodyDescriptor.ClrType;
+
+                            GrpcServerLog.DeserializingMessage(serverCallContext.Logger, type);
+                            bodyContent = (IMessage)(await JsonSerializer.DeserializeAsync(stream, serverCallContext.DescriptorInfo.BodyDescriptor.ClrType, serializerOptions))!;
+                        }
+                    }
+                    finally
+                    {
+                        if (usesTranscodingStream)
+                        {
+                            await stream.DisposeAsync();
                         }
                     }
                 }
-                finally
+
+                if (serverCallContext.DescriptorInfo.BodyFieldDescriptor != null)
                 {
-                    if (usesTranscodingStream)
+                    requestMessage = (IMessage)Activator.CreateInstance<TRequest>();
+
+                    // The spec says that request body must be on the top-level message.
+                    // Recursive request body isn't supported.
+                    ServiceDescriptorHelpers.SetValue(requestMessage, serverCallContext.DescriptorInfo.BodyFieldDescriptor, bodyContent);
+                }
+                else
+                {
+                    if (bodyContent == null)
                     {
-                        await stream.DisposeAsync();
+                        throw new InvalidOperationException($"Unable to deserialize null to {type.Name}.");
                     }
+
+                    requestMessage = (IMessage)bodyContent;
                 }
             }
             else
@@ -244,7 +282,7 @@ internal static class JsonRequestHelpers
                 var routeValue = serverCallContext.HttpContext.Request.RouteValues[parameterDescriptor.Key];
                 if (routeValue != null)
                 {
-                    ServiceDescriptorHelpers.RecursiveSetValue(requestMessage, parameterDescriptor.Value, routeValue);
+                    ServiceDescriptorHelpers.RecursiveSetValue(requestMessage, parameterDescriptor.Value.DescriptorsPath, routeValue);
                 }
             }
 
@@ -265,23 +303,79 @@ internal static class JsonRequestHelpers
             GrpcServerLog.ReceivedMessage(serverCallContext.Logger);
             return (TRequest)requestMessage;
         }
+        catch (JsonException ex)
+        {
+            GrpcServerLog.ErrorReadingMessage(serverCallContext.Logger, ex);
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Request JSON payload is not correctly formatted.", ex));
+        }
         catch (Exception ex)
         {
             GrpcServerLog.ErrorReadingMessage(serverCallContext.Logger, ex);
-            throw;
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message, ex));
         }
+    }
+
+    private static async ValueTask<IMessage> ReadHttpBodyAsync(JsonTranscodingServerCallContext serverCallContext)
+    {
+        var httpBody = (IMessage)Activator.CreateInstance(serverCallContext.DescriptorInfo.BodyDescriptor!.ClrType)!;
+
+        var contentType = serverCallContext.HttpContext.Request.ContentType;
+        if (contentType != null)
+        {
+            httpBody.Descriptor.Fields[HttpBody.ContentTypeFieldNumber].Accessor.SetValue(httpBody, contentType);
+        }
+
+        var data = await ReadDataAsync(serverCallContext);
+        httpBody.Descriptor.Fields[HttpBody.DataFieldNumber].Accessor.SetValue(httpBody, UnsafeByteOperations.UnsafeWrap(data));
+
+        return httpBody;
+    }
+
+    private static async ValueTask<byte[]> ReadDataAsync(JsonTranscodingServerCallContext serverCallContext)
+    {
+        // Buffer to disk if content is larger than 30Kb.
+        // Based on value in XmlSerializer and NewtonsoftJson input formatters.
+        const int DefaultMemoryThreshold = 1024 * 30;
+
+        var memoryThreshold = DefaultMemoryThreshold;
+        var contentLength = serverCallContext.HttpContext.Request.ContentLength.GetValueOrDefault();
+        if (contentLength > 0 && contentLength < memoryThreshold)
+        {
+            // If the Content-Length is known and is smaller than the default buffer size, use it.
+            memoryThreshold = (int)contentLength;
+        }
+
+        using var fs = new FileBufferingReadStream(serverCallContext.HttpContext.Request.Body, memoryThreshold);
+
+        // Read the request body into buffer.
+        // No explicit cancellation token. Request body uses underlying request aborted token.
+        await fs.DrainAsync(CancellationToken.None);
+        fs.Seek(0, SeekOrigin.Begin);
+
+        var data = new byte[fs.Length];
+        var read = fs.Read(data);
+        Debug.Assert(read == data.Length);
+
+        return data;
     }
 
     private static List<FieldDescriptor>? GetPathDescriptors(JsonTranscodingServerCallContext serverCallContext, IMessage requestMessage, string path)
     {
-        return serverCallContext.DescriptorInfo.PathDescriptorsCache.GetOrAdd(path, p =>
+        // Must not add null values for paths that don't resolve to a descriptor
+        var cache = serverCallContext.DescriptorInfo.PathDescriptorsCache;
+        if (cache.TryGetValue(path, out var pathDescriptors))
         {
-            ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, p, out var pathDescriptors);
             return pathDescriptors;
-        });
+        }
+        if (ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, path.Split('.'), allowJsonName: true, out pathDescriptors))
+        {
+            cache.TryAdd(path, pathDescriptors);
+            return pathDescriptors;
+        }
+        return null;
     }
 
-    public static async Task SendMessage<TResponse>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions, TResponse message, CancellationToken cancellationToken) where TResponse : class
+    public static async ValueTask SendMessage<TResponse>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions, TResponse message, CancellationToken cancellationToken) where TResponse : class
     {
         var response = serverCallContext.HttpContext.Response;
 
@@ -294,7 +388,8 @@ internal static class JsonRequestHelpers
 
             if (serverCallContext.DescriptorInfo.ResponseBodyDescriptor != null)
             {
-                // TODO: Support recursive response body?
+                // The spec says that response body must be on the top-level message.
+                // Recursive response body isn't supported.
                 responseBody = serverCallContext.DescriptorInfo.ResponseBodyDescriptor.Accessor.GetValue((IMessage)message);
                 responseType = JsonConverterHelper.GetFieldType(serverCallContext.DescriptorInfo.ResponseBodyDescriptor);
             }
@@ -320,17 +415,25 @@ internal static class JsonRequestHelpers
     {
         if (serverCallContext.DescriptorInfo.BodyDescriptor != null)
         {
-            if (serverCallContext.DescriptorInfo.BodyFieldDescriptors == null || serverCallContext.DescriptorInfo.BodyFieldDescriptors.Count == 0)
+            var bodyFieldDescriptor = serverCallContext.DescriptorInfo.BodyFieldDescriptor;
+
+            // Null field descriptor indicates "*" which means the entire message is bound to the body.
+            if (bodyFieldDescriptor?.Name is null)
             {
                 return false;
             }
 
-            if (variable == serverCallContext.DescriptorInfo.BodyFieldDescriptorsPath)
+            var bodyFieldName = bodyFieldDescriptor.Name;
+            var bodyFieldJsonName = bodyFieldDescriptor.JsonName;
+
+            // Exact match (proto name or JSON name)
+            if (variable == bodyFieldName || variable == bodyFieldJsonName)
             {
                 return false;
             }
 
-            if (variable.StartsWith(serverCallContext.DescriptorInfo.BodyFieldDescriptorsPath!, StringComparison.Ordinal))
+            // Nested field of body field (proto name prefix or JSON name prefix).
+            if (IsNestedBodyField(variable, bodyFieldName) || IsNestedBodyField(variable, bodyFieldJsonName))
             {
                 return false;
             }
@@ -341,6 +444,20 @@ internal static class JsonRequestHelpers
             return false;
         }
 
+        // Also check JSON name aliases. Route parameter keys use proto names (e.g. "user_id"),
+        // but query parameters can use JSON names (e.g. "userId") which resolve to the same field.
+        if (serverCallContext.DescriptorInfo.RouteParameterJsonPaths.Contains(variable))
+        {
+            return false;
+        }
+
         return true;
+    }
+
+    private static bool IsNestedBodyField(string variable, string bodyFieldName)
+    {
+        return bodyFieldName.Length + 1 < variable.Length &&
+            variable.StartsWith(bodyFieldName, StringComparison.Ordinal) &&
+            variable[bodyFieldName.Length] == '.';
     }
 }

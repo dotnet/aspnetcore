@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Session;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,12 +18,10 @@ public static class SessionServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    [RequiresUnreferencedCode("Session State middleware does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IServiceCollection AddSession(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddTransient<ISessionStore, DistributedSessionStore>();
         services.AddDataProtection();
@@ -35,17 +34,11 @@ public static class SessionServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">The session options to configure the middleware with.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    [RequiresUnreferencedCode("Session State middleware does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IServiceCollection AddSession(this IServiceCollection services, Action<SessionOptions> configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
 
         services.Configure(configure);
         services.AddSession();

@@ -2,13 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
@@ -46,29 +43,6 @@ public class ImageTagHelper : UrlResolutionTagHelper
         FileVersionProvider = fileVersionProvider;
     }
 
-    /// <summary>
-    /// Creates a new <see cref="ImageTagHelper"/>.
-    /// This constructor is obsolete and will be removed in a future version.
-    /// </summary>
-    /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-    /// <param name="cacheProvider">The <see cref="TagHelperMemoryCacheProvider"/>.</param>
-    /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
-    /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
-    /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
-    [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-    public ImageTagHelper(
-        IWebHostEnvironment hostingEnvironment,
-        TagHelperMemoryCacheProvider cacheProvider,
-        IFileVersionProvider fileVersionProvider,
-        HtmlEncoder htmlEncoder,
-        IUrlHelperFactory urlHelperFactory)
-        : base(urlHelperFactory, htmlEncoder)
-    {
-        HostingEnvironment = hostingEnvironment;
-        Cache = cacheProvider.Cache;
-        FileVersionProvider = fileVersionProvider;
-    }
-
     /// <inheritdoc />
     public override int Order => -1000;
 
@@ -90,34 +64,13 @@ public class ImageTagHelper : UrlResolutionTagHelper
     [HtmlAttributeName(AppendVersionAttributeName)]
     public bool AppendVersion { get; set; }
 
-    /// <summary>
-    /// Gets the <see cref="IWebHostEnvironment"/> for the application.
-    /// This property is obsolete and will be removed in a future version.
-    /// </summary>
-    [Obsolete("This property is obsolete and will be removed in a future version.")] // Remove after .NET 6.
-    protected internal IWebHostEnvironment HostingEnvironment { get; }
-
-    /// <summary>
-    /// Gets the <see cref="IMemoryCache"/> used to store globbed urls.
-    /// This property is obsolete and will be removed in a future version.
-    /// </summary>
-    [Obsolete("This property is obsolete and will be removed in a future version.")] // Remove after .NET 6.
-    protected internal IMemoryCache Cache { get; }
-
     internal IFileVersionProvider FileVersionProvider { get; private set; }
 
     /// <inheritdoc />
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         output.CopyHtmlAttribute(SrcAttributeName, context);
         ProcessUrlAttribute(SrcAttributeName, output);
@@ -130,8 +83,9 @@ public class ImageTagHelper : UrlResolutionTagHelper
             // pipeline have touched the value. If the value is already encoded this ImageTagHelper may
             // not function properly.
             Src = output.Attributes[SrcAttributeName].Value as string;
+            var src = GetVersionedResourceUrl(Src);
 
-            output.Attributes.SetAttribute(SrcAttributeName, FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Src));
+            output.Attributes.SetAttribute(SrcAttributeName, src);
         }
     }
 
@@ -141,5 +95,25 @@ public class ImageTagHelper : UrlResolutionTagHelper
         {
             FileVersionProvider = ViewContext.HttpContext.RequestServices.GetRequiredService<IFileVersionProvider>();
         }
+    }
+
+    private string GetVersionedResourceUrl(string url)
+    {
+        if (AppendVersion == true)
+        {
+            var pathBase = ViewContext.HttpContext.Request.PathBase;
+            if (ResourceCollectionUtilities.TryResolveFromAssetCollection(ViewContext, url, out var resolvedUrl))
+            {
+                url = resolvedUrl;
+                return url;
+            }
+
+            if (url != null)
+            {
+                url = FileVersionProvider.AddFileVersionToPath(pathBase, url);
+            }
+        }
+
+        return url;
     }
 }

@@ -50,10 +50,7 @@ public partial class ModelBinderFactory : IModelBinderFactory
     /// <inheritdoc />
     public IModelBinder CreateBinder(ModelBinderFactoryContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (_providers.Length == 0)
         {
@@ -260,15 +257,8 @@ public partial class ModelBinderFactory : IModelBinderFactory
 
         public override IModelBinder CreateBinder(ModelMetadata metadata, BindingInfo bindingInfo)
         {
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
-
-            if (bindingInfo == null)
-            {
-                throw new ArgumentNullException(nameof(bindingInfo));
-            }
+            ArgumentNullException.ThrowIfNull(metadata);
+            ArgumentNullException.ThrowIfNull(bindingInfo);
 
             // For non-root nodes we use the ModelMetadata as the cache token. This ensures that all non-root
             // nodes with the same metadata will have the same binder. This is OK because for an non-root

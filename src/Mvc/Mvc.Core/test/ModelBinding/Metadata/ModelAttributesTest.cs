@@ -185,11 +185,15 @@ public class ModelAttributesTest
                 .GetParameters()[0]);
 
         // Assert
-        // Not exactly "no attributes" due to SerializableAttribute on object.
-        Assert.IsType<SerializableAttribute>(Assert.Single(attributes.Attributes));
+        // The parameter itself has no attributes
         Assert.Empty(attributes.ParameterAttributes);
         Assert.Null(attributes.PropertyAttributes);
-        Assert.Equal(attributes.Attributes, attributes.TypeAttributes);
+
+        // Type attributes exist (but we don't care what they are - that's runtime implementation detail)
+        Assert.NotEmpty(attributes.TypeAttributes);
+
+        // Combined attributes = ParameterAttributes + TypeAttributes (when parameter has no attributes)
+        Assert.Equal(attributes.TypeAttributes, attributes.Attributes);
     }
 
     [Fact]
@@ -212,10 +216,8 @@ public class ModelAttributesTest
             attribute => Assert.IsType<RequiredAttribute>(attribute),
             attribute => Assert.IsType<RangeAttribute>(attribute));
         Assert.Null(attributes.PropertyAttributes);
-        Assert.Collection(
-            // Take(1) because the attribute or attributes after SerializableAttribute are framework-specific.
-            attributes.TypeAttributes.Take(1),
-            attribute => Assert.IsType<SerializableAttribute>(attribute));
+        // Check that SerializableAttribute exists in TypeAttributes (order-agnostic)
+        Assert.Contains(attributes.TypeAttributes, attr => attr is SerializableAttribute);
     }
 
     [Fact]
@@ -287,6 +289,18 @@ public class ModelAttributesTest
             attribute => Assert.IsType<ClassValidator>(attribute));
     }
 
+    [Fact]
+    public void GetAttributeForProperty_WithModelType_HandlesMultipleAttributesOnType()
+    {
+        // Arrange
+        var modelType = typeof(InvalidBaseViewModel);
+        var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == nameof(BaseModel.RouteValue));
+
+        // Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => ModelAttributes.GetAttributesForProperty(modelType, property));
+        Assert.Equal("Only one ModelMetadataType attribute is permitted per type.", exception.Message);
+    }
+
     [ClassValidator]
     private class BaseModel
     {
@@ -322,7 +336,7 @@ public class ModelAttributesTest
     {
     }
 
-    [ModelMetadataType(typeof(BaseModel))]
+    [ModelMetadataType<BaseModel>]
     private class BaseViewModel
     {
         [Range(0, 10)]
@@ -335,7 +349,11 @@ public class ModelAttributesTest
         public string RouteValue { get; set; }
     }
 
-    [ModelMetadataType(typeof(DerivedModel))]
+    [ModelMetadataType<BaseModel>]
+    [ModelMetadataType(typeof(BaseModel))]
+    private class InvalidBaseViewModel : BaseViewModel { }
+
+    [ModelMetadataType<DerivedModel>]
     private class DerivedViewModel : BaseViewModel
     {
         [StringLength(2)]
@@ -358,7 +376,7 @@ public class ModelAttributesTest
         }
     }
 
-    [ModelMetadataType(typeof(MergedAttributesMetadata))]
+    [ModelMetadataType<MergedAttributesMetadata>]
     private class MergedAttributes
     {
         [Required]

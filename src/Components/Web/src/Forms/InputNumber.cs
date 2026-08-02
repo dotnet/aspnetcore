@@ -53,12 +53,15 @@ public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
     {
         builder.OpenElement(0, "input");
         builder.AddAttribute(1, "step", _stepAttributeValue);
-        builder.AddMultipleAttributes(2, AdditionalAttributes);
-        builder.AddAttribute(3, "type", "number");
-        builder.AddAttributeIfNotNullOrEmpty(4, "class", CssClass);
-        builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValueAsString));
-        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
-        builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
+        builder.AddAttribute(2, "type", "number");
+        builder.AddMultipleAttributes(3, AdditionalAttributes);
+        builder.AddAttributeIfNotNullOrEmpty(4, "id", IdAttributeValue);
+        builder.AddAttributeIfNotNullOrEmpty(5, "name", NameAttributeValue);
+        builder.AddAttributeIfNotNullOrEmpty(6, "class", CssClass);
+        builder.AddAttribute(7, "value", CurrentValueAsString);
+        builder.AddAttribute(8, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(9, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 

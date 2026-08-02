@@ -16,4 +16,9 @@ internal static class LinkerFlags
     /// Flags for a component
     /// </summary>
     public const DynamicallyAccessedMemberTypes Component = DynamicallyAccessedMemberTypes.All;
+
+    /// <summary>
+    /// Flags for a JSInvokable type.
+    /// </summary>
+    public const DynamicallyAccessedMemberTypes JSInvokable = DynamicallyAccessedMemberTypes.PublicMethods;
 }

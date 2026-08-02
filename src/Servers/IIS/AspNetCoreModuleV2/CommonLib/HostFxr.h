@@ -16,7 +16,7 @@ struct hostfxr_initialize_parameters
 
 #define DOTNETCORE_STARTUP_HOOK  L"STARTUP_HOOKS"
 #define DOTNETCORE_USE_ENTRYPOINT_FILTER L"USE_ENTRYPOINT_FILTER"
-#define DOTNETCORE_STACK_SIZE L"DEFAULT_STACK_SIZE"
+#define DOTNETCORE_STACK_SIZE L"System.Threading.DefaultStackSize"
 #define APP_CONTEXT_BASE_DIRECTORY L"APP_CONTEXT_BASE_DIRECTORY"
 #define ASPNETCORE_STARTUP_ASSEMBLY L"Microsoft.AspNetCore.Server.IIS"
 
@@ -29,6 +29,8 @@ typedef int(*hostfxr_set_runtime_property_value_fn)(void* host_context_handle, P
 typedef int(*hostfxr_get_runtime_property_value_fn)(void* host_context_handle, PCWSTR name, PWSTR* value);
 typedef int(*hostfxr_run_app_fn)(void* host_context_handle);
 typedef int(*hostfxr_close_fn)(void* hostfxr_context_handle);
+
+const int AppArgNotRunnable = 0x80008094;
 
 class HostFxrErrorRedirector: NonCopyable
 {

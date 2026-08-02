@@ -19,10 +19,7 @@ internal sealed class PageSaveTempDataPropertyFilterFactory : IFilterFactory
 
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         var service = serviceProvider.GetRequiredService<PageSaveTempDataPropertyFilter>();
         service.Properties = Properties;

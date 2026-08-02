@@ -10,10 +10,7 @@ internal static class RewriteMapParser
 {
     public static IISRewriteMapCollection? Parse(XElement xmlRoot)
     {
-        if (xmlRoot == null)
-        {
-            throw new ArgumentNullException(nameof(xmlRoot));
-        }
+        ArgumentNullException.ThrowIfNull(xmlRoot);
 
         var mapsElement = xmlRoot.Descendants(RewriteTags.RewriteMaps).SingleOrDefault();
         if (mapsElement == null)

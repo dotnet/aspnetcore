@@ -338,9 +338,6 @@ public class BufferStream : Stream
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

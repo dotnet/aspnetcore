@@ -19,24 +19,28 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
 
-    <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)\UrlDecoder\UrlDecoder.cs" Link="UrlDecoder.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Reroute.cs" />
+    <Compile Include="$(SharedSourceRoot)Debugger\HttpContextDebugFormatter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ValueStringBuilder\ValueListBuilder.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="RouteHandlerInvocationContextOfT.Generated.tt">
+    <None Update="EndpointFilterInvocationContextOfT.Generated.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>RouteHandlerInvocationContextOfT.Generated.cs</LastGenOutput>
+      <LastGenOutput>EndpointFilterInvocationContextOfT.Generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -45,11 +49,15 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="RouteHandlerInvocationContextOfT.Generated.cs">
+    <Compile Update="EndpointFilterInvocationContextOfT.Generated.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>RouteHandlerInvocationContextOfT.Generated.tt</DependentUpon>
+      <DependentUpon>EndpointFilterInvocationContextOfT.Generated.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks" />
+  </ItemGroup>
 </Project>

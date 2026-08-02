@@ -6,8 +6,8 @@
 .PARAMETER Force
     Force the script to run the MSI, even it it appears LocalDB is installed.
 .LINK
-    https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-2016-express-localdb?view=sql-server-2016
-    https://docs.microsoft.com/en-us/sql/database-engine/install-windows/install-sql-server-from-the-command-prompt?view=sql-server-2016
+    https://learn.microsoft.com/sql/database-engine/configure-windows/sql-server-2016-express-localdb?view=sql-server-2016
+    https://learn.microsoft.com/sql/database-engine/install-windows/install-sql-server-from-the-command-prompt?view=sql-server-2016
 #>
 param(
     [switch]$Force

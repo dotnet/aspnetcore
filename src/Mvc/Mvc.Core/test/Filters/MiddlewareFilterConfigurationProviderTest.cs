@@ -118,14 +118,8 @@ public class MiddlewareFilterConfigurationProviderTest
             IWebHostEnvironment hostingEnvironment,
             ILoggerFactory loggerFactory)
         {
-            if (hostingEnvironment == null)
-            {
-                throw new ArgumentNullException(nameof(hostingEnvironment));
-            }
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
+            ArgumentNullException.ThrowIfNull(hostingEnvironment);
+            ArgumentNullException.ThrowIfNull(loggerFactory);
         }
     }
 
@@ -141,14 +135,8 @@ public class MiddlewareFilterConfigurationProviderTest
             IWebHostEnvironment hostingEnvironment,
             ILoggerFactory loggerFactory)
         {
-            if (hostingEnvironment == null)
-            {
-                throw new ArgumentNullException(nameof(hostingEnvironment));
-            }
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
+            ArgumentNullException.ThrowIfNull(hostingEnvironment);
+            ArgumentNullException.ThrowIfNull(loggerFactory);
         }
     }
 

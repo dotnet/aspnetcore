@@ -16,6 +16,15 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 {
     private readonly ILogger<RemoteNavigationManager> _logger;
     private IJSRuntime _jsRuntime;
+    private bool? _navigationLockStateBeforeJsRuntimeAttached;
+    private const string _disableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException";
+
+    [FeatureSwitchDefinition(_disableThrowNavigationException)]
+    private static bool _throwNavigationException { get; } =
+        !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
+    private Func<string, Task>? _onNavigateTo;
+
+    public event EventHandler<Exception>? UnhandledException;
 
     /// <summary>
     /// Creates a new <see cref="RemoteNavigationManager"/> instance.
@@ -43,6 +52,19 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     }
 
     /// <summary>
+    /// Initializes the <see cref="NavigationManager" />.
+    /// </summary>
+    /// <param name="baseUri">The base URI.</param>
+    /// <param name="uri">The absolute URI.</param>
+    /// <param name="onNavigateTo">A delegate that points to a method handling navigation events. </param>
+    public void Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo)
+    {
+        _onNavigateTo += onNavigateTo;
+        base.Initialize(baseUri, uri);
+        NotifyLocationChanged(isInterceptedLink: false);
+    }
+
+    /// <summary>
     /// Initializes the <see cref="RemoteNavigationManager"/>.
     /// </summary>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
@@ -54,14 +76,26 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
 
         _jsRuntime = jsRuntime;
+
+        if (_navigationLockStateBeforeJsRuntimeAttached.HasValue)
+        {
+            _ = SetHasLocationChangingListenersAsync(_navigationLockStateBeforeJsRuntimeAttached.Value);
+            _navigationLockStateBeforeJsRuntimeAttached = null;
+        }
     }
 
-    public void NotifyLocationChanged(string uri, bool intercepted)
+    public void NotifyLocationChanged(string uri, string state, bool intercepted)
     {
         Log.ReceivedLocationChangedNotification(_logger, uri, intercepted);
 
         Uri = uri;
+        HistoryEntryState = state;
         NotifyLocationChanged(intercepted);
+    }
+
+    public async ValueTask<bool> HandleLocationChangingAsync(string uri, string? state, bool intercepted)
+    {
+        return await NotifyLocationChangingAsync(uri, state, intercepted);
     }
 
     /// <inheritdoc />
@@ -72,11 +106,112 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         if (_jsRuntime == null)
         {
-            var absoluteUriString = ToAbsoluteUri(uri).ToString();
-            throw new NavigationException(absoluteUriString);
+            var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
+            if (_throwNavigationException)
+            {
+                throw new NavigationException(absoluteUriString);
+            }
+            if (_onNavigateTo == null)
+            {
+                throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
+            }
+            _ = _onNavigateTo(absoluteUriString);
+            return;
         }
 
-        _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options).Preserve();
+        _ = PerformNavigationAsync();
+
+        async Task PerformNavigationAsync()
+        {
+            try
+            {
+                var shouldContinueNavigation = await NotifyLocationChangingAsync(uri, options.HistoryEntryState, false);
+
+                if (!shouldContinueNavigation)
+                {
+                    Log.NavigationCanceled(_logger, uri);
+                    return;
+                }
+
+                await _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options);
+                Log.NavigationCompleted(_logger, uri);
+            }
+            catch (TaskCanceledException)
+            when (_jsRuntime is RemoteJSRuntime remoteRuntime && remoteRuntime.IsPermanentlyDisconnected)
+            {
+                Log.NavigationStoppedSessionEnded(_logger, uri);
+            }
+            catch (Exception ex)
+            {
+                // We shouldn't ever reach this since exceptions thrown from handlers are handled in HandleLocationChangingHandlerException.
+                // But if some other exception gets thrown, we still want to know about it.
+                Log.NavigationFailed(_logger, uri, ex);
+                UnhandledException?.Invoke(this, ex);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public override void Refresh(bool forceReload = false)
+    {
+        if (_jsRuntime == null)
+        {
+            var absoluteUriString = ToAbsoluteUri(Uri).AbsoluteUri;
+            if (_throwNavigationException)
+            {
+                throw new NavigationException(absoluteUriString);
+            }
+            if (_onNavigateTo == null)
+            {
+                throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
+            }
+            _ = _onNavigateTo(absoluteUriString);
+            return;
+        }
+
+        _ = RefreshAsync();
+
+        async Task RefreshAsync()
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync(Interop.Refresh, forceReload);
+            }
+            catch (Exception ex)
+            {
+                Log.RefreshFailed(_logger, ex);
+                UnhandledException?.Invoke(this, ex);
+            }
+        }
+    }
+
+    protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
+    {
+        Log.NavigationFailed(_logger, context.TargetLocation, ex);
+        UnhandledException?.Invoke(this, ex);
+    }
+
+    protected override void SetNavigationLockState(bool value)
+    {
+        if (_jsRuntime is null)
+        {
+            _navigationLockStateBeforeJsRuntimeAttached = value;
+            return;
+        }
+
+        _ = SetHasLocationChangingListenersAsync(value);
+    }
+
+    private async Task SetHasLocationChangingListenersAsync(bool value)
+    {
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, WebRendererId.Server, value);
+        }
+        catch (JSDisconnectedException)
+        {
+            // If the browser is gone, we don't need it to clean up any browser-side state
+        }
     }
 
     private static partial class Log
@@ -89,5 +224,23 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(2, LogLevel.Debug, "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}", EventName = "ReceivedLocationChangedNotification")]
         public static partial void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted);
+
+        [LoggerMessage(3, LogLevel.Debug, "Navigation canceled when changing the location to {Uri}", EventName = "NavigationCanceled")]
+        public static partial void NavigationCanceled(ILogger logger, string uri);
+
+        [LoggerMessage(4, LogLevel.Error, "Navigation failed when changing the location to {Uri}", EventName = "NavigationFailed")]
+        public static partial void NavigationFailed(ILogger logger, string uri, Exception exception);
+
+        [LoggerMessage(5, LogLevel.Error, "Failed to refresh", EventName = "RefreshFailed")]
+        public static partial void RefreshFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(1, LogLevel.Debug, "Requesting not found", EventName = "RequestingNotFound")]
+        public static partial void RequestingNotFound(ILogger logger);
+
+        [LoggerMessage(6, LogLevel.Debug, "Navigation completed when changing the location to {Uri}", EventName = "NavigationCompleted")]
+        public static partial void NavigationCompleted(ILogger logger, string uri);
+
+        [LoggerMessage(7, LogLevel.Debug, "Navigation stopped because the session ended when navigating to {Uri}", EventName = "NavigationStoppedSessionEnded")]
+        public static partial void NavigationStoppedSessionEnded(ILogger logger, string uri);
     }
 }

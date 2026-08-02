@@ -391,6 +391,27 @@ public class DefaultModelMetadataTest
 
     [Theory]
     [InlineData(typeof(string))]
+    [InlineData(typeof(int))]
+    public void IsParseableType_ReturnsFalse_ForByRefTypes(Type modelType)
+    {
+        // Arrange
+        var provider = new EmptyModelMetadataProvider();
+        var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+        var key = ModelMetadataIdentity.ForType(modelType.MakeByRefType());
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null));
+
+        var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+        // Act
+        var isParseableType = metadata.IsParseableType;
+
+        // Assert
+        Assert.False(isParseableType);
+    }
+
+    [Theory]
+    [InlineData(typeof(string))]
     [InlineData(typeof(IDisposable))]
     [InlineData(typeof(Nullable<int>))]
     public void IsRequired_ReturnsFalse_ForNullableTypes(Type modelType)
@@ -521,13 +542,11 @@ public class DefaultModelMetadataTest
         foreach (var originalName in originalNames)
         {
             expectedProperties.Add(new DefaultModelMetadata(
-                provider.Object,
-                detailsProvider,
-                new DefaultMetadataDetails(
-#pragma warning disable CS0618 // Using the obsolete overload does not affect the intent of this test, but fixing it requires a lot of code churn.
-                        ModelMetadataIdentity.ForProperty(typeof(int), originalName, typeof(string)),
-#pragma warning restore CS0618 // Type or member is obsolete
-                        attributes: new ModelAttributes(new object[0], new object[0], null))));
+            provider.Object,
+            detailsProvider,
+            new DefaultMetadataDetails(
+                    ModelMetadataIdentity.ForProperty(typeof(PropertyNamesContainer).GetProperty(originalName)!, typeof(int), typeof(PropertyNamesContainer)),
+                    attributes: new ModelAttributes(new object[0], new object[0], null))));
         }
 
         provider
@@ -626,9 +645,7 @@ public class DefaultModelMetadataTest
         foreach (var kvp in originalNamesAndOrders)
         {
             var propertyCache = new DefaultMetadataDetails(
-#pragma warning disable CS0618 // Using the obsolete overload does not affect the intent of this test, but fixing it requires a lot of code churn.
-                        ModelMetadataIdentity.ForProperty(typeof(int), kvp.Key, typeof(string)),
-#pragma warning restore CS0618 // Type or member is obsolete
+                        ModelMetadataIdentity.ForProperty(typeof(PropertyNamesContainer).GetProperty(kvp.Key)!, typeof(int), typeof(PropertyNamesContainer)),
                         attributes: new ModelAttributes(new object[0], new object[0], null))
             {
                 DisplayMetadata = new DisplayMetadata(),
@@ -1591,6 +1608,22 @@ public class DefaultModelMetadataTest
         public int PublicGetProtectedSetProperty { get; protected set; }
 
         public int PublicGetPublicSetProperty { get; set; }
+    }
+
+    private class PropertyNamesContainer
+    {
+        public int Property1 { get; set; }
+        public int Property2 { get; set; }
+        public int Property3 { get; set; }
+        public int Property4 { get; set; }
+        public int Alpha { get; set; }
+        public int Bravo { get; set; }
+        public int Charlie { get; set; }
+        public int Delta { get; set; }
+        public int John { get; set; }
+        public int Jonathan { get; set; }
+        public int Jon { get; set; }
+        public int Joan { get; set; }
     }
 
     private class TypeWithInvalidTryParse

@@ -23,6 +23,12 @@ export function registerCustomEventType(eventName: string, options: EventTypeOpt
     throw new Error(`The event '${eventName}' is already registered.`);
   }
 
+  // When aliasing a browser event, the custom event name must be different from the browser event name
+  // to avoid double-triggering (once for the browser event, once for the custom event wrapper)
+  if (options.browserEventName && eventName === options.browserEventName) {
+    throw new Error(`The custom event '${eventName}' cannot have the same name as its browserEventName '${options.browserEventName}'. Choose a different name for the custom event.`);
+  }
+
   // If applicable, register this as an alias of the given browserEventName
   if (options.browserEventName) {
     const aliasGroup = browserEventNamesToAliases.get(options.browserEventName);
@@ -160,7 +166,11 @@ registerBuiltInEventType(['wheel', 'mousewheel'], {
   createEventArgs: e => parseWheelEvent(e as WheelEvent),
 });
 
-registerBuiltInEventType(['toggle'], createBlankEventArgsOptions);
+registerBuiltInEventType([
+  'cancel',
+  'close',
+  'toggle',
+], createBlankEventArgsOptions);
 
 function parseChangeEvent(event: Event): ChangeEventArgs {
   const element = event.target as Element;
@@ -260,6 +270,7 @@ function parseKeyboardEvent(event: KeyboardEvent): KeyboardEventArgs {
     altKey: event.altKey,
     metaKey: event.metaKey,
     type: event.type,
+    isComposing: event.isComposing,
   };
 }
 
@@ -305,6 +316,8 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
     offsetY: event.offsetY,
     pageX: event.pageX,
     pageY: event.pageY,
+    movementX: event.movementX,
+    movementY: event.movementY,
     button: event.button,
     buttons: event.buttons,
     ctrlKey: event.ctrlKey,
@@ -409,6 +422,7 @@ interface KeyboardEventArgs {
   altKey: boolean;
   metaKey: boolean;
   type: string;
+  isComposing: boolean;
 }
 
 interface MouseEventArgs {
@@ -421,6 +435,8 @@ interface MouseEventArgs {
   offsetY: number;
   pageX: number;
   pageY: number;
+  movementX: number;
+  movementY: number;
   button: number;
   buttons: number;
   ctrlKey: boolean;

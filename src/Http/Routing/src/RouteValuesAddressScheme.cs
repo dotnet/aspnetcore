@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -21,10 +22,7 @@ internal sealed class RouteValuesAddressScheme : IEndpointAddressScheme<RouteVal
 
     public IEnumerable<Endpoint> FindEndpoints(RouteValuesAddress address)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         var state = State;
 
@@ -142,7 +140,7 @@ internal sealed class RouteValuesAddressScheme : IEndpointAddressScheme<RouteVal
         return new StateEntry(
             matchesWithRequiredValues,
             new LinkGenerationDecisionTree(matchesWithRequiredValues),
-            namedOutboundMatchResults);
+            namedOutboundMatchResults.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase));
     }
 
     private static OutboundRouteEntry CreateOutboundRouteEntry(
@@ -174,12 +172,12 @@ internal sealed class RouteValuesAddressScheme : IEndpointAddressScheme<RouteVal
         // For testing
         public readonly List<OutboundMatch> MatchesWithRequiredValues;
         public readonly LinkGenerationDecisionTree AllMatchesLinkGenerationTree;
-        public readonly Dictionary<string, List<OutboundMatchResult>> NamedMatches;
+        public readonly FrozenDictionary<string, List<OutboundMatchResult>> NamedMatches;
 
         public StateEntry(
             List<OutboundMatch> matchesWithRequiredValues,
             LinkGenerationDecisionTree allMatchesLinkGenerationTree,
-            Dictionary<string, List<OutboundMatchResult>> namedMatches)
+            FrozenDictionary<string, List<OutboundMatchResult>> namedMatches)
         {
             MatchesWithRequiredValues = matchesWithRequiredValues;
             AllMatchesLinkGenerationTree = allMatchesLinkGenerationTree;

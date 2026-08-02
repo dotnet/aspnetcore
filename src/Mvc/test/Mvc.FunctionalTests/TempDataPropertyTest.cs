@@ -1,20 +1,32 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class TempDataPropertyTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
+public class TempDataPropertyTest : LoggedTest
 {
-    protected HttpClient Client { get; }
-
-    public TempDataPropertyTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task TempDataPropertyAttribute_RetainsTempDataWithView()

@@ -26,10 +26,7 @@ public static class HeaderPropagationApplicationBuilderExtensions
     /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
     public static IApplicationBuilder UseHeaderPropagation(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         if (app.ApplicationServices.GetService<HeaderPropagationValues>() == null)
         {

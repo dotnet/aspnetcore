@@ -20,10 +20,7 @@ public abstract class FilterContext : ActionContext
         IList<IFilterMetadata> filters)
         : base(actionContext)
     {
-        if (filters == null)
-        {
-            throw new ArgumentNullException(nameof(filters));
-        }
+        ArgumentNullException.ThrowIfNull(filters);
 
         Filters = filters;
     }

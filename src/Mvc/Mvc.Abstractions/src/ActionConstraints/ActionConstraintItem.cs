@@ -15,10 +15,7 @@ public class ActionConstraintItem
     /// <param name="metadata">The <see cref="IActionConstraintMetadata"/> instance.</param>
     public ActionConstraintItem(IActionConstraintMetadata metadata)
     {
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
         Metadata = metadata;
     }

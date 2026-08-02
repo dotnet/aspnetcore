@@ -55,6 +55,49 @@ public class ResponseCookiesTest
     }
 
     [Fact]
+    public void AppendWithExtensions()
+    {
+        var headers = (IHeaderDictionary)new HeaderDictionary();
+        var features = MakeFeatures(headers);
+        var cookies = new ResponseCookies(features);
+        var testCookie = "TestCookie";
+
+        cookies.Append(testCookie, "value", new CookieOptions()
+        {
+            Extensions = { "simple", "key=value" }
+        });
+
+        var cookieHeaderValues = headers.SetCookie;
+        Assert.Single(cookieHeaderValues);
+        Assert.StartsWith(testCookie, cookieHeaderValues[0]);
+        Assert.Contains("path=/", cookieHeaderValues[0]);
+        Assert.Contains("simple;", cookieHeaderValues[0]);
+        Assert.EndsWith("key=value", cookieHeaderValues[0]);
+    }
+
+    [Fact]
+    public void DeleteWithExtensions()
+    {
+        var headers = (IHeaderDictionary)new HeaderDictionary();
+        var features = MakeFeatures(headers);
+        var cookies = new ResponseCookies(features);
+        var testCookie = "TestCookie";
+
+        cookies.Delete(testCookie, new CookieOptions()
+        {
+            Extensions = { "simple", "key=value" }
+        });
+
+        var cookieHeaderValues = headers.SetCookie;
+        Assert.Single(cookieHeaderValues);
+        Assert.StartsWith(testCookie, cookieHeaderValues[0]);
+        Assert.Contains("path=/", cookieHeaderValues[0]);
+        Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
+        Assert.Contains("simple;", cookieHeaderValues[0]);
+        Assert.EndsWith("key=value", cookieHeaderValues[0]);
+    }
+
+    [Fact]
     public void DeleteCookieShouldSetDefaultPath()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();
@@ -144,7 +187,8 @@ public class ResponseCookiesTest
             Path = "/",
             Expires = time,
             Domain = "example.com",
-            SameSite = SameSiteMode.Lax
+            SameSite = SameSiteMode.Lax,
+            Extensions = { "extension" }
         };
 
         cookies.Delete(testCookie, options);
@@ -157,6 +201,7 @@ public class ResponseCookiesTest
         Assert.Contains("secure", cookieHeaderValues[0]);
         Assert.Contains("httponly", cookieHeaderValues[0]);
         Assert.Contains("samesite", cookieHeaderValues[0]);
+        Assert.Contains("extension", cookieHeaderValues[0]);
     }
 
     [Fact]
@@ -223,24 +268,5 @@ public class ResponseCookiesTest
         var cookies = new ResponseCookies(features);
 
         Assert.Throws<ArgumentException>(() => cookies.Append(key, "1"));
-    }
-
-    [Theory]
-    [InlineData("key", "value", "key=value")]
-    [InlineData("key,", "!value", "key%2C=%21value")]
-    [InlineData("ke#y,", "val^ue", "ke%23y%2C=val%5Eue")]
-    [InlineData("base64", "QUI+REU/Rw==", "base64=QUI%2BREU%2FRw%3D%3D")]
-    public void AppContextSwitchEscapesKeysAndValuesBeforeSettingCookie(string key, string value, string expected)
-    {
-        var headers = (IHeaderDictionary)new HeaderDictionary();
-        var features = MakeFeatures(headers);
-        var cookies = new ResponseCookies(features);
-        cookies._enableCookieNameEncoding = true;
-
-        cookies.Append(key, value);
-
-        var cookieHeaderValues = headers.SetCookie;
-        Assert.Single(cookieHeaderValues);
-        Assert.StartsWith(expected, cookieHeaderValues[0]);
     }
 }

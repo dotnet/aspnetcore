@@ -10,9 +10,15 @@ internal static class BrowserNavigationManagerInterop
 
     public const string EnableNavigationInterception = Prefix + "enableNavigationInterception";
 
-    public const string GetLocationHref = Prefix + "getUnmarshalledLocationHref";
+    public const string GetLocationHref = Prefix + "getLocationHref";
 
-    public const string GetBaseUri = Prefix + "getUnmarshalledBaseURI";
+    public const string GetBaseUri = Prefix + "getBaseURI";
 
     public const string NavigateTo = Prefix + "navigateTo";
+
+    public const string Refresh = Prefix + "refresh";
+
+    public const string SetHasLocationChangingListeners = Prefix + "setHasLocationChangingListeners";
+
+    public const string ScrollToElement = Prefix + "scrollToElement";
 }

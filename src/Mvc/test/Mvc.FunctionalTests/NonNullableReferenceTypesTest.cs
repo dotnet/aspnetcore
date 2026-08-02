@@ -3,18 +3,30 @@
 
 using System.Net;
 using System.Net.Http;
-using AngleSharp.Parser.Html;
+using System.Reflection;
+using AngleSharp.Html.Parser;
+using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
+public class NonNullableReferenceTypesTest : LoggedTest
 {
-    public NonNullableReferenceTypesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    private HttpClient Client { get; set; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task CanUseNonNullableReferenceType_WithController_OmitData_ValidationErrors()
@@ -29,7 +41,7 @@ public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicW
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
 
-        var document = parser.Parse(content);
+        var document = parser.ParseDocument(content);
         var errors = document.QuerySelectorAll("#errors > ul > li");
         var li = Assert.Single(errors);
         Assert.Empty(li.TextContent);
@@ -53,7 +65,7 @@ public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicW
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         content = await response.Content.ReadAsStringAsync();
 
-        document = parser.Parse(content);
+        document = parser.ParseDocument(content);
         errors = errors = document.QuerySelectorAll("#errors > ul > li");
         Assert.Equal(2, errors.Length); // Not validating BCL error messages
     }
@@ -71,7 +83,7 @@ public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicW
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
 
-        var document = parser.Parse(content);
+        var document = parser.ParseDocument(content);
         var errors = document.QuerySelectorAll("#errors > ul > li");
         var li = Assert.Single(errors);
         Assert.Empty(li.TextContent);

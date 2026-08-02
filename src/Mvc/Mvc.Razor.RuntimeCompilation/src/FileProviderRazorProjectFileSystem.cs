@@ -15,15 +15,8 @@ internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSyste
 
     public FileProviderRazorProjectFileSystem(RuntimeCompilationFileProvider fileProvider, IWebHostEnvironment hostingEnvironment)
     {
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
-
-        if (hostingEnvironment == null)
-        {
-            throw new ArgumentNullException(nameof(hostingEnvironment));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
+        ArgumentNullException.ThrowIfNull(hostingEnvironment);
 
         _fileProvider = fileProvider;
         _hostingEnvironment = hostingEnvironment;
@@ -41,7 +34,9 @@ internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSyste
         path = NormalizeAndEnsureValidPath(path);
         var fileInfo = FileProvider.GetFileInfo(path);
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         return new FileProviderRazorProjectItem(fileInfo, basePath: string.Empty, filePath: path, root: _hostingEnvironment.ContentRootPath, fileKind);
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     }
 
     public override IEnumerable<RazorProjectItem> EnumerateItems(string path)
@@ -70,7 +65,9 @@ internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSyste
                 {
                     var filePath = prefix + "/" + fileInfo.Name;
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
                     yield return new FileProviderRazorProjectItem(fileInfo, basePath, filePath: filePath, root: _hostingEnvironment.ContentRootPath);
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
                 }
             }
         }
@@ -78,8 +75,8 @@ internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSyste
 
     private static string JoinPath(string path1, string path2)
     {
-        var hasTrailingSlash = path1.EndsWith("/", StringComparison.Ordinal);
-        var hasLeadingSlash = path2.StartsWith("/", StringComparison.Ordinal);
+        var hasTrailingSlash = path1.EndsWith('/');
+        var hasLeadingSlash = path2.StartsWith('/');
         if (hasLeadingSlash && hasTrailingSlash)
         {
             return string.Concat(path1, path2.AsSpan(1));

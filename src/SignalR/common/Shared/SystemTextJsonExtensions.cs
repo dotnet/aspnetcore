@@ -97,4 +97,21 @@ internal static class SystemTextJsonExtensions
 
         return reader.GetInt32();
     }
+
+    public static long? ReadAsInt64(this ref Utf8JsonReader reader, string propertyName)
+    {
+        reader.Read();
+
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
+
+        if (reader.TokenType != JsonTokenType.Number)
+        {
+            throw new InvalidDataException($"Expected '{propertyName}' to be of type {JsonTokenType.Number}.");
+        }
+
+        return reader.GetInt64();
+    }
 }

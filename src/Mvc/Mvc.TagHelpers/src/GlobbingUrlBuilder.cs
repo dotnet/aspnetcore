@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
@@ -16,8 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 public class GlobbingUrlBuilder
 {
     // Valid whitespace characters defined by the HTML5 spec.
-    private static readonly char[] ValidAttributeWhitespaceChars =
-        new[] { '\t', '\n', '\u000C', '\r', ' ' };
+    private static readonly SearchValues<char> ValidAttributeWhitespaceChars =
+        SearchValues.Create("\t\n\u000C\r ");
     private static readonly PathComparer DefaultPathComparer = new PathComparer();
     private static readonly char[] PatternSeparator = new[] { ',' };
     private static readonly char[] PathSeparator = new[] { '/' };
@@ -66,7 +68,7 @@ public class GlobbingUrlBuilder
     /// <param name="excludePattern">The file globbing exclude pattern.</param>
     /// <returns>The list of URLs</returns>
     public virtual IReadOnlyList<string> BuildUrlList(
-        string staticUrl,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string staticUrl,
         string includePattern,
         string excludePattern)
     {
@@ -304,7 +306,7 @@ public class GlobbingUrlBuilder
     private static bool IsWhiteSpace(string value, int index)
     {
         var ch = value[index];
-        return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
+        return ValidAttributeWhitespaceChars.Contains(ch);
     }
 
     private static StringSegment Trim(StringSegment value)

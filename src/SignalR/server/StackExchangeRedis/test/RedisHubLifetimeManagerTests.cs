@@ -6,9 +6,12 @@ using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Specification.Tests;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
+using Moq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -80,6 +83,65 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
                             Assert.Equal("Foo", prop.Value.Value<string>());
                         });
                 });
+        }
+    }
+
+    [Fact]
+    public async Task ErrorFromConnectionFactoryLogsAndAllowsDisconnect()
+    {
+        var server = new TestRedisServer();
+
+        var testSink = new TestSink();
+        var logger = new TestLogger("", testSink, true);
+        var mockLoggerFactory = new Mock<ILoggerFactory>();
+        mockLoggerFactory
+            .Setup(m => m.CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => (ILogger)logger);
+        var loggerT = mockLoggerFactory.Object.CreateLogger<RedisHubLifetimeManager<Hub>>();
+
+        var manager = new RedisHubLifetimeManager<Hub>(
+            loggerT,
+            Options.Create(new RedisOptions()
+            {
+                ConnectionFactory = _ => throw new ApplicationException("throw from connect")
+            }),
+            new DefaultHubProtocolResolver(new IHubProtocol[]
+            {
+            }, NullLogger<DefaultHubProtocolResolver>.Instance));
+
+        using (var client = new TestClient())
+        {
+            var connection = HubConnectionContextUtils.Create(client.Connection);
+
+            var ex = await Assert.ThrowsAsync<ApplicationException>(() => manager.OnConnectedAsync(connection)).DefaultTimeout();
+            Assert.Equal("throw from connect", ex.Message);
+
+            await manager.OnDisconnectedAsync(connection).DefaultTimeout();
+        }
+
+        var logs = testSink.Writes.ToArray();
+        Assert.Single(logs);
+        Assert.Equal("Error connecting to Redis.", logs[0].Message);
+        Assert.Equal("throw from connect", logs[0].Exception.Message);
+    }
+
+    // Smoke test that Debug.Asserts in TestSubscriber aren't hit
+    [Fact]
+    public async Task PatternGroupAndUser()
+    {
+        var server = new TestRedisServer();
+        using (var client = new TestClient())
+        {
+            var manager = CreateLifetimeManager(server);
+
+            var connection = HubConnectionContextUtils.Create(client.Connection);
+            connection.UserIdentifier = "*";
+
+            await manager.OnConnectedAsync(connection).DefaultTimeout();
+
+            var groupName = "*";
+
+            await manager.AddToGroupAsync(connection.ConnectionId, groupName).DefaultTimeout();
         }
     }
 

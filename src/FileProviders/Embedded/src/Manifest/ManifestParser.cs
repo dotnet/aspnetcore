@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
@@ -22,15 +23,8 @@ internal static class ManifestParser
 
     public static EmbeddedFilesManifest Parse(Assembly assembly, string name)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(assembly);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         var stream = assembly.GetManifestResourceStream(name);
         if (stream == null)

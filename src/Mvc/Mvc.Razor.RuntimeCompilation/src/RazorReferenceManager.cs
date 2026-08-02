@@ -14,14 +14,18 @@ internal class RazorReferenceManager
 #pragma warning restore CA1852 // Seal internal types
 {
     private readonly ApplicationPartManager _partManager;
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
     private readonly MvcRazorRuntimeCompilationOptions _options;
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     private object _compilationReferencesLock = new object();
     private bool _compilationReferencesInitialized;
     private IReadOnlyList<MetadataReference>? _compilationReferences;
 
     public RazorReferenceManager(
         ApplicationPartManager partManager,
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         IOptions<MvcRazorRuntimeCompilationOptions> options)
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     {
         _partManager = partManager;
         _options = options.Value;

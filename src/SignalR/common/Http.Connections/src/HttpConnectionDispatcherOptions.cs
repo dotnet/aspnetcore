@@ -4,6 +4,7 @@
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Http.Connections;
 
@@ -18,9 +19,6 @@ public class HttpConnectionDispatcherOptions
 
     private PipeOptions? _transportPipeOptions;
     private PipeOptions? _appPipeOptions;
-    private TimeSpan _transportSendTimeout;
-    private long _transportMaxBufferSize;
-    private long _applicationMaxBufferSize;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnectionDispatcherOptions"/> class.
@@ -64,15 +62,12 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public long TransportMaxBufferSize
     {
-        get => _transportMaxBufferSize;
+        get;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
-            _transportMaxBufferSize = value;
+            field = value;
         }
     }
 
@@ -84,20 +79,17 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public long ApplicationMaxBufferSize
     {
-        get => _applicationMaxBufferSize;
+        get;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
-            _applicationMaxBufferSize = value;
+            field = value;
         }
     }
 
     /// <summary>
-    /// Gets or sets the minimum protocol verison supported by the server.
+    /// Gets or sets the minimum protocol version supported by the server.
     /// The default value is 0, the lowest possible protocol version.
     /// </summary>
     public int MinimumProtocolVersion { get; set; }
@@ -111,16 +103,12 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public TimeSpan TransportSendTimeout
     {
-        get => _transportSendTimeout;
+        get;
         set
         {
-            if (value == TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeException.ThrowIfEqual(value, TimeSpan.Zero);
 
-            _transportSendTimeout = value;
-            TransportSendTimeoutTicks = value.Ticks;
+            field = value;
         }
     }
 
@@ -133,8 +121,30 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public bool CloseOnAuthenticationExpiration { get; set; }
 
-    internal long TransportSendTimeoutTicks { get; private set; }
-    internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
+    /// <summary>
+    /// Set to allow connections to reconnect with the same <see cref="BaseConnectionContext.ConnectionId"/>.
+    /// </summary>
+    /// <remarks>
+    /// Client still has to negotiate this option.
+    /// </remarks>
+    public bool AllowStatefulReconnects { get; set; }
+
+    /// <summary>
+    /// When set to <c>true</c>, enables the <c>/refresh</c> endpoint that allows clients to refresh their
+    /// authentication token without disconnecting. The server will re-authenticate the request and update
+    /// the connection's <see cref="System.Security.Claims.ClaimsPrincipal"/>.
+    /// </summary>
+    public bool EnableAuthenticationRefresh { get; set; }
+
+    /// <summary>
+    /// An optional callback invoked when the <c>/refresh</c> endpoint has successfully re-authenticated
+    /// the request but before the connection's user is replaced. Return <c>true</c> to accept the new
+    /// principal, or <c>false</c> to reject the refresh. When rejected, the endpoint responds with
+    /// HTTP 403 and the connection's current user remains in place.
+    /// </summary>
+    public Func<AuthenticationRefreshContext, ValueTask<bool>>? OnAuthenticationRefresh { get; set; }
+
+    internal bool TransportSendTimeoutEnabled => TransportSendTimeout != Timeout.InfiniteTimeSpan;
 
     // We initialize these lazily based on the state of the options specified here.
     // Though these are mutable it's extremely rare that they would be mutated past the

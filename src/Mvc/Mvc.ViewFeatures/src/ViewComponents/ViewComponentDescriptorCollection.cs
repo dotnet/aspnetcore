@@ -15,10 +15,7 @@ public class ViewComponentDescriptorCollection
     /// <param name="version">The unique version of discovered view components.</param>
     public ViewComponentDescriptorCollection(IEnumerable<ViewComponentDescriptor> items, int version)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
         Items = new List<ViewComponentDescriptor>(items);
         Version = version;

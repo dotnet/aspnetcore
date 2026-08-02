@@ -29,10 +29,7 @@ public class ResultExecutedContext : FilterContext
         object controller)
         : base(actionContext, filters)
     {
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(result);
 
         Result = result;
         Controller = controller;

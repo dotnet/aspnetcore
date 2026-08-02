@@ -33,10 +33,7 @@ public class RazorCompiledItemLoader
     /// <returns>A list of <see cref="RazorCompiledItem"/> objects.</returns>
     public virtual IReadOnlyList<RazorCompiledItem> LoadItems(Assembly assembly)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
 
         var items = new List<RazorCompiledItem>();
         foreach (var attribute in LoadAttributes(assembly))
@@ -54,10 +51,7 @@ public class RazorCompiledItemLoader
     /// <returns>A <see cref="RazorCompiledItem"/> created from <paramref name="attribute"/>.</returns>
     protected virtual RazorCompiledItem CreateItem(RazorCompiledItemAttribute attribute)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         return new DefaultRazorCompiledItem(attribute.Type, attribute.Kind, attribute.Identifier);
     }
@@ -70,10 +64,7 @@ public class RazorCompiledItemLoader
     /// <returns>A list of <see cref="RazorCompiledItemAttribute"/> attributes.</returns>
     protected IEnumerable<RazorCompiledItemAttribute> LoadAttributes(Assembly assembly)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
 
         return assembly.GetCustomAttributes<RazorCompiledItemAttribute>();
     }

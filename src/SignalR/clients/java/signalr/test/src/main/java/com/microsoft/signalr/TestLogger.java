@@ -43,6 +43,15 @@ class TestLogger implements AutoCloseable {
         this.logger.addAppender(this.appender);
     }
 
+    public ILoggingEvent[] getLogs() {
+        lock.lock();
+        try {
+            return list.toArray(new ILoggingEvent[0]);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public ILoggingEvent assertLog(String logMessage) {
         ILoggingEvent[] localList;
         lock.lock();

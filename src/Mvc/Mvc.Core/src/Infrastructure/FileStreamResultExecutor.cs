@@ -25,17 +25,10 @@ public partial class FileStreamResultExecutor : FileResultExecutorBase, IActionR
     /// <inheritdoc />
     public virtual async Task ExecuteAsync(ActionContext context, FileStreamResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
-
-        using (result.FileStream)
+        await using (result.FileStream)
         {
             Log.ExecutingFileResult(Logger, result);
 
@@ -75,15 +68,8 @@ public partial class FileStreamResultExecutor : FileResultExecutorBase, IActionR
         RangeItemHeaderValue? range,
         long rangeLength)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         if (range != null && rangeLength == 0)
         {

@@ -7,7 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
@@ -38,7 +38,7 @@ public class TargetingPackTests
         var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
             .Select(Path.GetFileNameWithoutExtension)
             .ToHashSet();
-        var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.Keys.ToHashSet();
+        var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.ToHashSet();
 
         _output.WriteLine("==== actual assemblies ====");
         _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
@@ -60,11 +60,25 @@ public class TargetingPackTests
     [Fact]
     public void RefAssembliesHaveExpectedAssemblyVersions()
     {
+        // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
+        var repoAssemblies = TestData.GetAspNetCoreTargetingPackDependencies()
+            .Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .ToHashSet();
+
+        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppVersion().Split('-', 2)[0];
+        var version = Version.Parse(versionStringWithoutPrereleaseTag);
+        var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
+        var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
+
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
         Assert.All(dlls, path =>
         {
+            var expectedVersion = repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)) ?
+                aspnetcoreVersion :
+                version;
+
             var fileName = Path.GetFileNameWithoutExtension(path);
             var assemblyName = AssemblyName.GetAssemblyName(path);
             using var fileStream = File.OpenRead(path);
@@ -72,8 +86,24 @@ public class TargetingPackTests
             var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
             var assemblyDefinition = reader.GetAssemblyDefinition();
 
-            TestData.ListedTargetingPackAssemblies.TryGetValue(fileName, out var expectedVersion);
-            Assert.Equal(expectedVersion, assemblyDefinition.Version.ToString());
+            // Assembly versions should all match Major.Minor.0.0
+            if (repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            {
+                // We always align major.minor in assemblies and packages.
+                Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
+            }
+            else
+            {
+                // ... but dotnet/runtime has a window between package version and (then) assembly version updates.
+                Assert.True(expectedVersion.Major == assemblyDefinition.Version.Major ||
+                    expectedVersion.Major - 1 == assemblyDefinition.Version.Major,
+                    $"Unexpected Major assembly version '{assemblyDefinition.Version.Major}' is neither " +
+                        $"{expectedVersion.Major - 1}' nor '{expectedVersion.Major}'.");
+            }
+
+            Assert.Equal(expectedVersion.Minor, assemblyDefinition.Version.Minor);
+            Assert.Equal(0, assemblyDefinition.Version.Build);
+            Assert.Equal(0, assemblyDefinition.Version.Revision);
         });
     }
 
@@ -114,10 +144,27 @@ public class TargetingPackTests
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count);
+        // Some packages are excluded from pruning because they contain build logic that is not in the SDK.
+        // These packages need their build targets to execute even though their runtime assemblies are in the shared framework.
+        string[] packagesExcludedFromPruning = ["Microsoft.Extensions.FileProviders.Embedded"]; // See https://github.com/dotnet/aspnetcore/issues/63719
+
+        foreach (var excludedPackage in packagesExcludedFromPruning)
+        {
+            aspnetcoreDependencies.Remove(excludedPackage);
+        }
+
+        // PackageOverrides will contain all Aspnetcore/Runtime ref pack libs, plus an entry for Microsoft.AspNetCore.App,
+        // minus any packages excluded from pruning
+        Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count + 1);
+
+        // Verify that excluded packages are NOT in PackageOverrides
+        foreach (var excludedPackage in packagesExcludedFromPruning)
+        {
+            Assert.DoesNotContain(packageOverrideFileLines, line => line.StartsWith(excludedPackage + "|", StringComparison.Ordinal));
+        }
 
         // PackageOverrides versions should remain at Major.Minor.0 while servicing.
-        var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppPackageVersion();
+        var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppVersion();
         Assert.True(
             NuGetVersion.TryParse(netCoreAppPackageVersion, out var parsedVersion),
             "MicrosoftNETCoreAppPackageVersion must be convertable to a NuGetVersion.");
@@ -147,13 +194,13 @@ public class TargetingPackTests
             {
                 Assert.Equal(netCoreAppPackageVersion, packageVersion);
             }
-            else if (aspnetcoreDependencies.Contains(packageName))
+            else if (packageName.Equals("Microsoft.AspNetCore.App", StringComparison.Ordinal) || aspnetcoreDependencies.Contains(packageName))
             {
                 Assert.Equal(aspNetCoreAppPackageVersion, packageVersion);
             }
             else
             {
-                Assert.True(false, $"{packageName} is not a recognized aspNetCore or runtime dependency");
+                Assert.Fail($"{packageName} is not a recognized aspNetCore or runtime dependency");
             }
         });
     }
@@ -182,7 +229,10 @@ public class TargetingPackTests
 
             Assert.True(hasRefAssemblyAttribute, $"{path} should have {nameof(ReferenceAssemblyAttribute)}");
 #pragma warning disable SYSLIB0037 // AssemblyName.ProcessorArchitecture is obsolete
-            Assert.Equal(ProcessorArchitecture.None, assemblyName.ProcessorArchitecture);
+            // MSIL and None represent platform neutral assemblies such that reference assemblies can always be loaded.
+            Assert.True(assemblyName.ProcessorArchitecture == ProcessorArchitecture.MSIL ||
+                assemblyName.ProcessorArchitecture == ProcessorArchitecture.None
+                );
 #pragma warning restore SYSLIB0037
         });
     }
@@ -330,7 +380,7 @@ public class TargetingPackTests
         var frameworkListEntries = frameworkListDoc.Root.Descendants();
 
         var packageFolder = SkipOnHelixAttribute.OnHelix() ?
-            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            AppContext.BaseDirectory :
             TestData.GetPackagesFolder();
         var targetingPackPath = Path.Combine(
             packageFolder, "Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg");

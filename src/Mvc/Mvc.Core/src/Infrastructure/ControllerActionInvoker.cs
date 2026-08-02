@@ -30,17 +30,16 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
     internal ControllerActionInvoker(
         ILogger logger,
         DiagnosticListener diagnosticListener,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         IActionContextAccessor actionContextAccessor,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
         IActionResultTypeMapper mapper,
         ControllerContext controllerContext,
         ControllerActionInvokerCacheEntry cacheEntry,
         IFilterMetadata[] filters)
         : base(diagnosticListener, logger, actionContextAccessor, mapper, controllerContext, filters, controllerContext.ValueProviderFactories)
     {
-        if (cacheEntry == null)
-        {
-            throw new ArgumentNullException(nameof(cacheEntry));
-        }
+        ArgumentNullException.ThrowIfNull(cacheEntry);
 
         _cacheEntry = cacheEntry;
         _controllerContext = controllerContext;
@@ -390,7 +389,7 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
         var actionMethodExecutor = _cacheEntry.ActionMethodExecutor;
         var orderedArguments = PrepareArguments(_arguments, objectMethodExecutor);
 
-        var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, _instance!, orderedArguments);
+        var actionResultValueTask = actionMethodExecutor.Execute(ControllerContext, _mapper, objectMethodExecutor, _instance!, orderedArguments);
         if (actionResultValueTask.IsCompletedSuccessfully)
         {
             _result = actionResultValueTask.Result;
@@ -428,7 +427,7 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
                     controller);
                 Log.ActionMethodExecuting(logger, controllerContext, orderedArguments);
                 var stopwatch = ValueStopwatch.StartNew();
-                var actionResultValueTask = actionMethodExecutor.Execute(invoker._mapper, objectMethodExecutor, controller!, orderedArguments);
+                var actionResultValueTask = actionMethodExecutor.Execute(controllerContext, invoker._mapper, objectMethodExecutor, controller!, orderedArguments);
                 if (actionResultValueTask.IsCompletedSuccessfully)
                 {
                     result = actionResultValueTask.Result;
@@ -504,10 +503,7 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
             return;
         }
 
-        if (context.ExceptionDispatchInfo != null)
-        {
-            context.ExceptionDispatchInfo.Throw();
-        }
+        context.ExceptionDispatchInfo?.Throw();
 
         if (context.Exception != null)
         {

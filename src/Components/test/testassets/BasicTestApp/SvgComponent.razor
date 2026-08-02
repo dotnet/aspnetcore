@@ -4,10 +4,10 @@
 
 <h3>SVG with Callback</h3>
 <svg height="250" width="250" id="svg-with-callback">
-    <circle cx="125" cy="125" r=@radius fill="red" stroke="black" stroke-width="3" />
+    <circle cx="125" cy="125" r=@radius fill="red" stroke="black" stroke-width="3" style="@styleValue" />
 </svg>
 
-<button @onclick=@(() => { radius *= 2; })>Click me</button>
+<button @onclick=@(() => { radius *= 2; styleValue = null; })>Click me</button>
 
 <h3>SVG with Child Component</h3>
 <svg height="250" width="250" id="svg-with-child-component">
@@ -81,6 +81,7 @@
 
 @code {
     int radius = 10;
+    string styleValue = "stroke: red;";
     string bar = "thestringbar";
 
     int value = 10;

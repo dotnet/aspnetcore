@@ -55,8 +55,9 @@ public sealed class CngCbcAuthenticatedEncryptorFactory : IAuthenticatedEncrypto
             return null;
         }
 
+        using var key = new Secret(secret);
         return new CbcAuthenticatedEncryptor(
-            keyDerivationKey: new Secret(secret),
+            keyDerivationKey: key,
             symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(configuration),
             symmetricAlgorithmKeySizeInBytes: (uint)(configuration.EncryptionAlgorithmKeySize / 8),
             hmacAlgorithmHandle: GetHmacAlgorithmHandle(configuration));

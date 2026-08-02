@@ -44,15 +44,8 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     /// <inheritdoc />
     public virtual void Write(BinaryWriter writer, AuthenticationProperties properties)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (properties == null)
-        {
-            throw new ArgumentNullException(nameof(properties));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(properties);
 
         writer.Write(FormatVersion);
         writer.Write(properties.Items.Count);
@@ -67,10 +60,7 @@ public class PropertiesSerializer : IDataSerializer<AuthenticationProperties>
     /// <inheritdoc />
     public virtual AuthenticationProperties? Read(BinaryReader reader)
     {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         if (reader.ReadInt32() != FormatVersion)
         {

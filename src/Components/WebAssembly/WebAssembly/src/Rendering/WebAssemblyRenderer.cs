@@ -2,12 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.JavaScript;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
@@ -19,18 +24,98 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
+    private readonly Dispatcher _dispatcher;
+    private readonly ResourceAssetCollection _resourceCollection;
+    private readonly IInternalJSImportMethods _jsMethods;
+    private readonly ComponentStatePersistenceManager _componentStatePersistenceManager;
+    private readonly bool _useOutOfProcessRendering;
+    private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
 
-    public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
+    public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop, bool useOutOfProcessRendering = false)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
-        // The WebAssembly renderer registers and unregisters itself with the static registry
-        RendererId = RendererRegistry.Add(this);
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
+        _jsMethods = serviceProvider.GetRequiredService<IInternalJSImportMethods>();
+        _componentStatePersistenceManager = serviceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+
+        // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
+        _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
+            ? NullDispatcher.Instance
+            : new WebAssemblyDispatcher();
+
+        _resourceCollection = resourceCollection;
+        _useOutOfProcessRendering = useOutOfProcessRendering;
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
+        DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
     }
 
-    public override Dispatcher Dispatcher => NullDispatcher.Instance;
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private void OnUpdateRootComponents(RootComponentOperationBatch batch, string appState)
+    {
+        var webRootComponentManager = GetOrCreateWebRootComponentManager();
+        TaskCompletionSource? taskCompletionSource = null;
+        var stateUpdateTask = Task.CompletedTask;
+        var store = !string.IsNullOrEmpty(appState) ? new PrerenderComponentApplicationStore(appState) : null;
+        if (store != null)
+        {
+            taskCompletionSource = new TaskCompletionSource();
+            stateUpdateTask = EnqueueRestore(taskCompletionSource.Task, _componentStatePersistenceManager, store);
+        }
+
+        webRootComponentManager.SetCurrentUpdateTask(stateUpdateTask);
+
+        for (var i = 0; i < batch.Operations.Length; i++)
+        {
+            var operation = batch.Operations[i];
+            switch (operation.Type)
+            {
+                case RootComponentOperationType.Add:
+                    _ = webRootComponentManager.AddRootComponentAsync(
+                        operation.SsrComponentId,
+                        operation.Descriptor!.ComponentType,
+                        operation.Marker!.Value.Key!,
+                        operation.Descriptor!.Parameters);
+                    break;
+                case RootComponentOperationType.Update:
+                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                        operation.SsrComponentId,
+                        operation.Descriptor!.ComponentType,
+                        operation.Marker?.Key,
+                        operation.Descriptor!.Parameters);
+                    break;
+                case RootComponentOperationType.Remove:
+                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                    break;
+            }
+        }
+        taskCompletionSource?.SetResult();
+        store?.ExistingState.Clear();
+
+        NotifyEndUpdateRootComponents(batch.BatchId);
+    }
+
+    private static async Task EnqueueRestore(
+        Task task,
+        ComponentStatePersistenceManager componentStatePersistenceManager,
+        PrerenderComponentApplicationStore store)
+    {
+        await task;
+        await componentStatePersistenceManager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
+    }
+
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveWebAssembly;
+
+    public void NotifyEndUpdateRootComponents(long batchId)
+    {
+        _jsMethods.EndUpdateRootComponents(batchId);
+    }
+
+    protected override ResourceAssetCollection Assets => _resourceCollection;
+
+    protected override RendererInfo RendererInfo => _componentPlatform;
+
+    public override Dispatcher Dispatcher => _dispatcher;
 
     public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, ParameterView parameters, string domElementSelector)
     {
@@ -38,20 +123,17 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
+
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(
-            "Blazor._internal.attachRootComponentToElement",
-            domElementSelector,
-            componentId,
-            RendererId);
+        _jsMethods.AttachRootComponentToElement(domElementSelector, componentId, RendererId);
     }
 
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        RendererRegistry.TryRemove(RendererId);
     }
 
     /// <inheritdoc />
@@ -81,12 +163,27 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private void CallBaseProcessPendingRender() => base.ProcessPendingRender();
 
     /// <inheritdoc />
-    protected override Task UpdateDisplayAsync(in RenderBatch batch)
+    protected override unsafe Task UpdateDisplayAsync(in RenderBatch batch)
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
-            "Blazor._internal.renderBatch",
-            RendererId,
-            batch);
+        if (_useOutOfProcessRendering)
+        {
+            UpdateDisplayOutOfProcess(in batch);
+        }
+        else
+        {
+            // This is a GC hazard - it would be ideal to pin 'batch' and all its contents to prevent
+            // it from getting moved, or pause the GC for the duration of the 'RenderBatch()' call.
+            // The key mitigation is that the JS-side code always processes renderbatches synchronously
+            // and never calls back into .NET during that process, so GC cannot run (assuming it would
+            // only run on the current thread).
+            // As an early-warning system in case we accidentally introduce bugs and violate that rule,
+            // or for edge cases where user code can be invoked during rendering (e.g., DOM mutation
+            // observers) we further enforce it on the JS side using a notion of "locking the heap"
+            // during rendering, which prevents any JS-to-.NET calls that go through Blazor APIs such
+            // as DotNet.invokeMethod or event handlers.
+            var batchCopy = batch;
+            RenderBatch(RendererId, Unsafe.AsPointer(ref batchCopy));
+        }
 
         if (WebAssemblyCallQueue.HasUnstartedWork)
         {
@@ -106,6 +203,28 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         }
     }
 
+    private void UpdateDisplayOutOfProcess(in RenderBatch batch)
+    {
+        // Serialize the render batch using the same binary format as Server rendering.
+        // This creates a self-contained byte[] copy that JS can process without a heap lock.
+        var arrayBuilder = new ArrayBuilder<byte>(2048);
+        try
+        {
+            using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
+            using (var renderBatchWriter = new RenderBatchWriter(memoryStream, leaveOpen: false, useUtf16StringTable: true))
+            {
+                renderBatchWriter.Write(in batch);
+            }
+
+            var batchBytes = arrayBuilder.Buffer.AsSpan(0, arrayBuilder.Count).ToArray();
+            RenderBatchOutOfProcess(RendererId, batchBytes);
+        }
+        finally
+        {
+            arrayBuilder.Dispose();
+        }
+    }
+
     /// <inheritdoc />
     protected override void HandleException(Exception exception)
     {
@@ -122,9 +241,34 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         }
     }
 
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+        => renderMode switch
+        {
+            InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode => componentActivator.CreateInstance(componentType),
+            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
+        };
+
+    protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
+    {
+        return new WebAssemblyComponentState(this, componentId, component, parentComponentState);
+    }
+
+    internal ComponentMarkerKey GetMarkerKey(WebAssemblyComponentState webAssemblyComponentState)
+    {
+        return webAssemblyComponentState.ParentComponentState != null ?
+            default :
+            _webRootComponentManager!.GetRootComponentKey(webAssemblyComponentState.ComponentId);
+    }
+
     private static partial class Log
     {
         [LoggerMessage(100, LogLevel.Critical, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
         public static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
     }
+
+    [JSImport("Blazor._internal.renderBatch", "blazor-internal")]
+    private static unsafe partial void RenderBatch(int id, void* batch);
+
+    [JSImport("Blazor._internal.renderBatchOutOfProcess", "blazor-internal")]
+    private static partial void RenderBatchOutOfProcess(int rendererId, byte[] batchData);
 }

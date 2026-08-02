@@ -17,10 +17,7 @@ public abstract class OutputFormatterCanWriteContext
     /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
     protected OutputFormatterCanWriteContext(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         HttpContext = httpContext;
     }

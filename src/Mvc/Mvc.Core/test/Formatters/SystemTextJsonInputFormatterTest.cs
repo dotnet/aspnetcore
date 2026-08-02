@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -133,7 +133,6 @@ public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
     [InlineData("{\"a\":{\"b\"}}", "$.a", "'}' is invalid after a property name. Expected a ':'. Path: $.a | LineNumber: 0 | BytePositionInLine: 9.")]
     [InlineData("{\"age\":\"x\"}", "$.age", "The JSON value could not be converted to System.Decimal. Path: $.age | LineNumber: 0 | BytePositionInLine: 10.")]
     [InlineData("{\"login\":1}", "$.login", "The JSON value could not be converted to Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatterTest+UserLogin. Path: $.login | LineNumber: 0 | BytePositionInLine: 10.")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40661")]
     public async Task ReadAsync_WithAllowInputFormatterExceptionMessages_RegistersJsonInputExceptionsAsInputFormatterException(
                 string content,
                 string modelStateKey,
@@ -198,7 +197,7 @@ public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
 
     internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "$[0]['It[s a key']";
 
-    internal override string JsonFormatter_EscapedKeys_SingleQuote_Expected => "$[0]['It's a key']";
+    internal override string JsonFormatter_EscapedKeys_SingleQuote_Expected => "$[0]['It\\'s a key']";
 
     internal override string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected => "$[2].Age";
 

@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Security;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
@@ -16,9 +18,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
@@ -26,6 +30,8 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 
 internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
 {
+    private static readonly bool AllowKeepAliveAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.IIS.AllowKeepAliveAfterCLTE", out var value) && value;
+
     private const int MinAllocBufferSize = 2048;
 
     protected readonly NativeSafeHandle _requestNativeHandle;
@@ -38,6 +44,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private int _statusCode;
     private string? _reasonPhrase;
+
     // Used to synchronize callback registration and native method calls
     internal readonly object _contextLock = new object();
 
@@ -75,7 +82,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         IISHttpServer server,
         ILogger logger,
         bool useLatin1)
-        : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
+        : base((HTTP_REQUEST_V1*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
     {
         _memoryPool = memoryPool;
         _requestNativeHandle = pInProcessHandler;
@@ -87,7 +94,8 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     }
 
     private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
-    private int ResumeWriterTheshold => PauseWriterThreshold / 2;
+    private int ResumeWriterThreshold => PauseWriterThreshold / 2;
+    private bool IsHttps => SslStatus != SslStatus.Insecure;
 
     public Version HttpVersion { get; set; } = default!;
     public string Scheme { get; set; } = default!;
@@ -111,6 +119,22 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     public Stream ResponseBody { get; set; } = default!;
     public PipeWriter? ResponsePipeWrapper { get; set; }
 
+    public SslProtocols Protocol { get; private set; }
+    public TlsCipherSuite? NegotiatedCipherSuite { get; private set; }
+    public string SniHostName { get; private set; } = default!;
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public CipherAlgorithmType CipherAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public int CipherStrength { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public HashAlgorithmType HashAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public int HashStrength { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
+    public int KeyExchangeStrength { get; private set; }
+
     protected IAsyncIOEngine? AsyncIO { get; set; }
 
     public IHeaderDictionary RequestHeaders { get; set; } = default!;
@@ -120,7 +144,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     private HeaderCollection HttpResponseTrailers => _trailers ??= new HeaderCollection(checkTrailers: true);
     internal bool HasTrailers => _trailers?.Count > 0;
 
-    internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
+    internal HTTP_VERB KnownMethod { get; private set; }
 
     private bool HasStartedConsumingRequestBody { get; set; }
     public long? MaxRequestBodySize { get; set; }
@@ -129,7 +153,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         // create a memory barrier between initialize and disconnect to prevent a possible
         // NullRef with disconnect being called before these fields have been written
-        // disconnect aquires this lock as well
+        // disconnect acquires this lock as well
         lock (_abortLock)
         {
             _thisHandle = GCHandle.Alloc(this);
@@ -139,23 +163,109 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             RawTarget = GetRawUrl() ?? string.Empty;
             // TODO version is slow.
             HttpVersion = GetVersion();
-            Scheme = SslStatus != SslStatus.Insecure ? Constants.HttpsScheme : Constants.HttpScheme;
+            Scheme = IsHttps ? Constants.HttpsScheme : Constants.HttpScheme;
             KnownMethod = VerbId;
             StatusCode = 200;
 
-            var originalPath = GetOriginalPath();
+            var originalPath = GetOriginalPath() ?? string.Empty;
+            var pathBase = _server.VirtualPath ?? string.Empty;
+            if (pathBase.Length > 1 && pathBase[^1] == '/')
+            {
+                pathBase = pathBase[..^1];
+            }
 
-            if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
+            if (KnownMethod == HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
+            else if (string.IsNullOrEmpty(pathBase) || pathBase == "/")
+            {
+                PathBase = string.Empty;
+                Path = originalPath;
+            }
+            else if (originalPath.Equals(pathBase, StringComparison.Ordinal))
+            {
+                // Exact match, no need to preserve the casing
+                PathBase = pathBase;
+                Path = string.Empty;
+            }
+            else if (originalPath.Equals(pathBase, StringComparison.OrdinalIgnoreCase))
+            {
+                // Preserve the user input casing
+                PathBase = originalPath;
+                Path = string.Empty;
+            }
+            else if (originalPath.Length == pathBase.Length + 1
+                && originalPath[^1] == '/'
+                && originalPath.StartsWith(pathBase, StringComparison.Ordinal))
+            {
+                // Exact match, no need to preserve the casing
+                PathBase = pathBase;
+                Path = "/";
+            }
+            else if (originalPath.Length == pathBase.Length + 1
+                && originalPath[^1] == '/'
+                && originalPath.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
+            {
+                // Preserve the user input casing
+                PathBase = originalPath[..pathBase.Length];
+                Path = "/";
+            }
             else
             {
-                // Path and pathbase are unescaped by RequestUriBuilder
-                // The UsePathBase middleware will modify the pathbase and path correctly
-                PathBase = string.Empty;
-                Path = originalPath ?? string.Empty;
+                // Http.Sys path base matching is based on the cooked url which applies some non-standard normalizations that we don't use
+                // like collapsing duplicate slashes "//", converting '\' to '/', and un-escaping "%2F" to '/'. Find the right split and
+                // ignore the normalizations.
+                var originalOffset = 0;
+                var baseOffset = 0;
+                while (originalOffset < originalPath.Length && baseOffset < pathBase.Length)
+                {
+                    var baseValue = pathBase[baseOffset];
+                    var offsetValue = originalPath[originalOffset];
+                    if (baseValue == offsetValue
+                        || char.ToUpperInvariant(baseValue) == char.ToUpperInvariant(offsetValue))
+                    {
+                        // case-insensitive match, continue
+                        originalOffset++;
+                        baseOffset++;
+                    }
+                    else if (baseValue == '/' && offsetValue == '\\')
+                    {
+                        // Http.Sys considers these equivalent
+                        originalOffset++;
+                        baseOffset++;
+                    }
+                    else if (baseValue == '/' && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Http.Sys un-escapes this
+                        originalOffset += 3;
+                        baseOffset++;
+                    }
+                    else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
+                        && (offsetValue == '/' || offsetValue == '\\'))
+                    {
+                        // Duplicate slash, skip
+                        originalOffset++;
+                    }
+                    else if (baseOffset > 0 && pathBase[baseOffset - 1] == '/'
+                        && originalPath.AsSpan(originalOffset).StartsWith("%2F", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Duplicate slash equivalent, skip
+                        originalOffset += 3;
+                    }
+                    else
+                    {
+                        // Mismatch, fall back
+                        // The failing test case here is "/base/call//../bat//path1//path2", reduced to "/base/call/bat//path1//path2",
+                        // where http.sys collapses "//" before "../", but we do "../" first. We've lost the context that there were dot segments,
+                        // or duplicate slashes, how do we figure out that "call/" can be eliminated?
+                        originalOffset = 0;
+                        break;
+                    }
+                }
+                PathBase = originalPath[..originalOffset];
+                Path = originalPath[originalOffset..];
             }
 
             var cookedUrl = GetCookedUrl();
@@ -166,6 +276,12 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             ResponseHeaders = HttpResponseHeaders;
             // Request headers can be modified by the app, read these first.
             RequestCanHaveBody = CheckRequestCanHaveBody();
+
+            SniHostName = string.Empty;
+            if (IsHttps)
+            {
+                GetTlsHandshakeResults();
+            }
 
             if (_options.ForwardWindowsAuthentication)
             {
@@ -196,7 +312,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 // schedules app code when backpressure is relieved which may block.
                 readerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: PauseWriterThreshold,
-                resumeWriterThreshold: ResumeWriterTheshold,
+                resumeWriterThreshold: ResumeWriterThreshold,
                 minimumSegmentSize: MinAllocBufferSize));
             _bodyOutput = new OutputProducer(pipe);
         }
@@ -247,6 +363,19 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             {
                 ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
             }
+
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
     }
@@ -259,12 +388,103 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
         // Transfer-Encoding takes priority over Content-Length.
         string transferEncoding = RequestHeaders.TransferEncoding.ToString();
-        if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+        if (IsChunked(transferEncoding))
         {
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.2
+            // A sender MUST NOT send a Content-Length header field in any message
+            // that contains a Transfer-Encoding header field.
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.3-2.3
+            // If a message is received with both a Transfer-Encoding and a
+            // Content-Length header field, the Transfer-Encoding overrides the
+            // Content-Length. Such a message might indicate an attempt to
+            // perform request smuggling (Section 11.2) or response splitting
+            // (Section 11.1) and ought to be handled as an error. An intermediary
+            // that chooses to forward the message MUST first remove the received
+            // Content-Length field and process the Transfer-Encoding
+            // (as described below) prior to forwarding the message downstream.
+            // We should remove the Content-Length request header in this case, for compatibility
+            // reasons, include X-Content-Length so that the original Content-Length is still available.
+            if (RequestHeaders.TryGetValue(HeaderNames.ContentLength, out var contentLength))
+            {
+                // if user already passed X-Content-Length, we won't overwrite it
+                _ = RequestHeaders.TryAdd("X-Content-Length", contentLength);
+                RequestHeaders.ContentLength = null;
+
+                if (!AllowKeepAliveAfterCLTE)
+                {
+                    // https://www.rfc-editor.org/rfc/rfc9112#section-6.1
+                    // A server MAY reject a request that contains both Content-Length
+                    // and Transfer-Encoding or process such a request in accordance
+                    // with the Transfer-Encoding alone. Regardless, the server MUST
+                    // close the connection after responding to such a request to
+                    // avoid the potential attacks.
+                    NativeMethods.HttpSetClose(_requestNativeHandle);
+                }
+            }
             return true;
         }
 
         return RequestHeaders.ContentLength.GetValueOrDefault() > 0;
+    }
+
+    private void GetTlsHandshakeResults()
+    {
+        var handshake = GetTlsHandshake();
+        Protocol = (SslProtocols)handshake.Protocol;
+
+        NegotiatedCipherSuite = GetTlsCipherSuite();
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
+        CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
+        CipherStrength = (int)handshake.CipherStrength;
+        HashAlgorithm = (HashAlgorithmType)handshake.HashType;
+        HashStrength = (int)handshake.HashStrength;
+        KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
+        KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
+
+        var sni = GetClientSni();
+        SniHostName = sni.Hostname.ToString();
+    }
+
+    private unsafe TlsCipherSuite? GetTlsCipherSuite()
+    {
+        SecPkgContext_CipherInfo cipherInfo = default;
+
+        var statusCode = NativeMethods.HttpQueryRequestProperty(
+            RequestId,
+            HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo,
+            qualifier: null,
+            qualifierSize: 0,
+            output: &cipherInfo,
+            outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
+            bytesReturned: null,
+            overlapped: IntPtr.Zero);
+
+        if (statusCode == NativeMethods.HR_OK)
+        {
+            return checked((TlsCipherSuite)cipherInfo.dwCipherSuite);
+        }
+
+        return default;
+    }
+
+    private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    {
+        var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+        fixed (byte* pBuffer = buffer)
+        {
+            var statusCode = NativeMethods.HttpQueryRequestProperty(
+                RequestId,
+                HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                qualifier: null,
+                qualifierSize: 0,
+                (void*)pBuffer,
+                (uint)buffer.Length,
+                bytesReturned: null,
+                IntPtr.Zero);
+
+            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
+        }
     }
 
     private async Task InitializeResponse(bool flushHeaders)
@@ -433,7 +653,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 continue;
             }
 
-            var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
+            var isKnownHeader = HttpApiTypes.KnownResponseHeaders.TryGetValue(headerPair.Key, out var knownHeaderIndex);
             for (var i = 0; i < headerValues.Count; i++)
             {
                 var headerValue = headerValues[i];
@@ -448,7 +668,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
                 fixed (byte* pHeaderValue = headerValueBytes)
                 {
-                    if (knownHeaderIndex == -1)
+                    if (!isKnownHeader)
                     {
                         var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
                         fixed (byte* pHeaderName = headerNameBytes)
@@ -615,6 +835,11 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier, ex);
     }
 
+    protected void ReportRequestAborted()
+    {
+        Log.RequestAborted(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier);
+    }
+
     public void PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
     {
         NativeMethods.HttpSetCompletionStatus(_requestNativeHandle, requestNotificationStatus);
@@ -654,6 +879,8 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             localAbortCts?.Dispose();
 
             disposedValue = true;
+
+            AsyncIO?.Dispose();
         }
     }
 
@@ -665,6 +892,12 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     private static void ThrowResponseAlreadyStartedException(string name)
     {
         throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(name));
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(CoreStrings.FormatInvalidReasonPhraseCharacter(
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     private WindowsPrincipal? GetWindowsPrincipal()
@@ -703,6 +936,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         finally
         {
             // Post completion after completing the request to resume the state machine
+            // This must be called before freeing the GCHandle _thisHandle, see comment in IndicateManagedRequestComplete for details
             PostCompletion(ConvertRequestCompletionResults(successfulRequest));
 
             // After disposing a safe handle, Dispose() will not block waiting for the pinvokes to finish.
@@ -725,5 +959,22 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
                        : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+    }
+
+    private static bool IsChunked(string? transferEncoding)
+    {
+        if (transferEncoding is null)
+        {
+            return false;
+        }
+
+        // Per RFC 7230 §7, list-based headers tolerate empty list elements
+        // (e.g. "chunked,"). Strip any trailing OWS/commas so that the
+        // LastIndexOf-based check below sees the real final coding.
+        ReadOnlySpan<char> trimChars = [' ', '\t', ','];
+        var span = transferEncoding.AsSpan().TrimEnd(trimChars);
+
+        var index = span.LastIndexOf(',');
+        return span.Slice(index + 1).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase);
     }
 }

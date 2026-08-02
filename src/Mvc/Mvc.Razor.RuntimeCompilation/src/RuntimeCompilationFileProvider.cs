@@ -8,15 +8,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
 internal sealed class RuntimeCompilationFileProvider
 {
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
     private readonly MvcRazorRuntimeCompilationOptions _options;
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     private IFileProvider? _compositeFileProvider;
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
     public RuntimeCompilationFileProvider(IOptions<MvcRazorRuntimeCompilationOptions> options)
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _options = options.Value;
     }
@@ -34,15 +35,19 @@ internal sealed class RuntimeCompilationFileProvider
         }
     }
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
     private static IFileProvider GetCompositeFileProvider(MvcRazorRuntimeCompilationOptions options)
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     {
         var fileProviders = options.FileProviders;
         if (fileProviders.Count == 0)
         {
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
             var message = Resources.FormatFileProvidersAreRequired(
                 typeof(MvcRazorRuntimeCompilationOptions).FullName,
                 nameof(MvcRazorRuntimeCompilationOptions.FileProviders),
                 typeof(IFileProvider).FullName);
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
             throw new InvalidOperationException(message);
         }
         else if (fileProviders.Count == 1)

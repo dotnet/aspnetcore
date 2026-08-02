@@ -1,0 +1,111 @@
+@using Components.TestServer.RazorComponents.Pages.Forms
+@using Microsoft.AspNetCore.Components.Endpoints
+@using Microsoft.AspNetCore.Components.Web
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <BasePath />
+    <link rel="stylesheet" href="@Assets["Components.TestServer.styles.css"]" />
+    <HeadOutlet />
+</head>
+<body>
+    @if (AutoPause)
+    {
+        <ConfigureBrowser Options="@AutoPauseConfig" />
+    }
+
+    <ServerApp @rendermode="@RenderMode.InteractiveServer" />
+
+    <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
+    <script>
+        const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
+
+        let pwr = Promise.withResolvers();
+        let reconnectPromise = pwr.promise;
+        let reconnectResolver = pwr.resolve;
+
+        function triggerReconnect() {
+            if(reconnectResolver) {
+                reconnectResolver();
+            }
+        }
+
+        function resetReconnect() {
+            pwr = Promise.withResolvers();
+            reconnectPromise = pwr.promise;
+            reconnectResolver = pwr.resolve;
+        }
+
+        function replaceReconnectCallback() {
+            const originalCallback = Blazor.defaultReconnectionHandler._reconnectCallback;
+            Blazor.defaultReconnectionHandler._reconnectCallback = async () => {
+                await reconnectPromise;
+                await originalCallback();
+            };
+        }
+
+        function callBlazorStart() {
+            const params = new URLSearchParams(location.search);
+            const circuitOptions = {
+                logLevel: 0
+            };
+            if (params.get('auto-pause') === 'true') {
+                window.autoPauseEvents = [];
+            }
+            const pauseDeferrals = new Set();
+            window.myApp = {
+                deferPause: (handler) => {
+                    pauseDeferrals.add(handler);
+                    return () => pauseDeferrals.delete(handler);
+                }
+            };
+            circuitOptions.circuitHandlers = [{
+                onCircuitPausing: (signal) => Promise.all([...pauseDeferrals].map(h => h(signal)))
+            }];
+            Blazor.start({
+                ssr: {
+                    disableDomPreservation: suppressEnhancedNavigation,
+                },
+                webAssembly: {
+                    loadBootResource: function (type, name, defaultUri, integrity) {
+                        return `WasmMinimal/_framework/${name}`;
+                    },
+                },
+                circuit: circuitOptions,
+            });
+        }
+
+        if (location.search.indexOf('suppress-autostart') < 0) {
+            callBlazorStart();
+        } else {
+            const startButton = document.createElement('button');
+            startButton.id = 'call-blazor-start';
+            startButton.textContent = 'Call Blazor.start()';
+            startButton.onclick = callBlazorStart;
+            document.body.appendChild(startButton);
+        }
+    </script>
+
+    @if(CustomReconnectUI) {
+        <ReconnectModal></ReconnectModal>
+    }
+</body>
+</html>
+
+@code {
+    [SupplyParameterFromQuery(Name = "custom-reconnect-ui")] public bool CustomReconnectUI { get; set; }
+    [SupplyParameterFromQuery(Name = "auto-pause")] public bool AutoPause { get; set; }
+    [SupplyParameterFromQuery(Name = "auto-pause-delay-ms")] public int AutoPauseDelayMs { get; set; }
+
+    private BrowserOptions AutoPauseConfig
+    {
+        get
+        {
+            var options = new BrowserOptions();
+            options.AddAutoPause(p => p.HiddenDelay = TimeSpan.FromMilliseconds(AutoPauseDelayMs > 0 ? AutoPauseDelayMs : 200));
+            return options;
+        }
+    }
+}

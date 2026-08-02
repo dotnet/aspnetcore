@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { AccessTokenHttpClient } from "./AccessTokenHttpClient";
 import { DefaultHttpClient } from "./DefaultHttpClient";
 import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError, AbortError } from "./Errors";
-import { HeaderNames } from "./HeaderNames";
-import { HttpClient } from "./HttpClient";
+import { HttpRequest } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { ILogger, LogLevel } from "./ILogger";
@@ -31,6 +31,8 @@ export interface INegotiateResponse {
     url?: string;
     accessToken?: string;
     error?: string;
+    useStatefulReconnect?: boolean;
+    tokenLifetimeSeconds?: number;
 }
 
 /** @private */
@@ -40,6 +42,12 @@ export interface IAvailableTransport {
 }
 
 const MAX_REDIRECTS = 100;
+const MAX_TOKEN_LIFETIME_IN_SECONDS = Math.floor(Number.MAX_SAFE_INTEGER / 1000);
+
+interface IAuthenticationRefreshFeature {
+    initialTokenLifetimeInSeconds?: number;
+    refreshAuthentication(): Promise<number | undefined>;
+}
 
 /** @private */
 export class HttpConnection implements IConnection {
@@ -47,7 +55,7 @@ export class HttpConnection implements IConnection {
     // connectionStarted is tracked independently from connectionState, so we can check if the
     // connection ever did successfully transition from connecting to connected before disconnecting.
     private _connectionStarted: boolean;
-    private readonly _httpClient: HttpClient;
+    private readonly _httpClient: AccessTokenHttpClient;
     private readonly _logger: ILogger;
     private readonly _options: IHttpConnectionOptions;
     // Needs to not start with _ to be available for tests
@@ -59,6 +67,11 @@ export class HttpConnection implements IConnection {
     private _stopError?: Error;
     private _accessTokenFactory?: () => string | Promise<string>;
     private _sendQueue?: TransportSendQueue;
+    private _connectionToken?: string;
+    private _connectionUrl?: string;
+    private _initialTokenLifetimeInSeconds?: number;
+    private _transportAccessTokenFromServer: boolean = false;
+    private _connectionGeneration: number = 0;
 
     public readonly features: any = {};
     public baseUrl: string;
@@ -110,7 +123,7 @@ export class HttpConnection implements IConnection {
             }
         }
 
-        this._httpClient = options.httpClient || new DefaultHttpClient(this._logger);
+        this._httpClient = new AccessTokenHttpClient(options.httpClient || new DefaultHttpClient(this._logger), options.accessTokenFactory);
         this._connectionState = ConnectionState.Disconnected;
         this._connectionStarted = false;
         this._options = options;
@@ -182,6 +195,7 @@ export class HttpConnection implements IConnection {
         }
 
         this._connectionState = ConnectionState.Disconnecting;
+        this._connectionGeneration++;
 
         this._stopPromise = new Promise((resolve) => {
             // Don't complete stop() until stopConnection() completes.
@@ -226,7 +240,15 @@ export class HttpConnection implements IConnection {
         // Store the original base url and the access token factory since they may change
         // as part of negotiating
         let url = this.baseUrl;
+        this._connectionGeneration++;
+        this._connectionToken = undefined;
+        this._connectionUrl = undefined;
+        this._initialTokenLifetimeInSeconds = undefined;
+        this._transportAccessTokenFromServer = false;
+        delete this.features.authenticationRefresh;
         this._accessTokenFactory = this._options.accessTokenFactory;
+        this._httpClient._accessTokenFactory = this._accessTokenFactory;
+        this._httpClient.setRefreshAccessTokenFactory(this._options.accessTokenFactory);
 
         try {
             if (this._options.skipNegotiation) {
@@ -265,8 +287,7 @@ export class HttpConnection implements IConnection {
                     if (negotiateResponse.accessToken) {
                         // Replace the current access token factory with one that uses
                         // the returned access token
-                        const accessToken = negotiateResponse.accessToken;
-                        this._accessTokenFactory = () => accessToken;
+                        this._setTransportAccessToken(negotiateResponse.accessToken);
                     }
 
                     redirects++;
@@ -277,7 +298,8 @@ export class HttpConnection implements IConnection {
                     throw new Error("Negotiate redirection limit exceeded.");
                 }
 
-                await this._createTransport(url, this._options.transport, negotiateResponse, transferFormat);
+                const finalNegotiateResponse = await this._createTransport(url, this._options.transport, negotiateResponse, transferFormat);
+                this._configureAuthenticationRefresh(finalNegotiateResponse);
             }
 
             if (this.transport instanceof LongPollingTransport) {
@@ -307,25 +329,20 @@ export class HttpConnection implements IConnection {
 
     private async _getNegotiationResponse(url: string): Promise<INegotiateResponse> {
         const headers: {[k: string]: string} = {};
-        if (this._accessTokenFactory) {
-            const token = await this._accessTokenFactory();
-            if (token) {
-                headers[HeaderNames.Authorization] = `Bearer ${token}`;
-            }
-        }
-
         const [name, value] = getUserAgentHeader();
         headers[name] = value;
 
         const negotiateUrl = this._resolveNegotiateUrl(url);
         this._logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}.`);
         try {
-            const response = await this._httpClient.post(negotiateUrl, {
+            const request: HttpRequest = {
                 content: "",
                 headers: { ...headers, ...this._options.headers },
                 timeout: this._options.timeout,
                 withCredentials: this._options.withCredentials,
-            });
+            };
+            this._httpClient.markNegotiateRequest(request);
+            const response = await this._httpClient.post(negotiateUrl, request);
 
             if (response.statusCode !== 200) {
                 return Promise.reject(new Error(`Unexpected status code returned from negotiate '${response.statusCode}'`));
@@ -337,6 +354,16 @@ export class HttpConnection implements IConnection {
                 // So we set it equal to connectionId so all our logic can use connectionToken without being aware of the negotiate version
                 negotiateResponse.connectionToken = negotiateResponse.connectionId;
             }
+
+            if (negotiateResponse.useStatefulReconnect && this._options._useStatefulReconnect !== true) {
+                return Promise.reject(new FailedToNegotiateWithServerError("Client didn't negotiate Stateful Reconnect but the server did."));
+            }
+
+            const tokenLifetimeInSeconds = getAuthenticationTokenLifetimeInSeconds(negotiateResponse.tokenLifetimeSeconds);
+            if (tokenLifetimeInSeconds !== undefined) {
+                this._initialTokenLifetimeInSeconds = tokenLifetimeInSeconds;
+            }
+
             return negotiateResponse;
         } catch (e) {
             let errorMessage = "Failed to complete negotiation with the server: " + e;
@@ -359,7 +386,88 @@ export class HttpConnection implements IConnection {
         return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionToken}`;
     }
 
-    private async _createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<void> {
+    private _createRefreshUrl(url: string, connectionToken: string): string {
+        const refreshUrl = new URL(url);
+
+        if (refreshUrl.pathname.endsWith("/")) {
+            refreshUrl.pathname += "refresh";
+        } else {
+            refreshUrl.pathname += "/refresh";
+        }
+
+        refreshUrl.searchParams.append("id", connectionToken);
+        return refreshUrl.toString();
+    }
+
+    private _configureAuthenticationRefresh(negotiateResponse: INegotiateResponse): void {
+        this._connectionToken = negotiateResponse.connectionToken;
+        this._connectionUrl = this.baseUrl;
+
+        const authenticationRefreshFeature: IAuthenticationRefreshFeature = {
+            initialTokenLifetimeInSeconds: this._initialTokenLifetimeInSeconds,
+            refreshAuthentication: () => this._refreshAuthentication(),
+        };
+        this.features.authenticationRefresh = authenticationRefreshFeature;
+    }
+
+    private async _refreshAuthentication(): Promise<number | undefined> {
+        if (!this._connectionToken || !this._connectionUrl) {
+            throw new Error("Cannot refresh authentication before the connection is started.");
+        }
+
+        const connectionGeneration = this._connectionGeneration;
+        const headers: {[k: string]: string} = {};
+        const [name, value] = getUserAgentHeader();
+        headers[name] = value;
+
+        const refreshUrl = this._createRefreshUrl(this._connectionUrl, this._connectionToken);
+        this._logger.log(LogLevel.Debug, `Sending authentication refresh request: ${refreshUrl}.`);
+
+        const request: HttpRequest = {
+            content: "",
+            headers: { ...headers, ...this._options.headers },
+            timeout: this._options.timeout,
+            withCredentials: this._options.withCredentials,
+        };
+        this._httpClient.markAuthenticationRefreshRequest(request);
+        const response = await this._httpClient.post(refreshUrl, request);
+
+        if (response.statusCode !== 200) {
+            throw new Error(`Unexpected status code returned from authentication refresh '${response.statusCode}'`);
+        }
+
+        if (typeof response.content !== "string") {
+            throw new Error("Invalid authentication refresh response received: expected JSON content.");
+        }
+
+        if (connectionGeneration !== this._connectionGeneration) {
+            return undefined;
+        }
+
+        const refreshResponse = JSON.parse(response.content) as { accessToken?: unknown, tokenLifetimeSeconds?: unknown };
+        if (typeof refreshResponse.accessToken === "string" && refreshResponse.accessToken) {
+            // Redirecting servers can return a transport token that should replace the current cached token.
+            this._setTransportAccessToken(refreshResponse.accessToken);
+        } else if (!this._transportAccessTokenFromServer) {
+            // Without a server-provided transport token, reuse the app token that successfully authenticated refresh.
+            const refreshRequestToken = this._httpClient.getRefreshRequestToken(response);
+            if (refreshRequestToken) {
+                this._httpClient.updateCachedToken(refreshRequestToken);
+            }
+        }
+
+        return getAuthenticationTokenLifetimeInSeconds(refreshResponse.tokenLifetimeSeconds);
+    }
+
+    private _setTransportAccessToken(accessToken: string): void {
+        this._httpClient.updateCachedToken(accessToken);
+        this._transportAccessTokenFromServer = true;
+        this._accessTokenFactory = () => this._httpClient._accessToken!;
+        // set the factory to undefined so the AccessTokenHttpClient won't retry with the same token, since we know it won't change until a connection restart
+        this._httpClient._accessTokenFactory = undefined;
+    }
+
+    private async _createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<INegotiateResponse> {
         let connectUrl = this._createConnectUrl(url, negotiateResponse.connectionToken);
         if (this._isITransport(requestedTransport)) {
             this._logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
@@ -367,14 +475,15 @@ export class HttpConnection implements IConnection {
             await this._startTransport(connectUrl, requestedTransferFormat);
 
             this.connectionId = negotiateResponse.connectionId;
-            return;
+            return negotiateResponse;
         }
 
         const transportExceptions: any[] = [];
         const transports = negotiateResponse.availableTransports || [];
         let negotiate: INegotiateResponse | undefined = negotiateResponse;
         for (const endpoint of transports) {
-            const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
+            const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat,
+                negotiate?.useStatefulReconnect === true);
             if (transportOrError instanceof Error) {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
                 transportExceptions.push(`${endpoint.transport} failed:`);
@@ -392,7 +501,7 @@ export class HttpConnection implements IConnection {
                 try {
                     await this._startTransport(connectUrl, requestedTransferFormat);
                     this.connectionId = negotiate.connectionId;
-                    return;
+                    return negotiate;
                 } catch (ex) {
                     this._logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
                     negotiate = undefined;
@@ -419,14 +528,15 @@ export class HttpConnection implements IConnection {
                 if (!this._options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!, this._options.WebSocket, this._options.headers || {});
+                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!,
+                    this._options.WebSocket, this._options.headers || {});
             case HttpTransportType.ServerSentEvents:
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options);
+                return new ServerSentEventsTransport(this._httpClient, this._httpClient._accessToken, this._logger, this._options);
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options);
+                return new LongPollingTransport(this._httpClient, this._logger, this._options);
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }
@@ -434,11 +544,34 @@ export class HttpConnection implements IConnection {
 
     private _startTransport(url: string, transferFormat: TransferFormat): Promise<void> {
         this.transport!.onreceive = this.onreceive;
-        this.transport!.onclose = (e) => this._stopConnection(e);
+        if (this.features.reconnect) {
+            this.transport!.onclose = async (e) => {
+                let callStop = false;
+                if (this.features.reconnect) {
+                    try {
+                        this.features.disconnected();
+                        await this.transport!.connect(url, transferFormat);
+                        await this.features.resend();
+                    } catch {
+                        callStop = true;
+                    }
+                } else {
+                    this._stopConnection(e);
+                    return;
+                }
+
+                if (callStop) {
+                    this._stopConnection(e);
+                }
+            };
+        } else {
+            this.transport!.onclose = (e) => this._stopConnection(e);
+        }
         return this.transport!.connect(url, transferFormat);
     }
 
-    private _resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): ITransport | Error {
+    private _resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined,
+        requestedTransferFormat: TransferFormat, useStatefulReconnect: boolean): ITransport | Error | unknown {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this._logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
@@ -454,6 +587,7 @@ export class HttpConnection implements IConnection {
                     } else {
                         this._logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         try {
+                            this.features.reconnect = transport === HttpTransportType.WebSockets ? useStatefulReconnect : undefined;
                             return this._constructTransport(transport);
                         } catch (ex) {
                             return ex;
@@ -493,6 +627,8 @@ export class HttpConnection implements IConnection {
             throw new Error(`HttpConnection.stopConnection(${error}) was called while the connection is still in the connecting state.`);
         }
 
+        this._connectionGeneration++;
+
         if (this._connectionState === ConnectionState.Disconnecting) {
             // A call to stop() induced this call to stopConnection and needs to be completed.
             // Any stop() awaiters will be scheduled to continue after the onclose callback fires.
@@ -513,6 +649,9 @@ export class HttpConnection implements IConnection {
         }
 
         this.connectionId = undefined;
+        this._connectionToken = undefined;
+        this._connectionUrl = undefined;
+        delete this.features.authenticationRefresh;
         this._connectionState = ConnectionState.Disconnected;
 
         if (this._connectionStarted) {
@@ -550,24 +689,43 @@ export class HttpConnection implements IConnection {
     }
 
     private _resolveNegotiateUrl(url: string): string {
-        const index = url.indexOf("?");
-        let negotiateUrl = url.substring(0, index === -1 ? url.length : index);
-        if (negotiateUrl[negotiateUrl.length - 1] !== "/") {
-            negotiateUrl += "/";
-        }
-        negotiateUrl += "negotiate";
-        negotiateUrl += index === -1 ? "" : url.substring(index);
+        const negotiateUrl = new URL(url);
 
-        if (negotiateUrl.indexOf("negotiateVersion") === -1) {
-            negotiateUrl += index === -1 ? "?" : "&";
-            negotiateUrl += "negotiateVersion=" + this._negotiateVersion;
+        if (negotiateUrl.pathname.endsWith('/')) {
+            negotiateUrl.pathname += "negotiate";
+        } else {
+            negotiateUrl.pathname += "/negotiate";
         }
-        return negotiateUrl;
+        const searchParams = new URLSearchParams(negotiateUrl.searchParams);
+
+        if (!searchParams.has("negotiateVersion")) {
+            searchParams.append("negotiateVersion", this._negotiateVersion.toString());
+        }
+
+        if (searchParams.has("useStatefulReconnect")) {
+            if (searchParams.get("useStatefulReconnect") === "true") {
+                this._options._useStatefulReconnect = true;
+            }
+        } else if (this._options._useStatefulReconnect === true) {
+            searchParams.append("useStatefulReconnect", "true");
+        }
+
+        negotiateUrl.search = searchParams.toString();
+
+        return negotiateUrl.toString();
     }
 }
 
 function transportMatches(requestedTransport: HttpTransportType | undefined, actualTransport: HttpTransportType) {
     return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
+}
+
+function getAuthenticationTokenLifetimeInSeconds(tokenLifetimeSeconds: unknown): number | undefined {
+    if (typeof tokenLifetimeSeconds !== "number" || !Number.isFinite(tokenLifetimeSeconds) || tokenLifetimeSeconds <= 0) {
+        return undefined;
+    }
+
+    return Math.min(tokenLifetimeSeconds, MAX_TOKEN_LIFETIME_IN_SECONDS);
 }
 
 /** @private */

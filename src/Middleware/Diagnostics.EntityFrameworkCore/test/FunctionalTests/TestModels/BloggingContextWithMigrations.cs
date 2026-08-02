@@ -26,6 +26,7 @@ public class BloggingContextWithMigrations : BloggingContext
             b.Property<int>("BlogId").ValueGeneratedOnAdd();
             b.Property<string>("Name");
             b.HasKey("BlogId");
+            b.ToTable("Blogs");
         });
     }
 

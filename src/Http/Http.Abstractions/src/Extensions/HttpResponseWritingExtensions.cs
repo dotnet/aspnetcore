@@ -25,15 +25,8 @@ public static class HttpResponseWritingExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static Task WriteAsync(this HttpResponse response, string text, CancellationToken cancellationToken = default(CancellationToken))
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(text);
 
         return response.WriteAsync(text, Encoding.UTF8, cancellationToken);
     }
@@ -49,20 +42,9 @@ public static class HttpResponseWritingExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static Task WriteAsync(this HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         // Need to call StartAsync before GetMemory/GetSpan
         if (!response.HasStarted)

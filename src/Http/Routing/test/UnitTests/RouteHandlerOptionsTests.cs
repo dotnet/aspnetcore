@@ -55,14 +55,15 @@ public class RouteHandlerOptionsTests
     }
 
     [Fact]
-    public void RouteHandlerOptionsFailsToResolveWithoutHostEnvironment()
+    public void RouteHandlerOptionsCanResolveWithoutHostEnvironment()
     {
         var services = new ServiceCollection();
         services.AddOptions();
         services.AddRouting();
         var serviceProvider = services.BuildServiceProvider();
 
-        Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>());
+        var options = serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>();
+        Assert.False(options.Value.ThrowOnBadRequest);
     }
 
     private class HostEnvironment : IHostEnvironment

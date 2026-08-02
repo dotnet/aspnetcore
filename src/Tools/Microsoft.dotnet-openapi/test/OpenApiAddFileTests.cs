@@ -3,6 +3,7 @@
 
 using System.Text.RegularExpressions;
 using System.Xml;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.OpenApi.Tests;
 using Xunit.Abstractions;
 

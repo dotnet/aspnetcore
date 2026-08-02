@@ -35,20 +35,20 @@
         if (uri.EndsWith("WithLazyAssembly"))
         {
             Console.WriteLine($"Loading assemblies for WithLazyAssembly...");
-            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "Newtonsoft.Json.dll" });
+            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "Newtonsoft.Json.wasm" });
             lazyLoadedAssemblies.AddRange(assemblies);
         }
 
         if (uri.EndsWith("WithLazyLoadedRoutes"))
         {
             Console.WriteLine($"Loading assemblies for WithLazyLoadedRoutes...");
-            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "LazyTestContentPackage.dll" });
+            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "LazyTestContentPackage.wasm" });
             lazyLoadedAssemblies.AddRange(assemblies);
         }
 
         if (uri.EndsWith("Other")) {
             Console.WriteLine($"Loading assemblies for Other...");
-            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "DoesNotExist.dll" });
+            var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "DoesNotExist.wasm" });
             lazyLoadedAssemblies.AddRange(assemblies);
         }
     }

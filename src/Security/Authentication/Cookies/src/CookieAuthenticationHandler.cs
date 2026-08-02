@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -40,8 +41,19 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public CookieAuthenticationHandler(IOptionsMonitor<CookieAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="CookieAuthenticationHandler"/>.
+    /// </summary>
+    /// <param name="options">Accessor to <see cref="CookieAuthenticationOptions"/>.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+    public CookieAuthenticationHandler(IOptionsMonitor<CookieAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <summary>
@@ -80,7 +92,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
     private async Task CheckForRefreshAsync(AuthenticationTicket ticket)
     {
-        var currentUtc = Clock.UtcNow;
+        var currentUtc = TimeProvider.GetUtcNow();
         var issuedUtc = ticket.Properties.IssuedUtc;
         var expiresUtc = ticket.Properties.ExpiresUtc;
         var allowRefresh = ticket.Properties.AllowRefresh ?? true;
@@ -93,7 +105,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             {
                 ShouldRenew = timeRemaining < timeElapsed,
             };
-            await Options.Events.CheckSlidingExpiration(eventContext);
+            await Events.CheckSlidingExpiration(eventContext);
 
             if (eventContext.ShouldRenew)
             {
@@ -110,7 +122,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         if (issuedUtc != null && expiresUtc != null)
         {
             _shouldRefresh = true;
-            var currentUtc = Clock.UtcNow;
+            var currentUtc = TimeProvider.GetUtcNow();
             _refreshIssuedUtc = currentUtc;
             var timeSpan = expiresUtc.Value.Subtract(issuedUtc.Value);
             _refreshExpiresUtc = currentUtc.Add(timeSpan);
@@ -147,7 +159,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         var ticket = Options.TicketDataFormat.Unprotect(cookie, GetTlsTokenBinding());
         if (ticket == null)
         {
-            return AuthenticateResult.Fail("Unprotect ticket failed");
+            return AuthenticateResults.FailedUnprotectingTicket;
         }
 
         if (Options.SessionStore != null)
@@ -155,27 +167,30 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             var claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim));
             if (claim == null)
             {
-                return AuthenticateResult.Fail("SessionId missing");
+                return AuthenticateResults.MissingSessionId;
             }
             // Only store _sessionKey if it matches an existing session. Otherwise we'll create a new one.
-            ticket = await Options.SessionStore.RetrieveAsync(claim.Value, Context.RequestAborted);
+            ticket = await Options.SessionStore.RetrieveAsync(claim.Value, Context, Context.RequestAborted);
             if (ticket == null)
             {
-                return AuthenticateResult.Fail("Identity missing in session store");
+                return AuthenticateResults.MissingIdentityInSession;
             }
             _sessionKey = claim.Value;
         }
 
-        var currentUtc = Clock.UtcNow;
+        var currentUtc = TimeProvider.GetUtcNow();
         var expiresUtc = ticket.Properties.ExpiresUtc;
 
         if (expiresUtc != null && expiresUtc.Value < currentUtc)
         {
             if (Options.SessionStore != null)
             {
-                await Options.SessionStore.RemoveAsync(_sessionKey!, Context.RequestAborted);
+                await Options.SessionStore.RemoveAsync(_sessionKey!, Context, Context.RequestAborted);
+
+                // Clear out the session key if its expired, so renew doesn't try to use it
+                _sessionKey = null;
             }
-            return AuthenticateResult.Fail("Ticket expired");
+            return AuthenticateResults.ExpiredTicket;
         }
 
         // Finally we have a valid ticket
@@ -201,7 +216,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
         if (context.Principal == null)
         {
-            return AuthenticateResult.Fail("No principal.");
+            return AuthenticateResults.NoPrincipal;
         }
 
         if (context.ShouldRenew)
@@ -247,7 +262,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
             if (Options.SessionStore != null && _sessionKey != null)
             {
-                await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context.RequestAborted);
+                await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context, Context.RequestAborted);
                 var principal = new ClaimsPrincipal(
                     new ClaimsIdentity(
                         new[] { new Claim(SessionIdClaim, _sessionKey, ClaimValueTypes.String, Options.ClaimsIssuer) },
@@ -269,17 +284,14 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
                 cookieValue,
                 cookieOptions);
 
-            await ApplyHeaders(shouldRedirectToReturnUrl: false, properties: properties);
+            await ApplyHeaders(shouldRedirect: false, shouldHonorReturnUrlParameter: false, properties: properties);
         }
     }
 
     /// <inheritdoc />
     protected override async Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         properties = properties ?? new AuthenticationProperties();
 
@@ -304,7 +316,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         }
         else
         {
-            issuedUtc = Clock.UtcNow;
+            issuedUtc = TimeProvider.GetUtcNow();
             signInContext.Properties.IssuedUtc = issuedUtc;
         }
 
@@ -328,11 +340,11 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             if (_sessionKey != null)
             {
                 // Renew the ticket in cases of multiple requests see: https://github.com/dotnet/aspnetcore/issues/22135
-                await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context.RequestAborted);
+                await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context, Context.RequestAborted);
             }
             else
             {
-                _sessionKey = await Options.SessionStore.StoreAsync(ticket, Context.RequestAborted);
+                _sessionKey = await Options.SessionStore.StoreAsync(ticket, Context, Context.RequestAborted);
             }
 
             var principal = new ClaimsPrincipal(
@@ -359,9 +371,9 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
         await Events.SignedIn(signedInContext);
 
-        // Only redirect on the login path
-        var shouldRedirect = Options.LoginPath.HasValue && OriginalPath == Options.LoginPath;
-        await ApplyHeaders(shouldRedirect, signedInContext.Properties);
+        // Only honor the ReturnUrl query string parameter on the login path
+        var shouldHonorReturnUrlParameter = Options.LoginPath.HasValue && OriginalPath == Options.LoginPath;
+        await ApplyHeaders(shouldRedirect: true, shouldHonorReturnUrlParameter, signedInContext.Properties);
 
         Logger.AuthenticationSchemeSignedIn(Scheme.Name);
     }
@@ -378,7 +390,12 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         var cookieOptions = BuildCookieOptions();
         if (Options.SessionStore != null && _sessionKey != null)
         {
-            await Options.SessionStore.RemoveAsync(_sessionKey, Context.RequestAborted);
+            await Options.SessionStore.RemoveAsync(_sessionKey, Context, Context.RequestAborted);
+
+            // Clear the cached session key so a subsequent SignInAsync call in the same request
+            // generates a new key via StoreAsync rather than reusing the just-removed key via RenewAsync.
+            // See https://github.com/dotnet/aspnetcore/issues/47503.
+            _sessionKey = null;
         }
 
         var context = new CookieSigningOutContext(
@@ -395,29 +412,29 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             Options.Cookie.Name!,
             context.CookieOptions);
 
-        // Only redirect on the logout path
-        var shouldRedirect = Options.LogoutPath.HasValue && OriginalPath == Options.LogoutPath;
-        await ApplyHeaders(shouldRedirect, context.Properties);
+        // Only honor the ReturnUrl query string parameter on the logout path
+        var shouldHonorReturnUrlParameter = Options.LogoutPath.HasValue && OriginalPath == Options.LogoutPath;
+        await ApplyHeaders(shouldRedirect: true, shouldHonorReturnUrlParameter, context.Properties);
 
         Logger.AuthenticationSchemeSignedOut(Scheme.Name);
     }
 
-    private async Task ApplyHeaders(bool shouldRedirectToReturnUrl, AuthenticationProperties properties)
+    private async Task ApplyHeaders(bool shouldRedirect, bool shouldHonorReturnUrlParameter, AuthenticationProperties properties)
     {
         Response.Headers.CacheControl = HeaderValueNoCacheNoStore;
         Response.Headers.Pragma = HeaderValueNoCache;
         Response.Headers.Expires = HeaderValueEpocDate;
 
-        if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
+        if (shouldRedirect && Response.StatusCode == 200)
         {
             // set redirect uri in order:
             // 1. properties.RedirectUri
-            // 2. query parameter ReturnUrlParameter
+            // 2. query parameter ReturnUrlParameter (if the request path matches the path set in the options)
             //
             // Absolute uri is not allowed if it is from query string as query string is not
             // a trusted source.
             var redirectUri = properties.RedirectUri;
-            if (string.IsNullOrEmpty(redirectUri))
+            if (shouldHonorReturnUrlParameter && string.IsNullOrEmpty(redirectUri))
             {
                 redirectUri = Request.Query[Options.ReturnUrlParameter];
                 if (string.IsNullOrEmpty(redirectUri) || !IsHostRelative(redirectUri))
@@ -435,17 +452,9 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
     }
 
     private static bool IsHostRelative(string path)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            return false;
-        }
-        if (path.Length == 1)
-        {
-            return path[0] == '/';
-        }
-        return path[0] == '/' && path[1] != '/' && path[1] != '\\';
-    }
+        => !string.IsNullOrEmpty(path)
+            && path[0] == '/' // Suppresses the "~/..." branch of SharedUrlHelper.IsLocalUrl so only true host-relative paths are accepted.
+            && SharedUrlHelper.IsLocalUrl(path);
 
     /// <inheritdoc />
     protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
@@ -476,7 +485,9 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
     private string? GetTlsTokenBinding()
     {
+#pragma warning disable ASPDEPR010 // ITlsTokenBindingFeature is obsolete; kept for back-compat inside cookie auth handler.
         var binding = Context.Features.Get<ITlsTokenBindingFeature>()?.GetProvidedTokenBindingId();
+#pragma warning restore ASPDEPR010
         return binding == null ? null : Convert.ToBase64String(binding);
     }
 }

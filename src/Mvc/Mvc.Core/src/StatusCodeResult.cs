@@ -33,14 +33,11 @@ public partial class StatusCodeResult : ActionResult, IClientErrorActionResult
     /// <inheritdoc />
     public override void ExecuteResult(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var httpContext = context.HttpContext;
         var factory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = factory.CreateLogger<StatusCodeResult>();
+        var logger = factory.CreateLogger(typeof(StatusCodeResult));
         Log.HttpStatusCodeResultExecuting(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;

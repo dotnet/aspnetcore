@@ -37,15 +37,8 @@ internal class ElementNode : ContainerNode
 
     internal void SetEvent(string eventName, ElementEventDescriptor descriptor)
     {
-        if (eventName is null)
-        {
-            throw new ArgumentNullException(nameof(eventName));
-        }
-
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(eventName);
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         _events[eventName] = descriptor;
     }

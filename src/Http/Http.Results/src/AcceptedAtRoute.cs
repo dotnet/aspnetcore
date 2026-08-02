@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,13 +17,14 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with status code Accepted (202) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider
+public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AcceptedAtRoute"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     internal AcceptedAtRoute(object? routeValues)
         : this(routeName: null, routeValues: routeValues)
     {
@@ -31,12 +36,24 @@ public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider
     /// </summary>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
+    [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
+    internal AcceptedAtRoute(string? routeName, object? routeValues)
+        : this(routeName, new RouteValueDictionary(routeValues))
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AcceptedAtRoute"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
     internal AcceptedAtRoute(
         string? routeName,
-        object? routeValues)
+        RouteValueDictionary? routeValues)
     {
         RouteName = routeName;
-        RouteValues = new RouteValueDictionary(routeValues);
+        RouteValues = routeValues ?? new RouteValueDictionary();
     }
 
     /// <summary>
@@ -54,13 +71,15 @@ public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider
     /// </summary>
     public int StatusCode => StatusCodes.Status202Accepted;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
-        var url = linkGenerator.GetUriByAddress(
+        var url = linkGenerator.GetUriByRouteValues(
             httpContext,
             RouteName,
             RouteValues,
@@ -84,10 +103,12 @@ public sealed class AcceptedAtRoute : IResult, IEndpointMetadataProvider
     }
 
     /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status202Accepted));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status202Accepted, typeof(void)));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

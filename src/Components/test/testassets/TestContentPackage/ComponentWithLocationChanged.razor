@@ -1,0 +1,61 @@
+﻿@implements IDisposable
+
+@using Microsoft.AspNetCore.Components.Routing
+
+@inject NavigationManager Navigation
+
+<button type="button" id="update-query-string-@Id" @onclick="UpdateQueryString">Update query string</button>
+
+<p>Current URL: <span id="nav-uri-@Id">@Navigation.Uri</span></p>
+
+<p>Query: <span id="query-@Id">@Query</span></p>
+
+<p>LocationChanged: <span id="location-changed-count-@Id">@_locationChangedCount</span></p>
+
+<p>LocationChanging: <span id="location-changing-count-@Id">@_locationChangingCount</span></p>
+
+
+@code {
+    private int _nextQueryStringValue = 1;
+    private int _locationChangedCount = 0;
+    private int _locationChangingCount = 0;
+
+    [Parameter]
+    public string Id { get; set; }
+
+    [SupplyParameterFromQuery] public int? Query { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        Navigation.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private void UpdateQueryString()
+    {
+        var uriWithQueryParameter = Navigation.GetUriWithQueryParameters(new Dictionary<string, object>
+            {
+                ["query"] = _nextQueryStringValue++,
+            });
+        Navigation.NavigateTo(uriWithQueryParameter);
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    {
+        _locationChangedCount++;
+        StateHasChanged();
+    }
+
+    private ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        _locationChangingCount++;
+        StateHasChanged();
+
+        return ValueTask.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

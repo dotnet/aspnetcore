@@ -7,10 +7,14 @@
         Output: <span id="output">@message</span>
     </p>
     <p>
-        Mouseover: <input id="mouseover_input" type="text" @onmouseover="OnMouseEvent" @onmouseout="OnMouseEvent" />
+        @* We use the label here as a target for the "mouseout" event *@
+        <span id="mouseover_label">Mouseover:</span> <input id="mouseover_input" type="text" @onmouseover="OnMouseEvent" @onmouseout="OnMouseEvent" />
     </p>
     <p>
         Mouseenter: <input id="mouseenter_input" type="text" @onmouseenter="OnMouseEvent" @onmouseleave="OnMouseEvent" />
+    </p>
+    <p>
+        Pointerenter: <input id="pointerenter_input" type="text" @onpointerenter="OnPointerEvent" @onpointerleave="OnPointerEvent" />
     </p>
     <p>
         <span id="mousemove_input" @onmousemove="OnMouseEvent">Mousemove city!</span>

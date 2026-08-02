@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "$schema": "https://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
     "Framework": {
       "longName": "framework"
@@ -14,6 +14,10 @@
     },
     "UseProgramMain": {
       "longName": "use-program-main",
+      "shortName": ""
+    },
+    "NativeAot": {
+      "longName": "aot",
       "shortName": ""
     }
   },

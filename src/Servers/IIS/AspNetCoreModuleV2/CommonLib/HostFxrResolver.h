@@ -8,8 +8,8 @@
 #include <filesystem>
 #include <optional>
 #include <string>
-
 #include "ErrorContext.h"
+#include "ProcessorArchitecture.h"
 
 #define READ_BUFFER_SIZE 4096
 
@@ -32,7 +32,7 @@ public:
     static
     void
     AppendArguments(
-        const std::wstring          &arugments,
+        const std::wstring          &applicationArguments,
         const std::filesystem::path &applicationPhysicalPath,
         std::vector<std::wstring>   &arguments,
         bool                        expandDllPaths = false
@@ -73,6 +73,8 @@ private:
         const std::filesystem::path & applicationPath,
         const std::filesystem::path & requestedPath
     );
+
+    static ProcessorArchitecture GetFileProcessorArchitecture(const WCHAR* binaryPath);
 
     struct LocalFreeDeleter
     {

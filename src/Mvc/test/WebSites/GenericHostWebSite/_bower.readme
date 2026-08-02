@@ -1,7 +1,0 @@
-To recreate minified JavaScript file,
-
-1. Update jquery-validation-unobtrusive version in _bower.json if necessary.
-2. Rename or copy _bower.json to bower.json, _gruntfile.js to gruntfile.js, and _package.json to package.json.
-3. Run build from the repo root. (Minimum command is `./build.sh --quiet run-grunt`.)
-4. Remove bower.json, gruntfile.js and package.json.
-5. Check in _bower.json and new jquery.validate.unobtrusive.min.js file.

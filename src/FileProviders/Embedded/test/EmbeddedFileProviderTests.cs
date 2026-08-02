@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Tests;
@@ -83,7 +83,7 @@ public class EmbeddedFileProviderTests
         Assert.False(fileInfo.Exists);
     }
 
-    public static TheoryData GetFileInfo_LocatesFilesUnderSpecifiedNamespaceData
+    public static TheoryData<string> GetFileInfo_LocatesFilesUnderSpecifiedNamespaceData
     {
         get
         {
@@ -121,7 +121,7 @@ public class EmbeddedFileProviderTests
         Assert.Equal("File3.txt", fileInfo.Name);
     }
 
-    public static TheoryData GetFileInfo_LocatesFilesUnderSubDirectoriesData
+    public static TheoryData<string> GetFileInfo_LocatesFilesUnderSubDirectoriesData
     {
         get
         {
@@ -157,6 +157,44 @@ public class EmbeddedFileProviderTests
         Assert.False(fileInfo.IsDirectory);
         Assert.Null(fileInfo.PhysicalPath);
         Assert.Equal("File.txt", fileInfo.Name);
+    }
+
+    public static TheoryData<string> GetFileInfo_LocatesFilesUnderSubDirectories_IfDirectoriesContainsInvalidEverettCharData
+    {
+        get
+        {
+            var theoryData = new TheoryData<string>
+                {
+                    "sub/sub-dir/File3.txt"
+                };
+
+            if (TestPlatformHelper.IsWindows)
+            {
+                theoryData.Add("sub\\sub-dir\\File3.txt");
+            }
+
+            return theoryData;
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(GetFileInfo_LocatesFilesUnderSubDirectories_IfDirectoriesContainsInvalidEverettCharData))]
+    public void GetFileInfo_LocatesFilesUnderSubDirectories_IfDirectoriesContainsInvalidEverettChar(string path)
+    {
+        // Arrange
+        var provider = new EmbeddedFileProvider(GetType().Assembly);
+
+        // Act
+        var fileInfo = provider.GetFileInfo(path);
+
+        // Assert
+        Assert.NotNull(fileInfo);
+        Assert.True(fileInfo.Exists);
+        Assert.NotEqual(default(DateTimeOffset), fileInfo.LastModified);
+        Assert.True(fileInfo.Length > 0);
+        Assert.False(fileInfo.IsDirectory);
+        Assert.Null(fileInfo.PhysicalPath);
+        Assert.Equal("File3.txt", fileInfo.Name);
     }
 
     [Theory]

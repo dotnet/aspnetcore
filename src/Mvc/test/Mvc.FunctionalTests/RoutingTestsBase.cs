@@ -1,25 +1,37 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public abstract class RoutingTestsBase<TStartup> : IClassFixture<MvcTestFixture<TStartup>> where TStartup : class
+public abstract class RoutingTestsBase<TStartup> : LoggedTest where TStartup : class
 {
-    protected RoutingTestsBase(MvcTestFixture<TStartup> fixture)
-    {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<TStartup>();
 
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<TStartup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<TStartup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Theory]
     [InlineData("http://localhost/Login/Index", "Login", "Index", "http://localhost/Login")]
@@ -1554,7 +1566,7 @@ public abstract class RoutingTestsBase<TStartup> : IClassFixture<MvcTestFixture<
         Assert.Equal("/Edit/10", editLink.GetAttribute("href"));
 
         var contactLink = document.RequiredQuerySelector("#contactlink");
-        Assert.Equal("/Home/Contact", contactLink.GetAttribute("href"));
+        Assert.Equal("/Home/Contact?org=contoso", contactLink.GetAttribute("href"));
     }
 
     [Fact]

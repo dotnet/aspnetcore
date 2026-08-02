@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -69,7 +69,7 @@ public partial class HttpConnectionTests
                             await Assert.ThrowsAsync<ObjectDisposedException>(
                                 async () => await connection.StartAsync()).DefaultTimeout();
 
-                        Assert.Equal(nameof(HttpConnection), exception.ObjectName);
+                        Assert.Equal(typeof(HttpConnection).FullName, exception.ObjectName);
                     });
             }
         }
@@ -536,7 +536,7 @@ public partial class HttpConnectionTests
         {
             var exception =
                 await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.StartAsync());
-            Assert.Equal(nameof(HttpConnection), exception.ObjectName);
+            Assert.Equal(typeof(HttpConnection).FullName, exception.ObjectName);
         }
     }
 }

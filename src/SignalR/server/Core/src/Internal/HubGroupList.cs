@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
@@ -40,15 +39,6 @@ internal sealed class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<st
                 var groupToRemove = new KeyValuePair<string, GroupConnectionList>(groupName, EmptyGroupConnectionList);
                 ((ICollection<KeyValuePair<string, GroupConnectionList>>)(_groups)).Remove(groupToRemove);
             }
-        }
-    }
-
-    public void RemoveDisconnectedConnection(string connectionId)
-    {
-        var groupNames = _groups.Where(x => x.Value.ContainsKey(connectionId)).Select(x => x.Key);
-        foreach (var groupName in groupNames)
-        {
-            Remove(connectionId, groupName);
         }
     }
 

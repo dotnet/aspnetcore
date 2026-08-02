@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -94,6 +95,15 @@ public class DefaultApplicationModelProviderTest
             },
             property =>
             {
+                Assert.Equal(nameof(ModelBinderController.Service), property.PropertyName);
+                Assert.Equal(BindingSource.Services, property.BindingInfo.BindingSource);
+                Assert.Same(controllerModel, property.Controller);
+
+                var attribute = Assert.Single(property.Attributes);
+                Assert.IsType<FromServicesAttribute>(attribute);
+            },
+            property =>
+            {
                 Assert.Equal(nameof(ModelBinderController.Unbound), property.PropertyName);
                 Assert.Null(property.BindingInfo);
                 Assert.Same(controllerModel, property.Controller);
@@ -104,7 +114,7 @@ public class DefaultApplicationModelProviderTest
     public void OnProvidersExecuting_ReadsBindingSourceForPropertiesFromModelMetadata()
     {
         // Arrange
-        var detailsProvider = new BindingSourceMetadataProvider(typeof(string), BindingSource.Services);
+        var detailsProvider = new BindingSourceMetadataProvider(typeof(string), BindingSource.Special);
         var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(new[] { detailsProvider });
         var typeInfo = typeof(ModelBinderController).GetTypeInfo();
         var provider = new TestApplicationModelProvider(new MvcOptions(), modelMetadataProvider);
@@ -137,8 +147,17 @@ public class DefaultApplicationModelProviderTest
             },
             property =>
             {
-                Assert.Equal(nameof(ModelBinderController.Unbound), property.PropertyName);
+                Assert.Equal(nameof(ModelBinderController.Service), property.PropertyName);
                 Assert.Equal(BindingSource.Services, property.BindingInfo.BindingSource);
+                Assert.Same(controllerModel, property.Controller);
+
+                var attribute = Assert.Single(property.Attributes);
+                Assert.IsType<FromServicesAttribute>(attribute);
+            },
+            property =>
+            {
+                Assert.Equal(nameof(ModelBinderController.Unbound), property.PropertyName);
+                Assert.Equal(BindingSource.Special, property.BindingInfo.BindingSource);
                 Assert.Same(controllerModel, property.Controller);
             });
     }
@@ -1226,6 +1245,65 @@ public class DefaultApplicationModelProviderTest
     }
 
     [Fact]
+    public void CreateActionModel_PopulatesReturnTypeEndpointMetadata() {
+        // Arrange
+        var builder = new TestApplicationModelProvider();
+        var typeInfo = typeof(TypedResultsReturningActionsController).GetTypeInfo();
+        var actionName = nameof(TypedResultsReturningActionsController.Get);
+
+        // Act
+        var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
+
+        // Assert
+        Assert.NotNull(action.Selectors);
+        Assert.All(action.Selectors, selector =>
+        {
+            Assert.NotNull(selector.EndpointMetadata);
+            Assert.Contains(selector.EndpointMetadata, m => m is ProducesResponseTypeMetadata);
+        });
+        var metadata = action.Selectors[0].EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Single();
+        Assert.Equal(200, metadata.StatusCode);
+    }
+
+    [Fact]
+    public void AddReturnTypeMetadata_ExtractsMetadataFromReturnType()
+    {
+        // Arrange
+        var selector = new SelectorModel();
+        var selectors = new List<SelectorModel> { selector };
+        var actionMethod = typeof(TypedResultsReturningActionsController).GetMethod(nameof(TypedResultsReturningActionsController.Get));
+
+        // Act
+        DefaultApplicationModelProvider.AddReturnTypeMetadata(selectors, actionMethod);
+
+        // Assert
+        Assert.NotNull(selector.EndpointMetadata);
+        Assert.Equal(2, selector.EndpointMetadata.Count);
+        Assert.Single(selector.EndpointMetadata.OfType<ProducesResponseTypeMetadata>());
+        Assert.Single(selector.EndpointMetadata.OfType<IDisableCookieRedirectMetadata>());
+        Assert.Equal(200, ((ProducesResponseTypeMetadata)selector.EndpointMetadata[0]).StatusCode);
+    }
+
+    [Fact]
+    public void AddReturnTypeMetadata_ExtractsMetadataFromResultsUnionReturnType()
+    {
+        // Arrange
+        var selector = new SelectorModel();
+        var selectors = new List<SelectorModel> { selector };
+        var actionMethod = typeof(TypedResultsReturningActionsController).GetMethod(nameof(TypedResultsReturningActionsController.GetUnion));
+
+        // Act
+        DefaultApplicationModelProvider.AddReturnTypeMetadata(selectors, actionMethod);
+
+        // Assert
+        Assert.NotNull(selector.EndpointMetadata);
+        var responseMetadata = selector.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().ToArray();
+        Assert.Equal(2, responseMetadata.Length);
+        Assert.Single(responseMetadata, m => m.StatusCode == 200);
+        Assert.Single(responseMetadata, m => m.StatusCode == 401);
+    }
+
+    [Fact]
     public void ControllerDispose_ExplicitlyImplemented_IDisposableMethods_AreTreatedAs_NonActions()
     {
         // Arrange
@@ -1693,6 +1771,20 @@ public class DefaultApplicationModelProviderTest
         public void List() { }
     }
 
+    private class TypedResultsReturningActionsController : Controller
+    {
+        [HttpGet]
+        public Http.HttpResults.Ok<Foo> Get() => TypedResults.Ok(new Foo { Info = "Hello" });
+
+        [HttpGet]
+        public Http.HttpResults.Results<Http.HttpResults.Ok<Foo>, Http.HttpResults.UnauthorizedHttpResult, Http.HttpResults.ProblemHttpResult> GetUnion()
+            => TypedResults.Ok(new Foo { Info = "Hello" });
+    }
+
+    public class Foo {
+        public required string Info { get; set; }
+    }
+
     private class CustomHttpMethodsAttribute : Attribute, IActionHttpMethodProvider
     {
         private readonly string[] _methods;
@@ -1743,12 +1835,18 @@ public class DefaultApplicationModelProviderTest
     {
     }
 
+    public interface ITestService
+    { }
+
     public class ModelBinderController
     {
         [FromQuery]
         public string Bound { get; set; }
 
         public string Unbound { get; set; }
+
+        [FromServices]
+        public ITestService Service { get; set; }
 
         public IFormFile FormFile { get; set; }
 

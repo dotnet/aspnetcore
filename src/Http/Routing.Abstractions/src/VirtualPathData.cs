@@ -33,10 +33,7 @@ public class VirtualPathData
         string virtualPath,
         RouteValueDictionary dataTokens)
     {
-        if (router == null)
-        {
-            throw new ArgumentNullException(nameof(router));
-        }
+        ArgumentNullException.ThrowIfNull(router);
 
         Router = router;
         VirtualPath = virtualPath;
@@ -86,7 +83,7 @@ public class VirtualPathData
             return string.Empty;
         }
 
-        if (!path.StartsWith("/", StringComparison.Ordinal))
+        if (!path.StartsWith('/'))
         {
             return "/" + path;
         }

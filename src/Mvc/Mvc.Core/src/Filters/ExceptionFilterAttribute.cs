@@ -16,10 +16,7 @@ public abstract class ExceptionFilterAttribute : Attribute, IAsyncExceptionFilte
     /// <inheritdoc />
     public virtual Task OnExceptionAsync(ExceptionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         OnException(context);
         return Task.CompletedTask;

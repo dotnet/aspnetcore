@@ -17,10 +17,7 @@ internal sealed class DefaultClientModelValidatorProvider : IClientModelValidato
     /// <inheritdoc />
     public void CreateValidators(ClientValidatorProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Perf: Avoid allocations
         var results = context.Results;

@@ -50,10 +50,7 @@ public sealed partial class SignOutHttpResult : IResult
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
     internal SignOutHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
-        if (authenticationSchemes is null)
-        {
-            throw new ArgumentNullException(nameof(authenticationSchemes));
-        }
+        ArgumentNullException.ThrowIfNull(authenticationSchemes);
 
         AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;

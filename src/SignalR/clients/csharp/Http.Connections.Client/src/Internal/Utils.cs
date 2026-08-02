@@ -2,11 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 internal static class Utils
 {
+    public static Uri CreateEndPointUri(Uri url)
+    {
+        // The EndPoint URI shouldn't have querystring or target.
+        var uriBuilder = new UriBuilder
+        {
+            Scheme = url.Scheme,
+            Host = url.Host,
+            Port = url.Port,
+            Path = url.AbsolutePath
+        };
+        return uriBuilder.Uri;
+    }
+
     public static Uri AppendPath(Uri url, string path)
     {
         var builder = new UriBuilder(url);
@@ -16,6 +30,19 @@ internal static class Utils
         }
         builder.Path += path;
         return builder.Uri;
+    }
+
+    internal static bool HasQueryStringParameter(string query, string key)
+    {
+        foreach (var pair in new QueryStringEnumerable(query))
+        {
+            if (pair.EncodedName.Span.SequenceEqual(key.AsSpan()))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal static Uri AppendQueryString(Uri url, string qs)

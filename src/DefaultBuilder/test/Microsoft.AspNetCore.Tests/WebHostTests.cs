@@ -1,14 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
+
 using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -108,6 +111,19 @@ public class WebHostTests
         Assert.Contains(events, args =>
             args.EventSource.Name == "Microsoft-Extensions-Logging" &&
             args.Payload.OfType<string>().Any(p => p.Contains("Request starting")));
+    }
+
+    [Fact]
+    public void WebHost_CreateDefaultBuilder_ConfiguresRegexInlineRouteConstraint_ByDefault()
+    {
+        var host = WebHost.CreateDefaultBuilder()
+            .Configure(_ => { })
+            .Build();
+
+        var routeOptions = host.Services.GetService<IOptions<RouteOptions>>();
+
+        Assert.True(routeOptions.Value.ConstraintMap.ContainsKey("regex"));
+        Assert.Equal(typeof(RegexInlineRouteConstraint), routeOptions.Value.ConstraintMap["regex"]);
     }
 
     private class TestEventListener : EventListener

@@ -31,25 +31,10 @@ public class StaticFileMiddleware
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
     public StaticFileMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<StaticFileOptions> options, ILoggerFactory loggerFactory)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (hostingEnv == null)
-        {
-            throw new ArgumentNullException(nameof(hostingEnv));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(hostingEnv);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _next = next;
         _options = options.Value;
@@ -57,6 +42,12 @@ public class StaticFileMiddleware
         _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
         _matchUrl = _options.RequestPath;
         _logger = loggerFactory.CreateLogger<StaticFileMiddleware>();
+
+        // See HostingEnvironmentExtensions.Initialize
+        if (_fileProvider is NullFileProvider && _fileProvider == hostingEnv.WebRootFileProvider)
+        {
+            _logger.WebRootPathNotFound(Path.GetFullPath(Path.Combine(hostingEnv.ContentRootPath, hostingEnv.WebRootPath ?? "wwwroot")));
+        }
     }
 
     /// <summary>
@@ -66,7 +57,7 @@ public class StaticFileMiddleware
     /// <returns></returns>
     public Task Invoke(HttpContext context)
     {
-        if (!ValidateNoEndpoint(context))
+        if (!ValidateNoEndpointDelegate(context))
         {
             _logger.EndpointMatched();
         }
@@ -91,8 +82,8 @@ public class StaticFileMiddleware
         return _next(context);
     }
 
-    // Return true because we only want to run if there is no endpoint.
-    private static bool ValidateNoEndpoint(HttpContext context) => context.GetEndpoint() == null;
+    // Return true because we only want to run if there is no endpoint delegate.
+    private static bool ValidateNoEndpointDelegate(HttpContext context) => context.GetEndpoint()?.RequestDelegate is null;
 
     private static bool ValidateMethod(HttpContext context)
     {

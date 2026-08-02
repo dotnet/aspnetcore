@@ -12,35 +12,35 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TResource>
 {
-    private List<RateLimiter> limiters = new List<RateLimiter>();
+    private readonly List<RateLimiter> _limiters = new List<RateLimiter>();
 
     public TestPartitionedRateLimiter() { }
 
     public TestPartitionedRateLimiter(RateLimiter limiter)
     {
-        limiters.Add(limiter);
+        _limiters.Add(limiter);
     }
 
     public void AddLimiter(RateLimiter limiter)
     {
-        limiters.Add(limiter);
+        _limiters.Add(limiter);
     }
 
-    public override int GetAvailablePermits(TResource resourceID)
+    public override RateLimiterStatistics GetStatistics(TResource resourceID)
     {
         throw new NotImplementedException();
     }
 
-    protected override RateLimitLease AcquireCore(TResource resourceID, int permitCount)
+    protected override RateLimitLease AttemptAcquireCore(TResource resourceID, int permitCount)
     {
         if (permitCount != 1)
         {
             throw new ArgumentException("Tests only support 1 permit at a time");
-        }    
+        }
         var leases = new List<RateLimitLease>();
-        foreach (var limiter in limiters)
+        foreach (var limiter in _limiters)
         {
-            var lease = limiter.Acquire();
+            var lease = limiter.AttemptAcquire();
             if (lease.IsAcquired)
             {
                 leases.Add(lease);
@@ -57,16 +57,16 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         return new TestRateLimitLease(true, leases);
     }
 
-    protected override async ValueTask<RateLimitLease> WaitAsyncCore(TResource resourceID, int permitCount, CancellationToken cancellationToken)
+    protected override async ValueTask<RateLimitLease> AcquireAsyncCore(TResource resourceID, int permitCount, CancellationToken cancellationToken)
     {
         if (permitCount != 1)
         {
             throw new ArgumentException("Tests only support 1 permit at a time");
         }
         var leases = new List<RateLimitLease>();
-        foreach (var limiter in limiters)
+        foreach (var limiter in _limiters)
         {
-            leases.Add(await limiter.WaitAsync().ConfigureAwait(false));
+            leases.Add(await limiter.AcquireAsync());
         }
         foreach (var lease in leases)
         {
@@ -77,9 +77,8 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
                     unusedLease.Dispose();
                 }
                 return new TestRateLimitLease(false, null);
-            }    
+            }
         }
         return new TestRateLimitLease(true, leases);
-
     }
 }

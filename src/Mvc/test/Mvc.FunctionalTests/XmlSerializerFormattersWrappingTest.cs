@@ -5,24 +5,34 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
 using XmlFormattersWebSite;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<Startup>>
+public class XmlSerializerFormattersWrappingTest : LoggedTest
 {
-    public XmlSerializerFormattersWrappingTest(MvcTestFixture<Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(builder => builder.UseStartup<Startup>());
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<Startup>(LoggerFactory);
         Client = Factory.CreateDefaultClient();
     }
 
-    public WebApplicationFactory<Startup> Factory { get; }
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Theory]
     [InlineData("http://localhost/IEnumerable/ValueTypes")]
@@ -197,7 +207,7 @@ public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<
             var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
                 "<status>404</status>" +
                 "<title>Not Found</title>" +
-                "<type>https://tools.ietf.org/html/rfc7231#section-6.5.4</type>" +
+                "<type>https://tools.ietf.org/html/rfc9110#section-15.5.5</type>" +
                 $"<traceId>{Activity.Current.Id}</traceId>" +
                 "</problem>";
 
@@ -210,7 +220,7 @@ public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<
             var root = XDocument.Parse(content).Root;
             Assert.Equal("404", root.Element(root.Name.Namespace.GetName("status"))?.Value);
             Assert.Equal("Not Found", root.Element(root.Name.Namespace.GetName("title"))?.Value);
-            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", root.Element(root.Name.Namespace.GetName("type"))?.Value);
+            Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", root.Element(root.Name.Namespace.GetName("type"))?.Value);
             // Activity is not null
             Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
         }

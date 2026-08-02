@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -30,6 +31,7 @@ public class HelloWorldTests : LoggedTest
 
     [ConditionalTheory]
     [MemberData(nameof(TestVariants))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/45378")]
     public async Task HelloWorld(TestVariant variant)
     {
         var testName = $"HelloWorld_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
@@ -106,6 +108,59 @@ public class HelloWorldTests : LoggedTest
                         throw new NotImplementedException(variant.Server.ToString());
                 }
             }
+        }
+    }
+
+    public static TestMatrix SelfHostTestVariants
+        => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys)
+            .WithTfms(Tfm.Default)
+            .WithApplicationTypes(ApplicationType.Portable)
+            .WithAllHostingModels()
+            .WithAllArchitectures();
+
+    [ConditionalTheory]
+    [MemberData(nameof(SelfHostTestVariants))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42380")]
+    public async Task ApplicationException(TestVariant variant)
+    {
+        var testName = $"ApplicationException_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
+        using (StartLog(out var loggerFactory, LogLevel.Debug, testName))
+        {
+            var logger = loggerFactory.CreateLogger("ApplicationException");
+
+            var deploymentParameters = new DeploymentParameters(variant)
+            {
+                ApplicationPath = Helpers.GetApplicationPath()
+            };
+
+            var output = string.Empty;
+            using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
+            {
+                deployer.ProcessOutputListener = (data) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(data))
+                    {
+                        output += data + '\n';
+                    }
+                };
+
+                var deploymentResult = await deployer.DeployAsync();
+
+                // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                using (var response = await RetryHelper.RetryRequest(() =>
+                {
+                    return deploymentResult.HttpClient.GetAsync("/throwexception");
+                }, logger, deploymentResult.HostShutdownToken))
+                {
+                    Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+                    var body = await response.Content.ReadAsStringAsync();
+                    Assert.Empty(body);
+                }
+            }
+            // Output should contain the ApplicationException and the 500 status code
+            Assert.Contains("System.ApplicationException: Application exception", output);
+            Assert.Contains("/throwexception - 500", output);
         }
     }
 }

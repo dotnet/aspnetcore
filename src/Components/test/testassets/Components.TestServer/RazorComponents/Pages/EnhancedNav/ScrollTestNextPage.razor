@@ -1,0 +1,38 @@
+﻿@page "/nav/scroll-test-next"
+@inject NavigationManager NavigationManager
+@attribute [StreamRendering]
+@rendermode RenderMode.InteractiveServer
+
+<PageTitle>Next page for testing scroll position</PageTitle>
+
+<h1 id="test-info-2">Scroll tests next page</h1>
+
+<p>If you scroll down a long way, you'll find more content. We add it asynchronously via streaming rendering.</p>
+
+<div style="height: 2000px; border: 2px dashed red;">top spacer</div>
+
+@if (showContent)
+{
+    <h2 id="some-content">Some content</h2>
+    <NavLink id="do-navigation" href="@(scrollPagePath)">
+        Navigation to another page
+    </NavLink>
+    <button id="do-programmatic-navigation" @onclick="@(() => NavigationManager.NavigateTo(scrollPagePath))">
+        Programmatic navigation to another page
+    </button>
+
+    <p>This is the content.</p>
+}
+
+<div style="height: 2000px; border: 2px dashed red;">bottom spacer</div>
+
+@code {
+    bool showContent;
+    string scrollPagePath = "nav/scroll-test";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        showContent = true;
+    }
+}

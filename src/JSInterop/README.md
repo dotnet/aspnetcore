@@ -4,8 +4,8 @@ This directory contains sources for [`Microsoft.JSInterop`](https://www.nuget.or
 
 The primary use case is for applications built with Blazor. For usage information, see the following documentation:
 
- * [Call JavaScript functions from .NET methods in ASP.NET Core Blazor](https://docs.microsoft.com/aspnet/core/blazor/call-javascript-from-dotnet)
- * [Call .NET methods from JavaScript functions in ASP.NET Core Blazor](https://docs.microsoft.com/aspnet/core/blazor/call-dotnet-from-javascript)
+ * [Call JavaScript functions from .NET methods in ASP.NET Core Blazor](https://learn.microsoft.com/aspnet/core/blazor/call-javascript-from-dotnet)
+ * [Call .NET methods from JavaScript functions in ASP.NET Core Blazor](https://learn.microsoft.com/aspnet/core/blazor/call-dotnet-from-javascript)
 
 ## Description
 

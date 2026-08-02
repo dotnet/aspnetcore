@@ -48,9 +48,12 @@ internal sealed class ResponseBodyReaderStream : Stream
 
     public override void SetLength(long value) => throw new NotSupportedException();
 
-    public override void Flush() => throw new NotSupportedException();
+    public override void Flush()
+    {
+        // No-op
+    }
 
-    public override Task FlushAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     // Write with count 0 will still trigger OnFirstWrite
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
@@ -68,8 +71,6 @@ internal sealed class ResponseBodyReaderStream : Stream
 
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        VerifyBuffer(buffer, offset, count);
-
         return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
 
@@ -103,22 +104,6 @@ internal sealed class ResponseBodyReaderStream : Stream
         readableBuffer.CopyTo(buffer.Span);
         _pipe.Reader.AdvanceTo(readableBuffer.End);
         return (int)actual;
-    }
-
-    private static void VerifyBuffer(byte[] buffer, int offset, int count)
-    {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-        if (offset < 0 || offset > buffer.Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-        }
-        if (count <= 0 || count > buffer.Length - offset)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
-        }
     }
 
     internal void Cancel()

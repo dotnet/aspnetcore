@@ -24,11 +24,23 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
         if (initialCapacity <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(initialCapacity));
+            throw new ArgumentOutOfRangeException(nameof(initialCapacity), actualValue: initialCapacity, $"{nameof(initialCapacity)} ('{initialCapacity}') must be a non-negative and non-zero value.");
         }
 
         _rentedBuffer = ArrayPool<T>.Shared.Rent(initialCapacity);
         _index = 0;
+    }
+
+    /// <summary>
+    /// Gets a span of the written data.
+    /// </summary>
+    public ReadOnlySpan<T> WrittenSpan
+    {
+        get
+        {
+            CheckIfDisposed();
+            return _rentedBuffer.AsSpan(0, _index);
+        }
     }
 
     public ReadOnlyMemory<T> WrittenMemory
@@ -36,7 +48,6 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
         get
         {
             CheckIfDisposed();
-
             return _rentedBuffer.AsMemory(0, _index);
         }
     }
@@ -46,7 +57,6 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
         get
         {
             CheckIfDisposed();
-
             return _index;
         }
     }
@@ -96,7 +106,7 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
         ClearHelper();
         ArrayPool<T>.Shared.Return(_rentedBuffer);
-        _rentedBuffer = null;
+        _rentedBuffer = null!;
     }
 
     private void CheckIfDisposed()
@@ -109,16 +119,28 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
     private static void ThrowObjectDisposedException()
     {
+#if NET
         throw new ObjectDisposedException(nameof(ArrayBufferWriter<T>));
+#else
+        throw new ObjectDisposedException(nameof(IBufferWriter<T>));
+#endif
     }
+
+    public void Advance(uint count)
+        => Advance((int)count);
 
     public void Advance(int count)
     {
-        CheckIfDisposed();
+        if (count == 0)
+        {
+            // no-op
+            return;
+        }
 
+        CheckIfDisposed();
         if (count < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(count));
+            throw new ArgumentOutOfRangeException(nameof(count), actualValue: count, $"{nameof(count)} ('{count}') must be a non-negative value.");
         }
 
         if (_index > _rentedBuffer.Length - count)
@@ -151,7 +173,7 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
         if (sizeHint < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(sizeHint));
+            throw new ArgumentOutOfRangeException(nameof(sizeHint), actualValue: sizeHint, $"{nameof(sizeHint)} ('{sizeHint}') must be a non-negative value.");
         }
 
         if (sizeHint == 0)

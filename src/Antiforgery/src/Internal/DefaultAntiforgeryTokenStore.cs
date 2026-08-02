@@ -14,10 +14,7 @@ internal sealed class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
 
     public DefaultAntiforgeryTokenStore(IOptions<AntiforgeryOptions> optionsAccessor)
     {
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(optionsAccessor);
 
         _options = optionsAccessor.Value;
     }
@@ -51,7 +48,7 @@ internal sealed class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
         }
 
         // Fall back to reading form instead
-        if (requestToken.Count == 0 && httpContext.Request.HasFormContentType)
+        if (requestToken.Count == 0 && httpContext.Request.HasFormContentType && !_options.SuppressReadingTokenFromFormBody)
         {
             // Check the content-type before accessing the form collection to make sure
             // we report errors gracefully.

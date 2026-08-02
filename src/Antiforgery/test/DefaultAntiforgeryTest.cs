@@ -709,6 +709,8 @@ public class DefaultAntiforgeryTest
     [InlineData("HEAD")]
     [InlineData("options")]
     [InlineData("TrAcE")]
+    [InlineData("QUERY")]
+    [InlineData("query")]
     public async Task IsRequestValidAsync_SkipsAntiforgery_ForSafeHttpMethods(string httpMethod)
     {
         // Arrange
@@ -1079,7 +1081,7 @@ public class DefaultAntiforgeryTest
     [InlineData(true, null)]
     public void SetCookieTokenAndHeader_AddsXFrameOptionsHeader(
         bool suppressXFrameOptions,
-        string expectedHeaderValue)
+        string? expectedHeaderValue)
     {
         // Arrange
         var options = new AntiforgeryOptions()

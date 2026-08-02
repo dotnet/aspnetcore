@@ -7,9 +7,10 @@ using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Grpc.Core;
+using Grpc.Shared;
+using Grpc.Shared.Server;
 using IntegrationTestsWebsite.Infrastructure;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,8 @@ public class DynamicGrpcServiceRegistry
 
         AddServiceCore(c =>
         {
+            RegisterDescriptor(methodDescriptor);
+
             var unaryMethod = new UnaryServerMethod<DynamicService, TRequest, TResponse>((service, request, context) => callHandler(request, context));
             var binder = CreateJsonTranscodingBinder<TRequest, TResponse>(methodDescriptor, c, new DynamicServiceInvokerResolver(unaryMethod));
 
@@ -57,6 +60,8 @@ public class DynamicGrpcServiceRegistry
 
         AddServiceCore(c =>
         {
+            RegisterDescriptor(methodDescriptor);
+
             var serverStreamingMethod = new ServerStreamingServerMethod<DynamicService, TRequest, TResponse>((service, request, stream, context) => callHandler(request, stream, context));
             var binder = CreateJsonTranscodingBinder<TRequest, TResponse>(methodDescriptor, c, new DynamicServiceInvokerResolver(serverStreamingMethod));
 
@@ -106,6 +111,14 @@ public class DynamicGrpcServiceRegistry
             });
     }
 
+    private void RegisterDescriptor(MethodDescriptor methodDescriptor)
+    {
+        // File descriptor is done in JsonTranscodingServiceMethodProvider.
+        // Need to replicate that logic here so tests that lookup descriptors are successful.
+        var descriptorRegistry = _serviceProvider.GetRequiredService<DescriptorRegistry>();
+        descriptorRegistry.RegisterFileDescriptor(methodDescriptor.File);
+    }
+
     private class DynamicEndpointRouteBuilder : IEndpointRouteBuilder
     {
         public DynamicEndpointRouteBuilder(IServiceProvider serviceProvider)
@@ -139,7 +152,8 @@ public class DynamicGrpcServiceRegistry
             _serviceProvider.GetRequiredService<IOptions<GrpcServiceOptions<DynamicService>>>().Value,
             _serviceProvider.GetRequiredService<ILoggerFactory>(),
             _serviceProvider.GetRequiredService<IGrpcServiceActivator<DynamicService>>(),
-            JsonTranscodingOptions);
+            JsonTranscodingOptions,
+            new InterceptorActivators(_serviceProvider));
 
         return binder;
     }

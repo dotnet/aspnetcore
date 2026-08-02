@@ -30,7 +30,8 @@ internal static unsafe class DpapiSecretSerializerHelper
         try
         {
             Guid dummy;
-            ProtectWithDpapi(new Secret((byte*)&dummy, sizeof(Guid)), protectToLocalMachine: false);
+            using var secret = new Secret((byte*)&dummy, sizeof(Guid));
+            ProtectWithDpapi(secret, protectToLocalMachine: false);
             return true;
         }
         catch
@@ -57,7 +58,7 @@ internal static unsafe class DpapiSecretSerializerHelper
             finally
             {
                 // To limit exposure to the GC.
-                Array.Clear(plaintextSecret, 0, plaintextSecret.Length);
+                CryptoUtil.ZeroMemory(plaintextSecret);
             }
         }
     }
@@ -91,7 +92,7 @@ internal static unsafe class DpapiSecretSerializerHelper
                 pvReserved: IntPtr.Zero,
                 pPromptStruct: IntPtr.Zero,
                 dwFlags: CRYPTPROTECT_UI_FORBIDDEN | ((fLocalMachine) ? CRYPTPROTECT_LOCAL_MACHINE : 0),
-                pDataOut: out dataOut);
+                pDataOut: &dataOut);
             if (!success)
             {
                 var errorCode = Marshal.GetLastWin32Error();
@@ -135,7 +136,7 @@ internal static unsafe class DpapiSecretSerializerHelper
             finally
             {
                 // Limits secret exposure to garbage collector.
-                Array.Clear(plaintextSecret, 0, plaintextSecret.Length);
+                CryptoUtil.ZeroMemory(plaintextSecret);
             }
         }
     }
@@ -234,7 +235,7 @@ internal static unsafe class DpapiSecretSerializerHelper
                 pvReserved: IntPtr.Zero,
                 pPromptStruct: IntPtr.Zero,
                 dwFlags: CRYPTPROTECT_UI_FORBIDDEN,
-                pDataOut: out dataOut);
+                pDataOut: &dataOut);
             if (!success)
             {
                 var errorCode = Marshal.GetLastWin32Error();

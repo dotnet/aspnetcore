@@ -30,7 +30,10 @@ public class InputRadioTest
         var model = new TestModel();
         var rootComponent = new TestInputRadioHostComponent<TestEnum>
         {
-            EditContext = new EditContext(model),
+            EditContext = new EditContext(model)
+            {
+                ShouldUseFieldIdentifiers = false,
+            },
             InnerContent = RadioButtonsWithGroup(null, () => model.TestEnum)
         };
 
@@ -75,8 +78,8 @@ public class InputRadioTest
         foreach (var selectedValue in (TestEnum[])Enum.GetValues(typeof(TestEnum)))
         {
             builder.OpenComponent<TestInputRadio>(0);
-            builder.AddAttribute(1, "Name", name);
-            builder.AddAttribute(2, "Value", selectedValue);
+            builder.AddComponentParameter(1, "Name", name);
+            builder.AddComponentParameter(2, "Value", selectedValue);
             builder.CloseComponent();
         }
     };
@@ -84,14 +87,14 @@ public class InputRadioTest
     private static RenderFragment RadioButtonsWithGroup(string name, Expression<Func<TestEnum>> valueExpression) => (builder) =>
     {
         builder.OpenComponent<InputRadioGroup<TestEnum>>(0);
-        builder.AddAttribute(1, "Name", name);
-        builder.AddAttribute(2, "ValueExpression", valueExpression);
-        builder.AddAttribute(2, "ChildContent", new RenderFragment((childBuilder) =>
+        builder.AddComponentParameter(1, "Name", name);
+        builder.AddComponentParameter(2, "ValueExpression", valueExpression);
+        builder.AddComponentParameter(2, "ChildContent", new RenderFragment((childBuilder) =>
         {
             foreach (var value in (TestEnum[])Enum.GetValues(typeof(TestEnum)))
             {
                 childBuilder.OpenComponent<TestInputRadio>(0);
-                childBuilder.AddAttribute(1, "Value", value);
+                childBuilder.AddComponentParameter(1, "Value", value);
                 childBuilder.CloseComponent();
             }
         }));
@@ -139,8 +142,8 @@ public class InputRadioTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<CascadingValue<EditContext>>(0);
-            builder.AddAttribute(1, "Value", EditContext);
-            builder.AddAttribute(2, "ChildContent", InnerContent);
+            builder.AddComponentParameter(1, "Value", EditContext);
+            builder.AddComponentParameter(2, "ChildContent", InnerContent);
             builder.CloseComponent();
         }
     }

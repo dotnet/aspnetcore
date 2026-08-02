@@ -38,10 +38,7 @@ public class FileStreamResult : FileResult
     public FileStreamResult(Stream fileStream, MediaTypeHeaderValue contentType)
         : base(contentType.ToString())
     {
-        if (fileStream == null)
-        {
-            throw new ArgumentNullException(nameof(fileStream));
-        }
+        ArgumentNullException.ThrowIfNull(fileStream);
 
         FileStream = fileStream;
     }
@@ -56,10 +53,7 @@ public class FileStreamResult : FileResult
         [MemberNotNull(nameof(_fileStream))]
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _fileStream = value;
         }
@@ -68,10 +62,7 @@ public class FileStreamResult : FileResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<FileStreamResult>>();
         return executor.ExecuteAsync(context, this);

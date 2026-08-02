@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +53,7 @@ public class CodeFixRunner
         {
             var message = string.Join(
                 Environment.NewLine,
-                diagnostics.Select(d => CSharpDiagnosticFormatter.Instance.Format(d)));
+                diagnostics.Select(d => CSharpDiagnosticFormatter.Instance.Format(d, CultureInfo.InvariantCulture)));
             throw new InvalidOperationException($"Compilation failed:{Environment.NewLine}{message}");
         }
     }

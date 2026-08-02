@@ -64,8 +64,11 @@ internal sealed class SpaProxyMiddleware
         }
         else
         {
-            _logger.LogInformation($"SPA proxy is ready. Redirecting to {_options.Value.ServerUrl}.");
-            context.Response.Redirect(_options.Value.ServerUrl);
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation($"SPA proxy is ready. Redirecting to {_options.Value.GetRedirectUrl()}.");
+            }
+            context.Response.Redirect(_options.Value.GetRedirectUrl());
         }
 
         static string GenerateSpaLaunchPage(SpaDevelopmentServerOptions options)
@@ -82,7 +85,7 @@ internal sealed class SpaProxyMiddleware
 </head>
 <body>
   <h1>Launching the SPA proxy...</h1>
-  <p>This page will automatically redirect to <a href=""{HtmlEncoder.Default.Encode(options.ServerUrl)}"">{HtmlEncoder.Default.Encode(options.ServerUrl)}</a> when the SPA proxy is ready.</p>
+  <p>This page will automatically redirect to <a href=""{HtmlEncoder.Default.Encode(options.GetRedirectUrl())}"">{HtmlEncoder.Default.Encode(options.GetRedirectUrl())}</a> when the SPA proxy is ready.</p>
 </body>
 </html>";
         }

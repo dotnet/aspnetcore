@@ -14,7 +14,7 @@ internal static class MvcRazorDiagnosticListenerExtensions
         IRazorPage page,
         ViewContext viewContext)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             BeforeViewPageImpl(diagnosticListener, page, viewContext);
@@ -44,7 +44,7 @@ internal static class MvcRazorDiagnosticListenerExtensions
         IRazorPage page,
         ViewContext viewContext)
     {
-        // Inlinable fast-path check if Diagnositcs is enabled
+        // Inlinable fast-path check if Diagnostics is enabled
         if (diagnosticListener.IsEnabled())
         {
             AfterViewPageImpl(diagnosticListener, page, viewContext);

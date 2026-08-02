@@ -24,7 +24,7 @@ public class ServerInteropTestDefaultExceptionsBehavior : ServerTestBase<BasicTe
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: true);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<InteropComponent>();
     }
 

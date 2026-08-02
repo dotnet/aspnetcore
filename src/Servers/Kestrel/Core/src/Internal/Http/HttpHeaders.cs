@@ -2,17 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 internal abstract partial class HttpHeaders : IHeaderDictionary
 {
     protected long _bits;
@@ -44,8 +48,11 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     {
         get
         {
-            TryGetValueFast(key, out var value);
-            return value;
+            if (TryGetValueFast(key, out var value))
+            {
+                return value;
+            }
+            return StringValues.Empty;
         }
         set
         {
@@ -95,7 +102,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
         throw new ArgumentException();
     }
 
-    protected static void ThrowKeyNotFoundException()
+    private static void ThrowKeyNotFoundException()
     {
         throw new KeyNotFoundException();
     }
@@ -109,7 +116,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
     bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => _isReadOnly;
 
-    ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToList();
+    ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     ICollection<StringValues> IDictionary<string, StringValues>.Values => ((IDictionary<string, StringValues>)this).Select(pair => pair.Value).ToList();
 
@@ -257,6 +264,16 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
         return TryGetValueFast(key, out value);
     }
 
+    internal string DebuggerToString()
+    {
+        var debugText = $"Count = {Count}";
+        if (_isReadOnly)
+        {
+            debugText += ", IsReadOnly = true";
+        }
+        return debugText;
+    }
+
     public static void ValidateHeaderValueCharacters(string headerName, StringValues headerValues, Func<string, Encoding?> encodingSelector)
     {
         var requireAscii = ReferenceEquals(encodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
@@ -353,7 +370,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
                 offset++;
                 if ((uint)offset > (uint)value.Length)
                 {
-                    // Consumed enitre string, move to next.
+                    // Consumed entire string, move to next.
                     break;
                 }
 
@@ -411,7 +428,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
                 if ((uint)offset >= (uint)value.Length)
                 {
-                    // Consumed enitre string, move to next string.
+                    // Consumed entire string, move to next string.
                     connectionOptions |= potentialConnectionOptions;
                     break;
                 }
@@ -436,19 +453,19 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
                 if ((uint)offset >= (uint)value.Length)
                 {
-                    // Consumed enitre string, move to next string.
+                    // Consumed entire string, move to next string.
                     connectionOptions |= potentialConnectionOptions;
                     break;
                 }
                 else if (c == ',')
                 {
-                    // Consumed value corretly.
+                    // Consumed value correctly.
                     connectionOptions |= potentialConnectionOptions;
                     // Skip comma.
                     offset++;
                     if ((uint)offset >= (uint)value.Length)
                     {
-                        // Consumed enitre string, move to next string.
+                        // Consumed entire string, move to next string.
                         break;
                     }
                     else
@@ -561,6 +578,14 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
                         offset += sizeof(uint) / 2;
                         transferEncodingOptions = TransferCoding.Chunked;
                     }
+                    else
+                    {
+                        transferEncodingOptions = TransferCoding.Other;
+                    }
+                }
+                else
+                {
+                    transferEncodingOptions = TransferCoding.Other;
                 }
 
                 if ((uint)offset >= (uint)values.Length)

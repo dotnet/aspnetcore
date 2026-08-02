@@ -55,10 +55,7 @@ public partial class CookieTempDataProvider : ITempDataProvider
     /// <returns>The temp data.</returns>
     public IDictionary<string, object> LoadTempData(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.Request.Cookies.ContainsKey(_options.Cookie.Name))
         {
@@ -104,10 +101,7 @@ public partial class CookieTempDataProvider : ITempDataProvider
     /// <param name="values">The values.</param>
     public void SaveTempData(HttpContext context, IDictionary<string, object> values)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var cookieOptions = _options.Cookie.Build(context);
         SetCookiePath(context, cookieOptions);

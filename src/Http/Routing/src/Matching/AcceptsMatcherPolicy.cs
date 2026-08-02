@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
 {
+    private static Endpoint? Http415Endpoint;
     internal const string Http415EndpointDisplayName = "415 HTTP Unsupported Media Type";
     internal const string AnyContentType = "*/*";
 
@@ -20,10 +21,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         if (ContainsDynamicEndpoints(endpoints))
         {
@@ -35,10 +33,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         return ContainsDynamicEndpoints(endpoints);
@@ -51,15 +46,8 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(candidates);
 
         // We want to return a 415 if we eliminated ALL of the currently valid endpoints due to content type
         // mismatch.
@@ -149,10 +137,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // The algorithm here is designed to be preserve the order of the endpoints
         // while also being relatively simple. Preserving order is important.
@@ -251,15 +236,19 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             edges.Add(string.Empty, anyEndpoints.ToList());
         }
 
-        return edges
-            .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
-            .ToArray();
+        var result = new PolicyNodeEdge[edges.Count];
+        var index = 0;
+        foreach (var kvp in edges)
+        {
+            result[index] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            index++;
+        }
+        return result;
     }
 
     private static Endpoint CreateRejectionEndpoint()
     {
-        return new Endpoint(
-            (context) =>
+        return Http415Endpoint ??= new Endpoint(context =>
             {
                 context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                 return Task.CompletedTask;
@@ -270,17 +259,17 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
     {
-        if (edges == null)
-        {
-            throw new ArgumentNullException(nameof(edges));
-        }
+        ArgumentNullException.ThrowIfNull(edges);
 
         // Since our 'edges' can have wildcards, we do a sort based on how wildcard-ey they
         // are then then execute them in linear order.
-        var ordered = edges
-            .Select(e => (mediaType: CreateEdgeMediaType(ref e), destination: e.Destination))
-            .OrderBy(e => GetScore(e.mediaType))
-            .ToArray();
+        var ordered = new (ReadOnlyMediaTypeHeaderValue mediaType, int destination)[edges.Count];
+        for (var i = 0; i < edges.Count; i++)
+        {
+            var e = edges[i];
+            ordered[i] = (mediaType: CreateEdgeMediaType(ref e), destination: e.Destination);
+        }
+        Array.Sort(ordered, static (left, right) => GetScore(left.mediaType).CompareTo(GetScore(right.mediaType)));
 
         // If any edge matches all content types, then treat that as the 'exit'. This will
         // always happen because we insert a 415 endpoint.

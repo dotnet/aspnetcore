@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 
@@ -92,7 +93,7 @@ public abstract class TagHelperContent : IHtmlContentBuilder
     /// </param>
     /// <param name="args">The object array to format.</param>
     /// <returns>A reference to this instance after the append operation has completed.</returns>
-    public TagHelperContent AppendFormat(string format, params object[] args)
+    public TagHelperContent AppendFormat([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format, params object[] args)
     {
         HtmlContentBuilderExtensions.AppendFormat(this, null, format, args);
         return this;
@@ -109,7 +110,10 @@ public abstract class TagHelperContent : IHtmlContentBuilder
     /// </param>
     /// <param name="args">The object array to format.</param>
     /// <returns>A reference to this instance after the append operation has completed.</returns>
-    public TagHelperContent AppendFormat(IFormatProvider provider, string format, params object[] args)
+    public TagHelperContent AppendFormat(
+        IFormatProvider provider,
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
+        params object[] args)
     {
         HtmlContentBuilderExtensions.AppendFormat(this, provider, format, args);
         return this;

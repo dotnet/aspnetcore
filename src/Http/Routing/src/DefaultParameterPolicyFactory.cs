@@ -22,10 +22,7 @@ internal sealed class DefaultParameterPolicyFactory : ParameterPolicyFactory
 
     public override IParameterPolicy Create(RoutePatternParameterPart? parameter, IParameterPolicy parameterPolicy)
     {
-        if (parameterPolicy == null)
-        {
-            throw new ArgumentNullException(nameof(parameterPolicy));
-        }
+        ArgumentNullException.ThrowIfNull(parameterPolicy);
 
         if (parameterPolicy is IRouteConstraint routeConstraint)
         {
@@ -37,10 +34,7 @@ internal sealed class DefaultParameterPolicyFactory : ParameterPolicyFactory
 
     public override IParameterPolicy Create(RoutePatternParameterPart? parameter, string inlineText)
     {
-        if (inlineText == null)
-        {
-            throw new ArgumentNullException(nameof(inlineText));
-        }
+        ArgumentNullException.ThrowIfNull(inlineText);
 
         var parameterPolicy = ParameterPolicyActivator.ResolveParameterPolicy<IParameterPolicy>(
             _options.TrimmerSafeConstraintMap,

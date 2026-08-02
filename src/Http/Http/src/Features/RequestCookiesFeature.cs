@@ -24,10 +24,7 @@ public class RequestCookiesFeature : IRequestCookiesFeature
     /// <param name="cookies">The <see cref="IRequestCookieCollection"/> to use as backing store.</param>
     public RequestCookiesFeature(IRequestCookieCollection cookies)
     {
-        if (cookies == null)
-        {
-            throw new ArgumentNullException(nameof(cookies));
-        }
+        ArgumentNullException.ThrowIfNull(cookies);
 
         _parsedValues = cookies;
     }
@@ -38,10 +35,7 @@ public class RequestCookiesFeature : IRequestCookiesFeature
     /// <param name="features">The <see cref="IFeatureCollection"/> to initialize.</param>
     public RequestCookiesFeature(IFeatureCollection features)
     {
-        if (features == null)
-        {
-            throw new ArgumentNullException(nameof(features));
-        }
+        ArgumentNullException.ThrowIfNull(features);
 
         _features.Initalize(features);
     }

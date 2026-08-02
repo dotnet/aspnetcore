@@ -13,7 +13,9 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Net.Http.Headers" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Metadata" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.WebUtilities" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Core" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
@@ -35,6 +37,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Features" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Validation" />
 
     <!-- These assemblies are only in the shared framework -->
     <AspNetCoreAppReference Include="Microsoft.AspNetCore" />
@@ -44,7 +47,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <AspNetCoreAppReference Include="Microsoft.Net.Http.Headers" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Extensions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Features" />
@@ -52,7 +54,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.WebUtilities" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Identity" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.HttpSys" />
@@ -60,8 +61,10 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.BearerToken" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.OAuth" />
@@ -77,6 +80,9 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization.Routing" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.OutputCaching" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RateLimiting" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.RequestDecompression" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCompression" />
@@ -102,6 +108,8 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Connections" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.StaticAssets" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Server" />
   </ItemGroup>
 </Project>

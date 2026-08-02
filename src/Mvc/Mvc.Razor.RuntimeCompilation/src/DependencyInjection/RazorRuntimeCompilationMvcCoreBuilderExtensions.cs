@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Static class that adds razor runtime compilation extension methods.
 /// </summary>
+[Obsolete("Razor runtime compilation is obsolete and is not recommended for production scenarios. For production scenarios, use the default build time compilation. For development scenarios, use Hot Reload instead. For more information, visit https://aka.ms/aspnet/deprecate/003.", DiagnosticId = "ASPDEPR003", UrlFormat = Obsoletions.AspNetCoreDeprecate003Url)]
 public static class RazorRuntimeCompilationMvcCoreBuilderExtensions
 {
     /// <summary>
@@ -29,10 +31,7 @@ public static class RazorRuntimeCompilationMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddRazorRuntimeCompilation(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         AddServices(builder.Services);
         return builder;
@@ -46,15 +45,8 @@ public static class RazorRuntimeCompilationMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddRazorRuntimeCompilation(this IMvcCoreBuilder builder, Action<MvcRazorRuntimeCompilationOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         AddServices(builder.Services);
         builder.Services.Configure(setupAction);

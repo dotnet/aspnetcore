@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -486,7 +487,7 @@ public class RendererSynchronizationContextTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
     }
 
     [Fact]
@@ -574,7 +575,7 @@ public class RendererSynchronizationContextTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
     }
 
     [Fact]
@@ -668,7 +669,7 @@ public class RendererSynchronizationContextTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
     }
 
     [Fact]
@@ -756,7 +757,7 @@ public class RendererSynchronizationContextTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
     }
 
     [Fact]
@@ -771,6 +772,9 @@ public class RendererSynchronizationContextTest
         await Task.Yield();
         actual = "First";
 
+        // this test assumes RendererSynchronizationContext optimization, which makes it synchronous execution.
+        // with multi-threading runtime and WebAssemblyDispatcher `InvokeAsync` will be executed asynchronously ordering it differently.
+        // See https://github.com/dotnet/aspnetcore/pull/52724#issuecomment-1895566632
         var invokeTask = context.InvokeAsync(async () =>
         {
             // When the sync context is idle, queued work items start synchronously

@@ -9,13 +9,20 @@
 <ul>
     <li><NavLink href="/subdir/" Match=NavLinkMatch.All>Default (matches all)</NavLink></li>
     <li><NavLink href="" Match=NavLinkMatch.All>Default with base-relative URL (matches all)</NavLink></li>
+    <li><NavLink href="/subdir" Match=NavLinkMatch.All>Default, no trailing slash (matches all)</NavLink></li>
     <li><NavLink href="/subdir/?abc=123">Default with query</NavLink></li>
+    <li><NavLink href="/subdir?abc=123">Default with query, no trailing slash</NavLink></li>
     <li><NavLink href="/subdir/#blah">Default with hash</NavLink></li>
+    <li><NavLink href="/subdir#blah">Default with hash, no trailing slash</NavLink></li>
     <li><NavLink href="/subdir/Default.html">With extension</NavLink></li>
     <li><NavLink href="/subdir/Other">Other</NavLink></li>
     <li><NavLink href="Other" Match=NavLinkMatch.All>Other with base-relative URL (matches all)</NavLink></li>
     <li><NavLink href="/subdir/other?abc=123">Other with query</NavLink></li>
     <li><NavLink href="/subdir/Other#blah">Other with hash</NavLink></li>
+    <li><NavLink href="/subdir/other-with-hyphens">Other with hyphens</NavLink></li>
+    <li><NavLink href="/subdir/other.with.dots">Other with dots</NavLink></li>
+    <li><NavLink href="/subdir/other_with_underscores">Other with underscores</NavLink></li>
+    <li><NavLink href="/subdir/other~with~tildes">Other with tildes</NavLink></li>
     <li><NavLink href="/subdir/WithParameters/name/Abc">With parameters</NavLink></li>
     <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
     <li><NavLink href="/subdir/WithQueryParameters/Abc">With query parameters (none)</NavLink></li>
@@ -30,6 +37,8 @@
     <li><a href="/subdir/images/blazor_logo_1000x.png" download>Download Me</a></li>
     <li><NavLink>Null href never matches</NavLink></li>
     <li><custom-link-with-shadow-root target-url="Other"></custom-link-with-shadow-root></li>
+    <li><NavLink href="/subdir/LongPageWithHash">Long page with hash</NavLink></li>
+    <li><NavLink href="/subdir/SVGNavigation">Anchor inside SVG Element</NavLink></li>
 </ul>
 
 <button id="do-navigation" @onclick=@(x => NavigationManager.NavigateTo("Other"))>

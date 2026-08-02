@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -9,51 +10,54 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(new[]
-    {
-        DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers,
-    });
+    private const int SequenceParameterOrdinal = 0;
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers);
 
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
+        context.RegisterCompilationStartAction(context =>
         {
-            var compilation = compilationStartAnalysisContext.Compilation;
+            var compilation = context.Compilation;
+            var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
 
-            if (!WellKnownTypes.TryCreate(compilation, out var wellKnownTypes))
+            context.RegisterOperationAction(context =>
             {
-                return;
-            }
-
-            compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
-            {
-                var invocation = (IInvocationOperation)operationAnalysisContext.Operation;
+                var invocation = (IInvocationOperation)context.Operation;
 
                 if (!IsRenderTreeBuilderMethodWithSequenceParameter(wellKnownTypes, invocation.TargetMethod))
                 {
                     return;
                 }
 
-                var sequenceArgument = invocation.Arguments[0];
-
-                if (!sequenceArgument.Value.Syntax.IsKind(SyntaxKind.NumericLiteralExpression))
+                foreach (var argument in invocation.Arguments)
                 {
-                    operationAnalysisContext.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers,
-                        sequenceArgument.Syntax.GetLocation(),
-                        sequenceArgument.Syntax.ToString()));
+                    if (argument.Parameter?.Ordinal == SequenceParameterOrdinal)
+                    {
+                        if (!argument.Value.Syntax.IsKind(SyntaxKind.NumericLiteralExpression))
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers,
+                                argument.Syntax.GetLocation(),
+                                argument.Syntax.ToString()));
+                        }
+
+                        break;
+                    }
                 }
+
             }, OperationKind.Invocation);
         });
     }
 
     private static bool IsRenderTreeBuilderMethodWithSequenceParameter(WellKnownTypes wellKnownTypes, IMethodSymbol targetMethod)
-        => SymbolEqualityComparer.Default.Equals(wellKnownTypes.RenderTreeBuilder, targetMethod.ContainingType)
-        && targetMethod.Parameters.Length != 0
-        && targetMethod.Parameters[0].Name == "sequence";
+        => SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Components_Rendering_RenderTreeBuilder), targetMethod.ContainingType)
+        && targetMethod.Parameters.Length > SequenceParameterOrdinal
+        && targetMethod.Parameters[SequenceParameterOrdinal].Name == "sequence";
 }

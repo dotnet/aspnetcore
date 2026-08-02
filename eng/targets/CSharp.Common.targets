@@ -60,7 +60,7 @@
     <Using Include="Xunit" Condition=" $(IsTestProject) " />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
+  <ItemGroup Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND $(AddPublicApiAnalyzers) ">
     <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
   </ItemGroup>
   <Target Name="_CheckIgnoredPublicApiFiles"
@@ -94,7 +94,12 @@
         <_Parameter2>$(RepositoryUrl)/tree/$(SourceRevisionId)</_Parameter2>
       </AssemblyAttribute>
 
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Serviceable)' == 'true'">
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(RepoOriginalSourceRevisionId)' != ''">
+        <_Parameter1>OriginalRepoCommitHash</_Parameter1>
+        <_Parameter2>$(RepoOriginalSourceRevisionId)</_Parameter2>
+      </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Serviceable)' == 'true'">
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>
@@ -119,10 +124,11 @@
      -->
     <When Condition=" ('$(Nullable)' == 'annotations' OR '$(Nullable)' == 'enable') AND
         '$(SuppressNullableAttributesImport)' != 'true' AND
-        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.0'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.1'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
       <PropertyGroup>
         <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
-        <NoWarn>$(NoWarn);nullable</NoWarn>
+        <!-- Repo-specific property to enable nullability warnings for ns2.0 -->
+        <NoWarn Condition=" '$(WarnOnNullable)' != 'true' ">$(NoWarn);nullable</NoWarn>
       </PropertyGroup>
       <ItemGroup>
         <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />

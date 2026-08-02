@@ -39,6 +39,10 @@ public class TestHubMessageEqualityComparer : IEqualityComparer<HubMessage>
                 return true;
             case CloseMessage closeMessage:
                 return string.Equals(closeMessage.Error, ((CloseMessage)y).Error);
+            case AckMessage ackMessage:
+                return ackMessage.SequenceId == ((AckMessage)y).SequenceId;
+            case SequenceMessage sequenceMessage:
+                return sequenceMessage.SequenceId == ((SequenceMessage)y).SequenceId;
             default:
                 throw new InvalidOperationException($"Unknown message type: {x.GetType().FullName}");
         }

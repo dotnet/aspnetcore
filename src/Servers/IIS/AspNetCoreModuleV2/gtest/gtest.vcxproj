@@ -7,6 +7,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CAC1267B-8778-4257-AAC6-CAF481723B01}</ProjectGuid>
     <RootNamespace>gtest</RootNamespace>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <TargetName>gtest</TargetName>

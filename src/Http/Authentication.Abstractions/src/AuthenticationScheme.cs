@@ -19,14 +19,8 @@ public class AuthenticationScheme
     /// <param name="handlerType">The <see cref="IAuthenticationHandler"/> type that handles this scheme.</param>
     public AuthenticationScheme(string name, string? displayName, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-        if (handlerType == null)
-        {
-            throw new ArgumentNullException(nameof(handlerType));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(handlerType);
         if (!typeof(IAuthenticationHandler).IsAssignableFrom(handlerType))
         {
             throw new ArgumentException("handlerType must implement IAuthenticationHandler.");

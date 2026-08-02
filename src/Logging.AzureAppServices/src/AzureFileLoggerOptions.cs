@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
 /// <summary>
-/// Options for Azure diagnostics file logging.
+/// Specifies options for Azure diagnostics file logging.
 /// </summary>
 public class AzureFileLoggerOptions : BatchingLoggerOptions
 {
@@ -15,10 +16,15 @@ public class AzureFileLoggerOptions : BatchingLoggerOptions
     private string _fileName = "diagnostics-";
 
     /// <summary>
-    /// Gets or sets a strictly positive value representing the maximum log size in bytes or null for no limit.
-    /// Once the log is full, no more messages will be appended.
-    /// Defaults to <c>10MB</c>.
+    /// Gets or sets a strictly positive value representing the maximum log size in bytes, or null for no limit.
     /// </summary>
+    /// <value>
+    /// The maximum log size in bytes, or <see langword="null" /> for no limit.
+    /// The default is 10 MB.
+    /// </value>
+    /// <remarks>
+    /// Once the log is full, no more messages are appended.
+    /// </remarks>
     public int? FileSizeLimit
     {
         get { return _fileSizeLimit; }
@@ -33,9 +39,12 @@ public class AzureFileLoggerOptions : BatchingLoggerOptions
     }
 
     /// <summary>
-    /// Gets or sets a strictly positive value representing the maximum retained file count or null for no limit.
-    /// Defaults to <c>2</c>.
+    /// Gets or sets a strictly positive value representing the maximum retained file count.
     /// </summary>
+    /// <value>
+    /// The maximum retained file count, or <see langword="null" /> for no limit.
+    /// The default is 2.
+    /// </value>
     public int? RetainedFileCountLimit
     {
         get { return _retainedFileCountLimit; }
@@ -50,19 +59,20 @@ public class AzureFileLoggerOptions : BatchingLoggerOptions
     }
 
     /// <summary>
-    /// Gets or sets a string representing the prefix of the file name used to store the logging information.
-    /// The current date, in the format YYYYMMDD will be added after the given value.
-    /// Defaults to <c>diagnostics-</c>.
+    /// Gets or sets the prefix of the file name used to store the logging information.
+    /// The current date, in the format YYYYMMDD, is added after this value.
     /// </summary>
+    /// <value>
+    /// The prefix of the file name used to store the logging information.
+    /// The default is <c>diagnostics-</c>.
+    /// </value>
     public string FileName
     {
         get { return _fileName; }
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentThrowHelper.ThrowIfNullOrEmpty(value);
+
             _fileName = value;
         }
     }

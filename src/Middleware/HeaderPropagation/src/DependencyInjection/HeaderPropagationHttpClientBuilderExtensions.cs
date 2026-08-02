@@ -21,10 +21,7 @@ public static class HeaderPropagationHttpClientBuilderExtensions
     /// <returns>The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.</returns>
     public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddHeaderPropagation();
 
@@ -53,15 +50,8 @@ public static class HeaderPropagationHttpClientBuilderExtensions
     /// <returns>The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.</returns>
     public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder, Action<HeaderPropagationMessageHandlerOptions> configure)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.AddHeaderPropagation();
 

@@ -247,15 +247,8 @@ public class LinkTagHelper : UrlResolutionTagHelper
     /// <inheritdoc />
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         // Pass through attribute that is also a well-known HTML attribute.
         if (Href != null)
@@ -283,11 +276,12 @@ public class LinkTagHelper : UrlResolutionTagHelper
 
             if (Href != null)
             {
+                var href = GetVersionedResourceUrl(Href);
                 var index = output.Attributes.IndexOfName(HrefAttributeName);
                 var existingAttribute = output.Attributes[index];
                 output.Attributes[index] = new TagHelperAttribute(
                     existingAttribute.Name,
-                    FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Href),
+                    href,
                     existingAttribute.ValueStyle);
             }
         }
@@ -459,7 +453,7 @@ public class LinkTagHelper : UrlResolutionTagHelper
             var valueToWrite = fallbackHrefs[i];
             if (AppendVersion == true)
             {
-                valueToWrite = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, fallbackHrefs[i]);
+                valueToWrite = GetVersionedResourceUrl(fallbackHrefs[i]);
             }
 
             // Must HTML-encode the href attribute value to ensure the written <link/> element is valid. Must also
@@ -527,16 +521,33 @@ public class LinkTagHelper : UrlResolutionTagHelper
 
     private void AppendVersionedHref(string hrefName, string hrefValue, TagHelperContent builder)
     {
-        if (AppendVersion == true)
-        {
-            hrefValue = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, hrefValue);
-        }
-
+        hrefValue = GetVersionedResourceUrl(hrefValue);
         builder
             .AppendHtml(hrefName)
             .AppendHtml("=\"")
             .Append(hrefValue)
             .AppendHtml("\" ");
+    }
+
+    private string GetVersionedResourceUrl(string url)
+    {
+        if (AppendVersion == true)
+        {
+            var pathBase = ViewContext.HttpContext.Request.PathBase;
+
+            if (ResourceCollectionUtilities.TryResolveFromAssetCollection(ViewContext, url, out var resolvedUrl))
+            {
+                url = resolvedUrl;
+                return url;
+            }
+
+            if (url != null)
+            {
+                url = FileVersionProvider.AddFileVersionToPath(pathBase, url);
+            }
+        }
+
+        return url;
     }
 
     private enum Mode

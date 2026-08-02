@@ -1,0 +1,48 @@
+﻿@inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components.Forms
+
+<p><a href="@(Nav.GetUriWithQueryParameter(nameof(ThrowDuringInitialRender), true))">Throw during initial render</a></p>
+
+<form data-enhance method="post" @formname="trigger-error" @onsubmit="TriggerError">
+    <AntiforgeryToken />
+    <button id="throw-sync" type="submit" name="@(nameof(Scenario))" value="ThrowDuringEventSync">Throw during event synchronously</button>
+    <button id="throw-async" type="submit" name="@(nameof(Scenario))" value="ThrowDuringEventAsync">Throw during event asynchronously</button>
+</form>
+
+@if (loading)
+{
+    <p>Loading...</p>
+}
+
+@code {
+    [SupplyParameterFromQuery] public bool ThrowDuringInitialRender { get; set; }
+
+    [SupplyParameterFromForm] public string Scenario { get; set; }
+
+    bool loading;
+
+    protected override void OnInitialized()
+    {
+        if (ThrowDuringInitialRender)
+        {
+            throw new InvalidTimeZoneException("This is a deliberate error during initial render");
+        }
+    }
+
+    async Task TriggerError()
+    {
+        if (Scenario == "ThrowDuringEventSync")
+        {
+            throw new InvalidTimeZoneException("This is a deliberate form-event synchronous error");
+        }
+
+        loading = true;
+        await Task.Delay(500);
+        loading = false;
+
+        if (Scenario == "ThrowDuringEventAsync")
+        {
+            throw new InvalidTimeZoneException("This is a deliberate form-event asynchronous error");
+        }
+    }
+}

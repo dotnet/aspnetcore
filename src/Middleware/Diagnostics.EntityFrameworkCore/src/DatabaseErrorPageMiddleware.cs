@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 ///     Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
 ///     migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
 /// </summary>
+[RequiresDynamicCode("DbContext migrations operations are not supported with NativeAOT")]
 public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object?>>
 {
     private static readonly AsyncLocal<DiagnosticHolder> _localDiagnostic = new AsyncLocal<DiagnosticHolder>();
@@ -52,20 +54,9 @@ public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObser
         ILoggerFactory loggerFactory,
         IOptions<DatabaseErrorPageOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _options = options.Value;
@@ -83,10 +74,7 @@ public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObser
     /// <returns>A task that represents the asynchronous operation.</returns>
     public virtual async Task Invoke(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         try
         {

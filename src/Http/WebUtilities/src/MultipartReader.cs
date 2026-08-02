@@ -27,7 +27,7 @@ public class MultipartReader
 
     private readonly BufferedReadStream _stream;
     private readonly MultipartBoundary _boundary;
-    private MultipartReaderStream _currentStream;
+    private MultipartReaderStream? _currentStream;
 
     /// <summary>
     /// Initializes a new instance of <see cref="MultipartReader"/>.
@@ -47,15 +47,8 @@ public class MultipartReader
     /// <param name="bufferSize">The minimum buffer size to use.</param>
     public MultipartReader(string boundary, Stream stream, int bufferSize)
     {
-        if (boundary == null)
-        {
-            throw new ArgumentNullException(nameof(boundary));
-        }
-
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(boundary);
+        ArgumentNullException.ThrowIfNull(stream);
 
         if (bufferSize < boundary.Length + 8) // Size of the boundary + leading and trailing CRLF + leading and trailing '--' markers.
         {
@@ -63,10 +56,7 @@ public class MultipartReader
         }
         _stream = new BufferedReadStream(stream, bufferSize);
         boundary = HeaderUtilities.RemoveQuotes(new StringSegment(boundary)).ToString();
-        _boundary = new MultipartBoundary(boundary, false);
-        // This stream will drain any preamble data and remove the first boundary marker.
-        // TODO: HeadersLengthLimit can't be modified until after the constructor.
-        _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = HeadersLengthLimit };
+        _boundary = new MultipartBoundary(boundary);
     }
 
     /// <summary>
@@ -93,6 +83,10 @@ public class MultipartReader
     /// <returns></returns>
     public async Task<MultipartSection?> ReadNextSectionAsync(CancellationToken cancellationToken = new CancellationToken())
     {
+        // Only occurs on first call
+        // This stream will drain any preamble data and remove the first boundary marker.
+        _currentStream ??= new MultipartReaderStream(_stream, _boundary) { LengthLimit = HeadersLengthLimit };
+
         // Drain the prior section.
         await _currentStream.DrainAsync(cancellationToken);
         // If we're at the end return null
@@ -103,7 +97,7 @@ public class MultipartReader
             return null;
         }
         var headers = await ReadHeadersAsync(cancellationToken);
-        _boundary.ExpectLeadingCrlf = true;
+        _boundary.ExpectLeadingCrlf();
         _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = BodyLengthLimit };
         long? baseStreamOffset = _stream.CanSeek ? (long?)_stream.Position : null;
         return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };
@@ -113,7 +107,7 @@ public class MultipartReader
     {
         int totalSize = 0;
         var accumulator = new KeyValueAccumulator();
-        var line = await _stream.ReadLineAsync(HeadersLengthLimit - totalSize, cancellationToken);
+        var line = await _stream.ReadLineAsync(HeadersLengthLimit, cancellationToken);
         while (!string.IsNullOrEmpty(line))
         {
             if (HeadersLengthLimit - totalSize < line.Length)

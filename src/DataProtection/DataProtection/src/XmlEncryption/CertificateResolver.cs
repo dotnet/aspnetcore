@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
@@ -20,10 +21,7 @@ public class CertificateResolver : ICertificateResolver
     /// <returns>The resolved <see cref="X509Certificate2"/>, or null if the certificate cannot be found.</returns>
     public virtual X509Certificate2? ResolveCertificate(string thumbprint)
     {
-        if (thumbprint == null)
-        {
-            throw new ArgumentNullException(nameof(thumbprint));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(thumbprint);
 
         if (String.IsNullOrEmpty(thumbprint))
         {

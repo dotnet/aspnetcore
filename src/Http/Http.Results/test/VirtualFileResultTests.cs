@@ -19,4 +19,29 @@ public class VirtualFileResultTests : VirtualFileResultTestBase
 
         return result.ExecuteAsync(httpContext);
     }
+
+    [Fact]
+    public void VirtualFileHttpResult_Implements_IFileHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IFileHttpResult>(new VirtualFileHttpResult("~/file.zip", contentType) { FileDownloadName = downloadName });
+        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal(downloadName, result.FileDownloadName);
+    }
+
+    [Fact]
+    public void VirtualFileHttpResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new VirtualFileHttpResult("~/file.zip", contentType) { FileDownloadName = downloadName });
+        Assert.Equal(contentType, result.ContentType);
+    }
 }

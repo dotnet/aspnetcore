@@ -25,10 +25,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
     bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         return !ContainsDynamicEndpoints(endpoints) && AppliesToEndpointsCore(endpoints);
     }
@@ -73,15 +70,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
     /// <inheritdoc />
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(candidates);
 
         for (var i = 0; i < candidates.Count; i++)
         {
@@ -112,7 +102,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                     host = host.Slice(0, pivot);
                 }
 
-                if (host == null || MemoryExtensions.Equals(host, WildcardHost, StringComparison.OrdinalIgnoreCase))
+                if (host.Length == 0 || MemoryExtensions.Equals(host, WildcardHost, StringComparison.OrdinalIgnoreCase))
                 {
                     // Can match any host
                 }
@@ -120,7 +110,16 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                     host.StartsWith(WildcardPrefix) &&
 
                     // Note that we only slice off the `*`. We want to match the leading `.` also.
-                    MemoryExtensions.EndsWith(requestHost, host.Slice(WildcardHost.Length), StringComparison.OrdinalIgnoreCase))
+                    MemoryExtensions.EndsWith(requestHost, host.Slice(WildcardHost.Length), StringComparison.OrdinalIgnoreCase) &&
+                    // We don't want to match anything that contains an empty label
+                    // (i.e. starts with `.`, includes empty wildcard, or contains consecutive dots).
+                    // For example:
+                    //   - `*.example.com` should not match `.example.com`
+                    //   - `*.example.com` should not match `.foo.example.com`
+                    //   - `*.example.com` should not match `foo..example.com`
+                    //   - `*.example.com` should not match `foo..bar.example.com`
+                    requestHost[0] != '.' &&
+                    requestHost.IndexOf("..", StringComparison.Ordinal) < 0)
                 {
                     // Matches a suffix wildcard.
                 }
@@ -164,25 +163,27 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             return EdgeKey.WildcardEdgeKey;
         }
 
-        var hostParts = host.Split(':');
-        if (hostParts.Length == 1)
+        Span<Range> hostParts = stackalloc Range[3];
+        var hostSpan = host.AsSpan();
+        var length = hostSpan.Split(hostParts, ':');
+        if (length == 1)
         {
-            if (!string.IsNullOrEmpty(hostParts[0]))
+            if (!hostSpan[hostParts[0]].IsEmpty)
             {
-                return new EdgeKey(hostParts[0], null);
+                return new EdgeKey(hostSpan[hostParts[0]].ToString(), null);
             }
         }
-        if (hostParts.Length == 2)
+        if (length == 2)
         {
-            if (!string.IsNullOrEmpty(hostParts[0]))
+            if (!hostSpan[hostParts[0]].IsEmpty)
             {
-                if (int.TryParse(hostParts[1], out var port))
+                if (int.TryParse(hostSpan[hostParts[1]], out var port))
                 {
-                    return new EdgeKey(hostParts[0], port);
+                    return new EdgeKey(hostSpan[hostParts[0]].ToString(), port);
                 }
-                else if (string.Equals(hostParts[1], WildcardHost, StringComparison.Ordinal))
+                else if (hostSpan[hostParts[1]].Equals(WildcardHost, StringComparison.Ordinal))
                 {
-                    return new EdgeKey(hostParts[0], null);
+                    return new EdgeKey(hostSpan[hostParts[0]].ToString(), null);
                 }
             }
         }
@@ -193,10 +194,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
     /// <inheritdoc />
     public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // The algorithm here is designed to be preserve the order of the endpoints
         // while also being relatively simple. Preserving order is important.
@@ -210,8 +208,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         for (var i = 0; i < endpoints.Count; i++)
         {
             var endpoint = endpoints[i];
-            var hosts = endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts.Select(h => CreateEdgeKey(h)).ToArray();
-            if (hosts == null || hosts.Length == 0)
+            var hosts = GetEdgeKeys(endpoint);
+            if (hosts is null || hosts.Length == 0)
             {
                 hosts = new[] { EdgeKey.WildcardEdgeKey };
             }
@@ -232,8 +230,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         {
             var endpoint = endpoints[i];
 
-            var endpointKeys = endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts.Select(h => CreateEdgeKey(h)).ToArray() ?? Array.Empty<EdgeKey>();
-            if (endpointKeys.Length == 0)
+            var endpointKeys = GetEdgeKeys(endpoint);
+            if (endpointKeys is null || endpointKeys.Length == 0)
             {
                 // OK this means that this endpoint matches *all* hosts.
                 // So, loop and add it to all states.
@@ -270,25 +268,44 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             }
         }
 
-        return edges
-            .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
-            .ToArray();
+        var result = new PolicyNodeEdge[edges.Count];
+        var index = 0;
+        foreach (var kvp in edges)
+        {
+            result[index] = new PolicyNodeEdge(kvp.Key, kvp.Value);
+            index++;
+        }
+        return result;
+    }
+
+    private static EdgeKey[]? GetEdgeKeys(Endpoint endpoint)
+    {
+        List<EdgeKey>? result = null;
+        var hostMetadata = endpoint.Metadata.GetMetadata<IHostMetadata>();
+        if (hostMetadata is not null)
+        {
+            foreach (var host in hostMetadata.Hosts)
+            {
+                (result ??= new()).Add(CreateEdgeKey(host));
+            }
+        }
+        return result?.ToArray();
     }
 
     /// <inheritdoc />
     public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
     {
-        if (edges == null)
-        {
-            throw new ArgumentNullException(nameof(edges));
-        }
+        ArgumentNullException.ThrowIfNull(edges);
 
         // Since our 'edges' can have wildcards, we do a sort based on how wildcard-ey they
         // are then then execute them in linear order.
-        var ordered = edges
-            .Select(e => (host: (EdgeKey)e.State, destination: e.Destination))
-            .OrderBy(e => GetScore(e.host))
-            .ToArray();
+        var ordered = new (EdgeKey host, int destination)[edges.Count];
+        for (var i = 0; i < edges.Count; i++)
+        {
+            PolicyJumpTableEdge e = edges[i];
+            ordered[i] = (host: (EdgeKey)e.State, destination: e.Destination);
+        }
+        Array.Sort(ordered, static (left, right) => GetScore(left.host).CompareTo(GetScore(right.host)));
 
         return new HostPolicyJumpTable(exitDestination, ordered);
     }
@@ -402,7 +419,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             Port = port;
 
             HasHostWildcard = Host.StartsWith(WildcardPrefix, StringComparison.Ordinal);
-            _wildcardEndsWith = HasHostWildcard ? Host.Substring(1) : null;
+            _wildcardEndsWith = HasHostWildcard ? Host.Substring(WildcardHost.Length) : null;
         }
 
         public bool HasHostWildcard { get; }
@@ -440,7 +457,16 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             {
                 if (HasHostWildcard)
                 {
-                    return host.EndsWith(_wildcardEndsWith!, StringComparison.OrdinalIgnoreCase);
+                    return host.EndsWith(_wildcardEndsWith!, StringComparison.OrdinalIgnoreCase) &&
+                        // We don't want to match anything that contains an empty label
+                        // (i.e. starts with `.`, includes empty wildcard, or contains consecutive dots).
+                        // For example:
+                        //   - `*.example.com` should not match `.example.com`
+                        //   - `*.example.com` should not match `.foo.example.com`
+                        //   - `*.example.com` should not match `foo..example.com`
+                        //   - `*.example.com` should not match `foo..bar.example.com`
+                        host[0] != '.' &&
+                        !host.Contains("..", StringComparison.Ordinal);
                 }
                 else
                 {

@@ -322,8 +322,6 @@ function InstallDotnetSymbol {
 }
 
 try {
-  . $PSScriptRoot\post-build-utils.ps1
-  
   InstallDotnetSymbol
 
   foreach ($Job in @(Get-Job)) {

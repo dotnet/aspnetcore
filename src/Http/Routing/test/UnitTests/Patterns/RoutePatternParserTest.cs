@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using static Microsoft.AspNetCore.Routing.Patterns.RoutePatternFactory;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;

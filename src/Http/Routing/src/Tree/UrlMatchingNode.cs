@@ -12,8 +12,13 @@ namespace Microsoft.AspNetCore.Routing.Tree;
 /// A node in a <see cref="UrlMatchingTree"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString(),nq}")]
+#if !COMPONENTS
 public class UrlMatchingNode
+#else
+internal class UrlMatchingNode
+#endif
 {
+
     /// <summary>
     /// Initializes a new instance of <see cref="UrlMatchingNode"/>.
     /// </summary>
@@ -75,6 +80,10 @@ public class UrlMatchingNode
 
     private string DebuggerToString()
     {
+#if !COMPONENTS
         return $"Length: {Depth}, Matches: {string.Join(" | ", Matches?.Select(m => $"({m.TemplateMatcher.Template.TemplateText})"))}";
+#else
+        return $"Length: {Depth}, Matches: {string.Join(" | ", Matches?.Select(m => $"({m.TemplateMatcher.RoutePattern.RawText})"))}";
+#endif
     }
 }

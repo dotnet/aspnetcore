@@ -13,4 +13,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal;
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class RazorInjectAttribute : Attribute
 {
+    /// <summary>
+    /// Gets or sets the object that specifies the key of the service to inject.
+    /// </summary>
+    public object? Key { get; init; }
 }

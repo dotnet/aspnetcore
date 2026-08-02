@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.SignalR;
 
 /// <summary>
@@ -8,6 +10,8 @@ namespace Microsoft.AspNetCore.SignalR;
 /// </summary>
 public abstract class Hub : IDisposable
 {
+    internal const DynamicallyAccessedMemberTypes DynamicallyAccessedMembers = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods;
+
     private bool _disposed;
     private IHubCallerClients _clients = default!;
     private HubCallerContext _context = default!;
@@ -83,6 +87,24 @@ public abstract class Hub : IDisposable
     }
 
     /// <summary>
+    /// Called when the authenticated user on the connection has been refreshed, for example via the
+    /// SignalR authentication-refresh endpoint. The new <see cref="System.Security.Claims.ClaimsPrincipal"/> is
+    /// available on <see cref="HubCallerContext.User"/>.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// This method is serialized with concurrent hub method invocations using the connection's
+    /// maximum-parallel-invocation limit. Client-result invocations are not supported from this method.
+    /// The previous principal is intentionally not exposed because its underlying resources
+    /// (for example a <see cref="System.Security.Principal.WindowsIdentity"/>'s <c>SafeHandle</c>)
+    /// may already be disposed by the time this method runs.
+    /// </remarks>
+    public virtual Task OnAuthenticationRefreshedAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Releases all resources currently used by this <see cref="Hub"/> instance.
     /// </summary>
     /// <param name="disposing"><c>true</c> if this method is being invoked by the <see cref="Dispose()"/> method,
@@ -106,9 +128,6 @@ public abstract class Hub : IDisposable
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

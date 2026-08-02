@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
+using System.Collections.Frozen;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
@@ -9,22 +9,19 @@ namespace Microsoft.AspNetCore.Routing;
 
 internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>, IDisposable
 {
-    private readonly DataSourceDependentCache<Dictionary<string, Endpoint[]>> _cache;
+    private readonly DataSourceDependentCache<FrozenDictionary<string, Endpoint[]>> _cache;
 
     public EndpointNameAddressScheme(EndpointDataSource dataSource)
     {
-        _cache = new DataSourceDependentCache<Dictionary<string, Endpoint[]>>(dataSource, Initialize);
+        _cache = new DataSourceDependentCache<FrozenDictionary<string, Endpoint[]>>(dataSource, Initialize);
     }
 
     // Internal for tests
-    internal Dictionary<string, Endpoint[]> Entries => _cache.EnsureInitialized();
+    internal FrozenDictionary<string, Endpoint[]> Entries => _cache.EnsureInitialized();
 
     public IEnumerable<Endpoint> FindEndpoints(string address)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         // Capture the current value of the cache
         var entries = Entries;
@@ -33,7 +30,7 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
         return result ?? Array.Empty<Endpoint>();
     }
 
-    private static Dictionary<string, Endpoint[]> Initialize(IReadOnlyList<Endpoint> endpoints)
+    private static FrozenDictionary<string, Endpoint[]> Initialize(IReadOnlyList<Endpoint> endpoints)
     {
         // Collect duplicates as we go, blow up on startup if we find any.
         var hasDuplicates = false;
@@ -55,35 +52,40 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
                 entries[endpointName] = new[] { endpoint };
                 continue;
             }
+            else
+            {
+                // Ok this is a duplicate, because we have two endpoints with the same name. Collect all the data
+                // so we can throw an exception. The extra allocations here don't matter since this is an exceptional case.
+                hasDuplicates = true;
 
-            // Ok this is a duplicate, because we have two endpoints with the same name. Bail out, because we
-            // are just going to throw, we don't need to finish collecting data.
-            hasDuplicates = true;
-            break;
+                var newEntry = new Endpoint[existing.Length + 1];
+                Array.Copy(existing, newEntry, existing.Length);
+                newEntry[existing.Length] = endpoint;
+                entries[endpointName] = newEntry;
+            }
         }
 
         if (!hasDuplicates)
         {
             // No duplicates, success!
-            return entries;
+            return entries.ToFrozenDictionary(StringComparer.Ordinal);
         }
 
         // OK we need to report some duplicates.
-        var duplicates = endpoints
-            .GroupBy(e => GetEndpointName(e))
-            .Where(g => g.Key != null && g.Count() > 1);
-
         var builder = new StringBuilder();
         builder.AppendLine(Resources.DuplicateEndpointNameHeader);
 
-        foreach (var group in duplicates)
+        foreach (var group in entries)
         {
-            builder.AppendLine();
-            builder.AppendLine(Resources.FormatDuplicateEndpointNameEntry(group.Key));
-
-            foreach (var endpoint in group)
+            if (group.Key is not null && group.Value.Length > 1)
             {
-                builder.AppendLine(endpoint.DisplayName);
+                builder.AppendLine();
+                builder.AppendLine(Resources.FormatDuplicateEndpointNameEntry(group.Key));
+
+                foreach (var endpoint in group.Value)
+                {
+                    builder.AppendLine(endpoint.DisplayName);
+                }
             }
         }
 

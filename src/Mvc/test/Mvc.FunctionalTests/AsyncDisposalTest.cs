@@ -3,28 +3,39 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using BasicWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class AsyncDisposalTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+public class AsyncDisposalTest : LoggedTest
 {
-    public AsyncDisposalTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<BasicWebSite.Startup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
         Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
     }
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<BasicWebSite.Startup>()
         .ConfigureServices(s => s.AddSingleton<ControllerTestDisposeAsync>());
 
-    public WebApplicationFactory<BasicWebSite.Startup> Factory { get; }
+    public WebApplicationFactory<BasicWebSite.Startup> Factory { get; private set; }
 
-    public HttpClient Client { get; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task CanDisposeAsyncController()

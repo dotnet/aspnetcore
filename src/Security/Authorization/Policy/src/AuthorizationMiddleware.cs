@@ -6,8 +6,20 @@ using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Authorization;
+
+// This middleware exists to force the correct constructor overload to be called when the user calls UseAuthorization().
+// Since we already expose the AuthorizationMiddleware type, we can't change the constructor signature without breaking it.
+internal sealed class AuthorizationMiddlewareInternal(
+    RequestDelegate next,
+    IServiceProvider services,
+    IAuthorizationPolicyProvider policyProvider,
+    ILogger<AuthorizationMiddleware> logger) : AuthorizationMiddleware(next, policyProvider, services, logger)
+{
+
+}
 
 /// <summary>
 /// A middleware that enables authorization capabilities.
@@ -16,6 +28,7 @@ public class AuthorizationMiddleware
 {
     // AppContext switch used to control whether HttpContext or endpoint is passed as a resource to AuthZ
     private const string SuppressUseHttpContextAsAuthorizationResource = "Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource";
+    private static readonly bool _suppressUseHttpContextAsAuthorizationResource = AppContext.TryGetSwitch(SuppressUseHttpContextAsAuthorizationResource, out var enabled) && enabled;
 
     // Property key is used by Endpoint routing to determine if Authorization has run
     private const string AuthorizationMiddlewareInvokedWithEndpointKey = "__AuthorizationMiddlewareWithEndpointInvoked";
@@ -23,16 +36,55 @@ public class AuthorizationMiddleware
 
     private readonly RequestDelegate _next;
     private readonly IAuthorizationPolicyProvider _policyProvider;
+    private readonly bool _canCache;
+    private readonly AuthorizationPolicyCache? _policyCache;
+    private readonly ILogger<AuthorizationMiddleware>? _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
     /// </summary>
     /// <param name="next">The next middleware in the application middleware pipeline.</param>
     /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
-    public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider)
+    public AuthorizationMiddleware(RequestDelegate next,
+        IAuthorizationPolicyProvider policyProvider)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
+        _canCache = false;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
+    /// </summary>
+    /// <param name="next">The next middleware in the application middleware pipeline.</param>
+    /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
+    /// <param name="services">The <see cref="IServiceProvider"/>.</param>
+    /// <param name="logger">The <see cref="ILogger"/>.</param>
+    public AuthorizationMiddleware(RequestDelegate next,
+        IAuthorizationPolicyProvider policyProvider,
+        IServiceProvider services,
+        ILogger<AuthorizationMiddleware> logger) : this(next, policyProvider, services)
+    {
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AuthorizationMiddleware"/>.
+    /// </summary>
+    /// <param name="next">The next middleware in the application middleware pipeline.</param>
+    /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/>.</param>
+    /// <param name="services">The <see cref="IServiceProvider"/>.</param>
+    public AuthorizationMiddleware(RequestDelegate next,
+        IAuthorizationPolicyProvider policyProvider,
+        IServiceProvider services) : this(next, policyProvider)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (_policyProvider.AllowsCachingPolicies)
+        {
+            _policyCache = services.GetService<AuthorizationPolicyCache>();
+            _canCache = _policyCache != null;
+        }
     }
 
     /// <summary>
@@ -41,13 +93,9 @@ public class AuthorizationMiddleware
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     public async Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var endpoint = context.GetEndpoint();
-
         if (endpoint != null)
         {
             // EndpointRoutingMiddleware uses this flag to check if the Authorization middleware processed auth metadata on the endpoint.
@@ -55,12 +103,28 @@ public class AuthorizationMiddleware
             context.Items[AuthorizationMiddlewareInvokedWithEndpointKey] = AuthorizationMiddlewareWithEndpointInvokedValue;
         }
 
-        // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
-        var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
+        // Use the computed policy for this endpoint if we can
+        AuthorizationPolicy? policy = null;
+        var canCachePolicy = _canCache && endpoint != null;
+        if (canCachePolicy)
+        {
+            policy = _policyCache!.Lookup(endpoint!);
+        }
 
-        var policies = endpoint?.Metadata.GetOrderedMetadata<AuthorizationPolicy>() ?? Array.Empty<AuthorizationPolicy>();
+        if (policy == null)
+        {
+            // The middleware evaluates all the authorization metadata associated with the endpoint at once.
+            // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
+            var metadata = (IEnumerable<object>?)endpoint?.Metadata ?? Array.Empty<object>();
 
-        var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData, policies);
+            policy = await AuthorizationPolicy.CombineAsync(_policyProvider, metadata);
+
+            // Cache the computed policy
+            if (policy != null && canCachePolicy)
+            {
+                _policyCache!.Store(endpoint!, policy);
+            }
+        }
 
         if (policy == null)
         {
@@ -72,7 +136,6 @@ public class AuthorizationMiddleware
         var policyEvaluator = context.RequestServices.GetRequiredService<IPolicyEvaluator>();
 
         var authenticateResult = await policyEvaluator.AuthenticateAsync(policy, context);
-
         if (authenticateResult?.Succeeded ?? false)
         {
             if (context.Features.Get<IAuthenticateResultFeature>() is IAuthenticateResultFeature authenticateResultFeature)
@@ -94,8 +157,13 @@ public class AuthorizationMiddleware
             return;
         }
 
+        if (authenticateResult != null && !authenticateResult.Succeeded && _logger is ILogger log && log.IsEnabled(LogLevel.Debug))
+        {
+            log.LogDebug("Policy authentication schemes {policyName} did not succeed", String.Join(", ", policy.AuthenticationSchemes));
+        }
+
         object? resource;
-        if (AppContext.TryGetSwitch(SuppressUseHttpContextAsAuthorizationResource, out var useEndpointAsResource) && useEndpointAsResource)
+        if (_suppressUseHttpContextAsAuthorizationResource)
         {
             resource = endpoint;
         }
@@ -108,4 +176,5 @@ public class AuthorizationMiddleware
         var authorizationMiddlewareResultHandler = context.RequestServices.GetRequiredService<IAuthorizationMiddlewareResultHandler>();
         await authorizationMiddlewareResultHandler.HandleAsync(_next, context, policy, authorizeResult);
     }
+
 }

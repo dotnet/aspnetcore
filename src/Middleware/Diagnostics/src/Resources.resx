@@ -248,7 +248,7 @@
     <value>Environment:</value>
   </data>
   <data name="ExceptionHandlerOptions_NotConfiguredCorrectly" xml:space="preserve">
-    <value>An error occurred when configuring the exception handler middleware. Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' property must be set in 'UseExceptionHandler()'. Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.AddExceptionHandler(options =&gt; { ... });'.</value>
+    <value>An error occurred when configuring the exception handler middleware. Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' property must be set in 'UseExceptionHandler()'. Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.AddExceptionHandler(options =&gt; { ... });' or configure to generate a 'ProblemDetails' response in 'service.AddProblemDetails()'.</value>
   </data>
   <data name="ErrorPageHtml_NoRouteValues" xml:space="preserve">
     <value>No route values.</value>
@@ -279,5 +279,14 @@
   </data>
   <data name="ErrorPageHtml_NameColumn" xml:space="preserve">
     <value>Name</value>
+  </data>
+  <data name="ErrorPageHtml_Metadata" xml:space="preserve">
+    <value>Endpoint Metadata</value>
+  </data>
+  <data name="ErrorPageHtml_MetadataDetail" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="ErrorPageHtml_MetadataTypeColumn" xml:space="preserve">
+    <value>Type</value>
   </data>
 </root>

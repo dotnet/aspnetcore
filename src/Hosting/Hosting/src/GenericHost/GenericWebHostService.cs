@@ -26,7 +26,8 @@ internal sealed partial class GenericWebHostService : IHostedService
                                  IApplicationBuilderFactory applicationBuilderFactory,
                                  IEnumerable<IStartupFilter> startupFilters,
                                  IConfiguration configuration,
-                                 IWebHostEnvironment hostingEnvironment)
+                                 IWebHostEnvironment hostingEnvironment,
+                                 HostingMetrics hostingMetrics)
     {
         Options = options.Value;
         Server = server;
@@ -40,6 +41,7 @@ internal sealed partial class GenericWebHostService : IHostedService
         StartupFilters = startupFilters;
         Configuration = configuration;
         HostingEnvironment = hostingEnvironment;
+        HostingMetrics = hostingMetrics;
     }
 
     public GenericWebHostServiceOptions Options { get; }
@@ -55,6 +57,7 @@ internal sealed partial class GenericWebHostService : IHostedService
     public IEnumerable<IStartupFilter> StartupFilters { get; }
     public IConfiguration Configuration { get; }
     public IWebHostEnvironment HostingEnvironment { get; }
+    public HostingMetrics HostingMetrics { get; }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -71,6 +74,27 @@ internal sealed partial class GenericWebHostService : IHostedService
             if (string.IsNullOrEmpty(urls))
             {
                 urls = Options.WebHostOptions.ServerUrls;
+            }
+
+            var httpPorts = Configuration[WebHostDefaults.HttpPortsKey] ?? string.Empty;
+            var httpsPorts = Configuration[WebHostDefaults.HttpsPortsKey] ?? string.Empty;
+            if (string.IsNullOrEmpty(urls))
+            {
+                // HTTP_PORTS and HTTPS_PORTS, these are lower priority than Urls.
+                static string ExpandPorts(string ports, string scheme)
+                {
+                    return string.Join(';',
+                        ports.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                        .Select(port => $"{scheme}://*:{port}"));
+                }
+
+                var httpUrls = ExpandPorts(httpPorts, Uri.UriSchemeHttp);
+                var httpsUrls = ExpandPorts(httpsPorts, Uri.UriSchemeHttps);
+                urls = $"{httpUrls};{httpsUrls}";
+            }
+            else if (!string.IsNullOrEmpty(httpPorts) || !string.IsNullOrEmpty(httpsPorts))
+            {
+                Logger.PortsOverridenByUrls(httpPorts, httpsPorts, urls);
             }
 
             if (!string.IsNullOrEmpty(urls))
@@ -108,7 +132,7 @@ internal sealed partial class GenericWebHostService : IHostedService
 
             var builder = ApplicationBuilderFactory.CreateBuilder(Server.Features);
 
-            foreach (var filter in StartupFilters.Reverse())
+            foreach (var filter in Enumerable.Reverse(StartupFilters))
             {
                 configure = filter.Configure(configure);
             }
@@ -132,7 +156,7 @@ internal sealed partial class GenericWebHostService : IHostedService
             application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
         }
 
-        var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory);
+        var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory, HostingEventSource.Log, HostingMetrics);
 
         await Server.StartAsync(httpApplication, cancellationToken);
         HostingEventSource.Log.ServerReady();
@@ -142,6 +166,14 @@ internal sealed partial class GenericWebHostService : IHostedService
             foreach (var address in addresses)
             {
                 Log.ListeningOnAddress(LifetimeLogger, address);
+                if (LifetimeLogger.IsEnabled(LogLevel.Information))
+                {
+                    if (address.Contains(".localhost", StringComparison.OrdinalIgnoreCase) && Uri.TryCreate(address, UriKind.Absolute, out var uri) && uri.Host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Log the localhost address without the sub-domain prefix too
+                        Log.ListeningOnAddress(LifetimeLogger, new UriBuilder(uri) { Host = "localhost" }.ToString().TrimEnd('/'));
+                    }
+                }
             }
         }
 

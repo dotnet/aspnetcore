@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.WriteStream;
+
 namespace Microsoft.AspNetCore.ResponseCaching;
 
 internal sealed class ResponseCachingStream : Stream
@@ -180,8 +182,8 @@ internal sealed class ResponseCachingStream : Stream
     }
 
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-        => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
+        => TaskToAsyncResult.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
 
     public override void EndWrite(IAsyncResult asyncResult)
-        => TaskToApm.End(asyncResult);
+        => TaskToAsyncResult.End(asyncResult);
 }

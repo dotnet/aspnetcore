@@ -15,7 +15,7 @@ public:
         m_disableStartupPage(disableStartupPage),
         m_statusCode(statusCode),
         m_subStatusCode(subStatusCode),
-        m_statusText(std::move(statusText)),
+        m_statusText(statusText),
         m_ExceptionInfoContent(responseContent)
     {
     }

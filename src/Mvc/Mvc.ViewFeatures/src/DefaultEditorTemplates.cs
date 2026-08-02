@@ -19,6 +19,7 @@ internal static class DefaultEditorTemplates
 {
     private const string HtmlAttributeKey = "htmlAttributes";
     private const string UsePasswordValue = "Switch.Microsoft.AspNetCore.Mvc.UsePasswordValue";
+    private static readonly bool _usePasswordValue = AppContext.TryGetSwitch(UsePasswordValue, out var enabled) && enabled;
 
     public static IHtmlContent BooleanTemplate(IHtmlHelper htmlHelper)
     {
@@ -312,7 +313,7 @@ internal static class DefaultEditorTemplates
     public static IHtmlContent PasswordTemplate(IHtmlHelper htmlHelper)
     {
         object value = null;
-        if (AppContext.TryGetSwitch(UsePasswordValue, out var usePasswordValue) && usePasswordValue)
+        if (_usePasswordValue)
         {
             value = htmlHelper.ViewData.TemplateInfo.FormattedModelValue;
         }
@@ -395,20 +396,14 @@ internal static class DefaultEditorTemplates
 
     public static IHtmlContent FileInputTemplate(IHtmlHelper htmlHelper)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return GenerateTextBox(htmlHelper, inputType: "file");
     }
 
     public static IHtmlContent FileCollectionInputTemplate(IHtmlHelper htmlHelper)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         var htmlAttributes =
             CreateHtmlAttributes(htmlHelper, className: "text-box single-line", inputType: "file");
@@ -506,10 +501,7 @@ internal static class DefaultEditorTemplates
 
         public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
         {
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
+            ArgumentNullException.ThrowIfNull(output);
 
             if (characterCount == 0)
             {
@@ -521,15 +513,8 @@ internal static class DefaultEditorTemplates
 
         public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
         {
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(output);
+            ArgumentNullException.ThrowIfNull(value);
 
             if (characterCount == 0)
             {

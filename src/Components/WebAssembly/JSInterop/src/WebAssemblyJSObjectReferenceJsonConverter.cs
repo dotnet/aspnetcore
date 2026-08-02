@@ -20,13 +20,18 @@ internal sealed class WebAssemblyJSObjectReferenceJsonConverter : JsonConverter<
     {
         return typeToConvert == typeof(WebAssemblyJSObjectReference) ||
             typeToConvert == typeof(IJSObjectReference) ||
-            typeToConvert == typeof(IJSInProcessObjectReference) ||
-            typeToConvert == typeof(IJSUnmarshalledObjectReference);
+            typeToConvert == typeof(IJSInProcessObjectReference);
     }
 
     public override IJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var id = JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref reader);
+
+        if (id == -1)
+        {
+            return null;
+        }
+
         return new WebAssemblyJSObjectReference(_jsRuntime, id);
     }
 

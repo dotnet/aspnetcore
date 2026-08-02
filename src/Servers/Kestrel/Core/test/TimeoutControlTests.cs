@@ -1,12 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -14,13 +12,13 @@ public class TimeoutControlTests
 {
     private readonly Mock<ITimeoutHandler> _mockTimeoutHandler;
     private readonly TimeoutControl _timeoutControl;
-    private readonly MockSystemClock _systemClock;
+    private readonly FakeTimeProvider _timeProvider;
 
     public TimeoutControlTests()
     {
         _mockTimeoutHandler = new Mock<ITimeoutHandler>();
-        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
-        _systemClock = new MockSystemClock();
+        _timeProvider = new FakeTimeProvider();
+        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider);
     }
 
     [Fact]
@@ -30,10 +28,10 @@ public class TimeoutControlTests
         mockDebugger.SetupGet(g => g.IsAttached).Returns(true);
         _timeoutControl.Debugger = mockDebugger.Object;
 
-        var now = DateTimeOffset.Now;
-        _timeoutControl.Initialize(now.Ticks);
-        _timeoutControl.SetTimeout(1, TimeoutReason.RequestHeaders);
-        _timeoutControl.Tick(now.AddTicks(2).Add(Heartbeat.Interval));
+        var now = _timeProvider.GetTimestamp();
+        _timeoutControl.Initialize();
+        _timeoutControl.SetTimeout(TimeSpan.FromTicks(1), TimeoutReason.RequestHeaders);
+        _timeoutControl.Tick(_timeProvider.GetTimestamp(now + 2, Heartbeat.Interval));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
     }
@@ -65,14 +63,14 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        var now = DateTimeOffset.UtcNow;
-        _timeoutControl.Initialize(now.Ticks);
+        var now = _timeProvider.GetTimestamp();
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
 
         // Tick during grace period w/ low data rate
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(10);
         _timeoutControl.Tick(now);
 
@@ -80,9 +78,9 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Tick after grace period w/ low data rate
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.Tick(now);
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(10);
         _timeoutControl.Tick(now);
 
@@ -97,21 +95,21 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: gracePeriod);
 
         // Initialize timestamp
-        var now = DateTimeOffset.UtcNow;
-        _timeoutControl.Initialize(now.Ticks);
+        var now = _timeProvider.GetTimestamp();
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
 
         // Set base data rate to 200 bytes/second
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.Tick(now);
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(400);
         _timeoutControl.Tick(now);
 
         // Data rate: 200 bytes/second
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(200);
         _timeoutControl.Tick(now);
 
@@ -119,7 +117,7 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Data rate: 150 bytes/second
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(0);
         _timeoutControl.Tick(now);
 
@@ -127,7 +125,7 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Data rate: 120 bytes/second
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(0);
         _timeoutControl.Tick(now);
 
@@ -135,7 +133,7 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Data rate: 100 bytes/second
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(0);
         _timeoutControl.Tick(now);
 
@@ -143,7 +141,7 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Data rate: ~85 bytes/second
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(0);
         _timeoutControl.Tick(now);
 
@@ -157,51 +155,51 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
 
         // Tick at 3s, expected counted time is 3s, expected data rate is 200 bytes/second
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1);
+        _timeProvider.Advance(TimeSpan.FromSeconds(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
+        _timeProvider.Advance(TimeSpan.FromSeconds(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
+        _timeProvider.Advance(TimeSpan.FromSeconds(1));
         _timeoutControl.BytesRead(600);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Pause at 3.5s
-        _systemClock.UtcNow += TimeSpan.FromSeconds(0.5);
+        _timeProvider.Advance(TimeSpan.FromSeconds(0.5));
         _timeoutControl.StopTimingRead();
 
         // Tick at 4s, expected counted time is 4s (first tick after pause goes through), expected data rate is 150 bytes/second
-        _systemClock.UtcNow += TimeSpan.FromSeconds(0.5);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromSeconds(0.5));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Tick at 6s, expected counted time is 4s, expected data rate is 150 bytes/second
-        _systemClock.UtcNow += TimeSpan.FromSeconds(2);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromSeconds(2));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Not timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Resume at 6.5s
-        _systemClock.UtcNow += TimeSpan.FromSeconds(0.5);
+        _timeProvider.Advance(TimeSpan.FromSeconds(0.5));
         _timeoutControl.StartTimingRead();
 
         // Tick at 9s, expected counted time is 6s, expected data rate is 100 bytes/second
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1.0);
-        _timeoutControl.Tick(_systemClock.UtcNow);
-        _systemClock.UtcNow += TimeSpan.FromSeconds(.5);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromSeconds(1.0));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
+        _timeProvider.Advance(TimeSpan.FromSeconds(.5));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Not timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Tick at 10s, expected counted time is 7s, expected data rate drops below 100 bytes/second
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromSeconds(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
@@ -213,40 +211,40 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
 
         // Tick at 2s, expected counted time is 2s, expected data rate is 100 bytes/second
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromSeconds(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
+        _timeProvider.Advance(TimeSpan.FromSeconds(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
         _timeoutControl.BytesRead(200);
 
         // Not timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Pause at 2.25s
-        _systemClock.UtcNow += TimeSpan.FromSeconds(0.25);
+        _timeProvider.Advance(TimeSpan.FromSeconds(0.25));
         _timeoutControl.StopTimingRead();
 
         // Resume at 2.5s
-        _systemClock.UtcNow += TimeSpan.FromSeconds(0.25);
+        _timeProvider.Advance(TimeSpan.FromSeconds(0.25));
         _timeoutControl.StartTimingRead();
 
         // Tick at 3s, expected counted time is 3s, expected data rate is 100 bytes/second
-        _systemClock.UtcNow += TimeSpan.FromSeconds(0.5);
+        _timeProvider.Advance(TimeSpan.FromSeconds(0.5));
         _timeoutControl.BytesRead(100);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Not timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Tick at 4s, expected counted time is 4s, expected data rate drops below 100 bytes/second
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromSeconds(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
@@ -258,27 +256,25 @@ public class TimeoutControlTests
         var timeout = TimeSpan.FromSeconds(5);
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
-        var startTime = _systemClock.UtcNow;
-
         // Initialize timestamp
-        _timeoutControl.Initialize(startTime.Ticks);
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
 
-        _timeoutControl.SetTimeout(timeout.Ticks, TimeoutReason.RequestBodyDrain);
+        _timeoutControl.SetTimeout(timeout, TimeoutReason.RequestBodyDrain);
 
         // Tick beyond grace period with low data rate
-        _systemClock.UtcNow += TimeSpan.FromSeconds(3);
+        _timeProvider.Advance(TimeSpan.FromSeconds(3));
         _timeoutControl.BytesRead(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Not timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Tick just past timeout period, adjusted by Heartbeat.Interval
-        _systemClock.UtcNow = startTime + timeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromSeconds(2) + Heartbeat.Interval + TimeSpan.FromTicks(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestBodyDrain), Times.Once);
@@ -292,18 +288,18 @@ public class TimeoutControlTests
         var flowControl = new InputFlowControl(initialWindowSize: 2, minWindowSizeIncrement: 1);
 
         // Initialize timestamp
-        var now = DateTimeOffset.UtcNow;
-        _timeoutControl.Initialize(now.Ticks);
+        var now = _timeProvider.GetTimestamp();
+        _timeoutControl.Initialize();
         _timeoutControl.InitializeHttp2(flowControl);
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
 
         // Tick past grace period
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(100);
         _timeoutControl.Tick(now);
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(100);
         _timeoutControl.Tick(now);
 
@@ -311,7 +307,7 @@ public class TimeoutControlTests
         flowControl.TryAdvance(2);
 
         // Read 0 bytes in 1 second
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.Tick(now);
 
         // Not timed out
@@ -325,7 +321,7 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Read 0 bytes in 1 second
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.Tick(now);
 
         // Timed out
@@ -338,22 +334,22 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        var now = DateTimeOffset.UtcNow;
-        _timeoutControl.Initialize(now.Ticks);
+        var now = _timeProvider.GetTimestamp();
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
 
         // Tick past grace period
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(100);
         _timeoutControl.Tick(now);
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(100);
         _timeoutControl.Tick(now);
 
         // Read 100 bytes in 2 seconds with a single tick
-        now += TimeSpan.FromSeconds(2);
+        now += _timeProvider.TimestampFrequency * 2;
         _timeoutControl.BytesRead(100);
         _timeoutControl.Tick(now);
 
@@ -361,10 +357,10 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Read 100 bytes in 2 seconds in two ticks
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.BytesRead(100);
         _timeoutControl.Tick(now);
-        now += TimeSpan.FromSeconds(1);
+        now += _timeProvider.TimestampFrequency;
         _timeoutControl.Tick(now);
 
         // Timed out
@@ -377,7 +373,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize();
 
         // Should complete within 4 seconds, but the timeout is adjusted by adding Heartbeat.Interval
         _timeoutControl.BytesWrittenToBuffer(minRate, 400);
@@ -395,8 +391,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));
 
         // Initialize timestamp
-        var startTime = _systemClock.UtcNow;
-        _timeoutControl.Initialize(startTime.Ticks);
+        _timeoutControl.Initialize();
 
         // Should complete within 1 second, but the timeout is adjusted by adding Heartbeat.Interval
         _timeoutControl.BytesWrittenToBuffer(minRate, 100);
@@ -420,7 +415,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize();
 
         // Should complete within 5 seconds, but the timeout is adjusted by adding Heartbeat.Interval
         _timeoutControl.BytesWrittenToBuffer(minRate, 500);
@@ -453,8 +448,7 @@ public class TimeoutControlTests
         var writeSize = 100;
 
         // Initialize timestamp
-        var startTime = _systemClock.UtcNow;
-        _timeoutControl.Initialize(startTime.Ticks);
+        _timeoutControl.Initialize();
 
         // 5 consecutive 100 byte writes.
         for (var i = 0; i < numWrites - 1; i++)
@@ -473,8 +467,8 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // On more tick forward triggers the timeout.
-        _systemClock.UtcNow += TimeSpan.FromTicks(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromTicks(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
     }
@@ -485,15 +479,15 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize();
 
         // Should complete within 4 seconds, but the timeout is adjusted by adding Heartbeat.Interval
         _timeoutControl.BytesWrittenToBuffer(minRate, 400);
         _timeoutControl.StartTimingWrite();
 
         // Tick just past 4s plus Heartbeat.Interval at once
-        _systemClock.UtcNow += TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Never);
 
@@ -510,7 +504,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond, gracePeriod);
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
@@ -518,22 +512,22 @@ public class TimeoutControlTests
         AdvanceClock(gracePeriod);
 
         // Tick after grace period w/ low data rate
-        _systemClock.UtcNow += TimeSpan.FromSeconds(1);
+        _timeProvider.Advance(TimeSpan.FromSeconds(1));
         _timeoutControl.BytesRead(1);
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
     }
 
     private void AdvanceClock(TimeSpan timeSpan)
     {
-        var endTime = _systemClock.UtcNow + timeSpan;
+        var endTime = _timeProvider.GetTimestamp(timeSpan);
 
-        while (_systemClock.UtcNow + Heartbeat.Interval < endTime)
+        while (_timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
         {
-            _systemClock.UtcNow += Heartbeat.Interval;
-            _timeoutControl.Tick(_systemClock.UtcNow);
+            _timeProvider.Advance(Heartbeat.Interval);
+            _timeoutControl.Tick(_timeProvider.GetTimestamp());
         }
 
-        _systemClock.UtcNow = endTime;
-        _timeoutControl.Tick(_systemClock.UtcNow);
+        _timeProvider.Advance(_timeProvider.GetElapsedTime(_timeProvider.GetTimestamp(), endTime));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp());
     }
 }

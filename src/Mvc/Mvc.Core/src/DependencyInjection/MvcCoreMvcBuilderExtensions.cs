@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -27,15 +26,8 @@ public static class MvcCoreMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<MvcOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;
@@ -43,6 +35,7 @@ public static class MvcCoreMvcBuilderExtensions
 
     /// <summary>
     /// Configures <see cref="JsonOptions"/> for the specified <paramref name="builder"/>.
+    /// Uses default values from <c>JsonSerializerDefaults.Web</c>.
     /// </summary>
     /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
     /// <param name="configure">An <see cref="Action"/> to configure the <see cref="JsonOptions"/>.</param>
@@ -51,15 +44,8 @@ public static class MvcCoreMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<JsonOptions> configure)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure(configure);
         return builder;
@@ -75,15 +61,8 @@ public static class MvcCoreMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<FormatterMappings> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure<MvcOptions>((options) => setupAction(options.FormatterMappings));
         return builder;
@@ -98,15 +77,8 @@ public static class MvcCoreMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddApplicationPart(this IMvcBuilder builder, Assembly assembly)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(assembly);
 
         builder.ConfigureApplicationPartManager(manager =>
         {
@@ -131,15 +103,8 @@ public static class MvcCoreMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<ApplicationPartManager> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         setupAction(builder.PartManager);
 
@@ -153,10 +118,7 @@ public static class MvcCoreMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder AddControllersAsServices(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         var feature = new ControllerFeature();
         builder.PartManager.PopulateFeature(feature);
@@ -172,26 +134,6 @@ public static class MvcCoreMvcBuilderExtensions
     }
 
     /// <summary>
-    /// Sets the <see cref="CompatibilityVersion"/> for ASP.NET Core MVC for the application.
-    /// </summary>
-    /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
-    /// <param name="version">The <see cref="CompatibilityVersion"/> value to configure.</param>
-    /// <returns>The <see cref="IMvcBuilder"/>.</returns>
-    [Obsolete("This API is obsolete and will be removed in a future version. Consider removing usages.",
-        DiagnosticId = "ASP5001",
-        UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
-    public static IMvcBuilder SetCompatibilityVersion(this IMvcBuilder builder, CompatibilityVersion version)
-    {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        builder.Services.Configure<MvcCompatibilityOptions>(o => o.CompatibilityVersion = version);
-        return builder;
-    }
-
-    /// <summary>
     /// Configures <see cref="ApiBehaviorOptions"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
@@ -201,15 +143,8 @@ public static class MvcCoreMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<ApiBehaviorOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
 

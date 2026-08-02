@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// This file intentionally tests the obsolete synchronous EditContext.Validate() API.
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class EditContextTest
@@ -231,6 +234,35 @@ public class EditContextTest
         // assert
         Assert.False(isValid);
         Assert.Equal(new[] { "Some message" }, editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void IsInvalidWithValidationMessagesForSpecifiedField()
+    {
+        // Arrange
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var fieldOnThisModel1 = editContext.Field("field1");
+        var fieldOnThisModel2 = editContext.Field("field2");
+        messages.Add(
+            fieldOnThisModel1,
+            "Some message");
+
+        // Assert
+        Assert.False(editContext.Validate());
+        Assert.False(editContext.IsValid(fieldOnThisModel1));
+        Assert.True(editContext.IsValid(fieldOnThisModel2));
+    }
+
+    [Fact]
+    public void Validate_HandlerThrowsSynchronously_PropagatesOriginalException()
+    {
+        var editContext = new EditContext(new object());
+        editContext.OnValidationRequested += (_, _) => throw new DivideByZeroException("boom");
+
+        var exception = Assert.Throws<DivideByZeroException>(() => editContext.Validate());
+
+        Assert.Equal("boom", exception.Message);
     }
 
     [Fact]

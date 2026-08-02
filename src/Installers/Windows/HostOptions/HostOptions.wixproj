@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
-
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>$(HostOptionsName)</Name>
-    <OutputName>$(HostOptionsName)</OutputName>
+    <Name>dotnet-hosting-options-$(_ProductVersionForInstallers)-win</Name>
+    <OutputName>$(Name)</OutputName>
+    <PackageFileName>$(Name).msi</PackageFileName>
     <OutputType>Package</OutputType>
     <ProductNameFolder>Microsoft ASP.NET Core Hosting Bundle Options</ProductNameFolder>
     <ProductNameShort>AspNetCore.HostOptions</ProductNameShort>
@@ -12,19 +12,17 @@
     <ProjectGuid>20248cd1-c5aa-4f42-ad88-bc260d64deea</ProjectGuid>
     <IsShipping>true</IsShipping>
     <SchemaVersion>2.0</SchemaVersion>
+    <!-- We import D.B.T ourselves in this file -->
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
 
     <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THIS. -->
     <NamespaceGuid>$(HostingBundleNamespaceGuid)</NamespaceGuid>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="Product.wxs" />
-  </ItemGroup>
-
+  <Import Project="Sdk.targets" Sdk="Microsoft.WixToolset.Sdk" />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <PackageFileName>dotnet-hosting-options-$(PackageVersion)-win$(TargetExt)</PackageFileName>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Hosting Bundle Options</ProductName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>

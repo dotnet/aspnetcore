@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -138,6 +140,25 @@ public class FieldIdentifierTest
     }
 
     [Fact]
+    public void CanCreateFromExpression_PropertyUsesCache()
+    {
+        var models = new TestModel[] { new TestModel(), new TestModel() };
+        var cache = new ConcurrentDictionary<(Type ModelType, MemberInfo FieldName), Func<object, object>>();
+        var result = new TestModel[2];
+        for (var i = 0; i < models.Length; i++)
+        {
+            var model = models[i];
+            LambdaExpression expression = () => model.StringProperty;
+            var body = expression.Body as MemberExpression;
+            var value = FieldIdentifier.GetModelFromMemberAccess((MemberExpression)body.Expression, cache);
+            result[i] = Assert.IsType<TestModel>(value);
+        }
+
+        Assert.Single(cache);
+        Assert.Equal(models, result);
+    }
+
+    [Fact]
     public void CannotCreateFromExpression_NonMember()
     {
         var ex = Assert.Throws<ArgumentException>(() =>
@@ -201,6 +222,53 @@ public class FieldIdentifierTest
         Assert.Equal(nameof(TestModel.StringField), fieldIdentifier.FieldName);
     }
 
+    [Fact]
+    public void CanCreateFromExpression_DifferentCaseField()
+    {
+        var fieldIdentifier = FieldIdentifier.Create(() => model.Field);
+        Assert.Same(model, fieldIdentifier.Model);
+        Assert.Equal(nameof(model.Field), fieldIdentifier.FieldName);
+    }
+
+    private DifferentCaseFieldModel model = new() { Field = 1 };
+#pragma warning disable CA1823 // This is used in the test above
+    private DifferentCaseFieldModel Model = new() { field = 2 };
+#pragma warning restore CA1823 // Avoid unused private fields
+
+    [Fact]
+    public void CanCreateFromExpression_DifferentCaseProperty()
+    {
+        var fieldIdentifier = FieldIdentifier.Create(() => Model2.Property);
+        Assert.Same(Model2, fieldIdentifier.Model);
+        Assert.Equal(nameof(Model2.Property), fieldIdentifier.FieldName);
+    }
+
+    protected DifferentCasePropertyModel Model2 { get; } = new() { property = 1 };
+
+    protected DifferentCasePropertyModel model2 { get; } = new() { Property = 2 };
+
+    [Fact]
+    public void CanCreateFromExpression_DifferentCasePropertyAndField()
+    {
+        var fieldIdentifier = FieldIdentifier.Create(() => model3.Value);
+        Assert.Same(model3, fieldIdentifier.Model);
+        Assert.Equal(nameof(Model3.Value), fieldIdentifier.FieldName);
+    }
+
+    [Fact]
+    public void CanCreateFromExpression_NonAsciiCharacters()
+    {
+        var fieldIdentifier = FieldIdentifier.Create(() => @ÖvrigAnställning.Ort);
+        Assert.Same(@ÖvrigAnställning, fieldIdentifier.Model);
+        Assert.Equal(nameof(@ÖvrigAnställning.Ort), fieldIdentifier.FieldName);
+    }
+
+    public DifferentCasePropertyFieldModel Model3 { get; } = new() { value = 1 };
+
+    public DifferentCasePropertyFieldModel model3 = new() { Value = 2 };
+
+    public ÖvrigAnställningModel @ÖvrigAnställning { get; set; } = new();
+
     string StringPropertyOnThisClass { get; set; }
 
     class TestModel
@@ -232,5 +300,28 @@ public class FieldIdentifierTest
         {
             return StringComparer.Ordinal.GetHashCode(Property);
         }
+    }
+
+    public class ÖvrigAnställningModel
+    {
+        public int Ort { get; set; }
+    }
+
+    private class DifferentCaseFieldModel
+    {
+        public int Field;
+        public int field;
+    }
+
+    protected class DifferentCasePropertyModel
+    {
+        public int Property { get; set; }
+        public int property { get; set; }
+    }
+
+    public class DifferentCasePropertyFieldModel
+    {
+        public int Value { get; set; }
+        public int value;
     }
 }

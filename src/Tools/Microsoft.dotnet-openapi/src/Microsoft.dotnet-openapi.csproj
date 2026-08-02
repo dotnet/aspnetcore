@@ -17,7 +17,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <Reference Include="Microsoft.Build.Locator" />
-    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,5 +30,9 @@
       <_Parameter2>$(NewtonsoftJsonVersion)</_Parameter2>
       <_Parameter3>NSwagCSharp;NSwagTypeScript</_Parameter3>
     </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.DotNet.Open.Api.Tools.Tests" />
   </ItemGroup>
 </Project>

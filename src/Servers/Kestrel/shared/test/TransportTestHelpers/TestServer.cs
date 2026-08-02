@@ -1,26 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 
@@ -48,7 +41,7 @@ internal class TestServer : IAsyncDisposable, IStartup
     {
     }
 
-    public TestServer(RequestDelegate app, TestServiceContext context, Action<ListenOptions> configureListenOptions)
+    public TestServer(RequestDelegate app, TestServiceContext context, Action<ListenOptions> configureListenOptions, Action<IServiceCollection> configureServices = null)
         : this(app, context, options =>
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -57,7 +50,10 @@ internal class TestServer : IAsyncDisposable, IStartup
             };
             configureListenOptions(listenOptions);
             options.CodeBackedListenOptions.Add(listenOptions);
-        }, _ => { })
+        }, s =>
+        {
+            configureServices?.Invoke(s);
+        })
     {
     }
 
@@ -71,19 +67,25 @@ internal class TestServer : IAsyncDisposable, IStartup
         _app = app;
         Context = context;
 
-        _host = TransportSelector.GetHostBuilder(context.MemoryPoolFactory, context.ServerOptions.Limits.MaxRequestBufferSize)
+        _host = TransportSelector.GetHostBuilder(context.ServerOptions.Limits.MaxRequestBufferSize)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
                     .UseKestrel(options =>
                     {
                         configureKestrel(options);
-                        _listenOptions = options.ListenOptions.First();
+                        _listenOptions = options.GetListenOptions().First();
                     })
                     .ConfigureServices(services =>
                     {
+                        if (context.MemoryPoolFactory != null)
+                        {
+                            services.AddSingleton<IMemoryPoolFactory<byte>>(context.MemoryPoolFactory);
+                        }
                         services.AddSingleton<IStartup>(this);
                         services.AddSingleton(context.LoggerFactory);
+                        services.AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>();
+                        services.AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>();
                         services.AddSingleton<IServer>(sp =>
                         {
                             // Manually configure options on the TestServiceContext.
@@ -94,7 +96,7 @@ internal class TestServer : IAsyncDisposable, IStartup
                                 c.Configure(context.ServerOptions);
                             }
 
-                            return new KestrelServerImpl(sp.GetRequiredService<IConnectionListenerFactory>(), context);
+                            return new KestrelServerImpl(sp.GetServices<IConnectionListenerFactory>(), Array.Empty<IMultiplexedConnectionListenerFactory>(), sp.GetRequiredService<IHttpsConfigurationService>(), context);
                         });
                         configureServices(services);
                     })

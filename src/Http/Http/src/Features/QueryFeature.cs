@@ -27,10 +27,7 @@ public class QueryFeature : IQueryFeature
     /// <param name="query">The <see cref="IQueryCollection"/> to use as a backing store.</param>
     public QueryFeature(IQueryCollection query)
     {
-        if (query == null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
+        ArgumentNullException.ThrowIfNull(query);
 
         _parsedValues = query;
     }
@@ -41,10 +38,7 @@ public class QueryFeature : IQueryFeature
     /// <param name="features">The <see cref="IFeatureCollection"/> to initialize.</param>
     public QueryFeature(IFeatureCollection features)
     {
-        if (features == null)
-        {
-            throw new ArgumentNullException(nameof(features));
-        }
+        ArgumentNullException.ThrowIfNull(features);
 
         _features.Initalize(features);
     }

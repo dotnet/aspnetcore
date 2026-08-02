@@ -3,10 +3,10 @@
 
 using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.Tracing;
+using Microsoft.AspNetCore.InternalTesting.Tracing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing.Tests;
+namespace Microsoft.AspNetCore.InternalTesting.Tests;
 
 // We are verifying here that when event listener tests are spread among multiple classes, they still
 // work, even when run in parallel. To do that we have a bunch of tests in different classes (since

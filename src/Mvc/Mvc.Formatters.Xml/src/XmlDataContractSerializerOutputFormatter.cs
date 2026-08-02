@@ -63,10 +63,7 @@ public partial class XmlDataContractSerializerOutputFormatter : TextOutputFormat
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public XmlDataContractSerializerOutputFormatter(XmlWriterSettings writerSettings, ILoggerFactory loggerFactory)
     {
-        if (writerSettings == null)
-        {
-            throw new ArgumentNullException(nameof(writerSettings));
-        }
+        ArgumentNullException.ThrowIfNull(writerSettings);
 
         SupportedEncodings.Add(Encoding.UTF8);
         SupportedEncodings.Add(Encoding.Unicode);
@@ -108,10 +105,7 @@ public partial class XmlDataContractSerializerOutputFormatter : TextOutputFormat
         get => _serializerSettings;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _serializerSettings = value;
         }
@@ -124,10 +118,7 @@ public partial class XmlDataContractSerializerOutputFormatter : TextOutputFormat
     /// <returns>The original or wrapped type provided by any <see cref="IWrapperProvider"/>s.</returns>
     protected virtual Type GetSerializableType(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(new WrapperProviderContext(
             type,
@@ -154,10 +145,7 @@ public partial class XmlDataContractSerializerOutputFormatter : TextOutputFormat
     /// <returns>A new instance of <see cref="DataContractSerializer"/></returns>
     protected virtual DataContractSerializer? CreateSerializer(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         try
         {
@@ -192,15 +180,8 @@ public partial class XmlDataContractSerializerOutputFormatter : TextOutputFormat
         TextWriter writer,
         XmlWriterSettings xmlWriterSettings)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (xmlWriterSettings == null)
-        {
-            throw new ArgumentNullException(nameof(xmlWriterSettings));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(xmlWriterSettings);
 
         // We always close the TextWriter, so the XmlWriter shouldn't.
         xmlWriterSettings.CloseOutput = false;
@@ -231,15 +212,8 @@ public partial class XmlDataContractSerializerOutputFormatter : TextOutputFormat
     /// <inheritdoc />
     public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (selectedEncoding == null)
-        {
-            throw new ArgumentNullException(nameof(selectedEncoding));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         var writerSettings = WriterSettings.Clone();
         writerSettings.Encoding = selectedEncoding;

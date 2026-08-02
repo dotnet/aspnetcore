@@ -17,16 +17,10 @@ internal sealed class AutoValidateAntiforgeryTokenAuthorizationFilter : Validate
 
     protected override bool ShouldValidate(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var method = context.HttpContext.Request.Method;
-        if (HttpMethods.IsGet(method) ||
-            HttpMethods.IsHead(method) ||
-            HttpMethods.IsTrace(method) ||
-            HttpMethods.IsOptions(method))
+        if (SafeHttpMethods.IsSafe(method))
         {
             return false;
         }

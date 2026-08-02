@@ -27,7 +27,7 @@ internal readonly struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, I
             return false;
         }
 
-        return obj is HeaderSegmentCollection && Equals((HeaderSegmentCollection)obj);
+        return obj is HeaderSegmentCollection collection && Equals(collection);
     }
 
     public override int GetHashCode()

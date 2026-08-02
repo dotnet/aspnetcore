@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.JsonPatch.Internal;
 using Microsoft.AspNetCore.JsonPatch.Operations;
+using Microsoft.AspNetCore.Shared;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Adapters;
@@ -56,15 +57,8 @@ public class ObjectAdapter : IObjectAdapterWithTest
 
     public void Add(Operation operation, object objectToApplyTo)
     {
-        if (operation == null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
-
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(operation);
+        ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
         Add(operation.path, operation.value, objectToApplyTo, operation);
     }
@@ -79,20 +73,9 @@ public class ObjectAdapter : IObjectAdapterWithTest
         object objectToApplyTo,
         Operation operation)
     {
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
-
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
-
-        if (operation == null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(path);
+        ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
+        ArgumentNullThrowHelper.ThrowIfNull(operation);
 
         var parsedPath = new ParsedPath(path);
         var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
@@ -115,15 +98,8 @@ public class ObjectAdapter : IObjectAdapterWithTest
 
     public void Move(Operation operation, object objectToApplyTo)
     {
-        if (operation == null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
-
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(operation);
+        ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
         // Get value at 'from' location and add that value to the 'path' location
         if (TryGetValue(operation.from, objectToApplyTo, operation, out var propertyValue))
@@ -141,15 +117,8 @@ public class ObjectAdapter : IObjectAdapterWithTest
 
     public void Remove(Operation operation, object objectToApplyTo)
     {
-        if (operation == null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
-
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(operation);
+        ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
         Remove(operation.path, objectToApplyTo, operation);
     }
@@ -184,15 +153,8 @@ public class ObjectAdapter : IObjectAdapterWithTest
 
     public void Replace(Operation operation, object objectToApplyTo)
     {
-        if (operation == null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
-
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(operation);
+        ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
         var parsedPath = new ParsedPath(operation.path);
         var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
@@ -215,15 +177,8 @@ public class ObjectAdapter : IObjectAdapterWithTest
 
     public void Copy(Operation operation, object objectToApplyTo)
     {
-        if (operation == null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
-
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(operation);
+        ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
         // Get value at 'from' location and add that value to the 'path' location
         if (TryGetValue(operation.from, objectToApplyTo, operation, out var propertyValue))
@@ -248,15 +203,8 @@ public class ObjectAdapter : IObjectAdapterWithTest
 
     public void Test(Operation operation, object objectToApplyTo)
     {
-        if (operation == null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
-
-        if (objectToApplyTo == null)
-        {
-            throw new ArgumentNullException(nameof(objectToApplyTo));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(operation);
+        ArgumentNullThrowHelper.ThrowIfNull(objectToApplyTo);
 
         var parsedPath = new ParsedPath(operation.path);
         var visitor = new ObjectVisitor(parsedPath, ContractResolver, AdapterFactory);
@@ -283,20 +231,9 @@ public class ObjectAdapter : IObjectAdapterWithTest
         Operation operation,
         out object propertyValue)
     {
-        if (fromLocation == null)
-        {
-            throw new ArgumentNullException(nameof(fromLocation));
-        }
-
-        if (objectToGetValueFrom == null)
-        {
-            throw new ArgumentNullException(nameof(objectToGetValueFrom));
-        }
-
-        if (operation == null)
-        {
-            throw new ArgumentNullException(nameof(operation));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(fromLocation);
+        ArgumentNullThrowHelper.ThrowIfNull(objectToGetValueFrom);
+        ArgumentNullThrowHelper.ThrowIfNull(operation);
 
         propertyValue = null;
 

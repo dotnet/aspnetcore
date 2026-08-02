@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
@@ -26,29 +27,16 @@ public static class KeyDerivation
     /// </remarks>
     public static byte[] Pbkdf2(string password, byte[] salt, KeyDerivationPrf prf, int iterationCount, int numBytesRequested)
     {
-        if (password == null)
-        {
-            throw new ArgumentNullException(nameof(password));
-        }
-
-        if (salt == null)
-        {
-            throw new ArgumentNullException(nameof(salt));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(password);
+        ArgumentNullThrowHelper.ThrowIfNull(salt);
 
         // parameter checking
         if (prf < KeyDerivationPrf.HMACSHA1 || prf > KeyDerivationPrf.HMACSHA512)
         {
             throw new ArgumentOutOfRangeException(nameof(prf));
         }
-        if (iterationCount <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(iterationCount));
-        }
-        if (numBytesRequested <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(numBytesRequested));
-        }
+        ArgumentOutOfRangeThrowHelper.ThrowIfNegativeOrZero(iterationCount);
+        ArgumentOutOfRangeThrowHelper.ThrowIfNegativeOrZero(numBytesRequested);
 
         return Pbkdf2Util.Pbkdf2Provider.DeriveKey(password, salt, prf, iterationCount, numBytesRequested);
     }

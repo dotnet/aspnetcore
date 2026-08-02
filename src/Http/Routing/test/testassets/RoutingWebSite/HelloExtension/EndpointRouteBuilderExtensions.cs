@@ -7,10 +7,7 @@ public static class EndpointRouteBuilderExtensions
 {
     public static IEndpointConventionBuilder MapHello(this IEndpointRouteBuilder endpoints, string template, string greeter)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         var pipeline = endpoints.CreateApplicationBuilder()
            .UseHello(greeter)

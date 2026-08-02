@@ -107,19 +107,26 @@ public static class NavigationManagerExtensions
         private readonly StringBuilder _builder;
 
         private bool _hasNewParameters;
+        private bool _hasHash;
 
         public string UriWithQueryString => _builder.ToString();
 
-        public QueryStringBuilder(ReadOnlySpan<char> uriWithoutQueryString, int additionalCapacity = 0)
+        public QueryStringBuilder(ReadOnlySpan<char> uriWithoutQueryStringAndHash, int additionalCapacity = 0)
         {
-            _builder = new(uriWithoutQueryString.Length + additionalCapacity);
-            _builder.Append(uriWithoutQueryString);
+            _builder = new(uriWithoutQueryStringAndHash.Length + additionalCapacity);
+            _builder.Append(uriWithoutQueryStringAndHash);
 
             _hasNewParameters = false;
+            _hasHash = false;
         }
 
         public void AppendParameter(ReadOnlySpan<char> encodedName, ReadOnlySpan<char> encodedValue)
         {
+            if (_hasHash)
+            {
+                throw new InvalidOperationException("Cannot append parameter after hash was added.");
+            }
+
             if (!_hasNewParameters)
             {
                 _hasNewParameters = true;
@@ -133,6 +140,12 @@ public static class NavigationManagerExtensions
             _builder.Append(encodedName);
             _builder.Append('=');
             _builder.Append(encodedValue);
+        }
+
+        public void AppendHash(ReadOnlySpan<char> hash)
+        {
+            _hasHash = true;
+            _builder.Append(hash);
         }
     }
 
@@ -508,10 +521,7 @@ public static class NavigationManagerExtensions
     /// </remarks>
     public static string GetUriWithQueryParameter(this NavigationManager navigationManager, string name, string? value)
     {
-        if (navigationManager is null)
-        {
-            throw new ArgumentNullException(nameof(navigationManager));
-        }
+        ArgumentNullException.ThrowIfNull(navigationManager);
 
         if (string.IsNullOrEmpty(name))
         {
@@ -548,21 +558,18 @@ public static class NavigationManagerExtensions
         string uri,
         IReadOnlyDictionary<string, object?> parameters)
     {
-        if (navigationManager is null)
-        {
-            throw new ArgumentNullException(nameof(navigationManager));
-        }
+        ArgumentNullException.ThrowIfNull(navigationManager);
+        ArgumentNullException.ThrowIfNull(uri);
 
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
+        if (!TryRebuildExistingQueryFromUri(
+            uri,
+            out var existingQueryStringEnumerable,
+            out var hash,
+            out var newQueryStringBuilder))
         {
             // There was no existing query, so there is no need to allocate a new dictionary to cache
             // encoded parameter values and track which parameters have been added.
-            return GetUriWithAppendedQueryParameters(uri, parameters);
+            return GetUriWithAppendedQueryParameters(uri, parameters, hash);
         }
 
         var parameterSources = CreateParameterSourceDictionary(parameters);
@@ -593,6 +600,8 @@ public static class NavigationManagerExtensions
             }
         }
 
+        newQueryStringBuilder.AppendHash(hash);
+
         return newQueryStringBuilder.UriWithQueryString;
     }
 
@@ -601,10 +610,16 @@ public static class NavigationManagerExtensions
         var encodedName = Uri.EscapeDataString(name);
         var encodedValue = Uri.EscapeDataString(value);
 
-        if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
+        if (!TryRebuildExistingQueryFromUri(
+            uri,
+            out var existingQueryStringEnumerable,
+            out var hash,
+            out var newQueryStringBuilder))
         {
-            // There was no existing query, so we can generate the new URI immediately.
-            return $"{uri}?{encodedName}={encodedValue}";
+            // There was no existing query, so we can generate the new URI.
+            newQueryStringBuilder.AppendParameter(encodedName, encodedValue);
+            newQueryStringBuilder.AppendHash(hash);
+            return newQueryStringBuilder.UriWithQueryString;
         }
 
         var didReplace = false;
@@ -627,12 +642,18 @@ public static class NavigationManagerExtensions
             newQueryStringBuilder.AppendParameter(encodedName, encodedValue);
         }
 
+        newQueryStringBuilder.AppendHash(hash);
+
         return newQueryStringBuilder.UriWithQueryString;
     }
 
     private static string GetUriWithRemovedQueryParameter(string uri, string name)
     {
-        if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
+        if (!TryRebuildExistingQueryFromUri(
+            uri,
+            out var existingQueryStringEnumerable,
+            out var hash,
+            out var newQueryStringBuilder))
         {
             // There was no existing query, so the URI remains unchanged.
             return uri;
@@ -649,14 +670,21 @@ public static class NavigationManagerExtensions
             }
         }
 
+        newQueryStringBuilder.AppendHash(hash);
+
         return newQueryStringBuilder.UriWithQueryString;
     }
 
     private static string GetUriWithAppendedQueryParameters(
         string uriWithoutQueryString,
-        IReadOnlyDictionary<string, object?> parameters)
+        IReadOnlyDictionary<string, object?> parameters,
+        ReadOnlySpan<char> hash)
     {
-        var builder = new QueryStringBuilder(uriWithoutQueryString);
+        var hashStartIndex = uriWithoutQueryString.IndexOf('#');
+
+        var uriWithoutQueryStringAndHash = hashStartIndex < 0 ? uriWithoutQueryString : uriWithoutQueryString.AsSpan(0, hashStartIndex);
+
+        var builder = new QueryStringBuilder(uriWithoutQueryStringAndHash);
 
         foreach (var (name, value) in parameters)
         {
@@ -666,6 +694,8 @@ public static class NavigationManagerExtensions
                 // Read all parameters.
             }
         }
+
+        builder.AppendHash(hash);
 
         return builder.UriWithQueryString;
     }
@@ -700,23 +730,97 @@ public static class NavigationManagerExtensions
     private static bool TryRebuildExistingQueryFromUri(
         string uri,
         out QueryStringEnumerable existingQueryStringEnumerable,
+        out ReadOnlySpan<char> hash,
         out QueryStringBuilder newQueryStringBuilder)
     {
-        var queryStartIndex = uri.IndexOf('?');
+        ReadOnlySpan<char> uriWithoutQueryStringAndHash;
+
+        var hashStartIndex = uri.IndexOf('#');
+        hash = hashStartIndex < 0 ? "" : uri.AsSpan(hashStartIndex);
+
+        var queryStartIndex = (hashStartIndex > 0 ? uri.AsSpan(0, hashStartIndex) : uri).IndexOf('?');
 
         if (queryStartIndex < 0)
         {
+
             existingQueryStringEnumerable = default;
-            newQueryStringBuilder = default;
+            uriWithoutQueryStringAndHash = hashStartIndex < 0 ? uri : uri.AsSpan(0, hashStartIndex);
+            newQueryStringBuilder = new(uriWithoutQueryStringAndHash);
             return false;
         }
 
-        var query = uri.AsMemory(queryStartIndex);
+        var queryLength = hashStartIndex < 0 ?
+            uri.Length - queryStartIndex :
+            hashStartIndex - queryStartIndex;
+
+        var query = uri.AsMemory(queryStartIndex, queryLength);
+
         existingQueryStringEnumerable = new(query);
 
-        var uriWithoutQueryString = uri.AsSpan(0, queryStartIndex);
-        newQueryStringBuilder = new(uriWithoutQueryString, query.Length);
+        uriWithoutQueryStringAndHash = uri.AsSpan(0, queryStartIndex);
+        newQueryStringBuilder = new(uriWithoutQueryStringAndHash, query.Length + hash.Length);
 
         return true;
+    }
+
+    /// <summary>
+    /// Returns a URI constructed from <see cref="NavigationManager.Uri"/> with a fragment
+    /// added, updated, or removed.
+    /// </summary>
+    /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+    /// <param name="fragment">The fragment string. If <see langword="null"/> or empty, the fragment will be removed from the URI.</param>
+    /// <returns>The URI with the specified fragment.</returns>
+    /// <remarks>
+    /// <para>
+    /// If <paramref name="fragment"/> does not start with <c>#</c>, then <c>#</c> will be prepended.
+    /// </para>
+    /// <para>
+    /// This method is useful when the document's <c>baseURI</c> differs from its location,
+    /// such as when a <c>&lt;base&gt;</c> element is used, since relative hash URLs are resolved
+    /// relative to the <c>baseURI</c>.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// @inject NavigationManager Nav
+    /// &lt;a href="@Nav.GetUriWithFragment("section1")"&gt;Go to section 1&lt;/a&gt;
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static string GetUriWithFragment(this NavigationManager navigationManager, string? fragment)
+    {
+        ArgumentNullException.ThrowIfNull(navigationManager);
+
+        var uri = navigationManager.Uri;
+        var existingHashIndex = uri.IndexOf('#');
+
+        var uriWithoutHashLength = existingHashIndex < 0 ? uri.Length : existingHashIndex;
+
+        if (string.IsNullOrEmpty(fragment))
+        {
+            if (existingHashIndex < 0)
+            {
+                return uri;
+            }
+
+            return uri.Substring(0, uriWithoutHashLength);
+        }
+
+        var fragmentStartsWithSymbol = fragment[0] == '#';
+        var totalLength = uriWithoutHashLength + (fragmentStartsWithSymbol ? fragment.Length : fragment.Length + 1);
+
+        return string.Create(totalLength, (uri, fragment, uriWithoutHashLength, fragmentStartsWithSymbol), static (chars, state) =>
+        {
+            var (uriValue, fragmentValue, uriLength, startsWithSymbol) = state;
+
+            uriValue.AsSpan(0, uriLength).CopyTo(chars);
+            var position = uriLength;
+
+            if (!startsWithSymbol)
+            {
+                chars[position++] = '#';
+            }
+
+            fragmentValue.AsSpan().CopyTo(chars[position..]);
+        });
     }
 }

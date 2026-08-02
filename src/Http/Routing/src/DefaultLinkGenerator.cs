@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,8 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing;
 
+[DebuggerDisplay("Endpoints = {Endpoints.Count}")]
+[DebuggerTypeProxy(typeof(DefaultLinkGeneratorDebugView))]
 internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
 {
     private readonly TemplateBinderFactory _binderFactory;
@@ -72,10 +75,7 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
         FragmentString fragment = default,
         LinkOptions? options = null)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var endpoints = GetEndpoints(address);
         if (endpoints.Count == 0)
@@ -127,10 +127,7 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
         FragmentString fragment = default,
         LinkOptions? options = null)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var endpoints = GetEndpoints(address);
         if (endpoints.Count == 0)
@@ -152,16 +149,13 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
     public override string? GetUriByAddress<TAddress>(
         TAddress address,
         RouteValueDictionary values,
-        string? scheme,
+        string scheme,
         HostString host,
         PathString pathBase = default,
         FragmentString fragment = default,
         LinkOptions? options = null)
     {
-        if (string.IsNullOrEmpty(scheme))
-        {
-            throw new ArgumentException("A scheme must be provided.", nameof(scheme));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(scheme);
 
         if (!host.HasValue)
         {
@@ -328,6 +322,16 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
     public void Dispose()
     {
         _cache.Dispose();
+    }
+
+    private IReadOnlyList<Endpoint> Endpoints => _serviceProvider.GetRequiredService<EndpointDataSource>().Endpoints;
+
+    private sealed class DefaultLinkGeneratorDebugView(DefaultLinkGenerator generator)
+    {
+        private readonly DefaultLinkGenerator _generator = generator;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public Endpoint[] Items => _generator.Endpoints.ToArray();
     }
 
     private static partial class Log

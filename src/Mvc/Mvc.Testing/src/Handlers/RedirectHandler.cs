@@ -31,10 +31,7 @@ public class RedirectHandler : DelegatingHandler
     /// equal or greater than 0.</param>
     public RedirectHandler(int maxRedirects)
     {
-        if (maxRedirects <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxRedirects));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(maxRedirects);
 
         MaxRedirects = maxRedirects;
     }
@@ -64,7 +61,7 @@ public class RedirectHandler : DelegatingHandler
     }
 
     private static bool HasBody(HttpRequestMessage request) =>
-        request.Method == HttpMethod.Post || request.Method == HttpMethod.Put;
+        request.Method == HttpMethod.Post || request.Method == HttpMethod.Put || request.Method == HttpMethod.Patch;
 
     private static async Task<HttpContent?> DuplicateRequestContent(HttpRequestMessage request)
     {
@@ -144,9 +141,7 @@ public class RedirectHandler : DelegatingHandler
         {
             if (!location.IsAbsoluteUri && response.RequestMessage.RequestUri is Uri requestUri)
             {
-                location = new Uri(
-                    new Uri(requestUri.GetLeftPart(UriPartial.Authority)),
-                    location);
+                location = new Uri(requestUri, location);
             }
 
             redirect.RequestUri = location;

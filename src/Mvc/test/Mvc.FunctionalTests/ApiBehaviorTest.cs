@@ -1,29 +1,43 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixture<TStartup>> where TStartup : class
+public abstract class ApiBehaviorTestBase<TStartup> : LoggedTest where TStartup : class
 {
-    protected ApiBehaviorTestBase(MvcTestFixture<TStartup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<TStartup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
     }
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<TStartup>();
 
-    public HttpClient Client { get; }
+    public WebApplicationFactory<TStartup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public virtual async Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
@@ -54,7 +68,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
                 });
 
             Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
-            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+            Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
 
             Assert.Collection(
                 problemDetails.Errors.OrderBy(kvp => kvp.Key),
@@ -143,6 +157,28 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
         var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
         Assert.Equal(input.ContactId, result.ContactId);
         Assert.Equal(input.Name, result.Name);
+    }
+
+    [Fact]
+    public async Task ActionsWithApiBehavior_DoesNotInferFromBodyForCompositeComplexTypesParameters()
+    {
+        // Arrange
+        var input = new Contact
+        {
+            ContactId = 13,
+            Name = "Test123",
+        };
+        var requestId = 1;
+
+        // Act
+        var response = await Client.PostAsJsonAsync($"/contact/ActionWithCompositeComplexTypeParameter/{requestId}", input);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var result = JsonConvert.DeserializeObject<ContactRequest>(await response.Content.ReadAsStringAsync());
+        Assert.Equal(input.ContactId, result.ContactInfo.ContactId);
+        Assert.Equal(input.Name, result.ContactInfo.Name);
+        Assert.Equal(requestId, result.Id);
     }
 
     [Fact]
@@ -350,11 +386,6 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
 
 public class ApiBehaviorTest : ApiBehaviorTestBase<BasicWebSite.StartupWithSystemTextJson>
 {
-    public ApiBehaviorTest(MvcTestFixture<BasicWebSite.StartupWithSystemTextJson> fixture)
-        : base(fixture)
-    {
-    }
-
     [Fact]
     public override Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
     {
@@ -388,21 +419,16 @@ public class ApiBehaviorTest : ApiBehaviorTestBase<BasicWebSite.StartupWithSyste
 
 public class ApiBehaviorTestNewtonsoftJson : ApiBehaviorTestBase<BasicWebSite.StartupWithoutEndpointRouting>
 {
-    public ApiBehaviorTestNewtonsoftJson(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
-        : base(fixture)
-    {
-        var factory = fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        CustomInvalidModelStateClient = factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<BasicWebSite.StartupWithCustomInvalidModelStateFactory>();
-
-    public HttpClient CustomInvalidModelStateClient { get; }
 
     [Fact]
     public async Task ActionsReturnBadRequest_UsesProblemDescriptionProviderAndApiConventionsToConfigureErrorResponse()
     {
+        await using var factory = new MvcTestFixture<BasicWebSite.StartupWithCustomInvalidModelStateFactory>(LoggerFactory)
+            .WithWebHostBuilder(ConfigureWebHostBuilder);
+        var customInvalidModelStateClient = factory.CreateDefaultClient();
+
         // Arrange
         var contactModel = new Contact
         {
@@ -418,7 +444,7 @@ public class ApiBehaviorTestNewtonsoftJson : ApiBehaviorTestBase<BasicWebSite.St
             };
 
         // Act
-        var response = await CustomInvalidModelStateClient.PostAsJsonAsync("/contact/PostWithVnd", contactModel);
+        var response = await customInvalidModelStateClient.PostAsJsonAsync("/contact/PostWithVnd", contactModel);
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);

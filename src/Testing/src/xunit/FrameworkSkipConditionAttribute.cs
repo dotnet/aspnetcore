@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class FrameworkSkipConditionAttribute : Attribute, ITestCondition
@@ -32,13 +32,13 @@ public class FrameworkSkipConditionAttribute : Attribute, ITestCondition
             return true;
         }
 
-#if NETFRAMEWORK
         if (excludedFrameworks.HasFlag(RuntimeFrameworks.Mono) &&
             TestPlatformHelper.IsMono)
         {
             return false;
         }
 
+#if NETFRAMEWORK
         if (excludedFrameworks.HasFlag(RuntimeFrameworks.CLR))
         {
             return false;

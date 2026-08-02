@@ -172,7 +172,7 @@ internal class TestUtils
                             {
                                 responseCachingOptions.MaximumBodySize = options.MaximumBodySize;
                                 responseCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
-                                responseCachingOptions.SystemClock = options.SystemClock;
+                                responseCachingOptions.TimeProvider = options.TimeProvider;
                             }
                         });
                     })
@@ -262,15 +262,8 @@ internal static class HttpResponseWritingExtensions
 {
     internal static void Write(this HttpResponse response, string text)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(text);
 
         byte[] data = Encoding.UTF8.GetBytes(text);
         response.Body.Write(data, 0, data.Length);
@@ -308,6 +301,7 @@ internal class LoggedMessage
     internal static LoggedMessage ResponseNotCached => new LoggedMessage(27, LogLevel.Information);
     internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(28, LogLevel.Warning);
     internal static LoggedMessage ExpirationInfiniteMaxStaleSatisfied => new LoggedMessage(29, LogLevel.Debug);
+    internal static LoggedMessage RequestContainsInvalidCacheSymbols => new LoggedMessage(30, LogLevel.Debug);
 
     private LoggedMessage(int evenId, LogLevel logLevel)
     {
@@ -395,9 +389,4 @@ internal class TestResponseCache : IResponseCache
         SetCount++;
         _storage[key] = entry;
     }
-}
-
-internal class TestClock : ISystemClock
-{
-    public DateTimeOffset UtcNow { get; set; }
 }

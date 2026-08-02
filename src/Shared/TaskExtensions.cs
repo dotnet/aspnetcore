@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 #if AspNetCoreTesting
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 #else
 namespace System.Threading.Tasks.Extensions;
 #endif

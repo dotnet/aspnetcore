@@ -22,10 +22,7 @@ public static class SignalRDependencyInjectionExtensions
     /// <returns>The same instance of the <see cref="ISignalRServerBuilder"/> for chaining.</returns>
     public static ISignalRServerBuilder AddHubOptions<THub>(this ISignalRServerBuilder signalrBuilder, Action<HubOptions<THub>> configure) where THub : Hub
     {
-        if (signalrBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(signalrBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(signalrBuilder);
 
         signalrBuilder.Services.AddSingleton<IConfigureOptions<HubOptions<THub>>, HubOptionsSetup<THub>>();
         signalrBuilder.Services.Configure(configure);
@@ -39,11 +36,9 @@ public static class SignalRDependencyInjectionExtensions
     /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
     public static ISignalRServerBuilder AddSignalR(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
+        services.AddMetrics();
         services.AddConnections();
         // Disable the WebSocket keep alive since SignalR has it's own
         services.Configure<WebSocketOptions>(o => o.KeepAliveInterval = TimeSpan.Zero);
@@ -60,10 +55,7 @@ public static class SignalRDependencyInjectionExtensions
     /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
     public static ISignalRServerBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var signalrBuilder = services.AddSignalR();
         // Setup users settings after we've setup ours

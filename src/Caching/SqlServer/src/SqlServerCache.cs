@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
@@ -13,7 +16,7 @@ namespace Microsoft.Extensions.Caching.SqlServer;
 /// <summary>
 /// Distributed cache implementation using Microsoft SQL Server database.
 /// </summary>
-public class SqlServerCache : IDistributedCache
+public class SqlServerCache : IDistributedCache, IBufferDistributedCache
 {
     private static readonly TimeSpan MinimumExpiredItemsDeletionInterval = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan DefaultExpiredItemsDeletionInterval = TimeSpan.FromMinutes(30);
@@ -34,21 +37,10 @@ public class SqlServerCache : IDistributedCache
     {
         var cacheOptions = options.Value;
 
-        if (string.IsNullOrEmpty(cacheOptions.ConnectionString))
-        {
-            throw new ArgumentException(
-                $"{nameof(SqlServerCacheOptions.ConnectionString)} cannot be empty or null.");
-        }
-        if (string.IsNullOrEmpty(cacheOptions.SchemaName))
-        {
-            throw new ArgumentException(
-                $"{nameof(SqlServerCacheOptions.SchemaName)} cannot be empty or null.");
-        }
-        if (string.IsNullOrEmpty(cacheOptions.TableName))
-        {
-            throw new ArgumentException(
-                $"{nameof(SqlServerCacheOptions.TableName)} cannot be empty or null.");
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.ConnectionString);
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.SchemaName);
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.TableName);
+
         if (cacheOptions.ExpiredItemsDeletionInterval.HasValue &&
             cacheOptions.ExpiredItemsDeletionInterval.Value < MinimumExpiredItemsDeletionInterval)
         {
@@ -58,10 +50,12 @@ public class SqlServerCache : IDistributedCache
         }
         if (cacheOptions.DefaultSlidingExpiration <= TimeSpan.Zero)
         {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             throw new ArgumentOutOfRangeException(
                 nameof(cacheOptions.DefaultSlidingExpiration),
                 cacheOptions.DefaultSlidingExpiration,
                 "The sliding expiration value must be positive.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
 
         _systemClock = cacheOptions.SystemClock ?? new SystemClock();
@@ -80,12 +74,21 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public byte[]? Get(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         var value = _dbOperations.GetCacheItem(key);
+
+        ScanForExpiredItemsIfRequired();
+
+        return value;
+    }
+
+    bool IBufferDistributedCache.TryGet(string key, IBufferWriter<byte> destination)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(destination);
+
+        var value = _dbOperations.TryGetCacheItem(key, destination);
 
         ScanForExpiredItemsIfRequired();
 
@@ -95,10 +98,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public async Task<byte[]?> GetAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -109,13 +109,22 @@ public class SqlServerCache : IDistributedCache
         return value;
     }
 
+    async ValueTask<bool> IBufferDistributedCache.TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken token)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(destination);
+
+        var value = await _dbOperations.TryGetCacheItemAsync(key, destination, token).ConfigureAwait(false);
+
+        ScanForExpiredItemsIfRequired();
+
+        return value;
+    }
+
     /// <inheritdoc />
     public void Refresh(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         _dbOperations.RefreshCacheItem(key);
 
@@ -125,10 +134,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public async Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -140,10 +146,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public void Remove(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         _dbOperations.DeleteCacheItem(key);
 
@@ -153,10 +156,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public async Task RemoveAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -168,24 +168,26 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         GetOptions(ref options);
 
-        _dbOperations.SetCacheItem(key, value, options);
+        _dbOperations.SetCacheItem(key, new(value), options);
+
+        ScanForExpiredItemsIfRequired();
+    }
+
+    void IBufferDistributedCache.Set(string key, ReadOnlySequence<byte> value, DistributedCacheEntryOptions options)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
+
+        GetOptions(ref options);
+
+        _dbOperations.SetCacheItem(key, Linearize(value, out var lease), options);
+        Recycle(lease); // we're fine to only recycle on success
 
         ScanForExpiredItemsIfRequired();
     }
@@ -197,28 +199,65 @@ public class SqlServerCache : IDistributedCache
         DistributedCacheEntryOptions options,
         CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         token.ThrowIfCancellationRequested();
 
         GetOptions(ref options);
 
-        await _dbOperations.SetCacheItemAsync(key, value, options, token).ConfigureAwait(false);
+        await _dbOperations.SetCacheItemAsync(key, new(value), options, token).ConfigureAwait(false);
 
         ScanForExpiredItemsIfRequired();
+    }
+
+    async ValueTask IBufferDistributedCache.SetAsync(
+        string key,
+        ReadOnlySequence<byte> value,
+        DistributedCacheEntryOptions options,
+        CancellationToken token)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
+
+        token.ThrowIfCancellationRequested();
+
+        GetOptions(ref options);
+
+        await _dbOperations.SetCacheItemAsync(key, Linearize(value, out var lease), options, token).ConfigureAwait(false);
+        Recycle(lease); // we're fine to only recycle on success
+
+        ScanForExpiredItemsIfRequired();
+    }
+
+    private static ArraySegment<byte> Linearize(in ReadOnlySequence<byte> value, out byte[]? lease)
+    {
+        if (value.IsEmpty)
+        {
+            lease = null;
+            return new([], 0, 0);
+        }
+
+        // SqlClient only supports single-segment chunks via byte[] with offset/count; this will
+        // almost never be an issue, but on those rare occasions: use a leased array to harmonize things
+        if (value.IsSingleSegment && MemoryMarshal.TryGetArray(value.First, out var segment))
+        {
+            lease = null;
+            return segment;
+        }
+        var length = checked((int)value.Length);
+        lease = ArrayPool<byte>.Shared.Rent(length);
+        value.CopyTo(lease);
+        return new(lease, 0, length);
+    }
+
+    private static void Recycle(byte[]? lease)
+    {
+        if (lease is not null)
+        {
+            ArrayPool<byte>.Shared.Return(lease);
+        }
     }
 
     // Called by multiple actions to see how long it's been since we last checked for expired items.

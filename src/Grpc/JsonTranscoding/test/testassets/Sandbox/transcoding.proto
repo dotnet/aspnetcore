@@ -82,6 +82,12 @@ service JsonTranscodingGreeter {
       post: "/v11/struct"
     };
   }
+  rpc ReturnEnum (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      get: "/v11/enum"
+      response_body: "enum"
+    };
+  }
 }
 
 service JsonTranscodingInvalidResponseBodyGreeter {
@@ -166,4 +172,13 @@ message HelloRequest {
 message HelloReply2 {
   string message = 1;
   repeated string values = 2;
+  EnumWithoutMessage enum = 3;
+}
+
+enum EnumWithoutMessage {
+  ENUM_WITHOUT_MESSAGE_UNSPECIFIED = 0;
+  ENUM_WITHOUT_MESSAGE_FOO = 1;
+  ENUM_WITHOUT_MESSAGE_BAR = 2;
+  ENUM_WITHOUT_MESSAGE_BAZ = 3;
+  ENUM_WITHOUT_MESSAGE_NEG = -1;  // Intentionally negative.
 }

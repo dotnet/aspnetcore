@@ -1,23 +1,37 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
+using System.Text;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RoutingFallbackTest : IClassFixture<MvcTestFixture<RoutingWebSite.StartupForFallback>>
+public class RoutingFallbackTest : LoggedTest
 {
-    public RoutingFallbackTest(MvcTestFixture<RoutingWebSite.StartupForFallback> fixture)
-    {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) => builder.UseStartup<RoutingWebSite.StartupForFallback>();
 
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<RoutingWebSite.StartupForFallback>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<RoutingWebSite.StartupForFallback> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task Fallback_CanGet404ForMissingFile()
@@ -102,7 +116,7 @@ public class RoutingFallbackTest : IClassFixture<MvcTestFixture<RoutingWebSite.S
     public async Task Fallback_CanFallbackToPage()
     {
         // Arrange
-        var url = "http://localhost/Foo";
+        var url = "http://localhost/FallbackToPage/Foo/Bar";
         var request = new HttpRequestMessage(HttpMethod.Get, url);
 
         // Act
@@ -112,5 +126,22 @@ public class RoutingFallbackTest : IClassFixture<MvcTestFixture<RoutingWebSite.S
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("Hello from fallback page: /FallbackPage", content);
+    }
+
+    [Fact]
+    public async Task Fallback_DoesNotFallbackToFile_WhenContentTypeDoesNotMatchConsumesAttribute()
+    {
+        // Arrange
+        var url = "http://localhost/ConsumesAttribute/Json";
+        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent("some plaintext", Encoding.UTF8, "text/plain"),
+        };
+
+        // Act
+        var response = await Client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
     }
 }

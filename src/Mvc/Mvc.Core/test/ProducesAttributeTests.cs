@@ -151,6 +151,29 @@ public class ProducesAttributeTests
         Assert.Empty(producesAttribute.ContentTypes);
     }
 
+    [Fact]
+    public void ProducesAttribute_SetsDescription()
+    {
+        // Arrange
+        var producesAttribute = new ProducesAttribute(typeof(Person))
+        {
+            Description = "Example"
+        };
+
+        // Act and Assert
+        Assert.Equal("Example", producesAttribute.Description);
+    }
+
+    [Fact]
+    public void ProducesAttribute_WithTypeOnly_DoesNotSetDescription()
+    {
+        // Arrange
+        var producesAttribute = new ProducesAttribute(typeof(Person));
+
+        // Act and Assert
+        Assert.Null(producesAttribute.Description);
+    }
+
     private static ResultExecutedContext CreateResultExecutedContext(ResultExecutingContext context)
     {
         return new ResultExecutedContext(context, context.Filters, context.Result, context.Controller);

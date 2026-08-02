@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -33,30 +34,12 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="options">The <see cref="AuthorizationOptions"/> used.</param>
     public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IAuthorizationHandlerProvider handlers, ILogger<DefaultAuthorizationService> logger, IAuthorizationHandlerContextFactory contextFactory, IAuthorizationEvaluator evaluator, IOptions<AuthorizationOptions> options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (policyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(policyProvider));
-        }
-        if (handlers == null)
-        {
-            throw new ArgumentNullException(nameof(handlers));
-        }
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
-        if (contextFactory == null)
-        {
-            throw new ArgumentNullException(nameof(contextFactory));
-        }
-        if (evaluator == null)
-        {
-            throw new ArgumentNullException(nameof(evaluator));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(options);
+        ArgumentNullThrowHelper.ThrowIfNull(policyProvider);
+        ArgumentNullThrowHelper.ThrowIfNull(handlers);
+        ArgumentNullThrowHelper.ThrowIfNull(logger);
+        ArgumentNullThrowHelper.ThrowIfNull(contextFactory);
+        ArgumentNullThrowHelper.ThrowIfNull(evaluator);
 
         _options = options.Value;
         _handlers = handlers;
@@ -73,15 +56,12 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="resource">The resource to evaluate the requirements against.</param>
     /// <param name="requirements">The requirements to evaluate.</param>
     /// <returns>
-    /// A flag indicating whether authorization has succeeded.
-    /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether authorization has succeeded.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
     {
-        if (requirements == null)
-        {
-            throw new ArgumentNullException(nameof(requirements));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(requirements);
 
         var authContext = _contextFactory.CreateContext(requirements, user, resource);
         var handlers = await _handlers.GetHandlersAsync(authContext).ConfigureAwait(false);
@@ -101,7 +81,7 @@ public class DefaultAuthorizationService : IAuthorizationService
         }
         else
         {
-            _logger.UserAuthorizationFailed(result.Failure!);
+            _logger.UserAuthorizationFailed(result.Failure);
         }
         return result;
     }
@@ -113,21 +93,19 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="resource">The resource the policy should be checked with.</param>
     /// <param name="policyName">The name of the policy to check against a specific context.</param>
     /// <returns>
-    /// A flag indicating whether authorization has succeeded.
-    /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether authorization has succeeded.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, string policyName)
     {
-        if (policyName == null)
-        {
-            throw new ArgumentNullException(nameof(policyName));
-        }
-
-        var policy = await _policyProvider.GetPolicyAsync(policyName).ConfigureAwait(false);
-        if (policy == null)
-        {
-            throw new InvalidOperationException($"No policy found: {policyName}.");
-        }
+        var policy = await GetPolicyAsync(policyName).ConfigureAwait(false);
         return await this.AuthorizeAsync(user, resource, policy).ConfigureAwait(false);
+    }
+
+    // For use in DefaultAuthorizationServiceImpl.
+    private protected async Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(policyName);
+        return await _policyProvider.GetPolicyAsync(policyName).ConfigureAwait(false) ?? throw new InvalidOperationException($"No policy found: {policyName}.");
     }
 }

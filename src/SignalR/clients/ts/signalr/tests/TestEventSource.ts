@@ -39,17 +39,24 @@ export class TestEventSource implements EventSource {
             TestEventSource.eventSourceSet.resolve();
         }
     }
+    addEventListener<K extends keyof EventSourceEventMap>(type: K, listener: (this: EventSource, ev: EventSourceEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): void;
+    addEventListener(type: string, listener: (this: EventSource, event // The .NET Foundation licenses this file to you under the MIT license.
+        : MessageEvent<any>) => any, options?: boolean | AddEventListenerOptions | undefined): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
+    addEventListener(type: unknown, listener: unknown, options?: unknown): void {
+        throw new Error("Method not implemented.");
+    }
+    removeEventListener<K extends keyof EventSourceEventMap>(type: K, listener: (this: EventSource, ev: EventSourceEventMap[K]) => any, options?: boolean | EventListenerOptions | undefined): void;
+    removeEventListener(type: string, listener: (this: EventSource, event: MessageEvent<any>) => any, options?: boolean | EventListenerOptions | undefined): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions | undefined): void;
+    removeEventListener(type: unknown, listener: unknown, options?: unknown): void {
+        throw new Error("Method not implemented.");
+    }
 
     public close(): void {
         this.closed = true;
     }
-    public addEventListener(type: string, listener?: EventListener | EventListenerObject | null, options?: boolean | AddEventListenerOptions): void {
-        throw new Error("Method not implemented.");
-    }
     public dispatchEvent(evt: Event): boolean {
-        throw new Error("Method not implemented.");
-    }
-    public removeEventListener(type: string, listener?: EventListener | EventListenerObject | null, options?: boolean | EventListenerOptions): void {
         throw new Error("Method not implemented.");
     }
 

@@ -4,10 +4,18 @@ param(
 )
 
 try {
-  . $PSScriptRoot\post-build-utils.ps1
+  $ErrorActionPreference = 'Stop'
+  Set-StrictMode -Version 2.0
+
+  # `tools.ps1` checks $ci to perform some actions. Since the post-build
+  # scripts don't necessarily execute in the same agent that run the
+  # build.ps1/sh script this variable isn't automatically set.
+  $ci = $true
+  $disableConfigureToolsetImport = $true
+  . $PSScriptRoot\..\tools.ps1
 
   if ($PromoteToChannels -eq "") {
-    Write-PipelineTaskError -Type 'warning' -Message "This build won't publish assets as it's not configured to any Maestro channel. If that wasn't intended use Darc to configure a default channel using add-default-channel for this branch or to promote it to a channel using add-build-to-channel. See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#assigning-an-individual-build-to-a-channel for more info."
+    Write-PipelineTaskError -Type 'warning' -Message "This build won't publish assets as it's not configured to any Maestro channel. If that wasn't intended use Darc to configure a default channel using add-default-channel for this branch or to promote it to a channel using add-build-to-channel. See https://github.com/dotnet/arcade/blob/main/Documentation/Darc.md#assigning-an-individual-build-to-a-channel for more info."
     ExitWithExitCode 0
   }
 

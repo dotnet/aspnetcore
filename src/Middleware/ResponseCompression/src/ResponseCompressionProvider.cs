@@ -29,25 +29,20 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
     /// <param name="options">The options for this instance.</param>
     public ResponseCompressionProvider(IServiceProvider services, IOptions<ResponseCompressionOptions> options)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(options);
 
         var responseCompressionOptions = options.Value;
 
         _providers = responseCompressionOptions.Providers.ToArray();
         if (_providers.Length == 0)
         {
-            // Use the factory so it can resolve IOptions<GzipCompressionProviderOptions> from DI.
+            // Use the factory so the default compression providers and their options can be resolved from DI.
             _providers = new ICompressionProvider[]
             {
-                    new CompressionProviderFactory(typeof(BrotliCompressionProvider)),
-                    new CompressionProviderFactory(typeof(GzipCompressionProvider)),
+                new CompressionProviderFactory(typeof(ZstandardCompressionProvider)),
+                new CompressionProviderFactory(typeof(BrotliCompressionProvider)),
+                new CompressionProviderFactory(typeof(GzipCompressionProvider)),
             };
         }
         for (var i = 0; i < _providers.Length; i++)

@@ -7,13 +7,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Internal;
 
 /// <summary>
 /// An <see cref="IDictionary{String, Object}"/> type to hold a small amount of items (10 or less in the common case).
 /// </summary>
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
 {
     // Threshold for size of array to use.
@@ -244,10 +246,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
     /// <inheritdoc />
     public void Clear()
     {
-        if (_dictionaryStorage != null)
-        {
-            _dictionaryStorage.Clear();
-        }
+        _dictionaryStorage?.Clear();
 
         if (_count == 0)
         {
@@ -292,10 +291,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
         KeyValuePair<TKey, TValue>[] array,
         int arrayIndex)
     {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
+        ArgumentNullException.ThrowIfNull(array);
 
         if ((uint)arrayIndex > array.Length || array.Length - arrayIndex < this.Count)
         {
@@ -548,8 +544,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
             Debug.Assert(_arrayStorage is not null);
             Debug.Assert(_count <= _arrayStorage.Length);
 
-            ref var r = ref MemoryMarshal.GetArrayDataReference(_arrayStorage);
-            return MemoryMarshal.CreateSpan(ref r, _count);
+            return _arrayStorage.AsSpan(0, _count);
         }
     }
 
@@ -561,9 +556,10 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
 
         if (_count > 0)
         {
-            for (var i = 0; i < ArrayStorageSpan.Length; ++i)
+            var localSpan = ArrayStorageSpan; // incur slice + bounds check once upfront instead of within loop
+            for (var i = 0; i < localSpan.Length; ++i)
             {
-                if (_comparer.Equals(ArrayStorageSpan[i].Key, key))
+                if (_comparer.Equals(localSpan[i].Key, key))
                 {
                     return i;
                 }
@@ -612,10 +608,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
         /// <param name="dictionary">A <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/>.</param>
         public Enumerator(AdaptiveCapacityDictionary<TKey, TValue> dictionary)
         {
-            if (dictionary == null)
-            {
-                throw new ArgumentNullException(nameof(dictionary));
-            }
+            ArgumentNullException.ThrowIfNull(dictionary);
 
             _dictionary = dictionary;
 

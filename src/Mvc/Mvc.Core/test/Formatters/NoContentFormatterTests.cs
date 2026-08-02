@@ -131,6 +131,26 @@ public class NoContentFormatterTests
     }
 
     [Fact]
+    public async Task WriteAsync_DoesNotHaveContentLengthSet()
+    {
+        // Arrange
+        var context = new OutputFormatterWriteContext(
+            new DefaultHttpContext(),
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(string),
+            @object: null);
+
+        var formatter = new HttpNoContentOutputFormatter();
+
+        // Act
+        await formatter.WriteAsync(context);
+
+        // Assert
+        // No Content responses shouldn't have a Content-Length.
+        Assert.Null(context.HttpContext.Response.ContentLength);
+    }
+
+    [Fact]
     public async Task WriteAsync_ContextStatusCodeSet_WritesSameStatusCode()
     {
         // Arrange

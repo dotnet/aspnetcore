@@ -123,7 +123,7 @@ public abstract class JsonOutputFormatterTestBase
         var outputFormatterContext = new OutputFormatterWriteContext(
             actionContext.HttpContext,
             new TestHttpResponseStreamWriterFactory().CreateWriter,
-            typeof(string),
+            typeof(object),
             content)
         {
             ContentType = new StringSegment(mediaType.ToString()),

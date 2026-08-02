@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -17,9 +12,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
-using Xunit;
+using Moq;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -77,6 +73,36 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             Assert.Equal("hello, world", await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
 
             Assert.False(responseBodyPersisted);
+        }
+    }
+
+    [Fact]
+    public async Task RequestBodyPipeReaderDoesZeroByteReads()
+    {
+        await using (var server = new TestServer(async context =>
+        {
+            var bufferLengths = new List<int>();
+
+            var mockStream = new Mock<Stream>();
+
+            mockStream.Setup(s => s.CanRead).Returns(true);
+            mockStream.Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>())).Returns<Memory<byte>, CancellationToken>((buffer, token) =>
+            {
+                bufferLengths.Add(buffer.Length);
+                return ValueTask.FromResult(0);
+            });
+
+            context.Request.Body = mockStream.Object;
+            var data = await context.Request.BodyReader.ReadAsync();
+
+            Assert.Equal(2, bufferLengths.Count);
+            Assert.Equal(0, bufferLengths[0]);
+            Assert.Equal(4096, bufferLengths[1]);
+
+            await context.Response.WriteAsync("hello, world");
+        }, new TestServiceContext(LoggerFactory)))
+        {
+            Assert.Equal("hello, world", await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
         }
     }
 
@@ -238,15 +264,15 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     "Done");
 
                 await Task.WhenAll(pathTcs.Task, rawTargetTcs.Task, queryTcs.Task).DefaultTimeout();
-                Assert.Equal(new PathString(expectedPath), pathTcs.Task.Result);
-                Assert.Equal(requestUrl, rawTargetTcs.Task.Result);
+                Assert.Equal(new PathString(expectedPath), await pathTcs.Task);
+                Assert.Equal(requestUrl, await rawTargetTcs.Task);
                 if (queryValue == null)
                 {
-                    Assert.False(queryTcs.Task.Result.ContainsKey("q"));
+                    Assert.False((await queryTcs.Task).ContainsKey("q"));
                 }
                 else
                 {
-                    Assert.Equal(queryValue, queryTcs.Task.Result["q"]);
+                    Assert.Equal(queryValue, (await queryTcs.Task)["q"]);
                 }
             }
         }
@@ -573,12 +599,17 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             var usedIds = new ConcurrentBag<string>();
 
             // requests on separate connections in parallel
-            Parallel.For(0, iterations, async i =>
+            var tasks = new List<Task>(iterations);
+            for (var i = 0; i < iterations; i++)
             {
-                var id = await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/");
-                Assert.DoesNotContain(id, usedIds.ToArray());
-                usedIds.Add(id);
-            });
+                tasks.Add(Task.Run(async () =>
+                {
+                    var id = await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/");
+                    Assert.DoesNotContain(id, usedIds.ToArray());
+                    usedIds.Add(id);
+                }));
+            }
+            await Task.WhenAll(tasks);
 
             // requests on same connection
             using (var connection = server.CreateConnection())
@@ -1021,7 +1052,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             readResult = await httpContext.Request.BodyReader.ReadAsync();
             Assert.Equal(5, readResult.Buffer.Length);
-
+            httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -1122,7 +1153,10 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task ContentLengthReadAsyncSingleBytesAtATime()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var tcs2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1191,6 +1225,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.UnexpectedEndOfRequestContent, m.Tags));
     }
 
     [Fact]
@@ -1592,7 +1628,6 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         var appEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var delayEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var serviceContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
         await using (var server = new TestServer(async context =>
         {
@@ -1628,8 +1663,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
 
                 await appEvent.Task.DefaultTimeout();
 
-                serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(5);
-                heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                serviceContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(5));
+                serviceContext.ConnectionManager.OnHeartbeat();
 
                 delayEvent.SetResult();
 
@@ -1856,7 +1891,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        Assert.Empty(LogMessages.Where(m => m.LogLevel >= LogLevel.Warning));
+        Assert.DoesNotContain(LogMessages, m => m.LogLevel >= LogLevel.Warning);
     }
 
     [Fact]
@@ -2218,6 +2253,36 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task TlsOverHttp()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using (var server = new TestServer(context =>
+        {
+            return Task.CompletedTask;
+        }, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Stream.WriteAsync(new byte[] { 0x16, 0x03, 0x01, 0x02, 0x00, 0x01, 0x00, 0xfc, 0x03, 0x03, 0x03, 0xca, 0xe0, 0xfd, 0x0a }).DefaultTimeout();
+
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 400 Bad Request",
+                    "Content-Length: 0",
+                    "Connection: close",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.TlsNotSupported, m.Tags));
+    }
+
+    [Fact]
     public async Task CustomRequestHeaderEncodingSelectorCanBeConfigured()
     {
         var testContext = new TestServiceContext(LoggerFactory);
@@ -2249,6 +2314,49 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                     $"Date: {testContext.DateHeaderValue}",
                     "",
                     "");
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SingleLineFeedIsSupportedAnywhere()
+    {
+        // Exercises all combinations of LF and CRLF as line separators.
+        // Uses a bit mask for all the possible combinations.
+
+        var lines = new[]
+        {
+                $"GET / HTTP/1.1",
+                "Content-Length: 0",
+                $"Host: localhost",
+                "",
+            };
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: false)))
+        {
+            var mask = Math.Pow(2, lines.Length) - 1;
+
+            for (var m = 0; m <= mask; m++)
+            {
+                using (var client = server.CreateConnection())
+                {
+                    var sb = new StringBuilder();
+
+                    for (var pos = 0; pos < lines.Length; pos++)
+                    {
+                        sb.Append(lines[pos]);
+                        var separator = (m & (1 << pos)) != 0 ? "\n" : "\r\n";
+                        sb.Append(separator);
+                    }
+
+                    var text = sb.ToString();
+                    var writer = new StreamWriter(client.Stream, Encoding.GetEncoding("iso-8859-1"));
+                    await writer.WriteAsync(text).ConfigureAwait(false);
+                    await writer.FlushAsync().ConfigureAwait(false);
+                    await client.Stream.FlushAsync().ConfigureAwait(false);
+
+                    await client.Receive("HTTP/1.1 200");
+                }
             }
         }
     }

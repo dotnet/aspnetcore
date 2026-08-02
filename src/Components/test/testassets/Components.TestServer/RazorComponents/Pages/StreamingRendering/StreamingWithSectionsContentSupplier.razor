@@ -1,0 +1,24 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+@attribute [StreamRendering]
+
+@*
+    For the test to be relevant, it's important that the streaming output comes from *this component* and not some descendant.
+    This is to ensure we correctly represent issue https://github.com/dotnet/aspnetcore/issues/50804
+    If it's a descendant that streams, the descendant simply lives within the SectionOutlet and encapsulates its own streaming,
+    and sections aren't really involved. But if the streaming output goes *directly* into SectionContent, then we're in a more
+    challenging situation because we need the SectionOutletContentRenderer to become streaming.
+*@
+
+<SectionContent SectionName="streaming-outlet">
+    <span id="streaming-message">@message</span>
+</SectionContent>
+
+@code {
+    string message = "Starting...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        message = "This is some streaming content";
+    }
+}

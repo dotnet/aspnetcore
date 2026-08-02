@@ -5,8 +5,10 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-internal sealed class ConnectionManager
+internal sealed class ConnectionManager : IHeartbeatHandler
 {
+    private readonly Action<KestrelConnection> _walkCallback;
+
     private long _lastConnectionId = long.MinValue;
 
     private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
@@ -21,6 +23,7 @@ internal sealed class ConnectionManager
     {
         UpgradedConnectionCount = upgradedConnections;
         _trace = trace;
+        _walkCallback = WalkCallback;
     }
 
     public long GetNewConnectionId() => Interlocked.Increment(ref _lastConnectionId);
@@ -29,6 +32,16 @@ internal sealed class ConnectionManager
     /// Connections that have been switched to a different protocol.
     /// </summary>
     public ResourceCounter UpgradedConnectionCount { get; }
+
+    public void OnHeartbeat()
+    {
+        Walk(_walkCallback);
+    }
+
+    private void WalkCallback(KestrelConnection connection)
+    {
+        connection.TickHeartbeat();
+    }
 
     public void AddConnection(long id, ConnectionReference connectionReference)
     {
@@ -66,7 +79,7 @@ internal sealed class ConnectionManager
                 // It's safe to modify the ConcurrentDictionary in the foreach.
                 // The connection reference has become unrooted because the application never completed.
                 _trace.ApplicationNeverCompleted(reference.ConnectionId);
-                reference.StopTrasnsportTracking();
+                reference.StopTransportTracking();
             }
 
             // If both conditions are false, the connection was removed during the heartbeat.

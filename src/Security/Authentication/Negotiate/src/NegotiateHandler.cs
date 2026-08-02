@@ -31,8 +31,17 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
     /// Creates a new <see cref="NegotiateHandler"/>
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="NegotiateHandler"/>
+    /// </summary>
+    /// <inheritdoc />
+    public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <summary>
@@ -117,10 +126,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
                 Logger.Reauthenticating();
                 _negotiateState.Dispose();
                 _negotiateState = null;
-                if (persistence != null)
-                {
-                    persistence.State = null;
-                }
+                persistence?.State = null;
             }
 
             _negotiateState ??= Options.StateFactory.CreateInstance();
@@ -195,7 +201,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
 
             if (_negotiateState.Protocol == "NTLM" && !Options.PersistNtlmCredentials)
             {
-                // NTLM was already put in the persitence cache on the prior request so we could complete the handshake.
+                // NTLM was already put in the persistence cache on the prior request so we could complete the handshake.
                 // Take it out if we don't want it to persist.
                 Debug.Assert(object.ReferenceEquals(persistence?.State, _negotiateState),
                     "NTLM is a two stage process, it must have already been in the cache for the handshake to succeed.");
@@ -272,7 +278,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
             }
             else if (errorContext.Result.Failure != null)
             {
-                throw new Exception("An error was returned from the AuthenticationFailed event.", errorContext.Result.Failure);
+                throw new AuthenticationFailureException("An error was returned from the AuthenticationFailed event.", errorContext.Result.Failure);
             }
         }
 

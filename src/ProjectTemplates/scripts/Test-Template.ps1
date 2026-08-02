@@ -21,7 +21,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         Pop-Location
     }
 
-    Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
+    Run-DotnetNew "install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
 
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory
     Push-Location $tmpDir
@@ -47,16 +47,18 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         foreach ($projPath in $proj) {
             $projContent = Get-Content -Path $projPath -Raw
             if ($isBlazorWasmHosted) {
-                $importPath = "$PSScriptRoot/../test/bin/Debug/net7.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net11.0/TestTemplates"
             }
             else {
-                $importPath = "$PSScriptRoot/../test/bin/Debug/net7.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net11.0/TestTemplates"
             }
             $projContent = $projContent -replace ('(?:<Project Sdk="Microsoft.NET.(?<SdkSuffix>Sdk\.\w+)">)', ('<Project Sdk="Microsoft.NET.${SdkSuffix}">
                 <Import Project="' + $importPath + '/Directory.Build.props" />
                 <Import Project="' + $importPath + '/Directory.Build.targets" />
                 <PropertyGroup>
                     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+                    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+                    <TrimmerSingleWarn>false</TrimmerSingleWarn>
                 </PropertyGroup>'))
             $projContent | Set-Content $projPath
         }
@@ -65,10 +67,19 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
             Push-Location Server
         }
         if ($templateArgs -match '-au') {
-            dotnet.exe ef migrations add mvc
+            dotnet.exe ef migrations add Initial
         }
-        dotnet.exe publish --configuration Release
-        Set-Location .\bin\Release\net7.0\publish
+
+        $publishOutputDir = ".\.publish";
+        dotnet.exe publish --configuration Release --output $publishOutputDir
+
+        if (Test-Path $publishOutputDir) {
+            Set-Location $publishOutputDir
+        }
+        else {
+            throw "Publish output directory could not be found";
+        }
+
         if ($isBlazorWasm -eq $false) {
             Invoke-Expression "./$templateName.exe"
         }

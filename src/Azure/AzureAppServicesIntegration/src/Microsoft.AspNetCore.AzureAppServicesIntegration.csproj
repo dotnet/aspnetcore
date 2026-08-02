@@ -11,7 +11,11 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.AzureAppServices" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Azure.AppServices.Tests" />
+  </ItemGroup>
 </Project>

@@ -102,9 +102,7 @@
             @if (!string.IsNullOrEmpty(Model.CompiledContent[i]))
             {
                 <div class="rawExceptionBlock">
-                    <div class="showRawExceptionContainer">
-                        <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show compilation source</button>
-                    </div>
+                    <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show compilation source</button>
                     <div id="@exceptionDetailId" class="rawExceptionDetails">
                         <pre class="rawExceptionStackTrace">@Model.CompiledContent[i]</pre>
                     </div>

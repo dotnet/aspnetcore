@@ -14,11 +14,20 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <Nullable>Enable</Nullable>
     <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+    <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
     <ProjectReference Include="..\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)\src\Shared\HashCode.cs" />
   </ItemGroup>
 
 </Project>

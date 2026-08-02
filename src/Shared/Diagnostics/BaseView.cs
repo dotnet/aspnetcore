@@ -118,7 +118,7 @@ internal abstract class BaseView
         Debug.Assert(AttributeValues != null);
         Debug.Assert(!string.IsNullOrEmpty(AttributeEnding));
 
-        var attributes = string.Join(" ", AttributeValues);
+        var attributes = string.Join(' ', AttributeValues);
         Output.Write(attributes);
         AttributeValues = null;
 
@@ -141,25 +141,10 @@ internal abstract class BaseView
         string trailer,
         params AttributeValue[] values)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (leader == null)
-        {
-            throw new ArgumentNullException(nameof(leader));
-        }
-
-        if (trailer == null)
-        {
-            throw new ArgumentNullException(nameof(trailer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(leader);
+        ArgumentNullException.ThrowIfNull(trailer);
 
         WriteLiteralTo(writer, leader);
         foreach (var value in values)

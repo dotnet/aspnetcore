@@ -1,6 +1,4 @@
 <Project>
-  <!-- Version of this SDK is set in global.json -->
-  <Sdk Name="Yarn.MSBuild" />
 
   <!-- Make sure the settings files get copied to the test output folder. -->
   <ItemGroup>
@@ -12,17 +10,6 @@
     </Content>
   </ItemGroup>
 
-  <!-- Ensuring that everything is ready before build -->
-  <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
-    <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-
-    <Message Condition="'$(EnforceE2ETestPrerequisites)' != 'true'"
-      Importance="High"
-      Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result." />
-
-    <Yarn Command="install --mutex network --frozen-lockfile" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"/>
-  </Target>
-
   <Target
     Name="WarnSeleniumNotSupported"
     BeforeTargets="Build"
@@ -32,31 +19,12 @@
 
   <!-- Running prerequisites -->
 
-  <Target Name="EnsurePrerequisites" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" BeforeTargets="EnsureNodeJSRestored">
-    <PropertyGroup>
-      <_PackageJson>$(MSBuildProjectDirectory)\package.json</_PackageJson>
-    </PropertyGroup>
-
+  <Target Name="EnsurePrerequisites" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" BeforeTargets="Build">
     <!-- JAVA -->
     <!-- https://github.com/dotnet/aspnetcore-internal/issues/2555 -->
     <Message Importance="High" Text="Ensuring JAVA is available" />
     <Exec Command="java -version" />
     <Message Importance="High" Text="JAVA is available on the PATH" />
-
-    <!-- package.json -->
-    <Error Condition="!Exists('$(_PackageJson)')" Text="Can't find $(_PackageJson)" />
-    <ReadLinesFromFile File="$(_PackageJson)">
-      <Output TaskParameter="Lines" ItemName="_PackageJsonLines" />
-    </ReadLinesFromFile>
-
-    <PropertyGroup>
-      <_PackageJsonLinesContent>@(_PackageJsonLines)</_PackageJsonLinesContent>
-      <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^7.1.0&quot;</_PackageJsonSeleniumPackage>
-    </PropertyGroup>
-
-    <Error
-      Condition="!$(_PackageJsonLinesContent.Contains ('$(_PackageJsonSeleniumPackage)'))"
-      Text="Can't find dependency $(_PackageJsonSeleniumPackage) in '$(_PackageJson)'" />
   </Target>
 
   <!-- Resolve content roots at build time -->
@@ -101,14 +69,8 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.Selenium.Supported</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.Selenium.Supported</_Parameter1>
         <_Parameter2>$(_SeleniumE2ETestsSupportedAttributeValue)</_Parameter2>
-      </AssemblyAttribute>
-
-      <AssemblyAttribute
-        Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.SeleniumConfigPath</_Parameter1>
-        <_Parameter2>$(SeleniumConfigPath)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
@@ -118,7 +80,7 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.Selenium.ProcessTracking</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.Selenium.ProcessTracking</_Parameter1>
         <_Parameter2>$(SeleniumProcessTrackingFolder)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
@@ -126,7 +88,7 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.SauceConnect.ProcessTracking</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.SauceConnect.ProcessTracking</_Parameter1>
         <_Parameter2>$(SauceConnectProcessTrackingFolder)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>

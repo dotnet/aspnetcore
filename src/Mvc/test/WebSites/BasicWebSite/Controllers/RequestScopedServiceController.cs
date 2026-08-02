@@ -17,7 +17,7 @@ public class RequestScopedServiceController : Controller
     }
 
     [HttpGet]
-    [TypeFilter(typeof(RequestScopedFilter))]
+    [TypeFilter<RequestScopedFilter>]
     public void FromFilter()
     {
     }
@@ -44,5 +44,14 @@ public class RequestScopedServiceController : Controller
     public string FromActionArgument([FromServices] RequestIdService requestIdService)
     {
         return requestIdService.RequestId;
+    }
+
+    [FromServices]
+    public RequestIdService RequestIdService { get; set; }
+
+    [HttpGet]
+    public string FromProperty()
+    {
+        return RequestIdService.RequestId;
     }
 }

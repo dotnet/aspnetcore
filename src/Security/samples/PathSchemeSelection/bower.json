@@ -3,8 +3,8 @@
   "private": true,
   "dependencies": {
     "bootstrap": "3.4.0",
-    "jquery": "3.5.1",
-    "jquery-validation": "1.14.0",
-    "jquery-validation-unobtrusive": "3.2.6"
+    "jquery": "3.6.0",
+    "jquery-validation": "1.19.5",
+    "jquery-validation-unobtrusive": "4.0.0"
   }
 }

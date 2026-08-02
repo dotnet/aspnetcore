@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace HelixTestRunner;
@@ -12,7 +13,9 @@ class Program
     {
         try
         {
-            var runner = new TestRunner(HelixTestRunnerOptions.Parse(args));
+            var options = HelixTestRunnerOptions.Parse(args);
+            var runner = new TestRunner(options);
+            ProcessUtil.PrintMessage($"Configured {runner.Options.Targets.Length} test assembly(ies).");
 
             var keepGoing = runner.SetupEnvironment();
             if (keepGoing)
@@ -28,7 +31,7 @@ class Program
                 }
                 else
                 {
-                    Console.WriteLine("Playwright install skipped.");
+                    ProcessUtil.PrintMessage("Playwright install skipped.");
                 }
             }
 
@@ -38,23 +41,29 @@ class Program
             {
                 if (!await runner.CheckTestDiscoveryAsync())
                 {
-                    Console.WriteLine("RunTest stopping due to test discovery failure.");
+                    ProcessUtil.PrintMessage("RunTest stopping due to test discovery failure.");
                     Environment.Exit(1);
                     return;
                 }
 
+                ProcessUtil.PrintMessage("Start running tests");
                 var exitCode = await runner.RunTestsAsync();
+                ProcessUtil.PrintMessage("Running tests complete");
+
+                ProcessUtil.PrintMessage("Uploading test results");
                 runner.UploadResults();
-                Console.WriteLine($"Completed Helix job with exit code '{exitCode}'");
+                ProcessUtil.PrintMessage("Test results uploaded");
+
+                ProcessUtil.PrintMessage($"Completed Helix job with exit code '{exitCode}'");
                 Environment.Exit(exitCode);
             }
 
-            Console.WriteLine("Tests were not run due to previous failures. Exit code=1");
+            ProcessUtil.PrintMessage("Tests were not run due to previous failures. Exit code=1");
             Environment.Exit(1);
         }
         catch (Exception e)
         {
-            Console.WriteLine($"HelixTestRunner uncaught exception: {e.ToString()}");
+            ProcessUtil.PrintMessage($"HelixTestRunner uncaught exception: {e}");
             Environment.Exit(1);
         }
     }

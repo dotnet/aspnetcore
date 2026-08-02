@@ -46,7 +46,7 @@ internal sealed class StackTraceHelper
             var method = frame.GetMethod();
 
             // MethodInfo should always be available for methods in the stack, but double check for null here.
-            // Apps with trimming enabled may remove some metdata. Better to be safe than sorry.
+            // Apps with trimming enabled may remove some metadata. Better to be safe than sorry.
             if (method == null)
             {
                 continue;

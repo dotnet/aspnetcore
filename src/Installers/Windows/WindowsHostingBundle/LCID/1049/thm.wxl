@@ -1,0 +1,87 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="Установка [WixBundleName]"/>
+  
+  <String Id="Title" Value="[BundleNameShort]"/>
+  
+  <String Id="SubTitle" Value="[BundleNameSub]"/>
+  
+  <String Id="InstallVersion" Value="Версия [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="Выполнить отмену?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Предыдущая версия"/>
+  <String Id="HelpHeader" Value="Справка по установке"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] — устанавливает, восстанавливает, удаляет или создает полную локальную копию пакета в каталоге. По умолчанию выполняется установка.
+
+/passive | /quiet — выводит минимальный пользовательский интерфейс без запросов или вообще не выводит пользовательский интерфейс и запросы. По умолчанию отображаются пользовательский интерфейс и все запросы.
+
+/norestart — подавляет все попытки перезапуска. По умолчанию пользовательский интерфейс запрашивает подтверждение перед перезапуском.
+
+/log &lt;LOG_FILE&gt; — вывод журналов в определенный файл. По умолчанию файл журнала создается в папке %TEMP%."/>
+  <String Id="HelpCloseButton" Value="&amp;Закрыть"/>
+  <String Id="InstallAcceptCheckbox" Value="Я &amp;принимаю условия лицензии"/>
+  <String Id="InstallInstallButton" Value="&amp;Установить"/>
+  <String Id="InstallCloseButton" Value="&amp;Закрыть"/>
+  <String Id="ProgressHeader" Value="Ход установки"/>
+  <String Id="ProgressLabel" Value="Выполняется обработка:"/>
+  <String Id="OverallProgressPackageText" Value="Выполняется инициализация…"/>
+  <String Id="ProgressCancelButton" Value="&amp;Отмена"/>
+  <String Id="ModifyHeader" Value="Изменение установки"/>
+  <String Id="ModifyRepairButton" Value="&amp;Исправить"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Удалить"/>
+  <String Id="ModifyCloseButton" Value="&amp;Закрыть"/>
+  <String Id="SuccessCacheHeader" Value="Кэширование успешно завершено"/>
+  <String Id="SuccessModifyHeader" Value="Изменение успешно завершено"/>
+  <String Id="SuccessRepairHeader" Value="Исправление успешно завершено"/>
+  <String Id="SuccessUninstallHeader" Value="Удаление успешно завершено"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Удаление успешно завершено"/>
+  <String Id="SuccessInstallHeader" Value="Установка успешно завершена"/>
+  <String Id="SuccessHeader" Value="Настройка успешно завершена"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Запустить"/>
+  <String Id="SuccessLayoutHeader" Value="Компоновка успешно завершена"/>
+  <String Id="SuccessRestartText" Value="Чтобы использовать установленное программное обеспечение, необходимо перезагрузить компьютер."/>
+  <String Id="SuccessUninstallRestartText" Value="Чтобы завершить удаление программного обеспечения, перезагрузите компьютер."/>
+  <String Id="SuccessRestartButton" Value="&amp;Перезагрузить"/>
+  <String Id="SuccessCloseButton" Value="&amp;Закрыть"/>
+  <String Id="FailureHeader" Value="Не удалось выполнить установку"/>
+  <String Id="FailureCacheHeader" Value="Сбой кэша"/>
+  <String Id="FailureLayoutHeader" Value="Сбой макета"/>
+  <String Id="FailureModifyHeader" Value="Сбой изменения"/>
+  <String Id="FailureInstallHeader" Value="Не удалось выполнить установку"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Не удалось выполнить удаление"/>
+  <String Id="FailureUninstallHeader" Value="Не удалось выполнить удаление"/>
+  <String Id="FailureRepairHeader" Value="Не удалось выполнить исправление"/>
+  <String Id="FailureHyperlinkLogText" Value="Возникли ошибки, вызвавшие сбой настройки. Устраните проблемы и повторите попытку настройки. Дополнительные сведения см. в &lt;a href=&quot;#&quot;&gt;файле журнала&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="Необходимо перезагрузить компьютер перед тем, как выполнять откат программного обеспечения."/>
+  <String Id="FailureRestartButton" Value="&amp;Перезагрузить"/>
+  <String Id="FailureCloseButton" Value="&amp;Закрыть"/>
+  <String Id="FilesInUseHeader" Value="Используемые файлы"/>
+  <String Id="FilesInUseLabel" Value="Следующие приложения используют файлы, которые нуждаются в обновлении:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Закрыть приложения и попробовать перезапустить их."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="&amp;Закрыть приложения."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Не закрывать приложения. Потребуется перезагрузка."/>
+  <String Id="FilesInUseOkButton" Value="&amp;ОК"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Отмена"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Повторить"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Пропустить"/>
+  <String Id="FilesInUseExitButton" Value="Вы&amp;ход"/>
+  <String Id="FilesInUseTitle" Value="Используемые файлы"/>
+  <String Id="LicenseAssent" Value="Нажимая кнопку &quot;Установить&quot;, вы принимаете следующие условия."/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Заявление о конфиденциальности&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Сведения о лицензировании для .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Сбор данных телеметрии и возможность отказа&lt;/A&gt;"/>
+
+  <!-- Custom UI strings -->
+  
+  <String Id="Welcome" Value="Вас приветствует мастер установки [WixBundleName]."/>
+  
+  <String Id="InstallResetIIS" Value="Перезапустите службы IIS после завершения установки. Дополнительные сведения см. &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;здесь&lt;/a&gt;."/>
+  
+  <String Id="InstallNoIIS" Value="Службы IIS не включены на этом компьютере. Если вы планируете запускать приложения ASP.NET Core с IIS, перед запуском этого установщика необходимо установить службы IIS. Дополнительные сведения см. &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;здесь&lt;/a&gt;."/>
+  
+  <String Id="EulaPrivacy" Value="&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;Условия лицензии&lt;/a&gt; и &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;заявление о конфиденциальности&lt;/a&gt; [WixBundleName]."/>
+  
+  <String Id="ModifyResetIIS" Value="Перезапустите службы IIS после завершения установки. Дополнительные сведения см. &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;здесь&lt;/a&gt;."/>
+  
+  <String Id="ModifyNoIIS" Value="Службы IIS не включены на этом компьютере. Если вы планируете запускать приложения ASP.NET Core с IIS, перед запуском этого установщика необходимо установить службы IIS. Дополнительные сведения см. &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;здесь&lt;/a&gt;."/>
+</WixLocalization>

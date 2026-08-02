@@ -57,7 +57,7 @@ public class DictionaryTest
         patchDocument.ApplyTo(model);
 
         // Assert
-        Assert.Equal(1, model.DictionaryOfStringToInteger.Count);
+        Assert.Single(model.DictionaryOfStringToInteger);
         Assert.Equal(1, model.DictionaryOfStringToInteger["one"]);
     }
 
@@ -75,7 +75,7 @@ public class DictionaryTest
         patchDocument.ApplyTo(model);
 
         // Assert
-        Assert.Equal(1, model.DictionaryOfStringToInteger.Count);
+        Assert.Single(model.DictionaryOfStringToInteger);
         Assert.Equal(1, model.DictionaryOfStringToInteger["two"]);
     }
 

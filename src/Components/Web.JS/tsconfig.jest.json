@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "module": "es2015",
+    "target": "es2019",
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "inlineSources": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "noEmitOnError": true,
+    "skipLibCheck": true,
+    "stripInternal": true,
+    "strict": true,
+    "outDir": "./dist",
+    "types": [
+      "jest",
+      "jasmine",
+      "node"
+    ],
+    "lib": [
+      "es2019",
+      "dom"
+    ],
+    "baseUrl": "."
+  },
+  "include": [
+    "./test/**/*"
+  ],
+}

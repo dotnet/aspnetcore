@@ -1,25 +1,32 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.Extensions;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
 internal static partial class HttpResultsHelper
 {
-    private const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
-    public static Task WriteResultAsJsonAsync<T>(
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+        Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+    public static Task WriteResultAsJsonAsync<TValue>(
         HttpContext httpContext,
         ILogger logger,
-        T? value,
+        TValue? value,
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
@@ -28,12 +35,35 @@ internal static partial class HttpResultsHelper
             return Task.CompletedTask;
         }
 
-        Log.WritingResultAsJson(logger, typeof(T).Name);
+        if (value is ProblemDetails)
+        {
+            contentType = MediaTypeNames.Application.ProblemJson;
+        }
 
-        return httpContext.Response.WriteAsJsonAsync(
-            value,
-            options: jsonSerializerOptions,
-            contentType: contentType);
+        jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
+        var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
+
+        Type? runtimeType = value.GetType();
+        if (jsonTypeInfo.ShouldUseWith(runtimeType))
+        {
+            Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
+            return httpContext.Response.WriteAsJsonAsync(
+                value,
+                jsonTypeInfo,
+                contentType: contentType);
+        }
+
+        Log.WritingResultAsJson(logger, runtimeType.Name);
+        // Since we don't know the type's polymorphic characteristics
+        // our best option is to serialize the value as 'object'.
+        // call WriteAsJsonAsync<object>() rather than the declared type
+        // and avoid source generators issues.
+        // https://github.com/dotnet/aspnetcore/issues/43894
+        // https://learn.microsoft.com/dotnet/standard/serialization/system-text-json-polymorphism
+        return httpContext.Response.WriteAsJsonAsync<object>(
+           value,
+           jsonSerializerOptions,
+           contentType: contentType);
     }
 
     public static Task WriteResultAsContentAsync(
@@ -46,7 +76,7 @@ internal static partial class HttpResultsHelper
         ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
             contentType,
             response.ContentType,
-            (DefaultContentType, DefaultEncoding),
+            (ContentTypeConstants.DefaultContentType, DefaultEncoding),
             ResponseContentTypeHelper.GetEncoding,
             out var resolvedContentType,
             out var resolvedContentTypeEncoding);
@@ -119,34 +149,14 @@ internal static partial class HttpResultsHelper
     {
         if (value is ProblemDetails problemDetails)
         {
-            ApplyProblemDetailsDefaults(problemDetails, statusCode);
+            ProblemDetailsDefaults.Apply(problemDetails, statusCode);
         }
     }
 
-    public static void ApplyProblemDetailsDefaults(ProblemDetails problemDetails, int? statusCode)
+    private static JsonOptions ResolveJsonOptions(HttpContext httpContext)
     {
-        // We allow StatusCode to be specified either on ProblemDetails or on the ObjectResult and use it to configure the other.
-        // This lets users write <c>return Conflict(new Problem("some description"))</c>
-        // or <c>return Problem("some-problem", 422)</c> and have the response have consistent fields.
-        if (problemDetails.Status is null)
-        {
-            if (statusCode is not null)
-            {
-                problemDetails.Status = statusCode;
-            }
-            else
-            {
-                problemDetails.Status = problemDetails is HttpValidationProblemDetails ?
-                    StatusCodes.Status400BadRequest :
-                    StatusCodes.Status500InternalServerError;
-            }
-        }
-
-        if (ProblemDetailsDefaults.Defaults.TryGetValue(problemDetails.Status.Value, out var defaults))
-        {
-            problemDetails.Title ??= defaults.Title;
-            problemDetails.Type ??= defaults.Type;
-        }
+        // Attempt to resolve options from DI then fallback to default options
+        return httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
     }
 
     internal static partial class Log

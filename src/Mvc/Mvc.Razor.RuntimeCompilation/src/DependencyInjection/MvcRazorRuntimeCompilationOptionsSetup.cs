@@ -6,7 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
 internal sealed class MvcRazorRuntimeCompilationOptionsSetup : IConfigureOptions<MvcRazorRuntimeCompilationOptions>
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
 {
     private readonly IWebHostEnvironment _hostingEnvironment;
 
@@ -15,12 +17,11 @@ internal sealed class MvcRazorRuntimeCompilationOptionsSetup : IConfigureOptions
         _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
     }
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
     public void Configure(MvcRazorRuntimeCompilationOptions options)
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.FileProviders.Add(_hostingEnvironment.ContentRootFileProvider);
     }

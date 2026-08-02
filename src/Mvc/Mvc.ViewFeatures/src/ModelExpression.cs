@@ -21,15 +21,8 @@ public sealed class ModelExpression
     /// </param>
     public ModelExpression(string name, ModelExplorer modelExplorer)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (modelExplorer == null)
-        {
-            throw new ArgumentNullException(nameof(modelExplorer));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(modelExplorer);
 
         Name = name;
         ModelExplorer = modelExplorer;

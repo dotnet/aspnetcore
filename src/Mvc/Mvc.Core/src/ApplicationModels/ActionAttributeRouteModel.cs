@@ -31,7 +31,7 @@ internal static class ActionAttributeRouteModel
             //
             // This is fragile wrt application model customizing the data - but no one has
             // run into an issue with this and its pretty esoteric.
-            additionalSelector = new SelectorModel(actionModel.Controller.Selectors.First());
+            additionalSelector = new SelectorModel(actionModel.Controller.Selectors[0]);
             additionalSelector.AttributeRouteModel = null;
 
             for (var i = additionalSelector.ActionConstraints.Count - 1; i >= 0; i--)
@@ -130,7 +130,7 @@ internal static class ActionAttributeRouteModel
     {
         if (controllerMetadata != null)
         {
-            // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
+            // It is critical to get the order in which metadata appears in endpoint metadata correct. More significant metadata
             // must appear later in the sequence. In this case, the values in `controllerMetadata` should have their order
             // preserved, but appear earlier than the entries in `selector.EndpointMetadata`.
             for (var i = 0; i < controllerMetadata.Count; i++)

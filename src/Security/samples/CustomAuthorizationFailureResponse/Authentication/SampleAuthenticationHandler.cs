@@ -3,9 +3,7 @@
 
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace CustomAuthorizationFailureResponse.Authentication;
@@ -14,7 +12,7 @@ public class SampleAuthenticationHandler : AuthenticationHandler<AuthenticationS
 {
     private readonly ClaimsPrincipal _id;
 
-    public SampleAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
+    public SampleAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
     {
         _id = new ClaimsPrincipal(new ClaimsIdentity("Api"));
     }

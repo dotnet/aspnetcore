@@ -1,0 +1,97 @@
+﻿@page "/redirect"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>Redirections</h1>
+
+<p>
+    If streaming and enhanced nav are both off, Blazor has no special involvement in the GET/POST,
+    so normal browser/HTTP behavior applies. So, we only need to test cases where either or both
+    of them are on.
+</p>
+
+<h2>Streaming on, enhanced nav off cases</h2>
+<ul data-enhance-nav="false">
+    <li><a href="redirect/streaming/get">Streaming GET with internal redirection</a></li>
+    <li><a href="redirect/streaming/get?external=true">Streaming GET with external redirection</a></li>
+    <li>
+        <form id="form-streaming-internal" @formname="myform" method="post" action="redirect/streaming/post">
+            <AntiforgeryToken />
+            <button>Streaming POST with internal redirection</button>
+        </form>
+    </li>
+    <li>
+        <form id="form-streaming-external" @formname="myform" method="post" action="redirect/streaming/post?external=true">
+            <AntiforgeryToken />
+            <button>Streaming POST with external redirection</button>
+        </form>
+    </li>
+</ul>
+
+<h2>Streaming off, enhanced nav on cases</h2>
+<ul>
+    <li><a href="redirect/get">Enhanced GET with internal redirection</a></li>
+    <li><a href="redirect/get?external=true">Enhanced GET with external redirection</a></li>
+    <li>
+        <form id="form-enhanced-internal" @formname="myform" method="post" action="redirect/post" data-enhance>
+            <AntiforgeryToken />
+            <button>Enhanced POST with internal redirection</button>
+        </form>
+    </li>
+    <li>
+        <form id="form-enhanced-external" @formname="myform" method="post" action="redirect/post?external=true" data-enhance>
+            <AntiforgeryToken />
+            <button>Enhanced POST with external redirection</button>
+        </form>
+    </li>
+</ul>
+
+<h2>Streaming on, enhanced nav on cases</h2>
+<ul>
+    <li><a href="redirect/streaming/get">Streaming enhanced GET with internal redirection</a></li>
+    <li><a href="redirect/streaming/get?external=true">Streaming enhanced GET with external redirection</a></li>
+    <li>
+        <form id="form-streaming-enhanced-internal" @formname="myform" method="post" action="redirect/streaming/post" data-enhance>
+            <AntiforgeryToken />
+            <button>Streaming enhanced POST with internal redirection</button>
+        </form>
+    </li>
+    <li>
+        <form id="form-streaming-enhanced-external" @formname="myform" method="post" action="redirect/streaming/post?external=true" data-enhance>
+            <AntiforgeryToken />
+            <button>Streaming enhanced POST with external redirection</button>
+        </form>
+    </li>
+</ul>
+
+<h2>Enhanced nav to non-Blazor endpoint cases</h2>
+<p>
+    In these cases we can't rely on the server doing anything special to participate in the process.
+    The server is just going to return a regular 302, not any special signal. If the target URL is internal,
+    the "fetch" request will follow it automatically so it just works. If the target URL is external, the
+    "fetch" gets an opaque response, and so if it's a GET we'll follow by retrying, or if it's POST
+    we have to just fail because we can't safely retry.
+</p>
+<ul>
+    <li><a href="redirect/nonblazor/get">Enhanced GET to non-Blazor endpoint with internal redirection</a></li>
+    <li><a href="redirect/nonblazor/get?external=true">Enhanced GET to non-Blazor endpoint with external redirection</a></li>
+    <li>
+        <!-- We don't recommend enhanced posts to non-Blazor endpoints, but people might still do it -->
+        <form id="form-nonblazor-enhanced-internal" @formname="myform" method="post" action="redirect/nonblazor/post" data-enhance>
+            <AntiforgeryToken />
+            <button>Enhanced POST to non-Blazor endpoint with internal redirection</button>
+        </form>
+    </li>
+    <li>
+        <!-- We don't recommend enhanced posts to non-Blazor endpoints, but people might still do it -->
+        <form id="form-nonblazor-enhanced-external" @formname="myform" method="post" action="redirect/nonblazor/post?external=true" data-enhance>
+            <AntiforgeryToken />
+            <button>Enhanced POST to non-Blazor endpoint with external redirection</button>
+            <span>Note: this case is not supported and is shown here only for manual testing. No E2E test attempts this case.</span>
+        </form>
+    </li>
+</ul>
+
+<h2>Redirect inside error boundary</h2>
+<ul>
+    <li><a href="redirect/error-boundary/get">Enhanced GET with redirect inside error boundary</a></li>
+</ul>

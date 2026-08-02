@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.Cng;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
@@ -33,10 +34,7 @@ public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public DpapiNGXmlEncryptor(string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags, ILoggerFactory loggerFactory)
     {
-        if (protectionDescriptorRule == null)
-        {
-            throw new ArgumentNullException(nameof(protectionDescriptorRule));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(protectionDescriptorRule);
 
         CryptoUtil.AssertPlatformIsWindows8OrLater();
 
@@ -58,10 +56,7 @@ public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintextElement);
 
         var protectionDescriptorRuleString = _protectionDescriptorHandle.GetProtectionDescriptorRuleString();
         _logger.EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule(protectionDescriptorRuleString);
@@ -97,7 +92,7 @@ public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
     }
 
     /// <summary>
-    /// Creates a rule string tied to the current Windows user and which is transferrable
+    /// Creates a rule string tied to the current Windows user and which is transferable
     /// across machines (backed up in AD).
     /// </summary>
     internal static string GetDefaultProtectionDescriptorString()

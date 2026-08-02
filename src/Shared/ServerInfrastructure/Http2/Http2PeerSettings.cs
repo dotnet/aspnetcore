@@ -5,6 +5,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Tracks HTTP/2 settings for a peer (client or server).
+/// </summary>
+/// <remarks>
+/// There are expected to be exactly two instances, one for the client and one for the server.
+/// Both are owned by the <see cref="Http2Connection"/>.
+/// </remarks>
+/// <seealso href="https://datatracker.ietf.org/doc/html/rfc9113#name-defined-settings"/>
 internal sealed class Http2PeerSettings
 {
     // Note these are protocol defaults, not Kestrel defaults.
@@ -90,9 +98,9 @@ internal sealed class Http2PeerSettings
     // Gets the settings that are different from the protocol defaults (as opposed to the server defaults).
     internal List<Http2PeerSetting> GetNonProtocolDefaults()
     {
-        // By default, there is only one setting that is sent from server to client.
+        // By default, there are only two settings that are sent from server to client.
         // Set capacity to that value.
-        var list = new List<Http2PeerSetting>(1);
+        var list = new List<Http2PeerSetting>(2);
 
         if (HeaderTableSize != DefaultHeaderTableSize)
         {
@@ -123,6 +131,8 @@ internal sealed class Http2PeerSettings
         {
             list.Add(new Http2PeerSetting(Http2SettingsParameter.SETTINGS_MAX_HEADER_LIST_SIZE, MaxHeaderListSize));
         }
+
+        list.Add(new Http2PeerSetting(Http2SettingsParameter.SETTINGS_ENABLE_CONNECT_PROTOCOL, 1u));
 
         return list;
     }

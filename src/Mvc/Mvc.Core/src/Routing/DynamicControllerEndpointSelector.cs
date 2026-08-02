@@ -13,10 +13,7 @@ internal sealed class DynamicControllerEndpointSelector : IDisposable
 
     public DynamicControllerEndpointSelector(EndpointDataSource dataSource)
     {
-        if (dataSource == null)
-        {
-            throw new ArgumentNullException(nameof(dataSource));
-        }
+        ArgumentNullException.ThrowIfNull(dataSource);
 
         _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
     }
@@ -25,10 +22,7 @@ internal sealed class DynamicControllerEndpointSelector : IDisposable
 
     public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         var table = Table;
         var matches = table.Select(values);

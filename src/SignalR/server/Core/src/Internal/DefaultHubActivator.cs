@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal sealed class DefaultHubActivator<THub> : IHubActivator<THub> where THub : Hub
+internal sealed class DefaultHubActivator<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : IHubActivator<THub> where THub : Hub
 {
     // Object factory for THub instances
     private static readonly Lazy<ObjectFactory> _objectFactory = new Lazy<ObjectFactory>(() => ActivatorUtilities.CreateFactory(typeof(THub), Type.EmptyTypes));
@@ -35,10 +36,7 @@ internal sealed class DefaultHubActivator<THub> : IHubActivator<THub> where THub
 
     public void Release(THub hub)
     {
-        if (hub == null)
-        {
-            throw new ArgumentNullException(nameof(hub));
-        }
+        ArgumentNullException.ThrowIfNull(hub);
 
         Debug.Assert(_created.HasValue, "hubs must be released with the hub activator they were created");
 

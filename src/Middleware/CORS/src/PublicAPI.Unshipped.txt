@@ -1,7 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.Cors.Infrastructure.CorsService.CorsService(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-*REMOVED*~Microsoft.AspNetCore.Cors.Infrastructure.CorsService.CorsService(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-Microsoft.AspNetCore.Cors.Infrastructure.CorsService.CorsService(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-*REMOVED*~Microsoft.AspNetCore.Cors.Infrastructure.DefaultCorsPolicyProvider.DefaultCorsPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions!>! options) -> void
-*REMOVED*~Microsoft.AspNetCore.Cors.Infrastructure.DefaultCorsPolicyProvider.DefaultCorsPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions> options) -> void
-Microsoft.AspNetCore.Cors.Infrastructure.DefaultCorsPolicyProvider.DefaultCorsPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions!>! options) -> void

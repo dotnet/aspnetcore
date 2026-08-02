@@ -73,26 +73,11 @@ public class IISMiddleware
         IAuthenticationSchemeProvider authentication,
         IHostApplicationLifetime applicationLifetime)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (applicationLifetime == null)
-        {
-            throw new ArgumentNullException(nameof(applicationLifetime));
-        }
-        if (string.IsNullOrEmpty(pairingToken))
-        {
-            throw new ArgumentException("Missing or empty pairing token.");
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(applicationLifetime);
+        ArgumentException.ThrowIfNullOrEmpty(pairingToken);
 
         _next = next;
         _options = options.Value;
@@ -128,7 +113,7 @@ public class IISMiddleware
             string.Equals(ANCMShutdownEventHeaderValue, httpContext.Request.Headers[MSAspNetCoreEvent], StringComparison.OrdinalIgnoreCase))
         {
             // Execute shutdown task on background thread without waiting for completion
-            var shutdownTask = Task.Run(() => _applicationLifetime.StopApplication());
+            var shutdownTask = Task.Run(_applicationLifetime.StopApplication);
             httpContext.Response.StatusCode = StatusCodes.Status202Accepted;
             return Task.CompletedTask;
         }

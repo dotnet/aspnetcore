@@ -33,10 +33,7 @@ internal sealed class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedF
     /// <inheritdoc />
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         var filter = serviceProvider.GetRequiredService<CorsAuthorizationFilter>();
         filter.PolicyName = _policyName;

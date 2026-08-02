@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Skip test if running on CI
@@ -34,6 +34,6 @@ public class SkipNonHelixAttribute : Attribute, ITestCondition
         }
     }
 
-    public static bool OnHelix() => !string.IsNullOrEmpty(GetTargetHelixQueue());
-    public static string GetTargetHelixQueue() => Environment.GetEnvironmentVariable("helix");
+    public static bool OnHelix() => HelixHelper.OnHelix();
+    public static string GetTargetHelixQueue() => HelixHelper.GetTargetHelixQueue();
 }

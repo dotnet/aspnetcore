@@ -62,7 +62,7 @@ public abstract class RemoteAttributeBase : ValidationAttribute, IClientModelVal
         {
             _additionalFields = value ?? string.Empty;
             _additionalFieldsSplit = SplitAndTrimPropertyNames(value)
-                .Select(field => FormatPropertyForClientValidation(field))
+                .Select(FormatPropertyForClientValidation)
                 .ToArray();
         }
     }
@@ -80,10 +80,7 @@ public abstract class RemoteAttributeBase : ValidationAttribute, IClientModelVal
     /// </remarks>
     public string FormatAdditionalFieldsForClientValidation(string property)
     {
-        if (string.IsNullOrEmpty(property))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(property));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(property);
 
         var delimitedAdditionalFields = string.Join(",", _additionalFieldsSplit);
         if (!string.IsNullOrEmpty(delimitedAdditionalFields))
@@ -104,10 +101,7 @@ public abstract class RemoteAttributeBase : ValidationAttribute, IClientModelVal
     /// <remarks>Returns <paramref name="property"/> with a <c>"*."</c> prefix.</remarks>
     public static string FormatPropertyForClientValidation(string property)
     {
-        if (string.IsNullOrEmpty(property))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(property));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(property);
 
         return "*." + property;
     }
@@ -146,10 +140,7 @@ public abstract class RemoteAttributeBase : ValidationAttribute, IClientModelVal
     /// </remarks>
     public virtual void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
 

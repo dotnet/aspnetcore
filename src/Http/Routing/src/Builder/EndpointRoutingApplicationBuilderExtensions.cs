@@ -9,15 +9,16 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
-/// Constains extensions for configuring routing on an <see cref="IApplicationBuilder"/>.
+/// Contains extensions for configuring routing on an <see cref="IApplicationBuilder"/>.
 /// </summary>
 public static class EndpointRoutingApplicationBuilderExtensions
 {
     private const string EndpointRouteBuilder = "__EndpointRouteBuilder";
     private const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+    private const string UseRoutingKey = "__UseRouting";
 
     /// <summary>
-    /// Adds a <see cref="EndpointRoutingMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>.
+    /// Adds routing to the specified <see cref="IApplicationBuilder"/> so that incoming requests can be matched to endpoints.
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
@@ -28,19 +29,15 @@ public static class EndpointRoutingApplicationBuilderExtensions
     /// instance.
     /// </para>
     /// <para>
-    /// The <see cref="EndpointRoutingMiddleware"/> defines a point in the middleware pipeline where routing decisions are
-    /// made, and an <see cref="Endpoint"/> is associated with the <see cref="HttpContext"/>. The <see cref="EndpointMiddleware"/>
-    /// defines a point in the middleware pipeline where the current <see cref="Endpoint"/> is executed. Middleware between
-    /// the <see cref="EndpointRoutingMiddleware"/> and <see cref="EndpointMiddleware"/> may observe or change the
+    /// Routing adds a point in the middleware pipeline where routing decisions are made and an <see cref="Endpoint"/>
+    /// is associated with the <see cref="HttpContext"/>. Middleware between <see cref="UseRouting(IApplicationBuilder)"/>
+    /// and <see cref="UseEndpoints(IApplicationBuilder, Action{IEndpointRouteBuilder})"/> may observe or change the
     /// <see cref="Endpoint"/> associated with the <see cref="HttpContext"/>.
     /// </para>
     /// </remarks>
     public static IApplicationBuilder UseRouting(this IApplicationBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         VerifyRoutingServicesAreRegistered(builder);
 
@@ -57,14 +54,17 @@ public static class EndpointRoutingApplicationBuilderExtensions
             builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
         }
 
+        // Add UseRouting function to properties so that middleware that can't reference UseRouting directly can call UseRouting via this property
+        // This is part of the global endpoint route builder concept
+        builder.Properties.TryAdd(UseRoutingKey, (object)UseRouting);
+
         return builder.UseMiddleware<EndpointRoutingMiddleware>(endpointRouteBuilder);
     }
 
     /// <summary>
-    /// Adds a <see cref="EndpointMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>
-    /// with the <see cref="EndpointDataSource"/> instances built from configured <see cref="IEndpointRouteBuilder"/>.
-    /// The <see cref="EndpointMiddleware"/> will execute the <see cref="Endpoint"/> associated with the current
-    /// request.
+    /// Adds endpoint execution to the specified <see cref="IApplicationBuilder"/> with the
+    /// <see cref="EndpointDataSource"/> instances built from the configured <see cref="IEndpointRouteBuilder"/>.
+    /// This middleware executes the <see cref="Endpoint"/> associated with the current request.
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
     /// <param name="configure">An <see cref="Action{IEndpointRouteBuilder}"/> to configure the provided <see cref="IEndpointRouteBuilder"/>.</param>
@@ -76,24 +76,16 @@ public static class EndpointRoutingApplicationBuilderExtensions
     /// instance.
     /// </para>
     /// <para>
-    /// The <see cref="EndpointRoutingMiddleware"/> defines a point in the middleware pipeline where routing decisions are
-    /// made, and an <see cref="Endpoint"/> is associated with the <see cref="HttpContext"/>. The <see cref="EndpointMiddleware"/>
-    /// defines a point in the middleware pipeline where the current <see cref="Endpoint"/> is executed. Middleware between
-    /// the <see cref="EndpointRoutingMiddleware"/> and <see cref="EndpointMiddleware"/> may observe or change the
+    /// Routing adds a point in the middleware pipeline where routing decisions are made and an <see cref="Endpoint"/>
+    /// is associated with the <see cref="HttpContext"/>. Middleware between <see cref="UseRouting(IApplicationBuilder)"/>
+    /// and <see cref="UseEndpoints(IApplicationBuilder, Action{IEndpointRouteBuilder})"/> may observe or change the
     /// <see cref="Endpoint"/> associated with the <see cref="HttpContext"/>.
     /// </para>
     /// </remarks>
     public static IApplicationBuilder UseEndpoints(this IApplicationBuilder builder, Action<IEndpointRouteBuilder> configure)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
 
         VerifyRoutingServicesAreRegistered(builder);
 

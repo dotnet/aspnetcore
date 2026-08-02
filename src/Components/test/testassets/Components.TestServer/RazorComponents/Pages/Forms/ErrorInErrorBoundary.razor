@@ -1,0 +1,15 @@
+﻿@page "/forms/error-in-error-boundary"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>Error in error boundary</h3>
+
+<p>Demonstrates what happens with an unhandled exception during form post handling.</p>
+
+<ErrorBoundary>
+    <ChildContent>
+        <ComponentThatThrows />
+    </ChildContent>
+    <ErrorContent>
+        <p id="error-content">The error boundary caught an exception with message: @context.Message</p>
+    </ErrorContent>
+</ErrorBoundary>

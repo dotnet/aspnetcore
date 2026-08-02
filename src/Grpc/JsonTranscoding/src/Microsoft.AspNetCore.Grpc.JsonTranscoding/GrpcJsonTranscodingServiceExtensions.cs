@@ -3,9 +3,12 @@
 
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
+using Grpc.Shared;
+using Grpc.Shared.Server;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -17,34 +20,49 @@ public static class GrpcJsonTranscodingServiceExtensions
     /// <summary>
     /// Adds gRPC JSON transcoding services to the specified <see cref="IGrpcServerBuilder" />.
     /// </summary>
-    /// <param name="grpcBuilder">The <see cref="IGrpcServerBuilder"/>.</param>
+    /// <param name="builder">The <see cref="IGrpcServerBuilder"/>.</param>
     /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
-    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder grpcBuilder)
+    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder builder)
     {
-        if (grpcBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(grpcBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        grpcBuilder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<GrpcJsonTranscodingOptions>, GrpcJsonTranscodingOptionsSetup>());
+        builder.Services.TryAddSingleton<DescriptorRegistry>();
+        builder.Services.TryAddSingleton<InterceptorActivators>();
 
-        return grpcBuilder;
+        return builder;
     }
 
     /// <summary>
     /// Adds gRPC JSON transcoding services to the specified <see cref="IGrpcServerBuilder" />.
     /// </summary>
-    /// <param name="grpcBuilder">The <see cref="IGrpcServerBuilder"/>.</param>
+    /// <param name="builder">The <see cref="IGrpcServerBuilder"/>.</param>
     /// <param name="configureOptions">An <see cref="Action{GrpcJsonTranscodingOptions}"/> to configure the provided <see cref="GrpcJsonTranscodingOptions"/>.</param>
     /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
-    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder grpcBuilder, Action<GrpcJsonTranscodingOptions> configureOptions)
+    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder builder, Action<GrpcJsonTranscodingOptions> configureOptions)
     {
-        if (grpcBuilder == null)
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.Configure(configureOptions);
+
+        return builder.AddJsonTranscoding();
+    }
+
+    private sealed class GrpcJsonTranscodingOptionsSetup : IConfigureOptions<GrpcJsonTranscodingOptions>
+    {
+        private readonly DescriptorRegistry _descriptorRegistry;
+
+        public GrpcJsonTranscodingOptionsSetup(DescriptorRegistry descriptorRegistry)
         {
-            throw new ArgumentNullException(nameof(grpcBuilder));
+            _descriptorRegistry = descriptorRegistry;
         }
 
-        grpcBuilder.Services.Configure(configureOptions);
-        return grpcBuilder.AddJsonTranscoding();
+        public void Configure(GrpcJsonTranscodingOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            options.DescriptorRegistry = _descriptorRegistry;
+        }
     }
 }

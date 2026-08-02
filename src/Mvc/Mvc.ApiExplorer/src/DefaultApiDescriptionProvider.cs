@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 
@@ -20,6 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 /// Implements a provider of <see cref="ApiDescription"/> for actions represented
 /// by <see cref="ControllerActionDescriptor"/>.
 /// </summary>
+[RequiresUnreferencedCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
+[RequiresDynamicCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
 public class DefaultApiDescriptionProvider : IApiDescriptionProvider
 {
     private readonly MvcOptions _mvcOptions;
@@ -58,10 +62,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     /// <inheritdoc />
     public void OnProvidersExecuting(ApiDescriptionProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var action in context.Actions.OfType<ControllerActionDescriptor>())
         {
@@ -104,6 +105,9 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             GroupName = groupName,
             HttpMethod = httpMethod,
             RelativePath = GetRelativePath(parsedTemplate),
+            RoutePattern = action.AttributeRouteInfo?.Template is not null
+                ? RoutePatternFactory.Parse(action.AttributeRouteInfo.Template)
+                : null,
         };
 
         var templateParameters = parsedTemplate?.Parameters?.ToList() ?? new List<TemplatePart>();
@@ -115,8 +119,6 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             apiDescription.ParameterDescriptions.Add(parameter);
         }
 
-        var requestMetadataAttributes = GetRequestMetadataAttributes(action);
-
         var apiResponseTypes = _responseTypeProvider.GetApiResponseTypes(action);
         foreach (var apiResponseType in apiResponseTypes)
         {
@@ -127,7 +129,11 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         // could end up with duplicate data.
         if (apiDescription.ParameterDescriptions.Count > 0)
         {
-            var contentTypes = GetDeclaredContentTypes(requestMetadataAttributes);
+            // Get the most significant accepts metadata
+            var acceptsMetadata = action.EndpointMetadata.OfType<IAcceptsMetadata>().LastOrDefault();
+            var requestMetadataAttributes = GetRequestMetadataAttributes(action);
+
+            var contentTypes = GetDeclaredContentTypes(requestMetadataAttributes, acceptsMetadata);
             foreach (var parameter in apiDescription.ParameterDescriptions)
             {
                 if (parameter.Source == BindingSource.Body)
@@ -269,7 +275,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                         !defaultModelMetadata.Attributes.Attributes.OfType<IFromRouteMetadata>().Any())
                     {
                         // If we didn't see the parameter in the route and no FromRoute metadata is set, it probably means
-                        // the parameter binding source was inferred (InferParameterBindingInfoConvention)  
+                        // the parameter binding source was inferred (InferParameterBindingInfoConvention)
                         // probably because another route to this action contains it as route parameter and
                         // will be removed from the API description
                         // https://github.com/dotnet/aspnetcore/issues/26234
@@ -313,9 +319,21 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                 parameter.IsRequired = true;
             }
 
-            if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null && !parameter.RouteInfo.IsOptional)
+            if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null)
             {
-                parameter.IsRequired = true;
+                // Locate the corresponding route parameter metadata.
+                var routeParam = context.RouteParameters
+                    .FirstOrDefault(rp => string.Equals(rp.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+
+                // If the parameter is defined as a catch-all, mark it as optional.
+                if (routeParam != null && routeParam.IsCatchAll)
+                {
+                    parameter.IsRequired = false;
+                }
+                else if (!parameter.RouteInfo.IsOptional)
+                {
+                    parameter.IsRequired = true;
+                }
             }
         }
     }
@@ -449,11 +467,23 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         return results;
     }
 
-    internal static MediaTypeCollection GetDeclaredContentTypes(IReadOnlyList<IApiRequestMetadataProvider>? requestMetadataAttributes)
+    internal static MediaTypeCollection GetDeclaredContentTypes(IReadOnlyList<IApiRequestMetadataProvider>? requestMetadataAttributes, IAcceptsMetadata? acceptsMetadata)
     {
+        var contentTypes = new MediaTypeCollection();
+
+        // Walking the content types from the accepts metadata first
+        // to allow any RequestMetadataProvider to see or override any accepts metadata
+        // keeping the current behavior.
+        if (acceptsMetadata != null)
+        {
+            foreach (var contentType in acceptsMetadata.ContentTypes)
+            {
+                contentTypes.Add(contentType);
+            }
+        }
+
         // Walk through all 'filter' attributes in order, and allow each one to see or override
         // the results of the previous ones. This is similar to the execution path for content-negotiation.
-        var contentTypes = new MediaTypeCollection();
         if (requestMetadataAttributes != null)
         {
             foreach (var metadataAttribute in requestMetadataAttributes)
@@ -521,6 +551,8 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         }
     }
 
+    [RequiresUnreferencedCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
+    [RequiresDynamicCode("DefaultApiDescriptionProvider is used by MVC which does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     private sealed class PseudoModelBindingVisitor
     {
         public PseudoModelBindingVisitor(ApiParameterContext context, ParameterDescriptor parameter)
@@ -644,10 +676,21 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                 ModelMetadata = bindingContext.ModelMetadata,
                 Name = GetName(containerName, bindingContext),
                 Source = source,
-                Type = bindingContext.ModelMetadata.ModelType,
+                Type = GetModelType(bindingContext.ModelMetadata),
                 ParameterDescriptor = Parameter,
                 BindingInfo = bindingContext.BindingInfo
             };
+        }
+
+        private static Type GetModelType(ModelMetadata metadata)
+        {
+            // IsParseableType || IsConvertibleType
+            if (!metadata.IsComplexType)
+            {
+                return EndpointModelMetadata.GetDisplayType(metadata.ModelType);
+            }
+
+            return metadata.ModelType;
         }
 
         private static string GetName(string containerName, ApiParameterDescriptionContext metadata)

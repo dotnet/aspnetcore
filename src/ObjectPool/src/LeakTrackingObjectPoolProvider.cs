@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.ObjectPool;
 
@@ -9,6 +10,8 @@ namespace Microsoft.Extensions.ObjectPool;
 /// An <see cref="ObjectPoolProvider"/> that produces instances of
 /// <see cref="LeakTrackingObjectPool{T}"/>.
 /// </summary>
+[Obsolete("LeakTrackingObjectPoolProvider was only intended for internal use in diagnostic builds of .NET. " +
+    "It never functioned in publicly shipped .NET versions and may be removed in a future release.")]
 public class LeakTrackingObjectPoolProvider : ObjectPoolProvider
 {
     private readonly ObjectPoolProvider _inner;
@@ -19,10 +22,7 @@ public class LeakTrackingObjectPoolProvider : ObjectPoolProvider
     /// <param name="inner">The <see cref="ObjectPoolProvider"/> to wrap.</param>
     public LeakTrackingObjectPoolProvider(ObjectPoolProvider inner)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(inner);
 
         _inner = inner;
     }

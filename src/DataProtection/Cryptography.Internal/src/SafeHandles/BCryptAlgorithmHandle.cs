@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles;
 internal sealed unsafe class BCryptAlgorithmHandle : BCryptHandle
 {
     // Called by P/Invoke when returning SafeHandles
-    private BCryptAlgorithmHandle() { }
+    public BCryptAlgorithmHandle() { }
 
     /// <summary>
     /// Creates an unkeyed hash handle from this hash algorithm.

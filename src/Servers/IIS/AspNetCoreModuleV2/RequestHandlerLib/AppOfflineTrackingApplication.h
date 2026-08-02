@@ -16,7 +16,8 @@ public:
         m_applicationPath(application.GetApplicationPhysicalPath()),
         m_fileWatcher(nullptr),
         m_fAppOfflineProcessed(false),
-        m_shutdownTimeout(120000) // default to 2 minutes
+        m_shutdownTimeout(120000), // default to 2 minutes
+        m_detectedAppOffline(false)
     {
     }
 

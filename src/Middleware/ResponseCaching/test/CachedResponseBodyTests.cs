@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests;
 

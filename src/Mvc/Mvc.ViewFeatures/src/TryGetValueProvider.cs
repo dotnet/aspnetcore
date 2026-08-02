@@ -27,10 +27,7 @@ public static class TryGetValueProvider
     /// <returns>The <see cref="TryGetValueDelegate"/>.</returns>
     public static TryGetValueDelegate CreateInstance(Type targetType)
     {
-        if (targetType == null)
-        {
-            throw new ArgumentNullException(nameof(targetType));
-        }
+        ArgumentNullException.ThrowIfNull(targetType);
 
         TryGetValueDelegate result;
 

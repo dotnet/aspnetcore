@@ -36,7 +36,7 @@ public class UrlPrefixTests
     [InlineData("http:////:5000")]
     public void CreateThrowsForUrlsWithoutHost(string url)
     {
-        Assert.Throws<ArgumentNullException>(() => UrlPrefix.Create(url));
+        Assert.Throws<ArgumentException>(() => UrlPrefix.Create(url));
     }
 
     [Theory]

@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Http;
 public class BindingAddress
 {
     private const string UnixPipeHostPrefix = "unix:/";
+    private const string NamedPipeHostPrefix = "pipe:/";
 
     private BindingAddress(string host, string pathBase, int port, string scheme)
     {
@@ -58,6 +59,14 @@ public class BindingAddress
     public bool IsUnixPipe => Host.StartsWith(UnixPipeHostPrefix, StringComparison.Ordinal);
 
     /// <summary>
+    /// Gets a value that determines if this instance represents a named pipe.
+    /// <para>
+    /// Returns <see langword="true"/> if <see cref="Host"/> starts with <c>pipe:/</c> prefix.
+    /// </para>
+    /// </summary>
+    public bool IsNamedPipe => Host.StartsWith(NamedPipeHostPrefix, StringComparison.Ordinal);
+
+    /// <summary>
     /// Gets the unix pipe path if this instance represents a Unix pipe.
     /// </summary>
     public string UnixPipePath
@@ -73,6 +82,22 @@ public class BindingAddress
         }
     }
 
+    /// <summary>
+    /// Gets the named pipe name if this instance represents a named pipe.
+    /// </summary>
+    public string NamedPipeName
+    {
+        get
+        {
+            if (!IsNamedPipe)
+            {
+                throw new InvalidOperationException("Binding address is not a named pipe.");
+            }
+
+            return GetNamedPipeName(Host);
+        }
+    }
+
     private static string GetUnixPipePath(string host)
     {
         var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
@@ -84,10 +109,12 @@ public class BindingAddress
         return host.Substring(unixPipeHostPrefixLength);
     }
 
+    private static string GetNamedPipeName(string host) => host.Substring(NamedPipeHostPrefix.Length);
+
     /// <inheritdoc />
     public override string ToString()
     {
-        if (IsUnixPipe)
+        if (IsUnixPipe || IsNamedPipe)
         {
             return Scheme.ToLowerInvariant() + Uri.SchemeDelimiter + Host.ToLowerInvariant();
         }
@@ -134,16 +161,12 @@ public class BindingAddress
         }
         var schemeDelimiterEnd = schemeDelimiterStart + Uri.SchemeDelimiter.Length;
 
-        var isUnixPipe = address.IndexOf(UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
+        var isUnixPipe = address.AsSpan(schemeDelimiterEnd).StartsWith(UnixPipeHostPrefix, StringComparison.Ordinal);
+        var isNamedPipe = address.AsSpan(schemeDelimiterEnd).StartsWith(NamedPipeHostPrefix, StringComparison.Ordinal);
 
         int pathDelimiterStart;
         int pathDelimiterEnd;
-        if (!isUnixPipe)
-        {
-            pathDelimiterStart = address.IndexOf("/", schemeDelimiterEnd, StringComparison.Ordinal);
-            pathDelimiterEnd = pathDelimiterStart;
-        }
-        else
+        if (isUnixPipe)
         {
             var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
             if (OperatingSystem.IsWindows())
@@ -156,8 +179,18 @@ public class BindingAddress
                 }
             }
 
-            pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + unixPipeHostPrefixLength, StringComparison.Ordinal);
+            pathDelimiterStart = address.IndexOf(':', schemeDelimiterEnd + unixPipeHostPrefixLength);
             pathDelimiterEnd = pathDelimiterStart + ":".Length;
+        }
+        else if (isNamedPipe)
+        {
+            pathDelimiterStart = address.IndexOf(':', schemeDelimiterEnd + NamedPipeHostPrefix.Length);
+            pathDelimiterEnd = pathDelimiterStart + ":".Length;
+        }
+        else
+        {
+            pathDelimiterStart = address.IndexOf('/', schemeDelimiterEnd);
+            pathDelimiterEnd = pathDelimiterStart;
         }
 
         if (pathDelimiterStart < 0)
@@ -172,7 +205,7 @@ public class BindingAddress
         var hasSpecifiedPort = false;
         if (!isUnixPipe)
         {
-            var portDelimiterStart = address.LastIndexOf(":", pathDelimiterStart - 1, pathDelimiterStart - schemeDelimiterEnd, StringComparison.Ordinal);
+            var portDelimiterStart = address.LastIndexOf(':', pathDelimiterStart - 1, pathDelimiterStart - schemeDelimiterEnd);
             if (portDelimiterStart >= 0)
             {
                 var portDelimiterEnd = portDelimiterStart + ":".Length;

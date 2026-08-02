@@ -16,20 +16,20 @@ public class CertificateValidationCache : ICertificateValidationCache
 {
     private readonly MemoryCache _cache;
     private readonly CertificateValidationCacheOptions _options;
-    private readonly ISystemClock _clock;
+    private readonly TimeProvider _timeProvider;
 
-    internal CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options, ISystemClock clock)
+    internal CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options, TimeProvider timeProvider)
     {
         _options = options.Value;
-        _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize, Clock = new CachingClock(clock) });
-        _clock = clock;
+        _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize, Clock = new CachingClock(timeProvider) });
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="CertificateValidationCache"/>.
     /// </summary>
     /// <param name="options">An accessor to <see cref="CertificateValidationCacheOptions"/></param>
-    public CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options) : this(options, new SystemClock())
+    public CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options) : this(options, TimeProvider.System)
     { }
 
     /// <summary>
@@ -39,7 +39,14 @@ public class CertificateValidationCache : ICertificateValidationCache
     /// <param name="certificate">The certificate.</param>
     /// <returns>the <see cref="AuthenticateResult"/></returns>
     public AuthenticateResult? Get(HttpContext context, X509Certificate2 certificate)
-        => _cache.Get<AuthenticateResult>(ComputeKey(certificate))?.Clone();
+    {
+        var key = ComputeKey(context, certificate);
+        if (key is null)
+        {
+            return null;
+        }
+        return _cache.Get<AuthenticateResult>(key)?.Clone();
+    }
 
     /// <summary>
     /// Store a <see cref="AuthenticateResult"/> for the connection and certificate
@@ -49,26 +56,39 @@ public class CertificateValidationCache : ICertificateValidationCache
     /// <param name="result">the <see cref="AuthenticateResult"/></param>
     public void Put(HttpContext context, X509Certificate2 certificate, AuthenticateResult result)
     {
+        var key = ComputeKey(context, certificate);
+        if (key is null)
+        {
+            return;
+        }
+
         // Never cache longer than 30 minutes
-        var absoluteExpiration = _clock.UtcNow.Add(TimeSpan.FromMinutes(30));
+        var absoluteExpiration = _timeProvider.GetUtcNow().Add(TimeSpan.FromMinutes(30));
         var notAfter = certificate.NotAfter.ToUniversalTime();
         if (notAfter < absoluteExpiration)
         {
             absoluteExpiration = notAfter;
         }
-        _cache.Set(ComputeKey(certificate), result.Clone(), new MemoryCacheEntryOptions()
+        _cache.Set(key, result.Clone(), new MemoryCacheEntryOptions()
             .SetSize(1)
             .SetSlidingExpiration(_options.CacheEntryExpiration)
             .SetAbsoluteExpiration(absoluteExpiration));
     }
 
-    private static string ComputeKey(X509Certificate2 certificate)
-        => certificate.GetCertHashString(HashAlgorithmName.SHA256);
+    private static string? ComputeKey(HttpContext context, X509Certificate2 certificate)
+    {
+        if (context.Items.TryGetValue(CertificateAuthenticationHandler.CertificateSchemeCacheKeyItem, out var schemeObj)
+            && schemeObj is string schemeName)
+        {
+            return $"{schemeName}:{certificate.GetCertHashString(HashAlgorithmName.SHA256)}";
+        }
+        return null;
+    }
 
     private sealed class CachingClock : Extensions.Internal.ISystemClock
     {
-        private readonly ISystemClock _clock;
-        public CachingClock(ISystemClock clock) => _clock = clock;
-        public DateTimeOffset UtcNow => _clock.UtcNow;
+        private readonly TimeProvider _timeProvider;
+        public CachingClock(TimeProvider timeProvider) => _timeProvider = timeProvider;
+        public DateTimeOffset UtcNow => _timeProvider.GetUtcNow();
     }
 }

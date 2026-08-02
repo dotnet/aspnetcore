@@ -23,7 +23,7 @@ public class HostedInAspNetTest : ServerTestBase<AspNetSiteServerFixture>
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/", noReload: true);
+        Navigate("/");
         WaitUntilLoaded();
     }
 

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 // property. If you just added this class, register it as an IPostConfigureOptions<TOptions> in DI.
 //
 /// <summary>
-/// Infrastructure supporting the implementation of <see cref="CompatibilityVersion"/>. This is an
+/// Infrastructure supporting compatibility switches. This is an
 /// implementation of <see cref="ICompatibilitySwitch"/> suitable for use with the <see cref="IOptions{T}"/>
 /// pattern. This is framework infrastructure and should not be used by application code.
 /// </summary>
@@ -77,10 +77,7 @@ public class CompatibilitySwitch<TValue> : ICompatibilitySwitch where TValue : s
     /// </param>
     public CompatibilitySwitch(string name, TValue initialValue)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Name = name;
         _value = initialValue;

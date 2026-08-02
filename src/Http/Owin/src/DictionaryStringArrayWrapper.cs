@@ -10,16 +10,16 @@ namespace Microsoft.AspNetCore.Owin;
 
 internal sealed class DictionaryStringArrayWrapper : IDictionary<string, string[]>
 {
+    public readonly IHeaderDictionary Inner;
+
     public DictionaryStringArrayWrapper(IHeaderDictionary inner)
     {
         Inner = inner;
     }
 
-    public readonly IHeaderDictionary Inner;
+    private static KeyValuePair<string, StringValues> Convert(KeyValuePair<string, string[]> item) => new(item.Key, item.Value);
 
-    private static KeyValuePair<string, StringValues> Convert(KeyValuePair<string, string[]> item) => new KeyValuePair<string, StringValues>(item.Key, item.Value);
-
-    private static KeyValuePair<string, string[]> Convert(KeyValuePair<string, StringValues> item) => new KeyValuePair<string, string[]>(item.Key, item.Value);
+    private static KeyValuePair<string, string[]> Convert(KeyValuePair<string, StringValues> item) => new(item.Key, item.Value);
 
     private string[] Convert(StringValues item) => item;
 
@@ -55,9 +55,11 @@ internal sealed class DictionaryStringArrayWrapper : IDictionary<string, string[
         }
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => Inner.Select(Convert).GetEnumerator();
+    public ConvertingEnumerator GetEnumerator() => new ConvertingEnumerator(Inner);
 
-    IEnumerator<KeyValuePair<string, string[]>> IEnumerable<KeyValuePair<string, string[]>>.GetEnumerator() => Inner.Select(Convert).GetEnumerator();
+    IEnumerator<KeyValuePair<string, string[]>> IEnumerable<KeyValuePair<string, string[]>>.GetEnumerator() => new ConvertingEnumerator(Inner);
+
+    IEnumerator IEnumerable.GetEnumerator() => new ConvertingEnumerator(Inner);
 
     bool ICollection<KeyValuePair<string, string[]>>.Remove(KeyValuePair<string, string[]> item) => Inner.Remove(Convert(item));
 
@@ -73,5 +75,41 @@ internal sealed class DictionaryStringArrayWrapper : IDictionary<string, string[
         }
         value = default(StringValues);
         return false;
+    }
+
+    public struct ConvertingEnumerator : IEnumerator<KeyValuePair<string, string[]>>, IEnumerator
+    {
+        private IEnumerator<KeyValuePair<string, StringValues>> _inner;
+        private KeyValuePair<string, string[]> _current;
+
+        internal ConvertingEnumerator(IDictionary<string, StringValues> inner)
+        {
+            _inner = inner.GetEnumerator();
+            _current = default;
+        }
+
+        public void Dispose()
+        {
+            _inner?.Dispose();
+            _inner = null;
+        }
+
+        public bool MoveNext()
+        {
+            if (!_inner.MoveNext())
+            {
+                _current = default;
+                return false;
+            }
+
+            _current = Convert(_inner.Current);
+            return true;
+        }
+
+        public KeyValuePair<string, string[]> Current => _current;
+
+        object IEnumerator.Current => Current;
+
+        void IEnumerator.Reset() => throw new NotSupportedException();
     }
 }

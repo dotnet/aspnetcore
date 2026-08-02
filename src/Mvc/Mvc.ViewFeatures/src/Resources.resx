@@ -229,9 +229,6 @@
   <data name="UnobtrusiveJavascript_ValidationTypeMustBeUnique" xml:space="preserve">
     <value>Validation type names in unobtrusive client validation rules must be unique. The following validation type was seen more than once: {0}</value>
   </data>
-  <data name="TypeMustDeriveFromType" xml:space="preserve">
-    <value>The type '{0}' must derive from '{1}'.</value>
-  </data>
   <data name="TemplatedViewLocationExpander_NoReplacementToken" xml:space="preserve">
     <value>Could not find a replacement for view expansion token '{0}'.</value>
   </data>
@@ -294,9 +291,6 @@
   </data>
   <data name="TempData_CannotDeserializeType" xml:space="preserve">
     <value>Unsupported data type '{0}'.</value>
-  </data>
-  <data name="UnsupportedRenderMode" xml:space="preserve">
-    <value>Unsupported RenderMode '{0}'.</value>
   </data>
   <data name="AsyncDisposableViewsNotSupported" xml:space="preserve">
     <value>Views implementing '{0}' are not supported.</value>

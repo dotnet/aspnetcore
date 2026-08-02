@@ -26,10 +26,7 @@ internal sealed class DefaultViewComponentActivator : IViewComponentActivator
     /// </param>
     public DefaultViewComponentActivator(ITypeActivatorCache typeActivatorCache)
     {
-        if (typeActivatorCache == null)
-        {
-            throw new ArgumentNullException(nameof(typeActivatorCache));
-        }
+        ArgumentNullException.ThrowIfNull(typeActivatorCache);
 
         _typeActivatorCache = typeActivatorCache;
     }
@@ -37,10 +34,7 @@ internal sealed class DefaultViewComponentActivator : IViewComponentActivator
     /// <inheritdoc />
     public object Create(ViewComponentContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var componentType = context.ViewComponentDescriptor.TypeInfo;
 

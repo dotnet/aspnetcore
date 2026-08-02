@@ -31,11 +31,7 @@ internal static class ReactDevelopmentServerMiddleware
         {
             throw new ArgumentException("Property 'SourcePath' cannot be null or empty", nameof(spaBuilder));
         }
-
-        if (string.IsNullOrEmpty(scriptName))
-        {
-            throw new ArgumentException("Cannot be null or empty", nameof(scriptName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(scriptName);
 
         // Start create-react-app and attach to middleware pipeline
         var appBuilder = spaBuilder.ApplicationBuilder;
@@ -69,7 +65,10 @@ internal static class ReactDevelopmentServerMiddleware
         {
             portNumber = TcpPortFinder.FindAvailablePort();
         }
-        logger.LogInformation($"Starting create-react-app server on port {portNumber}...");
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation($"Starting create-react-app server on port {portNumber}...");
+        }
 
         var envVars = new Dictionary<string, string>
             {

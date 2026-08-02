@@ -1,0 +1,74 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <EnablePackageValidation>false</EnablePackageValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="@(AspNetCoreShippingAssembly)" />
+
+    <!-- This project does not produce a .dll -->
+    <Reference Remove="Microsoft.Extensions.ApiDescription.Server" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="_RemoveUnwantedAspNetFrameworkReference" BeforeTargets="ResolveFrameworkReferences" >
+    <ItemGroup>
+      <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      _ResolveApiDocsTransportContent;
+    </BuildDependsOn>
+  </PropertyGroup>
+
+  <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
+  <Target Name="GetTargetPath" />
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
+
+  <!-- This project doesn't compile anything. -->
+  <Target Name="CoreCompile" />
+
+  <!-- Completely disable default targets for copying to output. -->
+  <Target Name="CopyFilesToOutputDirectory" />
+
+  <!-- Nothing to do for Publish in this project -->
+  <Target Name="Publish" />
+
+  <!-- This target finds the reference assemblies & .xml files. -->
+  <Target Name="_ResolveApiDocsTransportContent"
+          Returns="@(_ApiDocsContent)"
+          DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <FullAspNetCoreReferenceAssemblyPath
+        Include="@(ReferencePathWithRefAssemblies)"
+        Exclude="
+          @(ReferencePathWithRefAssemblies->WithMetadataValue('ExternallyResolved', 'true'))"/>
+
+      <FullAspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->'%(RootDir)%(Directory)%(FileName).xml')"
+          Condition="Exists('%(RootDir)%(Directory)%(FileName).xml')" />
+
+      <_ApiDocsContent Include="@(FullAspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
+      <_ApiDocsContent Include="@(FullAspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
+      <_PackageFiles Include="@(_ApiDocsContent)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

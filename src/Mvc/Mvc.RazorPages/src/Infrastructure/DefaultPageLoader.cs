@@ -37,10 +37,7 @@ internal sealed class DefaultPageLoader : PageLoader
 
     public override Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
     {
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
 
         if (actionDescriptor is CompiledPageActionDescriptor compiledPageActionDescriptor)
         {
@@ -87,6 +84,9 @@ internal sealed class DefaultPageLoader : PageLoader
                         }
                     },
             },
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
+            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
             createInertEndpoints: false);
 
         // In some test scenarios there's no route so the endpoint isn't created. This is fine because

@@ -31,10 +31,7 @@ public static class GenericHostBuilderExtensions
     /// <returns>A reference to the <paramref name="builder"/> after the operation has completed.</returns>
     public static IHostBuilder ConfigureWebHostDefaults(this IHostBuilder builder, Action<IWebHostBuilder> configure)
     {
-        if (configure is null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         return builder.ConfigureWebHostDefaults(configure, _ => { });
     }
@@ -60,14 +57,13 @@ public static class GenericHostBuilderExtensions
     /// <returns>A reference to the <paramref name="builder"/> after the operation has completed.</returns>
     public static IHostBuilder ConfigureWebHostDefaults(this IHostBuilder builder, Action<IWebHostBuilder> configure, Action<WebHostBuilderOptions> configureOptions)
     {
-        if (configure is null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         return builder.ConfigureWebHost(webHostBuilder =>
         {
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
             WebHost.ConfigureWebDefaults(webHostBuilder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 
             configure(webHostBuilder);
         }, configureOptions);

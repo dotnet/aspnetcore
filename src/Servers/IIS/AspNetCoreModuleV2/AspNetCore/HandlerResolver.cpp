@@ -22,7 +22,8 @@ const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"
 HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
     : m_hModule(hModule),
       m_pServer(pServer),
-      m_loadedApplicationHostingModel(HOSTING_UNKNOWN)
+      m_loadedApplicationHostingModel(HOSTING_UNKNOWN),
+      m_shutdownDelay()
 {
     m_disallowRotationOnConfigChange = false;
     InitializeSRWLock(&m_requestHandlerLoadLock);
@@ -109,7 +110,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
         LOG_INFOF(L"Loading request handler:  '%ls'", handlerDllPath.c_str());
 
-        hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str());
+        hRequestHandlerDll = LoadLibraryEx(handlerDllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
         RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll);
 
         if (preventUnload)
@@ -171,6 +172,7 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, con
     m_loadedApplicationHostingModel = options.QueryHostingModel();
     m_loadedApplicationId = pApplication.GetApplicationId();
     m_disallowRotationOnConfigChange = options.QueryDisallowRotationOnConfigChange();
+    m_shutdownDelay = options.QueryShutdownDelay();
 
     RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, shadowCopyPath, options, pApplicationFactory, errorContext));
 
@@ -195,6 +197,11 @@ APP_HOSTING_MODEL HandlerResolver::GetHostingModel()
 bool HandlerResolver::GetDisallowRotationOnConfigChange()
 {
     return m_disallowRotationOnConfigChange;
+}
+
+std::chrono::milliseconds HandlerResolver::GetShutdownDelay() const
+{
+    return m_shutdownDelay;
 }
 
 HRESULT
@@ -321,10 +328,21 @@ try
                 errorContext.generalErrorType = "Failed to load ASP.NET Core runtime";
                 errorContext.errorReason = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found.";
 
-                EventLog::Error(
-                    ASPNETCORE_EVENT_GENERAL_ERROR,
-                    ASPNETCORE_EVENT_HOSTFXR_FAILURE_MSG
-                );
+                if (intHostFxrExitCode == AppArgNotRunnable)
+                {
+                    errorContext.detailedErrorContent = "Provided application path does not exist, or isn't a .dll or .exe.";
+                    EventLog::Error(
+                        ASPNETCORE_EVENT_GENERAL_ERROR,
+                        ASPNETCORE_EVENT_HOSTFXR_BAD_APPLICATION_FAILURE_MSG
+                    );
+                }
+                else
+                {
+                    EventLog::Error(
+                        ASPNETCORE_EVENT_GENERAL_ERROR,
+                        ASPNETCORE_EVENT_HOSTFXR_FAILURE_MSG
+                    );
+                }
 
                 return E_UNEXPECTED;
             }

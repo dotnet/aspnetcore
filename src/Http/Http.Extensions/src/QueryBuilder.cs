@@ -69,7 +69,7 @@ public class QueryBuilder : IEnumerable<KeyValuePair<string, string>>
     /// <inheritdoc/>
     public override string ToString()
     {
-        var builder = new StringBuilder();
+        var builder = new ValueStringBuilder();
         bool first = true;
         for (var i = 0; i < _params.Count; i++)
         {

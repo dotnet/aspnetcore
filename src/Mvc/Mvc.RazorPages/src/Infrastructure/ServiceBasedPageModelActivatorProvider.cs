@@ -13,10 +13,7 @@ public class ServiceBasedPageModelActivatorProvider : IPageModelActivatorProvide
     /// <inheritdoc/>
     public Func<PageContext, object> CreateActivator(CompiledPageActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         var modelType = descriptor.ModelTypeInfo?.AsType();
         if (modelType == null)

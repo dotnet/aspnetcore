@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -28,10 +29,7 @@ public class PhoneNumberTokenProvider<TUser> : TotpSecurityStampBasedTokenProvid
     /// </returns>
     public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
 
         var phoneNumber = await manager.GetPhoneNumberAsync(user).ConfigureAwait(false);
 
@@ -50,10 +48,7 @@ public class PhoneNumberTokenProvider<TUser> : TotpSecurityStampBasedTokenProvid
     /// </returns>
     public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager, TUser user)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
 
         var phoneNumber = await manager.GetPhoneNumberAsync(user).ConfigureAwait(false);
 

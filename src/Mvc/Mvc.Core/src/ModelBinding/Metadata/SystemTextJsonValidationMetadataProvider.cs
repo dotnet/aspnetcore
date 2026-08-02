@@ -30,10 +30,7 @@ public sealed class SystemTextJsonValidationMetadataProvider : IDisplayMetadataP
     /// <param name="namingPolicy">The <see cref="JsonNamingPolicy"/> to be used to configure the metadata provider.</param>
     public SystemTextJsonValidationMetadataProvider(JsonNamingPolicy namingPolicy)
     {
-        if (namingPolicy == null)
-        {
-            throw new ArgumentNullException(nameof(namingPolicy));
-        }
+        ArgumentNullException.ThrowIfNull(namingPolicy);
 
         _jsonNamingPolicy = namingPolicy;
     }
@@ -41,10 +38,7 @@ public sealed class SystemTextJsonValidationMetadataProvider : IDisplayMetadataP
     /// <inheritdoc />
     public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var propertyName = ReadPropertyNameFrom(context.Attributes);
 
@@ -57,16 +51,15 @@ public sealed class SystemTextJsonValidationMetadataProvider : IDisplayMetadataP
     /// <inheritdoc />
     public void CreateValidationMetadata(ValidationMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var propertyName = ReadPropertyNameFrom(context.Attributes);
 
         if (string.IsNullOrEmpty(propertyName))
         {
-            propertyName = _jsonNamingPolicy.ConvertName(context.Key.Name!);
+            propertyName = context.Key.Name is string contextKeyName
+                ? _jsonNamingPolicy.ConvertName(contextKeyName)
+                : null;
         }
 
         context.ValidationMetadata.ValidationModelName = propertyName;

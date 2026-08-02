@@ -39,30 +39,11 @@ public class SessionMiddleware
         ISessionStore sessionStore,
         IOptions<SessionOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (dataProtectionProvider == null)
-        {
-            throw new ArgumentNullException(nameof(dataProtectionProvider));
-        }
-
-        if (sessionStore == null)
-        {
-            throw new ArgumentNullException(nameof(sessionStore));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(dataProtectionProvider);
+        ArgumentNullException.ThrowIfNull(sessionStore);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _logger = loggerFactory.CreateLogger<SessionMiddleware>();
@@ -85,9 +66,15 @@ public class SessionMiddleware
         if (string.IsNullOrWhiteSpace(sessionKey) || sessionKey.Length != SessionKeyLength)
         {
             // No valid cookie, new session.
-            var guidBytes = new byte[16];
-            RandomNumberGenerator.Fill(guidBytes);
-            sessionKey = new Guid(guidBytes).ToString();
+            sessionKey = GetSessionKey();
+
+            static string GetSessionKey()
+            {
+                Span<byte> guidBytes = stackalloc byte[16];
+                RandomNumberGenerator.Fill(guidBytes);
+                return new Guid(guidBytes).ToString();
+            }
+
             cookieValue = CookieProtection.Protect(_dataProtector, sessionKey);
             var establisher = new SessionEstablisher(context, cookieValue, _options);
             tryEstablishSession = establisher.TryEstablishSession;
@@ -154,6 +141,7 @@ public class SessionMiddleware
             var cookieOptions = _options.Cookie.Build(_context);
 
             var response = _context.Response;
+            // codeql[SM02373] - By design the session cookie's SecurePolicy defaults to None so sessions work over HTTP; apps set CookiePolicy or SecurePolicy.Always to require Secure.
             response.Cookies.Append(_options.Cookie.Name!, _cookieValue, cookieOptions);
 
             var responseHeaders = response.Headers;

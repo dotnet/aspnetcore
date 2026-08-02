@@ -3,27 +3,34 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
+    <!-- Only verify assembly versions in non-dev builds. Dev builds always produce assembly version `42.42.42.42` -->
+    <VerifyPackageAssemblyVersions Condition="'$(OfficialBuild)' == 'true' or '$(DotNetUseShippingVersions)' == 'true'">true</VerifyPackageAssemblyVersions>
     <TestDependsOnAspNetAppPackages>true</TestDependsOnAspNetAppPackages>
     <SkipHelixArm>true</SkipHelixArm>
+    <PackagesLayoutRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Packages.Layout', '$(Configuration)'))</PackagesLayoutRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Grab RuntimeList.xml because it's not placed in the .dotnet/ folder. -->
-    <None Include="$(ArtifactsObjDir)Microsoft.AspNetCore.App.Runtime\RuntimeList.xml"
+    <!--
+      Grab RuntimeList.xml because it's not placed in the .dotnet/ folder.
+      This depends on internal implementation details of the SharedFramework SDK and should be changed to use a supported mechanism
+      to discover the runtime list.
+    -->
+    <None Include="$(ArtifactsObjDir)aspnetcore-sfx\$(Configuration)\$(TargetRuntimeIdentifier)\RuntimeList.xml"
         CopyToOutputDirectory="PreserveNewest" />
 
     <!-- Ignore aspnetcorev2_inprocess because tests expect only managed assemblies in this item group. -->
     <_SharedFrameworkBinariesFromRepo Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage)" />
 
+    <_ExpectedSharedFrameworkBinaries Include="@(_SharedFrameworkBinariesFromRepo);
+        @(ExternalAspNetCoreAppReference);
+        @(_TransitiveExternalAspNetCoreAppReference)" />
     <!--
       Special-case System.Diagnostics.EventLog.Messages.dll because that assembly name does _not_ match a
       package. Can't mention it in @(ExternalAspNetCoreAppReference) or underlying
       @(_TransitiveExternalAspNetCoreAppReference) without thoroughly confusing eng/targets/ResolveReferences.targets.
     -->
-    <_ExpectedSharedFrameworkBinaries Include="@(_SharedFrameworkBinariesFromRepo);
-        @(ExternalAspNetCoreAppReference);
-        @(_TransitiveExternalAspNetCoreAppReference);
-        System.Diagnostics.EventLog.Messages" />
+    <_ExpectedSharedFrameworkBinaries Condition="'$(TargetOsName)' == 'win'" Include="System.Diagnostics.EventLog.Messages" />
     <_ExpectedSharedFrameworkBinaries Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'" Include="aspnetcorev2_inprocess" />
 
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
@@ -39,8 +46,8 @@
       <_Parameter2>$(TargetRuntimeIdentifier)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>MicrosoftNETCoreAppRuntimeVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNETCoreAppRuntimeVersion)</_Parameter2>
+      <_Parameter1>MicrosoftNETCoreAppRefVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETCoreAppRefVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>SharedFrameworkBinariesFromRepo</_Parameter1>
@@ -51,8 +58,16 @@
       <_Parameter2>@(_ExpectedSharedFrameworkBinaries)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>PackageLayoutRoot</_Parameter1>
+      <_Parameter2>$(PackagesLayoutRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>VerifyAncmBinary</_Parameter1>
       <_Parameter2>$(VerifyAncmBinary)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>VerifyPackageAssemblyVersions</_Parameter1>
+      <_Parameter2>$(VerifyPackageAssemblyVersions)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>PackagesFolder</_Parameter1>
@@ -66,7 +81,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -74,12 +89,16 @@
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
     <!-- Use the ref pack logic to compute the list of expected targeting pack content -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-        Targets="ResolveTargetingPackContent">
-      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackDependencies" />
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
+        Targets="GetFilesToPackage">
+      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackFiles" />
     </MSBuild>
 
     <ItemGroup>
+      <_AnalyzersInTargetingPack Include="@(_TargetingPackFiles)" Condition="$([System.String]::new('%(_TargetingPackFiles.Directory)').Contains('analyzers'))" />
+      <_AnalyzersInTargetingPack Include="@(_TargetingPackFiles->WithMetadataValue('OutputItemType','AspNetCoreAnalyzer'))" />
+      <_TargetingPackDependencies Include="@(_TargetingPackFiles->WithMetadataValue('Extension','.dll'))" Exclude="@(_AnalyzersInTargetingPack)" />
+
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>TargetingPackDependencies</_Parameter1>
         <_Parameter2>@(_TargetingPackDependencies->'%(FileName)')</_Parameter2>

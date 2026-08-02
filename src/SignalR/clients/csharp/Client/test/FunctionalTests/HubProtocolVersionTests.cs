@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -13,7 +14,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -171,7 +172,7 @@ public class HubProtocolVersionTests : FunctionalTestBase
             var connectionBuilder = new HubConnectionBuilder()
                 .WithLoggerFactory(LoggerFactory)
                 .WithUrl(server.Url + "/version", transportType);
-            connectionBuilder.Services.AddSingleton<IHubProtocol>(new VersionedJsonHubProtocol(int.MaxValue));
+            connectionBuilder.Services.AddSingleton<IHubProtocol>(new SingleVersionHubProtocol(new VersionedJsonHubProtocol(int.MaxValue), int.MaxValue));
 
             var connection = connectionBuilder.Build();
 
@@ -190,6 +191,41 @@ public class HubProtocolVersionTests : FunctionalTestBase
             {
                 await connection.DisposeAsync().DefaultTimeout();
             }
+        }
+    }
+
+    public class SingleVersionHubProtocol : IHubProtocol
+    {
+        private readonly IHubProtocol _protocol;
+        private readonly int _version;
+
+        public SingleVersionHubProtocol(IHubProtocol inner, int version)
+        {
+            _protocol = inner;
+            _version = version;
+        }
+
+        public string Name => _protocol.Name;
+
+        public int Version => _version;
+
+        public TransferFormat TransferFormat => _protocol.TransferFormat;
+
+        public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message) => _protocol.GetMessageBytes(message);
+
+        public bool IsVersionSupported(int version)
+        {
+            return version == _version;
+        }
+
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, [NotNullWhen(true)] out HubMessage message)
+        {
+            return _protocol.TryParseMessage(ref input, binder, out message);
+        }
+
+        public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
+        {
+            _protocol.WriteMessage(message, output);
         }
     }
 

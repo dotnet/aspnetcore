@@ -29,7 +29,7 @@ internal sealed partial class LongPollingServerTransport : IHttpTransport
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.LongPollingTransport");
     }
 
-    public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
+    public async Task<bool> ProcessRequestAsync(HttpContext context, CancellationToken token)
     {
         try
         {
@@ -43,7 +43,7 @@ internal sealed partial class LongPollingServerTransport : IHttpTransport
                     Log.LongPolling204(_logger);
                     context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
-                    return;
+                    return false;
                 }
 
                 // We're intentionally not checking cancellation here because we need to drain messages we've got so far,
@@ -109,6 +109,7 @@ internal sealed partial class LongPollingServerTransport : IHttpTransport
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             throw;
         }
+        return false;
     }
 
     private static partial class Log

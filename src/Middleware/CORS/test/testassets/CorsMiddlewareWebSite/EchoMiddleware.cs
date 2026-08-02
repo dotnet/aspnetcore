@@ -22,10 +22,7 @@ public class EchoMiddleware
     /// <returns>A <see cref="Task"/> that completes when writing to the response is done.</returns>
     public Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.Response.ContentType = "text/plain; charset=utf-8";
         var path = context.Request.PathBase + context.Request.Path + context.Request.QueryString;

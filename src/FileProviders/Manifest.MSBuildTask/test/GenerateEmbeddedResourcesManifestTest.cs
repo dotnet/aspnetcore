@@ -60,6 +60,28 @@ public class GenerateEmbeddedResourcesManifestTest
     }
 
     [Fact]
+    public void CreateEmbeddedItems_MapsMetadataFromEmbeddedResources_WithEmptyLogicalName()
+    {
+        // Arrange
+        var task = new TestGenerateEmbeddedResourcesManifest();
+        var embeddedFiles = CreateEmbeddedResource(
+            CreateMetadata("site.css"),
+            CreateMetadata(@"lib\js\jquery.validate.js", logicalName: string.Empty));
+
+        var expectedItems = new[]
+        {
+            CreateEmbeddedItem("site.css","site.css"),
+            CreateEmbeddedItem(@"lib\js\jquery.validate.js","lib.js.jquery.validate.js")
+        };
+
+        // Act
+        var embeddedItems = task.CreateEmbeddedItems(embeddedFiles);
+
+        // Assert
+        Assert.Equal(expectedItems, embeddedItems);
+    }
+
+    [Fact]
     public void BuildManifest_CanCreatesManifest_ForTopLevelFiles()
     {
         // Arrange

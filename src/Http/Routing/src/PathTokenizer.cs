@@ -5,7 +5,11 @@
 
 using System.Collections;
 using System.Diagnostics;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -46,18 +50,10 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
                 }
 
                 // This is a non-trivial PathString
-                _count = 1;
-
                 // Since a non-empty PathString must begin with a `/`, we can just count the number of occurrences
                 // of `/` to find the number of segments. However, we don't look at the last character, because
                 // routing ignores a trailing slash.
-                for (var i = 1; i < _path.Length - 1; i++)
-                {
-                    if (_path[i] == '/')
-                    {
-                        _count++;
-                    }
-                }
+                _count = _path.AsSpan(0, _path.Length - 1).Count('/');
             }
 
             return _count;
@@ -68,10 +64,7 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
     {
         get
         {
-            if (index >= Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
 
             var currentSegmentIndex = 0;
             var currentSegmentStart = 1;

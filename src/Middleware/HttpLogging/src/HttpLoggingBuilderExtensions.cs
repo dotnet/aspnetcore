@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
+using Resources = Microsoft.AspNetCore.HttpLogging.Resources;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -17,10 +20,9 @@ public static class HttpLoggingBuilderExtensions
     /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
     public static IApplicationBuilder UseHttpLogging(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+
+        VerifyHttpLoggingServicesAreRegistered(app);
 
         app.UseMiddleware<HttpLoggingMiddleware>();
         return app;
@@ -33,12 +35,35 @@ public static class HttpLoggingBuilderExtensions
     /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
     public static IApplicationBuilder UseW3CLogging(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+
+        VerifyW3CLoggingServicesAreRegistered(app);
 
         app.UseMiddleware<W3CLoggingMiddleware>();
         return app;
+    }
+
+    private static void VerifyHttpLoggingServicesAreRegistered(IApplicationBuilder app)
+    {
+        var serviceProviderIsService = app.ApplicationServices.GetService<IServiceProviderIsService>();
+        if (serviceProviderIsService != null && (!serviceProviderIsService.IsService(typeof(ObjectPool<HttpLoggingInterceptorContext>)) ||
+            !serviceProviderIsService.IsService(typeof(TimeProvider))))
+        {
+            throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                nameof(IServiceCollection),
+                nameof(HttpLoggingServicesExtensions.AddHttpLogging)));
+        }
+    }
+
+    private static void VerifyW3CLoggingServicesAreRegistered(IApplicationBuilder app)
+    {
+        var serviceProviderIsService = app.ApplicationServices.GetService<IServiceProviderIsService>();
+        if (serviceProviderIsService != null && (!serviceProviderIsService.IsService(typeof(W3CLoggerProcessor)) ||
+          !serviceProviderIsService.IsService(typeof(W3CLogger))))
+        {
+            throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                nameof(IServiceCollection),
+                nameof(HttpLoggingServicesExtensions.AddW3CLogging)));
+        }
     }
 }

@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -52,5 +52,16 @@ public class CertificateLoaderTests : LoggedTest
         Assert.NotEmpty(eku.EnhancedKeyUsages);
 
         Assert.False(CertificateLoader.IsCertificateAllowedForServerAuth(cert));
+    }
+
+    [Theory]
+    [InlineData("aspnetdevcert.pfx", true)]
+    [InlineData("no_extensions.pfx", false)]
+    public void DoesCertificateHaveASubjectAlternativeName(string testCertName, bool hasSan)
+    {
+        var certPath = TestResources.GetCertPath(testCertName);
+        TestOutputHelper.WriteLine("Loading " + certPath);
+        var cert = new X509Certificate2(certPath, "testPassword");
+        Assert.Equal(hasSan, CertificateLoader.DoesCertificateHaveASubjectAlternativeName(cert));
     }
 }

@@ -39,10 +39,7 @@ internal sealed class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public AntiforgeryTokenSet GetAndStoreTokens(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -79,10 +76,7 @@ internal sealed class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public AntiforgeryTokenSet GetTokens(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -93,20 +87,13 @@ internal sealed class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public async Task<bool> IsRequestValidAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
         var method = httpContext.Request.Method;
-        if (HttpMethods.IsGet(method) ||
-            HttpMethods.IsHead(method) ||
-            HttpMethods.IsOptions(method) ||
-            HttpMethods.IsTrace(method))
+        if (SafeHttpMethods.IsSafe(method))
         {
-            // Validation not needed for these request types.
             return true;
         }
 
@@ -151,10 +138,7 @@ internal sealed class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public async Task ValidateRequestAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -220,10 +204,7 @@ internal sealed class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public void SetCookieTokenAndHeader(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -281,7 +262,7 @@ internal sealed class DefaultAntiforgery : IAntiforgery
     private static IAntiforgeryFeature GetAntiforgeryFeature(HttpContext httpContext)
     {
         var antiforgeryFeature = httpContext.Features.Get<IAntiforgeryFeature>();
-        if (antiforgeryFeature == null)
+        if (antiforgeryFeature is null)
         {
             antiforgeryFeature = new AntiforgeryFeature();
             httpContext.Features.Set(antiforgeryFeature);

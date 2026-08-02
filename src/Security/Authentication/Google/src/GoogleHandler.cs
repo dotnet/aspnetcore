@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Authentication.Google;
 
@@ -23,8 +24,17 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
     /// Initializes a new instance of <see cref="GoogleHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public GoogleHandler(IOptionsMonitor<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="GoogleHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public GoogleHandler(IOptionsMonitor<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <inheritdoc />
@@ -58,27 +68,24 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
         // Google Identity Platform Manual:
         // https://developers.google.com/identity/protocols/OAuth2WebServer
 
-        var queryStrings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        queryStrings.Add("response_type", "code");
-        queryStrings.Add("client_id", Options.ClientId);
-        queryStrings.Add("redirect_uri", redirectUri);
+        // Some query params and features (e.g. PKCE) are handled by the base class but some params have to be modified or added here
+        var queryStrings = QueryHelpers.ParseQuery(new Uri(base.BuildChallengeUrl(properties, redirectUri)).Query);
 
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.ScopeKey, FormatScope, Options.Scope);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.AccessTypeKey, Options.AccessType);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
-        AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.ScopeKey, FormatScope, Options.Scope);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.AccessTypeKey, Options.AccessType);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
+        SetQueryParam(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
 
-        var state = Options.StateDataFormat.Protect(properties);
-        queryStrings.Add("state", state);
+        // Some properties are removed when setting query params above, so the state has to be reset
+        queryStrings["state"] = Options.StateDataFormat.Protect(properties);
 
-        var authorizationEndpoint = QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings!);
-        return authorizationEndpoint;
+        return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings);
     }
 
-    private static void AddQueryString<T>(
-        IDictionary<string, string> queryStrings,
+    private static void SetQueryParam<T>(
+        IDictionary<string, StringValues> queryStrings,
         AuthenticationProperties properties,
         string name,
         Func<T, string?> formatter,
@@ -104,10 +111,10 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
         }
     }
 
-    private static void AddQueryString(
-        IDictionary<string, string> queryStrings,
+    private static void SetQueryParam(
+        IDictionary<string, StringValues> queryStrings,
         AuthenticationProperties properties,
         string name,
         string? defaultValue = null)
-        => AddQueryString(queryStrings, properties, name, x => x, defaultValue);
+        => SetQueryParam(queryStrings, properties, name, x => x, defaultValue);
 }

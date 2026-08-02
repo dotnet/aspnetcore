@@ -1,0 +1,12 @@
+﻿<DeclarativePersistStateComponent @key="KeyDirective" InitialValue="@InitialValue" KeyName="@KeyName" />
+
+@code {
+    [Parameter, EditorRequired]
+    public string InitialValue { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string KeyName { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public object KeyDirective { get; set; }
+}

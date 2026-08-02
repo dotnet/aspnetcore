@@ -25,10 +25,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
                                       IOptions<DataProtectionTokenProviderOptions> options,
                                       ILogger<DataProtectorTokenProvider<TUser>> logger)
     {
-        if (dataProtectionProvider == null)
-        {
-            throw new ArgumentNullException(nameof(dataProtectionProvider));
-        }
+        ArgumentNullException.ThrowIfNull(dataProtectionProvider);
 
         Options = options?.Value ?? new DataProtectionTokenProviderOptions();
 
@@ -78,10 +75,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
     /// <returns>A <see cref="Task{TResult}"/> representing the generated token.</returns>
     public virtual async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
         var ms = new MemoryStream();
         var userId = await manager.GetUserIdAsync(user);
         using (var writer = ms.CreateWriter())
@@ -204,19 +198,13 @@ internal static class StreamExtensions
     internal static readonly Encoding DefaultEncoding = new UTF8Encoding(false, true);
 
     public static BinaryReader CreateReader(this Stream stream)
-    {
-        return new BinaryReader(stream, DefaultEncoding, true);
-    }
+        => new BinaryReader(stream, DefaultEncoding, true);
 
     public static BinaryWriter CreateWriter(this Stream stream)
-    {
-        return new BinaryWriter(stream, DefaultEncoding, true);
-    }
+        => new BinaryWriter(stream, DefaultEncoding, true);
 
     public static DateTimeOffset ReadDateTimeOffset(this BinaryReader reader)
-    {
-        return new DateTimeOffset(reader.ReadInt64(), TimeSpan.Zero);
-    }
+        => new DateTimeOffset(reader.ReadInt64(), TimeSpan.Zero);
 
     public static void Write(this BinaryWriter writer, DateTimeOffset value)
     {

@@ -5,12 +5,13 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Security.Claims;
-using System.Security.Principal;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,13 +23,17 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionItemsFeature,
                                      IConnectionTransportFeature,
                                      IConnectionUserFeature,
+                                     IConnectionUserRefreshFeature,
                                      IConnectionHeartbeatFeature,
                                      ITransferFormatFeature,
                                      IHttpContextFeature,
                                      IHttpTransportFeature,
                                      IConnectionInherentKeepAliveFeature,
                                      IConnectionLifetimeFeature,
-                                     IConnectionLifetimeNotificationFeature
+                                     IConnectionLifetimeNotificationFeature,
+#pragma warning disable CA2252 // This API requires opting into preview features
+                                     IStatefulReconnectFeature
+#pragma warning restore CA2252 // This API requires opting into preview features
 {
     private readonly HttpConnectionDispatcherOptions _options;
 
@@ -45,7 +50,15 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     private CancellationTokenSource? _sendCts;
     private bool _activeSend;
-    private long _startedSendTime;
+    private TimeSpan _startedSendTime;
+    private bool _useStatefulReconnect;
+    // Guards User swaps in UpdateUser so concurrent /refresh requests (or long-polling polls racing
+    // explicit /refresh requests) can't roll the connection back to an older identity.
+    private readonly object _userLock = new object();
+    // True only for the WindowsIdentity user clone created by the first long-polling request.
+    private bool _ownsUserIdentities;
+    private readonly object _userRefreshCallbackLock = new object();
+    private List<UserRefreshedCallbackRegistration>? _userRefreshedCallbacks;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -53,11 +66,14 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     // on the same task
     private readonly TaskCompletionSource _disposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+    internal Func<PipeWriter, Task>? NotifyOnReconnect { get; set; }
+
     /// <summary>
     /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
-    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
+    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext,
+        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);
@@ -65,7 +81,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         ConnectionId = connectionId;
         ConnectionToken = connectionToken;
-        LastSeenTicks = Environment.TickCount64;
+        LastSeenTicks = TimeSpan.FromMilliseconds(Environment.TickCount64);
         _options = options;
 
         // The default behavior is that both formats are supported.
@@ -73,10 +89,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         ActiveFormat = TransferFormat.Text;
 
         _logger = logger ?? NullLogger.Instance;
+        MetricsContext = metricsContext;
 
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
         Features.Set<IConnectionUserFeature>(this);
+        Features.Set<IConnectionUserRefreshFeature>(this);
         Features.Set<IConnectionItemsFeature>(this);
         Features.Set<IConnectionIdFeature>(this);
         Features.Set<IConnectionTransportFeature>(this);
@@ -88,17 +106,29 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Features.Set<IConnectionLifetimeFeature>(this);
         Features.Set<IConnectionLifetimeNotificationFeature>(this);
 
+        if (useStatefulReconnect)
+        {
+#pragma warning disable CA2252 // This API requires opting into preview features
+            Features.Set<IStatefulReconnectFeature>(this);
+#pragma warning restore CA2252 // This API requires opting into preview features
+        }
+
         _connectionClosedTokenSource = new CancellationTokenSource();
         ConnectionClosed = _connectionClosedTokenSource.Token;
 
         _connectionCloseRequested = new CancellationTokenSource();
         ConnectionClosedRequested = _connectionCloseRequested.Token;
         AuthenticationExpiration = DateTimeOffset.MaxValue;
+        _useStatefulReconnect = useStatefulReconnect;
     }
+
+    public bool UseStatefulReconnect => _useStatefulReconnect;
 
     public CancellationTokenSource? Cancellation { get; set; }
 
     public HttpTransportType TransportType { get; set; }
+
+    internal long StartTimestamp { get; set; }
 
     public SemaphoreSlim WriteLock { get; } = new SemaphoreSlim(1, 1);
 
@@ -112,15 +142,15 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
-    public Task? TransportTask { get; set; }
+    public Task<bool>? TransportTask { get; set; }
 
     public Task PreviousPollTask { get; set; } = Task.CompletedTask;
 
     public Task? ApplicationTask { get; set; }
 
-    public long LastSeenTicks { get; set; }
+    public TimeSpan LastSeenTicks { get; set; }
 
-    public long? LastSeenTicksIfInactive
+    public TimeSpan? LastSeenTicksIfInactive
     {
         get
         {
@@ -134,6 +164,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public HttpConnectionStatus Status { get; set; } = HttpConnectionStatus.Inactive;
 
     public override string ConnectionId { get; set; }
+
+    public MetricsContext MetricsContext { get; }
 
     internal string ConnectionToken { get; set; }
 
@@ -221,6 +253,111 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
+    public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var registration = new UserRefreshedCallbackRegistration(this, callback, state);
+        lock (_userRefreshCallbackLock)
+        {
+            _userRefreshedCallbacks ??= new List<UserRefreshedCallbackRegistration>();
+            _userRefreshedCallbacks.Add(registration);
+        }
+
+        return registration;
+    }
+
+    private void RemoveUserRefreshedCallback(UserRefreshedCallbackRegistration registration)
+    {
+        lock (_userRefreshCallbackLock)
+        {
+            _userRefreshedCallbacks?.Remove(registration);
+        }
+    }
+
+    /// <summary>
+    /// Updates the User/ClaimsPrincipal on this connection and refreshes the authentication expiration.
+    /// </summary>
+    /// <param name="user">The refreshed principal to apply to the connection.</param>
+    /// <param name="authenticationExpiration">The expiration of the refreshed authentication.</param>
+    /// <remarks>
+    /// The update is skipped if <paramref name="authenticationExpiration"/> is older than the currently
+    /// applied <see cref="AuthenticationExpiration"/>. This makes the staleness check and the swap atomic
+    /// so a caller racing a concurrent refresh that already applied a newer token can't roll the connection
+    /// back to an older identity.
+    /// </remarks>
+    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+    {
+        ClaimsPrincipal? previouslyOwnedUser = null;
+
+        lock (_userLock)
+        {
+            // A concurrent refresh (for example the /refresh endpoint racing a long-polling poll) may have
+            // already applied a newer token. Don't roll the connection back to an older one. Checking this
+            // under _userLock makes the decision atomic with the swap below.
+            if (authenticationExpiration != DateTimeOffset.MaxValue
+                && AuthenticationExpiration != DateTimeOffset.MaxValue
+                && authenticationExpiration < AuthenticationExpiration)
+            {
+                return;
+            }
+
+            if (_ownsUserIdentities && !ReferenceEquals(User, user))
+            {
+                previouslyOwnedUser = User;
+                _ownsUserIdentities = false;
+            }
+
+            User = user;
+            AuthenticationExpiration = authenticationExpiration;
+
+            // Also update the HttpContext's user if available
+            if (HttpContext is { } httpContext)
+            {
+                httpContext.User = user;
+            }
+        }
+
+        // Notify callbacks (e.g., the SignalR Hub layer) that the user has been updated. Invoke
+        // outside _userLock to avoid reentrancy/deadlock if a callback aborts/disposes the connection.
+        UserRefreshedCallbackRegistration[]? callbacks = null;
+        lock (_userRefreshCallbackLock)
+        {
+            if (_userRefreshedCallbacks is { Count: > 0 })
+            {
+                callbacks = _userRefreshedCallbacks.ToArray();
+            }
+        }
+
+        if (callbacks is not null)
+        {
+            foreach (var callback in callbacks)
+            {
+                try
+                {
+                    callback.Invoke(user);
+                }
+                catch (Exception ex)
+                {
+                    Log.UserRefreshedCallbackFailed(_logger, ex);
+                }
+            }
+        }
+
+        if (previouslyOwnedUser is not null)
+        {
+            DisposeOwnedIdentities(previouslyOwnedUser);
+        }
+    }
+
+    internal void MarkUserOwned()
+    {
+        lock (_userLock)
+        {
+            _ownsUserIdentities = true;
+        }
+    }
+
     public async Task DisposeAsync(bool closeGracefully = false)
     {
         Task disposeTask;
@@ -248,23 +385,37 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
         finally
         {
+            ClaimsPrincipal? ownedUser = null;
+            lock (_userLock)
+            {
+                if (_ownsUserIdentities)
+                {
+                    ownedUser = User;
+                    _ownsUserIdentities = false;
+                }
+            }
+
+            if (ownedUser is not null)
+            {
+                DisposeOwnedIdentities(ownedUser);
+            }
+
             Cancellation?.Dispose();
 
             Cancellation = null;
-
-            // Long Polling clones the windows identity if set
-            if (TransportType == HttpTransportType.LongPolling && User?.Identity is WindowsIdentity)
-            {
-                foreach (var identity in User.Identities)
-                {
-                    (identity as IDisposable)?.Dispose();
-                }
-            }
 
             ServiceScope?.Dispose();
         }
 
         await disposeTask;
+    }
+
+    private static void DisposeOwnedIdentities(ClaimsPrincipal user)
+    {
+        foreach (var identity in user.Identities)
+        {
+            (identity as IDisposable)?.Dispose();
+        }
     }
 
     private async Task WaitOnTasks(Task applicationTask, Task transportTask, bool closeGracefully)
@@ -381,6 +532,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     internal bool TryActivatePersistentConnection(
         ConnectionDelegate connectionDelegate,
         IHttpTransport transport,
+        Task currentRequestTask,
         HttpContext context,
         ILogger dispatcherLogger)
     {
@@ -390,11 +542,15 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             {
                 Status = HttpConnectionStatus.Active;
 
+                PreviousPollTask = currentRequestTask;
+
                 // Call into the end point passing the connection
-                ApplicationTask = ExecuteApplication(connectionDelegate);
+                ApplicationTask ??= ExecuteApplication(connectionDelegate);
 
                 // Start the transport
                 TransportTask = transport.ProcessRequestAsync(context, context.RequestAborted);
+
+                context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
 
                 return true;
             }
@@ -437,7 +593,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
                     // On the first poll, we flush the response immediately to mark the poll as "initialized" so future
                     // requests can be made safely
-                    TransportTask = nonClonedContext.Response.Body.FlushAsync();
+                    TransportTask = Func();
+                    async Task<bool> Func()
+                    {
+                        await nonClonedContext.Response.Body.FlushAsync();
+                        return false;
+                    };
                 }
                 else
                 {
@@ -517,6 +678,19 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             // Cancel the previous request
             cts?.Cancel();
 
+            // TODO: remove transport check once other transports support Stateful Reconnect
+            if (UseStatefulReconnect && TransportType == HttpTransportType.WebSockets)
+            {
+                // Break transport send loop in case it's still waiting on reading from the application
+                Application.Input.CancelPendingRead();
+                if (!UpdateConnectionPair())
+                {
+                    context.Response.ContentType = "text/plain";
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return false;
+                }
+            }
+
             try
             {
                 // Wait for the previous request to drain
@@ -534,6 +708,36 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
+    internal SetTransportState TrySetTransport(HttpTransportType transportType, HttpConnectionsMetrics metrics)
+    {
+        lock (_stateLock)
+        {
+            if (TransportType == HttpTransportType.None)
+            {
+                TransportType = transportType;
+
+                if (HttpConnectionsEventSource.Log.IsEnabled() || MetricsContext.ConnectionDurationEnabled)
+                {
+                    StartTimestamp = Stopwatch.GetTimestamp();
+                }
+
+                HttpConnectionsEventSource.Log.ConnectionStart(ConnectionId);
+
+                metrics.ConnectionTransportStart(MetricsContext, transportType);
+            }
+            else if (TransportType != transportType)
+            {
+                return SetTransportState.CannotChange;
+            }
+            else if (!ClientReconnectExpected())
+            {
+                return SetTransportState.AlreadyActive;
+            }
+
+            return SetTransportState.Success;
+        }
+    }
+
     public void MarkInactive()
     {
         lock (_stateLock)
@@ -541,7 +745,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             if (Status == HttpConnectionStatus.Active)
             {
                 Status = HttpConnectionStatus.Inactive;
-                LastSeenTicks = Environment.TickCount64;
+                LastSeenTicks = TimeSpan.FromMilliseconds(Environment.TickCount64);
             }
         }
     }
@@ -573,12 +777,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                 _sendCts = new CancellationTokenSource();
                 SendingToken = _sendCts.Token;
             }
-            _startedSendTime = Environment.TickCount64;
+            _startedSendTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
             _activeSend = true;
         }
     }
 
-    internal void TryCancelSend(long currentTicks)
+    internal void TryCancelSend(TimeSpan currentTicks)
     {
         if (!_options.TransportSendTimeoutEnabled)
         {
@@ -589,7 +793,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         {
             if (_activeSend)
             {
-                if (currentTicks - _startedSendTime > _options.TransportSendTimeoutTicks)
+                if (currentTicks - _startedSendTime > _options.TransportSendTimeout)
                 {
                     _sendCts!.Cancel();
 
@@ -615,6 +819,95 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public void RequestClose()
     {
         ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
+    }
+
+    private bool UpdateConnectionPair()
+    {
+        lock (_stateLock)
+        {
+            // Lock and check _useStatefulReconnect, we want to swap the Pipe completely before DisableReconnect returns if there is contention there.
+            // The calling code will start completing the transport after DisableReconnect
+            // so we want to avoid any possibility of the new Pipe staying alive or even worse a new WebSocket connection being open when the transport
+            // might think it's closed.
+            if (!_useStatefulReconnect)
+            {
+                return false;
+            }
+            var input = new Pipe(_options.TransportPipeOptions);
+
+            // Add new pipe for reading from and writing to transport from app code
+            var transportToApplication = new DuplexPipe(Transport.Input, input.Writer);
+            var applicationToTransport = new DuplexPipe(input.Reader, Application.Output);
+
+            Application = applicationToTransport;
+            Transport = transportToApplication;
+        }
+
+        return true;
+    }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+    public void DisableReconnect()
+#pragma warning restore CA2252 // This API requires opting into preview features
+    {
+        lock (_stateLock)
+        {
+            _useStatefulReconnect = false;
+        }
+    }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+    public void OnReconnected(Func<PipeWriter, Task> notifyOnReconnect)
+#pragma warning restore CA2252 // This API requires opting into preview features
+    {
+        if (NotifyOnReconnect is null)
+        {
+            NotifyOnReconnect = notifyOnReconnect;
+        }
+        else
+        {
+            var localOnReconnect = NotifyOnReconnect;
+            NotifyOnReconnect = async (writer) =>
+            {
+                await localOnReconnect(writer);
+                await notifyOnReconnect(writer);
+            };
+        }
+    }
+
+    // If the connection is using the Stateful Reconnect feature or using LongPolling
+    internal bool ClientReconnectExpected()
+    {
+        return UseStatefulReconnect == true || TransportType == HttpTransportType.LongPolling;
+    }
+
+    private sealed class UserRefreshedCallbackRegistration(
+        HttpConnectionContext connection,
+        Action<ClaimsPrincipal, object?> callback,
+        object? state) : IDisposable
+    {
+        private HttpConnectionContext? _connection = connection;
+
+        public void Invoke(ClaimsPrincipal user)
+        {
+            if (_connection is not null)
+            {
+                callback(user, state);
+            }
+        }
+
+        public void Dispose()
+        {
+            var connection = Interlocked.Exchange(ref _connection, null);
+            connection?.RemoveUserRefreshedCallback(this);
+        }
+    }
+
+    internal enum SetTransportState
+    {
+        Success,
+        AlreadyActive,
+        CannotChange,
     }
 
     private static partial class Log
@@ -645,5 +938,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         [LoggerMessage(9, LogLevel.Trace, "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.", EventName = "TransportSendTimeout")]
         public static partial void TransportSendTimeout(ILogger logger, TimeSpan timeout, string transportConnectionId);
+
+        [LoggerMessage(10, LogLevel.Error, "An IConnectionUserRefreshFeature.OnUserRefreshed callback threw an exception.", EventName = "UserRefreshedCallbackFailed")]
+        public static partial void UserRefreshedCallbackFailed(ILogger logger, Exception exception);
     }
 }

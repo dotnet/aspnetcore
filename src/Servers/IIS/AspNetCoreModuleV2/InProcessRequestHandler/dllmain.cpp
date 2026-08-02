@@ -24,10 +24,10 @@ DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 BOOL                g_fGlobalInitialize = FALSE;
 BOOL                g_fProcessDetach = FALSE;
 SRWLOCK             g_srwLockRH;
-IHttpServer *       g_pHttpServer = NULL;
+IHttpServer *       g_pHttpServer = nullptr;
 HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
-HANDLE              g_hEventLog = NULL;
+HANDLE              g_hEventLog = nullptr;
 bool                g_fInProcessApplicationCreated = false;
 std::string         g_errorPageContent;
 HINSTANCE           g_hServerModule;
@@ -50,11 +50,11 @@ InitializeGlobalConfiguration(
 
             if (pServer->IsCommandLineLaunch())
             {
-                g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
+                g_hEventLog = RegisterEventSource(nullptr, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
             }
             else
             {
-                g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_EVENT_PROVIDER);
+                g_hEventLog = RegisterEventSource(nullptr, ASPNETCORE_EVENT_PROVIDER);
             }
 
             DebugInitializeFromConfig(*pServer, *pHttpApplication);
@@ -85,6 +85,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         IN_PROCESS_HANDLER::StaticTerminate();
         ALLOC_CACHE_HANDLER::StaticTerminate();
         DebugStop();
+        break;
     default:
         break;
     }
@@ -140,12 +141,11 @@ CreateApplication(
             auto content = !g_errorPageContent.empty() ?
                 g_errorPageContent :
                 FILE_UTILITY::GetHtml(g_hServerModule,
-                    IN_PROCESS_RH_STATIC_HTML,
+                    ANCM_ERROR_PAGE,
                     errorContext.statusCode,
                     errorContext.subStatusCode,
                     errorContext.generalErrorType,
-                    errorContext.errorReason,
-                    "");
+                    errorContext.errorReason);
 
             auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer,
                 *pHttpApplication,

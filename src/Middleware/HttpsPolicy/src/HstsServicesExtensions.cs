@@ -19,14 +19,8 @@ public static class HstsServicesExtensions
     /// <returns></returns>
     public static IServiceCollection AddHsts(this IServiceCollection services, Action<HstsOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
         return services;
