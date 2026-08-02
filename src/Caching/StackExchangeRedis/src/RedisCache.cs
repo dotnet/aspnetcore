@@ -323,29 +323,35 @@ public class RedisCache : IDistributedCache, IDisposable
 
         // This also resets the LRU status as desired.
         // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
-        RedisValue[] results;
-        if (getData)
+        try
         {
-            results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
-        }
-        else
-        {
-            results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
-        }
+            RedisValue[] results;
+            if (getData)
+            {
+                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+            }
+            else
+            {
+                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+            }
 
-        // TODO: Error handling
-        if (results.Length >= 2)
-        {
-            MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            Refresh(_cache, key, absExpr, sldExpr);
-        }
+            if (results.Length >= 2)
+            {
+                MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
+                Refresh(_cache, key, absExpr, sldExpr);
+            }
 
-        if (results.Length >= 3 && results[2].HasValue)
-        {
-            return results[2];
-        }
+            if (results.Length >= 3 && results[2].HasValue)
+            {
+                return results[2];
+            }
 
-        return null;
+            return null;
+        }
+        catch (RedisConnectionException ex)
+        {
+            throw new InvalidOperationException("Redis cache connection failed. See inner exception for details.", ex);
+        }
     }
 
     private async Task<byte[]?> GetAndRefreshAsync(string key, bool getData, CancellationToken token = default(CancellationToken))
