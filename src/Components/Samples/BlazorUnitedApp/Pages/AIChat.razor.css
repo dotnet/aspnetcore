@@ -1,0 +1,51 @@
+.chat-configuration {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(16rem, 1fr));
+    gap: 1rem;
+    max-width: 60rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+}
+
+.chat-configuration label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.configuration-wide,
+.configuration-actions {
+    grid-column: 1 / -1;
+}
+
+.configuration-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.chat-page-host {
+    height: min(42rem, calc(100vh - 24rem));
+    min-height: 28rem;
+    margin-top: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.chat-page-host ::deep .sc-ai-chat-page {
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .chat-configuration {
+        grid-template-columns: 1fr;
+    }
+
+    .configuration-wide,
+    .configuration-actions {
+        grid-column: auto;
+    }
+}
