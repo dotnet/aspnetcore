@@ -11,12 +11,21 @@
     <AspNetCoreMajorVersion>11</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseVersionIteration>7</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">8.19.2</IdentityModelVersion>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">*-*</IdentityModelVersion>
-    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>rc</PreReleaseVersionLabel>
     <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
     <DotNetFinalVersionKind></DotNetFinalVersionKind>
+    <!--
+      Label and iteration used by packages that intentionally never stabilize. Such projects set
+      SuppressFinalPackageVersion=true and override PreReleaseVersionLabel/PreReleaseVersionIteration with these
+      values, so they keep producing dated prerelease versions (e.g. 11.0.0-preview.7.25580.1) even when the rest of
+      the repo builds RC or RTM versions. Overriding the label is required because Arcade builds the version suffix
+      from PreReleaseVersionLabel, and because the suffix logic is skipped entirely when that label is empty.
+    -->
+    <PreviewOnlyPackagePreReleaseVersionLabel>preview</PreviewOnlyPackagePreReleaseVersionLabel>
+    <PreviewOnlyPackagePreReleaseVersionIteration>7</PreviewOnlyPackagePreReleaseVersionIteration>
 
     <!-- PreReleaseBrandingLabel is automatically calculated based on PreReleaseVersionLabel -->
     <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'alpha'">Alpha $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
@@ -115,6 +124,7 @@
          This gets overriden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
     <MicrosoftCodeAnalysisSourceGeneratorVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisSourceGeneratorVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
+    <MicrosoftIdentityModelJsonWebTokensVersion>$(IdentityModelVersion)</MicrosoftIdentityModelJsonWebTokensVersion>
     <MicrosoftIdentityModelLoggingVersion>$(IdentityModelVersion)</MicrosoftIdentityModelLoggingVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>$(IdentityModelVersion)</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
     <MicrosoftIdentityModelProtocolsWsFederationVersion>$(IdentityModelVersion)</MicrosoftIdentityModelProtocolsWsFederationVersion>

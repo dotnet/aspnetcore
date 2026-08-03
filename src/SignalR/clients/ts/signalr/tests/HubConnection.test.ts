@@ -5,6 +5,7 @@ import { AbortError } from "../src/Errors";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
 import { HubMessage, IHubProtocol, MessageType } from "../src/IHubProtocol";
+import type { IAuthenticationRefreshOptions } from "../src/IAuthenticationRefreshOptions";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { TransferFormat } from "../src/ITransport";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
@@ -17,8 +18,8 @@ import { VerifyLogger } from "./Common";
 import { TestConnection } from "./TestConnection";
 import { delayUntil, PromiseSource, registerUnhandledRejectionHandler } from "./Utils";
 
-function createHubConnection(connection: IConnection, logger?: ILogger | null, protocol?: IHubProtocol | null) {
-    return HubConnection.create(connection, logger || NullLogger.instance, protocol || new JsonHubProtocol());
+function createHubConnection(connection: IConnection, logger?: ILogger | null, protocol?: IHubProtocol | null, authenticationRefreshOptions?: IAuthenticationRefreshOptions) {
+    return HubConnection.create(connection, logger || NullLogger.instance, protocol || new JsonHubProtocol(), undefined, undefined, undefined, undefined, authenticationRefreshOptions);
 }
 
 registerUnhandledRejectionHandler();
@@ -170,6 +171,7 @@ describe("HubConnection", () => {
                     expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
                 }
             });
+
         });
 
         it("sends close message", async () => {
@@ -190,6 +192,304 @@ describe("HubConnection", () => {
                     await hubConnection.stop();
                 }
             });
+        });
+    });
+
+    describe("authentication refresh", () => {
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        it("refreshes authentication manually and invokes refreshed callback", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                connection.features.authenticationRefresh = {
+                    refreshAuthentication: () => Promise.resolve(60),
+                };
+
+                let refreshedContextConnection: HubConnection | undefined;
+                let refreshedTokenLifetimeInSeconds: number | undefined;
+                let refreshedAt: Date | undefined;
+                const hubConnection = createHubConnection(connection, logger, undefined, {
+                    enableAutoRefresh: false,
+                    onAuthenticationRefreshed: (context) => {
+                        refreshedContextConnection = context.connection;
+                        refreshedTokenLifetimeInSeconds = context.newTokenLifetimeInSeconds;
+                        refreshedAt = context.refreshedAt;
+                    },
+                });
+
+                try {
+                    await hubConnection.start();
+
+                    const newTokenLifetimeInSeconds = await hubConnection.refreshAuthentication();
+
+                    expect(newTokenLifetimeInSeconds).toBe(60);
+                    expect(refreshedContextConnection).toBe(hubConnection);
+                    expect(refreshedTokenLifetimeInSeconds).toBe(60);
+                    expect(refreshedAt).toBeInstanceOf(Date);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("invokes failed callback and rejects manual refresh when refresh fails", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const refreshError = new Error("refresh failed");
+                const connection = new TestConnection();
+                connection.features.authenticationRefresh = {
+                    refreshAuthentication: () => Promise.reject(refreshError),
+                };
+
+                let failedContextConnection: HubConnection | undefined;
+                let failedError: Error | undefined;
+                const hubConnection = createHubConnection(connection, logger, undefined, {
+                    enableAutoRefresh: false,
+                    onAuthenticationRefreshFailed: (context) => {
+                        failedContextConnection = context.connection;
+                        failedError = context.error;
+                    },
+                });
+
+                try {
+                    await hubConnection.start();
+
+                    await expect(hubConnection.refreshAuthentication()).rejects.toThrow("refresh failed");
+                    expect(failedContextConnection).toBe(hubConnection);
+                    expect(failedError).toBe(refreshError);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("schedules automatic refresh from initial token lifetime", async () => {
+            jest.useFakeTimers();
+
+            await VerifyLogger.run(async (logger) => {
+                let refreshCount = 0;
+                const connection = new TestConnection(true, true);
+                connection.features.authenticationRefresh = {
+                    initialTokenLifetimeInSeconds: 100,
+                    refreshAuthentication: () => {
+                        refreshCount++;
+                        return Promise.resolve(120);
+                    },
+                };
+
+                const hubConnection = createHubConnection(connection, logger, undefined, {
+                    refreshBeforeExpirationInMilliseconds: 30_000,
+                });
+
+                try {
+                    await hubConnection.start();
+
+                    expect(jest.getTimerCount()).toBe(1);
+                    jest.advanceTimersByTime(69_999);
+                    await Promise.resolve();
+                    expect(refreshCount).toBe(0);
+
+                    jest.advanceTimersByTime(1);
+                    await Promise.resolve();
+                    await Promise.resolve();
+
+                    expect(refreshCount).toBe(1);
+                    expect(jest.getTimerCount()).toBe(1);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("schedules short-lived token refreshes before expiration", async () => {
+            jest.useFakeTimers();
+
+            await VerifyLogger.run(async (logger) => {
+                let refreshCount = 0;
+                const connection = new TestConnection(true, true);
+                connection.features.authenticationRefresh = {
+                    initialTokenLifetimeInSeconds: 10,
+                    refreshAuthentication: () => {
+                        refreshCount++;
+                        return Promise.resolve(undefined);
+                    },
+                };
+
+                const hubConnection = createHubConnection(connection, logger, undefined, {});
+
+                try {
+                    await hubConnection.start();
+
+                    expect(jest.getTimerCount()).toBe(1);
+                    jest.advanceTimersByTime(4_999);
+                    await Promise.resolve();
+                    expect(refreshCount).toBe(0);
+
+                    jest.advanceTimersByTime(1);
+                    await Promise.resolve();
+                    await Promise.resolve();
+
+                    expect(refreshCount).toBe(1);
+                    expect(jest.getTimerCount()).toBe(0);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("does not schedule automatic refresh unless configured", async () => {
+            jest.useFakeTimers();
+
+            await VerifyLogger.run(async (logger) => {
+                let refreshCount = 0;
+                const connection = new TestConnection(true, true);
+                connection.features.authenticationRefresh = {
+                    initialTokenLifetimeInSeconds: 60,
+                    refreshAuthentication: () => {
+                        refreshCount++;
+                        return Promise.resolve(undefined);
+                    },
+                };
+
+                const hubConnection = createHubConnection(connection, logger);
+
+                try {
+                    await hubConnection.start();
+
+                    expect(jest.getTimerCount()).toBe(0);
+                    jest.advanceTimersByTime(60_000);
+                    await Promise.resolve();
+
+                    expect(refreshCount).toBe(0);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("cleans up automatic refresh timer when stopped", async () => {
+            jest.useFakeTimers();
+
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection(true, true);
+                connection.features.authenticationRefresh = {
+                    initialTokenLifetimeInSeconds: 60,
+                    refreshAuthentication: () => Promise.resolve(undefined),
+                };
+
+                const hubConnection = createHubConnection(connection, logger, undefined, {});
+
+                await hubConnection.start();
+                expect(jest.getTimerCount()).toBe(1);
+
+                await hubConnection.stop();
+                expect(jest.getTimerCount()).toBe(0);
+            });
+        });
+
+        it("does not reschedule automatic refresh when stopped while refresh is in progress", async () => {
+            jest.useFakeTimers();
+
+            await VerifyLogger.run(async (logger) => {
+                const refreshStarted = new PromiseSource();
+                const refreshResult = new PromiseSource<number | undefined>();
+                const refreshed = new PromiseSource();
+                const connection = new TestConnection(true, true);
+                connection.features.authenticationRefresh = {
+                    initialTokenLifetimeInSeconds: 60,
+                    refreshAuthentication: () => {
+                        refreshStarted.resolve();
+                        return refreshResult.promise;
+                    },
+                };
+
+                const hubConnection = createHubConnection(connection, logger, undefined, {
+                    onAuthenticationRefreshed: () => refreshed.resolve(),
+                });
+
+                await hubConnection.start();
+                jest.advanceTimersByTime(30_000);
+                await refreshStarted.promise;
+
+                await hubConnection.stop();
+                expect(jest.getTimerCount()).toBe(0);
+
+                refreshResult.resolve(120);
+                await refreshed.promise;
+                await Promise.resolve();
+
+                expect(jest.getTimerCount()).toBe(0);
+            });
+        });
+
+        it("does not reschedule from a stale authentication refresh feature", async () => {
+            jest.useFakeTimers();
+
+            await VerifyLogger.run(async (logger) => {
+                const refreshStarted = new PromiseSource();
+                const refreshResult = new PromiseSource<number | undefined>();
+                const connection = new TestConnection(true, true);
+                connection.features.authenticationRefresh = {
+                    refreshAuthentication: () => {
+                        refreshStarted.resolve();
+                        return refreshResult.promise;
+                    },
+                };
+
+                const hubConnection = createHubConnection(connection, logger, undefined, {});
+
+                try {
+                    await hubConnection.start();
+                    expect(jest.getTimerCount()).toBe(0);
+
+                    const refreshPromise = hubConnection.refreshAuthentication();
+                    await refreshStarted.promise;
+
+                    connection.features.authenticationRefresh = {
+                        refreshAuthentication: () => Promise.resolve(120),
+                    };
+
+                    refreshResult.resolve(120);
+
+                    expect(await refreshPromise).toBe(120);
+                    expect(jest.getTimerCount()).toBe(0);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("logs automatic refresh failures after invoking failed callback", async () => {
+            jest.useFakeTimers();
+
+            const refreshError = new Error("refresh failed");
+            let failedError: Error | undefined;
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection(true, true);
+                connection.features.authenticationRefresh = {
+                    initialTokenLifetimeInSeconds: 60,
+                    refreshAuthentication: () => Promise.reject(refreshError),
+                };
+
+                const hubConnection = createHubConnection(connection, logger, undefined, {
+                    onAuthenticationRefreshFailed: (context) => {
+                        failedError = context.error;
+                    },
+                });
+
+                try {
+                    await hubConnection.start();
+
+                    jest.advanceTimersByTime(30_000);
+                    await Promise.resolve();
+                    await Promise.resolve();
+
+                    expect(failedError).toBe(refreshError);
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, /Authentication refresh failed: Error: refresh failed/);
         });
     });
 
