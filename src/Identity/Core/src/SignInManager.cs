@@ -557,7 +557,7 @@ public class SignInManager<TUser> where TUser : class
     /// </para>
     /// <para>
     /// Because these APIs reveal how many passkeys a user has, only call them when the user is authenticated.
-    /// The <paramref name="userEntity"/> must match the one passed to
+    /// The <paramref name="userEntity"/> must have the same <see cref="PasskeyUserEntity.Id"/> that was passed to
     /// <see cref="MakePasskeyCreationOptionsAsync(PasskeyUserEntity)"/> when the passkeys were created,
     /// otherwise the authenticator will not recognize the user and the signal will have no effect.
     /// </para>

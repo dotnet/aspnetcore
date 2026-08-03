@@ -380,7 +380,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         static async Task<string[]> GetSignalledCredentialIdsAsync(IPage page)
         {
             var options = await GetPasskeySignalAsync(page, "signalAllAcceptedCredentials");
-            return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id => NormalizeBase64(id.GetString()))];
+            return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id => id.GetString())];
         }
 
         static async Task<string[]> GetAuthenticatorCredentialsAsync(ICDPSession cdpSession, string authenticatorId)
@@ -389,12 +389,10 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             {
                 ["authenticatorId"] = authenticatorId,
             });
-            return [.. result.Value.GetProperty("credentials").EnumerateArray().Select(c => NormalizeBase64(c.GetProperty("credentialId").GetString()))];
+            var credentials = result.Value.GetProperty("credentials").EnumerateArray();
+            // The signal API uses base64url while CDP uses base64.
+            return [.. credentials.Select(c => Base64Url.EncodeToString(Convert.FromBase64String(c.GetProperty("credentialId").GetString())))];
         }
-
-        // The signal API uses base64url while CDP uses base64, so compare a canonical form.
-        static string NormalizeBase64(string value)
-            => value.Replace('+', '-').Replace('/', '_').TrimEnd('=');
     }
 
     protected void EnsureBrowserAvailable(BrowserKind browserKind)
