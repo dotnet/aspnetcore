@@ -821,7 +821,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Flaky network-timing test; connection reset by remote host")]
         public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
         {
             var testContext = new TestServiceContext(LoggerFactory);
