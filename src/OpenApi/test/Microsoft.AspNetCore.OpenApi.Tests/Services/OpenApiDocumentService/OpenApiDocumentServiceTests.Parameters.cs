@@ -310,10 +310,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
         // Assert
         var document = await VerifyOpenApiDocument(builder, _ => { });
-        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
         var expected = """
             {
-              "openapi": "3.0.4",
+              "openapi": "3.2.0",
               "info": {
                 "title": "OpenApiDocumentServiceTests | Test",
                 "version": "1.0.0"
@@ -388,10 +388,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
         // Assert
         var document = await VerifyOpenApiDocument(builder, _ => { });
-        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
         var expected = """
             {
-              "openapi": "3.0.4",
+              "openapi": "3.2.0",
               "info": {
                 "title": "OpenApiDocumentServiceTests | Test",
                 "version": "1.0.0"
@@ -406,11 +406,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                       "content": {
                         "multipart/form-data": {
                           "schema": {
+                            "description": "The Complex Object",
                             "$ref": "#/components/schemas/FormWithDescription"
                           }
                         },
                         "application/x-www-form-urlencoded": {
                           "schema": {
+                            "description": "The Complex Object",
                             "$ref": "#/components/schemas/FormWithDescription"
                           }
                         }
@@ -431,19 +433,24 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     "type": "object",
                     "properties": {
                       "name": {
-                        "type": "string",
-                        "description": "The name of the item",
-                        "nullable": true
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "description": "The name of the item"
                       },
                       "file": {
+                        "description": "The file to upload",
                         "$ref": "#/components/schemas/IFormFile"
                       }
                     }
                   },
                   "IFormFile": {
-                    "type": "string",
-                    "format": "binary",
-                    "nullable": true
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "binary"
                   }
                 }
               },
@@ -488,10 +495,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
         // Assert
         var document = await VerifyOpenApiDocument(builder, _ => { });
-        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
         var expected = """
             {
-              "openapi": "3.0.4",
+              "openapi": "3.2.0",
               "info": {
                 "title": "OpenApiDocumentServiceTests | Test",
                 "version": "1.0.0"
@@ -528,26 +535,29 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
               "components": {
                 "schemas": {
                   "IFormFile": {
-                    "type": "string",
-                    "format": "binary",
-                    "nullable": true
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "binary"
                   },
                   "NullableFormWithDescription": {
                     "type": "object",
                     "properties": {
                       "name": {
-                        "type": "string",
-                        "description": "The name of the item",
-                        "nullable": true
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "description": "The name of the item"
                       },
                       "file": {
                         "oneOf": [
                           {
-                            "enum": [
-                              null
-                            ]
+                            "type": "null"
                           },
                           {
+                            "description": "The file to upload",
                             "$ref": "#/components/schemas/IFormFile"
                           }
                         ]
