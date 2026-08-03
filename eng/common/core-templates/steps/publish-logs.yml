@@ -30,7 +30,6 @@ steps:
       -TokensFilePath '$(System.DefaultWorkingDirectory)/eng/BinlogSecretsRedactionFile.txt'
       '$(publishing-dnceng-devdiv-code-r-build-re)'
       '$(MaestroAccessToken)'
-      '$(dn-bot-all-orgs-artifact-feeds-rw)'
       '$(akams-client-id)'
       '$(microsoft-symbol-server-pat)'
       '$(symweb-symbol-server-pat)'
