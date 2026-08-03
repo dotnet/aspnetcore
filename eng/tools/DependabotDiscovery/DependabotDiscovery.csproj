@@ -108,6 +108,7 @@
     <PackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
   </ItemGroup>
 
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <!-- Microsoft.Owin.* only ship a net45 asset; the default TFM above can't restore them. -->
     <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesVersion)" />
