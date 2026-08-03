@@ -17,6 +17,7 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
   </ItemGroup>
 
 </Project>
