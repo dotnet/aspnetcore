@@ -79,16 +79,32 @@ public class RemoteAuthenticationStartup
                         return Results.Redirect($"{redirect_uri}?error=invalid_request&error_description=extraQueryParams%20not%20preserved&state={state}");
                     }
 
-                    if (string.Equals(callbackResponseMode, "fragment", StringComparison.Ordinal))
+                    if (!string.IsNullOrEmpty(callbackResponseMode))
                     {
                         callbackError ??= "access_denied";
-                        var fragment = $"error={Uri.EscapeDataString(callbackError)}&state={Uri.EscapeDataString(state ?? string.Empty)}";
+                        var error = $"error={Uri.EscapeDataString(callbackError)}";
                         if (!string.IsNullOrEmpty(callbackErrorDescription))
                         {
-                            fragment += $"&error_description={Uri.EscapeDataString(callbackErrorDescription)}";
+                            error += $"&error_description={Uri.EscapeDataString(callbackErrorDescription)}";
                         }
 
-                        return Results.Redirect($"{redirect_uri}#{fragment}");
+                        var escapedState = Uri.EscapeDataString(state ?? string.Empty);
+
+                        // The client is configured for the authorization code flow, so 'query' is
+                        // where the callback parameters belong for these tests.
+                        if (string.Equals(callbackResponseMode, "query", StringComparison.Ordinal))
+                        {
+                            return Results.Redirect($"{redirect_uri}?{error}&state={escapedState}");
+                        }
+
+                        // Emits a well-formed query callback while also placing an unrelated error in
+                        // the fragment. A code-flow client must ignore the fragment entirely.
+                        if (string.Equals(callbackResponseMode, "strayFragment", StringComparison.Ordinal))
+                        {
+                            return Results.Redirect($"{redirect_uri}?state={escapedState}#{error}");
+                        }
+
+                        return Results.BadRequest($"Unsupported callbackResponseMode '{callbackResponseMode}'.");
                     }
 
                     lastCode = Random.Shared.Next().ToString(CultureInfo.InvariantCulture);

@@ -381,14 +381,40 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
+    // Determines where the authorization server places the callback parameters for the
+    // configured flow, per OAuth 2.0 Multiple Response Type Encoding Practices §2 and §2.1.
+    // The response mode is authoritative when it is explicitly configured; otherwise the
+    // default is defined by the response type. This is deterministic: it never depends on
+    // what happens to be present in the callback URL.
+    private getCallbackParameterLocation(): 'query' | 'fragment' {
+        const { response_mode, response_type } = this._userManager.settings;
+
+        if (response_mode) {
+            // 'form_post' delivers the parameters in a POST body rather than in the URL, so
+            // there is nothing to read from the fragment; treat it like 'query'.
+            return response_mode === 'fragment' ? 'fragment' : 'query';
+        }
+
+        if (!response_type) {
+            return 'query';
+        }
+
+        // 'code' (authorization code flow) defaults to 'query'. Any response type that
+        // returns a token directly from the authorization endpoint (implicit and hybrid
+        // flows) defaults to 'fragment'.
+        const responseTypes = response_type.trim().split(/\s+/);
+        return responseTypes.some(type => type === 'token' || type === 'id_token')
+            ? 'fragment'
+            : 'query';
+    }
+
     private getUrlParameter(url: string, parameterName: string): string | null {
         const parsedUrl = new URL(url);
-        const hashContent = parsedUrl.hash.substring(1);
-        // Only parse fragment as OIDC params if it doesn't look like a router path
-        const fromHash = hashContent && !hashContent.startsWith('/')
-            ? new URLSearchParams(hashContent).get(parameterName)
-            : null;
-        return fromHash ?? parsedUrl.searchParams.get(parameterName);
+        if (this.getCallbackParameterLocation() === 'fragment') {
+            return new URLSearchParams(parsedUrl.hash.substring(1)).get(parameterName);
+        }
+
+        return parsedUrl.searchParams.get(parameterName);
     }
 
     private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
