@@ -78,7 +78,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 ActionContext = new ActionContext()
                 {
-                    HttpContext = new DefaultHttpContext(),
+                    HttpContext = new DefaultHttpContext()
+                    {
+                        RequestServices = new ServiceCollection().BuildServiceProvider(),
+                    },
                 },
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
