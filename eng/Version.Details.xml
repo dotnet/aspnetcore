@@ -121,7 +121,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="8.0.30-servicing.26367.20">
+    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="8.0.30-servicing.26403.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a83db3e0eb2defb6220e15dae2f1a0462fdbf99f</Sha>
     </Dependency>
@@ -185,7 +185,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="8.0.30-servicing.26367.20">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="8.0.30-servicing.26403.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a83db3e0eb2defb6220e15dae2f1a0462fdbf99f</Sha>
     </Dependency>
@@ -320,7 +320,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a83db3e0eb2defb6220e15dae2f1a0462fdbf99f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.30-servicing.26367.20">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.30-servicing.26403.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a83db3e0eb2defb6220e15dae2f1a0462fdbf99f</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
@@ -329,7 +329,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a83db3e0eb2defb6220e15dae2f1a0462fdbf99f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="8.0.30-servicing.26367.20">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="8.0.30-servicing.26403.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a83db3e0eb2defb6220e15dae2f1a0462fdbf99f</Sha>
     </Dependency>
@@ -368,7 +368,7 @@
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="8.0.30-servicing.26367.20">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="8.0.30-servicing.26403.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a83db3e0eb2defb6220e15dae2f1a0462fdbf99f</Sha>
     </Dependency>
