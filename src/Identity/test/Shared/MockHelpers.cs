@@ -34,33 +34,45 @@ namespace Microsoft.AspNetCore.Identity.Test
                 new IdentityErrorDescriber(), null);
         }
 
-        public static Mock<ILogger<T>> MockILogger<T>(StringBuilder logStore = null) where T : class
+        public static ILogger<T> MockILogger<T>(StringBuilder logStore = null) where T : class
         {
-            logStore = logStore ?? LogMessage;
-            var logger = new Mock<ILogger<T>>();
-            logger.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(),
-                It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback((LogLevel logLevel, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter) =>
-                {
-                    if (formatter == null)
-                    {
-                        logStore.Append(state.ToString());
-                    }
-                    else
-                    {
-                        logStore.Append(formatter(state, exception));
-                    }
-                    logStore.Append(" ");
-                });
-            logger.Setup(x => x.BeginScope(It.IsAny<object>())).Callback((object state) =>
-                {
-                    logStore.Append(state.ToString());
-                    logStore.Append(" ");
-                });
-            logger.Setup(x => x.IsEnabled(LogLevel.Debug)).Returns(true);
-            logger.Setup(x => x.IsEnabled(LogLevel.Warning)).Returns(true);
+            // Moq (pinned to an old version in this branch) cannot intercept ILogger.Log<TState>
+            // when TState is the internal Microsoft.Extensions.Logging.FormattedLogValues type used
+            // by newer Microsoft.Extensions.Logging.Abstractions versions, so a hand-written fake is
+            // used instead of a Moq-based mock.
+            return new CapturingLogger<T>(logStore ?? LogMessage);
+        }
 
-            return logger;
+        private class CapturingLogger<T> : ILogger<T>
+        {
+            private readonly StringBuilder _logStore;
+
+            public CapturingLogger(StringBuilder logStore)
+            {
+                _logStore = logStore;
+            }
+
+            public IDisposable BeginScope<TState>(TState state)
+            {
+                _logStore.Append(state.ToString());
+                _logStore.Append(" ");
+                return null;
+            }
+
+            public bool IsEnabled(LogLevel logLevel) => logLevel == LogLevel.Debug || logLevel == LogLevel.Warning;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                if (formatter == null)
+                {
+                    _logStore.Append(state.ToString());
+                }
+                else
+                {
+                    _logStore.Append(formatter(state, exception));
+                }
+                _logStore.Append(" ");
+            }
         }
 
         public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null) where TUser : class

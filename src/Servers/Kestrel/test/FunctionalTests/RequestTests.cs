@@ -49,6 +49,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private const int _connectionResetEventId = 19;
         private static readonly int _semaphoreWaitTimeout = Debugger.IsAttached ? 10000 : 2500;
 
+        private ILoggerFactory CreateKestrelLoggerFactory(Action<LogLevel, EventId, string, Exception> callback, params string[] categories)
+        {
+            return new DelegatingLoggerFactory(
+                Logger,
+                new DelegatingLogger(Logger, callback),
+                categories);
+        }
+
         public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
@@ -347,41 +355,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var connectionReadFin = new SemaphoreSlim(0);
             var loggedHigherThanDebug = false;
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            var loggerFactory = CreateKestrelLoggerFactory((logLevel, eventId, message, exception) =>
+            {
+                if (eventId.Id == _connectionStartedEventId)
                 {
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                    if (eventId.Id == _connectionStartedEventId)
-                    {
-                        connectionStarted.Release();
-                    }
-                    else if (eventId.Id == _connectionReadFinEventId)
-                    {
-                        connectionReadFin.Release();
-                    }
+                    connectionStarted.Release();
+                }
+                else if (eventId.Id == _connectionReadFinEventId)
+                {
+                    connectionReadFin.Release();
+                }
 
-                    if (logLevel > LogLevel.Debug)
-                    {
-                        loggedHigherThanDebug = true;
-                    }
-                });
+                if (logLevel > LogLevel.Debug)
+                {
+                    loggedHigherThanDebug = true;
+                }
+            });
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
-
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(loggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -409,41 +400,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var connectionReset = new SemaphoreSlim(0);
             var loggedHigherThanDebug = false;
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            var loggerFactory = CreateKestrelLoggerFactory((logLevel, eventId, message, exception) =>
+            {
+                if (eventId.Id == _connectionStartedEventId)
                 {
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                    if (eventId.Id == _connectionStartedEventId)
-                    {
-                        connectionStarted.Release();
-                    }
-                    else if (eventId.Id == _connectionResetEventId)
-                    {
-                        connectionReset.Release();
-                    }
+                    connectionStarted.Release();
+                }
+                else if (eventId.Id == _connectionResetEventId)
+                {
+                    connectionReset.Release();
+                }
 
-                    if (logLevel > LogLevel.Debug)
-                    {
-                        loggedHigherThanDebug = true;
-                    }
-                });
+                if (logLevel > LogLevel.Debug)
+                {
+                    loggedHigherThanDebug = true;
+                }
+            });
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
-
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(loggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -470,37 +444,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var loggedHigherThanDebug = false;
 
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            var loggerFactory = CreateKestrelLoggerFactory((logLevel, eventId, message, exception) =>
+            {
+                if (eventId.Id == _connectionReadFinEventId)
                 {
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                    if (eventId.Id == _connectionReadFinEventId)
-                    {
-                        connectionReadFin.Release();
-                    }
+                    connectionReadFin.Release();
+                }
 
-                    if (logLevel > LogLevel.Debug)
-                    {
-                        loggedHigherThanDebug = true;
-                    }
-                });
+                if (logLevel > LogLevel.Debug)
+                {
+                    loggedHigherThanDebug = true;
+                }
+            });
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
-
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(loggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -541,37 +498,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var connectionReset = new SemaphoreSlim(0);
             var loggedHigherThanDebug = false;
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            var loggerFactory = CreateKestrelLoggerFactory((logLevel, eventId, message, exception) =>
+            {
+                if (eventId.Id == _connectionResetEventId)
                 {
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                    if (eventId.Id == _connectionResetEventId)
-                    {
-                        connectionReset.Release();
-                    }
+                    connectionReset.Release();
+                }
 
-                    if (logLevel > LogLevel.Debug)
-                    {
-                        loggedHigherThanDebug = true;
-                    }
-                });
+                if (logLevel > LogLevel.Debug)
+                {
+                    loggedHigherThanDebug = true;
+                }
+            });
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
-
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(loggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -613,45 +553,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var connectionClosing = new SemaphoreSlim(0);
             var loggedHigherThanDebug = false;
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            var loggerFactory = CreateKestrelLoggerFactory((logLevel, eventId, message, exception) =>
+            {
+                var log = $"Log {logLevel}[{eventId}]: {message} {exception}";
+                TestOutputHelper.WriteLine(log);
+
+                if (eventId.Id == _connectionResetEventId)
                 {
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                    var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
-                    TestOutputHelper.WriteLine(log);
+                    connectionReset.Release();
+                }
 
-                    if (eventId.Id == _connectionResetEventId)
-                    {
-                        connectionReset.Release();
-                    }
-
-                    if (logLevel > LogLevel.Debug)
-                    {
-                        loggedHigherThanDebug = true;
-                    }
-                });
-
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
+                if (logLevel > LogLevel.Debug)
+                {
+                    loggedHigherThanDebug = true;
+                }
+            });
 
             using (var server = new TestServer(async context =>
                 {
                     requestStarted.Release();
                     await connectionClosing.WaitAsync();
                 },
-                new TestServiceContext(mockLoggerFactory.Object)))
+                new TestServiceContext(loggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1480,13 +1403,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var serverRstConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            var loggerFactory = CreateKestrelLoggerFactory(
+                (logLevel, eventId, message, exception) =>
                 {
                     if (eventId.Id == connectionPausedEventId)
                     {
@@ -1500,21 +1418,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         serverRstConnection.TrySetResult(null);
                     }
-
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                });
-
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
+                },
+                "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
+                "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
 
             var mockKestrelTrace = new Mock<KestrelTrace>(Logger) { CallBase = true };
-            var testContext = new TestServiceContext(mockLoggerFactory.Object)
+            var testContext = new TestServiceContext(loggerFactory)
             {
                 Log = mockKestrelTrace.Object,
                 ServerOptions =
@@ -2189,6 +2098,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var facts = JsonConvert.DeserializeObject<JObject>(connectionFacts);
                 Assert.Equal(expectAddress, facts["RemoteIPAddress"].Value<string>());
                 Assert.NotEmpty(facts["RemotePort"].Value<string>());
+            }
+        }
+
+        private class DelegatingLoggerFactory : ILoggerFactory
+        {
+            private readonly ILogger _defaultLogger;
+            private readonly ILogger _kestrelLogger;
+            private readonly string[] _interceptedCategories;
+
+            public DelegatingLoggerFactory(ILogger defaultLogger, ILogger kestrelLogger, string[] interceptedCategories)
+            {
+                _defaultLogger = defaultLogger;
+                _kestrelLogger = kestrelLogger;
+                _interceptedCategories = interceptedCategories?.Length > 0
+                    ? interceptedCategories
+                    : new[]
+                    {
+                        "Microsoft.AspNetCore.Server.Kestrel",
+                        "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
+                        "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets"
+                    };
+            }
+
+            public void AddProvider(ILoggerProvider provider)
+            {
+            }
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                foreach (var interceptedCategory in _interceptedCategories)
+                {
+                    if (categoryName == interceptedCategory)
+                    {
+                        return _kestrelLogger;
+                    }
+                }
+
+                return _defaultLogger;
+            }
+
+            public void Dispose()
+            {
+            }
+        }
+
+        private class DelegatingLogger : ILogger
+        {
+            private readonly ILogger _inner;
+            private readonly Action<LogLevel, EventId, string, Exception> _callback;
+
+            public DelegatingLogger(ILogger inner, Action<LogLevel, EventId, string, Exception> callback)
+            {
+                _inner = inner;
+                _callback = callback;
+            }
+
+            public IDisposable BeginScope<TState>(TState state)
+            {
+                return _inner.BeginScope(state);
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return true;
+            }
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                // Moq 4.7.145 cannot intercept ILogger.Log<TState> once newer logging abstractions
+                // pass the internal FormattedLogValues type as TState, so these tests use a real logger.
+                _inner.Log(logLevel, eventId, state, exception, formatter);
+                _callback?.Invoke(logLevel, eventId, formatter != null ? formatter(state, exception) : Convert.ToString(state), exception);
             }
         }
 

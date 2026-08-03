@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
             var logger = MockHelpers.MockILogger<SignInManager<PocoUser>>(logStore);
-            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger.Object, new Mock<IAuthenticationSchemeProvider>().Object);
+            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
             var logger = MockHelpers.MockILogger<SignInManager<PocoUser>>(logStore);
-            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger.Object, new Mock<IAuthenticationSchemeProvider>().Object);
+            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object);
 
             // Act
             var result = await helper.CheckPasswordSignInAsync(user, "bogus", false);
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options.Object);
             var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
-            sm.Logger = MockHelpers.MockILogger<SignInManager<PocoUser>>(logStore ?? new StringBuilder()).Object;
+            sm.Logger = MockHelpers.MockILogger<SignInManager<PocoUser>>(logStore ?? new StringBuilder());
             return sm;
         }
 
