@@ -180,24 +180,30 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public virtual void CancelsOutdatedRefreshes_Async()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var cancellationCount = Browser.Exists(By.Id("cancellation-count"));
         var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
         var js = (IJavaScriptExecutor)Browser;
 
-        // Load the initial set of items.
         finishLoadingButton.Click();
 
-        // Validate that there are no initial cancellations.
-        Browser.Equal("0", () => cancellationCount.Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("cancellation-count")).Text);
 
-        // Validate that scrolling causes cancellations
         for (var y = 1000; y <= 5000; y += 1000)
         {
             js.ExecuteScript($"document.getElementById('async-container').scrollTo({{ top: {y} }})");
-            Browser.Equal(y, () => (long)js.ExecuteScript("return document.getElementById('async-container').scrollTop"));
+            var targetY = y;
+            Browser.True(() =>
+            {
+                var scrollTop = (long)js.ExecuteScript("return document.getElementById('async-container').scrollTop");
+                return scrollTop == targetY;
+            });
         }
 
-        Browser.True(() => int.Parse(cancellationCount.Text, CultureInfo.InvariantCulture) > 0);
+        Browser.True(() =>
+        {
+            var text = Browser.FindElement(By.Id("cancellation-count")).Text;
+            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
+                && count > 0;
+        });
     }
 
     [Fact]
