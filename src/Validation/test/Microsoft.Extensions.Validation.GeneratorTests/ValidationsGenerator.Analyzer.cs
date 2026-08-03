@@ -82,7 +82,7 @@ internal class InternalModel
     }
 
     [Fact]
-    public async Task ReportsNonPublicProperty_WithValidationAttribute()
+    public async Task InternalPropertyInDeeperTypeIsNotAnalyzed()
     {
         var source = AnalyzerPreamble + """
 
@@ -96,10 +96,11 @@ public class PublicWithInternalChildPropModel
     }
 }
 """;
+        // Ideally, we should have a diagnostic here for the internal property.
+        // But we are bringing the analyzer scope down to avoid potential false positives.
+        // A false negative is better than a false positive for now.
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
-        var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0034", diagnostic.Id);
-        Assert.Contains("Name", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Empty(diagnostics);
     }
 
     [Fact]
@@ -121,7 +122,7 @@ public class PublicWithInternalChildModel
     }
 
     [Fact]
-    public async Task ReportsTypeNotInGraph_ForConcreteTypeImplementingValidatableInterface()
+    public async Task DoesNotReportTypeNotInGraph_ForConcreteTypeImplementingValidatableInterface()
     {
         var source = AnalyzerPreamble + """
 
@@ -140,9 +141,12 @@ public class ChildWithIValidatableObject
     }
 }
 """;
+        // Ideally, we should have a diagnostic here for the TheChild class which is
+        // reachable at runtime but not part of the validatable type graph.
+        // But we are bringing the analyzer scope down to avoid potential false positives.
+        // A false negative is better than a false positive for now.
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
-        var diagnostic = Assert.Single(diagnostics.Where(d => d.Id == "ASP0035"));
-        Assert.Contains("TheChild", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Empty(diagnostics);
     }
 
     [Fact]

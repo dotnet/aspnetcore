@@ -55,23 +55,11 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         description: null,
         helpLinkUri: GetHelpLinkUri("ASP0034"));
 
-    internal static readonly DiagnosticDescriptor ValidatableTypeNotInGraph = new(
-        "ASP0035",
-        "Type participating in validation is not part of the validatable graph",
-        "The type '{0}' implements or derives from '{1}', which participates in validation, but '{0}' itself is not part of the validatable graph and declares validation that is silently skipped at run time. Add [ValidatableType] to '{0}'.",
-        Usage,
-        DiagnosticSeverity.Warning,
-        isEnabledByDefault: true,
-        description: null,
-        helpLinkUri: GetHelpLinkUri("ASP0035"),
-        WellKnownDiagnosticTags.CompilationEnd);
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
         [
             ValidatableTypeIsNotAccessible,
             EndpointParameterTypeIsNotAccessible,
             ValidatablePropertyIsNotAccessible,
-            ValidatableTypeNotInGraph,
         ];
 
     public override void Initialize(AnalysisContext context)
@@ -85,7 +73,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         => type is INamedTypeSymbol { IsFileLocal: true } ||
             type.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal);
 
-    private static void AddRecursiveTypes(
+    private static void AnalyzeType(
         Action<Diagnostic> reportDiagnostic,
         INamedTypeSymbol skipValidationAttributeSymbol,
         ITypeSymbol currentType,
@@ -108,12 +96,8 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            if (property.DeclaredAccessibility is Accessibility.Public &&
-                !IsInaccessibleFromGeneratedCode(property.Type))
-            {
-                AddRecursiveTypes(reportDiagnostic, skipValidationAttributeSymbol, property.Type, allValidatableTypes);
-            }
-            else
+            if (property.DeclaredAccessibility is not Accessibility.Public ||
+                IsInaccessibleFromGeneratedCode(property.Type))
             {
                 reportDiagnostic(Diagnostic.Create(
                     ValidatablePropertyIsNotAccessible,
@@ -159,7 +143,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         return;
                     }
 
-                    AddRecursiveTypes(context.ReportDiagnostic, skipValidationAttribute, attributedType, allValidatableTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, attributedType, allValidatableTypes);
                 }
             }, OperationKind.Attribute);
         }
@@ -224,10 +208,8 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    AddRecursiveTypes(context.ReportDiagnostic, skipValidationAttribute, parameter.Type, allValidatableTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, parameter.Type, allValidatableTypes);
                 }
-
-                RunCompilationEndAnalysis(context, allValidatableTypes, reachableAtRuntimeCandidates);
             }
         });
     }
@@ -279,46 +261,5 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         }
 
         return true;
-    }
-
-    private static void RunCompilationEndAnalysis(
-        CompilationAnalysisContext context,
-        ConcurrentDictionary<ITypeSymbol, byte> allValidatableTypes,
-        ConcurrentQueue<INamedTypeSymbol> reachableAtRuntimeCandidates)
-    {
-        foreach (var candidate in reachableAtRuntimeCandidates)
-        {
-            if (allValidatableTypes.ContainsKey(candidate))
-            {
-                continue;
-            }
-
-            var baseType = candidate.BaseType;
-            while (baseType is not null)
-            {
-                if (allValidatableTypes.ContainsKey(baseType))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        ValidatableTypeNotInGraph,
-                        candidate.Locations.FirstOrDefault(),
-                        candidate.ToDisplayString(),
-                        baseType.ToDisplayString()));
-                }
-
-                baseType = baseType.BaseType;
-            }
-
-            foreach (var @interface in candidate.AllInterfaces)
-            {
-                if (allValidatableTypes.ContainsKey(@interface))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        ValidatableTypeNotInGraph,
-                        candidate.Locations.FirstOrDefault(),
-                        candidate.ToDisplayString(),
-                        @interface.ToDisplayString()));
-                }
-            }
-        }
     }
 }
