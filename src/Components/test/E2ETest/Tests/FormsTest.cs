@@ -468,7 +468,6 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     public void CanWireUpINotifyPropertyChangedToEditContext()
     {
         var appElement = Browser.MountTestComponent<NotifyPropertyChangedValidationComponent>();
-        // Wait for the user-name element to be rendered before finding child elements
         Browser.Exists(By.ClassName("user-name"));
         var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
         var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
