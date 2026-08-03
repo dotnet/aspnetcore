@@ -3,7 +3,6 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -495,28 +494,10 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <returns><see langword="true"/> if the schema will be componentized; otherwise, <see langword="false"/>.</returns>
     internal static bool WillBeComponentized(this JsonNode schema)
-        => schema.WillBeComponentized(out _);
-
-    /// <summary>
-    /// Determines whether the specified JSON schema node contains a componentized schema identifier.
-    /// </summary>
-    /// <param name="schema">The JSON schema node to inspect for a componentized schema identifier.</param>
-    /// <param name="schemaId">When this method returns <see langword="true"/>, contains the schema identifier found in the node; otherwise,
-    /// <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if the schema will be componentized; otherwise, <see langword="false"/>.</returns>
-    internal static bool WillBeComponentized(this JsonNode schema, [NotNullWhen(true)] out string? schemaId)
     {
-        if (schema[OpenApiConstants.SchemaId] is JsonNode schemaIdNode
-            && schemaIdNode.GetValueKind() == JsonValueKind.String)
-        {
-            schemaId = schemaIdNode.GetValue<string>();
-            if (!string.IsNullOrEmpty(schemaId))
-            {
-                return true;
-            }
-        }
-        schemaId = null;
-        return false;
+        return (schema[OpenApiConstants.SchemaId] is JsonNode schemaIdNode
+            && schemaIdNode.GetValueKind() == JsonValueKind.String &&
+            !string.IsNullOrEmpty(schemaIdNode.GetValue<string>()));
     }
 
     /// <summary>
