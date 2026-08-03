@@ -314,7 +314,6 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52573")]
     [ConditionalTheory]
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
@@ -324,6 +323,31 @@ public class Http3RequestTests : LoggedTest
         // Arrange
         string contentType = null;
         string authority = null;
+        // The "StreamPooled" trace log is written inside _poolLock immediately after
+        // StreamPool.Push, so by the time we observe it the first request's stream is
+        // already available in the connection's pool and the second request's AcceptAsync
+        // is guaranteed to pop it (reusing the same HttpRequestHeaders instance). The
+        // original WaitForLogAsync used a 100ms-initial-delay poll that was too coarse on
+        // CI: the second request could be accepted on a fresh stream context before the
+        // first stream was pooled. We subscribe to TestSink.MessageLogged BEFORE the first
+        // request so we cannot miss the log, and wait on a TCS that fires from the event.
+        // This is the same synchronization guarantee as the original log-wait, but with
+        // millisecond-level precision instead of 100ms.
+        var pooledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Action<WriteContext> handler = null;
+        if (protocol == HttpProtocols.Http3)
+        {
+            handler = ctx =>
+            {
+                if (ctx.EventId.Name == "StreamPooled" &&
+                    ctx.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic")
+                {
+                    pooledTcs.TrySetResult();
+                }
+            };
+            TestSink.MessageLogged += handler;
+        }
+
         var builder = CreateHostBuilder(async context =>
         {
             contentType = context.Request.ContentType;
@@ -333,38 +357,47 @@ public class Http3RequestTests : LoggedTest
             await context.Response.Body.WriteAsync(data);
         }, protocol: protocol);
 
-        using (var host = builder.Build())
-        using (var client = HttpHelpers.CreateClient())
+        try
         {
-            await host.StartAsync();
-
-            // Act
-            var response1 = await SendRequestAsync(protocol, host, client);
-            var contentType1 = contentType;
-            var authority1 = authority;
-
-            if (protocol == HttpProtocols.Http3)
+            using (var host = builder.Build())
+            using (var client = HttpHelpers.CreateClient())
             {
-                await WaitForLogAsync(logs =>
+                await host.StartAsync();
+
+                // Act
+                var response1 = await SendRequestAsync(protocol, host, client);
+                var contentType1 = contentType;
+                var authority1 = authority;
+
+                if (protocol == HttpProtocols.Http3)
                 {
-                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
-                                         w.EventId.Name == "StreamPooled");
-                }, "Wait for server to finish pooling stream.");
+                    // Wait for the server to pool the first request's stream before sending
+                    // the second request, so the second request reuses the same
+                    // HttpRequestHeaders instance and Assert.Same below holds.
+                    await pooledTcs.Task.DefaultTimeout();
+                }
+
+                var response2 = await SendRequestAsync(protocol, host, client);
+                var contentType2 = contentType;
+                var authority2 = authority;
+
+                // Assert
+                Assert.NotNull(contentType1);
+                Assert.NotNull(authority1);
+
+                // We're testing `Same`, specifically, since we're trying to detect cache misses
+                Assert.Same(contentType1, contentType2);
+                Assert.Same(authority1, authority2);
+
+                await host.StopAsync();
             }
-
-            var response2 = await SendRequestAsync(protocol, host, client);
-            var contentType2 = contentType;
-            var authority2 = authority;
-
-            // Assert
-            Assert.NotNull(contentType1);
-            Assert.NotNull(authority1);
-
-            // We're testing `Same`, specifically, since we're trying to detect cache misses
-            Assert.Same(contentType1, contentType2);
-            Assert.Same(authority1, authority2);
-
-            await host.StopAsync();
+        }
+        finally
+        {
+            if (handler != null)
+            {
+                TestSink.MessageLogged -= handler;
+            }
         }
 
         static async Task<HttpResponseMessage> SendRequestAsync(HttpProtocols protocol, IHost host, HttpMessageInvoker client)
