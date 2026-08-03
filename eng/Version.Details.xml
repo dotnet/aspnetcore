@@ -390,25 +390,25 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5da2de22f7c6e2ebe7ed4c16c614b00183145d3c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.8.2">
+    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.8.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>0c62cc326738e407c8dc6be3a78a835524de2fc4</Sha>
+      <Sha>ccb356f31db9d894807c4fd0c97c2f41553d1524</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="10.8.2">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="10.8.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>0c62cc326738e407c8dc6be3a78a835524de2fc4</Sha>
+      <Sha>ccb356f31db9d894807c4fd0c97c2f41553d1524</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="10.8.2">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="10.8.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>0c62cc326738e407c8dc6be3a78a835524de2fc4</Sha>
+      <Sha>ccb356f31db9d894807c4fd0c97c2f41553d1524</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ServiceDiscovery" Version="10.8.2">
+    <Dependency Name="Microsoft.Extensions.ServiceDiscovery" Version="10.8.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>0c62cc326738e407c8dc6be3a78a835524de2fc4</Sha>
+      <Sha>ccb356f31db9d894807c4fd0c97c2f41553d1524</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="10.8.2">
+    <Dependency Name="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="10.8.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>0c62cc326738e407c8dc6be3a78a835524de2fc4</Sha>
+      <Sha>ccb356f31db9d894807c4fd0c97c2f41553d1524</Sha>
     </Dependency>
     <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.26318.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
