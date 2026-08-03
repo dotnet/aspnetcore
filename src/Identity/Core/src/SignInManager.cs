@@ -7,7 +7,6 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +33,6 @@ public class SignInManager<TUser> where TUser : class
     private readonly IAuthenticationSchemeProvider _schemes;
     private readonly IUserConfirmation<TUser> _confirmation;
     private readonly IPasskeyHandler<TUser>? _passkeyHandler;
-    private readonly IdentityPasskeyOptions _passkeyOptions;
     private readonly SignInManagerMetrics? _metrics;
     private HttpContext? _context;
     private TwoFactorAuthenticationInfo? _twoFactorInfo;
@@ -72,7 +70,6 @@ public class SignInManager<TUser> where TUser : class
         // SignInManagerMetrics created from constructor because of difficulties registering internal type.
         _metrics = userManager.ServiceProvider?.GetService<IMeterFactory>() is { } factory ? new SignInManagerMetrics(factory) : null;
         _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
-        _passkeyOptions = userManager.ServiceProvider?.GetService<IOptions<IdentityPasskeyOptions>>()?.Value ?? new IdentityPasskeyOptions();
     }
 
     /// <summary>
@@ -547,6 +544,16 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Gets a value indicating whether the registered <see cref="IPasskeyHandler{TUser}"/> supports
+    /// generating passkey signal options.
+    /// </summary>
+    /// <remarks>
+    /// Check this before calling <see cref="MakePasskeySignalOptionsAsync(TUser, PasskeyUserEntity)"/>,
+    /// which throws when the handler does not support signal options.
+    /// </remarks>
+    public virtual bool SupportsPasskeySignalOptions => _passkeyHandler?.SupportsSignalOptions ?? false;
+
+    /// <summary>
     /// Generates the options used to signal the current state of a user's passkeys to authenticators.
     /// </summary>
     /// <remarks>
@@ -568,6 +575,10 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="user">The user whose passkeys should be signaled.</param>
     /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
     /// <returns>A JSON string representing the passkey signal options.</returns>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
     /// <example>
     /// The following example shows how the result is used from JavaScript.
     /// <code language="javascript">
@@ -578,26 +589,12 @@ public class SignInManager<TUser> where TUser : class
     /// </example>
     public virtual async Task<string> MakePasskeySignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
     {
+        ThrowIfNoPasskeyHandler();
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(userEntity);
 
-        var userId = await UserManager.GetUserIdAsync(user);
-        if (!string.Equals(userId, userEntity.Id, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException(
-                $"The user entity ID '{userEntity.Id}' does not match the ID '{userId}' of the specified user.");
-        }
-
-        var passkeys = await UserManager.GetPasskeysAsync(user);
-        var options = new PasskeySignalOptions
-        {
-            RpId = PasskeyServerDomain.Resolve(_passkeyOptions, Context),
-            UserId = BufferSource.FromString(userEntity.Id),
-            AllAcceptedCredentialIds = [.. passkeys.Select(p => BufferSource.FromBytes(p.CredentialId))],
-            Name = userEntity.Name,
-            DisplayName = userEntity.DisplayName,
-        };
-        return JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PasskeySignalOptions);
+        var result = await _passkeyHandler.MakeSignalOptionsAsync(user, userEntity, Context);
+        return result.SignalOptionsJson;
     }
 
     /// <summary>

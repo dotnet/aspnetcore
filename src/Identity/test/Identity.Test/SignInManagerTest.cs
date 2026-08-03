@@ -5,7 +5,6 @@ using System.Buffers.Text;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication;
@@ -123,10 +122,9 @@ public class SignInManagerTest
     private static Mock<UserManager<PocoUser>> SetupUserManager(
         PocoUser user,
         IMeterFactory meterFactory = null,
-        IPasskeyHandler<PocoUser> passkeyHandler = null,
-        IdentityPasskeyOptions passkeyOptions = null)
+        IPasskeyHandler<PocoUser> passkeyHandler = null)
     {
-        var manager = MockHelpers.MockUserManager<PocoUser>(meterFactory, passkeyHandler, passkeyOptions);
+        var manager = MockHelpers.MockUserManager<PocoUser>(meterFactory, passkeyHandler);
         manager.Setup(m => m.FindByNameAsync(user.UserName)).ReturnsAsync(user);
         manager.Setup(m => m.FindByIdAsync(user.Id)).ReturnsAsync(user);
         manager.Setup(m => m.GetUserIdAsync(user)).ReturnsAsync(user.Id.ToString());
@@ -654,78 +652,54 @@ public class SignInManagerTest
     public async Task CanMakePasskeySignalOptions()
     {
         var user = new PocoUser { UserName = "Foo" };
-        var manager = SetupUserManager(user);
-        manager
-            .Setup(m => m.GetPasskeysAsync(user))
-            .ReturnsAsync([
-                CreatePasskey([1, 2, 3]),
-                CreatePasskey([4, 5, 6]),
-            ]);
+        var userEntity = new PasskeyUserEntity { Id = user.Id, Name = "Foo", DisplayName = "Foo Bar" };
+        var expectedOptionsJson = "<some-options-json>";
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeSignalOptionsAsync(user, userEntity, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeySignalOptionsResult
+            {
+                SignalOptionsJson = expectedOptionsJson,
+            }))
+            .Verifiable();
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
         var context = new DefaultHttpContext();
-        context.Request.Host = new HostString("contoso.com", 5001);
         var helper = SetupSignInManager(manager.Object, context);
 
-        var optionsJson = await helper.MakePasskeySignalOptionsAsync(user, new()
-        {
-            Id = user.Id,
-            Name = "Foo",
-            DisplayName = "Foo Bar",
-        });
+        var optionsJson = await helper.MakePasskeySignalOptionsAsync(user, userEntity);
 
-        var options = JsonSerializer.Deserialize<JsonElement>(optionsJson);
-        Assert.Equal("contoso.com", options.GetProperty("rpId").GetString());
-        Assert.Equal(Base64Url.EncodeToString(Encoding.UTF8.GetBytes(user.Id)), options.GetProperty("userId").GetString());
-        Assert.Equal("Foo", options.GetProperty("name").GetString());
-        Assert.Equal("Foo Bar", options.GetProperty("displayName").GetString());
-        Assert.Collection(options.GetProperty("allAcceptedCredentialIds").EnumerateArray(),
-            id => Assert.Equal(Base64Url.EncodeToString([1, 2, 3]), id.GetString()),
-            id => Assert.Equal(Base64Url.EncodeToString([4, 5, 6]), id.GetString()));
+        Assert.Equal(expectedOptionsJson, optionsJson);
+        passkeyHandler.Verify();
     }
 
-    [Fact]
-    public async Task MakePasskeySignalOptionsUsesConfiguredServerDomain()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SupportsPasskeySignalOptionsMatchesPasskeyHandler(bool supportsSignalOptions)
     {
         var user = new PocoUser { UserName = "Foo" };
-        var passkeyOptions = new IdentityPasskeyOptions { ServerDomain = "fabrikam.com" };
-        var manager = SetupUserManager(user, passkeyOptions: passkeyOptions);
-        manager.Setup(m => m.GetPasskeysAsync(user)).ReturnsAsync([]);
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler.Setup(h => h.SupportsSignalOptions).Returns(supportsSignalOptions);
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
         var context = new DefaultHttpContext();
-        context.Request.Host = new HostString("contoso.com");
         var helper = SetupSignInManager(manager.Object, context);
 
-        var optionsJson = await helper.MakePasskeySignalOptionsAsync(user, new()
-        {
-            Id = user.Id,
-            Name = "Foo",
-            DisplayName = "Foo",
-        });
-
-        var options = JsonSerializer.Deserialize<JsonElement>(optionsJson);
-        Assert.Equal("fabrikam.com", options.GetProperty("rpId").GetString());
+        Assert.Equal(supportsSignalOptions, helper.SupportsPasskeySignalOptions);
     }
 
     [Fact]
-    public async Task MakePasskeySignalOptionsWithoutPasskeysReturnsEmptyCredentialList()
+    public void SupportsPasskeySignalOptionsIsFalseWithoutPasskeyHandler()
     {
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user);
-        manager.Setup(m => m.GetPasskeysAsync(user)).ReturnsAsync([]);
         var context = new DefaultHttpContext();
         var helper = SetupSignInManager(manager.Object, context);
 
-        var optionsJson = await helper.MakePasskeySignalOptionsAsync(user, new()
-        {
-            Id = user.Id,
-            Name = "Foo",
-            DisplayName = "Foo",
-        });
-
-        var options = JsonSerializer.Deserialize<JsonElement>(optionsJson);
-        Assert.Empty(options.GetProperty("allAcceptedCredentialIds").EnumerateArray());
+        Assert.False(helper.SupportsPasskeySignalOptions);
     }
 
     [Fact]
-    public async Task MakePasskeySignalOptionsThrowsWhenUserEntityIdDoesNotMatchUser()
+    public async Task MakePasskeySignalOptionsThrowsWithoutPasskeyHandler()
     {
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user);
@@ -735,16 +709,13 @@ public class SignInManagerTest
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => helper.MakePasskeySignalOptionsAsync(user, new()
             {
-                Id = "some-other-id",
+                Id = user.Id,
                 Name = "Foo",
                 DisplayName = "Foo",
             }));
 
-        Assert.Equal($"The user entity ID 'some-other-id' does not match the ID '{user.Id}' of the specified user.", ex.Message);
+        Assert.Equal("This operation requires an IPasskeyHandler service to be registered.", ex.Message);
     }
-
-    private static UserPasskeyInfo CreatePasskey(byte[] credentialId)
-        => new(credentialId, [], default, 0, null, false, false, false, [], []);
 
     private static void SetupPasskeyAuth(HttpContext context, Mock<IAuthenticationService> auth)
     {
