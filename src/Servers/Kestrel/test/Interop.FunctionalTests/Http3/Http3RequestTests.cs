@@ -323,16 +323,6 @@ public class Http3RequestTests : LoggedTest
         // Arrange
         string contentType = null;
         string authority = null;
-        // The "StreamPooled" trace log is written inside _poolLock immediately after
-        // StreamPool.Push, so by the time we observe it the first request's stream is
-        // already available in the connection's pool and the second request's AcceptAsync
-        // is guaranteed to pop it (reusing the same HttpRequestHeaders instance). The
-        // original WaitForLogAsync used a 100ms-initial-delay poll that was too coarse on
-        // CI: the second request could be accepted on a fresh stream context before the
-        // first stream was pooled. We subscribe to TestSink.MessageLogged BEFORE the first
-        // request so we cannot miss the log, and wait on a TCS that fires from the event.
-        // This is the same synchronization guarantee as the original log-wait, but with
-        // millisecond-level precision instead of 100ms.
         var pooledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Action<WriteContext> handler = null;
         if (protocol == HttpProtocols.Http3)
