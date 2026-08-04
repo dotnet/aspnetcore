@@ -412,5 +412,29 @@ InitializeToolset
 
 restore=$_tmp_restore=
 
+# Compute affected test areas for PR builds to filter tests to only affected areas.
+# Writes a .props file that Build.props conditionally imports to set AffectedTestAreas.
+# The file is cached so subsequent build steps in the same CI job use the same areas.
+props_file="$artifacts_dir/tmp/AffectedTestAreas.props"
+if [ "$ci" = true ] && [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCH:-}" ] && [ ! -f "$props_file" ]; then
+    affected_areas_script="$DIR/scripts/GetAffectedTestAreas.ps1"
+    if [ -f "$affected_areas_script" ] && command -v pwsh &>/dev/null; then
+        echo "Computing affected test areas for PR build..."
+        mkdir -p "$(dirname "$props_file")"
+        # Use set +e to prevent script failure if area computation fails
+        set +e
+        pwsh -NoProfile -Command "& '$affected_areas_script' -OutputFile '$props_file'"
+        pwsh_exit=$?
+        set -e
+        if [ $pwsh_exit -eq 0 ] && [ -f "$props_file" ]; then
+            echo "AffectedTestAreas .props file written."
+        else
+            echo "Warning: Failed to compute affected test areas. All tests will run."
+        fi
+    fi
+elif [ -f "$props_file" ]; then
+    echo "AffectedTestAreas .props file already exists, reusing cached result."
+fi
+
 MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
 ExitWithExitCode 0
