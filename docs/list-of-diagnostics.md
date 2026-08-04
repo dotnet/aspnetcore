@@ -40,7 +40,6 @@
 |  __`ASP0032`__ | \[ValidatableType\] is applied to an inaccessible type |
 |  __`ASP0033`__ | Endpoint parameter type is inaccessible from generated code |
 |  __`ASP0034`__ | Validatable property or its type is not accessible |
-|  __`ASP0035`__ | Type participating in validation is not part of the validatable graph |
 
 ### API (`API1000-API1003`)
 
