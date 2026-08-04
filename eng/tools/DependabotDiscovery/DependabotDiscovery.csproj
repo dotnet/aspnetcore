@@ -53,6 +53,8 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion)" />
     <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="$(MicrosoftDataSqlClientExtensionsAzureVersion)" />
     <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterVersion)" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
     <PackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllVersion)" />
     <PackageReference Include="Microsoft.OpenApi" Version="$(MicrosoftOpenApiVersion)" />

@@ -1,0 +1,17 @@
+[
+  [
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "Hello! I'm your AI assistant. How can I help you today?"
+        }
+      ],
+      "responseId": "e2e-single-turn-001",
+      "messageId": "e2e-single-turn-001",
+      "createdAt": "2026-01-01T00:00:00+00:00",
+      "modelId": "e2e-test"
+    }
+  ]
+]
