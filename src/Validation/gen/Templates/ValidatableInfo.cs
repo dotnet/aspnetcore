@@ -85,29 +85,15 @@ file abstract class ValidatableInfo
             return result.ErrorMessage;
         }
 
-        var lookupKey = !string.IsNullOrEmpty(attribute.ErrorMessage)
-            ? attribute.ErrorMessage
-            : context.ValidationOptions.MessageKeyProvider?.Invoke(new global::Microsoft.Extensions.Validation.ValidationMessageKeyContext
-            {
-                ValidatorType = attribute.GetType(),
-                MemberName = memberName,
-                DeclaringType = declaringType,
-            });
-
-        if (string.IsNullOrEmpty(lookupKey))
-        {
-            return result.ErrorMessage;
-        }
-
         var localizer = LocalizationHelpers.CreateStringLocalizer(context, declaringType, localizerFactory);
 
-        var localizedTemplate = localizer[lookupKey!];
-        if (localizedTemplate.ResourceNotFound)
+        var localizedTemplate = LocalizationHelpers.FindLocalizedTemplate(localizer, attribute, memberName, declaringType);
+        if (localizedTemplate is null)
         {
             return result.ErrorMessage;
         }
 
-        return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
+        return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate, displayName);
     }
 
     // Keep in sync with DataAnnotationsLocalizer.FormatMessage in

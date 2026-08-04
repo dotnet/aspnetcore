@@ -10,8 +10,8 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Validation.Tests;
 
 // End-to-end coverage for the validation localization pipeline that is now emitted into the
-// generated code and driven purely by ValidationOptions.LocalizerProvider / MessageKeyProvider and a
-// registered IStringLocalizerFactory.
+// generated code and driven purely by ValidationOptions.LocalizerProvider, the built-in message
+// key convention, and a registered IStringLocalizerFactory.
 public class ValidationLocalizationIntegrationTests : ValidationTestBase
 {
     [Theory]
@@ -117,15 +117,53 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Property_MessageKeyProvider_ComputesLookupKey(bool useAsync)
+    public async Task Property_ConventionKey_MemberTier_TakesPrecedence(bool useAsync)
+    {
+        // All three conventional keys resolve, so the most specific one wins.
+        var translations = new Dictionary<string, string>
+        {
+            ["LocalizedDefaultModel_Name_RequiredAttribute_Error"] = "{0} is required for this member.",
+            ["LocalizedDefaultModel_RequiredAttribute_Error"] = "{0} is required for this type.",
+            ["RequiredAttribute_Error"] = "{0} is mandatory.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
+
+        Assert.Equal("Name is required for this member.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ConventionKey_TypeTier_UsedWhenMemberKeyMissing(bool useAsync)
     {
         var translations = new Dictionary<string, string>
         {
-            ["RequiredAttribute"] = "{0} is mandatory.",
+            ["LocalizedDefaultModel_RequiredAttribute_Error"] = "{0} is required for this type.",
+            ["RequiredAttribute_Error"] = "{0} is mandatory.",
         };
-        var (provider, options) = CreateServices(
-            translations,
-            o => o.MessageKeyProvider = ctx => ctx.ValidatorType.Name);
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
+
+        Assert.Equal("Name is required for this type.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ConventionKey_GlobalTier_UsedWhenSpecificKeysMissing(bool useAsync)
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["RequiredAttribute_Error"] = "{0} is mandatory.",
+        };
+        var (provider, options) = CreateServices(translations);
         var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
         var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
@@ -137,28 +175,64 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Property_ExplicitErrorMessage_WinsOverProvider(bool useAsync)
+    public async Task Property_ConventionKey_NoMatch_FallsBackToAttributeMessage(bool useAsync)
     {
-        // An explicit ErrorMessage on the validator is used as the key directly; the convention
-        // provider is not consulted.
+        // A factory is registered but no conventional key resolves, so the attribute's own
+        // non-localized message is used.
+        var translations = new Dictionary<string, string>
+        {
+            ["UnrelatedKey"] = "unused",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
+
+        Assert.Equal("The Name field is required.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TypeLevelAttribute_WithoutMemberNames_SkipsMemberTier(bool useAsync)
+    {
+        // A type-level attribute that reports no member names has no member to key on, so the
+        // member tier is skipped rather than repeating the type name in the key.
+        var translations = new Dictionary<string, string>
+        {
+            ["LocalizedTypeLevelModel_LocalizedTypeLevelModel_AlwaysFailsAttribute_Error"] = "doubled key",
+            ["LocalizedTypeLevelModel_AlwaysFailsAttribute_Error"] = "{0} failed type-level validation.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedTypeLevelModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedTypeLevelModel(), context, useAsync, default);
+
+        Assert.Equal("LocalizedTypeLevelModel failed type-level validation.", Single(context, string.Empty));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ExplicitErrorMessage_WinsOverConvention(bool useAsync)
+    {
+        // An explicit ErrorMessage on the validator is used as the key directly; the built-in
+        // convention is not consulted.
         var translations = new Dictionary<string, string>
         {
             ["RequiredKey"] = "Explicit {0}.",
-            ["ConventionKey"] = "Convention {0}.",
+            ["LocalizedKeyedModel_Name_RequiredAttribute_Error"] = "Convention {0}.",
+            ["RequiredAttribute_Error"] = "Convention {0}.",
         };
-        var providerCalled = false;
-        var (provider, options) = CreateServices(translations, o => o.MessageKeyProvider = _ =>
-        {
-            providerCalled = true;
-            return "ConventionKey";
-        });
+        var (provider, options) = CreateServices(translations);
         var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedKeyedModel>(options);
         var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
 
         await ValidateAsync(typeInfo, new LocalizedKeyedModel(), context, useAsync, default);
 
         Assert.Equal("Explicit Customer Name.", Single(context, "Name"));
-        Assert.False(providerCalled);
     }
 
     [Theory]
@@ -346,6 +420,19 @@ public class LocalizedSelfFormattingModel
     [Display(Name = "Field")]
     [SelfFormatting(ErrorMessage = "SelfKey", Extra = "EXTRA")]
     public string? Value { get; set; }
+}
+
+[ValidatableType]
+[AlwaysFails]
+public class LocalizedTypeLevelModel
+{
+    public string? Value { get; set; }
+}
+
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class AlwaysFailsAttribute : ValidationAttribute
+{
+    public override bool IsValid(object? value) => false;
 }
 
 [ValidatableType]
