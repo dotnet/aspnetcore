@@ -561,12 +561,12 @@ public class SignInManager<TUser> where TUser : class
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
 
         var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync()
-            ?? throw new InvalidOperationException(
+            ?? throw new PasskeyAuthenticationStateException(
                 "No passkey attestation is underway. " +
                 $"Make sure to call '{nameof(SignInManager<>)}.{nameof(MakePasskeyCreationOptionsAsync)}()' to initiate a passkey attestation.");
         if (!string.Equals(PasskeyOperations.Attestation, passkeyInfo.Operation, StringComparison.Ordinal))
         {
-            throw new InvalidOperationException(
+            throw new PasskeyAuthenticationStateException(
                 $"Expected passkey operation '{PasskeyOperations.Attestation}', but got '{passkeyInfo.Operation}'. " +
                 $"This may indicate that you have not previously called '{nameof(SignInManager<>)}.{nameof(MakePasskeyCreationOptionsAsync)}()'.");
         }
@@ -605,12 +605,12 @@ public class SignInManager<TUser> where TUser : class
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
 
         var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync()
-            ?? throw new InvalidOperationException(
+            ?? throw new PasskeyAuthenticationStateException(
                 "No passkey assertion is underway. " +
                 $"Make sure to call '{nameof(SignInManager<>)}.{nameof(MakePasskeyRequestOptionsAsync)}()' to initiate a passkey assertion.");
         if (!string.Equals(PasskeyOperations.Assertion, passkeyInfo.Operation, StringComparison.Ordinal))
         {
-            throw new InvalidOperationException(
+            throw new PasskeyAuthenticationStateException(
                 $"Expected passkey operation '{PasskeyOperations.Assertion}', but got '{passkeyInfo.Operation}'. " +
                 $"This may indicate that you have not previously called '{nameof(SignInManager<>)}.{nameof(MakePasskeyRequestOptionsAsync)}()'.");
         }
@@ -642,24 +642,43 @@ public class SignInManager<TUser> where TUser : class
     /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.
     /// </returns>
-    public virtual async Task<SignInResult> PasskeySignInAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
+    public virtual Task<SignInResult> PasskeySignInAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
+        => PasskeySignInAsync(credentialJson, isPersistent: false);
+
+    /// <summary>
+    /// Performs a passkey assertion and attempts to sign in the user.
+    /// </summary>
+    /// <remarks>
+    /// The <paramref name="credentialJson"/> should be obtained by JSON-serializing the result of the
+    /// <c>navigator.credentials.get()</c> JavaScript API. The argument to <c>navigator.credentials.get()</c>
+    /// should be obtained by calling <see cref="MakePasskeyRequestOptionsAsync(TUser)"/>.
+    /// </remarks>
+    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
+    /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
+    /// <returns>
+    /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
+    /// for the sign-in attempt.
+    /// </returns>
+    public virtual async Task<SignInResult> PasskeySignInAsync(
+        [StringSyntax(StringSyntaxAttribute.Json)] string credentialJson,
+        bool isPersistent)
     {
         var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            var result = await PasskeySignInCoreAsync(credentialJson);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent: false, startTimestamp);
+            var result = await PasskeySignInCoreAsync(credentialJson, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent: false, startTimestamp, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent, startTimestamp, ex);
             throw;
         }
     }
 
-    private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson)
+    private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson, bool isPersistent)
     {
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
 
@@ -683,7 +702,7 @@ public class SignInManager<TUser> where TUser : class
             return SignInResult.Failed;
         }
 
-        return await SignInOrTwoFactorAsync(assertionResult.User, isPersistent: false, bypassTwoFactor: true);
+        return await SignInOrTwoFactorAsync(assertionResult.User, isPersistent, bypassTwoFactor: true);
     }
 
     [MemberNotNull(nameof(_passkeyHandler))]
