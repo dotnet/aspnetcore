@@ -71,4 +71,31 @@ public class WebAssemblyTrimmingTest : ServerTestBase<BlazorWasmTestAppFixture<P
         // Verify that StartHandleEventActivity method has been trimmed away
         Browser.Equal("false", () => appElement.FindElement(By.Id("start-handle-event-activity-found")).Text);
     }
+
+    [Fact]
+    public void CustomEventArgsAreDeserialized_WhenPublishedWithTrimming()
+    {
+        // Regression test for https://github.com/microsoft/fast-blazor/issues/280, where custom
+        // event args types were trimmed away in assemblies marked IsTrimmable=true, causing
+        // deserialization to fail at runtime. The members required to deserialize a custom event
+        // args type are preserved through the [EventHandler] attribute's DynamicallyAccessedMembers
+        // annotation. This test runs against the trimmed BasicTestApp so it validates that the
+        // custom event args type (and the members needed to JSON-deserialize it) survive trimming.
+        var appElement = Browser.MountTestComponent<EventCustomArgsComponent>();
+
+        appElement.FindElement(By.Id("register-testevent-with-createventargs-that-supplies-args")).Click();
+        appElement.FindElement(By.Id("trigger-testevent-directly")).Click();
+
+        // If the custom event args type had been trimmed, deserialization would fail and MyProp
+        // would never be populated. Observing the value confirms the members were preserved.
+        Browser.Equal(
+            "Received testevent with args '{ MyProp=Native event target ID=test-event-target-child }'",
+            () => GetLogLines(appElement).LastOrDefault());
+    }
+
+    private static string[] GetLogLines(IWebElement appElement)
+        => appElement.FindElement(By.Id("test-log"))
+            .GetDomProperty("value")
+            .Replace("\r\n", "\n")
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 }

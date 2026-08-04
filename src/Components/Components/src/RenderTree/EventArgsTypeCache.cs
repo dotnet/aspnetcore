@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree;
 
@@ -19,6 +21,8 @@ internal static class EventArgsTypeCache
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2073", Justification = "Custom event args types are preserved because the EventHandlerAttribute constructor parameter is correctly annotated.")]
+    [return: DynamicallyAccessedMembers(JsonSerialized)]
     public static Type GetEventArgsType(MethodInfo methodInfo)
     {
         return Cache.GetOrAdd(methodInfo, methodInfo =>

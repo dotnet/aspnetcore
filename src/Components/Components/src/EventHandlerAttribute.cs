@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
+
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
@@ -14,7 +17,7 @@ public sealed class EventHandlerAttribute : Attribute
     /// </summary>
     /// <param name="attributeName"></param>
     /// <param name="eventArgsType"></param>
-    public EventHandlerAttribute(string attributeName, Type eventArgsType) : this(attributeName, eventArgsType, false, false)
+    public EventHandlerAttribute(string attributeName, [DynamicallyAccessedMembers(JsonSerialized)] Type eventArgsType) : this(attributeName, eventArgsType, false, false)
     {
     }
 
@@ -25,7 +28,7 @@ public sealed class EventHandlerAttribute : Attribute
     /// <param name="eventArgsType"></param>
     /// <param name="enableStopPropagation"></param>
     /// <param name="enablePreventDefault"></param>
-    public EventHandlerAttribute(string attributeName, Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault)
+    public EventHandlerAttribute(string attributeName, [DynamicallyAccessedMembers(JsonSerialized)] Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault)
     {
         ArgumentNullException.ThrowIfNull(attributeName);
         ArgumentNullException.ThrowIfNull(eventArgsType);
@@ -44,6 +47,7 @@ public sealed class EventHandlerAttribute : Attribute
     /// <summary>
     /// Gets the event argument type.
     /// </summary>
+    [DynamicallyAccessedMembers(JsonSerialized)]
     public Type EventArgsType { get; }
 
     /// <summary>
