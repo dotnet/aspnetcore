@@ -143,6 +143,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         var compilation = context.Compilation;
         var serviceCollectionExtensionsType = compilation.GetTypeByMetadataName("Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions");
         var validatableTypeAttribute = compilation.GetTypeByMetadataName("Microsoft.Extensions.Validation.ValidatableTypeAttribute");
+        var validationEndpointConventionBuilderExtensions = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Builder.ValidationEndpointConventionBuilderExtensions");
 
         var wellKnownTypes = WellKnownTypes.GetOrCreate(compilation);
         var fromServiceMetadata = wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
@@ -195,6 +196,11 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
             if (InvocationOperationExtensions.KnownMethods.Contains(invocation.TargetMethod.Name) &&
                 invocation.TryGetRouteHandlerMethod(semanticModel, needsAccurateSignature: false, out var routeHandlerMethod))
             {
+                if (IsValidationDisabledForEndpoint(invocation, validationEndpointConventionBuilderExtensions))
+                {
+                    return;
+                }
+
                 foreach (var parameter in routeHandlerMethod.Parameters)
                 {
                     if (parameter.IsServiceParameter(fromServiceMetadata, fromKeyedServiceAttribute)
@@ -250,6 +256,31 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         var method = invocation.TargetMethod;
         return method.Name == "AddValidation" &&
             method.ContainingType.Equals(extensionsType, SymbolEqualityComparer.Default);
+    }
+
+    private static bool IsValidationDisabledForEndpoint(IInvocationOperation routeHandlerInvocation, INamedTypeSymbol? validationEndpointConventionBuilderExtensions)
+    {
+        if (validationEndpointConventionBuilderExtensions is null)
+        {
+            return false;
+        }
+
+        // Walk up the fluent chain (e.g. app.MapPost(...).WithName(...).DisableValidation())
+        // to determine whether DisableValidation() is applied to this endpoint.
+        var current = routeHandlerInvocation.Parent;
+        while (current is not null && current is not IExpressionStatementOperation)
+        {
+            if (current is IInvocationOperation chainedInvocation &&
+                chainedInvocation.TargetMethod.Name == "DisableValidation" &&
+                chainedInvocation.TargetMethod.ContainingType.Equals(validationEndpointConventionBuilderExtensions, SymbolEqualityComparer.Default))
+            {
+                return true;
+            }
+
+            current = current.Parent;
+        }
+
+        return false;
     }
 
     private static bool IsPossiblyReachableAtRuntimeInValidatableTypeGraph(INamedTypeSymbol type)

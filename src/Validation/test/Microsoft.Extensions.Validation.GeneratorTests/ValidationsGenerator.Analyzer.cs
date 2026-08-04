@@ -194,5 +194,69 @@ public partial class Home
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         Assert.Single(diagnostics.Where(d => d.Id == "ASP0032"));
     }
+
+    [Fact]
+    public async Task DoesNotReportInaccessibleEndpointParameter_WhenValidationIsDisabled()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/disabled", (FileModel model) => Results.Ok()).DisableValidation();
+
+app.Run();
+
+file class FileModel
+{
+    [Required]
+    internal required string P { get; init; }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task DoesNotReportForPublicTypes()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/api", (InternalModel model) => Results.Ok()).DisableValidation();
+
+app.Run();
+
+public sealed class Model
+{
+    [Required]
+    public required string P { get; init; }
+
+    [Required]
+    public required string[] P2 { get; init; }
+
+    [Required]
+    public required List<string> P3 { get; init; }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        Assert.Empty(diagnostics);
+    }
 }
 
