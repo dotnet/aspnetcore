@@ -544,6 +544,60 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Gets a value indicating whether the registered <see cref="IPasskeyHandler{TUser}"/> supports
+    /// generating passkey signal options.
+    /// </summary>
+    /// <remarks>
+    /// Check this before calling <see cref="MakePasskeySignalOptionsAsync(TUser, PasskeyUserEntity)"/>,
+    /// which throws when the handler does not support signal options.
+    /// </remarks>
+    public virtual bool SupportsPasskeySignalOptions => _passkeyHandler?.SupportsSignalOptions ?? false;
+
+    /// <summary>
+    /// Generates the options used to signal the current state of a user's passkeys to authenticators.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON contains the arguments for both the <c>PublicKeyCredential.signalAllAcceptedCredentials()</c>
+    /// and <c>PublicKeyCredential.signalCurrentUserDetails()</c> JavaScript APIs, which let an authenticator
+    /// stop offering passkeys that were removed from the server and keep the user's details up to date.
+    /// </para>
+    /// <para>
+    /// Because these APIs reveal how many passkeys a user has, only call them when the user is authenticated.
+    /// The <paramref name="userEntity"/> must have the same <see cref="PasskeyUserEntity.Id"/> that was passed to
+    /// <see cref="MakePasskeyCreationOptionsAsync(PasskeyUserEntity)"/> when the passkeys were created,
+    /// otherwise the authenticator will not recognize the user and the signal will have no effect.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose passkeys should be signaled.</param>
+    /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
+    /// <returns>A JSON string representing the passkey signal options.</returns>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// const { rpId, userId, allAcceptedCredentialIds, name, displayName } = signalOptions;
+    /// await PublicKeyCredential.signalAllAcceptedCredentials?.({ rpId, userId, allAcceptedCredentialIds });
+    /// await PublicKeyCredential.signalCurrentUserDetails?.({ rpId, userId, name, displayName });
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakePasskeySignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(userEntity);
+
+        var result = await _passkeyHandler.MakeSignalOptionsAsync(user, userEntity, Context);
+        return result.SignalOptionsJson;
+    }
+
+    /// <summary>
     /// Performs passkey attestation for the given <paramref name="credentialJson"/>.
     /// </summary>
     /// <remarks>

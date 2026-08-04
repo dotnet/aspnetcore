@@ -35,6 +35,9 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     }
 
     /// <inheritdoc />
+    public bool SupportsSignalOptions => _userManager.SupportsUserPasskey;
+
+    /// <inheritdoc />
     public async Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(userEntity);
@@ -155,6 +158,37 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
                 });
             return [.. allowCredentials];
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<PasskeySignalOptionsResult> MakeSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(userEntity);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        var userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
+        if (!string.Equals(userId, userEntity.Id, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"The user entity ID '{userEntity.Id}' does not match the ID '{userId}' of the specified user.");
+        }
+
+        var passkeys = await _userManager.GetPasskeysAsync(user).ConfigureAwait(false);
+        var options = new PasskeySignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            UserId = BufferSource.FromString(userEntity.Id),
+            AllAcceptedCredentialIds = [.. passkeys.Select(p => BufferSource.FromBytes(p.CredentialId))],
+            Name = userEntity.Name,
+            DisplayName = userEntity.DisplayName,
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PasskeySignalOptions);
+
+        return new PasskeySignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
     }
 
     /// <inheritdoc/>
