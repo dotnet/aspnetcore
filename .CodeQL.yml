@@ -7,3 +7,6 @@ path_classifiers:
     # The test/ directories don't contain shipping implementations of code, so they should
     # be excluded from analysis. 
     - src/**/test/*
+  library:
+    # The .packages/ directory contains restored third-party dependencies.
+    - .packages
