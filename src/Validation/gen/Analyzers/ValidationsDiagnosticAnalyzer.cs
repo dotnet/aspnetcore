@@ -71,7 +71,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
 
     private static bool IsPropertyIgnoredDueToAccessibility(IPropertySymbol property)
         => property.DeclaredAccessibility != Accessibility.Public ||
-            IsInaccessibleFromGeneratedCode(property.Type);
+            IsInaccessibleFromGeneratedCode(property.Type.UnwrapType());
 
     private static bool IsInaccessibleFromGeneratedCode(ITypeSymbol type)
         => type is INamedTypeSymbol { IsFileLocal: true } ||
@@ -239,13 +239,13 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
             {
                 foreach (var parameter in endpointParameters.Keys)
                 {
-                    if (IsInaccessibleFromGeneratedCode(parameter.Type))
+                    if (IsInaccessibleFromGeneratedCode(parameter.Type.UnwrapType()))
                     {
                         context.ReportDiagnostic(Diagnostic.Create(EndpointParameterTypeIsNotAccessible, parameter.Locations.FirstOrDefault(), parameter.Name));
                         continue;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, parameter.Type, allValidatableTypes, wellKnownTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, parameter.Type.UnwrapType(), allValidatableTypes, wellKnownTypes);
                 }
             }
         });

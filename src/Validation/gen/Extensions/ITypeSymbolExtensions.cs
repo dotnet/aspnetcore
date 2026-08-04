@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -11,14 +12,31 @@ namespace Microsoft.Extensions.Validation;
 
 internal static class ITypeSymbolExtensions
 {
-    public static bool IsEnumerable(this ITypeSymbol type, INamedTypeSymbol enumerable)
+    public static bool IsGenericEnumerable(this INamedTypeSymbol type, [NotNullWhen(true)] out ITypeSymbol? elementType)
     {
+        elementType = null;
+
         if (type.SpecialType == SpecialType.System_String)
         {
             return false;
         }
 
-        return type.ImplementsInterface(enumerable) || SymbolEqualityComparer.Default.Equals(type, enumerable);
+        if (type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+        {
+            elementType = type.TypeArguments[0];
+            return true;
+        }
+
+        foreach (var iface in type.AllInterfaces)
+        {
+            if (iface.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+            {
+                elementType = iface.TypeArguments[0];
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static bool ImplementsValidationAttribute(this ITypeSymbol typeSymbol, INamedTypeSymbol validationAttributeSymbol)
@@ -36,7 +54,7 @@ internal static class ITypeSymbolExtensions
         return false;
     }
 
-    public static ITypeSymbol UnwrapType(this ITypeSymbol type, INamedTypeSymbol enumerable)
+    public static ITypeSymbol UnwrapType(this ITypeSymbol type)
     {
         if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
             type is INamedTypeSymbol { TypeArguments.Length: 1 })
@@ -52,10 +70,10 @@ internal static class ITypeSymbolExtensions
             type = type.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
         }
 
-        if (type is INamedTypeSymbol namedType && namedType.IsEnumerable(enumerable) && namedType.TypeArguments.Length == 1)
+        // Extract the T from an IEnumerable<T> or List<T>
+        if (type is INamedTypeSymbol namedType && namedType.IsGenericEnumerable(out var elementType))
         {
-            // Extract the T from an IEnumerable<T> or List<T>
-            type = namedType.TypeArguments[0];
+            type = elementType;
         }
 
         if (type is IArrayTypeSymbol arrayType)
@@ -172,7 +190,7 @@ internal static class ITypeSymbolExtensions
         // JsonIgnoreCondition enum values from System.Text.Json.Serialization
         const int JsonIgnoreCondition_Always = 1;      // Property is always ignored
         const int JsonIgnoreCondition_WhenReading = 5; // Property is ignored during deserialization
-        
+
         foreach (var attr in property.GetAttributes())
         {
             if (attr.AttributeClass is not null &&
@@ -194,12 +212,12 @@ internal static class ITypeSymbolExtensions
                         }
                     }
                 }
-                
+
                 // If no Condition is specified, the default behavior is Always (skip validation)
                 return true;
             }
         }
-        
+
         return false;
     }
 

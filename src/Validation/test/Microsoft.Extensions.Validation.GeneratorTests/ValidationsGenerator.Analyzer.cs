@@ -229,6 +229,7 @@ file class FileModel
     {
         var source = """
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -239,7 +240,7 @@ var builder = WebApplication.CreateBuilder();
 builder.Services.AddValidation();
 var app = builder.Build();
 
-app.MapPost("/api", (InternalModel model) => Results.Ok()).DisableValidation();
+app.MapPost("/api", (Model model) => Results.Ok());
 
 app.Run();
 
