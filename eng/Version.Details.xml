@@ -382,6 +382,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>322f5005d6589845edf1d69d55820a7d1ab9a09c</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26402.102">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>322f5005d6589845edf1d69d55820a7d1ab9a09c</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="11.0.0-beta.26402.102">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>322f5005d6589845edf1d69d55820a7d1ab9a09c</Sha>
