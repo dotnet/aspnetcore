@@ -214,19 +214,6 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
             }
         }, OperationKind.Invocation);
 
-        // Candidate types for the "not in graph" diagnostic.
-        var reachableAtRuntimeCandidates = new ConcurrentQueue<INamedTypeSymbol>();
-
-        context.RegisterSymbolAction(context =>
-        {
-            var type = (INamedTypeSymbol)context.Symbol;
-
-            if (IsPossiblyReachableAtRuntimeInValidatableTypeGraph(type))
-            {
-                reachableAtRuntimeCandidates.Enqueue(type);
-            }
-        }, SymbolKind.NamedType);
-
         context.RegisterCompilationEndAction(context =>
         {
             if (!addValidationFound && validatableTypeAttributeFound)
@@ -281,47 +268,5 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         }
 
         return false;
-    }
-
-    private static bool IsPossiblyReachableAtRuntimeInValidatableTypeGraph(INamedTypeSymbol type)
-    {
-        // The types we are looking for here are concrete instantiatable types which can be hidden
-        // behind an interface or base type.
-        // Consider:
-        //
-        // class Base { } // could be an interface as well.
-        //
-        // class Derived : Base
-        // {
-        //     [MyValidation]
-        //     public string S { get; set; }
-        // }
-        //
-        // [ValidatableType]
-        // class ValidatableModel
-        // {
-        //     public Base B { get; set; }
-        // }
-        //
-        // In the above case, we want to keep track of "Derived" types.
-        // At the end of compilation, if we find any such types which are not
-        // part of the validatable type graph, and the base type or interface is part of the graph,
-        // then we want to report a diagnostic.
-        // Only non-abstract and non-static types can be instantiated behind an interface or base type.
-        if (type.TypeKind is not (TypeKind.Class or TypeKind.Struct)
-            || type.IsStatic
-            || type.IsAbstract)
-        {
-            return false;
-        }
-
-        // Must implement an interface or extend a non-object base type to be reachable through the graph.
-        var hasBaseType = type.BaseType is { SpecialType: not SpecialType.System_Object and not SpecialType.System_ValueType };
-        if (!hasBaseType && !type.AllInterfaces.Any())
-        {
-            return false;
-        }
-
-        return true;
     }
 }
