@@ -51,6 +51,13 @@ internal class ConnectionIoState : IDisposable
     // makes the flag reads and the epoll_ctl atomic with respect to the other side. Because the sockets are
     // non-blocking every native call returns promptly and completions run continuations asynchronously, so
     // the lock is still held only briefly.
+    //
+    // Each side's transition (ReadAsync/WriteAsync/OnReadable/OnWritable) is written *inline* inside its lock
+    // and must stay fully synchronous - it is deliberately not delegated to an async helper. A lock (Monitor)
+    // is released when its synchronous scope returns, so an 'await' in the body would drop the lock at the
+    // suspension point and let the continuation keep mutating this state unguarded. Keeping the body lexically
+    // inside the lock turns any such 'await' into a compile error (CS1996); a plain helper call could hide an
+    // await behind the method boundary and silently defeat that guarantee.
     private readonly object _sslLock = new();
 
     public readonly int Fd;
@@ -199,57 +206,65 @@ internal class ConnectionIoState : IDisposable
     public ValueTask<int> ReadAsync(Memory<byte> buffer)
     {
         // Serialize the whole transition (see _sslLock remarks): the flag updates and the epoll_ctl issued
-        // here must be atomic with respect to the pump thread's OnReadable/OnWritable.
+        // here must be atomic with respect to the pump thread's OnReadable/OnWritable. The body is inlined
+        // here rather than delegated to a helper so it stays synchronous - a stray 'await' would be a CS1996
+        // compile error instead of silently releasing the lock mid-transition.
         lock (_sslLock)
         {
-            return ReadAsyncCore(buffer);
+            if (!IsHandshaked)
+            {
+                throw new InvalidOperationException("Handshake not complete");
+            }
+
+            if (_readAwaitable.IsActive)
+            {
+                throw new InvalidOperationException("Read already pending");
+            }
+
+            var status = TlsRead(buffer.Span, out var read);
+
+            switch (status)
+            {
+                case TlsOperationStatus.Complete:
+                    return new ValueTask<int>(read);
+
+                case TlsOperationStatus.NeedMoreData:
+                    // Need more ciphertext; wait for the socket to become readable.
+                    _readBuffer = buffer;
+                    _readWantsWrite = false;
+                    return _readAwaitable.Reset();
+
+                case TlsOperationStatus.DestinationTooSmall:
+                    // Renegotiation: the read needs to send handshake output. Wait for writable.
+                    _readBuffer = buffer;
+                    _readWantsWrite = true;
+                    var pending = _readAwaitable.Reset();
+                    UpdateEvents();
+                    return pending;
+
+                case TlsOperationStatus.Closed:
+                default:
+                    return new ValueTask<int>(0); // EOF
+            }
         }
     }
 
-    private ValueTask<int> ReadAsyncCore(Memory<byte> buffer)
-    {
-        if (!IsHandshaked)
-        {
-            throw new InvalidOperationException("Handshake not complete");
-        }
-
-        if (_readAwaitable.IsActive)
-        {
-            throw new InvalidOperationException("Read already pending");
-        }
-
-        var status = TlsRead(buffer.Span, out var read);
-
-        switch (status)
-        {
-            case TlsOperationStatus.Complete:
-                return new ValueTask<int>(read);
-
-            case TlsOperationStatus.NeedMoreData:
-                // Need more ciphertext; wait for the socket to become readable.
-                _readBuffer = buffer;
-                _readWantsWrite = false;
-                return _readAwaitable.Reset();
-
-            case TlsOperationStatus.DestinationTooSmall:
-                // Renegotiation: the read needs to send handshake output. Wait for writable.
-                _readBuffer = buffer;
-                _readWantsWrite = true;
-                var pending = _readAwaitable.Reset();
-                UpdateEvents();
-                return pending;
-
-            case TlsOperationStatus.Closed:
-            default:
-                return new ValueTask<int>(0); // EOF
-        }
-    }
-
-    private void TryCompleteRead()
+    /// <summary>
+    /// Advances the pending read against the TLS session when the socket signals readable/writable, either
+    /// completing the read awaitable or re-arming epoll interest for more ciphertext / renegotiation output.
+    /// </summary>
+    /// <remarks>
+    /// Unsynchronized: the caller must already hold <c>_sslLock</c> - this method never takes it. It mutates the
+    /// read state machine (<c>_readBuffer</c>, <c>_readWantsWrite</c>, the read awaitable) and issues the absolute
+    /// <c>epoll_ctl</c> via <see cref="UpdateEvents"/>, all of which must stay atomic with respect to
+    /// <see cref="ReadAsync"/> and the write side (see the <c>_sslLock</c> remarks). Its only call sites are inside
+    /// the <see cref="OnReadable"/>/<see cref="OnWritable"/> lock blocks.
+    /// </remarks>
+    private void TryCompleteReadUnsynchronized()
     {
         if (!_readAwaitable.IsActive)
         {
-            _logger?.LogDebug("TryCompleteRead called but no read is pending");
+            _logger?.LogDebug("TryCompleteReadUnsynchronized called but no read is pending");
             return; // Race: canceled or completed between check and call
         }
 
@@ -306,62 +321,70 @@ internal class ConnectionIoState : IDisposable
     public ValueTask<int> WriteAsync(ReadOnlyMemory<byte> buffer)
     {
         // Serialize the whole transition (see _sslLock remarks): the flag updates and the epoll_ctl issued
-        // here must be atomic with respect to the pump thread's OnReadable/OnWritable.
+        // here must be atomic with respect to the pump thread's OnReadable/OnWritable. The body is inlined
+        // here rather than delegated to a helper so it stays synchronous - a stray 'await' would be a CS1996
+        // compile error instead of silently releasing the lock mid-transition.
         lock (_sslLock)
         {
-            return WriteAsyncCore(buffer);
+            if (!IsHandshaked)
+            {
+                throw new InvalidOperationException("Handshake not complete");
+            }
+
+            if (_writeAwaitable.IsActive)
+            {
+                throw new InvalidOperationException("Write already pending");
+            }
+
+            _writeBuffer = buffer;
+            _writeTotal = buffer.Length;
+            _writeWantsRead = false;
+            _writeWantsWrite = false;
+
+            var status = TlsWrite(_writeBuffer.Span, out var written);
+
+            switch (status)
+            {
+                case TlsOperationStatus.Complete:
+                    _writeBuffer = default;
+                    return new ValueTask<int>(_writeTotal);
+
+                case TlsOperationStatus.DestinationTooSmall:
+                    // Socket WouldBlock mid-write. 'written' application bytes were consumed;
+                    // retry the remainder once the socket is writable.
+                    _writeBuffer = _writeBuffer.Slice(written);
+                    _writeWantsWrite = true;
+                    var pending = _writeAwaitable.Reset();
+                    UpdateEvents();
+                    return pending;
+
+                case TlsOperationStatus.NeedMoreData:
+                    // Renegotiation: the write needs to read peer ciphertext first.
+                    _writeBuffer = _writeBuffer.Slice(written);
+                    _writeWantsRead = true;
+                    // EPOLLIN is already registered (baseline).
+                    return _writeAwaitable.Reset();
+
+                case TlsOperationStatus.Closed:
+                default:
+                    _writeBuffer = default;
+                    return new ValueTask<int>(0); // EOF
+            }
         }
     }
 
-    private ValueTask<int> WriteAsyncCore(ReadOnlyMemory<byte> buffer)
-    {
-        if (!IsHandshaked)
-        {
-            throw new InvalidOperationException("Handshake not complete");
-        }
-
-        if (_writeAwaitable.IsActive)
-        {
-            throw new InvalidOperationException("Write already pending");
-        }
-
-        _writeBuffer = buffer;
-        _writeTotal = buffer.Length;
-        _writeWantsRead = false;
-        _writeWantsWrite = false;
-
-        var status = TlsWrite(_writeBuffer.Span, out var written);
-
-        switch (status)
-        {
-            case TlsOperationStatus.Complete:
-                _writeBuffer = default;
-                return new ValueTask<int>(_writeTotal);
-
-            case TlsOperationStatus.DestinationTooSmall:
-                // Socket WouldBlock mid-write. 'written' application bytes were consumed;
-                // retry the remainder once the socket is writable.
-                _writeBuffer = _writeBuffer.Slice(written);
-                _writeWantsWrite = true;
-                var pending = _writeAwaitable.Reset();
-                UpdateEvents();
-                return pending;
-
-            case TlsOperationStatus.NeedMoreData:
-                // Renegotiation: the write needs to read peer ciphertext first.
-                _writeBuffer = _writeBuffer.Slice(written);
-                _writeWantsRead = true;
-                // EPOLLIN is already registered (baseline).
-                return _writeAwaitable.Reset();
-
-            case TlsOperationStatus.Closed:
-            default:
-                _writeBuffer = default;
-                return new ValueTask<int>(0); // EOF
-        }
-    }
-
-    private void TryCompleteWrite()
+    /// <summary>
+    /// Advances the pending write against the TLS session when the socket signals writable/readable, either
+    /// completing the write awaitable or re-arming epoll interest for a WouldBlock'd remainder / renegotiation input.
+    /// </summary>
+    /// <remarks>
+    /// Unsynchronized: the caller must already hold <c>_sslLock</c> - this method never takes it. It mutates the
+    /// write state machine (<c>_writeBuffer</c>, <c>_writeWantsRead</c>/<c>_writeWantsWrite</c>, the write awaitable)
+    /// and issues the absolute <c>epoll_ctl</c> via <see cref="UpdateEvents"/>, all of which must stay atomic with
+    /// respect to <see cref="WriteAsync"/> and the read side (see the <c>_sslLock</c> remarks). Its only call sites
+    /// are inside the <see cref="OnReadable"/>/<see cref="OnWritable"/> lock blocks.
+    /// </remarks>
+    private void TryCompleteWriteUnsynchronized()
     {
         if (!_writeAwaitable.IsActive)
         {
@@ -422,47 +445,41 @@ internal class ConnectionIoState : IDisposable
 
     internal void OnReadable()
     {
+        // Inlined under _sslLock and kept synchronous on purpose (see _sslLock remarks): a stray 'await' here
+        // would be a CS1996 compile error rather than silently releasing the lock mid-transition.
         lock (_sslLock)
         {
-            OnReadableCore();
-        }
-    }
+            // A pending write waiting for read (renegotiation) takes priority.
+            if (_writeWantsRead && _writeAwaitable.IsActive)
+            {
+                TryCompleteWriteUnsynchronized();
+                return;
+            }
 
-    private void OnReadableCore()
-    {
-        // A pending write waiting for read (renegotiation) takes priority.
-        if (_writeWantsRead && _writeAwaitable.IsActive)
-        {
-            TryCompleteWrite();
-            return;
-        }
-
-        if (_readAwaitable.IsActive)
-        {
-            TryCompleteRead();
+            if (_readAwaitable.IsActive)
+            {
+                TryCompleteReadUnsynchronized();
+            }
         }
     }
 
     internal void OnWritable()
     {
+        // Inlined under _sslLock and kept synchronous on purpose (see _sslLock remarks): a stray 'await' here
+        // would be a CS1996 compile error rather than silently releasing the lock mid-transition.
         lock (_sslLock)
         {
-            OnWritableCore();
-        }
-    }
+            // A pending read waiting for write (renegotiation) takes priority.
+            if (_readWantsWrite && _readAwaitable.IsActive)
+            {
+                TryCompleteReadUnsynchronized();
+                return;
+            }
 
-    private void OnWritableCore()
-    {
-        // A pending read waiting for write (renegotiation) takes priority.
-        if (_readWantsWrite && _readAwaitable.IsActive)
-        {
-            TryCompleteRead();
-            return;
-        }
-
-        if (_writeAwaitable.IsActive)
-        {
-            TryCompleteWrite();
+            if (_writeAwaitable.IsActive)
+            {
+                TryCompleteWriteUnsynchronized();
+            }
         }
     }
 
