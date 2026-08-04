@@ -69,6 +69,10 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(OnCompilationStart);
     }
 
+    private static bool IsPropertyIgnoredDueToAccessibility(IPropertySymbol property)
+        => property.DeclaredAccessibility != Accessibility.Public ||
+            IsInaccessibleFromGeneratedCode(property.Type);
+
     private static bool IsInaccessibleFromGeneratedCode(ITypeSymbol type)
         => type is INamedTypeSymbol { IsFileLocal: true } ||
             type.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal);
@@ -77,7 +81,8 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         Action<Diagnostic> reportDiagnostic,
         INamedTypeSymbol skipValidationAttributeSymbol,
         ITypeSymbol currentType,
-        ConcurrentDictionary<ITypeSymbol, byte> allValidatableTypes)
+        ConcurrentDictionary<ITypeSymbol, byte> allValidatableTypes,
+        WellKnownTypes wellKnownTypes)
     {
         if (!allValidatableTypes.TryAdd(currentType, 0))
         {
@@ -96,8 +101,9 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            if (property.DeclaredAccessibility is not Accessibility.Public ||
-                IsInaccessibleFromGeneratedCode(property.Type))
+            if (IsPropertyIgnoredDueToAccessibility(property) &&
+                (ValidationsGenerator.HasValidationAttributes(property, wellKnownTypes) ||
+                TypeHasValidation(property.Type, wellKnownTypes)))
             {
                 reportDiagnostic(Diagnostic.Create(
                     ValidatablePropertyIsNotAccessible,
@@ -106,6 +112,30 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                     currentType.ToDisplayString()));
             }
         }
+    }
+
+    private static bool TypeHasValidation(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    {
+        if (ValidationsGenerator.HasValidationAttributes(type, wellKnownTypes) ||
+            ValidationsGenerator.HasIValidatableObjectInterface(type, wellKnownTypes))
+        {
+            return true;
+        }
+
+        foreach (var member in type.GetMembers())
+        {
+            if (member is not IPropertySymbol property)
+            {
+                continue;
+            }
+
+            if (ValidationsGenerator.HasValidationAttributes(property, wellKnownTypes))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void OnCompilationStart(CompilationStartAnalysisContext context)
@@ -143,7 +173,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         return;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, attributedType, allValidatableTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, attributedType, allValidatableTypes, wellKnownTypes);
                 }
             }, OperationKind.Attribute);
         }
@@ -208,7 +238,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, parameter.Type, allValidatableTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, parameter.Type, allValidatableTypes, wellKnownTypes);
                 }
             }
         });
