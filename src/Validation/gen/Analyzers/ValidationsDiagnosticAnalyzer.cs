@@ -209,7 +209,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    if (parameter.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                    if (parameter.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
                     {
                         // Not very accurate check for services, but fine for the case of the analyzer.
                         // We don't want to report a diagnostic for a service parameter.
