@@ -192,7 +192,8 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
             }
 
             var semanticModel = context.Operation.SemanticModel!;
-            if (invocation.TryGetRouteHandlerMethod(semanticModel, needsAccurateSignature: false, out var routeHandlerMethod))
+            if (InvocationOperationExtensions.KnownMethods.Contains(invocation.TargetMethod.Name) &&
+                invocation.TryGetRouteHandlerMethod(semanticModel, needsAccurateSignature: false, out var routeHandlerMethod))
             {
                 foreach (var parameter in routeHandlerMethod.Parameters)
                 {
