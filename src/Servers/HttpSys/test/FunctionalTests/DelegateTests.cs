@@ -262,6 +262,7 @@ public class DelegateTests : LoggedTest
             options.UrlPrefixes.Clear();
             options.UrlPrefixes.Add(receiverAddress);
         }, LoggerFactory);
+        destination?.Dispose();
         destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
         responseString = await SendRequestAsync(delegatorAddress);
         Assert.Equal(_expectedResponseString, responseString);
