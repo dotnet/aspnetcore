@@ -21,7 +21,7 @@ internal static class EventArgsTypeCache
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2073", Justification = "Custom event args types are preserved because the EventHandlerAttribute constructor parameter is correctly annotated.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2073", Justification = "This returns the event handler parameter type, which is later used for JSON deserialization of custom browser event args. The return annotation communicates the required members to the trimmer.")]
     [return: DynamicallyAccessedMembers(JsonSerialized)]
     public static Type GetEventArgsType(MethodInfo methodInfo)
     {
