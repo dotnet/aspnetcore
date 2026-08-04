@@ -993,7 +993,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Navigate().Back();
 
         // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
-        Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
+        // Wait for blocking-controls to appear before checking state (ensures PreventNavigation() has taken effect on server)
         Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
 
         // The location was reverted to what it was before the navigation started
@@ -1006,7 +1006,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         // The first navigation was canceled and logged
         var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath0";
-        // Ensure the log entry exists before accessing its text (accounts for SignalR latency on server-side variant)
+        // Wait for blocking-controls to appear, then ensure the log entry exists before accessing its text (accounts for SignalR latency on server-side variant)
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
         var logEntryElement = Browser.Exists(By.CssSelector("#navigation-lock-0 > p.navigation-log > span.navigation-log-entry-0"));
         Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => logEntryElement.Text);
 
