@@ -44,7 +44,6 @@ public class ServerRoutingTest : RoutingTest
     {
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61080")]
     public override void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
         => base.NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation();
 

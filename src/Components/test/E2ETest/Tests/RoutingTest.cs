@@ -1006,7 +1006,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         // The first navigation was canceled and logged
         var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath0";
-        Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p.navigation-log > span.navigation-log-entry-0"))?.Text);
+        // Ensure the log entry exists before accessing its text (accounts for SignalR latency on server-side variant)
+        var logEntryElement = Browser.Exists(By.CssSelector("#navigation-lock-0 > p.navigation-log > span.navigation-log-entry-0"));
+        Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => logEntryElement.Text);
 
         // Unblock the new navigation
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-continue")).Click();
