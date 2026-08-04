@@ -75,7 +75,7 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
-            RedirectManager.RedirectTo(ReturnUrl);
+            RedirectManager.RedirectTo("Account/PasskeyUpgrade", new() { ["returnUrl"] = ReturnUrl });
         }
         else if (result.IsLockedOut)
         {

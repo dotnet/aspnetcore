@@ -13,12 +13,50 @@ public interface IPasskeyHandler<TUser>
     where TUser : class
 {
     /// <summary>
+    /// Gets a value indicating whether this handler supports conditionally mediated passkey creation.
+    /// </summary>
+    /// <remarks>
+    /// Returns <see langword="false"/> unless the handler implements
+    /// <see cref="MakeCreationOptionsAsync(PasskeyUserEntity, bool, HttpContext)"/>.
+    /// </remarks>
+    bool SupportsConditionalCreation => false;
+
+    /// <summary>
     /// Generates passkey creation options for the specified user entity and HTTP context.
     /// </summary>
     /// <param name="userEntity">The passkey user entity for which to generate creation options.</param>
     /// <param name="httpContext">The HTTP context associated with the request.</param>
     /// <returns>A <see cref="PasskeyCreationOptionsResult"/> representing the result.</returns>
     Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext);
+
+    /// <summary>
+    /// Generates passkey creation options for the specified user entity and HTTP context.
+    /// </summary>
+    /// <param name="userEntity">The passkey user entity for which to generate creation options.</param>
+    /// <param name="isConditionallyMediated">
+    /// <see langword="true"/> if the passkey will be created with conditional mediation; otherwise, <see langword="false"/>.
+    /// </param>
+    /// <param name="httpContext">The HTTP context associated with the request.</param>
+    /// <returns>A <see cref="PasskeyCreationOptionsResult"/> representing the result.</returns>
+    /// <remarks>
+    /// Conditional mediation lets a passkey be created without a user gesture, typically immediately
+    /// after the user signs in with a password. The corresponding <c>navigator.credentials.create()</c>
+    /// call must specify <c>mediation: "conditional"</c>.
+    /// </remarks>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when <paramref name="isConditionallyMediated"/> is <see langword="true"/> and the handler
+    /// does not support conditionally mediated passkey creation.
+    /// </exception>
+    Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, bool isConditionallyMediated, HttpContext httpContext)
+    {
+        if (isConditionallyMediated)
+        {
+            throw new NotSupportedException(
+                $"The passkey handler '{GetType()}' does not support conditionally mediated passkey creation.");
+        }
+
+        return MakeCreationOptionsAsync(userEntity, httpContext);
+    }
 
     /// <summary>
     /// Generates passkey request options for the specified user and HTTP context.

@@ -63,7 +63,7 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", userId);
-            RedirectManager.RedirectTo(ReturnUrl);
+            RedirectManager.RedirectTo("Account/PasskeyUpgrade", new() { ["returnUrl"] = ReturnUrl });
         }
         else if (result.IsLockedOut)
         {
