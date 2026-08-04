@@ -351,9 +351,21 @@ internal sealed partial class DirectTlsConnection : TransportConnection
             // Already disposed, ignore
         }
 
-        // Only cancel Application.Input to unblock SendLoop (matches Kestrel's Abort pattern)
-        // Don't cancel Application.Output - let ReceiveLoop exit naturally
+        // Unblock BOTH loops so the connection tears down immediately instead of leaving the socket
+        // half-open until the peer times out. SocketConnection.Abort closes the socket synchronously
+        // (RST/FIN); DirectTls instead closes it later in DisposeAsync, so Abort must make Kestrel
+        // progress to that point right away.
+        //
+        // The receive loop is the key: on an app-initiated abort mid-response (e.g. HttpContext.Abort),
+        // it is parked in ReadAsync waiting for peer bytes while the peer is parked waiting for response
+        // bytes - a standoff only the peer's request timeout can break. Cancelling the TLS operations
+        // completes that parked read; the receive loop then completes Application.Output, signalling
+        // Kestrel that the transport is done so it disposes the connection (closing the socket) without
+        // waiting. Cancelling the pending flush covers a receive loop parked on Application.Output
+        // backpressure, and CancelPendingRead unblocks the send loop as before.
+        _connectionState.Cancel();
         Application.Input.CancelPendingRead();
+        Application.Output.CancelPendingFlush();
     }
 
     /// <summary>

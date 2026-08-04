@@ -33,6 +33,26 @@ internal class ConnectionIoState : IDisposable
     private readonly ILogger? _logger;
     private readonly TlsSocketSession _session;
 
+    // Serializes every native SSL operation (SSL_read / SSL_write / SSL_shutdown) on this connection's
+    // session. TlsSocketSession is not safe for concurrent Read/Write from different threads - one SSL*
+    // and its scratch buffers back both directions, and in TLS 1.3 post-handshake messages make reads and
+    // writes touch shared state. Yet the receive loop, the send loop, and the pump thread can each drive a
+    // native call simultaneously (most often under HTTP/2 duplex traffic, where a request body is read while
+    // a response body is written). Without this gate, concurrent SSL_read/SSL_write corrupt the TLS state
+    // machine and surface a spurious error that TlsRead translates to EOF, closing a live connection
+    // mid-stream.
+    //
+    // It also serializes the read/write state machine itself - the initiating ReadAsync/WriteAsync (on the
+    // receive/send loop threads) and the completing OnReadable/OnWritable (on the pump thread) both mutate
+    // the epoll-interest flags (_readWantsWrite/_writeWantsWrite) and issue an *absolute* EPOLL_CTL_MOD via
+    // UpdateEvents. Without a common gate those two sides race: the later epoll_ctl wins and can drop an
+    // EPOLLOUT the other side is still waiting on, stranding a parked write (a WouldBlock'd final response
+    // byte) with no wakeup until the peer times out. Holding this lock across each side's whole transition
+    // makes the flag reads and the epoll_ctl atomic with respect to the other side. Because the sockets are
+    // non-blocking every native call returns promptly and completions run continuations asynchronously, so
+    // the lock is still held only briefly.
+    private readonly object _sslLock = new();
+
     public readonly int Fd;
 
     /// <summary>The underlying TLS session, exposed so the connection can publish negotiated TLS features.</summary>
@@ -82,10 +102,20 @@ internal class ConnectionIoState : IDisposable
     // The only native session calls, isolated as the test seam (see class remarks). Virtual so tests can
     // script raw statuses or simulate an abrupt close without a live TlsSocketSession.
     internal virtual TlsOperationStatus RawRead(Span<byte> buffer, out int bytesRead)
-        => _session.Read(buffer, out bytesRead);
+    {
+        lock (_sslLock)
+        {
+            return _session.Read(buffer, out bytesRead);
+        }
+    }
 
     internal virtual TlsOperationStatus RawWrite(ReadOnlySpan<byte> buffer, out int bytesWritten)
-        => _session.Write(buffer, out bytesWritten);
+    {
+        lock (_sslLock)
+        {
+            return _session.Write(buffer, out bytesWritten);
+        }
+    }
 
     internal virtual void ApplyEvents(uint events)
     {
@@ -104,11 +134,13 @@ internal class ConnectionIoState : IDisposable
                 ? status
                 : throw new TlsException($"TLS read failed: {status}");
         }
-        catch (AuthenticationException)
+        catch (AuthenticationException ex)
         {
             // Abrupt peer close (SSL_ERROR_SYSCALL: ECONNRESET / no close_notify) surfaces as
-            // AuthenticationException from the runtime. Treat as EOF.
+            // AuthenticationException from the runtime. Treat as EOF, but log it: this swallow point
+            // masks any genuine TLS read failure behind a clean end-of-stream.
             bytesRead = 0;
+            _logger?.LogDebug(ex, "TLS read surfaced an AuthenticationException for fd={Fd}; treating as EOF.", Fd);
             return TlsOperationStatus.Closed;
         }
     }
@@ -125,9 +157,12 @@ internal class ConnectionIoState : IDisposable
                 ? status
                 : throw new TlsException($"TLS write failed: {status}");
         }
-        catch (AuthenticationException)
+        catch (AuthenticationException ex)
         {
+            // Treat as EOF, but log it: reporting a clean close here makes SendLoop abandon the rest of an
+            // in-flight response, so a genuine SSL_write failure must not disappear silently.
             bytesWritten = 0;
+            _logger?.LogDebug(ex, "TLS write surfaced an AuthenticationException for fd={Fd}; treating as EOF.", Fd);
             return TlsOperationStatus.Closed;
         }
     }
@@ -162,6 +197,16 @@ internal class ConnectionIoState : IDisposable
     // ═══════════════════════════════════════════════════════════════
 
     public ValueTask<int> ReadAsync(Memory<byte> buffer)
+    {
+        // Serialize the whole transition (see _sslLock remarks): the flag updates and the epoll_ctl issued
+        // here must be atomic with respect to the pump thread's OnReadable/OnWritable.
+        lock (_sslLock)
+        {
+            return ReadAsyncCore(buffer);
+        }
+    }
+
+    private ValueTask<int> ReadAsyncCore(Memory<byte> buffer)
     {
         if (!IsHandshaked)
         {
@@ -259,6 +304,16 @@ internal class ConnectionIoState : IDisposable
     // ═══════════════════════════════════════════════════════════════
 
     public ValueTask<int> WriteAsync(ReadOnlyMemory<byte> buffer)
+    {
+        // Serialize the whole transition (see _sslLock remarks): the flag updates and the epoll_ctl issued
+        // here must be atomic with respect to the pump thread's OnReadable/OnWritable.
+        lock (_sslLock)
+        {
+            return WriteAsyncCore(buffer);
+        }
+    }
+
+    private ValueTask<int> WriteAsyncCore(ReadOnlyMemory<byte> buffer)
     {
         if (!IsHandshaked)
         {
@@ -367,6 +422,14 @@ internal class ConnectionIoState : IDisposable
 
     internal void OnReadable()
     {
+        lock (_sslLock)
+        {
+            OnReadableCore();
+        }
+    }
+
+    private void OnReadableCore()
+    {
         // A pending write waiting for read (renegotiation) takes priority.
         if (_writeWantsRead && _writeAwaitable.IsActive)
         {
@@ -381,6 +444,14 @@ internal class ConnectionIoState : IDisposable
     }
 
     internal void OnWritable()
+    {
+        lock (_sslLock)
+        {
+            OnWritableCore();
+        }
+    }
+
+    private void OnWritableCore()
     {
         // A pending read waiting for write (renegotiation) takes priority.
         if (_readWantsWrite && _readAwaitable.IsActive)
@@ -430,7 +501,12 @@ internal class ConnectionIoState : IDisposable
         // the native SSL_free/close is deferred until any in-flight native call releases its DangerousAddRef.
         // The worst outcome of the race is a spurious ObjectDisposedException on the pump thread's next
         // native call, which TlsEventPump.PumpLoop already catches and turns into an ordinary connection drop.
-        _session.Shutdown();
-        _session.Dispose();
+        // Take _sslLock so the close_notify is not emitted while another thread is mid SSL_read/SSL_write,
+        // which would otherwise corrupt the record stream (the "application data after close notify" alert).
+        lock (_sslLock)
+        {
+            _session.Shutdown();
+            _session.Dispose();
+        }
     }
 }

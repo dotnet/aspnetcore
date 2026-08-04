@@ -206,6 +206,53 @@ public class ConnectionIoStateTests
     }
 
     [Fact]
+    public void ConcurrentReadCompletionAndWrite_DoNotDropTheParkedWriteEpollOut()
+    {
+        // The multi-threaded sibling of the union-mask test above. UpdateEvents reads both want-flags and
+        // applies an ABSOLUTE epoll interest (EPOLL_CTL_MOD replaces, it does not OR), and it runs on two
+        // threads with no lock: the pump completing a renegotiating read, and the send loop submitting a
+        // write. If the pump computes its post-completion mask (EPOLLIN only, seeing no pending write) and a
+        // concurrent write then requests EPOLLOUT, the pump's stale mask can land last and silently drop the
+        // EPOLLOUT the parked write is waiting on -> that write wedges until the connection dies. The union
+        // mask alone does not fix this; it needs the writes to be serialized per connection.
+        var io = new ScriptedConnectionIoState();
+
+        // A read is parked flushing renegotiation output, so the connection currently wants EPOLLIN|EPOLLOUT.
+        io.ScriptRead(TlsOperationStatus.DestinationTooSmall);
+        var read = io.ReadAsync(new byte[16]);
+        Assert.Equal(InOut, io.LastEvents);
+
+        io.ScriptRead(TlsOperationStatus.Complete, bytesRead: 5);   // the renegotiation read then completes
+        io.ScriptWrite(TlsOperationStatus.DestinationTooSmall);      // a concurrent write hits WouldBlock -> wants EPOLLOUT
+
+        // Force the losing interleaving: the pump computes its EPOLLIN-only mask FIRST (while no write is
+        // pending) and parks mid-apply; the write then requests EPOLLOUT; finally the pump's stale mask lands.
+        io.EpollOutApplied.Reset();
+        io.ArmGate();
+
+        var pump = new Thread(() => io.OnWritable()) { IsBackground = true };
+        pump.Start();
+        Assert.True(io.GateReached.Wait(TimeSpan.FromSeconds(10)), "read completion never reached the epoll update");
+
+        ValueTask<int> write = default;
+        var sender = new Thread(() => write = io.WriteAsync(new byte[10])) { IsBackground = true };
+        sender.Start();
+
+        // Pre-fix: the write applies EPOLLIN|EPOLLOUT immediately; observe it, then let the stale mask land.
+        // Fixed: the write blocks on the per-connection lock the parked pump holds, so this wait elapses and
+        // the write only applies its (correct, union) mask AFTER the pump releases -> no lost EPOLLOUT.
+        io.EpollOutApplied.Wait(TimeSpan.FromMilliseconds(500));
+        io.ReleaseGate();
+
+        Assert.True(pump.Join(TimeSpan.FromSeconds(10)));
+        Assert.True(sender.Join(TimeSpan.FromSeconds(10)));
+
+        Assert.True(read.IsCompleted);
+        Assert.False(write.IsCompleted);      // the write is still parked...
+        Assert.Equal(InOut, io.LastEvents);   // ...so the connection MUST still be requesting EPOLLOUT.
+    }
+
+    [Fact]
     public async Task WriteRenegotiation_DropsEpollOut_ThenCompletesOnReadable()
     {
         // A parked write that flips into renegotiation (NeedMoreData) must drop its EPOLLOUT and wait for
@@ -297,10 +344,38 @@ public class ConnectionIoStateTests
             return status ?? throw new AuthenticationException();
         }
 
+        // ── Gate hooks for the concurrent epoll-interest race test (opt-in; unarmed for every other test) ──
+        private int _gateArmed;
+        private readonly ManualResetEventSlim _gateReached = new();
+        private readonly ManualResetEventSlim _gateRelease = new();
+        private readonly ManualResetEventSlim _epollOutApplied = new();
+
+        /// <summary>Signalled once a gated <see cref="ApplyEvents"/> call has parked mid-update inside the gate.</summary>
+        public ManualResetEventSlim GateReached => _gateReached;
+
+        /// <summary>Signalled each time an EPOLLOUT-bearing interest mask is applied.</summary>
+        public ManualResetEventSlim EpollOutApplied => _epollOutApplied;
+
+        /// <summary>Arm the gate so the NEXT <see cref="ApplyEvents"/> call blocks mid-update until <see cref="ReleaseGate"/>.</summary>
+        public void ArmGate() => Volatile.Write(ref _gateArmed, 1);
+
+        public void ReleaseGate() => _gateRelease.Set();
+
         internal override void ApplyEvents(uint events)
         {
+            if (Interlocked.CompareExchange(ref _gateArmed, 0, 1) == 1)
+            {
+                _gateReached.Set();
+                _gateRelease.Wait();
+            }
+
             ApplyEventsCallCount++;
             LastEvents = events;
+
+            if ((events & NativeTls.EPOLLOUT) != 0)
+            {
+                _epollOutApplied.Set();
+            }
         }
     }
 }

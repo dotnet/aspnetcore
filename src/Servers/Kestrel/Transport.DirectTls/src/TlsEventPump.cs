@@ -171,12 +171,23 @@ internal class TlsEventPump : IDisposable
         _pumpThread.Start();
     }
 
-    public void Unregister(int fd)
+    public void Unregister(int fd) => DropEstablishedConnection(fd);
+
+    // Remove an established connection from the pump: drop it from the connection table AND de-register its
+    // fd from this pump's epoll set. Both halves are required. Established-connection events are
+    // level-triggered, so an fd left registered after the connection is gone keeps re-firing on every
+    // epoll_wait; it is then dropped again at the _connections lookup in HandleConnectionEvent, which
+    // tight-spins the pump thread at 100% CPU and starves every other connection this pump owns.
+    private void DropEstablishedConnection(int fd)
     {
         _connections.TryRemove(fd, out _);
-
-        NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
+        DeregisterFromEpoll(fd);
     }
+
+    // The single epoll de-registration syscall, isolated as a virtual seam (like RawRead/AcceptOne) so
+    // tests can observe which fds the pump removes from its interest set without a live epoll instance.
+    internal virtual void DeregisterFromEpoll(int fd)
+        => NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
 
     /// <summary>
     /// Modify the epoll events for a file descriptor.
@@ -277,53 +288,8 @@ internal class TlsEventPump : IDisposable
                     continue;
                 }
 
-                // Check if this is an established connection
-                if (!_connections.TryGetValue(fd, out var conn))
-                {
-                    continue;
-                }
-
-                if ((mask & (NativeTls.EPOLLERR | NativeTls.EPOLLHUP)) != 0)
-                {
-                    // When error events occur, add EPOLLIN|EPOLLOUT
-                    // to handle the events in at least one active handler.
-                    mask |= NativeTls.EPOLLIN | NativeTls.EPOLLOUT;
-                }
-
-                // Process EPOLLIN first - even if EPOLLRDHUP is set, there may be data to read.
-                // Read/write drive native SSL_read/SSL_write which can throw on a broken or
-                // reset peer; isolate it on the pump thread so one connection cannot crash the
-                // process. On failure drop the connection via OnError.
-                try
-                {
-                    if ((mask & NativeTls.EPOLLIN) != 0)
-                    {
-                        conn.OnReadable();
-                    }
-
-                    if ((mask & NativeTls.EPOLLOUT) != 0)
-                    {
-                        conn.OnWritable();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogDebug(ex, "Connection I/O threw for fd={Fd}", fd);
-                    _connections.TryRemove(fd, out _);
-                    conn.OnError(ex);
-                    continue;
-                }
-
-                // Handle EPOLLRDHUP - peer closed their write side
-                if ((mask & NativeTls.EPOLLRDHUP) != 0)
-                {
-                    if ((mask & NativeTls.EPOLLIN) == 0)
-                    {
-                        // No data to read, peer closed - signal error
-                        _connections.TryRemove(fd, out _);
-                        conn.OnError(new IOException("Peer closed connection"));
-                    }
-                }
+                // Established connection - dispatch its I/O. Extracted so the failure/drop paths are testable.
+                HandleConnectionEvent(fd, mask);
             }
 
             // Drop connections whose handshake has taken too long. The epoll_wait timeout above is 10ms
@@ -343,6 +309,59 @@ internal class TlsEventPump : IDisposable
         }
         _handshaking.Clear();
     }
+
+    // Dispatches an epoll event for an established (post-handshake) connection. Extracted from PumpLoop's
+    // event loop so the failure paths (I/O throw, peer RDHUP) can be driven directly from tests.
+    internal void HandleConnectionEvent(int fd, uint mask)
+    {
+        if (!_connections.TryGetValue(fd, out var conn))
+        {
+            return;
+        }
+
+        if ((mask & (NativeTls.EPOLLERR | NativeTls.EPOLLHUP)) != 0)
+        {
+            // When error events occur, add EPOLLIN|EPOLLOUT to handle the events in at least one active handler.
+            mask |= NativeTls.EPOLLIN | NativeTls.EPOLLOUT;
+        }
+
+        // Process EPOLLIN first - even if EPOLLRDHUP is set, there may be data to read. Read/write drive
+        // native SSL_read/SSL_write which can throw on a broken or reset peer; isolate it on the pump thread
+        // so one connection cannot crash the process. On failure drop the connection via OnError.
+        try
+        {
+            if ((mask & NativeTls.EPOLLIN) != 0)
+            {
+                conn.OnReadable();
+            }
+
+            if ((mask & NativeTls.EPOLLOUT) != 0)
+            {
+                conn.OnWritable();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogDebug(ex, "Connection I/O threw for fd={Fd}", fd);
+            DropEstablishedConnection(fd);
+            conn.OnError(ex);
+            return;
+        }
+
+        // Handle EPOLLRDHUP - peer closed their write side.
+        if ((mask & NativeTls.EPOLLRDHUP) != 0)
+        {
+            if ((mask & NativeTls.EPOLLIN) == 0)
+            {
+                // No data to read, peer closed - signal error.
+                DropEstablishedConnection(fd);
+                conn.OnError(new IOException("Peer closed connection"));
+            }
+        }
+    }
+
+    // internal for testing: seed an established connection without running the native handshake.
+    internal void TrackConnectionForTest(int fd, ConnectionIoState conn) => _connections[fd] = conn;
 
     /// <summary>
     /// Accept new connections from the listen socket via the managed Socket API.
