@@ -3,6 +3,8 @@
 
 using System.Buffers;
 using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -161,5 +163,43 @@ public class DirectTlsTransportFactoryTests
         }
 
         Assert.True(memoryPoolFactory.Pool.IsDisposed);
+    }
+
+    [Fact]
+    public void BuildClientCertificateValidation_DisposesConvertedCertificate()
+    {
+        using var sourceCertificate = TestResources.GetTestCertificate();
+        using var legacyCertificate = new X509Certificate(sourceCertificate.Export(X509ContentType.Cert));
+        X509Certificate2 convertedCertificate = null;
+        var endpointOptions = new DirectTlsEndpointOptions
+        {
+            ClientCertificateMode = ClientCertificateMode.AllowCertificate,
+            ClientCertificateValidation = (certificate, _, _) =>
+            {
+                convertedCertificate = certificate;
+                Assert.NotEqual(IntPtr.Zero, certificate.Handle);
+                return true;
+            },
+        };
+        var validation = DirectTlsTransportFactory.BuildClientCertificateValidation(endpointOptions);
+
+        Assert.True(validation(new object(), legacyCertificate, chain: null, SslPolicyErrors.None));
+        Assert.NotNull(convertedCertificate);
+        Assert.Equal(IntPtr.Zero, convertedCertificate.Handle);
+    }
+
+    [Fact]
+    public void BuildClientCertificateValidation_DoesNotDisposeProvidedCertificate2()
+    {
+        using var certificate = TestResources.GetTestCertificate();
+        var endpointOptions = new DirectTlsEndpointOptions
+        {
+            ClientCertificateMode = ClientCertificateMode.AllowCertificate,
+            ClientCertificateValidation = (_, _, _) => true,
+        };
+        var validation = DirectTlsTransportFactory.BuildClientCertificateValidation(endpointOptions);
+
+        Assert.True(validation(new object(), certificate, chain: null, SslPolicyErrors.None));
+        Assert.NotEqual(IntPtr.Zero, certificate.Handle);
     }
 }

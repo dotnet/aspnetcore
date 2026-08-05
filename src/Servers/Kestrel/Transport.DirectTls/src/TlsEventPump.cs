@@ -309,12 +309,18 @@ internal class TlsEventPump : IDisposable
             }
         }
 
-        // Cleanup handshaking connections
-        foreach (var kvp in _handshaking)
+        ReleasePendingHandshakes();
+    }
+
+    // Release every half-open handshake after the event loop stops. Use the same ownership-aware teardown as
+    // ordinary handshake failures so a DirectTlsConnection allocated at NeedsTlsContext is aborted as well.
+    internal void ReleasePendingHandshakes()
+    {
+        foreach (var connection in _handshaking.Values)
         {
-            // Disposing the session closes the underlying socket fd.
-            kvp.Value.Session.Dispose();
+            ReleaseHandshakeResources(connection);
         }
+
         _handshaking.Clear();
     }
 
@@ -868,7 +874,7 @@ internal class TlsEventPump : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Failed to read ClientHello length for fd={Fd}", connection.ConnectionId);
+            _logger.LogDebug(ex, "Failed to read ClientHello length for fd={Fd}", connection.ConnectionState.Fd);
             return;
         }
 
@@ -892,7 +898,7 @@ internal class TlsEventPump : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "TLS ClientHello listener callback threw for fd={Fd}", connection.ConnectionId);
+            _logger.LogDebug(ex, "TLS ClientHello listener callback threw for fd={Fd}", connection.ConnectionState.Fd);
         }
         finally
         {

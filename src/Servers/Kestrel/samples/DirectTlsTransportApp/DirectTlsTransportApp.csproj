@@ -32,8 +32,8 @@
                HintPath="$(ArtifactsBinDir)Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets/$(Configuration)/$(DefaultNetCoreTargetFramework)/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.dll"
                Private="true" />
 
-    <!-- The DirectTls transport is not part of the shared framework; reference the local project directly. -->
-    <ProjectReference Include="..\..\Transport.DirectTls\src\Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.csproj" />
+    <!-- The DirectTls transport is not part of the shared framework; resolve it from the local project list. -->
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls" />
   </ItemGroup>
 
   <ItemGroup>

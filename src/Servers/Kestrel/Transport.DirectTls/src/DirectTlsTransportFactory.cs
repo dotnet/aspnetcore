@@ -191,10 +191,17 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
     // Maps the endpoint's ClientCertificateMode + optional user validation callback onto the
     // RemoteCertificateValidationCallback the pump runs at handshake completion. Only built for
     // Allow/Require modes.
-    private static RemoteCertificateValidationCallback BuildClientCertificateValidation(DirectTlsEndpointOptions endpointOptions)
+    internal static RemoteCertificateValidationCallback BuildClientCertificateValidation(DirectTlsEndpointOptions endpointOptions)
     {
         var clientCertificateMode = endpointOptions.ClientCertificateMode;
         var userValidation = endpointOptions.ClientCertificateValidation;
+
+        bool ValidateCertificate(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
+        {
+            return userValidation is not null
+                ? userValidation(certificate, chain, sslPolicyErrors)
+                : sslPolicyErrors == SslPolicyErrors.None;
+        }
 
         return (sender, certificate, chain, sslPolicyErrors) =>
         {
@@ -204,12 +211,14 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
                 return clientCertificateMode != ClientCertificateMode.RequireCertificate;
             }
 
-            var certificate2 = certificate as X509Certificate2
-                ?? X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
+            if (certificate is X509Certificate2 certificate2)
+            {
+                return ValidateCertificate(certificate2, chain, sslPolicyErrors);
+            }
 
-            return userValidation is not null
-                ? userValidation(certificate2, chain, sslPolicyErrors)
-                : sslPolicyErrors == SslPolicyErrors.None;
+            using var convertedCertificate = X509CertificateLoader.LoadCertificate(certificate.Export(X509ContentType.Cert));
+
+            return ValidateCertificate(convertedCertificate, chain, sslPolicyErrors);
         };
     }
 }

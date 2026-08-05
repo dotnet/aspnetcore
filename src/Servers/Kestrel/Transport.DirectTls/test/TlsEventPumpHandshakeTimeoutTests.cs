@@ -3,7 +3,9 @@
 
 #nullable enable
 
+using System.Buffers;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
@@ -105,6 +107,37 @@ public class TlsEventPumpHandshakeTimeoutTests
         using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));
 
         Assert.Equal(0, pump.SweepExpiredHandshakes(nowTimestamp: long.MaxValue));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void ReleasePendingHandshakes_AbortsConnectionAllocatedBeforeHandshakeCompleted()
+    {
+        using var pump = new TlsEventPump(NullLogger<TlsEventPump>.Instance, id: 0, Timeout.InfiniteTimeSpan);
+        var connectionState = new ConnectionIoState(
+            fd: 101,
+            session: null!,
+            NullLogger<ConnectionIoState>.Instance);
+        var connection = new DirectTlsConnection(
+            connectionState,
+            pump,
+            localEndPoint: null,
+            remoteEndPoint: null,
+            MemoryPool<byte>.Shared,
+            maxReadBufferSize: 0,
+            maxWriteBufferSize: 0,
+            NullLogger<DirectTlsConnection>.Instance);
+        pump.Handshakes[101] = new TlsEventPump.HandshakingConnection
+        {
+            Fd = 101,
+            Session = null!,
+            Connection = connection,
+        };
+
+        pump.ReleasePendingHandshakes();
+
+        Assert.True(connection.ConnectionClosed.IsCancellationRequested);
+        Assert.Empty(pump.Handshakes);
     }
 
     /// <summary>
