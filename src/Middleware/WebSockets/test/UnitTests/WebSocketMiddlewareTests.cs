@@ -796,7 +796,6 @@ public class WebSocketMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65080")]
     public async Task PingTimeoutCancelsReceiveAsync()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -819,8 +818,8 @@ public class WebSocketMiddlewareTests : LoggedTest
         },
         o =>
         {
-            o.KeepAliveInterval = TimeSpan.FromMilliseconds(1);
-            o.KeepAliveTimeout = TimeSpan.FromMilliseconds(1);
+            o.KeepAliveInterval = TimeSpan.FromMilliseconds(50);
+            o.KeepAliveTimeout = TimeSpan.FromMilliseconds(50);
         }))
         {
             using (var client = new HttpClient())
