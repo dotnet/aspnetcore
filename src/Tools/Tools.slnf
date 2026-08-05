@@ -105,8 +105,6 @@
       "src\\SignalR\\common\\Http.Connections\\src\\Microsoft.AspNetCore.Http.Connections.csproj",
       "src\\SignalR\\common\\SignalR.Common\\src\\Microsoft.AspNetCore.SignalR.Common.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
-      "src\\Tools\\Extensions.ApiDescription.Client\\src\\Microsoft.Extensions.ApiDescription.Client.csproj",
-      "src\\Tools\\Extensions.ApiDescription.Client\\test\\Microsoft.Extensions.ApiDescription.Client.Tests.csproj",
       "src\\Tools\\Extensions.ApiDescription.Server\\src\\Microsoft.Extensions.ApiDescription.Server.csproj",
       "src\\Tools\\FirstRunCertGenerator\\src\\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj",
       "src\\Tools\\FirstRunCertGenerator\\test\\Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj",

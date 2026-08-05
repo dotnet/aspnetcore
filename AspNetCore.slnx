@@ -1164,10 +1164,6 @@
     <Project Path="src/Tools/dotnet-user-secrets/src/dotnet-user-secrets.csproj" />
     <Project Path="src/Tools/dotnet-user-secrets/test/dotnet-user-secrets.Tests.csproj" />
   </Folder>
-  <Folder Name="/src/Tools/Extensions.ApiDescription.Client/">
-    <Project Path="src/Tools/Extensions.ApiDescription.Client/src/Microsoft.Extensions.ApiDescription.Client.csproj" />
-    <Project Path="src/Tools/Extensions.ApiDescription.Client/test/Microsoft.Extensions.ApiDescription.Client.Tests.csproj" />
-  </Folder>
   <Folder Name="/src/Tools/Extensions.ApiDescription.Server/">
     <Project Path="src/Tools/Extensions.ApiDescription.Server/src/Microsoft.Extensions.ApiDescription.Server.csproj" />
   </Folder>
