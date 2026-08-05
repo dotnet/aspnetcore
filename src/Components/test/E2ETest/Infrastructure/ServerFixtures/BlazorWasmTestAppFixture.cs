@@ -41,21 +41,26 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
         var indexHtmlPath = Path.Combine(ContentRoot, "wwwroot", "index.html");
         var runtimeManifestPath = Path.ChangeExtension(clientAssemblyPath, ".staticwebassets.runtime.json");
         var endpointsManifestPath = Path.ChangeExtension(clientAssemblyPath, ".staticwebassets.endpoints.json");
+        var clientAssemblyExists = File.Exists(clientAssemblyPath);
+        var contentRootExists = Directory.Exists(ContentRoot);
+        var indexHtmlExists = File.Exists(indexHtmlPath);
+        var runtimeManifestExists = File.Exists(runtimeManifestPath);
+        var endpointsManifestExists = File.Exists(endpointsManifestPath);
 
-        if (!File.Exists(clientAssemblyPath) ||
-            !Directory.Exists(ContentRoot) ||
-            !File.Exists(indexHtmlPath) ||
-            !File.Exists(runtimeManifestPath) ||
-            !File.Exists(endpointsManifestPath))
+        if (!clientAssemblyExists ||
+            !contentRootExists ||
+            !indexHtmlExists ||
+            !runtimeManifestExists ||
+            !endpointsManifestExists)
         {
             throw new InvalidOperationException(
                 $"""
                 The Blazor WebAssembly E2E test app is not ready to start.
-                Client assembly: '{clientAssemblyPath}' ({(File.Exists(clientAssemblyPath) ? "found" : "missing")})
-                Content root: '{ContentRoot}' ({(Directory.Exists(ContentRoot) ? "found" : "missing")})
-                Entry point: '{indexHtmlPath}' ({(File.Exists(indexHtmlPath) ? "found" : "missing")})
-                Runtime manifest: '{runtimeManifestPath}' ({(File.Exists(runtimeManifestPath) ? "found" : "missing")})
-                Endpoints manifest: '{endpointsManifestPath}' ({(File.Exists(endpointsManifestPath) ? "found" : "missing")})
+                Client assembly: '{clientAssemblyPath}' ({(clientAssemblyExists ? "found" : "missing")})
+                Content root: '{ContentRoot}' ({(contentRootExists ? "found" : "missing")})
+                Entry point: '{indexHtmlPath}' ({(indexHtmlExists ? "found" : "missing")})
+                Runtime manifest: '{runtimeManifestPath}' ({(runtimeManifestExists ? "found" : "missing")})
+                Endpoints manifest: '{endpointsManifestPath}' ({(endpointsManifestExists ? "found" : "missing")})
 
                 Rebuild the E2E project and referenced test apps before rerunning the test with --no-build:
                   dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore
