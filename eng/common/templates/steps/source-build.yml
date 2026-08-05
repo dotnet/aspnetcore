@@ -18,7 +18,6 @@ parameters:
 steps:
 # Build. Keep it self-contained for simple reusability. (No source-build-specific job variables.)
 - script: |
-    set -x
     df -h
 
     # If building on the internal project, the artifact feeds variable may be available (usually only if needed)
@@ -30,7 +29,12 @@ steps:
     if [ '$(dn-bot-dnceng-artifact-feeds-rw)' != '$''(dn-bot-dnceng-artifact-feeds-rw)' ]; then
       # Temporarily work around https://github.com/dotnet/arcade/issues/7709
       chmod +x $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.sh
-      $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.sh $(System.DefaultWorkingDirectory)/NuGet.config $(dn-bot-dnceng-artifact-feeds-rw)
+      # Authenticate to internal feeds using the build identity (System.AccessToken)
+      if [ -z "$(System.AccessToken)" ]; then
+        echo "##vso[task.logissue type=error]System.AccessToken is empty; cannot authenticate to internal feeds for source-build."
+        exit 1
+      fi
+      "$(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.sh" "$(System.DefaultWorkingDirectory)/NuGet.config" "$(System.AccessToken)"
       internalRestoreArgs='/p:CopyWipIntoInnerSourceBuildRepo=true'
 
       # The 'Copy WIP' feature of source build uses git stash to apply changes from the original repo.
@@ -49,6 +53,9 @@ steps:
     if [ '$(dotnetbuilds-internal-container-read-token-base64)' != '$''(dotnetbuilds-internal-container-read-token-base64)' ]; then
       internalRuntimeDownloadArgs='/p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64) --runtimesourcefeed https://ci.dot.net/internal --runtimesourcefeedkey $(dotnetbuilds-internal-container-read-token-base64)'
     fi
+
+    # Enable command tracing for the build-argument assembly below (no secrets are evaluated here).
+    set -x
 
     buildConfig=Release
     # Check if AzDO substitutes in a build config from a variable, and use it if so.
@@ -86,6 +93,9 @@ steps:
       assetManifestFileName=SourceBuild_${{ parameters.platform.name }}.xml
     fi
 
+    # internalRuntimeDownloadArgs embeds the dotnetbuilds-internal-container-read-token-base64 secret,
+    # so disable tracing before the build invocation so the token isn't echoed via xtrace.
+    set +x
     ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
       --configuration $buildConfig \
       --restore --build --pack $publishArgs -bl \
