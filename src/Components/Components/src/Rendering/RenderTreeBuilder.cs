@@ -190,7 +190,8 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </para>
     /// <para>
     /// The attribute is associated with the most recently added element. If the value is <c>false</c> and the
-    /// current element is not a component, the frame will be omitted.
+    /// current element is not a component, the frame will be omitted, except for HTML enumerated attributes
+    /// such as <c>draggable</c>, <c>spellcheck</c>, and <c>contenteditable</c>, which render <c>"false"</c>.
     /// </para>
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -361,7 +362,8 @@ public sealed class RenderTreeBuilder : IDisposable
     /// Appends a frame representing a string-valued attribute.
     /// The attribute is associated with the most recently added element. If the value is <c>null</c>, or
     /// the <see cref="System.Boolean" /> value <c>false</c> and the current element is not a component, the
-    /// frame will be omitted.
+    /// frame will be omitted, except for HTML enumerated attributes such as <c>draggable</c>, <c>spellcheck</c>,
+    /// and <c>contenteditable</c>, which render <c>"false"</c>.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="name">The name of the attribute.</param>
