@@ -418,7 +418,7 @@ public class ComponentHubTest
         feature.Set(httpContextFeature.Object);
         mockContext.Setup(x => x.Features).Returns(feature);
         mockContext.Setup(x => x.ConnectionId).Returns("123");
-        mockContext.Setup(x => x.User).Returns(user);
+        mockContext.Setup(x => x.User).Returns(user ?? new ClaimsPrincipal());
         hub.Context = mockContext.Object;
 
         return (mockClientProxy, hub);

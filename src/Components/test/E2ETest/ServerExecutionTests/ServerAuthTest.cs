@@ -63,7 +63,7 @@ public class ServerAuthTest : AuthTest
         SignInAs("Someone", "TestRole", useSeparateTab: true);
         var refreshStatus = javascript.ExecuteAsyncScript("""
             const callback = arguments[arguments.length - 1];
-            authenticationRefreshTest.refresh().then(callback);
+            authenticationRefreshTest.refresh().then(callback, error => callback(String(error)));
             """);
 
         Assert.Equal(200L, refreshStatus);
