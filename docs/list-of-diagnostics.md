@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0034`)
+### ASP (`ASP0000-ASP0035`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -40,6 +40,7 @@
 |  __`ASP0032`__ | \[ValidatableType\] is applied to an inaccessible type |
 |  __`ASP0033`__ | Endpoint parameter type is inaccessible from generated code |
 |  __`ASP0034`__ | Validatable property or its type is not accessible |
+|  __`ASP0035`__ | \[ValidatableType] cannot be used in generated code |
 
 ### API (`API1000-API1003`)
 

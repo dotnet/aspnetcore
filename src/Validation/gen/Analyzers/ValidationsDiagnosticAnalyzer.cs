@@ -55,16 +55,27 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         description: null,
         helpLinkUri: GetHelpLinkUri("ASP0034"));
 
+    internal static readonly DiagnosticDescriptor ValidatableTypeCantBeUsedInGeneratedCode = new(
+        "ASP0035",
+        "[ValidatableType] cannot be used in generated code",
+        "The 'ValidatableTypeAttribute' is applied to type '{0}' in generated code. Generated code cannot be inspected by ValidationsGenerator.",
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: null,
+        helpLinkUri: GetHelpLinkUri("ASP0035"));
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
         [
             ValidatableTypeIsNotAccessible,
             EndpointParameterTypeIsNotAccessible,
             ValidatablePropertyIsNotAccessible,
+            ValidatableTypeCantBeUsedInGeneratedCode,
         ];
 
     public override void Initialize(AnalysisContext context)
     {
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
         context.EnableConcurrentExecution();
         context.RegisterCompilationStartAction(OnCompilationStart);
     }
@@ -167,6 +178,12 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                     validatableTypeAttribute.Equals(attributeObjectCreationOperation.Constructor?.ContainingType, SymbolEqualityComparer.Default))
                 {
                     validatableTypeAttributeFound = true;
+
+                    if (context.IsGeneratedCode)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(ValidatableTypeCantBeUsedInGeneratedCode, attributedType.Locations.FirstOrDefault(), attributedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
+                        return;
+                    }
 
                     if (IsInaccessibleFromGeneratedCode(attributedType))
                     {

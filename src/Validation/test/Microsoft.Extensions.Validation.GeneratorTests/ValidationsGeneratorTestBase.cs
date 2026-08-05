@@ -96,10 +96,10 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
                 MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Localization.IStringLocalizerFactory).Assembly.Location),
             ]);
 
-    internal static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source)
+    internal static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source, string filePath = "Program.cs")
     {
         var compilation = CSharpCompilation.Create("ValidationsAnalyzerSample",
-            [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
+            [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: filePath)],
             GetMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
 
