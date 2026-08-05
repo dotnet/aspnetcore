@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// A component that describes a location in prerendered output where client-side code
 /// should insert an interactive component.
 /// </summary>
-[CacheBoundaryLiveComponent]
+[CacheBehavior(CacheBehavior.Rerender)]
 internal class SSRRenderModeBoundary : IComponent
 {
     private static readonly ConcurrentDictionary<Type, string> _componentTypeNameHashCache = new();

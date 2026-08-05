@@ -16,6 +16,8 @@
 
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
     <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
+    <!-- Browser-only assembly: JSImport partials are [SupportedOSPlatform("browser")] (dotnet/runtime #131055). CA1416 is not meaningful here since all code runs on the Mono WebAssembly runtime. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

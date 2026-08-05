@@ -6,6 +6,7 @@ export { AbortSignal } from "./AbortController";
 export { AbortError, HttpError, TimeoutError } from "./Errors";
 export { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 export { DefaultHttpClient } from "./DefaultHttpClient";
+export { AuthenticationRefreshFailedContext, AuthenticationRefreshedContext, IAuthenticationRefreshOptions } from "./IAuthenticationRefreshOptions";
 export { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 export { IStatefulReconnectOptions } from "./IStatefulReconnectOptions";
 export { HubConnection, HubConnectionState } from "./HubConnection";

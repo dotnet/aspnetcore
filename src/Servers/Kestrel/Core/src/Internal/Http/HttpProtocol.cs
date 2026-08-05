@@ -1253,6 +1253,15 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             }
         }
 
+        // Close the connection when rejecting an HTTP/1.1 CONNECT request.
+        // See https://www.rfc-editor.org/rfc/rfc9931#section-8.
+        if (_httpVersion == Http.HttpVersion.Http11 &&
+            Method == HttpMethod.Connect &&
+            StatusCode >= StatusCodes.Status300MultipleChoices)
+        {
+            DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
+        }
+
         responseHeaders.SetReadOnly();
 
         if (!hasConnection && _httpVersion < Http.HttpVersion.Http2)

@@ -169,10 +169,10 @@ internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature
     }
 
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-        => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
+        => TaskToAsyncResult.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
 
     public override void EndWrite(IAsyncResult asyncResult)
-        => TaskToApm.End(asyncResult);
+        => TaskToAsyncResult.End(asyncResult);
 
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         => await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
