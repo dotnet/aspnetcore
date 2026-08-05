@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
+using System.Net.Http;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -1552,7 +1553,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    public void PersistedState_IsEmitted_OnReExecutedPage()
+    public async Task PersistedState_IsEmitted_OnReExecutedPage()
     {
         Navigate($"{ServerPathBase}/interactive-reexecution/not-existing-page");
 
@@ -1562,12 +1563,12 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
 
         // The persisted-state comment must be present in the raw HTML response.
-        var url = $"{ServerPathBase}/interactive-reexecution/not-existing-page";
-        var html = ((IJavaScriptExecutor)Browser).ExecuteScript(
-            $@"var x = new XMLHttpRequest(); x.open('GET', {System.Text.Json.JsonSerializer.Serialize(url)}, false); x.send(); return x.responseText;")
-            as string;
+        var url = new Uri(_serverFixture.RootUri, $"{ServerPathBase}/interactive-reexecution/not-existing-page");
+        using var httpClient = new HttpClient();
+        using var response = await httpClient.GetAsync(url);
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
+        var html = await response.Content.ReadAsStringAsync();
 
-        Assert.NotNull(html);
         Assert.Contains("Blazor-Server-Component-State", html);
     }
 
