@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 internal sealed class TlsEventPumpPool : IDisposable
 {
     private readonly TlsEventPump[] _pumps;
-    private readonly ILoggerFactory? _loggerFactory;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public TlsEventPumpPool(int pumpCount = 0, ILoggerFactory? loggerFactory = null, TimeSpan? handshakeTimeout = null)
+    public TlsEventPumpPool(int pumpCount, ILoggerFactory loggerFactory, TimeSpan? handshakeTimeout = null)
     {
         _loggerFactory = loggerFactory;
 
@@ -36,7 +36,7 @@ internal sealed class TlsEventPumpPool : IDisposable
         _pumps = new TlsEventPump[pumpCount];
         for (int i = 0; i < pumpCount; i++)
         {
-            _pumps[i] = new TlsEventPump(loggerFactory?.CreateLogger<TlsEventPump>(), i, effectiveHandshakeTimeout);
+            _pumps[i] = new TlsEventPump(loggerFactory.CreateLogger<TlsEventPump>(), i, effectiveHandshakeTimeout);
         }
     }
 
@@ -63,7 +63,7 @@ internal sealed class TlsEventPumpPool : IDisposable
                 contextResolver,
                 readyConnections,
                 memoryPool,
-                _loggerFactory!,
+                _loggerFactory,
                 noDelay,
                 maxReadBufferSize,
                 maxWriteBufferSize,

@@ -35,7 +35,7 @@ public class DirectTlsListenerDisposalTests
             NullLoggerFactory.Instance,
             bootstrapContext,
             contextResolver: null,
-            new TlsEventPumpPool(pumpCount: 0),
+            new TlsEventPumpPool(pumpCount: 1, NullLoggerFactory.Instance),
             new IPEndPoint(IPAddress.Loopback, 0),
             new DirectTlsTransportOptions(),
             MemoryPool<byte>.Shared,

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Interop;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 /// </summary>
 internal class TlsEventPump : IDisposable
 {
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
     private readonly int _id;
 
     // Maximum time a connection is allowed to spend handshaking before the pump drops it. Stored as
@@ -52,7 +53,7 @@ internal class TlsEventPump : IDisposable
     private Func<ConnectionContext?, string?, (TlsContext Context, RemoteCertificateValidationCallback? ClientCertificateValidation)>? _contextResolver;
     private ChannelWriter<DirectTlsConnection>? _readyConnections;
     private MemoryPool<byte>? _memoryPool;
-    private ILoggerFactory? _loggerFactory;
+    private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
     private bool _noDelay;
     // Writer backpressure thresholds for the per-connection duplex pipes (0 = unbounded). Sourced from
     // DirectTlsTransportOptions.MaxReadBufferSize / MaxWriteBufferSize and applied in the DirectTlsConnection ctor.
@@ -66,8 +67,8 @@ internal class TlsEventPump : IDisposable
     private Action<ConnectionContext, ReadOnlySequence<byte>>? _clientHelloCallback;
 
     // Cached loggers for connection creation (initialized in StartWithListenSocket)
-    private ILogger<ConnectionIoState>? _connectionIoStateLogger;
-    private ILogger<DirectTlsConnection>? _directTlsConnectionLogger;
+    private ILogger<ConnectionIoState> _connectionIoStateLogger = NullLogger<ConnectionIoState>.Instance;
+    private ILogger<DirectTlsConnection> _directTlsConnectionLogger = NullLogger<DirectTlsConnection>.Instance;
 
     // Cached listen endpoint to avoid getsockname syscall per connection
     private EndPoint? _listenEndPoint;
@@ -81,7 +82,7 @@ internal class TlsEventPump : IDisposable
     {
         public int Fd;
         public TlsSocketSession Session;
-        public System.Net.IPEndPoint? RemoteEndPoint;  // Captured from Socket.RemoteEndPoint at accept time
+        public IPEndPoint? RemoteEndPoint;  // Captured from Socket.RemoteEndPoint at accept time
         public RemoteCertificateValidationCallback? ClientCertificateValidation;  // Endpoint's client-cert validation callback (null when no client cert requested); runs at Complete for mTLS enforcement
         // DirectTlsConnection allocated early (at NeedsTlsContext) so the ClientHello listener has a stable
         // ConnectionContext. Null until the listener fires; reused when the handshake reaches Complete.
@@ -91,7 +92,7 @@ internal class TlsEventPump : IDisposable
         public long HandshakeDeadlineTimestamp;
     }
 
-    public TlsEventPump(ILogger? tlsPumpLogger, int id, TimeSpan handshakeTimeout)
+    public TlsEventPump(ILogger tlsPumpLogger, int id, TimeSpan handshakeTimeout)
     {
         _id = id;
         _logger = tlsPumpLogger;
@@ -165,7 +166,7 @@ internal class TlsEventPump : IDisposable
             throw new InvalidOperationException($"Failed to add listen socket to epoll: errno={errno}");
         }
 
-        _logger?.LogDebug("Pump {Id}: Added listen socket fd={Fd} with EPOLLEXCLUSIVE", _id, listenFd);
+        _logger.LogDebug("Pump {Id}: Added listen socket fd={Fd} with EPOLLEXCLUSIVE", _id, listenFd);
 
         // Start the pump thread
         _pumpThread.Start();
@@ -206,7 +207,7 @@ internal class TlsEventPump : IDisposable
         if (result < 0)
         {
             int errno = Marshal.GetLastWin32Error();
-            _logger?.LogWarning("epoll_ctl MOD failed for fd={Fd}: errno={Errno}", fd, errno);
+            _logger.LogWarning("epoll_ctl MOD failed for fd={Fd}: errno={Errno}", fd, errno);
         }
     }
 
@@ -238,7 +239,7 @@ internal class TlsEventPump : IDisposable
         // epoll_ctl is safe to call concurrently with the pump thread's epoll_wait.
         if (NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, listenFd, IntPtr.Zero) < 0)
         {
-            _logger?.LogDebug("epoll_ctl DEL listenFd={Fd} failed: errno={Errno}", listenFd, Marshal.GetLastWin32Error());
+            _logger.LogDebug("epoll_ctl DEL listenFd={Fd} failed: errno={Errno}", listenFd, Marshal.GetLastWin32Error());
         }
     }
 
@@ -249,55 +250,62 @@ internal class TlsEventPump : IDisposable
 
         while (_running)
         {
-            // Use shorter timeout when there are handshaking connections
-            int timeout = _handshaking.Count > 0 ? 10 : 1000;
-            int numEvents = NativeTls.epoll_wait(_epollFd, events, MaxEvents, timeout);
-
-            if (numEvents < 0)
+            try
             {
-                int errno = Marshal.GetLastWin32Error();
-                if (errno == 4)
+                // Use shorter timeout when there are handshaking connections
+                int timeout = _handshaking.Count > 0 ? 10 : 1000;
+                int numEvents = NativeTls.epoll_wait(_epollFd, events, MaxEvents, timeout);
+
+                if (numEvents < 0)
                 {
-                    continue; // EINTR
+                    int errno = Marshal.GetLastWin32Error();
+                    if (errno == 4)
+                    {
+                        continue; // EINTR
+                    }
+                    _logger.LogError("epoll_wait failed: errno={Errno}", errno);
+                    break;
                 }
-                _logger?.LogError("epoll_wait failed: errno={Errno}", errno);
-                break;
+
+                for (int i = 0; i < numEvents; i++)
+                {
+                    int fd = events[i].Data.Fd;
+                    uint mask = events[i].Events;
+
+                    if (fd == 0 && mask == 0)
+                    {
+                        continue;
+                    }
+
+                    // Check if this is the listen socket
+                    if (fd == _listenFd)
+                    {
+                        AcceptConnections();
+                        continue;
+                    }
+
+                    // Check if this is a handshaking connection
+                    if (_handshaking.TryGetValue(fd, out var handshakingConn))
+                    {
+                        TryAdvanceHandshake(fd, handshakingConn);
+                        continue;
+                    }
+
+                    // Established connection - dispatch its I/O. Extracted so the failure/drop paths are testable.
+                    HandleConnectionEvent(fd, mask);
+                }
+
+                // Drop connections whose handshake has taken too long. The epoll_wait timeout above is 10ms
+                // while any handshake is in flight, so a stalled handshake (e.g. a slow-loris ClientHello) is
+                // swept within ~10ms of its deadline even when the connection sends nothing to wake the pump.
+                if (_handshakeTimeoutMs != long.MaxValue && _handshaking.Count > 0)
+                {
+                    SweepExpiredHandshakes(Environment.TickCount64);
+                }
             }
-
-            for (int i = 0; i < numEvents; i++)
+            catch (Exception ex)
             {
-                int fd = events[i].Data.Fd;
-                uint mask = events[i].Events;
-
-                if (fd == 0 && mask == 0)
-                {
-                    continue;
-                }
-
-                // Check if this is the listen socket
-                if (fd == _listenFd)
-                {
-                    AcceptConnections();
-                    continue;
-                }
-
-                // Check if this is a handshaking connection
-                if (_handshaking.TryGetValue(fd, out var handshakingConn))
-                {
-                    TryAdvanceHandshake(fd, handshakingConn);
-                    continue;
-                }
-
-                // Established connection - dispatch its I/O. Extracted so the failure/drop paths are testable.
-                HandleConnectionEvent(fd, mask);
-            }
-
-            // Drop connections whose handshake has taken too long. The epoll_wait timeout above is 10ms
-            // while any handshake is in flight, so a stalled handshake (e.g. a slow-loris ClientHello) is
-            // swept within ~10ms of its deadline even when the connection sends nothing to wake the pump.
-            if (_handshakeTimeoutMs != long.MaxValue && _handshaking.Count > 0)
-            {
-                SweepExpiredHandshakes(Environment.TickCount64);
+                _logger.LogError(ex, "Pump {Id} encountered an exception in PumpLoop", _id);
             }
         }
 
@@ -342,7 +350,7 @@ internal class TlsEventPump : IDisposable
         }
         catch (Exception ex)
         {
-            _logger?.LogDebug(ex, "Connection I/O threw for fd={Fd}", fd);
+            _logger.LogDebug(ex, "Connection I/O threw for fd={Fd}", fd);
             DropEstablishedConnection(fd);
             conn.OnError(ex);
             return;
@@ -400,7 +408,7 @@ internal class TlsEventPump : IDisposable
             {
                 // Rare accept failure: a per-connection error (e.g. peer reset before accept) or a listen
                 // socket torn down mid-drain. Stop this drain and let epoll decide if there is more to do.
-                _logger?.LogDebug(ex, "Accept failed: {Error}", ex.SocketErrorCode);
+                _logger.LogDebug(ex, "Accept failed: {Error}", ex.SocketErrorCode);
                 break;
             }
 
@@ -432,14 +440,13 @@ internal class TlsEventPump : IDisposable
             accepted.NoDelay = true;
         }
 
-        var remoteEndPoint = accepted.RemoteEndPoint as System.Net.IPEndPoint;
-        int clientFd = (int)accepted.Handle;
+        var remoteEndPoint = accepted.RemoteEndPoint as IPEndPoint;
 
-        // Hand the accepted socket's own SafeSocketHandle to the session. TlsSocketSession
-        // takes ownership and disposes it (closing the fd) with the session. Suppress the
-        // managed Socket's finalizer so it never double-closes the fd the session now owns.
-        var socketHandle = accepted.SafeHandle;
-        GC.SuppressFinalize(accepted);
+        // TlsSocketSession takes ownership of its SafeSocketHandle. Explicitly transfer the fd out of the
+        // accepted Socket: suppressing the Socket finalizer would leave the Socket undisposed and make the
+        // lifetime depend on an implicit shared SafeSocketHandle reference.
+        var socketHandle = TransferSocketHandleOwnership(accepted);
+        int clientFd = (int)socketHandle.DangerousGetHandle();
 
         // Create a socket-bound TLS session and attach the shared server context.
         // SetContext configures SSL_set_fd + server accept state internally.
@@ -450,7 +457,7 @@ internal class TlsEventPump : IDisposable
         }
         catch (Exception ex)
         {
-            _logger?.LogDebug(ex, "Failed to initialize TLS session for fd={Fd}", clientFd);
+            _logger.LogDebug(ex, "Failed to initialize TLS session for fd={Fd}", clientFd);
             session.Dispose();
             return;
         }
@@ -466,7 +473,7 @@ internal class TlsEventPump : IDisposable
         if (result < 0)
         {
             int errno = Marshal.GetLastWin32Error();
-            _logger?.LogWarning("epoll_ctl ADD failed for handshaking fd={Fd}: errno={Errno}", clientFd, errno);
+            _logger.LogWarning("epoll_ctl ADD failed for handshaking fd={Fd}: errno={Errno}", clientFd, errno);
             session.Dispose();
             return;
         }
@@ -482,6 +489,25 @@ internal class TlsEventPump : IDisposable
 
         // Try handshake immediately (might complete for resumed sessions)
         TryAdvanceHandshake(clientFd, _handshaking[clientFd]);
+    }
+
+    /// <summary>
+    /// Transfers ownership of <paramref name="socket"/>'s native handle to a new owning
+    /// <see cref="SafeSocketHandle"/> and disposes the original <see cref="Socket"/> without closing the handle.
+    /// </summary>
+    /// <remarks>
+    /// The caller owns the returned handle and must dispose it or transfer ownership to another owner.
+    /// </remarks>
+    internal static SafeSocketHandle TransferSocketHandleOwnership(Socket socket)
+    {
+        ArgumentNullException.ThrowIfNull(socket);
+
+        var socketHandle = socket.SafeHandle;
+        var transferredHandle = new SafeSocketHandle(socketHandle.DangerousGetHandle(), ownsHandle: true);
+        socketHandle.SetHandleAsInvalid();
+        socket.Dispose();
+
+        return transferredHandle;
     }
 
     /// <summary>
@@ -503,7 +529,7 @@ internal class TlsEventPump : IDisposable
             // AuthenticationException). This runs on the pump thread, so an unhandled
             // throw would tear down the whole process. Isolate it and drop just this
             // connection - one bad client must not affect the others.
-            _logger?.LogDebug(ex, "Handshake threw for fd={Fd}", fd);
+            _logger.LogDebug(ex, "Handshake threw for fd={Fd}", fd);
             DropHandshake(fd, conn);
             return;
         }
@@ -540,7 +566,7 @@ internal class TlsEventPump : IDisposable
 
                 if (!accepted)
                 {
-                    _logger?.LogDebug("Client certificate rejected for fd={Fd} (presented={Presented}).", fd, presentedCertificate is not null);
+                    _logger.LogDebug("Client certificate rejected for fd={Fd} (presented={Presented}).", fd, presentedCertificate is not null);
                     DropHandshake(fd, conn);
                     return;
                 }
@@ -661,7 +687,7 @@ internal class TlsEventPump : IDisposable
             }
             catch (Exception ex)
             {
-                _logger?.LogDebug(ex, "Client certificate validation failed for fd={Fd}", fd);
+                _logger.LogDebug(ex, "Client certificate validation failed for fd={Fd}", fd);
                 DropHandshake(fd, conn);
                 return;
             }
@@ -679,7 +705,7 @@ internal class TlsEventPump : IDisposable
             if (_contextResolver is null)
             {
                 // No selector configured but the session still deferred — misconfiguration.
-                _logger?.LogDebug("Handshake returned NeedsTlsContext but no certificate resolver is configured for fd={Fd}", fd);
+                _logger.LogDebug("Handshake returned NeedsTlsContext but no certificate resolver is configured for fd={Fd}", fd);
                 DropHandshake(fd, conn);
                 return;
             }
@@ -738,7 +764,7 @@ internal class TlsEventPump : IDisposable
             {
                 // A bad SNI host, a selector that returned no certificate, or a credential
                 // acquisition failure must drop only this connection, not the pump.
-                _logger?.LogDebug(ex, "SNI certificate resolution failed for fd={Fd}", fd);
+                _logger.LogDebug(ex, "SNI certificate resolution failed for fd={Fd}", fd);
                 DropHandshake(fd, conn);
                 return;
             }
@@ -749,7 +775,7 @@ internal class TlsEventPump : IDisposable
         }
 
         // Handshake failed or connection closed - cleanup.
-        _logger?.LogDebug("Handshake failed for fd={Fd}: status={Status}", fd, status);
+        _logger.LogDebug("Handshake failed for fd={Fd}: status={Status}", fd, status);
         DropHandshake(fd, conn);
     }
 
@@ -820,7 +846,7 @@ internal class TlsEventPump : IDisposable
             int fd = expired[i];
             if (_handshaking.TryGetValue(fd, out var conn))
             {
-                _logger?.LogDebug("Handshake timed out for fd={Fd} after {TimeoutMs}ms; dropping connection.", fd, _handshakeTimeoutMs);
+                _logger.LogDebug("Handshake timed out for fd={Fd} after {TimeoutMs}ms; dropping connection.", fd, _handshakeTimeoutMs);
                 DropHandshake(fd, conn);
             }
         }
@@ -842,7 +868,7 @@ internal class TlsEventPump : IDisposable
         }
         catch (Exception ex)
         {
-            _logger?.LogDebug(ex, "Failed to read ClientHello length for fd={Fd}", connection.ConnectionId);
+            _logger.LogDebug(ex, "Failed to read ClientHello length for fd={Fd}", connection.ConnectionId);
             return;
         }
 
@@ -866,7 +892,7 @@ internal class TlsEventPump : IDisposable
         }
         catch (Exception ex)
         {
-            _logger?.LogDebug(ex, "TLS ClientHello listener callback threw for fd={Fd}", connection.ConnectionId);
+            _logger.LogDebug(ex, "TLS ClientHello listener callback threw for fd={Fd}", connection.ConnectionId);
         }
         finally
         {
@@ -900,7 +926,7 @@ internal class TlsEventPump : IDisposable
         // rather than a leak, so log it for diagnostics but don't act on it.
         if (NativeTls.close(_epollFd) < 0)
         {
-            _logger?.LogDebug("close(epollFd={EpollFd}) failed: errno={Errno}", _epollFd, Marshal.GetLastWin32Error());
+            _logger.LogDebug("close(epollFd={EpollFd}) failed: errno={Errno}", _epollFd, Marshal.GetLastWin32Error());
         }
     }
 }

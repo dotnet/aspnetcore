@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 /// </remarks>
 internal class ConnectionIoState : IDisposable
 {
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
     private readonly TlsSocketSession _session;
 
     // Serializes every native SSL operation (SSL_read / SSL_write / SSL_shutdown) on this connection's
@@ -85,7 +85,7 @@ internal class ConnectionIoState : IDisposable
     private bool _writeWantsRead;                // Write needs the socket to become readable (renegotiation)
     private bool _writeWantsWrite;               // Write hit WouldBlock and needs the socket to become writable
 
-    public ConnectionIoState(int fd, TlsSocketSession session, ILogger? logger = null)
+    public ConnectionIoState(int fd, TlsSocketSession session, ILogger logger)
     {
         _logger = logger;
 
@@ -147,7 +147,7 @@ internal class ConnectionIoState : IDisposable
             // AuthenticationException from the runtime. Treat as EOF, but log it: this swallow point
             // masks any genuine TLS read failure behind a clean end-of-stream.
             bytesRead = 0;
-            _logger?.LogDebug(ex, "TLS read surfaced an AuthenticationException for fd={Fd}; treating as EOF.", Fd);
+            _logger.LogDebug(ex, "TLS read surfaced an AuthenticationException for fd={Fd}; treating as EOF.", Fd);
             return TlsOperationStatus.Closed;
         }
     }
@@ -169,7 +169,7 @@ internal class ConnectionIoState : IDisposable
             // Treat as EOF, but log it: reporting a clean close here makes SendLoop abandon the rest of an
             // in-flight response, so a genuine SSL_write failure must not disappear silently.
             bytesWritten = 0;
-            _logger?.LogDebug(ex, "TLS write surfaced an AuthenticationException for fd={Fd}; treating as EOF.", Fd);
+            _logger.LogDebug(ex, "TLS write surfaced an AuthenticationException for fd={Fd}; treating as EOF.", Fd);
             return TlsOperationStatus.Closed;
         }
     }
@@ -264,7 +264,7 @@ internal class ConnectionIoState : IDisposable
     {
         if (!_readAwaitable.IsActive)
         {
-            _logger?.LogDebug("TryCompleteReadUnsynchronized called but no read is pending");
+            _logger.LogDebug("TryCompleteReadUnsynchronized called but no read is pending");
             return; // Race: canceled or completed between check and call
         }
 

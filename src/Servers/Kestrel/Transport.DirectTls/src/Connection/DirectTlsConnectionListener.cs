@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 /// </summary>
 internal sealed class DirectTlsConnectionListener : IConnectionListener
 {
-    private readonly ILogger? _logger;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger _logger;
     private readonly DirectTlsTransportOptions _options;
 
+    // Listener-owned pool shared by all of its connections and disposed after its pumps have stopped.
     private readonly MemoryPool<byte> _memoryPool;
 
     private readonly TlsContext _tlsContext;
@@ -56,7 +56,6 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         ArgumentNullException.ThrowIfNull(tlsContext);
 
         _logger = loggerFactory.CreateLogger<DirectTlsConnectionListener>();
-        _loggerFactory = loggerFactory;
         _options = options;
         _memoryPool = memoryPool;
 
@@ -108,17 +107,17 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         // Each pump will accept connections directly in its epoll loop
         int listenFd = (int)listenSocket.Handle;
         _pumpPool.StartWithListenSocket(
-            listenFd, 
-            _tlsContext, 
+            listenFd,
+            _tlsContext,
             _contextResolver,
-            _readyConnections.Writer, 
+            _readyConnections.Writer,
             _memoryPool,
             _options.NoDelay,
             _options.MaxReadBufferSize ?? 0,
             _options.MaxWriteBufferSize ?? 0,
             _clientHelloCallback);
 
-        _logger?.LogInformation("DirectTls listener started with EPOLLEXCLUSIVE worker accept");
+        _logger.LogInformation("DirectTls listener started with EPOLLEXCLUSIVE worker accept");
     }
 
     public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
@@ -176,6 +175,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         // credentials (bootstrap + per-SNI contexts). Done last so disposal can't race a pump using a context;
         // idempotent, so a second DisposeAsync is a no-op here.
         _ownedServerContexts?.Dispose();
+        _memoryPool.Dispose();
     }
 
     public ValueTask UnbindAsync(CancellationToken cancellationToken = default)

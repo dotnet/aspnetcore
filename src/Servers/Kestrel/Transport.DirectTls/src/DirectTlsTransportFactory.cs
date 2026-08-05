@@ -139,7 +139,7 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
         var workerCount = endpointOptions.WorkerCount ?? _options.WorkerCount;
         var pumpPool = new TlsEventPumpPool(workerCount, _loggerFactory, endpointOptions.HandshakeTimeout);
 
-        var memoryPool = MemoryPool<byte>.Shared;
+        var memoryPool = _options.MemoryPoolFactory.Create(DirectTlsTransportOptions.MemoryPoolOptions);
 
         // The listener owns the native contexts (bootstrap + per-SNI cache) and disposes them on teardown.
         var ownedServerContexts = new ServerTlsContexts(bootstrapContext, contextCache);

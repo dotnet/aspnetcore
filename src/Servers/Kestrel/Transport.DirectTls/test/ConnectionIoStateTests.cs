@@ -3,6 +3,7 @@
 
 using System.Net.Security;
 using System.Security.Authentication;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Tests;
 
@@ -307,7 +308,7 @@ public class ConnectionIoStateTests
         private readonly Queue<(TlsOperationStatus? Status, int Count)> _writes = new();
 
         public ScriptedConnectionIoState()
-            : base(fd: -1, session: null!, logger: null)
+            : base(fd: -1, session: null!, logger: NullLogger<ConnectionIoState>.Instance)
         {
             SetHandshakeComplete();
         }

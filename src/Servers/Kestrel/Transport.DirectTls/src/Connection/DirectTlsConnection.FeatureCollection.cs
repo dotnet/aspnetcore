@@ -85,14 +85,14 @@ internal sealed partial class DirectTlsConnection : ITlsConnectionFeature, ITlsH
     /// <summary>
     /// Exposes a managed <see cref="Socket"/> for the connection.
     ///
-    /// NOT IDEAL - this is a sharp edge (see the sample app README). DirectTls never owns a managed
-    /// <see cref="Socket"/>: the accepted socket's <see cref="SafeSocketHandle"/> is handed straight to OpenSSL
-    /// (via <c>SSL_set_fd</c>) and driven by the TLS event pump. We reconstruct a <see cref="Socket"/> from the
-    /// raw file descriptor on demand, wrapping it in a <b>non-owning</b> <see cref="SafeSocketHandle"/> so that
-    /// disposing the returned socket does not close the descriptor the TLS session still uses. The returned
-    /// socket is only safe for reading metadata (endpoints, socket options); performing raw send/receive on it
-    /// would corrupt the TLS record stream. It exists purely for feature parity with the standard sockets
-    /// transport, which surfaces the real accepted socket here.
+    /// NOT IDEAL - this is a sharp edge (see the sample app README). DirectTls does not retain the managed
+    /// <see cref="Socket"/> returned by accept: ownership of its fd is transferred to the
+    /// <see cref="TlsSocketSession"/>'s <see cref="SafeSocketHandle"/> and driven by the TLS event pump. We
+    /// reconstruct a <see cref="Socket"/> from the raw file descriptor on demand, wrapping it in a
+    /// <b>non-owning</b> <see cref="SafeSocketHandle"/> so that disposing the returned socket does not close the
+    /// descriptor the TLS session still uses. The returned socket is only safe for reading metadata (endpoints,
+    /// socket options); performing raw send/receive on it would corrupt the TLS record stream. It exists purely
+    /// for feature parity with the standard sockets transport, which surfaces the real accepted socket here.
     /// </summary>
     public Socket Socket
         => _socket ??= new Socket(new SafeSocketHandle((IntPtr)_connectionState.Fd, ownsHandle: false));

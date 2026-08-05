@@ -5,6 +5,7 @@
 
 using System.Net.Security;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
@@ -26,7 +27,7 @@ public class TlsEventPumpConnectionDropTests
     {
         using var pump = new RecordingDeregisterPump();
         const int fd = 42;
-        var conn = new ConnectionIoState(fd, session: null!, logger: null);
+        var conn = new ConnectionIoState(fd, session: null!, logger: NullLogger<ConnectionIoState>.Instance);
         pump.TrackConnectionForTest(fd, conn);
 
         // EPOLLRDHUP with no EPOLLIN: the peer closed their write side and there is nothing to read.
@@ -57,7 +58,7 @@ public class TlsEventPumpConnectionDropTests
         public List<int> DeregisteredFds { get; } = new();
 
         public RecordingDeregisterPump()
-            : base(tlsPumpLogger: null, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
+            : base(tlsPumpLogger: NullLogger<TlsEventPump>.Instance, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
         {
         }
 
@@ -73,7 +74,7 @@ public class TlsEventPumpConnectionDropTests
         private bool _parked;
 
         public ReadFailsOnCompletionConnection(int fd)
-            : base(fd, session: null!, logger: null)
+            : base(fd, session: null!, logger: NullLogger<ConnectionIoState>.Instance)
         {
             SetHandshakeComplete();
         }

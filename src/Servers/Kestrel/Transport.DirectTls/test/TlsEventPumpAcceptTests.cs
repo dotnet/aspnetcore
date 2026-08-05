@@ -5,6 +5,7 @@
 
 using System.Net.Sockets;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
@@ -169,7 +170,7 @@ public class TlsEventPumpAcceptTests
         public int ProcessedCount { get; private set; }
 
         public ScriptedAcceptPump(IEnumerable<Func<Socket>> script, Func<Socket>? defaultOutcome = null)
-            : base(tlsPumpLogger: null, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
+            : base(tlsPumpLogger: NullLogger<TlsEventPump>.Instance, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
         {
             _script = new Queue<Func<Socket>>(script);
             // When the script is exhausted, behave like a drained backlog unless told otherwise.

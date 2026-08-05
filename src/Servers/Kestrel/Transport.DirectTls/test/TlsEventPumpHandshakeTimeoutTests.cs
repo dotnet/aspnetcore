@@ -4,6 +4,7 @@
 #nullable enable
 
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
@@ -117,7 +118,7 @@ public class TlsEventPumpHandshakeTimeoutTests
         public List<int> DroppedFds { get; } = new();
 
         public RecordingDropPump(TimeSpan handshakeTimeout)
-            : base(tlsPumpLogger: null, id: 0, handshakeTimeout: handshakeTimeout)
+            : base(tlsPumpLogger: NullLogger<TlsEventPump>.Instance, id: 0, handshakeTimeout: handshakeTimeout)
         {
         }
 

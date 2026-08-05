@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
@@ -90,6 +91,10 @@ public sealed class DirectTlsTransportOptions
     /// Defaults to 64 KiB.
     /// </remarks>
     internal long? MaxWriteBufferSize { get; set; } = 64 * 1024;
+
+    internal IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = DefaultSimpleMemoryPoolFactory.Instance;
+
+    internal static readonly MemoryPoolOptions MemoryPoolOptions = new() { Owner = "kestrel" };
 
     /// <summary>
     /// A function used to create a new <see cref="Socket"/> to listen with. If

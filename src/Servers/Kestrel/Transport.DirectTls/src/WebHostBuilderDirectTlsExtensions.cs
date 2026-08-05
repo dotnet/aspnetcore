@@ -5,8 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -43,6 +45,14 @@ public static class WebHostBuilderDirectTlsExtensions
             // KestrelServerImpl reverses the factory list, so this last-registered factory is tried first and
             // its CanBind claims only DirectTlsEndpoint; every other endpoint falls through to the default.
             services.AddSingleton<IConnectionListenerFactory, DirectTlsTransportFactory>();
+
+            services.TryAddSingleton<IMemoryPoolFactory<byte>, DefaultSimpleMemoryPoolFactory>();
+            services.AddOptions<DirectTlsTransportOptions>().Configure((DirectTlsTransportOptions options, IMemoryPoolFactory<byte> factory) =>
+            {
+                // UseKestrelCore normally registers PinnedBlockMemoryPoolFactory. The fallback supports
+                // standalone transport registration, matching the sockets transport.
+                options.MemoryPoolFactory = factory;
+            });
 
             // Copies each DirectTlsEndpoint's ListenOptions.Protocols onto the endpoint after all endpoints
             // are configured, so the transport can read the ALPN protocols off the endpoint itself.
