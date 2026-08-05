@@ -65,6 +65,7 @@ public partial class HubConnectionTests
 
     [Theory]
     [MemberData(nameof(TransportTypes))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68019")]
     public async Task RefreshingAuthRemovingClaimBlocksAuthorizedMethod(HttpTransportType transportType)
     {
         await using (var server = await StartServer<Startup>())
@@ -120,6 +121,7 @@ public partial class HubConnectionTests
 
     [Theory]
     [MemberData(nameof(TransportTypes))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68019")]
     public async Task RefreshingAuthAddingClaimAllowsAuthorizedMethod(HttpTransportType transportType)
     {
         await using (var server = await StartServer<Startup>())
@@ -318,6 +320,7 @@ public partial class HubConnectionTests
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68149")]
     [Theory]
     [MemberData(nameof(TransportTypes))]
     public async Task RefreshChangingUserIdentifierClosesConnection(HttpTransportType transportType)

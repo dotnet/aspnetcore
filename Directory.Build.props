@@ -295,7 +295,8 @@
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />
-  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
+  <!-- This file is generated at build time and doesn't exist under Dependabot's un-built clone; skip it there (see eng/tools/DependabotDiscovery). -->
+  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' AND '$(DEPENDABOT_NATIVE_HELPERS_PATH)' == '' " />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\RequiresDelayedBuildProjects.props" />

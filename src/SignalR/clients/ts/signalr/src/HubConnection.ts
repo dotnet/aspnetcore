@@ -5,6 +5,7 @@ import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } 
 import { IConnection } from "./IConnection";
 import { AbortError } from "./Errors";
 import { CancelInvocationMessage, CloseMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
+import type { AuthenticationRefreshFailedContext, AuthenticationRefreshedContext, IAuthenticationRefreshOptions } from "./IAuthenticationRefreshOptions";
 import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
@@ -15,6 +16,13 @@ import { MessageBuffer } from "./MessageBuffer";
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
 const DEFAULT_STATEFUL_RECONNECT_BUFFER_SIZE = 100_000;
+const DEFAULT_AUTHENTICATION_REFRESH_BEFORE_EXPIRATION_IN_MS = 5 * 60 * 1000;
+const MAX_AUTHENTICATION_REFRESH_INTERVAL_IN_MS = 2_147_483_647;
+
+interface IAuthenticationRefreshFeature {
+    initialTokenLifetimeInSeconds?: number;
+    refreshAuthentication(): Promise<number | undefined>;
+}
 
 /** Describes the current state of the {@link HubConnection} to the server. */
 export enum HubConnectionState {
@@ -39,6 +47,7 @@ export class HubConnection {
     private readonly _logger: ILogger;
     private readonly _reconnectPolicy?: IRetryPolicy;
     private readonly _statefulReconnectBufferSize: number;
+    private readonly _authenticationRefreshOptions?: IAuthenticationRefreshOptions;
     private _protocol: IHubProtocol;
     private _handshakeProtocol: HandshakeProtocol;
     private _callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
@@ -69,6 +78,7 @@ export class HubConnection {
     private _reconnectDelayHandle?: any;
     private _timeoutHandle?: any;
     private _pingServerHandle?: any;
+    private _authenticationRefreshTimerHandle?: any;
 
     private _freezeEventListener = () =>
     {
@@ -103,9 +113,10 @@ export class HubConnection {
         reconnectPolicy?: IRetryPolicy,
         serverTimeoutInMilliseconds?: number,
         keepAliveIntervalInMilliseconds?: number,
-        statefulReconnectBufferSize?: number): HubConnection {
+        statefulReconnectBufferSize?: number,
+        authenticationRefreshOptions?: IAuthenticationRefreshOptions): HubConnection {
         return new HubConnection(connection, logger, protocol, reconnectPolicy,
-            serverTimeoutInMilliseconds, keepAliveIntervalInMilliseconds, statefulReconnectBufferSize);
+            serverTimeoutInMilliseconds, keepAliveIntervalInMilliseconds, statefulReconnectBufferSize, authenticationRefreshOptions);
     }
 
     private constructor(
@@ -115,7 +126,8 @@ export class HubConnection {
         reconnectPolicy?: IRetryPolicy,
         serverTimeoutInMilliseconds?: number,
         keepAliveIntervalInMilliseconds?: number,
-        statefulReconnectBufferSize?: number) {
+        statefulReconnectBufferSize?: number,
+        authenticationRefreshOptions?: IAuthenticationRefreshOptions) {
         Arg.isRequired(connection, "connection");
         Arg.isRequired(logger, "logger");
         Arg.isRequired(protocol, "protocol");
@@ -124,6 +136,8 @@ export class HubConnection {
         this.keepAliveIntervalInMilliseconds = keepAliveIntervalInMilliseconds ?? DEFAULT_PING_INTERVAL_IN_MS;
 
         this._statefulReconnectBufferSize = statefulReconnectBufferSize ?? DEFAULT_STATEFUL_RECONNECT_BUFFER_SIZE;
+        this._authenticationRefreshOptions = authenticationRefreshOptions;
+        this._validateAuthenticationRefreshOptions();
 
         this._logger = logger;
         this._protocol = protocol;
@@ -278,6 +292,8 @@ export class HubConnection {
             if (!this.connection.features.inherentKeepAlive) {
                 await this._sendMessage(this._cachedPingMessage);
             }
+
+            this._scheduleAuthenticationRefreshIfNeeded();
         } catch (e) {
             this._logger.log(LogLevel.Debug, `Hub handshake failed with error '${e}' during start(). Stopping HubConnection.`);
 
@@ -299,6 +315,7 @@ export class HubConnection {
         // Capture the start promise before the connection might be restarted in an onclose callback.
         const startPromise = this._startPromise;
         this.connection.features.reconnect = false;
+        this._cleanupAuthenticationRefreshTimer();
 
         this._stopPromise = this._stopInternal();
         await this._stopPromise;
@@ -347,6 +364,7 @@ export class HubConnection {
 
         this._cleanupTimeout();
         this._cleanupPingTimer();
+        this._cleanupAuthenticationRefreshTimer();
         this._stopDuringStartError = error || new AbortError("The connection was stopped before the hub handshake could complete.");
 
         // HttpConnection.stop() should not complete until after either HttpConnection.start() fails
@@ -593,6 +611,39 @@ export class HubConnection {
         }
     }
 
+    /** Refreshes the authentication state for this connection.
+     *
+     * @returns A Promise that resolves with the new server-reported token lifetime in seconds, or undefined when the server does not report one.
+     */
+    public async refreshAuthentication(): Promise<number | undefined> {
+        if (this._connectionState !== HubConnectionState.Connected) {
+            throw new Error("Cannot refresh authentication when the connection is not active.");
+        }
+
+        const authenticationRefreshFeature = this.connection.features.authenticationRefresh as IAuthenticationRefreshFeature | undefined;
+        if (!authenticationRefreshFeature) {
+            throw new Error("Authentication refresh is only supported with HTTP-based connections.");
+        }
+
+        let newTokenLifetimeInSeconds: number | undefined;
+        try {
+            newTokenLifetimeInSeconds = await authenticationRefreshFeature.refreshAuthentication();
+        } catch (e) {
+            await this._invokeAuthenticationRefreshFailed(e);
+            throw e;
+        }
+
+        if (this._connectionState === HubConnectionState.Connected &&
+            this.connection.features.authenticationRefresh === authenticationRefreshFeature &&
+            this._isAutoAuthenticationRefreshEnabled() &&
+            isValidAuthenticationTokenLifetime(newTokenLifetimeInSeconds)) {
+            this._scheduleAuthenticationRefresh(newTokenLifetimeInSeconds);
+        }
+
+        await this._invokeAuthenticationRefreshed(newTokenLifetimeInSeconds);
+        return newTokenLifetimeInSeconds;
+    }
+
     private _processIncomingData(data: any) {
         this._cleanupTimeout();
 
@@ -831,6 +882,7 @@ export class HubConnection {
 
         this._cleanupTimeout();
         this._cleanupPingTimer();
+        this._cleanupAuthenticationRefreshTimer();
 
         if (this._connectionState === HubConnectionState.Disconnecting) {
             this._completeClose(error);
@@ -968,6 +1020,122 @@ export class HubConnection {
         }
     }
 
+    private _validateAuthenticationRefreshOptions(): void {
+        if (!this._authenticationRefreshOptions) {
+            return;
+        }
+
+        const refreshBeforeExpirationInMilliseconds = this._authenticationRefreshOptions.refreshBeforeExpirationInMilliseconds;
+        if (refreshBeforeExpirationInMilliseconds !== undefined &&
+            (typeof refreshBeforeExpirationInMilliseconds !== "number" ||
+                !Number.isFinite(refreshBeforeExpirationInMilliseconds) ||
+                refreshBeforeExpirationInMilliseconds < 0)) {
+            throw new Error("Authentication refreshBeforeExpirationInMilliseconds must be a finite number greater than or equal to 0.");
+        }
+    }
+
+    private _scheduleAuthenticationRefreshIfNeeded(): void {
+        if (!this._isAutoAuthenticationRefreshEnabled()) {
+            return;
+        }
+
+        const authenticationRefreshFeature = this.connection.features.authenticationRefresh as IAuthenticationRefreshFeature | undefined;
+        const initialTokenLifetimeInSeconds = authenticationRefreshFeature?.initialTokenLifetimeInSeconds;
+        if (isValidAuthenticationTokenLifetime(initialTokenLifetimeInSeconds)) {
+            this._scheduleAuthenticationRefresh(initialTokenLifetimeInSeconds);
+        }
+    }
+
+    private _isAutoAuthenticationRefreshEnabled(): boolean {
+        return !!this._authenticationRefreshOptions && this._authenticationRefreshOptions.enableAutoRefresh !== false;
+    }
+
+    private _scheduleAuthenticationRefresh(tokenLifetimeInSeconds: number): void {
+        const refreshBeforeExpirationInMilliseconds = this._authenticationRefreshOptions?.refreshBeforeExpirationInMilliseconds ??
+            DEFAULT_AUTHENTICATION_REFRESH_BEFORE_EXPIRATION_IN_MS;
+        const tokenLifetimeInMilliseconds = tokenLifetimeInSeconds * 1000;
+        let refreshIn: number;
+
+        if (tokenLifetimeInMilliseconds <= refreshBeforeExpirationInMilliseconds * 2) {
+            refreshIn = tokenLifetimeInMilliseconds / 2;
+        } else {
+            refreshIn = tokenLifetimeInMilliseconds - refreshBeforeExpirationInMilliseconds;
+        }
+
+        this._scheduleAuthenticationRefreshAt(refreshIn);
+    }
+
+    private _scheduleAuthenticationRefreshAt(refreshIn: number): void {
+        this._cleanupAuthenticationRefreshTimer();
+
+        refreshIn = Math.min(refreshIn, MAX_AUTHENTICATION_REFRESH_INTERVAL_IN_MS);
+
+        this._authenticationRefreshTimerHandle = setTimeout(() => {
+            this._authenticationRefreshTimerHandle = undefined;
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._onAuthenticationRefreshTimerFired();
+        }, refreshIn);
+    }
+
+    private _cleanupAuthenticationRefreshTimer(): void {
+        if (this._authenticationRefreshTimerHandle) {
+            clearTimeout(this._authenticationRefreshTimerHandle);
+            this._authenticationRefreshTimerHandle = undefined;
+        }
+    }
+
+    private async _onAuthenticationRefreshTimerFired(): Promise<void> {
+        if (this._connectionState !== HubConnectionState.Connected) {
+            this._logger.log(LogLevel.Debug, "Skipping authentication refresh because the connection is not active.");
+            return;
+        }
+
+        try {
+            this._logger.log(LogLevel.Debug, "Refreshing authentication.");
+            const newTokenLifetimeInSeconds = await this.refreshAuthentication();
+            this._logger.log(LogLevel.Debug, `Authentication refresh completed. New token lifetime: ${newTokenLifetimeInSeconds}.`);
+        } catch (e) {
+            this._logger.log(LogLevel.Error, `Authentication refresh failed: ${getErrorString(e)}`);
+        }
+    }
+
+    private async _invokeAuthenticationRefreshed(newTokenLifetimeInSeconds: number | undefined): Promise<void> {
+        const callback = this._authenticationRefreshOptions?.onAuthenticationRefreshed;
+        if (!callback) {
+            return;
+        }
+
+        const context: AuthenticationRefreshedContext = {
+            connection: this,
+            newTokenLifetimeInSeconds,
+            refreshedAt: new Date(),
+        };
+
+        try {
+            await callback(context);
+        } catch (e) {
+            this._logger.log(LogLevel.Error, `An onAuthenticationRefreshed callback threw error '${getErrorString(e)}'.`);
+        }
+    }
+
+    private async _invokeAuthenticationRefreshFailed(error: any): Promise<void> {
+        const callback = this._authenticationRefreshOptions?.onAuthenticationRefreshFailed;
+        if (!callback) {
+            return;
+        }
+
+        const context: AuthenticationRefreshFailedContext = {
+            connection: this,
+            error: error instanceof Error ? error : new Error(getErrorString(error)),
+        };
+
+        try {
+            await callback(context);
+        } catch (e) {
+            this._logger.log(LogLevel.Error, `An onAuthenticationRefreshFailed callback threw error '${getErrorString(e)}'.`);
+        }
+    }
+
     private _cancelCallbacksWithError(error: Error) {
         const callbacks = this._callbacks;
         this._callbacks = {};
@@ -1087,7 +1255,6 @@ export class HubConnection {
                 args.splice(i, 1);
             }
         }
-
         return [streams, streamIds];
     }
 
@@ -1162,4 +1329,10 @@ export class HubConnection {
             this._cleanupPingTimer();
         }
     }
+}
+
+function isValidAuthenticationTokenLifetime(tokenLifetimeInSeconds: number | undefined): tokenLifetimeInSeconds is number {
+    return typeof tokenLifetimeInSeconds === "number" &&
+        Number.isFinite(tokenLifetimeInSeconds) &&
+        tokenLifetimeInSeconds > 0;
 }
