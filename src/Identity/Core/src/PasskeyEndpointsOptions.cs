@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// }
 /// </code>
 /// </example>
-public class PasskeyEndpointsOptions
+public sealed class PasskeyEndpointsOptions
 {
     /// <summary>
     /// Gets or sets the URL of the page where a user can create a new passkey.
