@@ -2363,8 +2363,6 @@ public partial class HubConnectionTests : FunctionalTestBase
     [ConditionalFact]
     public async Task LongPollingUsesHttp2ByDefault()
     {
-        // Event-based synchronization for async log messages prevents race condition
-        // between log emission and resource disposal
         var logsSeen = false;
         var logsTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -2435,7 +2433,6 @@ public partial class HubConnectionTests : FunctionalTestBase
         }
         finally
         {
-            // Cleanup: remove event handler to prevent memory leaks
             TestSink.MessageLogged -= handler;
         }
 
