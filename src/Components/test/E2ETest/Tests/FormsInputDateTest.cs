@@ -6,7 +6,6 @@ using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -34,7 +33,6 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31734")]
     public void InputDateInteractsWithEditContext_NonNullableDateTime()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -46,28 +44,27 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => renewalDateInput.GetAttribute("class"));
-        renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
-        renewalDateInput.SendKeys("01/01/2000\t");
+        ClearDate(renewalDateInput);
+        SetDate(renewalDateInput, "01/01/2000\t");
         Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
 
         // Can become invalid
-        renewalDateInput.SendKeys("11-11-11111\t");
+        SetDate(renewalDateInput, "11-11-11111\t");
         Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
         Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
         // Empty is invalid, because it's not nullable
-        renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+        ClearDate(renewalDateInput);
         Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
         Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
         // Can become valid
-        renewalDateInput.SendKeys("01/01/01\t");
+        SetDate(renewalDateInput, "01/01/01\t");
         Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67243")]
     public void InputDateInteractsWithEditContext_NullableDateTimeOffset()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -76,22 +73,21 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => expiryDateInput.GetAttribute("class"));
-        expiryDateInput.SendKeys("01-01-2000\t");
+        SetDate(expiryDateInput, "01-01-2000\t");
         Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
 
         // Can become invalid
-        expiryDateInput.SendKeys("11-11-11111\t");
+        SetDate(expiryDateInput, "11-11-11111\t");
         Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
         Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
         // Empty is valid, because it's nullable
-        expiryDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+        ClearDate(expiryDateInput);
         Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35018")]
     public void InputDateInteractsWithEditContext_TimeInput()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -111,9 +107,9 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
 
         // Can become invalid
-        // Stricly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
+        // Strictly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
         // We don't know of any way to produce a different (non-empty-equivalent) state using UI gestures, so there's nothing else to test
-        departureTimeInput.SendKeys($"20{Keys.Backspace}\t");
+        SetDate(departureTimeInput, $"20{Keys.Backspace}\t");
         Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
         Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
     }
@@ -235,6 +231,21 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
         Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
         Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetAttribute("value"));
+    }
+
+    private static void SetDate(IWebElement input, string keys)
+    {
+        input.Click();
+        input.SendKeys(Keys.ArrowLeft + Keys.ArrowLeft + Keys.ArrowLeft);
+        input.SendKeys(keys);
+    }
+
+    private static void ClearDate(IWebElement input)
+    {
+        input.Click();
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Delete);
+        input.SendKeys(Keys.Tab);
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
