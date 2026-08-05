@@ -37,12 +37,19 @@ builder.Services.AddIdentityCore<PocoUser>()
 builder.Services.AddSingleton<IUserStore<PocoUser>, InMemoryUserStore<PocoUser>>();
 builder.Services.AddSingleton<IUserPasskeyStore<PocoUser>, InMemoryUserStore<PocoUser>>();
 
+// Advertises where passkeys can be created at /.well-known/passkey-endpoints so that credential
+// managers can offer to upgrade a saved password to a passkey. This sample has no passkey
+// management page, so only "enroll" is advertised and "manage" is omitted from the document.
+// See https://w3c.github.io/webappsec-passkey-endpoints/.
+builder.Services.AddPasskeyEndpoints(options => options.Enroll = "/");
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
+app.MapWellKnownPasskeyEndpoints();
 
 app.MapPost("attestation/options", async (
     [FromServices] UserManager<PocoUser> userManager,
