@@ -85,6 +85,14 @@ internal sealed partial class ComponentHub : Hub
         return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
     }
 
+    public override Task OnAuthenticationRefreshedAsync()
+    {
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        circuitHost?.SetCircuitUser(Context.User);
+
+        return Task.CompletedTask;
+    }
+
     public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
     {
         var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
