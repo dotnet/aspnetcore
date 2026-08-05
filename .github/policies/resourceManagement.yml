@@ -672,11 +672,11 @@ configuration:
 
             ${assignees}, after you commit this PR please take the following actions, as part of the breaking changes announcement process:
 
-            \n- [ ] Create an announcement issue by using the [ASP.NET Core breaking change](https://github.com/aspnet/Announcements/issues/new?assignees=&labels=Breaking+change&template=breaking-change.yaml&title=%5BBreaking+change%5D%3A+) issue template.
+            - [ ] Create an announcement issue by using the [ASP.NET Core breaking change](https://github.com/aspnet/Announcements/issues/new?assignees=&labels=Breaking+change&template=breaking-change.yaml&title=%5BBreaking+change%5D%3A+) issue template.
 
-            \n- [ ] Link the breaking change announcement issue from this PR.
+            - [ ] Link the breaking change announcement issue from this PR.
 
-            \n- [ ] Remove the `needs-breaking-change-announcement` label.
+            - [ ] Remove the `needs-breaking-change-announcement` label.
       description: Breaking change actions reminder
     - if:
       - payloadType: Issues
