@@ -1551,6 +1551,17 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         AssertReExecutedPageIsInteractive();
     }
 
+    [Fact]
+    public void PersistedState_IsEmitted_OnReExecutedPage()
+    {
+        Navigate($"{ServerPathBase}/interactive-reexecution/not-existing-page");
+
+        Assert404ReExecuted();
+        AssertReExecutedPageIsInteractive();
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
+    }
+
     private void AssertReExecutedPageIsInteractive()
     {
         Browser.Equal("Current count: 0", () => Browser.FindElement(By.CssSelector("[role='status']")).Text);
