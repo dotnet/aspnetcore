@@ -50,7 +50,7 @@ internal sealed class HttpsConfigurationService : IHttpsConfigurationService
 
     /// <inheritdoc />
     // If there's an initializer, it *can* be initialized, even though it might not be yet.
-    // Use explicit interface implentation so we don't accidentally call it within this class.
+    // Use explicit interface implementation so we don't accidentally call it within this class.
     bool IHttpsConfigurationService.IsInitialized => _isInitialized || _initializer is not null;
 
     /// <inheritdoc/>

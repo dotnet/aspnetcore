@@ -218,6 +218,7 @@ message HelloRequest {
   string hiding_field_name = 24 [json_name="field_name"];
   repeated SubMessage repeated_messages = 25;
   map<int32, int32> map_keyint_valueint = 26;
+  SubMessage sub_data = 27;
 }
 
 message HelloReply {

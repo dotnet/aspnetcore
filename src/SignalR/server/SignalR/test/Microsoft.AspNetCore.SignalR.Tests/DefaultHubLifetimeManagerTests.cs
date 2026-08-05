@@ -219,4 +219,5 @@ public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
             Assert.False(connection2.ConnectionAborted.IsCancellationRequested);
         }
     }
+
 }

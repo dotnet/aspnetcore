@@ -43,19 +43,20 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         ArgumentNullException.ThrowIfNull(context);
         var cookieName = _options.TempDataCookie.Name ?? CookieName;
 
+        if (!context.Request.Cookies.ContainsKey(cookieName))
+        {
+            Log.TempDataCookieNotFound(_logger, cookieName);
+            return ReadOnlyDictionary<string, object?>.Empty;
+        }
+
+        var serializedDataFromCookie = _chunkingCookieManager.GetRequestCookie(context, cookieName);
+        if (serializedDataFromCookie is null)
+        {
+            return ReadOnlyDictionary<string, object?>.Empty;
+        }
+
         try
         {
-            if (!context.Request.Cookies.ContainsKey(cookieName))
-            {
-                Log.TempDataCookieNotFound(_logger, cookieName);
-                return ReadOnlyDictionary<string, object?>.Empty;
-            }
-            var serializedDataFromCookie = _chunkingCookieManager.GetRequestCookie(context, cookieName);
-            if (serializedDataFromCookie is null)
-            {
-                return ReadOnlyDictionary<string, object?>.Empty;
-            }
-
             byte[]? rentedDecodeBuffer = null;
             var maxDecodedSize = Base64Url.GetMaxDecodedLength(serializedDataFromCookie.Length);
             var decodeBuffer = maxDecodedSize <= 256
@@ -65,6 +66,10 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             try
             {
                 var decodeStatus = Base64Url.DecodeFromChars(serializedDataFromCookie, decodeBuffer, out _, out var bytesWritten);
+                if (decodeStatus != OperationStatus.Done)
+                {
+                    throw new FormatException("The TempData cookie did not contain valid Base64Url-encoded data.");
+                }
                 var protectedBytes = decodeBuffer[..bytesWritten];
                 Dictionary<string, JsonElement>? dataFromCookie;
 

@@ -162,7 +162,7 @@ public class EntityTagHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out EntityTagHeaderValue? parsedValue)
     {
         var index = 0;
-        return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+        return SingleValueParser.TryParseValue(input, index, out _, out parsedValue);
     }
 
     /// <summary>
@@ -248,7 +248,10 @@ public class EntityTagHeaderValue
             var tagStartIndex = current;
             if (HttpRuleParser.GetQuotedStringLength(input, current, out var tagLength) != HttpParseResult.Parsed)
             {
-                return 0;
+                // Report the span consumed by the malformed quoted-string so the outer recovery
+                // loop in HttpHeaderParser.TryParseValues can skip past it in O(1) instead of
+                // re-scanning character-by-character. See https://github.com/dotnet/aspnetcore/issues/66668.
+                return (current - startIndex) + tagLength;
             }
 
             parsedValue = new EntityTagHeaderValue();

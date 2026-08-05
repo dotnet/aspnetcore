@@ -86,7 +86,10 @@ public abstract class WebRenderer : Renderer
     /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
     protected abstract void AttachRootComponentToBrowser(int componentId, string domElementSelector);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Releases the resources used by the current <see cref="WebRenderer"/> instance.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> to release managed resources; otherwise, <see langword="false"/>.</param>
     protected override void Dispose(bool disposing)
     {
         if (disposing)

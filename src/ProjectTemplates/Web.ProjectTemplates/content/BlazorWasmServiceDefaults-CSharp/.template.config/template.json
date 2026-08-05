@@ -13,7 +13,7 @@
   "groupIdentity": "Microsoft.Web.Blazor.Wasm.ServiceDefaults",
   "precedence": "10000",
   "identity": "Microsoft.Web.Blazor.Wasm.ServiceDefaults.CSharp.11.0",
-  "shortName": "blazor-wasm-servicedefaults",
+  "shortName": "blazorwasm-servicedefaults",
   "thirdPartyNotices": "https://aka.ms/aspnetcore/11.0-third-party-notices",
   "tags": {
     "language": "C#",

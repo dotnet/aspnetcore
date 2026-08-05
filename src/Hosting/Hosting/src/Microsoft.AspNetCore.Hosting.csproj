@@ -21,6 +21,7 @@
     <Compile Include="$(SharedSourceRoot)Diagnostics\ActivityCreator.cs" />
     <Compile Include="$(SharedSourceRoot)Diagnostics\RouteDiagnosticsHelpers.cs" />
     <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)WebHostUtilities\WebHostUtilities.cs" LinkBase="Internal" />
   </ItemGroup>
 
   <ItemGroup>

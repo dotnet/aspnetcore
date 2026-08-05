@@ -201,7 +201,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
 
             if (_negotiateState.Protocol == "NTLM" && !Options.PersistNtlmCredentials)
             {
-                // NTLM was already put in the persitence cache on the prior request so we could complete the handshake.
+                // NTLM was already put in the persistence cache on the prior request so we could complete the handshake.
                 // Take it out if we don't want it to persist.
                 Debug.Assert(object.ReferenceEquals(persistence?.State, _negotiateState),
                     "NTLM is a two stage process, it must have already been in the cache for the handshake to succeed.");

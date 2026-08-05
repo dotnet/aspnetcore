@@ -48,7 +48,8 @@
     (e.g., set it to the development build output in testassets/Directory.Build.props).
   -->
   <PropertyGroup>
-    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)tasks\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(MSBuildThisFileDirectory)tasks\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
+    <!-- NuGet package layout: buildTransitive/net10.0/ (MSBuildThisFileDirectory) → ../../tasks/ -->
+    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)../../tasks/netstandard2.0/Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(MSBuildThisFileDirectory)../../tasks/netstandard2.0/Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
   </PropertyGroup>
 
   <UsingTask
@@ -122,6 +123,11 @@
       Projects="@(_E2EAppProjects)"
       Targets="Publish"
       Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', 'publish', '%(_E2EAppProjects.Filename)'))/;Configuration=$(Configuration)" />
+
+    <!-- Warn loudly if E2E app projects are declared but the task assembly is missing -->
+    <Warning
+      Text="E2E app project(s) found (@(_E2EAppProjects)) but the GenerateE2EManifest task assembly could not be located. The e2e-manifest.json will NOT be generated. Ensure the Microsoft.AspNetCore.Components.Testing package is correctly installed."
+      Condition="'@(_E2EAppProjects)' != '' and '$(_E2ETasksAssembly)' == ''" />
 
     <!-- Generate manifest -->
     <GenerateE2EManifest

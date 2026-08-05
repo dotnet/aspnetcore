@@ -53,6 +53,16 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         _symmetricAlgorithmHandle = symmetricAlgorithmHandle;
         _symmetricAlgorithmSubkeyLengthInBytes = symmetricAlgorithmKeySizeInBytes;
         _contextHeader = CreateContextHeader();
+
+        try
+        {
+            this.PerformSelfTest();
+        }
+        catch
+        {
+            _sp800_108_ctr_hmac_provider.Dispose();
+            throw;
+        }
     }
 
     public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : IBufferWriter<byte>
@@ -152,8 +162,8 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
 
 #if NET
         byte[] rentedBuffer = null!;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
@@ -301,8 +311,8 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         var outputSize = (int)(preBufferSize + size + postBufferSize);
 #if NET
         byte[] rentedBuffer = null!;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);

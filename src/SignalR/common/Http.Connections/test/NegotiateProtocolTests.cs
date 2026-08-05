@@ -105,14 +105,90 @@ public class NegotiateProtocolTests
             NegotiateProtocol.WriteResponse(new NegotiationResponse
             {
                 AvailableTransports = new List<AvailableTransport>
-                    {
-                        new AvailableTransport()
-                    }
+                {
+                    new AvailableTransport()
+                }
             }, writer);
 
             string json = Encoding.UTF8.GetString(writer.ToArray());
 
             Assert.Equal("{\"negotiateVersion\":0,\"availableTransports\":[{\"transport\":null,\"transferFormats\":[]}]}", json);
         }
+    }
+
+    [Fact]
+    public void WriteNegotiateResponseIncludesTokenLifetimeWhenSet()
+    {
+        using (MemoryBufferWriter writer = new MemoryBufferWriter())
+        {
+            NegotiateProtocol.WriteResponse(new NegotiationResponse
+            {
+                ConnectionId = "abc",
+                ConnectionToken = "tok",
+                Version = 1,
+                TokenLifetime = TimeSpan.FromSeconds(3600),
+            }, writer);
+
+            string json = Encoding.UTF8.GetString(writer.ToArray());
+
+            Assert.Contains("\"tokenLifetimeSeconds\":3600", json);
+        }
+    }
+
+    [Fact]
+    public void WriteNegotiateResponseClampsTokenLifetimeToMaxInt()
+    {
+        using (MemoryBufferWriter writer = new MemoryBufferWriter())
+        {
+            NegotiateProtocol.WriteResponse(new NegotiationResponse
+            {
+                ConnectionId = "abc",
+                ConnectionToken = "tok",
+                Version = 1,
+                TokenLifetime = TimeSpan.FromSeconds((double)int.MaxValue + 1),
+            }, writer);
+
+            string json = Encoding.UTF8.GetString(writer.ToArray());
+
+            Assert.Contains($"\"tokenLifetimeSeconds\":{int.MaxValue}", json);
+        }
+    }
+
+    [Fact]
+    public void WriteNegotiateResponseOmitsTokenLifetimeWhenNullOrZero()
+    {
+        using (MemoryBufferWriter writer = new MemoryBufferWriter())
+        {
+            NegotiateProtocol.WriteResponse(new NegotiationResponse
+            {
+                TokenLifetime = null,
+            }, writer);
+            Assert.DoesNotContain("tokenLifetimeSeconds", Encoding.UTF8.GetString(writer.ToArray()));
+        }
+
+        using (MemoryBufferWriter writer = new MemoryBufferWriter())
+        {
+            NegotiateProtocol.WriteResponse(new NegotiationResponse
+            {
+                TokenLifetime = TimeSpan.Zero,
+            }, writer);
+            Assert.DoesNotContain("tokenLifetimeSeconds", Encoding.UTF8.GetString(writer.ToArray()));
+        }
+    }
+
+    [Fact]
+    public void ParseNegotiateResponseReadsTokenLifetime()
+    {
+        var json = "{\"connectionId\":\"abc\",\"availableTransports\":[],\"tokenLifetimeSeconds\":1234}";
+        var response = NegotiateProtocol.ParseResponse(Encoding.UTF8.GetBytes(json));
+        Assert.Equal(TimeSpan.FromSeconds(1234), response.TokenLifetime);
+    }
+
+    [Fact]
+    public void ParseNegotiateResponseLeavesTokenLifetimeNullWhenAbsent()
+    {
+        var json = "{\"connectionId\":\"abc\",\"availableTransports\":[]}";
+        var response = NegotiateProtocol.ParseResponse(Encoding.UTF8.GetBytes(json));
+        Assert.Null(response.TokenLifetime);
     }
 }

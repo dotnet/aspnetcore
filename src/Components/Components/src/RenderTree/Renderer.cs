@@ -55,6 +55,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     private bool _hotReloadInitialized;
     private HotReloadRenderHandler? _hotReloadRenderHandler;
+    private HashSet<int>? _hotReloadRenderedComponentIds;
 
     /// <summary>
     /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -151,6 +152,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     internal bool IsRenderingOnMetadataUpdate { get; private set; }
 
     /// <summary>
+    /// Returns <see langword="true"/> the first time the specified component requests a render during the current
+    /// metadata-update (hot-reload) pass, and <see langword="false"/> on every subsequent call within the same
+    /// pass. This allows <see cref="ComponentBase.StateHasChanged"/> to bypass <c>ShouldRender()</c> exactly once
+    /// per component so every component refreshes its UI while still letting <c>ShouldRender() == false</c>
+    /// break any synchronous re-render cycles that would otherwise run unboundedly.
+    /// </summary>
+    internal bool IsFirstHotReloadRender(int componentId)
+    {
+        _hotReloadRenderedComponentIds ??= new HashSet<int>();
+        return _hotReloadRenderedComponentIds.Add(componentId);
+    }
+
+    /// <summary>
     /// Gets whether the renderer has been disposed.
     /// </summary>
     internal bool Disposed => _rendererIsDisposed;
@@ -219,6 +233,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             finally
             {
                 IsRenderingOnMetadataUpdate = false;
+                _hotReloadRenderedComponentIds = null;
             }
         });
     }

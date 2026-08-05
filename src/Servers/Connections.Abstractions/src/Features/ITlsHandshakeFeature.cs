@@ -83,7 +83,7 @@ public interface ITlsHandshakeFeature
 #endif
     int KeyExchangeStrength { get; }
 
-#if NET11_0_OR_GREATER
+#if NETCOREAPP
     /// <summary>
     /// Gets the exception that occurred during the TLS handshake, if any.
     /// <see langword="null"/> if the handshake succeeded or has not yet completed.

@@ -11,6 +11,12 @@ internal static class DiagnosticEmitter
 {
     public static void EmitRequiredDiagnostics(this EndpointResponse response, List<Diagnostic> diagnostics, Location location)
     {
+        if (response.ResponseType is IErrorTypeSymbol)
+        {
+            diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveReturnType, location));
+            return;
+        }
+
         if (response.ResponseType is ITypeParameterSymbol)
         {
             diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.TypeParametersNotSupported, location));

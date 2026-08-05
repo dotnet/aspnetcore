@@ -48,7 +48,16 @@
       we intentionally do not do that in this project.
     -->
     <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
+    <!--
+      Maximum number of small test assemblies grouped into a single Helix work item.
+      20 balances reducing per-work-item overhead (payload upload, machine acquisition,
+      result reporting) against keeping each batch's total runtime well within the
+      work item timeout. Override by setting HelixWorkItemMaxBatchSize.
+    -->
+    <HelixWorkItemMaxBatchSize Condition="'$(HelixWorkItemMaxBatchSize)' == ''">20</HelixWorkItemMaxBatchSize>
   </PropertyGroup>
+
+  <Import Project="..\tools\RepoTasks\RepoTasks.tasks" />
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
@@ -186,6 +195,29 @@
         SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
+  </Target>
+
+  <Target Name="BatchSmallWorkItems" AfterTargets="Gather" BeforeTargets="BeforeTest" Condition=" '$(HelixTargetQueue)' != '' AND '@(HelixWorkItem)' != '' ">
+    <ItemGroup>
+      <_OriginalHelixWorkItem Remove="@(_OriginalHelixWorkItem)" />
+      <_OriginalHelixWorkItem Include="@(HelixWorkItem)" />
+    </ItemGroup>
+
+    <RepoTasks.BatchHelixWorkItems WorkItems="@(_OriginalHelixWorkItem)"
+        MaxBatchSize="$(HelixWorkItemMaxBatchSize)"
+        OutputDirectory="$(OutputPath)"
+        IsWindowsQueue="$(IsWindowsHelixQueue)">
+      <Output TaskParameter="BatchedWorkItems" ItemName="_BatchedHelixWorkItem" />
+      <Output TaskParameter="UnbatchedWorkItems" ItemName="_UnbatchedHelixWorkItem" />
+    </RepoTasks.BatchHelixWorkItems>
+
+    <ItemGroup>
+      <HelixWorkItem Remove="@(HelixWorkItem)" />
+      <HelixWorkItem Include="@(_UnbatchedHelixWorkItem)" />
+      <HelixWorkItem Include="@(_BatchedHelixWorkItem)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Helix work item batching updated @(HelixWorkItem->Count()) work items before submission." />
   </Target>
 
   <!--

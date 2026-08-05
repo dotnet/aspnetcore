@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="PreReleaseVersionLabel;PreReleaseVersionIteration">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -11,6 +11,15 @@
     <NoWarn>$(NoWarn);NU5100;RS0026</NoWarn>
     <Description>Cross-render-mode E2E testing library for Blazor using Playwright, xUnit V3, and YARP.</Description>
     <PackageTags>blazor;e2e;testing;playwright</PackageTags>
+    <!--
+      This package does not ship a stable version as part of .NET 11.0. Keep producing dated prerelease versions even
+      when the repo builds RC or RTM versions. The label/iteration overrides are required so the version reads
+      sensibly (and so Arcade's version suffix logic keeps running) once the branch moves to 'rc' or 'rtm'; they are
+      listed in TreatAsLocalProperty above so they win even if the label is passed in as a global property.
+    -->
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionLabel>$(PreviewOnlyPackagePreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>$(PreviewOnlyPackagePreReleaseVersionIteration)</PreReleaseVersionIteration>
   </PropertyGroup>
 
 
@@ -30,9 +39,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
