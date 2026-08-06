@@ -34,7 +34,8 @@
 
   <Target Name="_ValidateProjectAssetsRuntimeTarget"
           BeforeTargets="ResolvePackageAssets"
-          Condition="'$(TargetFramework)' != '' AND
+          Condition="'$(DesignTimeBuild)' != 'true' AND
+                     '$(TargetFramework)' != '' AND
                      '$(RuntimeIdentifier)' != '' AND
                      Exists('$(ProjectAssetsFile)')">
     <CheckProjectAssetsRuntimeTarget
