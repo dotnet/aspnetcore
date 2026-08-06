@@ -40,8 +40,8 @@ public class CachedResponseBodyTests
 
         var pipe = new Pipe();
 
-        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments, CancellationToken.None);
-        var copyTask = body.CopyToAsync(pipe.Writer, CancellationToken.None).ContinueWith(_ => pipe.Writer.CompleteAsync());
+        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
+        var copyTask = CopyDataAsync(body, pipe.Writer);
 
         await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
 
@@ -60,7 +60,7 @@ public class CachedResponseBodyTests
 
         var pipe = new Pipe();
 
-        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments, CancellationToken.None);
+        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
         var copyTask = CopyDataAsync(body, pipe.Writer);
 
         await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
@@ -81,7 +81,7 @@ public class CachedResponseBodyTests
 
         var pipe = new Pipe();
 
-        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments, CancellationToken.None);
+        var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
         var copyTask = CopyDataAsync(body, pipe.Writer);
 
         await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
@@ -95,7 +95,7 @@ public class CachedResponseBodyTests
         await writer.CompleteAsync();
     }
 
-    static async Task ReceiveDataAsync(PipeReader reader, List<byte[]> receivedSegments, CancellationToken cancellationToken)
+    static async Task ReceiveDataAsync(PipeReader reader, List<byte[]> receivedSegments)
     {
         while (true)
         {
