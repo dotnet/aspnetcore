@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -254,10 +255,12 @@ public class FormReader : IDisposable
     // '+' un-escapes to ' ', %HH un-escapes as ASCII (or utf-8?)
     private string BuildWord()
     {
-        _builder.Replace('+', ' ');
         var result = _builder.ToString();
         _builder.Clear();
-        return Uri.UnescapeDataString(result); // TODO: Replace this, it's not completely accurate.
+
+        var bytes = Encoding.UTF8.GetBytes(result);
+        var decodedLength = UrlDecoder.DecodeInPlace(bytes, isFormEncoding: true);
+        return Encoding.UTF8.GetString(bytes, 0, decodedLength);
     }
 
     private void Buffer()
