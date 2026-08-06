@@ -16,4 +16,8 @@
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>

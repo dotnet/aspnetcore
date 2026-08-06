@@ -1,0 +1,18 @@
+@attribute [StreamRendering]
+
+@if (_loaded)
+{
+    <p class="@CssClass">@Guid.NewGuid()</p>
+}
+
+@code {
+    [Parameter] public string CssClass { get; set; } = "";
+
+    private bool _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _loaded = true;
+    }
+}

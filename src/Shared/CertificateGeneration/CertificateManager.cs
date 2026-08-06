@@ -1093,7 +1093,7 @@ internal abstract class CertificateManager
     public sealed class CertificateManagerEventSource : EventSource
     {
         [Event(1, Level = EventLevel.Verbose, Message = "Listing certificates from {0}\\{1}")]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primitive values.")]
         public void ListCertificatesStart(StoreLocation location, StoreName storeName) => WriteEvent(1, location, storeName);
 
         [Event(2, Level = EventLevel.Verbose, Message = "Found certificates: {0}")]

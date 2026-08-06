@@ -42,6 +42,12 @@ internal sealed partial class HttpConnectionDispatcher
             TransferFormats = new List<string> { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
         };
 
+    // SignalR's default IUserIdProvider keys user identity off NameIdentifier, but an app can
+    // override it to use a different claim. This transport-layer dispatcher can't see IUserIdProvider,
+    // so mirror the standard identity-claim precedence antiforgery uses (DefaultClaimUidExtractor):
+    // sub, then NameIdentifier, then Upn. The first claim present on the principal identifies the user.
+    private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
+
     private readonly HttpConnectionManager _manager;
     private readonly ILoggerFactory _loggerFactory;
     private readonly HttpConnectionsMetrics _metrics;
@@ -706,6 +712,11 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
+        if (await RejectIfUserChangedAsync(connection, context))
+        {
+            return;
+        }
+
         const int bufferSize = 4096;
 
         await connection.WriteLock.WaitAsync();
@@ -799,6 +810,11 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
+        if (await RejectIfUserChangedAsync(connection, context))
+        {
+            return;
+        }
+
         Log.TerminatingConnection(_logger);
 
         // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
@@ -838,6 +854,17 @@ internal sealed partial class HttpConnectionDispatcher
                 Log.CannotChangeTransport(_logger, connection.TransportType, transportType);
                 await context.Response.WriteAsync("Cannot change transports mid-connection");
                 return false;
+        }
+
+        // Only connections that reuse their state across requests (Stateful Reconnect or Long
+        // Polling) re-enter here with an already-populated User; other transports handle a single
+        // request per connection. This must run before any connection state is mutated below so a
+        // rejected request leaves the existing connection fully intact. When authentication refresh
+        // is enabled the application owns principal-change policy via OnAuthenticationRefresh, so the
+        // hardening reject only applies when that feature is not enabled.
+        if (!options.EnableAuthenticationRefresh && connection.ClientReconnectExpected() && await RejectIfUserChangedAsync(connection, context))
+        {
+            return false;
         }
 
         // Set the IHttpConnectionFeature now that we can access it.
@@ -889,14 +916,6 @@ internal sealed partial class HttpConnectionDispatcher
         var currentUser = connection.User;
         if (currentUser is not null)
         {
-            var originalName = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var newName = newPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (originalName != newName)
-            {
-                // Log warning, different user
-                Log.UserNameChanged(_logger, originalName, newName);
-            }
-
             // WindowsIdentity is cloned on first poll and must not be swapped here (disposing the old
             // SafeHandles could race the application), so those connections keep the legacy behavior below.
             var authRefreshEligible = options.EnableAuthenticationRefresh
@@ -1146,6 +1165,49 @@ internal sealed partial class HttpConnectionDispatcher
         newHttpContext.Items = new Dictionary<object, object?>(context.Items);
 
         connection.HttpContext = newHttpContext;
+    }
+
+    // The connection is resolved purely by its connection token, so a different authenticated and
+    // endpoint-authorized user who obtained that token could otherwise act on a connection bound to
+    // another user. Reject the request (403) when the incoming user's identity claim differs from
+    // the one the connection is bound to, leaving the connection intact for the original user.
+    private async Task<bool> RejectIfUserChangedAsync(HttpConnectionContext connection, HttpContext context)
+    {
+        if (connection.User is null)
+        {
+            return false;
+        }
+
+        var originalIdentity = GetUserIdentityKey(connection.User);
+        var newIdentity = GetUserIdentityKey(context.User);
+        if (originalIdentity == newIdentity)
+        {
+            return false;
+        }
+
+        Log.UserNameChangedRejected(_logger, originalIdentity?.Value, newIdentity?.Value);
+        context.Response.ContentType = "text/plain";
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        await context.Response.WriteAsync("The user associated with this connection changed.");
+        return true;
+    }
+
+    // Returns a comparable identity key (claim type, value, issuer) for the first standard identity
+    // claim present on the principal, or null when none is present. Two principals with the same key
+    // (e.g. a refreshed token for the same user) are treated as the same user; a null key on both
+    // sides also compares equal, preserving the prior behavior for principals without these claims.
+    private static (string Type, string Value, string Issuer)? GetUserIdentityKey(ClaimsPrincipal user)
+    {
+        foreach (var claimType in _userIdentityClaimTypes)
+        {
+            var claim = user.FindFirst(claimType);
+            if (claim is not null && !string.IsNullOrEmpty(claim.Value))
+            {
+                return (claim.Type, claim.Value, claim.Issuer);
+            }
+        }
+
+        return null;
     }
 
     private async Task<HttpConnectionContext?> GetConnectionAsync(HttpContext context)

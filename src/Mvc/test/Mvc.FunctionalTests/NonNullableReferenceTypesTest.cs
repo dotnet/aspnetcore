@@ -4,7 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
@@ -41,7 +41,7 @@ public class NonNullableReferenceTypesTest : LoggedTest
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
 
-        var document = parser.Parse(content);
+        var document = parser.ParseDocument(content);
         var errors = document.QuerySelectorAll("#errors > ul > li");
         var li = Assert.Single(errors);
         Assert.Empty(li.TextContent);
@@ -65,7 +65,7 @@ public class NonNullableReferenceTypesTest : LoggedTest
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         content = await response.Content.ReadAsStringAsync();
 
-        document = parser.Parse(content);
+        document = parser.ParseDocument(content);
         errors = errors = document.QuerySelectorAll("#errors > ul > li");
         Assert.Equal(2, errors.Length); // Not validating BCL error messages
     }
@@ -83,7 +83,7 @@ public class NonNullableReferenceTypesTest : LoggedTest
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
 
-        var document = parser.Parse(content);
+        var document = parser.ParseDocument(content);
         var errors = document.QuerySelectorAll("#errors > ul > li");
         var li = Assert.Single(errors);
         Assert.Empty(li.TextContent);

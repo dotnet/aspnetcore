@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         if (method.Length > length)
         {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "MethodAsciiString {0} length is greather than {1}", method, length));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "MethodAsciiString {0} length is greater than {1}", method, length));
         }
         string result = method;
 

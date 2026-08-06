@@ -8,9 +8,15 @@ namespace Microsoft.Extensions.Validation;
 /// <summary>
 /// Represents an interface for validating a value of a type.
 /// </summary>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public interface IValidatableTypeInfo
 {
+    /// <summary>
+    /// Validates the specified <paramref name="value"/>.
+    /// </summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="context">The validation context.</param>
+    void Validate(object? value, ValidateContext context);
+
     /// <summary>
     /// Validates the specified <paramref name="value"/>.
     /// </summary>
