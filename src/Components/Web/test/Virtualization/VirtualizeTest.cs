@@ -1174,6 +1174,34 @@ public class VirtualizeTest
             $"A UserScroll before-spacer callback should move the window toward the top; it stayed at {virtualize._itemsBefore}.");
     }
 
+    // Covers dotnet/aspnetcore#67936: a bottom-spacer callback while the window underfills the viewport is
+    // classified ViewportFill and MUST grow the window to cover the viewport, rather than staying at the
+    // viewport-agnostic OverscanCount*2+1 seed.
+    [Fact]
+    public async Task OnAfterSpacerVisible_ViewportFill_GrowsWindowToCoverViewport()
+    {
+        var requests = new List<ItemsProviderRequest>();
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 1000 - request.StartIndex)), 1000));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 1000, customProvider: provider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        // Tall (2000px) viewport, 50px items: the seed capacity (OverscanCount*2+1 = 31) does not cover it.
+        // ViewportFill must grow the window to at least ceil(2000/50) = 40 rows so the viewport is filled.
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 2000f, SpacerVisibilityReason.ViewportFill));
+
+        var minRowsToCoverViewport = (int)Math.Ceiling(2000f / 50f);
+        Assert.True(requests[^1].Count >= minRowsToCoverViewport,
+            $"ViewportFill must grow the window to cover the viewport (>= {minRowsToCoverViewport} rows); it requested {requests[^1].Count}.");
+    }
+
     // "Display an index that is already on screen": a short list that fully fits the viewport, so aligning to
     // InitialItemIndex needs no real scroll. Verify the window is not left stuck — it renders from the top
     // (all items visible, target on screen) and a later bottom-spacer ViewportFill is still honored.

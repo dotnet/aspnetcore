@@ -711,6 +711,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         if (_initialIndex.Phase == InitialIndexPhase.Pending)
         {
+            var viewportCovered = _lastRenderedPlaceholderCount == 0 && spacerSeparation >= containerSize;
+            if (!viewportCovered && visibleItemCapacity > _visibleItemCapacity)
+            {
+                _skipNextDistributionRefresh = false;
+                UpdateItemDistribution(_itemsBefore, visibleItemCapacity, unusedItemCapacity);
+            }
             return;
         }
 
