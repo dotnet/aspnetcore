@@ -43,13 +43,10 @@ internal partial class SessionCascadingValueSupplier
             SessionEstablishmentHelper.TryRegisterSessionEstablishment(_httpContext);
         }
 
-        var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
+        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
         var componentType = componentState.Component.GetType();
-
         var propertyType = parameterInfo.PropertyType;
-        var underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
-
-        if (underlyingType != typeof(object) && !underlyingType.IsAbstract && !_serializer.CanSerialize(underlyingType))
+        if (propertyType != typeof(object) && !propertyType.IsAbstract && !_serializer.CanSerialize(propertyType))
         {
             throw new InvalidOperationException(
                 $"The property '{parameterInfo.PropertyName}' on component '{componentType}' is annotated with '[SupplyParameterFromSession]' but its type '{propertyType}' is not supported for session storage.");
@@ -80,6 +77,7 @@ internal partial class SessionCascadingValueSupplier
 
     internal void RegisterValueCallback(string sessionKey, Func<object?> valueGetter)
     {
+        sessionKey = sessionKey.ToLowerInvariant();
         if (!_valueCallbacks.TryAdd(sessionKey, valueGetter))
         {
             throw new InvalidOperationException($"A callback is already registered for the session key '{sessionKey}'. Multiple components cannot use the same session key for multiple [SupplyParameterFromSession] attributes.");
@@ -102,7 +100,6 @@ internal partial class SessionCascadingValueSupplier
 
         foreach (var (key, valueGetter) in _valueCallbacks)
         {
-            var sessionKey = key.ToLowerInvariant();
             object? value;
             try
             {
@@ -116,14 +113,14 @@ internal partial class SessionCascadingValueSupplier
 
             if (value is null)
             {
-                session.Remove(sessionKey);
+                session.Remove(key);
                 continue;
             }
 
             var valueType = value.GetType();
             var bytes = _serializer.SerializeValue(value, valueType);
 
-            session.Set(sessionKey, bytes);
+            session.Set(key, bytes);
         }
         return Task.CompletedTask;
     }
@@ -183,7 +180,7 @@ internal partial class SessionCascadingValueSupplier
 
             try
             {
-                if (!session.TryGetValue(_sessionKey.ToLowerInvariant(), out var bytes) || bytes.Length == 0)
+                if (!session.TryGetValue(_sessionKey, out var bytes) || bytes.Length == 0)
                 {
                     return null;
                 }
