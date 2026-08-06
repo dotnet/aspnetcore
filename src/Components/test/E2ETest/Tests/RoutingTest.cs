@@ -989,11 +989,12 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
+        Browser.Equal("true", () => Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.navigation-lock-ready")).GetDomProperty("value"));
 
         Browser.Navigate().Back();
 
         // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
-        // Wait for blocking-controls to appear before checking state (ensures PreventNavigation() has taken effect on server)
+        Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
         Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
 
         // The location was reverted to what it was before the navigation started
@@ -1006,10 +1007,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         // The first navigation was canceled and logged
         var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath0";
-        // Wait for blocking-controls to appear, then ensure the log entry exists before accessing its text (accounts for SignalR latency on server-side variant)
-        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
-        var logEntryElement = Browser.Exists(By.CssSelector("#navigation-lock-0 > p.navigation-log > span.navigation-log-entry-0"));
-        Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => logEntryElement.Text);
+        Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p.navigation-log > span.navigation-log-entry-0"))?.Text);
 
         // Unblock the new navigation
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-continue")).Click();
