@@ -335,7 +335,6 @@ public class Http3RequestTests : LoggedTest
                     pooledTcs.TrySetResult();
                 }
             };
-            TestSink.MessageLogged += handler;
         }
 
         var builder = CreateHostBuilder(async context =>
@@ -349,6 +348,11 @@ public class Http3RequestTests : LoggedTest
 
         try
         {
+            if (handler != null)
+            {
+                TestSink.MessageLogged += handler;
+            }
+
             using (var host = builder.Build())
             using (var client = HttpHelpers.CreateClient())
             {
