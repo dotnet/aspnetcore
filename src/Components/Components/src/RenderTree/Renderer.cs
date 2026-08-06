@@ -38,7 +38,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly Dictionary<ulong, (int RenderedByComponentId, EventCallback Callback, string? attributeName)> _eventBindings = new();
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
     private readonly ILogger _logger;
-    private readonly SectionRegistry _sectionRegistry;
+    private readonly ILoggerFactory _loggerFactory;
+    private SectionRegistry? _sectionRegistry;
     private readonly ComponentFactory _componentFactory;
     private readonly ComponentsMetrics? _componentsMetrics;
     private readonly ComponentsActivitySource? _componentsActivitySource;
@@ -102,7 +103,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
-        _sectionRegistry = new SectionRegistry(loggerFactory);
+        _loggerFactory = loggerFactory;
         _componentFactory = new ComponentFactory(componentActivator, GetComponentPropertyActivatorOrDefault(serviceProvider), this);
         if (ComponentsMetrics.IsSupported)
         {
@@ -122,7 +123,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _componentsActivitySource;
 
-    internal SectionRegistry SectionRegistry => _sectionRegistry;
+    internal SectionRegistry SectionRegistry => _sectionRegistry ??= new SectionRegistry(_loggerFactory);
 
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 

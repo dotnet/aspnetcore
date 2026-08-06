@@ -5,12 +5,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Sections;
 
-internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
+internal sealed partial class SectionRegistry(ILoggerFactory loggerFactory)
 {
     private readonly Dictionary<object, SectionOutlet> _subscribersByIdentifier = new();
     private readonly Dictionary<object, List<SectionContent>> _providersByIdentifier = new();
 
-    private readonly ILogger? _logger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Components.Sections.SectionRegistry");
+    private readonly ILogger _logger = loggerFactory.CreateLogger<SectionRegistry>();
 
     private HashSet<object>? _mismatchLoggedIdentifiers;
 
@@ -112,8 +112,9 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
 
     private void DetectRenderModeMismatch(object identifier, SectionOutlet subscriber, SectionContent? provider)
     {
-        if (_logger is null || provider is null)
+        if (provider is null)
         {
+            _mismatchLoggedIdentifiers?.Remove(identifier);
             return;
         }
 
@@ -139,7 +140,21 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
         => renderMode is null ? "static server-side rendering" : renderMode.GetType().Name;
 
     private static string DescribeIdentifier(object identifier)
-        => identifier as string ?? identifier.ToString() ?? "(unknown)";
+    {
+        if (identifier is string id)
+        {
+            return id;
+        }
+
+        try
+        {
+            return identifier.ToString() ?? "(unknown)";
+        }
+        catch (Exception)
+        {
+            return "(unknown)";
+        }
+    }
 
     private static SectionContent? GetCurrentProviderContentOrDefault(List<SectionContent> providers)
         => providers.Count != 0
