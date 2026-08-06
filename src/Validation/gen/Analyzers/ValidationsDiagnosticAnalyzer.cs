@@ -58,7 +58,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
     internal static readonly DiagnosticDescriptor ValidatableTypeCantBeUsedInGeneratedCode = new(
         "ASP0035",
         "[ValidatableType] cannot be used in generated code",
-        "The 'ValidatableTypeAttribute' is applied to type '{0}' in generated code. Generated code cannot be inspected by ValidationsGenerator.",
+        "'[ValidatableType]' on type '{0}' has no effect because the type is declared in generated code (for example, in a .razor file). Source generators cannot inspect each other's output. Declare the type in a regular .cs file instead.",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
