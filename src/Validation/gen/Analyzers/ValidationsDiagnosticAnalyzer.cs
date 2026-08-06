@@ -167,7 +167,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         var fromKeyedServiceAttribute = wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
         var skipValidationAttribute = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
 
-        var allValidatableTypes = new ConcurrentDictionary<ITypeSymbol, byte>(SymbolEqualityComparer.Default);
+        var topLevelValidatableTypes = new ConcurrentDictionary<ITypeSymbol, byte>(SymbolEqualityComparer.Default);
         var endpointParameters = new ConcurrentDictionary<IParameterSymbol, byte>(SymbolEqualityComparer.Default);
 
         var addValidationFound = false;
@@ -191,7 +191,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         return;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, attributedType, allValidatableTypes, wellKnownTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, attributedType, topLevelValidatableTypes, wellKnownTypes);
                 }
             }, OperationKind.Attribute);
         }
@@ -259,7 +259,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, type, allValidatableTypes, wellKnownTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, type, topLevelValidatableTypes, wellKnownTypes);
                 }
             }
         });
