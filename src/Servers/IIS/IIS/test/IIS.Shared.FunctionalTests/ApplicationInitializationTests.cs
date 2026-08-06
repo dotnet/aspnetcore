@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -71,6 +73,33 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
                 var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
                 Assert.Empty(matchedEntries);
             }
+        }
+    }
+
+    [ConditionalFact]
+    [RequiresIIS(IISCapability.ApplicationInitialization)]
+    [RequiresNewHandler]
+    public async Task ApplicationPreloadDrainsRequestDuringShutdown()
+    {
+        // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+        using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            deploymentParameters.TransformArguments((args, _) => $"{args} HostBuilder");
+            EnablePreload(deploymentParameters);
+
+            var result = await DeployAsync(deploymentParameters);
+            using var client = result.CreateClient(new HttpClientHandler());
+            using var response = await client.GetAsync("/CompleteAfterAppStartsShuttingDown", HttpCompletionOption.ResponseHeadersRead);
+            var responseBodyTask = response.Content.ReadAsStringAsync();
+
+            var stopwatch = Stopwatch.StartNew();
+            StopServer();
+            stopwatch.Stop();
+
+            Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(30), $"Shutdown took {stopwatch.Elapsed}.");
+            Assert.Equal("StartedCompleted", await responseBodyTask);
+            result.AssertWorkerProcessStop();
         }
     }
 

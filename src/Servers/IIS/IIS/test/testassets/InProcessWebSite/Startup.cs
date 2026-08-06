@@ -596,13 +596,27 @@ public partial class Startup
     private async Task WaitForAppToStartShuttingDown(HttpContext ctx)
     {
         await ctx.Response.WriteAsync("test1");
-#if FORWARDCOMPAT
-        var lifetime = ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
-#else
-        var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
-#endif
-        lifetime.ApplicationStopping.WaitHandle.WaitOne();
+        GetApplicationStopping(ctx).WaitHandle.WaitOne();
         await ctx.Response.WriteAsync("test2");
+    }
+
+    private async Task CompleteAfterAppStartsShuttingDown(HttpContext ctx)
+    {
+        await ctx.Response.WriteAsync("Started");
+        await ctx.Response.Body.FlushAsync();
+        GetApplicationStopping(ctx).WaitHandle.WaitOne();
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        await ctx.Response.WriteAsync("Completed");
+    }
+
+    private static CancellationToken GetApplicationStopping(HttpContext ctx)
+    {
+#if FORWARDCOMPAT
+        var lifetime = ctx.RequestServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
+#else
+        var lifetime = ctx.RequestServices.GetRequiredService<IHostApplicationLifetime>();
+#endif
+        return lifetime.ApplicationStopping;
     }
 
     private async Task ReadFullBody(HttpContext ctx)
