@@ -27,6 +27,28 @@
     <GetSharedFrameworkFilesForReadyToRunDependsOn>$(GetSharedFrameworkFilesForReadyToRunDependsOn);_AddOptimizationDataForReadyToRun</GetSharedFrameworkFilesForReadyToRunDependsOn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <_RestoreRuntimeTargetCommand Condition="$([MSBuild]::IsOSPlatform('Windows'))">.\restore.cmd -Architecture $(TargetArchitecture) -p:RestoreForce=true</_RestoreRuntimeTargetCommand>
+    <_RestoreRuntimeTargetCommand Condition="!$([MSBuild]::IsOSPlatform('Windows'))">./restore.sh --os-name $(TargetOsName) --arch $(TargetArchitecture) -p:RestoreForce=true</_RestoreRuntimeTargetCommand>
+  </PropertyGroup>
+
+  <Target Name="_ValidateProjectAssetsRuntimeTarget"
+          BeforeTargets="ResolvePackageAssets"
+          Condition="'$(TargetFramework)' != '' AND
+                     '$(RuntimeIdentifier)' != '' AND
+                     Exists('$(ProjectAssetsFile)')">
+    <CheckProjectAssetsRuntimeTarget
+        ProjectAssetsFile="$(ProjectAssetsFile)"
+        TargetFramework="$(TargetFramework)"
+        RuntimeIdentifier="$(RuntimeIdentifier)">
+      <Output TaskParameter="RuntimeTargetExists" PropertyName="_ProjectAssetsRuntimeTargetExists" />
+    </CheckProjectAssetsRuntimeTarget>
+
+    <Error
+        Condition="'$(_ProjectAssetsRuntimeTargetExists)' != 'true'"
+        Text="The restore assets for $(MSBuildProjectName) do not contain the requested target '$(TargetFramework)/$(RuntimeIdentifier)'. From the repository root, run '$(_RestoreRuntimeTargetCommand)'." />
+  </Target>
+
   <!-- IBC data packages don't follow NuGet conventions.  -->
   <Target Name="_AddOptimizationDataForReadyToRun">
     <ItemGroup>
