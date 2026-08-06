@@ -244,7 +244,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
+            var wrapper = mediaType.Schema;
+            Assert.NotNull(wrapper.OneOf);
+            Assert.Equal(2, wrapper.OneOf.Count);
+            Assert.Equal(JsonSchemaType.Null, wrapper.OneOf[0].Type);
+            var schema = wrapper.OneOf[1];
             Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
@@ -291,7 +295,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
+            var wrapper = mediaType.Schema;
+            Assert.NotNull(wrapper.OneOf);
+            Assert.Equal(2, wrapper.OneOf.Count);
+            Assert.Equal(JsonSchemaType.Null, wrapper.OneOf[0].Type);
+            var schema = wrapper.OneOf[1];
             Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>

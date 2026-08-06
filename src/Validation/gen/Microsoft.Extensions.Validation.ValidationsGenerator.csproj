@@ -18,6 +18,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Class bodies emitted verbatim as file classes into consumer code. They are not compiled
+         into the generator assembly, only embedded and read at generation time. -->
+    <Compile Remove="Templates\**\*.cs" />
+    <EmbeddedResource Include="Templates\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.Validation.GeneratorTests" />
   </ItemGroup>
 

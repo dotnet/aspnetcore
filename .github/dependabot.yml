@@ -1,9 +1,206 @@
+version: 2
+registries:
+  dotnet-public:
+    type: nuget-feed
+    url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
 updates:
-- directory: /
-  open-pull-requests-limit: 0
-  package-ecosystem: nuget
+- package-ecosystem: "nuget"
+  directories:
+  - "/"
+  # Exposes packages Dependabot otherwise can't see; see eng/tools/DependabotDiscovery/README.md
+  - "/eng/tools/DependabotDiscovery"
+  registries:
+  - dotnet-public
+  open-pull-requests-limit: 10
   schedule:
-    interval: weekly
+    interval: "weekly"
+    day: "monday"
+  cooldown:
+    default-days: 7
+  labels:
+  - "area-infrastructure"
+  groups:
+    grpc:
+      patterns:
+      - "Grpc.*"
+    google:
+      patterns:
+      - "Google.*"
+    messagepack:
+      patterns:
+      - "MessagePack*"
+    azureappservices-siteextension:
+      patterns:
+      - "Microsoft.AspNetCore.AzureAppServices.SiteExtension.*"
+    codeanalysis:
+      patterns:
+      - "Microsoft.CodeAnalysis.*"
+    sqlclient:
+      patterns:
+      - "Microsoft.Data.SqlClient*"
+    extensions:
+      patterns:
+      - "Microsoft.Extensions.*"
+    openapi:
+      patterns:
+      - "Microsoft.OpenApi*"
+    owin:
+      patterns:
+      - "Microsoft.Owin.*"
+    playwright:
+      patterns:
+      - "Microsoft.Playwright*"
+    modelcontextprotocol:
+      patterns:
+      - "ModelContextProtocol*"
+    mono:
+      patterns:
+      - "Mono.*"
+    newtonsoft-json:
+      patterns:
+      - "Newtonsoft.Json*"
+    opentelemetry:
+      patterns:
+      - "OpenTelemetry.*"
+    polly:
+      patterns:
+      - "Polly*"
+    selenium:
+      patterns:
+      - "Selenium.*"
+    serilog:
+      patterns:
+      - "Serilog.*"
+    system:
+      patterns:
+      - "System.*"
+    verify:
+      patterns:
+      - "Verify.*"
+    xunit:
+      patterns:
+      - "xunit*"
+  ignore:
+  # Only update to the latest minor or patch version, never major
+  - dependency-name: "*"
+    update-types: ["version-update:semver-major"]
+  # IdentityModel packages: version is pinned centrally via the shared
+  # $(IdentityModelVersion) property in eng/Versions.props; update that instead.
+  - dependency-name: "Microsoft.IdentityModel.Logging"
+  - dependency-name: "Microsoft.IdentityModel.Protocols.OpenIdConnect"
+  - dependency-name: "Microsoft.IdentityModel.Protocols.WsFederation"
+  - dependency-name: "System.IdentityModel.Tokens.Jwt"
+  # Packages managed by Maestro dependency flow (eng/Version.Details.xml on main)
+  - dependency-name: "Microsoft.Bcl.AsyncInterfaces"
+  - dependency-name: "Microsoft.Bcl.TimeProvider"
+  - dependency-name: "Microsoft.Build"
+  - dependency-name: "Microsoft.Build.Framework"
+  - dependency-name: "Microsoft.Build.Tasks.Core"
+  - dependency-name: "Microsoft.Build.Utilities.Core"
+  - dependency-name: "Microsoft.CodeAnalysis.CSharp"
+  - dependency-name: "Microsoft.CodeAnalysis.CSharp.Workspaces"
+  - dependency-name: "Microsoft.CodeAnalysis.Common"
+  - dependency-name: "Microsoft.CodeAnalysis.ExternalAccess.AspNetCore"
+  - dependency-name: "Microsoft.DotNet.Arcade.Sdk"
+  - dependency-name: "Microsoft.DotNet.Build.Tasks.Archives"
+  - dependency-name: "Microsoft.DotNet.Build.Tasks.Installers"
+  - dependency-name: "Microsoft.DotNet.Build.Tasks.Templating"
+  - dependency-name: "Microsoft.DotNet.Helix.Sdk"
+  - dependency-name: "Microsoft.DotNet.RemoteExecutor"
+  - dependency-name: "Microsoft.DotNet.SharedFramework.Sdk"
+  - dependency-name: "Microsoft.EntityFrameworkCore"
+  - dependency-name: "Microsoft.EntityFrameworkCore.Design"
+  - dependency-name: "Microsoft.EntityFrameworkCore.InMemory"
+  - dependency-name: "Microsoft.EntityFrameworkCore.Relational"
+  - dependency-name: "Microsoft.EntityFrameworkCore.SqlServer"
+  - dependency-name: "Microsoft.EntityFrameworkCore.Sqlite"
+  - dependency-name: "Microsoft.EntityFrameworkCore.Tools"
+  - dependency-name: "Microsoft.Extensions.Caching.Abstractions"
+  - dependency-name: "Microsoft.Extensions.Caching.Hybrid"
+  - dependency-name: "Microsoft.Extensions.Caching.Memory"
+  - dependency-name: "Microsoft.Extensions.Configuration"
+  - dependency-name: "Microsoft.Extensions.Configuration.Abstractions"
+  - dependency-name: "Microsoft.Extensions.Configuration.Binder"
+  - dependency-name: "Microsoft.Extensions.Configuration.CommandLine"
+  - dependency-name: "Microsoft.Extensions.Configuration.EnvironmentVariables"
+  - dependency-name: "Microsoft.Extensions.Configuration.FileExtensions"
+  - dependency-name: "Microsoft.Extensions.Configuration.Ini"
+  - dependency-name: "Microsoft.Extensions.Configuration.Json"
+  - dependency-name: "Microsoft.Extensions.Configuration.UserSecrets"
+  - dependency-name: "Microsoft.Extensions.Configuration.Xml"
+  - dependency-name: "Microsoft.Extensions.DependencyInjection"
+  - dependency-name: "Microsoft.Extensions.DependencyInjection.Abstractions"
+  - dependency-name: "Microsoft.Extensions.DependencyModel"
+  - dependency-name: "Microsoft.Extensions.Diagnostics"
+  - dependency-name: "Microsoft.Extensions.Diagnostics.Abstractions"
+  - dependency-name: "Microsoft.Extensions.Diagnostics.Testing"
+  - dependency-name: "Microsoft.Extensions.FileProviders.Abstractions"
+  - dependency-name: "Microsoft.Extensions.FileProviders.Composite"
+  - dependency-name: "Microsoft.Extensions.FileProviders.Physical"
+  - dependency-name: "Microsoft.Extensions.FileSystemGlobbing"
+  - dependency-name: "Microsoft.Extensions.HostFactoryResolver.Sources"
+  - dependency-name: "Microsoft.Extensions.Hosting"
+  - dependency-name: "Microsoft.Extensions.Hosting.Abstractions"
+  - dependency-name: "Microsoft.Extensions.Http"
+  - dependency-name: "Microsoft.Extensions.Logging"
+  - dependency-name: "Microsoft.Extensions.Logging.Abstractions"
+  - dependency-name: "Microsoft.Extensions.Logging.Configuration"
+  - dependency-name: "Microsoft.Extensions.Logging.Console"
+  - dependency-name: "Microsoft.Extensions.Logging.Debug"
+  - dependency-name: "Microsoft.Extensions.Logging.EventLog"
+  - dependency-name: "Microsoft.Extensions.Logging.EventSource"
+  - dependency-name: "Microsoft.Extensions.Logging.TraceSource"
+  - dependency-name: "Microsoft.Extensions.Options"
+  - dependency-name: "Microsoft.Extensions.Options.ConfigurationExtensions"
+  - dependency-name: "Microsoft.Extensions.Options.DataAnnotations"
+  - dependency-name: "Microsoft.Extensions.Primitives"
+  - dependency-name: "Microsoft.Extensions.ServiceDiscovery"
+  - dependency-name: "Microsoft.Extensions.ServiceDiscovery.Yarp"
+  - dependency-name: "Microsoft.Extensions.TimeProvider.Testing"
+  - dependency-name: "Microsoft.Internal.Runtime.AspNetCore.Transport"
+  - dependency-name: "Microsoft.NET.Runtime.MonoAOTCompiler.Task"
+  - dependency-name: "Microsoft.NET.Runtime.WebAssembly.Sdk"
+  - dependency-name: "Microsoft.NETCore.App.Ref"
+  - dependency-name: "Microsoft.NETCore.BrowserDebugHost.Transport"
+  - dependency-name: "Microsoft.NETCore.Platforms"
+  - dependency-name: "Microsoft.Web.Xdt"
+  - dependency-name: "NuGet.Frameworks"
+  - dependency-name: "NuGet.Packaging"
+  - dependency-name: "NuGet.Versioning"
+  - dependency-name: "System.Collections.Immutable"
+  - dependency-name: "System.Composition"
+  - dependency-name: "System.Configuration.ConfigurationManager"
+  - dependency-name: "System.Diagnostics.DiagnosticSource"
+  - dependency-name: "System.Diagnostics.EventLog"
+  - dependency-name: "System.Diagnostics.PerformanceCounter"
+  - dependency-name: "System.DirectoryServices.Protocols"
+  - dependency-name: "System.Formats.Asn1"
+  - dependency-name: "System.Formats.Cbor"
+  - dependency-name: "System.IO.Hashing"
+  - dependency-name: "System.IO.Pipelines"
+  - dependency-name: "System.Memory.Data"
+  - dependency-name: "System.Net.Http.Json"
+  - dependency-name: "System.Net.Http.WinHttpHandler"
+  - dependency-name: "System.Net.ServerSentEvents"
+  - dependency-name: "System.Numerics.Tensors"
+  - dependency-name: "System.Reflection.Metadata"
+  - dependency-name: "System.Resources.Extensions"
+  - dependency-name: "System.Runtime.Caching"
+  - dependency-name: "System.Security.Cryptography.Pkcs"
+  - dependency-name: "System.Security.Cryptography.Xml"
+  - dependency-name: "System.Security.Permissions"
+  - dependency-name: "System.ServiceProcess.ServiceController"
+  - dependency-name: "System.Text.Encodings.Web"
+  - dependency-name: "System.Text.Json"
+  - dependency-name: "System.Threading.AccessControl"
+  - dependency-name: "System.Threading.Channels"
+  - dependency-name: "System.Threading.RateLimiting"
+  - dependency-name: "dotnet-ef"
+  - dependency-name: "optimization.linux-arm64.MIBC.Runtime"
+  - dependency-name: "optimization.linux-x64.MIBC.Runtime"
+  - dependency-name: "optimization.windows_nt-arm64.MIBC.Runtime"
+  - dependency-name: "optimization.windows_nt-x64.MIBC.Runtime"
+  - dependency-name: "optimization.windows_nt-x86.MIBC.Runtime"
 - commit-message:
     include: scope
     prefix: "[main] "
@@ -91,4 +288,4 @@ updates:
   schedule:
     interval: monthly
   target-branch: release/10.0
-version: 2
+

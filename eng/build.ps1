@@ -417,6 +417,23 @@ function LocateJava {
     }
 }
 
+function GetMSBuildBinaryLogCommandLineArgument($arguments) {
+  foreach ($argument in $arguments) {
+    if ($argument -ne $null) {
+      $arg = $argument.Trim()
+      if ($arg.StartsWith('/bl:', "OrdinalIgnoreCase")) {
+        return $arg.Substring('/bl:'.Length)
+      }
+
+      if ($arg.StartsWith('/binaryLogger:', 'OrdinalIgnoreCase')) {
+        return $arg.Substring('/binaryLogger:'.Length)
+      }
+    }
+  }
+
+  return $null
+}
+
 # Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks
 # $BinaryLog, $CI and $ExcludeCIBinarylog values for an error case. But tools.ps1 provides a nice function to help.
 if ($BinaryLog) {
