@@ -3,27 +3,33 @@
   "isRoot": true,
   "tools": {
     "dotnet-dump": {
-      "version": "${DotnetDumpVersion}",
+      "version": "6.0.322601",
       "commands": [
         "dotnet-dump"
       ]
     },
     "dotnet-ef": {
-      "version": "${DotnetEfVersion}",
+      "version": "11.0.0-rc.1.26404.101",
       "commands": [
         "dotnet-ef"
       ]
     },
     "dotnet-serve": {
-      "version": "${DotnetServeVersion}",
+      "version": "1.10.93",
       "commands": [
         "dotnet-serve"
       ]
     },
     "Microsoft.Playwright.CLI": {
-      "version": "${MicrosoftPlaywrightCLIVersion}",
+      "version": "1.2.3",
       "commands": [
         "playwright"
+      ]
+    },
+    "microsoft.dotnet.helix.jobmonitor": {
+      "version": "11.0.0-beta.26404.101",
+      "commands": [
+        "dotnet-helix-job-monitor"
       ]
     }
   }

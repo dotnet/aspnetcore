@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0035`)
+### ASP (`ASP0000-ASP0036`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -37,10 +37,11 @@
 |  __`ASP0029`__ | Experimental warning for validations resolver APIs |
 |  __`ASP0030`__ | Experimental warning for QuickGrid virtualization anchoring APIs |
 |  __`ASP0031`__ | Experimental warning for Device Bound Sessions (DBSC) APIs |
-|  __`ASP0032`__ | \[ValidatableType\] is applied to an inaccessible type |
-|  __`ASP0033`__ | Endpoint parameter type is inaccessible from generated code |
-|  __`ASP0034`__ | Validatable property or its type is not accessible |
-|  __`ASP0035`__ | \[ValidatableType] cannot be used in generated code |
+|  __`ASP0032`__ | Experimental warning for RenderFragment serialization APIs |
+|  __`ASP0033`__ | \[ValidatableType\] is applied to an inaccessible type |
+|  __`ASP0034`__ | Endpoint parameter type is inaccessible from generated code |
+|  __`ASP0035`__ | Validatable property or its type is not accessible |
+|  __`ASP0036`__ | \[ValidatableType] cannot be used in generated code |
 
 ### API (`API1000-API1003`)
 
