@@ -28,13 +28,26 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     public void ConfigureServices(IServiceCollection services)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
+        // Force the cached QuickGridFeatureFlags field, since it captures the AppContext switch only at
+        // static initialization. This is safe only because the E2E suite runs serially; enabling
+        // parallelization would let servers needing opposite values race on it and reintroduce #66883.
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, true);
 
-        var builder = services.AddRazorComponents(options =>
+        services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         });
+
+        if (Configuration.GetValue<bool>("UseHybridCacheViewStore"))
+        {
+            services.AddHybridCache();
+        }
+
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
 

@@ -30,6 +30,7 @@ public class HubConnectionTestsCollection : ICollectionFixture<InProcessTestServ
 public partial class HubConnectionTests : FunctionalTestBase
 {
     private const string DefaultHubDispatcherLoggerName = "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher";
+    private const string LongPollingTransportLoggerName = "Microsoft.AspNetCore.Http.Connections.Client.Internal.LongPollingTransport";
 
     private HubConnection CreateHubConnection(
         string url,
@@ -2037,6 +2038,9 @@ public partial class HubConnectionTests : FunctionalTestBase
                 .WithLoggerFactory(LoggerFactory)
                 .WithUrl(server.Url + "/default", options =>
                 {
+                    // /default is unauthenticated, so HeaderUserIdProvider finds no NameIdentifier claim
+                    // and falls back to this header. If /default ever gains an authenticated principal,
+                    // the provider would return the principal's NameIdentifier instead of "SuperAdmin".
                     options.Headers.Add(HeaderUserIdProvider.HeaderName, "SuperAdmin");
                 })
                 .Build();
@@ -2677,13 +2681,26 @@ public partial class HubConnectionTests : FunctionalTestBase
 
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52408")]
     [Fact]
-    public async Task ChangingUserNameDuringReconnectLogsWarning()
+    public async Task ChangingUserNameDuringStatefulReconnectRejectsReconnect()
     {
         var protocol = HubProtocols["json"];
         await using (var server = await StartServer<Startup>())
         {
             var websocket = new ClientWebSocket();
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var rejectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            Action<WriteContext> handler = null;
+            handler = writeContext =>
+            {
+                if (writeContext.EventId.Name == "UserNameChangedRejected")
+                {
+                    rejectedTcs.TrySetResult(writeContext.Message);
+                    TestSink.MessageLogged -= handler;
+                }
+            };
+
+            TestSink.MessageLogged += handler;
 
             var userName = "test1";
             var connectionBuilder = new HubConnectionBuilder()
@@ -2698,43 +2715,31 @@ public partial class HubConnectionTests : FunctionalTestBase
                         websocket.Options.SetRequestHeader("Authorization", $"Bearer {authHeader}");
 
                         await websocket.ConnectAsync(context.Uri, token);
-                        tcs.SetResult();
+                        connectTcs.TrySetResult();
                         return websocket;
                     };
                 })
-                .WithStatefulReconnect()
-                .WithAutomaticReconnect();
+                .WithStatefulReconnect();
             connectionBuilder.Services.AddSingleton(protocol);
             var connection = connectionBuilder.Build();
-
-            var reconnectCalled = false;
-            connection.Reconnecting += ex =>
-            {
-                reconnectCalled = true;
-                return Task.CompletedTask;
-            };
 
             try
             {
                 await connection.StartAsync().DefaultTimeout();
-                userName = "test2";
-                await tcs.Task;
-                tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                await connectTcs.Task.DefaultTimeout();
 
-                var originalConnectionId = connection.ConnectionId;
+                // The next websocket the client opens will authenticate as a different user.
+                userName = "test2";
 
                 var originalWebsocket = websocket;
                 websocket = new ClientWebSocket();
 
+                // Drop the underlying connection to trigger a stateful reconnect attempt.
                 originalWebsocket.Dispose();
 
-                await tcs.Task.DefaultTimeout();
-
-                Assert.Equal(originalConnectionId, connection.ConnectionId);
-                Assert.False(reconnectCalled);
-
-                var changeLog = Assert.Single(TestSink.Writes.Where(w => w.EventId.Name == "UserNameChanged"));
-                Assert.EndsWith("The name of the user changed from 'test1' to 'test2'.", changeLog.Message);
+                // The server rejects the reconnect because the authenticated user changed.
+                var rejectedMessage = await rejectedTcs.Task.DefaultTimeout();
+                Assert.Contains("from 'test1' to 'test2'", rejectedMessage);
             }
             catch (Exception ex)
             {
@@ -2843,6 +2848,7 @@ public partial class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67344")]
     public async Task ServerWithOldProtocolVersionClientWithNewProtocolVersionWorksDoesNotAllowStatefulReconnect()
     {
         bool ExpectedErrors(WriteContext writeContext)

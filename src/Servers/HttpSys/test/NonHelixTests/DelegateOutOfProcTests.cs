@@ -13,6 +13,7 @@ public class DelegateOutOfProcTests : LoggedTest
     public DelegateOutOfProcTests(ITestOutputHelper output) : base(output) { }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67458")]
     [DelegateSupportedCondition(true)]
     public async Task CanDelegateOutOfProcess()
     {

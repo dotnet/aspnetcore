@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -61,7 +60,11 @@ internal partial class SessionCascadingValueSupplier
         return new PropertyGetter(type, propertyInfo);
     }
 
-    internal ISession? GetSession() => _httpContext?.Features.Get<ISessionFeature>()?.Session;
+    // A null HttpContext means we're rendering interactively (Server circuit or WebAssembly),
+    // where the session isn't available; yield null instead of failing. When an HttpContext is
+    // present (static SSR) an unavailable session is a misconfiguration and fails fast.
+    internal ISession? GetSession()
+        => _httpContext is null ? null : SessionResolver.GetRequiredSession(_httpContext);
 
     internal void RegisterValueCallback(string sessionKey, Func<object?> valueGetter)
     {
@@ -81,6 +84,7 @@ internal partial class SessionCascadingValueSupplier
         var session = GetSession();
         if (session is null)
         {
+            Log.SessionUnavailable(_logger);
             return Task.CompletedTask;
         }
 
@@ -120,6 +124,9 @@ internal partial class SessionCascadingValueSupplier
 
         [LoggerMessage(2, LogLevel.Warning, "Deserialization of the element from session failed.", EventName = "SessionDeserializeFail")]
         public static partial void SessionDeserializeFail(ILogger logger, Exception exception);
+
+        [LoggerMessage(3, LogLevel.Warning, "No active HttpContext is available (interactive rendering); [SupplyParameterFromSession] is skipped.", EventName = "SessionUnavailable")]
+        public static partial void SessionUnavailable(ILogger logger);
     }
 
     internal partial class SessionSubscription : CascadingParameterSubscription
@@ -153,6 +160,7 @@ internal partial class SessionCascadingValueSupplier
             var session = _owner.GetSession();
             if (session is null)
             {
+                Log.SessionUnavailable(_owner._logger);
                 return null;
             }
 

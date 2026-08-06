@@ -2,7 +2,12 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
+    <!--
+      TypeScript in this tree is compiled via npm/rollup (e.g. Interop\ -> dist\), not by the
+      MSBuild TypeScript toolchain. Block the SDK's TypeScript compilation so neither the
+      VS-installed targets nor the StaticWebAssets TypeScript target try to compile our .ts files.
+    -->
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
 
   <PropertyGroup>

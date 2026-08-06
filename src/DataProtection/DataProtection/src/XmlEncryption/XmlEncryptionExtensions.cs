@@ -173,7 +173,7 @@ internal static unsafe class XmlEncryptionExtensions
             }
             finally
             {
-                Array.Clear(underlyingBuffer, 0, underlyingBuffer.Length);
+                CryptoUtil.ZeroMemory(underlyingBuffer);
             }
         }
     }
@@ -194,7 +194,7 @@ internal static unsafe class XmlEncryptionExtensions
             }
             finally
             {
-                Array.Clear(plaintextSecret, 0, plaintextSecret.Length);
+                CryptoUtil.ZeroMemory(plaintextSecret);
             }
         }
     }

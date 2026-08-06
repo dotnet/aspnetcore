@@ -430,7 +430,7 @@ internal sealed class ParameterBindingMethodCache
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     private static bool TryGetExplicitIParsableTryParseMethod(Type type, out MethodInfo methodInfo)
     {
-        // Nested types by default use + as the delimeter between the containing type and the
+        // Nested types by default use + as the delimiter between the containing type and the
         // inner type. However when doing a method search this '+' symbol needs to be a '.' symbol.
         var typeName = TypeNameHelper.GetTypeDisplayName(type, fullName: true, nestedTypeDelimiter: '.');
         var name = $"System.IParsable<{typeName}>.TryParse";
