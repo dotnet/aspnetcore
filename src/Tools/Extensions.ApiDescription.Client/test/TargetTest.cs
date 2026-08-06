@@ -28,7 +28,7 @@ public class TargetTest : IDisposable
         _output = output;
         _temporaryDirectory = new TemporaryDirectory();
 
-        var build = _temporaryDirectory.SubDir("build");
+        var build = _temporaryDirectory.SubDir("build").SubDir("netstandard2.0");
         var files = _temporaryDirectory.SubDir("files");
         var tasks = _temporaryDirectory.SubDir("tasks").SubDir("netstandard2.0");
         _temporaryDirectory.Create();

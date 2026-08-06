@@ -66,27 +66,26 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
-        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
-        var encryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
-
 #if NET
-        if (encryptor is ISpanAuthenticatedEncryptor)
-        {
-            // allows caller to check if dataProtector supports Span APIs
-            // and use more performant APIs
-            return new KeyRingBasedSpanDataProtector(
-                logger: _logger,
-                keyRingProvider: _keyRingProvider,
-                originalPurposes: Purposes,
-                newPurpose: purpose);
-        }
-#endif
-
+        // Always return the span-capable protector on .NET. It inspects the resolved encryptor at each Protect/Unprotect call
+        // and falls back to the byte[] path when the encryptor does not implement ISpanAuthenticatedEncryptor.
+        //
+        // We could determine whether the encryptor implements ISpanAuthenticatedEncryptor here and return the appropriate protector type,
+        // but that would force a keyring resolve (which may hit the configured key store, e.g. a database or blob storage) during startup.
+        // In hosted apps using AddDataProtection, the registered provider is first wrapped with the application discriminator, so app calls
+        // hit this method (not just KeyRingBasedDataProtectionProvider.CreateProtector). See dotnet/aspnetcore#67447.
+        return new KeyRingBasedSpanDataProtector(
+            logger: _logger,
+            keyRingProvider: _keyRingProvider,
+            originalPurposes: Purposes,
+            newPurpose: purpose);
+#else
         return new KeyRingBasedDataProtector(
             logger: _logger,
             keyRingProvider: _keyRingProvider,
             originalPurposes: Purposes,
             newPurpose: purpose);
+#endif
     }
 
     protected static string JoinPurposesForLog(IEnumerable<string> purposes)

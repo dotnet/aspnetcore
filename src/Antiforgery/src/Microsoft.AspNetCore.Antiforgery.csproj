@@ -28,6 +28,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MiddlewareInvokedKeys.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)SafeHttpMethods.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)AntiforgeryValidationFeature.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)Encoding\Int7BitEncodingUtils.cs" Link="Shared\Encoding\%(Filename)%(Extension)" />

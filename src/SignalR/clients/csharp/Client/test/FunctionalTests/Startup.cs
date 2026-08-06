@@ -58,8 +58,10 @@ public class Startup
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters =
+                        // codeql[SM04554] - By design: this functional-test host validates self-issued test tokens, so no external issuer is configured. codeql[SM04555] - By design: issuer validation is intentionally disabled in the test host.
                         new TokenValidationParameters
                         {
+                            // codeql[SM04387] - By design: functional-test host signs tokens with a test key, so disabling audience/issuer validation is safe.
                             ValidateAudience = false,
                             ValidateIssuer = false,
                             ValidateActor = false,

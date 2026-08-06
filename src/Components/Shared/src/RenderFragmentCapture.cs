@@ -20,6 +20,12 @@ internal sealed class RenderFragmentCapture
         _original = original;
     }
 
+    public RenderFragmentCapture(RenderTreeFrame[] capturedFrames)
+    {
+        _original = static _ => { };
+        _capturedFrames = capturedFrames;
+    }
+
     public IReadOnlyDictionary<int, RenderFragmentCapture> ChildCaptures => _childCaptures;
 
     public void Invoke(RenderTreeBuilder builder)

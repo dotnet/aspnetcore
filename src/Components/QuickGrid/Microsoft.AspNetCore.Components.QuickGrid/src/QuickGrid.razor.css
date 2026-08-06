@@ -18,7 +18,7 @@ th {
 
 /* Deep to make it easy for people adding a sort-indicator element in a custom HeaderTemplate */
 th ::deep .sort-indicator {
-    /* Preset width so the column width doen't change as the sort indicator appears/disappears */
+    /* Preset width so the column width doesn't change as the sort indicator appears/disappears */
     width: 1rem;
     height: 1rem;
     align-self: center;

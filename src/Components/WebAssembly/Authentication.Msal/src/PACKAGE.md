@@ -14,7 +14,7 @@ dotnet add package Microsoft.Authentication.WebAssembly.Msal
 
 ### Usage
 
-For usage examples and documentation, refer to the [offical documentation](https://learn.microsoft.com/aspnet/core/blazor/security/webassembly) on Blazor WebAssembly security and identity.
+For usage examples and documentation, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/blazor/security/webassembly) on Blazor WebAssembly security and identity.
 
 ## Feedback &amp; Contributing
 

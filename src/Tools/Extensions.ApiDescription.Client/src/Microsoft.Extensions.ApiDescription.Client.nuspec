@@ -6,8 +6,8 @@
 
   <files>
     $CommonFileElements$
-    <file src="build\*" target="build" />
-    <file src="buildMultiTargeting\*" target="buildMultiTargeting" />
+    <file src="build\*" target="build\netstandard2.0" />
+    <file src="buildMultiTargeting\*" target="buildMultiTargeting\netstandard2.0" />
     <file src="$baseOutputPath$\$configuration$\netstandard2.0\Microsoft.Extensions.ApiDescription.Client.*" target="tasks\netstandard2.0" />
   </files>
 </package>

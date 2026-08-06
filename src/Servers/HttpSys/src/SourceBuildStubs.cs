@@ -89,6 +89,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     }
 
     /// <summary>
+    /// Specifies the Http.Sys authentication hardening level (source-build stub).
+    /// </summary>
+    public enum HttpAuthenticationHardeningLevel
+    {
+        /// <summary>Legacy (default). No CBT validation and no CBT exposed to the app.</summary>
+        Legacy = 0,
+
+        /// <summary>Medium. CBT validated if present; CBT exposed to the app.</summary>
+        Medium = 1,
+
+        /// <summary>Strict. CBT required; CBT exposed to the app.</summary>
+        Strict = 2,
+    }
+
+    /// <summary>
     /// Defines the types of request processing timestamps exposed via the Http.Sys HTTP_REQUEST_TIMING_INFO extensibility point.
     /// </summary>
     /// <remarks>
@@ -313,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         /// <summary>
         /// A collection of the HTTP_REQUEST_INFO for the current request. The integer represents the identifying
-        /// HTTP_REQUEST_INFO_TYPE enum value. The Memory is opaque bytes that need to be interperted in the format
+        /// HTTP_REQUEST_INFO_TYPE enum value. The Memory is opaque bytes that need to be interpreted in the format
         /// specified by the enum value.
         /// </summary>
         public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo { get; }
@@ -747,6 +762,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Enable buffering of response data in the Kernel. The default value is <c>false</c>.
         /// </summary>
         public bool EnableKernelResponseBuffering { get; set; }
+
+        /// <summary>
+        /// Configures the Http.Sys authentication hardening level and, when non-<see cref="HttpAuthenticationHardeningLevel.Legacy"/>,
+        /// exposes the RFC 5929 TLS channel binding token (CBT) for each request via
+        /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.TryGetChannelBindingBytes"/>.
+        /// The default is <see cref="HttpAuthenticationHardeningLevel.Medium"/>.
+        /// </summary>
+        public HttpAuthenticationHardeningLevel HttpAuthenticationHardeningLevel { get; set; } = HttpAuthenticationHardeningLevel.Medium;
 
         /// <summary>
         /// Gets or sets the maximum number of concurrent connections to accept. Set <c>-1</c> for infinite.
