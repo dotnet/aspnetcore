@@ -588,6 +588,19 @@ internal sealed class OpenApiDocumentService(
                 continue;
             }
 
+            var parameterSchema = await _componentService.GetOrCreateSchemaAsync(
+                document,
+                GetTargetType(description, parameter),
+                scopedServiceProvider,
+                schemaTransformers,
+                parameter,
+                cancellationToken: cancellationToken);
+
+            if (parameter.ShouldApplyNullableArrayElementSchema())
+            {
+                parameterSchema.MakeArrayItemsNullable();
+            }
+
             var openApiParameter = new OpenApiParameter
             {
                 Name = parameter.Name,
@@ -599,7 +612,7 @@ internal sealed class OpenApiDocumentService(
                     _ => ParameterLocation.Query
                 },
                 Required = IsRequired(parameter),
-                Schema = await _componentService.GetOrCreateSchemaAsync(document, GetTargetType(description, parameter), scopedServiceProvider, schemaTransformers, parameter, cancellationToken: cancellationToken),
+                Schema = parameterSchema,
                 Description = GetParameterDescriptionFromAttribute(parameter)
             };
 
