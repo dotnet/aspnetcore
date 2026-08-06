@@ -27,6 +27,8 @@ public class JsonStoredDataSerializerTest
                     { typeof(Dictionary<string, TestItem>) },
                     { typeof(LinkedList<int>) },
                     { typeof(int[,]) },
+                    { typeof(SortedSet<int>) },
+                    { typeof(System.Collections.ObjectModel.ObservableCollection<int>) },
                 };
         }
     }
@@ -70,9 +72,7 @@ public class JsonStoredDataSerializerTest
                     { typeof(TestEnum[]) },
                     { typeof(List<TestEnum>) },
                     { typeof(HashSet<TestEnum>) },
-                    { typeof(SortedSet<TestEnum>) },
                     { typeof(System.Collections.ObjectModel.Collection<TestEnum>) },
-                    { typeof(System.Collections.ObjectModel.ObservableCollection<TestEnum>) },
                     { typeof(Dictionary<string, TestEnum>) },
                     { typeof(List<int>) },
                     { typeof(List<string>) },
@@ -80,9 +80,7 @@ public class JsonStoredDataSerializerTest
                     { typeof(List<Guid>) },
                     { typeof(List<DateTime>) },
                     { typeof(HashSet<int>) },
-                    { typeof(SortedSet<int>) },
                     { typeof(System.Collections.ObjectModel.Collection<int>) },
-                    { typeof(System.Collections.ObjectModel.ObservableCollection<int>) },
                     { typeof(object[]) },
                     { typeof(int?) },
                     { typeof(bool?) },
@@ -306,22 +304,6 @@ public class JsonStoredDataSerializerTest
     }
 
     [Fact]
-    public void RoundTrip_SortedSet()
-    {
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new SortedSet<int> { 3, 1, 2 } }
-        });
-
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument!);
-
-        var set = Assert.IsType<SortedSet<int>>(result["key"]);
-        Assert.Equal(new SortedSet<int> { 1, 2, 3 }, set);
-    }
-
-    [Fact]
     public void RoundTrip_Collection()
     {
         var serializer = CreateSerializer();
@@ -334,22 +316,6 @@ public class JsonStoredDataSerializerTest
         var result = serializer.DeserializeData(jsonDocument!);
 
         var collection = Assert.IsType<System.Collections.ObjectModel.Collection<int>>(result["key"]);
-        Assert.Equal(new[] { 1, 2, 3 }, collection);
-    }
-
-    [Fact]
-    public void RoundTrip_ObservableCollection()
-    {
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new System.Collections.ObjectModel.ObservableCollection<int> { 1, 2, 3 } }
-        });
-
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument!);
-
-        var collection = Assert.IsType<System.Collections.ObjectModel.ObservableCollection<int>>(result["key"]);
         Assert.Equal(new[] { 1, 2, 3 }, collection);
     }
 
