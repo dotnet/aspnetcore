@@ -20,7 +20,6 @@ The following tools are produced by us but not bundled in the .NET Core CLI. The
 
 This folder also contains the infrastructure for our partners' service reference features:
 
-- [Extensions.ApiDescription.Client](Extensions.ApiDescription.Client/README.md) MSBuild glue for OpenAPI code generation.
 - [Extensions.ApiDescription.Server](Extensions.ApiDescription.Server/README.md) MSBuild glue for OpenAPI document generation.
 - [dotnet-getdocument](dotnet-getdocument/README.md) the outside man of OpenAPI document generation tool.
 - [GetDocument.Insider](GetDocumentInsider/README.md) the inside man of OpenAPI document generation tool.
