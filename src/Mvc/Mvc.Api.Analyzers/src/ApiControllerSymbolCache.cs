@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -12,84 +12,28 @@ internal readonly struct ApiControllerSymbolCache
     {
         symbolCache = default;
 
-        if (!TryGetType(ApiSymbolNames.ApiConventionMethodAttribute, out var apiConventionMethodAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ApiConventionNameMatchAttribute, out var apiConventionNameMatchAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ApiConventionTypeAttribute, out var apiConventionTypeAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ApiConventionTypeMatchAttribute, out var apiConventionTypeMatchAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ControllerAttribute, out var controllerAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.DefaultStatusCodeAttribute, out var defaultStatusCodeAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.IActionResult, out var iActionResult))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.IApiBehaviorMetadata, out var iApiBehaviorMetadata))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ModelStateDictionary, out var modelStateDictionary))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.NonActionAttribute, out var nonActionAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.NonControllerAttribute, out var nonControllerAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ProblemDetails, out var problemDetails))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ProducesDefaultResponseTypeAttribute, out var producesDefaultResponseTypeAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ProducesErrorResponseTypeAttribute, out var producesErrorResponseTypeAttribute))
-        {
-            return false;
-        }
-
-        if (!TryGetType(ApiSymbolNames.ProducesResponseTypeAttribute, out var producesResponseTypeAttribute))
+        if (!TryGetType(ApiSymbolNames.ApiConventionMethodAttribute, out var apiConventionMethodAttribute) ||
+            !TryGetType(ApiSymbolNames.ApiConventionNameMatchAttribute, out var apiConventionNameMatchAttribute) ||
+            !TryGetType(ApiSymbolNames.ApiConventionTypeAttribute, out var apiConventionTypeAttribute) ||
+            !TryGetType(ApiSymbolNames.ApiConventionTypeMatchAttribute, out var apiConventionTypeMatchAttribute) ||
+            !TryGetType(ApiSymbolNames.ControllerAttribute, out var controllerAttribute) ||
+            !TryGetType(ApiSymbolNames.DefaultStatusCodeAttribute, out var defaultStatusCodeAttribute) ||
+            !TryGetType(ApiSymbolNames.IActionResult, out var iActionResult) ||
+            !TryGetType(ApiSymbolNames.IApiBehaviorMetadata, out var iApiBehaviorMetadata) ||
+            !TryGetType(ApiSymbolNames.ModelStateDictionary, out var modelStateDictionary) ||
+            !TryGetType(ApiSymbolNames.NonActionAttribute, out var nonActionAttribute) ||
+            !TryGetType(ApiSymbolNames.NonControllerAttribute, out var nonControllerAttribute) ||
+            !TryGetType(ApiSymbolNames.ProblemDetails, out var problemDetails) ||
+            !TryGetType(ApiSymbolNames.ProducesDefaultResponseTypeAttribute, out var producesDefaultResponseTypeAttribute) ||
+            !TryGetType(ApiSymbolNames.ProducesErrorResponseTypeAttribute, out var producesErrorResponseTypeAttribute) ||
+            !TryGetType(ApiSymbolNames.ProducesResponseTypeAttribute, out var producesResponseTypeAttribute))
         {
             return false;
         }
 
         var statusCodeActionResult = compilation.GetTypeByMetadataName(ApiSymbolNames.IStatusCodeActionResult);
         var statusCodeActionResultStatusProperty = (IPropertySymbol?)statusCodeActionResult?.GetMembers("StatusCode")[0];
-        if (statusCodeActionResultStatusProperty == null)
+        if (statusCodeActionResultStatusProperty is null)
         {
             return false;
         }
@@ -97,7 +41,7 @@ internal readonly struct ApiControllerSymbolCache
         var disposable = compilation.GetSpecialType(SpecialType.System_IDisposable);
         var members = disposable?.GetMembers(nameof(IDisposable.Dispose));
         var iDisposableDispose = (IMethodSymbol?)members?[0];
-        if (iDisposableDispose == null)
+        if (iDisposableDispose is null)
         {
             return false;
         }
@@ -126,7 +70,7 @@ internal readonly struct ApiControllerSymbolCache
         bool TryGetType(string typeName, out INamedTypeSymbol typeSymbol)
         {
             typeSymbol = compilation.GetTypeByMetadataName(typeName);
-            return typeSymbol != null && typeSymbol.TypeKind != TypeKind.Error;
+            return typeSymbol is not null && typeSymbol.TypeKind is not TypeKind.Error;
         }
     }
 
