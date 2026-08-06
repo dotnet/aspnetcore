@@ -444,6 +444,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (anchorModeIs.beginning && snapshot.scrollTop < 1) {
       scrollElement.scrollTop = 0;
       startConvergenceObserving('top');
+      reobserveSpacers();
       return;
     }
 
@@ -732,6 +733,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         const modePinsTopItem = !anchorModeIs.beginning || !convergence.top;
         const itemAlreadyShifted = rect.top - containerTop > rect.height;
         if (nativeAnchoringUnavailable && modePinsTopItem && existing && itemAlreadyShifted) {
+          if (existing.scrollTop < 1 && anchorModeIs.end) {
+            suppressSpacerCallbacks = true;
+          }
           return;
         }
         observersByDotNetObjectId[id].anchorSnapshot = {

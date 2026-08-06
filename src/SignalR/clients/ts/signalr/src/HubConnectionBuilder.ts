@@ -6,6 +6,7 @@ import { HttpConnection } from "./HttpConnection";
 import { HubConnection } from "./HubConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { IHubProtocol } from "./IHubProtocol";
+import type { IAuthenticationRefreshOptions } from "./IAuthenticationRefreshOptions";
 import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
 import { IStatefulReconnectOptions } from "./IStatefulReconnectOptions";
@@ -57,6 +58,7 @@ export class HubConnectionBuilder {
     public reconnectPolicy?: IRetryPolicy;
 
     private _statefulReconnectBufferSize?: number;
+    private _authenticationRefreshOptions?: IAuthenticationRefreshOptions;
 
     /** Configures console logging for the {@link @microsoft/signalr.HubConnection}.
      *
@@ -228,6 +230,13 @@ export class HubConnectionBuilder {
         return this;
     }
 
+    /** Enables and configures automatic authentication refresh for the {@link @microsoft/signalr.HubConnection}. */
+    public withAuthenticationRefresh(options: IAuthenticationRefreshOptions = {}): HubConnectionBuilder {
+        this._authenticationRefreshOptions = options;
+
+        return this;
+    }
+
     /** Creates a {@link @microsoft/signalr.HubConnection} from the configuration options specified in this builder.
      *
      * @returns {HubConnection} The configured {@link @microsoft/signalr.HubConnection}.
@@ -256,7 +265,8 @@ export class HubConnectionBuilder {
             this.reconnectPolicy,
             this._serverTimeoutInMilliseconds,
             this._keepAliveIntervalInMilliseconds,
-            this._statefulReconnectBufferSize);
+            this._statefulReconnectBufferSize,
+            this._authenticationRefreshOptions);
     }
 }
 

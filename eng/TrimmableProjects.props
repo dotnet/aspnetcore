@@ -48,6 +48,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Certificate" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.DeviceBoundSessions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Google" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
