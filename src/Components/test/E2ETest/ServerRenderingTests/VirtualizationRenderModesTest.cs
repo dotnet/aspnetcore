@@ -207,7 +207,6 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
                                     entry.target?.hasAttribute?.('data-blazor-virtualize-reserved-height'));
                                 if (!heldInitialCallback && containsVirtualizeSpacer) {
                                     heldInitialCallback = true;
-                                    heldInitialCallback = true;
                                     pendingInitialCallback = () => callback(entries, observer);
                                     return;
                                 }

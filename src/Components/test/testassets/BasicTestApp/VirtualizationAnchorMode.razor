@@ -19,7 +19,7 @@
     {
         @if (useItemsProvider)
         {
-            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" @attributes="ComparerSplat" InitialItemIndex="@InitialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" @attributes="ComparerSplat" InitialItemIndex="@initialItemIndex" Context="item">
                 <ItemContent>
                     <div class="item"
                          data-index="@item.Index"
@@ -38,7 +38,7 @@
         }
         else
         {
-            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" InitialItemIndex="@InitialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
                 <div class="item"
                      data-index="@item.Index"
                      data-anchor-mode="@((int)anchorMode)"
@@ -56,11 +56,11 @@
 
 <div style="margin-top: 6px;">
     <label>Initial Index:
-        <input id="manual-initial-index" type="number" @bind="InitialItemIndex" style="width: 80px;" />
+        <input id="manual-initial-index" type="number" @bind="manualInitialIndex" style="width: 80px;" />
     </label>
     <button id="reload-with-initial-index" @onclick="ReloadWithInitialIndex">Load list with Initial Index</button>
     <button id="unload-list" @onclick="UnloadList">Unload list</button>
-    <span id="manual-initial-index-bound" data-value="@InitialItemIndex" style="margin-left: 8px; color:#888;">bound:@InitialItemIndex</span>
+    <span id="manual-initial-index-bound" data-value="@manualInitialIndex" style="margin-left: 8px; color:#888;">bound:@manualInitialIndex</span>
 </div>
 
 <div style="margin-top: 6px;">
@@ -122,6 +122,8 @@
     private int providerCallIndex;
     private List<string> providerEvents = new();
     private Virtualize<DynamicItem> virtualizeRef;
+    private int manualInitialIndex;
+    private int initialItemIndex;
     private bool listLoaded = true;
     private int scrollTargetIndex = 200;
     private string scrollStatus = "Idle";
@@ -148,6 +150,7 @@
 
     protected override void OnInitialized()
     {
+        initialItemIndex = InitialItemIndex;
         items = Enumerable.Range(0, 1000)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
@@ -441,6 +444,7 @@
         listLoaded = false;
         StateHasChanged();
         await Task.Yield();
+        initialItemIndex = manualInitialIndex;
         listLoaded = true;
     }
 
