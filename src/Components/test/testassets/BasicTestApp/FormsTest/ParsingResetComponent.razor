@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Forms
+﻿@using Microsoft.AspNetCore.Components.Forms
 
 <EditForm EditContext="@editContext">
     <DataAnnotationsValidator />
@@ -11,18 +11,10 @@
         <ValidationMessage For="@(() => dateValue)" />
     </div>
 
-    <div class="parsing-reset-number-test">
-        <h3>Number Input</h3>
-        <InputNumber id="test-number-input" @bind-Value="numberValue" />
-        <span id="current-number-value">@numberValue</span>
-        <button type="button" id="set-new-number-btn" @onclick="SetNewNumber">Set New Number</button>
-        <ValidationMessage For="@(() => numberValue)" />
-    </div>
 </EditForm>
 
 @code {
     private DateTime? dateValue;
-    private int numberValue;
     private EditContext editContext;
 
     protected override void OnInitialized()
@@ -40,8 +32,4 @@
         dateValue = new DateTime(2021, 6, 15);
     }
 
-    private void SetNewNumber()
-    {
-        numberValue = 42;
-    }
 }

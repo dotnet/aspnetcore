@@ -549,6 +549,7 @@ public class InputBaseTest
         Assert.Equal(new DateTime(2020, 06, 15), inputComponent.CurrentValue);
         Assert.Equal(new DateTime(2020, 06, 15).ToString("yyyy/MM/dd", CultureInfo.InvariantCulture), inputComponent.CurrentValueAsString);
         Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.DoesNotContain("invalid", inputComponent.CssClass);
     }
 
     [Fact]
@@ -594,31 +595,6 @@ public class InputBaseTest
 
         Assert.Equal(new DateTime(2020, 06, 15), inputComponent.CurrentValue);
         Assert.Equal(new DateTime(2020, 06, 15).ToString("yyyy/MM/dd", CultureInfo.InvariantCulture), inputComponent.CurrentValueAsString);
-    }
-
-    [Fact]
-    public async Task SettingValueParameterToNewValueWhereValueMatchesPreviouslyParsedValue()
-    {
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
-        {
-            EditContext = new EditContext(model),
-            Value = new DateTime(2000, 1, 1),
-            ValueExpression = () => model.DateProperty
-        };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
-        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        await inputComponent.SetCurrentValueAsStringAsync("02/30/2000"); // invalid
-        Assert.Single(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
-
-        rootComponent.Value = new DateTime(2000, 2, 28); // same ballpark but valid
-        rootComponent.TriggerRender();
-
-        Assert.Equal(new DateTime(2000, 2, 28), inputComponent.CurrentValue);
-        Assert.Equal(new DateTime(2000, 2, 28).ToString("yyyy/MM/dd", CultureInfo.InvariantCulture), inputComponent.CurrentValueAsString);
-        Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
-        Assert.DoesNotContain("invalid", inputComponent.CssClass);
     }
 
     [Fact]
@@ -700,30 +676,11 @@ public class InputBaseTest
         Assert.Equal("External business rule error", remainingMessages[0]);
     }
 
-    private async Task<TestInputComponent<string>> RenderStringInputWithFailingParser()
-    {
-        // Creates a string input component whose TryParseValueFromString always fails,
-        // so the input can reliably enter a parsing-failed state for the reference-type test.
-        var model = new TestModel();
-        var stringHost = new TestInputHostComponent<string, TestStringInputWithFailingParser>
-        {
-            EditContext = new EditContext(model),
-            Value = "initial",
-            ValueExpression = () => model.StringProperty
-        };
-        return await InputRenderer.RenderAndGetComponent(stringHost);
-    }
-
     class TestModel
     {
         public string StringProperty { get; set; }
 
         public DateTime DateProperty { get; set; }
-    }
-
-    class TestModelNullableInt
-    {
-        public int? IntProperty { get; set; }
     }
 
     class TestInputComponent<T> : InputBase<T>
@@ -781,28 +738,6 @@ public class InputBaseTest
             else
             {
                 validationErrorMessage = "Bad date value";
-                return false;
-            }
-        }
-    }
-
-    private class TestNullableIntInputComponent : TestInputComponent<int?>
-    {
-        protected override string FormatValueAsString(int? value)
-            => value.HasValue ? value.Value.ToString(CultureInfo.InvariantCulture) : string.Empty;
-
-        protected override bool TryParseValueFromString(string value, out int? result, out string validationErrorMessage)
-        {
-            if (int.TryParse(value, out var parsed))
-            {
-                result = parsed;
-                validationErrorMessage = null;
-                return true;
-            }
-            else
-            {
-                result = null;
-                validationErrorMessage = "Not a valid integer";
                 return false;
             }
         }
