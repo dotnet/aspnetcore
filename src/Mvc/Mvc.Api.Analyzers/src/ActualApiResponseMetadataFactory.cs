@@ -59,9 +59,10 @@ public static class ActualApiResponseMetadataFactory
     internal static ActualApiResponseMetadata?[] InspectReturnOperation(
         in ApiControllerSymbolCache symbolCache,
         IReturnOperation returnOperation,
-        ISwitchExpressionArmOperation? armOperation = null)
+        ISwitchExpressionArmOperation? armOperation = null,
+        IOperation? overrideReturnedValue = null)
     {
-        var returnedValue = armOperation?.Value ?? returnOperation.ReturnedValue;
+        var returnedValue = overrideReturnedValue ?? armOperation?.Value ?? returnOperation.ReturnedValue;
         var defaultStatusCodeAttributeSymbol = symbolCache.DefaultStatusCodeAttribute;
 
         if (returnedValue is null || returnedValue is IInvalidOperation)
@@ -109,6 +110,18 @@ public static class ActualApiResponseMetadataFactory
                 var armMetadata = InspectReturnOperation(symbolCache, returnOperation, arm);
                 metadata.AddRange(armMetadata);
             }
+
+            return metadata.ToArray();
+        }
+
+        // Covers the `return cond ? NotFound() : Ok(model)` case (and the expression-bodied
+        // equivalent). Each branch of the conditional is recursed into so that callers see
+        // one ActualApiResponseMetadata entry per possible response.
+        if (returnedValue is IConditionalOperation { WhenFalse: { } whenFalse } conditional)
+        {
+            var metadata = new List<ActualApiResponseMetadata?>();
+            metadata.AddRange(InspectReturnOperation(symbolCache, returnOperation, overrideReturnedValue: conditional.WhenTrue));
+            metadata.AddRange(InspectReturnOperation(symbolCache, returnOperation, overrideReturnedValue: whenFalse));
 
             return metadata.ToArray();
         }
