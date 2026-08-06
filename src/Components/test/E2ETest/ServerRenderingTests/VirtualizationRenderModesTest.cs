@@ -228,7 +228,11 @@ public class VirtualizationRenderModesTest : ServerTestBase<BasicTestAppServerSi
                             const virtualize = value?._internal?.Virtualize;
                             originalBeginProgrammaticScroll = virtualize.beginProgrammaticScroll;
                             virtualize.beginProgrammaticScroll = async (...args) => {
+                                const deadline = Date.now() + 5000;
                                 while (!pendingInitialCallback) {
+                                    if (Date.now() > deadline) {
+                                        throw new Error('Virtualize race harness: the initial spacer IntersectionObserver callback never fired within 5s, so the race could not be triggered.');
+                                    }
                                     await new Promise(resolve => setTimeout(resolve));
                                 }
 
