@@ -13,6 +13,12 @@
 # Set to true to output binary log from msbuild. Note that emitting binary log slows down the build.
 [bool]$binaryLog = if (Test-Path variable:binaryLog) { $binaryLog } else { $ci -and !$excludeCIBinarylog }
 
+# Set to true to use the pipelines logger which will enable Azure logging output.
+# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
+# This flag is meant as a temporary opt-in for the feature while validating it across
+# our consumers. It will be deleted in the future.
+[bool]$pipelinesLog = if (Test-Path variable:pipelinesLog) { $pipelinesLog } else { $ci }
+
 # Turns on machine preparation/clean up code that changes the machine state (e.g. kills build processes).
 [bool]$prepareMachine = if (Test-Path variable:prepareMachine) { $prepareMachine } else { $false }
 
@@ -64,6 +70,8 @@ $ErrorActionPreference = 'Stop'
 
 # True when the build is running within the VMR.
 [bool]$fromVMR = if (Test-Path variable:fromVMR) { $fromVMR } else { $false }
+
+[bool]$disablePipelineSetResult = if (Test-Path variable:disablePipelineSetResult) { $disablePipelineSetResult } else { $false }
 
 function Create-Directory ([string[]] $path) {
     New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
@@ -713,7 +721,17 @@ function InitializeToolset() {
     $downloadArgs += "--configfile"
     $downloadArgs += $nugetConfig
   }
-  DotNet @downloadArgs
+
+  # 'dotnet package download' fails outright if any source in the repo's NuGet.config is
+  # unavailable (for example a transport feed that was decommissioned after a release). The
+  # Arcade SDK is always published to the public dotnet-eng feed, so if the config-driven
+  # download fails, retry once against that feed directly (which ignores the other sources)
+  # before giving up, so a single dead source doesn't block the build.
+  $downloadExitCode = DotNet -ignoreFailure @downloadArgs
+  if ($downloadExitCode) {
+    Write-Host "Restoring the Arcade SDK from the configured sources failed; retrying from the public dotnet-eng feed."
+    DotNet @downloadArgs --source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"
+  }
 
   $packageDir = Join-Path $nugetPackageCachePath (Join-Path 'microsoft.dotnet.arcade.sdk' $toolsetVersion)
   $packageToolsetDir = Join-Path $packageDir 'toolset'
@@ -775,6 +793,19 @@ function MSBuild() {
 
   $buildTool = InitializeBuildTool
 
+  if ($pipelinesLog) {
+    $toolsetBuildProject = InitializeToolset
+    $basePath = Split-Path -parent $toolsetBuildProject
+    $selectedPath = Join-Path $basePath (Join-Path 'net' 'Microsoft.DotNet.ArcadeLogging.dll')
+
+    # Only inject the logger when it's present. A last-known-good Arcade used to bootstrap
+    # the build may not ship the logger yet, so its absence must not be a hard error.
+    # Specify the logger type explicitly so loading is deterministic.
+    if (Test-Path $selectedPath) {
+      $args += "/logger:Microsoft.DotNet.ArcadeLogging.PipelinesLogger,$selectedPath"
+    }
+  }
+
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
   # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
@@ -790,7 +821,8 @@ function MSBuild() {
   }
 
   if ($warnAsError -and $warnNotAsError) {
-    $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$warnNotAsError"
+    $escapedWarnNotAsError = $warnNotAsError -replace ';', '%3B'
+    $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$escapedWarnNotAsError"
   }
 
   foreach ($arg in $args) {
@@ -813,8 +845,8 @@ function MSBuild() {
     Write-Host "Build failed with exit code $exitCode. Check errors above." -ForegroundColor Red
 
     # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-    # Skip this when the build is a child of the VMR build.
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR) {
+    # Skip this when the build is a child of the VMR build, or when -disablePipelineSetResult is set so the real exit code propagates.
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR -and !$disablePipelineSetResult) {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
@@ -829,7 +861,7 @@ function MSBuild() {
 # Executes a dotnet command with arguments passed to the function.
 # Terminates the script if the command fails.
 #
-function DotNet() {
+function DotNet([switch]$ignoreFailure) {
   $dotnetRoot = InitializeDotNetCli -install:$restore
   $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
 
@@ -848,9 +880,15 @@ function DotNet() {
   $exitCode = Exec-Process $dotnetPath $cmdArgs
 
   if ($exitCode -ne 0) {
+    # When -ignoreFailure is set, return the exit code to the caller so it can implement
+    # its own fallback logic instead of terminating the script.
+    if ($ignoreFailure) {
+      return $exitCode
+    }
+
     Write-Host "dotnet command failed with exit code $exitCode. Check errors above." -ForegroundColor Red
 
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR) {
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR -and !$disablePipelineSetResult) {
       Write-PipelineSetResult -Result "Failed" -Message "dotnet command execution failed."
       ExitWithExitCode 0
     } else {

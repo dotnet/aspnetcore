@@ -45,22 +45,22 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => renewalDateInput.GetDomAttribute("class"));
-        renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
-        renewalDateInput.SendKeys("01/01/2000\t");
+        ClearDate(renewalDateInput);
+        SetDate(renewalDateInput, "01/01/2000\t");
         Browser.Equal("modified valid", () => renewalDateInput.GetDomAttribute("class"));
 
         // Can become invalid
-        renewalDateInput.SendKeys("11-11-11111\t");
+        SetDate(renewalDateInput, "11-11-11111\t");
         Browser.Equal("modified invalid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
         // Empty is invalid, because it's not nullable
-        renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+        ClearDate(renewalDateInput);
         Browser.Equal("modified invalid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
         // Can become valid
-        renewalDateInput.SendKeys("01/01/01\t");
+        SetDate(renewalDateInput, "01/01/01\t");
         Browser.Equal("modified valid", () => renewalDateInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
@@ -74,16 +74,16 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => expiryDateInput.GetDomAttribute("class"));
-        expiryDateInput.SendKeys("01-01-2000\t");
+        SetDate(expiryDateInput, "01-01-2000\t");
         Browser.Equal("modified valid", () => expiryDateInput.GetDomAttribute("class"));
 
         // Can become invalid
-        expiryDateInput.SendKeys("11-11-11111\t");
+        SetDate(expiryDateInput, "11-11-11111\t");
         Browser.Equal("modified invalid", () => expiryDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
         // Empty is valid, because it's nullable
-        expiryDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+        ClearDate(expiryDateInput);
         Browser.Equal("modified valid", () => expiryDateInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
@@ -108,9 +108,9 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Equal("modified valid", () => departureTimeInput.GetDomAttribute("class"));
 
         // Can become invalid
-        // Stricly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
+        // Strictly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
         // We don't know of any way to produce a different (non-empty-equivalent) state using UI gestures, so there's nothing else to test
-        departureTimeInput.SendKeys($"20{Keys.Backspace}\t");
+        SetDate(departureTimeInput, $"20{Keys.Backspace}\t");
         Browser.Equal("modified invalid", () => departureTimeInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
     }
@@ -232,6 +232,21 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetDomProperty("value"));
+    }
+
+    private static void SetDate(IWebElement input, string keys)
+    {
+        input.Click();
+        input.SendKeys(Keys.ArrowLeft + Keys.ArrowLeft + Keys.ArrowLeft);
+        input.SendKeys(keys);
+    }
+
+    private static void ClearDate(IWebElement input)
+    {
+        input.Click();
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Delete);
+        input.SendKeys(Keys.Tab);
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
