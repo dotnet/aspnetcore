@@ -96,6 +96,11 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         ConcurrentDictionary<ITypeSymbol, byte> allValidatableTypes,
         WellKnownTypes wellKnownTypes)
     {
+        if (currentType.SpecialType != SpecialType.None || currentType.IsExemptType(wellKnownTypes))
+        {
+            return;
+        }
+
         if (!allValidatableTypes.TryAdd(currentType, 0))
         {
             return;
