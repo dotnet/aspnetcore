@@ -158,7 +158,7 @@ internal partial class SessionCascadingValueSupplier
             Func<object?> currentValueGetter)
         {
             _owner = owner;
-            _sessionKey = sessionKey;
+            _sessionKey = sessionKey.ToLowerInvariant();
             _propertyType = propertyType;
             _currentValueGetter = currentValueGetter;
         }
