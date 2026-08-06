@@ -64,16 +64,16 @@ public static class ActualApiResponseMetadataFactory
         var returnedValue = armOperation?.Value ?? returnOperation.ReturnedValue;
         var defaultStatusCodeAttributeSymbol = symbolCache.DefaultStatusCodeAttribute;
 
-        if (returnedValue is null || returnedValue is IInvalidOperation)
-        {
-            return [null];
-        }
-
         // Covers conversion in the `IActionResult GetResult => NotFound()` case.
         // Multiple conversions can happen for ActionResult<T>, hence a while loop.
         while (returnedValue is IConversionOperation conversion)
         {
             returnedValue = conversion.Operand;
+        }
+
+        if (returnedValue is null || returnedValue is IInvalidOperation)
+        {
+            return [null];
         }
 
         var statementReturnType = returnedValue.Type;
