@@ -40,7 +40,7 @@ public partial class Home
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0032", diagnostic.Id);
+        Assert.Equal("ASP0033", diagnostic.Id);
         Assert.Contains("PrivateModel", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
@@ -57,7 +57,7 @@ file class FileLocalModel
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0032", diagnostic.Id);
+        Assert.Equal("ASP0033", diagnostic.Id);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class ComponentModel
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source, filePath: "Components/Pages/MyComponent.razor.g.cs");
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0035", diagnostic.Id);
+        Assert.Equal("ASP0036", diagnostic.Id);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class PublicWithInternalChildModel
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0034", diagnostic.Id);
+        Assert.Equal("ASP0035", diagnostic.Id);
         Assert.Contains("Child", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
@@ -214,7 +214,7 @@ public partial class Home
 }
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
-        Assert.Single(diagnostics.Where(d => d.Id == "ASP0032"));
+        Assert.Single(diagnostics.Where(d => d.Id == "ASP0033"));
     }
 
     [Fact]

@@ -25,57 +25,58 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
     private static string GetHelpLinkUri(string id) => $"https://learn.microsoft.com/aspnet/core/diagnostics/{id.ToLowerInvariant()}";
 
     internal static readonly DiagnosticDescriptor ValidatableTypeIsNotAccessible = new(
-        "ASP0032",
+        "ASP0033",
         "[ValidatableType] is applied to an inaccessible type",
         "The type '{0}' is marked with [ValidatableType] but is not accessible from the generated validation code. The type must be public or internal and must not be a file-local type, otherwise its validation is silently skipped.",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: null,
-        helpLinkUri: GetHelpLinkUri("ASP0032"));
+        helpLinkUri: GetHelpLinkUri("ASP0033"));
 
     internal static readonly DiagnosticDescriptor EndpointParameterTypeIsNotAccessible = new(
-        "ASP0033",
+        "ASP0034",
         "Endpoint parameter type is inaccessible from generated code",
-        "The endpoint parameter '{0}' is not accessible from the generated validation code. The type must be public or internal and must not be a file-local type, otherwise its validation is silently skipped.",
+        "The type '{1}' of endpoint parameter '{0}' is not accessible from the generated validation code. The type must be public or internal and must not be a file-local type, otherwise its validation is silently skipped.",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: null,
-        helpLinkUri: GetHelpLinkUri("ASP0033"),
+        helpLinkUri: GetHelpLinkUri("ASP0034"),
         WellKnownDiagnosticTags.CompilationEnd);
 
     internal static readonly DiagnosticDescriptor ValidatablePropertyIsNotAccessible = new(
-        "ASP0034",
+        "ASP0035",
         "Validatable property or its type is not accessible",
         "The property '{0}' on type '{1}' declares validation but is not public or its type isn't accessible in generated code, so it is silently skipped by the validation source generator",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: null,
-        helpLinkUri: GetHelpLinkUri("ASP0034"));
+        helpLinkUri: GetHelpLinkUri("ASP0035"));
 
-    internal static readonly DiagnosticDescriptor ValidatableTypeCantBeUsedInGeneratedCode = new(
-        "ASP0035",
-        "[ValidatableType] cannot be used in generated code",
-        "'[ValidatableType]' on type '{0}' has no effect because the type is declared in generated code (for example, in a .razor file). Source generators cannot inspect each other's output. Declare the type in a regular .cs file instead.",
+    internal static readonly DiagnosticDescriptor ValidatableTypeIsUsedWithoutAddValidation = new(
+        "ASP0037",
+        "[ValidatableType] should not be used without a call to 'AddValidation'",
+        "'[ValidatableType]' has no effect if there is no 'AddValidation' call in your application entry-point",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: null,
-        helpLinkUri: GetHelpLinkUri("ASP0035"));
+        helpLinkUri: GetHelpLinkUri("ASP0037"),
+        WellKnownDiagnosticTags.CompilationEnd);
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
         [
             ValidatableTypeIsNotAccessible,
             EndpointParameterTypeIsNotAccessible,
             ValidatablePropertyIsNotAccessible,
-            ValidatableTypeCantBeUsedInGeneratedCode,
+            ValidatableTypeIsUsedWithoutAddValidation,
         ];
 
     public override void Initialize(AnalysisContext context)
     {
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
         context.RegisterCompilationStartAction(OnCompilationStart);
     }
@@ -179,12 +180,6 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                 {
                     validatableTypeAttributeFound = true;
 
-                    if (context.IsGeneratedCode)
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(ValidatableTypeCantBeUsedInGeneratedCode, attributedType.Locations.FirstOrDefault(), attributedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
-                        return;
-                    }
-
                     if (IsInaccessibleFromGeneratedCode(attributedType))
                     {
                         context.ReportDiagnostic(Diagnostic.Create(ValidatableTypeIsNotAccessible, attributedType.Locations.FirstOrDefault(), attributedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
@@ -244,7 +239,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         {
             if (!addValidationFound && validatableTypeAttributeFound)
             {
-                // TODO: Report diagnostic
+                context.ReportDiagnostic(Diagnostic.Create(ValidatableTypeIsUsedWithoutAddValidation, Location.None));
                 return;
             }
 
@@ -255,7 +250,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                     var type = parameter.Type.UnwrapType();
                     if (IsInaccessibleFromGeneratedCode(type))
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(EndpointParameterTypeIsNotAccessible, parameter.Locations.FirstOrDefault(), parameter.Name));
+                        context.ReportDiagnostic(Diagnostic.Create(EndpointParameterTypeIsNotAccessible, parameter.Locations.FirstOrDefault(), parameter.Name, type.Name));
                         continue;
                     }
 

@@ -103,7 +103,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
             GetMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
 
-        var compilationWithAnalyzers = compilation.WithAnalyzers([new ValidationsDiagnosticAnalyzer()]);
+        var compilationWithAnalyzers = compilation.WithAnalyzers([new ValidationsDiagnosticAnalyzer(), new ValidatableTypeInGeneratedCodeDiagnosticAnalyzer()]);
         var diagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
         return [.. diagnostics.OrderBy(d => d.Id).ThenBy(d => d.Location.SourceSpan.Start)];
     }

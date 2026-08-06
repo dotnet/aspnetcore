@@ -42,6 +42,7 @@
 |  __`ASP0034`__ | Endpoint parameter type is inaccessible from generated code |
 |  __`ASP0035`__ | Validatable property or its type is not accessible |
 |  __`ASP0036`__ | \[ValidatableType] cannot be used in generated code |
+|  __`ASP0037`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
 
 ### API (`API1000-API1003`)
 
