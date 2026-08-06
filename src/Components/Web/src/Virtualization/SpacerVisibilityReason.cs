@@ -3,11 +3,6 @@
 
 namespace Microsoft.AspNetCore.Components.Web.Virtualization;
 
-/// <summary>
-/// Describes why a virtualization spacer became visible, as reported by the JavaScript
-/// <c>IntersectionObserver</c>. The component uses this to decide whether a spacer callback should
-/// load data, instead of inferring user-vs-programmatic scrolling from timing.
-/// </summary>
 /// <remarks>
 /// The numeric values must stay in sync with the <c>SpacerVisibilityReason</c> constant in
 /// <c>Virtualize.ts</c>.
@@ -19,8 +14,7 @@ internal enum SpacerVisibilityReason
 
     /// <summary>
     /// A scroll the component itself performed (initial positioning, <c>ScrollToItemAsync</c>, or an
-    /// anchor restore) transiently exposed the spacer. Such callbacks are ignored — acting on them would
-    /// undo the programmatic position.
+    /// anchor restore) transiently exposed the spacer.
     /// </summary>
     ProgrammaticScroll = 1,
 
