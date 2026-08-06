@@ -48,7 +48,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
     internal static readonly DiagnosticDescriptor ValidatablePropertyIsNotAccessible = new(
         "ASP0034",
         "Validatable property or its type is not accessible",
-        "The property '{0}' on type '{1}' declares validation but is not public, so it is silently skipped by the validation source generator. Make the property and its getter public for it to be validated.",
+        "The property '{0}' on type '{1}' declares validation but is not public or its type isn't accessible in generated code, so it is silently skipped by the validation source generator",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
