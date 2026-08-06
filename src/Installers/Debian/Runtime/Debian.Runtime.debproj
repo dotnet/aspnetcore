@@ -15,7 +15,7 @@
     <DotnetRuntimeDependencyVersion Condition="$(DotnetRuntimeDependencyVersion.Contains('-'))">$(DotnetRuntimeDependencyVersion.Substring(0, $(DotnetRuntimeDependencyVersion.IndexOf('-'))))~$(DotnetRuntimeDependencyVersion.Substring($([MSBuild]::Add($(DotnetRuntimeDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
     <DotnetRuntimeDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRuntimeVersion.Split('.')[0]).$(MicrosoftNETCoreAppRuntimeVersion.Split('.')[1])</DotnetRuntimeDependencyMajorMinorVersion>
 
-    <PackageSummary>$(SharedFxProductName)</PackageSummary>
+    <PackageSummary>$(SharedFxName).Runtime $(VersionPrefix)</PackageSummary>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <DebianConfigProperties>
       DotnetRuntimeDependencyMajorMinorVersion=$(DotnetRuntimeDependencyMajorMinorVersion);

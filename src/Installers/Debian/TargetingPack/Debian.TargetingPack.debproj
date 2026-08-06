@@ -18,8 +18,6 @@
     <DotnetTargetingPackDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetTargetingPackDependencyVersion>
     <DotnetTargetingPackDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRefVersion.Split('.')[0]).$(MicrosoftNETCoreAppRefVersion.Split('.')[1])</DotnetTargetingPackDependencyMajorMinorVersion>
 
-    <PackageSummary>$(SharedFxProductName)</PackageSummary>
-    <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <DebianConfigProperties>
       DotnetTargetingPackDependencyMajorMinorVersion=$(DotnetTargetingPackDependencyMajorMinorVersion);
       DotnetTargetingPackDependencyVersion=$(DotnetTargetingPackDependencyVersion);
