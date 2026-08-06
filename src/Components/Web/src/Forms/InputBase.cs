@@ -319,8 +319,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
     {
-            UpdateAdditionalValidationAttributes();
-            StateHasChanged();
+        UpdateAdditionalValidationAttributes();
+        StateHasChanged();
     }
 
     private void UpdateAdditionalValidationAttributes()
