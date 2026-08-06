@@ -12,12 +12,7 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
 
     private readonly ILogger? _logger = loggerFactory?.CreateLogger("Microsoft.AspNetCore.Components.Sections.SectionRegistry");
 
-    private HashSet<object>? _identifiersPendingOrphanCheck;
-
-    // Kept as separate "already logged" sets so a section that changes problem type still emits the new diagnostic. Concrete case: during streaming SSR a SectionOutlet first renders orphaned (its SectionContent hasn't streamed in yet), then the SectionContent streams in under a different render mode; the mismatch warning must still fire even though the orphan was already logged.
     private HashSet<object>? _mismatchLoggedIdentifiers;
-
-    private HashSet<object>? _orphanLoggedIdentifiers;
 
     public void AddProvider(object identifier, SectionContent provider, bool isDefaultProvider)
     {
@@ -35,8 +30,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
         {
             providers.Add(provider);
         }
-
-        MarkForOrphanCheck(identifier);
     }
 
     public void RemoveProvider(object identifier, SectionContent provider)
@@ -61,9 +54,14 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
             // the current content to that of second most recently added provider.
             var contentProvider = GetCurrentProviderContentOrDefault(providers);
             NotifyContentChangedForSubscriber(identifier, contentProvider);
-        }
 
-        MarkForOrphanCheck(identifier);
+            // The active content for this section changed. Re-evaluate the render mode mismatch against
+            // the new content (or re-arm the diagnostic when no content remains).
+            if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
+            {
+                DetectRenderModeMismatch(identifier, subscriber, contentProvider);
+            }
+        }
     }
 
     public void Subscribe(object identifier, SectionOutlet subscriber)
@@ -80,7 +78,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
         _subscribersByIdentifier.Add(identifier, subscriber);
 
         DetectRenderModeMismatch(identifier, subscriber, provider);
-        MarkForOrphanCheck(identifier);
     }
 
     public void Unsubscribe(object identifier)
@@ -90,7 +87,9 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
             throw new InvalidOperationException($"The subscriber with the given section ID '{identifier}' is already unsubscribed.");
         }
 
-        MarkForOrphanCheck(identifier);
+        // The section pair is no longer complete, so re-arm the mismatch diagnostic in case the outlet
+        // and content are later reconnected in mismatched render modes.
+        _mismatchLoggedIdentifiers?.Remove(identifier);
     }
 
     public void NotifyContentProviderChanged(object identifier, SectionContent provider)
@@ -106,73 +105,10 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
         {
             NotifyContentChangedForSubscriber(identifier, provider);
 
-            // Option A: the active content for this section changed. If a matching outlet exists in a
-            // different render mode, warn now.
             if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
             {
                 DetectRenderModeMismatch(identifier, subscriber, provider);
             }
-        }
-    }
-
-    /// <summary>
-    /// Called by the renderer once a render batch has completed. Emits deferred diagnostics for
-    /// SectionOutlet/SectionContent components that remain "orphaned" (Option B).
-    /// </summary>
-    public void OnRenderBatchCompleted()
-    {
-        if (_identifiersPendingOrphanCheck is not { Count: > 0 } pending)
-        {
-            return;
-        }
-
-        foreach (var identifier in pending)
-        {
-            EvaluateOrphanState(identifier);
-        }
-
-        pending.Clear();
-    }
-
-    private void MarkForOrphanCheck(object identifier)
-    {
-        if (_logger is null)
-        {
-            return;
-        }
-
-        (_identifiersPendingOrphanCheck ??= new()).Add(identifier);
-    }
-
-    private void EvaluateOrphanState(object identifier)
-    {
-        var hasSubscriber = _subscribersByIdentifier.ContainsKey(identifier);
-        var hasProvider = _providersByIdentifier.TryGetValue(identifier, out var providers) && providers.Count != 0;
-
-        // If one side is missing (or both were removed), any previously logged render mode mismatch is resolved.
-        if (!(hasSubscriber && hasProvider))
-        {
-            _mismatchLoggedIdentifiers?.Remove(identifier);
-        }
-
-        if (hasSubscriber == hasProvider)
-        {
-            _orphanLoggedIdentifiers?.Remove(identifier);
-            return;
-        }
-
-        if (!TryMarkOrphanLogged(identifier) || _logger is null)
-        {
-            return;
-        }
-
-        if (hasSubscriber)
-        {
-            Log.SectionOutletWithoutContent(_logger, DescribeIdentifier(identifier));
-        }
-        else
-        {
-            Log.SectionContentWithoutOutlet(_logger, DescribeIdentifier(identifier));
         }
     }
 
@@ -197,9 +133,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
             Log.SectionRenderModeMismatch(_logger, DescribeIdentifier(identifier), DescribeRenderMode(outletRenderMode), DescribeRenderMode(contentRenderMode));
         }
     }
-
-    private bool TryMarkOrphanLogged(object identifier)
-        => (_orphanLoggedIdentifiers ??= new()).Add(identifier);
 
     private static bool RenderModesDiffer(IComponentRenderMode? left, IComponentRenderMode? right)
         => left?.GetType() != right?.GetType();
@@ -232,11 +165,5 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
     {
         [LoggerMessage(1, LogLevel.Warning, "The section with ID '{SectionId}' has its SectionOutlet in render mode '{OutletRenderMode}' and its SectionContent in render mode '{ContentRenderMode}'. Sections cannot connect across render mode boundaries, so the outlet will not display this content once the components become interactive.", EventName = "SectionRenderModeMismatch")]
         public static partial void SectionRenderModeMismatch(ILogger logger, string sectionId, string outletRenderMode, string contentRenderMode);
-
-        [LoggerMessage(2, LogLevel.Debug, "The section with ID '{SectionId}' has a SectionOutlet but no matching SectionContent.", EventName = "SectionOutletWithoutContent")]
-        public static partial void SectionOutletWithoutContent(ILogger logger, string sectionId);
-
-        [LoggerMessage(3, LogLevel.Debug, "The section with ID '{SectionId}' has a SectionContent but no matching SectionOutlet.", EventName = "SectionContentWithoutOutlet")]
-        public static partial void SectionContentWithoutOutlet(ILogger logger, string sectionId);
     }
 }

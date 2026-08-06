@@ -26,14 +26,12 @@ public class SectionRegistryTest
             ContentRenderMode = new RenderModeB(),
         };
 
-        Render(renderer, outletFirst: true, includeContent: true);
+        Render(renderer, outletFirst: true);
 
         var write = Assert.Single(GetWrites(sink, "SectionRenderModeMismatch"));
         Assert.Equal(LogLevel.Warning, write.LogLevel);
         Assert.Contains("RenderModeA", write.Message);
         Assert.Contains("RenderModeB", write.Message);
-        Assert.Empty(GetWrites(sink, "SectionOutletWithoutContent"));
-        Assert.Empty(GetWrites(sink, "SectionContentWithoutOutlet"));
     }
 
     [Fact]
@@ -46,7 +44,7 @@ public class SectionRegistryTest
             ContentRenderMode = new RenderModeB(),
         };
 
-        Render(renderer, outletFirst: false, includeContent: true);
+        Render(renderer, outletFirst: false);
 
         var write = Assert.Single(GetWrites(sink, "SectionRenderModeMismatch"));
         Assert.Equal(LogLevel.Warning, write.LogLevel);
@@ -62,14 +60,14 @@ public class SectionRegistryTest
             ContentRenderMode = new RenderModeA(),
         };
 
-        Render(renderer, outletFirst: true, includeContent: true);
+        Render(renderer, outletFirst: true);
 
         var write = Assert.Single(GetWrites(sink, "SectionRenderModeMismatch"));
         Assert.Contains("static", write.Message);
     }
 
     [Fact]
-    public void OutletAndContent_SameRenderMode_DoesNotWarnOrReportOrphan()
+    public void OutletAndContent_SameRenderMode_DoesNotWarn()
     {
         var sink = new TestSink();
         var renderer = new SectionsTestRenderer(sink)
@@ -78,42 +76,9 @@ public class SectionRegistryTest
             ContentRenderMode = new RenderModeA(),
         };
 
-        Render(renderer, outletFirst: true, includeContent: true);
+        Render(renderer, outletFirst: true);
 
         Assert.Empty(GetWrites(sink, "SectionRenderModeMismatch"));
-        Assert.Empty(GetWrites(sink, "SectionOutletWithoutContent"));
-        Assert.Empty(GetWrites(sink, "SectionContentWithoutOutlet"));
-    }
-
-    [Fact]
-    public void OutletWithoutContent_LogsOrphanDebug()
-    {
-        var sink = new TestSink();
-        var renderer = new SectionsTestRenderer(sink)
-        {
-            OutletRenderMode = new RenderModeA(),
-        };
-
-        Render(renderer, outletFirst: true, includeContent: false);
-
-        var write = Assert.Single(GetWrites(sink, "SectionOutletWithoutContent"));
-        Assert.Equal(LogLevel.Debug, write.LogLevel);
-        Assert.Empty(GetWrites(sink, "SectionRenderModeMismatch"));
-    }
-
-    [Fact]
-    public void ContentWithoutOutlet_LogsOrphanDebug()
-    {
-        var sink = new TestSink();
-        var renderer = new SectionsTestRenderer(sink)
-        {
-            ContentRenderMode = new RenderModeA(),
-        };
-
-        Render(renderer, outletFirst: true, includeContent: true, includeOutlet: false);
-
-        var write = Assert.Single(GetWrites(sink, "SectionContentWithoutOutlet"));
-        Assert.Equal(LogLevel.Debug, write.LogLevel);
     }
 
     private static IReadOnlyList<WriteContext> GetWrites(TestSink sink, string eventName)
@@ -121,9 +86,7 @@ public class SectionRegistryTest
 
     private static void Render(
         SectionsTestRenderer renderer,
-        bool outletFirst,
-        bool includeContent,
-        bool includeOutlet = true)
+        bool outletFirst)
     {
         RenderFragment content = builder => builder.AddContent(0, "Section content");
 
@@ -131,11 +94,6 @@ public class SectionRegistryTest
         {
             void RenderOutlet(RenderTreeBuilder b)
             {
-                if (!includeOutlet)
-                {
-                    return;
-                }
-
                 b.OpenComponent<SectionOutlet>(0);
                 b.AddComponentParameter(1, nameof(SectionOutlet.SectionId), SectionId);
                 b.CloseComponent();
@@ -143,11 +101,6 @@ public class SectionRegistryTest
 
             void RenderContent(RenderTreeBuilder b)
             {
-                if (!includeContent)
-                {
-                    return;
-                }
-
                 b.OpenComponent<SectionContent>(2);
                 b.AddComponentParameter(3, nameof(SectionContent.SectionId), SectionId);
                 b.AddComponentParameter(4, nameof(SectionContent.ChildContent), content);
