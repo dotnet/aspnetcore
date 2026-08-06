@@ -1451,9 +1451,6 @@ public class EndpointHtmlRendererTest
         var httpContext = GetHttpContext();
 
         // Act
-        // The SectionOutlet renders statically while the SectionContent declares the InteractiveServer
-        // render mode. During SSR both halves are seen by the same renderer, so the registry detects the
-        // render mode mismatch and logs a warning.
         var result = await renderer.PrerenderComponentAsync(
             httpContext,
             typeof(SectionOutletAndContentWithDifferentRenderModes),

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -150,9 +148,9 @@ public class SectionRegistryTest
             Dispatcher = Dispatcher.CreateDefault();
         }
 
-        public IComponentRenderMode? OutletRenderMode { get; set; }
+        public IComponentRenderMode OutletRenderMode { get; set; }
 
-        public IComponentRenderMode? ContentRenderMode { get; set; }
+        public IComponentRenderMode ContentRenderMode { get; set; }
 
         public override Dispatcher Dispatcher { get; }
 
@@ -171,7 +169,7 @@ public class SectionRegistryTest
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
 
-        protected internal override IComponentRenderMode? GetComponentRenderMode(IComponent component)
+        protected internal override IComponentRenderMode GetComponentRenderMode(IComponent component)
             => component switch
             {
                 SectionOutlet => OutletRenderMode,

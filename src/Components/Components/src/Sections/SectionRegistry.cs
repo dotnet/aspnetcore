@@ -55,8 +55,6 @@ internal sealed partial class SectionRegistry(ILoggerFactory? loggerFactory)
             var contentProvider = GetCurrentProviderContentOrDefault(providers);
             NotifyContentChangedForSubscriber(identifier, contentProvider);
 
-            // The active content for this section changed. Re-evaluate the render mode mismatch against
-            // the new content (or re-arm the diagnostic when no content remains).
             if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
             {
                 DetectRenderModeMismatch(identifier, subscriber, contentProvider);
