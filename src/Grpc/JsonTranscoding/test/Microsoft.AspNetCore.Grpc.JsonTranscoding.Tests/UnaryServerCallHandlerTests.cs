@@ -1392,6 +1392,78 @@ public class UnaryServerCallHandlerTests : LoggedTest
     }
 
     [Fact]
+    public async Task HandleCallAsync_ManyDistinctQueryStringPaths_CacheSizeIsBounded()
+    {
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo();
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+
+        var query = new Dictionary<string, StringValues>();
+        var pathBuilder = new StringBuilder("recursive");
+        for (var i = 0; i < descriptorInfo.MaxPathDescriptorsCacheCount + 100; i++)
+        {
+            query[pathBuilder.ToString() + ".value"] = "value";
+            pathBuilder.Append(".child");
+        }
+        httpContext.Request.Query = new QueryCollection(query);
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(descriptorInfo.MaxPathDescriptorsCacheCount, descriptorInfo.PathDescriptorsCache.Count);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_CacheAtCapacity_StillBindsUncachedQueryStringValues()
+    {
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo();
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo);
+
+        var fillQuery = new Dictionary<string, StringValues>();
+        var pathBuilder = new StringBuilder("recursive");
+        for (var i = 0; i < descriptorInfo.MaxPathDescriptorsCacheCount + 10; i++)
+        {
+            fillQuery[pathBuilder.ToString() + ".value"] = "value";
+            pathBuilder.Append(".child");
+        }
+        var fillContext = TestHelpers.CreateHttpContext();
+        fillContext.Request.Query = new QueryCollection(fillQuery);
+        await unaryServerCallHandler.HandleCallAsync(fillContext);
+        Assert.Equal(descriptorInfo.MaxPathDescriptorsCacheCount, descriptorInfo.PathDescriptorsCache.Count);
+
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "QueryName"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("QueryName", request!.Name);
+        Assert.False(descriptorInfo.PathDescriptorsCache.ContainsKey("name"));
+        Assert.Equal(descriptorInfo.MaxPathDescriptorsCacheCount, descriptorInfo.PathDescriptorsCache.Count);
+    }
+
+    [Fact]
     public async Task HandleCallAsync_DataTypes_SetOnRequestMessage()
     {
         // Arrange
@@ -1868,6 +1940,128 @@ public class UnaryServerCallHandlerTests : LoggedTest
         // Assert
         Assert.NotNull(request);
         Assert.Equal("body_value", request!.SubData.Subfield);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringMixedNameNestedRoute_DoesNotOverwriteRouteValue()
+    {
+        // Route binds the nested field "sub_data.sub_field_name".
+        //   proto path: sub_data.sub_field_name
+        //   JSON path:  subData.subFieldNameJson
+        // A query parameter using a mixed spelling ("subData.sub_field_name") resolves to the
+        // same field and must not overwrite the route-bound value.
+
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["sub_data.sub_field_name"] = CreateRouteParameter(new List<FieldDescriptor>(new[]
+            {
+                HelloRequest.Descriptor.FindFieldByName("sub_data"),
+                HelloRequest.Types.SubMessage.Descriptor.FindFieldByName("sub_field_name")
+            }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["sub_data.sub_field_name"] = "route_value";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["subData.sub_field_name"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("route_value", request!.SubData.SubFieldName);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringAncestorOfRoute_DoesNotOverwriteRouteValue()
+    {
+        // Route binds the nested field "timestamp_value.seconds". A query parameter targeting the
+        // ancestor "timestamp_value" would replace the whole Timestamp (well-known types serialize
+        // as a single scalar) and discard the route-bound child. It must be blocked.
+
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["timestamp_value.seconds"] = CreateRouteParameter(new List<FieldDescriptor>(new[]
+            {
+                HelloRequest.Descriptor.FindFieldByName("timestamp_value"),
+                Timestamp.Descriptor.FindFieldByName("seconds")
+            }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["timestamp_value.seconds"] = "5";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["timestamp_value"] = "2020-01-01T00:00:00Z"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(5, request!.TimestampValue.Seconds);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringSiblingOfNestedRoute_StillBinds()
+    {
+        // Route binds "timestamp_value.seconds". A query parameter for the sibling field
+        // "timestamp_value.nanos" targets a different field and must still bind.
+
+        // Arrange
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["timestamp_value.seconds"] = CreateRouteParameter(new List<FieldDescriptor>(new[]
+            {
+                HelloRequest.Descriptor.FindFieldByName("timestamp_value"),
+                Timestamp.Descriptor.FindFieldByName("seconds")
+            }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["timestamp_value.seconds"] = "5";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["timestamp_value.nanos"] = "10"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(5, request!.TimestampValue.Seconds);
+        Assert.Equal(10, request!.TimestampValue.Nanos);
     }
 
     private UnaryServerCallHandler<JsonTranscodingGreeterService, HelloRequest, HelloReply> CreateCallHandler(
