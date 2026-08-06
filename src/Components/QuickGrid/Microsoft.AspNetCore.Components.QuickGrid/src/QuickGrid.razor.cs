@@ -486,10 +486,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// (either <see cref="Items"/> or <see cref="ItemsProvider"/>).
     /// </summary>
     /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
-    public async Task RefreshDataAsync()
+    public Task RefreshDataAsync()
     {
-        await RefreshDataCoreAsync();
-        await InvokeAsync(StateHasChanged);
+        return InvokeAsync(async () =>
+        {
+            await RefreshDataCoreAsync();
+            StateHasChanged();
+        });
     }
 
     /// <summary>

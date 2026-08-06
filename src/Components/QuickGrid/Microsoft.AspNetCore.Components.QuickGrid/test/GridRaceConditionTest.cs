@@ -143,9 +143,10 @@ public class GridRaceConditionTest
         return testComponent;
     }
 
-    private static async Task<Exception> ExecuteTimerActionAsync(Func<Task> action)
+#nullable enable annotations
+    private static async Task<Exception?> ExecuteTimerActionAsync(Func<Task> action)
     {
-        Exception exception = null!;
+        Exception? exception = null;
         var refreshCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var timer = new System.Threading.Timer(_ =>
@@ -170,6 +171,7 @@ public class GridRaceConditionTest
         await refreshCompleted.Task;
         return exception;
     }
+#nullable restore annotations
 }
 
 internal class Person
