@@ -17,6 +17,7 @@ public class BrowserFixture : IAsyncLifetime
     public static string RoutingTestContext { get; } = "routing";
     public static string StreamingBackForwardCacheContext { get; } = "streaming.backforwardcache";
 
+    public static string RedirectionContext { get; } = "redirection";
     private readonly ConcurrentDictionary<string, (IWebDriver browser, ILogs log)> _browsers = new();
 
     public BrowserFixture(IMessageSink diagnosticsMessageSink)
@@ -143,9 +144,14 @@ public class BrowserFixture : IAsyncLifetime
             opts.UseWebSocketUrl = true;
         }
 
-        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true || context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true)
+        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true || context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true || context?.StartsWith(RedirectionContext, StringComparison.Ordinal) == true)
         {
-            // Tells Selenium not to wait until the page navigation has completed before continuing with the tests
+            // Tells Selenium not to wait until the page navigation has completed before continuing with the tests.
+            // For the redirection tests this is essential: several of them redirect to an external site, and under
+            // the default "normal" page load strategy the WebDriver click/navigate command would block until that
+            // external page has fully loaded. On CI agents with slow or unreliable access to the external site this
+            // can exceed the 60s WebDriver command timeout, causing flaky failures. With "none" the command returns
+            // immediately and the assertions poll for the navigation to commit instead.
             opts.PageLoadStrategy = PageLoadStrategy.None;
         }
 

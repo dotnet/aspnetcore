@@ -26,7 +26,12 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
     public override async Task InitializeAsync()
     {
-        await base.InitializeAsync();
+        // Use a browser configured with PageLoadStrategy.None. Some of these tests redirect to an
+        // external site, and under the default "normal" strategy the WebDriver command would block
+        // until that external page fully loads, which can exceed the 60s command timeout on CI and
+        // cause flaky failures. With "none" the command returns immediately and the URL assertions
+        // poll for the navigation to commit.
+        await base.InitializeAsync(BrowserFixture.RedirectionContext);
         Navigate($"{ServerPathBase}/redirect");
 
         _originalH1Element = Browser.Exists(By.TagName("h1"));
@@ -148,7 +153,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67444")]
     public void RedirectEnhancedPostToExternal(bool disableThrowNavigationException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
@@ -185,7 +189,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Exists(By.LinkText("Streaming enhanced GET with external redirection")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
-    
 
     [Theory]
     [InlineData(true)]
