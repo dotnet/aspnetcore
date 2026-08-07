@@ -427,4 +427,26 @@ public class BindConverterTest
             return base.ConvertTo(context, culture, value, destinationType);
         }
     }
+
+    [Fact]
+    public void FormatValue_Array_Null()
+    {
+        string[] value = null;
+        string expected = "[]";
+
+        var actual = BindConverter.FormatValue(value);
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_Empty()
+    {
+        string[] value = new string[0];
+        string expected = "[]";
+
+        var actual = BindConverter.FormatValue(value);
+
+        Assert.Equal(expected, actual);
+    }
 }
