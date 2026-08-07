@@ -234,13 +234,13 @@ internal sealed partial class LongPollingTransport : ITransport
 
             var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
 
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
             {
                 Log.ConnectionAlreadyClosedSendingDeleteRequest(_logger, url);
             }
             else
             {
-                // Check for non-404 errors
+                // Check for non-404/403 errors
                 response.EnsureSuccessStatusCode();
                 Log.DeleteRequestAccepted(_logger, url);
             }

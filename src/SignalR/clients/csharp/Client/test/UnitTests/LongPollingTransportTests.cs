@@ -577,6 +577,56 @@ public class LongPollingTransportTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task LongPollingTransportTreatsForbiddenDeleteAsAlreadyClosed()
+    {
+        var pollTcs = new TaskCompletionSource<HttpResponseMessage>();
+        var deleteTcs = new TaskCompletionSource();
+        var firstPoll = true;
+
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+            {
+                await Task.Yield();
+                if (request.Method == HttpMethod.Get)
+                {
+                    if (firstPoll)
+                    {
+                        firstPoll = false;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    }
+
+                    cancellationToken.Register(() => pollTcs.TrySetCanceled(cancellationToken));
+                    return await pollTcs.Task;
+                }
+                else if (request.Method == HttpMethod.Delete)
+                {
+                    deleteTcs.TrySetResult();
+                    return ResponseUtils.CreateResponse(HttpStatusCode.Forbidden);
+                }
+
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        {
+            var longPollingTransport = new LongPollingTransport(httpClient);
+
+            using (StartVerifiableLog())
+            {
+                await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
+
+                var task = longPollingTransport.StopAsync();
+
+                await deleteTcs.Task.DefaultTimeout();
+
+                await task.DefaultTimeout();
+            }
+        }
+    }
+
     [Theory]
     [InlineData(TransferFormat.Binary)]
     [InlineData(TransferFormat.Text)]
