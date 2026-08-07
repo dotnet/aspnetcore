@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(IISTestSiteCollectionInProc.Name)]
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/aw_iisrrt1")]
 public class RequestResponseTests
 {
     private readonly IISTestSiteFixture _fixture;
