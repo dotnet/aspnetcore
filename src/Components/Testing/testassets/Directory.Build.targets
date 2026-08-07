@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+  <Import Project="$(RepoRoot)eng\MTP\MTP.targets"
+          Condition="'$(IsTestingPlatformApplication)' == 'true'" />
+</Project>

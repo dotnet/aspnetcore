@@ -202,6 +202,31 @@ public class TestRunner
     {
         try
         {
+            var testingPlatformTargets = Options.Targets.Where(IsTestingPlatformTarget).ToArray();
+            if (testingPlatformTargets.Length > 0)
+            {
+                foreach (var target in testingPlatformTargets)
+                {
+                    ProcessUtil.PrintMessage($"Running test discovery for MTP application '{target}'.");
+                    var mtpDiscoveryResult = await ProcessUtil.RunAsync(
+                        $"{Options.DotnetRoot}/dotnet",
+                        $"exec \"{target}\" --list-tests",
+                        environmentVariables: EnvironmentVariables,
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                    if (mtpDiscoveryResult.StandardOutput.Contains("Exception thrown", StringComparison.Ordinal) ||
+                        mtpDiscoveryResult.StandardError.Contains("Exception thrown", StringComparison.Ordinal))
+                    {
+                        ProcessUtil.PrintMessage("Exception thrown during test discovery.");
+                        ProcessUtil.PrintMessage(mtpDiscoveryResult.StandardOutput);
+                        ProcessUtil.PrintMessage(mtpDiscoveryResult.StandardError);
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
             // Run test discovery to verify there are tests to run.
             // dotnet test accepts multiple DLL paths.
             var assemblyArgs = string.Join(" ", Options.Targets.Select(t => $"\"{t}\""));
@@ -231,6 +256,12 @@ public class TestRunner
 
     public async Task<int> RunTestsAsync()
     {
+        var testingPlatformTargets = Options.Targets.Where(IsTestingPlatformTarget).ToArray();
+        if (testingPlatformTargets.Length > 0)
+        {
+            return await RunTestingPlatformTestsAsync(testingPlatformTargets);
+        }
+
         var exitCode = 0;
         try
         {
@@ -288,6 +319,66 @@ public class TestRunner
             exitCode = 1;
         }
         return exitCode;
+    }
+
+    private async Task<int> RunTestingPlatformTestsAsync(string[] targets)
+    {
+        var exitCode = 0;
+        var testProcessTimeout = Options.Timeout.Subtract(TimeSpan.FromMinutes(5));
+        if (testProcessTimeout <= TimeSpan.Zero)
+        {
+            testProcessTimeout = Options.Timeout;
+        }
+
+        var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") ?? Directory.GetCurrentDirectory();
+        EnvironmentVariables["E2E_ARTIFACTS_DIR"] = Path.Combine(uploadRoot, "test-artifacts");
+        var filter = Options.Quarantined
+            ? "TestCategory=Quarantined"
+            : "TestCategory!=Quarantined";
+        var filterDesc = Options.Quarantined ? "quarantined" : "non-quarantined";
+
+        foreach (var target in targets)
+        {
+            var resultFileName = Path.GetFileNameWithoutExtension(target) + ".trx";
+            var arguments =
+                $"exec \"{target}\" --results-directory \"{uploadRoot}\" " +
+                $"--timeout 15m --maximum-failed-tests 25 --report-trx " +
+                $"--report-trx-filename \"{resultFileName}\" --filter \"{filter}\"";
+
+            using var cts = new CancellationTokenSource(testProcessTimeout);
+            ProcessUtil.PrintMessage($"Running {filterDesc} tests for MTP application '{target}'.");
+            var result = await ProcessUtil.RunAsync(
+                $"{Options.DotnetRoot}/dotnet",
+                arguments,
+                environmentVariables: EnvironmentVariables,
+                outputDataReceived: ProcessUtil.PrintMessage,
+                errorDataReceived: ProcessUtil.PrintErrorMessage,
+                throwOnError: false,
+                cancellationToken: cts.Token);
+
+            if (cts.Token.IsCancellationRequested)
+            {
+                ProcessUtil.PrintMessage($"Tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+            }
+
+            if (result.ExitCode != 0)
+            {
+                ProcessUtil.PrintMessage($"Failure in {filterDesc} tests. Exit code: {result.ExitCode}.");
+                if (!Options.Quarantined)
+                {
+                    exitCode = result.ExitCode;
+                }
+            }
+        }
+
+        return exitCode;
+    }
+
+    private static bool IsTestingPlatformTarget(string target)
+    {
+        var depsFile = Path.ChangeExtension(target, ".deps.json");
+        return File.Exists(depsFile) &&
+            File.ReadAllText(depsFile).Contains("\"Microsoft.Testing.Platform/", StringComparison.OrdinalIgnoreCase);
     }
 
     public void UploadResults()

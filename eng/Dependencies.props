@@ -250,6 +250,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
     <!-- Components.Testing (MSTest on MTP + Playwright + YARP) -->
     <LatestPackageReference Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
+    <LatestPackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
     <LatestPackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="$(MicrosoftTestingPlatformMSBuildVersion)" />
     <LatestPackageReference Include="Microsoft.Testing.Extensions.Retry" Version="$(MicrosoftTestingExtensionsRetryVersion)" />
     <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />

@@ -19,8 +19,7 @@ public partial class HomePageTests : BrowserTest
     protected override async Task InitializeCoreAsync()
     {
         await base.InitializeCoreAsync();
-        _server = await TestRoot.Servers.StartServerAsync<App>();
-        DiagnosticServers.Add(_server);
+        _server = await StartServerAsync<App>(TestRoot.Servers);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         _page = await context.NewPageAsync();
     }

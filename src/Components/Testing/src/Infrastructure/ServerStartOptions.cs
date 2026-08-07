@@ -4,8 +4,8 @@
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 /// <summary>
-/// Options for starting an app via <see cref="ServerFactory{TTestAssembly}.StartServerAsync{TApp}"/>.
-/// These options form part of the deduplication key: calling <c>StartServerAsync</c>
+/// Options for starting an app through the E2E test infrastructure.
+/// These options form part of the deduplication key: starting an app
 /// twice with the same app name and same options returns the same instance.
 /// </summary>
 public class ServerStartOptions

@@ -49,7 +49,7 @@ public class GenerateE2EManifestTaskTests : IDisposable
         var entry = manifest.GetApp("MyApp");
         Assert.NotNull(entry);
         Assert.Equal("dotnet", entry!.Executable);
-        Assert.Equal("run --no-launch-profile", entry.Arguments);
+        Assert.Equal("run --no-build --no-restore --no-launch-profile", entry.Arguments);
         Assert.Equal(projectDir, entry.WorkingDirectory);
     }
 

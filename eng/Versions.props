@@ -215,6 +215,7 @@
     <MSTestVersion>4.2.3</MSTestVersion>
     <MSTestTestFrameworkVersion>$(MSTestVersion)</MSTestTestFrameworkVersion>
     <MSTestTestAdapterVersion>$(MSTestVersion)</MSTestTestAdapterVersion>
+    <MicrosoftTestingExtensionsTrxReportVersion>2.2.3</MicrosoftTestingExtensionsTrxReportVersion>
     <MicrosoftTestingPlatformMSBuildVersion>2.2.3</MicrosoftTestingPlatformMSBuildVersion>
     <MicrosoftTestingExtensionsRetryVersion>2.2.3</MicrosoftTestingExtensionsRetryVersion>
     <!-- Components.Testing dependencies -->

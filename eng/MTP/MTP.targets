@@ -1,0 +1,32 @@
+<Project>
+  <Target Name="RunTests"
+          Outputs="%(TestToRun.ResultsStdOutPath)"
+          Condition="'@(TestToRun)' != ''">
+    <PropertyGroup>
+      <_MTPTestAssembly>%(TestToRun.Identity)</_MTPTestAssembly>
+      <_MTPTestDirectory>$([System.IO.Path]::GetDirectoryName('$(_MTPTestAssembly)'))</_MTPTestDirectory>
+      <_MTPResultsDirectory>$([System.IO.Path]::GetFullPath('$(ArtifactsTestResultsDir)').TrimEnd('\'))</_MTPResultsDirectory>
+      <_MTPTestCommand>&quot;$(DotNetTool)&quot; exec &quot;$(_MTPTestAssembly)&quot; $(TestingPlatformCommandLineArguments) --results-directory &quot;$(_MTPResultsDirectory)&quot;</_MTPTestCommand>
+      <_MTPTestCommand Condition="'$(TestCaptureOutput)' != 'false'">$(_MTPTestCommand) &gt; &quot;%(TestToRun.ResultsStdOutPath)&quot; 2&gt;&amp;1</_MTPTestCommand>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(ArtifactsTestResultsDir);$(ArtifactsLogDir)" />
+    <Delete Files="%(TestToRun.ResultsStdOutPath)" />
+
+    <Message Text="Running tests: $(_MTPTestAssembly) [%(TestToRun.EnvironmentDisplay)]" Importance="high" />
+    <Exec Command="$(_MTPTestCommand)"
+          WorkingDirectory="$(_MTPTestDirectory)"
+          IgnoreExitCode="true"
+          Timeout="%(TestToRun.TestTimeout)"
+          ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="ExitCode" PropertyName="_MTPTestErrorCode" />
+    </Exec>
+
+    <Message Text="Tests succeeded: $(_MTPTestAssembly) [%(TestToRun.EnvironmentDisplay)]"
+             Condition="'$(_MTPTestErrorCode)' == '0'"
+             Importance="high" />
+    <Error Text="Tests failed: %(TestToRun.ResultsStdOutPath) [%(TestToRun.EnvironmentDisplay)]"
+           Condition="'$(_MTPTestErrorCode)' != '0' and '$(_ErrorOnTestFailure)' != 'false'"
+           File="MTP" />
+  </Target>
+</Project>
