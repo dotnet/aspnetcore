@@ -134,7 +134,11 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
             {
-                tcs.TrySetCanceled(cancellationToken);
+                if (_pendingTasks.TryRemove(taskId, out var tcs))
+                {
+                    ((TaskCompletionSource<TValue>)tcs).TrySetCanceled(cancellationToken);
+                }
+
                 CleanupTasksAndRegistrations(taskId);
             });
         }
@@ -303,7 +307,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         catch (Exception exception)
         {
             var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
-            TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
+            TaskGenericsUtil.TrySetTaskCompletionSourceException(tcs, new JSException(message, exception));
             return false;
         }
     }
