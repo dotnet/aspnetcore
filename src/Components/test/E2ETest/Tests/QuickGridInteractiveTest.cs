@@ -97,20 +97,17 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67350")]
     public void PaginatorCorrectItemsPerPage()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
 
-        var grid = Browser.FindElement(By.ClassName("quickgrid"));
-        var rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
-        Assert.Equal(10, rowCount);
+        Browser.Equal(10, () => Browser.FindElements(By.CssSelector("#grid .quickgrid tbody tr")).Count);
 
         Browser.Click(By.CssSelector(".first-paginator .go-next"));
 
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal(10, () => Browser.FindElement(By.CssSelector("#grid .quickgrid")).FindElements(By.CssSelector("tbody > tr")).Count);
+        Browser.Equal(10, () => Browser.FindElements(By.CssSelector("#grid .quickgrid tbody tr")).Count);
     }
 
     [Fact]

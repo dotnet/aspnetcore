@@ -52,8 +52,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool CanDetectPrepend => _previousFirstLoadedItem is not null;
 
-    private bool _itemComparerExplicitlySet;
-
     private CancellationTokenSource? _refreshCts;
 
     private CancellationTokenSource? _currentScrollCts;
@@ -89,6 +87,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // When true, OnAfterRenderAsync tells JS to restore the anchor snapshot
     // so the viewport stays stable after a prepend or append.
     private bool _pendingAnchorRestore;
+
+    private bool _deferPrependAnchorClear;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -186,9 +186,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// (e.g., <c>Id</c>); otherwise reference-equality fallback would produce false-positive
     /// prepend detection when the provider returns fresh instances.
     ///
-    /// Prepend detection only runs when this parameter is explicitly assigned by the consumer.
     /// The <c>BL0011</c> analyzer warns when <see cref="ItemsProvider"/> is used without an
-    /// explicit <see cref="ItemComparer"/> assignment.
+    /// explicit <see cref="ItemComparer"/> assignment, because the default comparer falls back to
+    /// reference equality for classes without value-equality semantics.
     ///
     /// For in-memory <see cref="Items"/>, this parameter is not needed because the component
     /// can detect prepends using object identity.
@@ -197,11 +197,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public IEqualityComparer<TItem> ItemComparer
     {
         get => _itemComparer;
-        set
-        {
-            _itemComparer = value;
-            _itemComparerExplicitlySet = true;
-        }
+        set => _itemComparer = value;
     }
 
     /// <summary>
@@ -485,14 +481,25 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // same viewport offset. Skip while a ScrollToItemAsync is in flight — we are
             // intentionally moving the viewport.
             var shouldRestore = _pendingAnchorRestore && !_pendingScrollToBottom && _currentScrollCts is null;
-            _pendingAnchorRestore = false;
+
+            var deferAnchorRestoreClear = shouldRestore
+                && (AnchorMode == VirtualizeAnchorMode.None
+                    || AnchorMode == VirtualizeAnchorMode.End
+                    || ((AnchorMode & VirtualizeAnchorMode.Start) != 0 && _deferPrependAnchorClear));
+            if (!deferAnchorRestoreClear)
+            {
+                _pendingAnchorRestore = false;
+            }
 
             if (shouldRestore)
             {
                 await _jsInterop.RestoreAnchorAsync();
             }
 
-            await _jsInterop.RefreshObserversAsync();
+            _pendingAnchorRestore = false;
+            _deferPrependAnchorClear = false;
+
+            await _jsInterop.RefreshObserversAsync(_loading);
         }
 
         // Apply InitialItemIndex once: drive the first fetch via ScrollToItemAsync rather than
@@ -564,7 +571,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
 
-                if (isFirstRenderedItem && _itemComparerExplicitlySet && _itemsProvider != DefaultItemsProvider)
+                if (isFirstRenderedItem && _itemsProvider != DefaultItemsProvider)
                 {
                     _previousFirstLoadedItem = item;
                     isFirstRenderedItem = false;
@@ -863,7 +870,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                     _pendingScrollToBottom = true;
                 }
             }
-            else if (itemsAdded && !isDefaultProvider && _itemComparerExplicitlySet && CanDetectPrepend)
+            else if (itemsAdded && !isDefaultProvider && CanDetectPrepend)
             {
                 using var enumerator = result.Items.GetEnumerator();
                 if (enumerator.MoveNext())
@@ -952,8 +959,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private async ValueTask<ItemsProviderResult<TItem>> AdjustForPrependAsync(
         int countDelta, int newTotalCount, CancellationToken cancellationToken)
     {
+        var wasAtTop = _itemsBefore == 0;
         _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
         _pendingAnchorRestore = true;
+        _deferPrependAnchorClear = !wasAtTop;
 
         var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
         return await _itemsProvider(adjustedRequest);
@@ -964,6 +973,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // chase the new items via spacer redistribution.
     private bool ShouldAnchorForAppend(int countDelta, int previousItemCount)
         => countDelta > 0
+            && countDelta < previousItemCount
             && (AnchorMode & VirtualizeAnchorMode.End) == 0
             && _itemsBefore + _visibleItemCapacity >= previousItemCount;
 

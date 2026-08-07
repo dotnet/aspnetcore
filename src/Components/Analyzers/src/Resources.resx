@@ -261,6 +261,18 @@
   <data name="JSInvokableMethodShouldBePublic_FixTitle" xml:space="preserve">
     <value>Make [JSInvokable] method public.</value>
   </data>
+  <data name="UnguardedJSInteropCall_Description" xml:space="preserve">
+    <value>JS interop calls should be guarded with a try/catch block to handle potential exceptions.</value>
+  </data>
+  <data name="UnguardedJSInteropCall_Format" xml:space="preserve">
+    <value>JS interop call '{0}' is not guarded with a try/catch block.</value>
+  </data>
+  <data name="UnguardedJSInteropCall_Title" xml:space="preserve">
+    <value>Unguarded JS interop call</value>
+  </data>
+  <data name="UnguardedJSInteropCall_FixTitle" xml:space="preserve">
+    <value>Wrap JS interop call in a try/catch block.</value>
+  </data>
   <data name="ComponentHasDisposeWithoutIDisposable_Description" xml:space="preserve">
     <value>A Blazor component declares a 'Dispose()' method but does not implement 'IDisposable'. The runtime will not call 'Dispose()' unless the component implements 'IDisposable'. Add '@implements IDisposable' (in .razor files) or 'IDisposable' to the class declaration.</value>
   </data>
