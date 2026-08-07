@@ -42,6 +42,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                     new JSStreamReferenceJsonConverter(this),
                     new DotNetStreamReferenceJsonConverter(this),
                     new ByteArrayJsonConverter(this),
+                    new TypeJsonConverter(),
                 }
         };
     }
