@@ -309,6 +309,50 @@ namespace Microsoft.Extensions.Validation.Generated
                 => context.ValidationOptions.LocalizerProvider(type, factory)
                     ?? throw new global::System.InvalidOperationException(
                         $"The ValidationOptions.LocalizerProvider delegate returned null for type '{type.FullName}'. The delegate must return a non-null IStringLocalizer instance.");
+
+        public static string? FindLocalizedTemplate(
+            global::Microsoft.Extensions.Localization.IStringLocalizer localizer,
+            global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
+            string memberName,
+            global::System.Type declaringType)
+        {
+            if (!string.IsNullOrEmpty(attribute.ErrorMessage))
+            {
+                var explicitMatch = localizer[attribute.ErrorMessage!];
+
+                return explicitMatch.ResourceNotFound ? null : explicitMatch.Value;
+            }
+
+            var attributeName = attribute.GetType().Name;
+            var typeName = GetKeySegment(declaringType);
+
+            if (!string.Equals(memberName, declaringType.Name, global::System.StringComparison.Ordinal))
+            {
+                var memberMatch = localizer[$"{typeName}_{memberName}_{attributeName}_Error"];
+                if (!memberMatch.ResourceNotFound)
+                {
+                    return memberMatch.Value;
+                }
+            }
+
+            var typeMatch = localizer[$"{typeName}_{attributeName}_Error"];
+            if (!typeMatch.ResourceNotFound)
+            {
+                return typeMatch.Value;
+            }
+
+            var globalMatch = localizer[$"{attributeName}_Error"];
+
+            return globalMatch.ResourceNotFound ? null : globalMatch.Value;
+        }
+
+        private static string GetKeySegment(global::System.Type type)
+        {
+            var name = type.Name;
+            var arityIndex = name.IndexOf('`');
+
+            return arityIndex < 0 ? name : name.Substring(0, arityIndex);
+        }
     }
 
 
@@ -399,29 +443,15 @@ namespace Microsoft.Extensions.Validation.Generated
                 return result.ErrorMessage;
             }
 
-            var lookupKey = !string.IsNullOrEmpty(attribute.ErrorMessage)
-                ? attribute.ErrorMessage
-                : context.ValidationOptions.MessageKeyProvider?.Invoke(new global::Microsoft.Extensions.Validation.ValidationMessageKeyContext
-                {
-                    ValidatorType = attribute.GetType(),
-                    MemberName = memberName,
-                    DeclaringType = declaringType,
-                });
-
-            if (string.IsNullOrEmpty(lookupKey))
-            {
-                return result.ErrorMessage;
-            }
-
             var localizer = LocalizationHelpers.CreateStringLocalizer(context, declaringType, localizerFactory);
 
-            var localizedTemplate = localizer[lookupKey!];
-            if (localizedTemplate.ResourceNotFound)
+            var localizedTemplate = LocalizationHelpers.FindLocalizedTemplate(localizer, attribute, memberName, declaringType);
+            if (localizedTemplate is null)
             {
                 return result.ErrorMessage;
             }
 
-            return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
+            return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate, displayName);
         }
 
         // Keep in sync with DataAnnotationsLocalizer.FormatMessage in
