@@ -64,7 +64,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     internal static bool TryExtractValidatableType(ITypeSymbol incomingTypeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
     {
-        var typeSymbol = incomingTypeSymbol.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable));
+        var typeSymbol = incomingTypeSymbol.UnwrapType();
         if (typeSymbol.SpecialType != SpecialType.None)
         {
             return false;
@@ -142,6 +142,43 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             HasResourceDisplayAttribute: typeHasResourceDisplay));
 
         return true;
+    }
+
+    internal static bool ShouldSkipProperty(
+        IPropertySymbol property,
+        WellKnownTypes wellKnownTypes,
+        INamedTypeSymbol skipValidationAttributeSymbol,
+        INamedTypeSymbol jsonIgnoreAttributeSymbol)
+    {
+        // Skip compiler generated properties, indexers, static properties, properties without
+        // a public getter, and .
+        if (property.IsImplicitlyDeclared
+            || property.IsIndexer
+            || property.IsStatic
+            || property.IsWriteOnly
+            || property.GetMethod is null
+            || property.GetMethod.DeclaredAccessibility is not Accessibility.Public
+            || property.IsEqualityContract(wellKnownTypes))
+        {
+            return true;
+        }
+
+        // Skip property if it or its type are annotated with SkipValidationAttribute
+        // TODO: This logic sounds wrong.
+        // If a property has some validation attributes and its type has SkipValidationAttribute, we
+        // should only skip the "type validation" part of the property, but still validate the property itself.
+        if (property.IsSkippedValidationProperty(skipValidationAttributeSymbol))
+        {
+            return true;
+        }
+
+        // Skip properties that have JsonIgnore attribute
+        if (property.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
@@ -243,16 +280,13 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Handle properties for classes and any properties not handled by the constructor
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
-            // Skip compiler generated properties, indexers, static properties, properties without
-            // a public getter, and properties already processed via the record processing logic above.
-            if (member.IsImplicitlyDeclared
-                || member.IsIndexer
-                || member.IsStatic
-                || member.IsWriteOnly
-                || member.GetMethod is null
-                || member.GetMethod.DeclaredAccessibility is not Accessibility.Public
-                || member.IsEqualityContract(wellKnownTypes)
-                || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            if (ShouldSkipProperty(member, wellKnownTypes, skipValidationAttributeSymbol, jsonIgnoreAttributeSymbol))
+            {
+                continue;
+            }
+
+            // Skip properties already processed via the record processing logic above
+            if (resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
                 continue;
             }
@@ -266,18 +300,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             // We only validate public properties for now.
             // We could consider in the future if we want to support internal properties.
             if (member.DeclaredAccessibility is not Accessibility.Public)
-            {
-                continue;
-            }
-
-            // Skip properties that have JsonIgnore attribute
-            if (member.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
-            {
-                continue;
-            }
-
-            // Skip property if it or its type are annotated with SkipValidationAttribute
-            if (member.IsSkippedValidationProperty(skipValidationAttributeSymbol))
             {
                 continue;
             }
