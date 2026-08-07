@@ -8,6 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -133,6 +134,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
+
+        // Registers a cookie scheme so that hitting an [Authorize] endpoint while unauthenticated challenges and
+        // redirects to LoginPath (relied on by the ReturnUrlIsPreservedWhenNavigatingToSecuredPageViaMenuDuringEnhancedNavigation
+        // E2E test). It's not the source of truth for the current user - UseFakeAuthState (below) sets HttpContext.User.
+        // Only /weather (AuthorizeWeather.razor) carries authorization metadata, so other endpoints are unaffected.
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options => options.LoginPath = "/account/login");
+        services.AddAuthorization();
+
         services.AddCascadingAuthenticationState();
         services.AddSingleton<WebSocketCompressionConfiguration>();
 
@@ -218,7 +228,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.UseWebSockets();
         app.UseRouting();
+        app.UseAuthentication();
         UseFakeAuthState(app);
+        app.UseAuthorization();
         app.UseAntiforgery();
 
         app.UseRequestLocalization(new RequestLocalizationOptions
