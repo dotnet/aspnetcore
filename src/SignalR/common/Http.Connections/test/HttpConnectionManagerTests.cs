@@ -425,6 +425,26 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task ApplicationLifetimeStoppingApplicationStopsNewIncomingConnections()
+    {
+        using (StartVerifiableLog())
+        {
+            var appLifetime = new TestApplicationLifetime();
+            var connectionManager = CreateConnectionManager(LoggerFactory, appLifetime);
+
+            appLifetime.Start();
+
+            appLifetime.StopApplication();
+
+            var connection = connectionManager.CreateConnection();
+
+            Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
+            var result = await connection.Application.Output.FlushAsync();
+            Assert.True(result.IsCompleted);
+        }
+    }
+
     private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime = null, HttpConnectionsMetrics metrics = null)
     {
         lifetime ??= new EmptyApplicationLifetime();
