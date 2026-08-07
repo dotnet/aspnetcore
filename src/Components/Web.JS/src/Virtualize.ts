@@ -807,7 +807,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const isBefore = entry.target === spacerBefore;
       const spacer = isBefore ? spacerBefore : spacerAfter;
 
-      // At startup both spacers are visible, but we choose only one to report events to avoid duplicated callbacks..
+      // At startup both spacers are visible, but we choose only one to report events to avoid duplicated callbacks.
       if (!isBefore && spacer.offsetHeight === 0) {
         return;
       }
