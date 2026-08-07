@@ -22,11 +22,14 @@
 </form>
 
 @code {
-    private ApplicationUser? user;
     private string? creationOptionsJson;
+    private ApplicationUser? user;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromTempData(Name = PasskeyUpgradeManager.CreationOptionsKey)]
+    private string? SuppliedCreationOptionsJson { get; set; }
 
     [SupplyParameterFromForm(FormName = "passkey-upgrade")]
     private PasskeyInputModel Input { get; set; } = default!;
@@ -36,6 +39,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        creationOptionsJson = SuppliedCreationOptionsJson;
+        SuppliedCreationOptionsJson = null;
         Input ??= new();
 
         user = await UserManager.GetUserAsync(HttpContext.User);
@@ -51,20 +56,10 @@
             return;
         }
 
-        if (!SignInManager.SupportsPasskeyConditionalCreation)
+        if (string.IsNullOrEmpty(creationOptionsJson))
         {
             RedirectManager.RedirectTo(ReturnUrl);
-            return;
         }
-
-        var userId = await UserManager.GetUserIdAsync(user);
-        var userName = await UserManager.GetUserNameAsync(user) ?? "User";
-        creationOptionsJson = await SignInManager.MakePasskeyCreationOptionsAsync(new()
-        {
-            Id = userId,
-            Name = userName,
-            DisplayName = userName
-        }, isConditionallyMediated: true);
     }
 
     private async Task UpgradeToPasskey()

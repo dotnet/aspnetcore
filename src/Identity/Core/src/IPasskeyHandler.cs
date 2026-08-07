@@ -42,6 +42,10 @@ public interface IPasskeyHandler<TUser>
     /// Conditional mediation lets a passkey be created without a user gesture, typically immediately
     /// after the user signs in with a password. The corresponding <c>navigator.credentials.create()</c>
     /// call must specify <c>mediation: "conditional"</c>.
+    /// The caller must only request conditional mediation after a recent successful password authentication.
+    /// An existing authenticated session by itself is not sufficient authorization to add a new passkey.
+    /// The protected attestation state prevents the client from changing the mediation mode after options
+    /// are issued, but it does not authorize issuing conditional options.
     /// </remarks>
     /// <exception cref="NotSupportedException">
     /// Thrown when <paramref name="isConditionallyMediated"/> is <see langword="true"/> and the handler

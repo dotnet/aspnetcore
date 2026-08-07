@@ -85,6 +85,9 @@
     [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
     private string? IdentityStatusMessage { get; set; }
 
+    [SupplyParameterFromTempData(Name = PasskeyUpgradeManager.CreationOptionsKey)]
+    private string? PasskeyUpgradeCreationOptions { get; set; }
+
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
 
@@ -140,13 +143,27 @@
             Logger.LogInformation("User logged in.");
             if (isPasswordSignIn)
             {
-                // A passkey can only be created silently right after a password sign-in.
-                RedirectManager.RedirectTo("Account/PasskeyUpgrade", new() { ["returnUrl"] = ReturnUrl });
+                var user = await UserManager.FindByNameAsync(Input.Email);
+                if (user is not null)
+                {
+                    PasskeyUpgradeCreationOptions = await PasskeyUpgradeManager.TryMakeCreationOptionsAsync(
+                        UserManager,
+                        SignInManager,
+                        user);
+                }
+                else
+                {
+                    Logger.LogWarning("Unable to load the user after a successful password sign-in.");
+                }
+
+                if (PasskeyUpgradeCreationOptions is not null)
+                {
+                    RedirectManager.RedirectTo("Account/PasskeyUpgrade", new() { ["returnUrl"] = ReturnUrl });
+                    return;
+                }
             }
-            else
-            {
-                RedirectManager.RedirectTo(ReturnUrl);
-            }
+
+            RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
         {
