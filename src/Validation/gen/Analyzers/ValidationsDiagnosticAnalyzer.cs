@@ -92,6 +92,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeType(
         Action<Diagnostic> reportDiagnostic,
         INamedTypeSymbol skipValidationAttributeSymbol,
+        INamedTypeSymbol jsonIgnoreAttributeSymbol,
         ITypeSymbol currentType,
         ConcurrentDictionary<ITypeSymbol, byte> allValidatableTypes,
         WellKnownTypes wellKnownTypes)
@@ -108,7 +109,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
 
         foreach (var property in currentType.GetMembers().OfType<IPropertySymbol>())
         {
-            if (ValidationsGenerator.ShouldSkipProperty(property, wellKnownTypes, skipValidationAttributeSymbol))
+            if (ValidationsGenerator.ShouldSkipProperty(property, wellKnownTypes, skipValidationAttributeSymbol, jsonIgnoreAttributeSymbol))
             {
                 continue;
             }
@@ -161,6 +162,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         var fromServiceMetadata = wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
         var fromKeyedServiceAttribute = wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
         var skipValidationAttribute = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
+        var jsonIgnoreAttributeSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);
 
         var topLevelValidatableTypes = new ConcurrentDictionary<ITypeSymbol, byte>(SymbolEqualityComparer.Default);
         var endpointParameters = new ConcurrentDictionary<IParameterSymbol, byte>(SymbolEqualityComparer.Default);
@@ -186,7 +188,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         return;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, attributedType, topLevelValidatableTypes, wellKnownTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, jsonIgnoreAttributeSymbol, attributedType, topLevelValidatableTypes, wellKnownTypes);
                 }
             }, OperationKind.Attribute);
         }
@@ -254,7 +256,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, type, topLevelValidatableTypes, wellKnownTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, jsonIgnoreAttributeSymbol, type, topLevelValidatableTypes, wellKnownTypes);
                 }
             }
         });

@@ -8,9 +8,7 @@ using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using static Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -146,7 +144,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return true;
     }
 
-    internal static bool ShouldSkipProperty(IPropertySymbol property, WellKnownTypes wellKnownTypes, INamedTypeSymbol skipValidationAttributeSymbol)
+    internal static bool ShouldSkipProperty(
+        IPropertySymbol property,
+        WellKnownTypes wellKnownTypes,
+        INamedTypeSymbol skipValidationAttributeSymbol,
+        INamedTypeSymbol jsonIgnoreAttributeSymbol)
     {
         // Skip compiler generated properties, indexers, static properties, properties without
         // a public getter, and .
@@ -166,6 +168,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // If a property has some validation attributes and its type has SkipValidationAttribute, we
         // should only skip the "type validation" part of the property, but still validate the property itself.
         if (property.IsSkippedValidationProperty(skipValidationAttributeSymbol))
+        {
+            return true;
+        }
+
+        // Skip properties that have JsonIgnore attribute
+        if (property.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
         {
             return true;
         }
@@ -272,7 +280,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Handle properties for classes and any properties not handled by the constructor
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
-            if (ShouldSkipProperty(member, wellKnownTypes, skipValidationAttributeSymbol))
+            if (ShouldSkipProperty(member, wellKnownTypes, skipValidationAttributeSymbol, jsonIgnoreAttributeSymbol))
             {
                 continue;
             }
@@ -292,12 +300,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             // We only validate public properties for now.
             // We could consider in the future if we want to support internal properties.
             if (member.DeclaredAccessibility is not Accessibility.Public)
-            {
-                continue;
-            }
-
-            // Skip properties that have JsonIgnore attribute
-            if (member.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
             {
                 continue;
             }
