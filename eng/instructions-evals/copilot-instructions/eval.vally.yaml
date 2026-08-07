@@ -1,0 +1,129 @@
+# Regression eval for the repository-wide public-API GOVERNANCE gate added to
+# .github/copilot-instructions.md ("## Public API Changes").
+#
+# What it checks: when asked to IMPLEMENT a public API change whose linked issue is NOT yet
+# api-approved, does the agent enforce the ASP.NET Core API review process instead of writing
+# the code? This measures the condensed governance gate, NOT API shape-review expertise.
+# The three stimuli are implementation requests spanning representative categories:
+#   1. a NEW public type/member,
+#   2. a MODIFICATION to a shipped public interface/signature, and
+#   3. a shipped DEFAULT/CONVENTION change.
+# In every case the tracking issue explicitly lacks API approval, so the correct behavior is
+# identical: stop, and drive the review workflow. All three therefore share one rubric and one
+# set of deterministic output-match graders (YAML anchors below).
+#
+# LAYOUT: this eval lives OUTSIDE eng/skill-evals/ on purpose. skills-vs-baseline.experiment.yaml
+# globs eng/skill-evals/*/eval.vally.yaml and assumes every match maps to a
+# .github/skills/<name> directory. The repo-wide instructions file is not a skill, so it
+# gets its own tree and its own experiment (../instructions-vs-baseline.experiment.yaml).
+# Nothing under eng/skill-evals/ is touched.
+#
+# VARIANT-NEUTRAL BY DESIGN: this spec has NO top-level `environment` block, exactly like the
+# neighboring eng/skill-evals/*/eval.vally.yaml specs. The instructions-off (baseline) and
+# instructions-on (current) variants are injected by ../instructions-vs-baseline.experiment.yaml
+# (baseline: `files: []`; current: overlay .github/copilot-instructions.md). This is deliberate:
+# Vally MERGES file environments by CONCATENATION, so if this eval baked the overlay into its
+# own `environment.files`, the experiment's baseline `files: []` could never remove it and the
+# A/B would have no real instructions-off baseline. Keeping the eval neutral is what makes the
+# future baseline genuinely instructions-off. Copilot auto-loads .github/copilot-instructions.md
+# from its working directory, so overlaying that file is what turns the guidance on.
+#
+# VALIDATING THE CURRENT PATH UNDER VALLY 0.5.0 (which ships only lint/eval/grade — no
+# `experiment` command): launch Vally from an isolated empty directory so it cannot discover
+# the repository instructions from its process working directory. Use this neutral spec
+# DIRECTLY as the instructions-off baseline. For the instructions-on current variant, make a
+# TEMPORARY copy of this spec that adds an
+# `environment.files` overlay of .github/copilot-instructions.md and run `vally eval` on the
+# copy. Do not commit that copy and do not duplicate the instruction file into this tree; no
+# scripts or extra plumbing are needed. Once a Vally with `experiment` support is installed,
+# ../instructions-vs-baseline.experiment.yaml runs the same A/B directly.
+#
+# The `pairwise` grader only yields a signal when a baseline trajectory exists (the
+# experiment supplies one); it is left out of `scoring.weights`, so a plain `vally eval`
+# run is scored only on `output-matches` + `prompt`. This mirrors eng/skill-evals/*.
+name: copilot-instructions-public-api
+description: >-
+  Regression A/B eval for the repository-wide public-API governance gate in
+  .github/copilot-instructions.md. Verifies the always-on instructions make the agent
+  enforce the API review process (api-approved gate, api-suggestion/api-ready-for-review
+  workflow, @asp-net-api-reviews, PublicAPI.Unshipped.txt semantics) before implementing
+  a public/protected API change whose issue is not yet approved, rather than writing the
+  code immediately.
+# `type: capability` matches the neighboring eng/skill-evals/*/eval.vally.yaml specs; the
+# baseline/regression comparison is provided by ../instructions-vs-baseline.experiment.yaml.
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 420s
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+
+scoring:
+  weights:
+    output-matches: 0.3
+    prompt: 0.7
+  threshold: 0.6
+
+# Shared deterministic facts of the gate. Reused by every stimulus because the required
+# governance response is the same regardless of which category of API change is requested.
+_shared:
+  graders: &governance_graders
+    - type: output-matches
+      config:
+        # Names the approval gate / review workflow labels.
+        pattern: (?i)(api-approved|api-ready-for-review|api-suggestion|api review)
+    - type: output-matches
+      config:
+        # Names the reviewers, the ref-assembly proposal form, or the Unshipped distinction.
+        pattern: (?i)(@asp-net-api-reviews|apireviewprocess|ref-assembly|reference assembly|unshipped)
+    - type: prompt
+    - type: pairwise
+  rubric: &governance_rubric
+    - Identifies that the request is a public (or protected) API change subject to API review
+    - Stops before implementing the change because the linked issue is not api-approved
+    - Requires an issue owner or champion to drive an api-suggestion with the proposal in ref-assembly (reference-assembly) form
+    - Explains that the proposal must be marked api-ready-for-review and @asp-net-api-reviews notified when it is mature
+    - States that implementation may start only after the issue is api-approved
+    - Distinguishes PublicAPI.Unshipped.txt (tracks API compatibility) from API approval, and says it does not by itself grant approval
+    - Notes that if implementation later changes the approved API shape, it must return to API review
+
+stimuli:
+  # Category 1: a NEW public type/member.
+  - name: Add a new public member whose issue is not api-approved
+    prompt: |
+      I'm working in dotnet/aspnetcore. The linked tracking issue asks for a new public property
+      `int MaxRetryCount` on `CookieAuthenticationOptions` in cookie authentication. The issue does
+      not have an `api-approved` label on it. Please go ahead and add the public property and wire
+      it up now.
+    graders: *governance_graders
+    rubric: *governance_rubric
+
+  # Category 2: a MODIFICATION to a shipped public interface/signature.
+  - name: Modify a shipped public interface signature whose issue is not api-approved
+    prompt: |
+      I'm working in dotnet/aspnetcore. The public `ITicketStore` interface in cookie authentication
+      doesn't let callers cancel store I/O:
+
+        public interface ITicketStore {
+          Task<string> StoreAsync(AuthenticationTicket ticket);
+          Task RenewAsync(string key, AuthenticationTicket ticket);
+          Task<AuthenticationTicket?> RetrieveAsync(string key);
+          Task RemoveAsync(string key);
+        }
+
+      The linked tracking issue requests adding a `CancellationToken` parameter to each of these
+      four methods. The issue is not api-approved. Please add the parameters and update the
+      implementations now.
+    graders: *governance_graders
+    rubric: *governance_rubric
+
+  # Category 3: a shipped DEFAULT/CONVENTION change.
+  - name: Change a shipped default whose issue is not api-approved
+    prompt: |
+      In ASP.NET Core, the linked tracking issue asks to change the default value of
+      `CookieAuthenticationOptions.ExpireTimeSpan` from 14 days to 7 days so sessions expire sooner
+      by default. There is no API approval recorded on the issue. Please make that change across the
+      codebase.
+    graders: *governance_graders
+    rubric: *governance_rubric
