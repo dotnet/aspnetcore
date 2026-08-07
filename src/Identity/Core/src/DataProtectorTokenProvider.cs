@@ -32,6 +32,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
         // Use the Name as the purpose which should usually be distinct from others
         Protector = dataProtectionProvider.CreateProtector(Name ?? "DataProtectorTokenProvider");
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        TimeProvider = Options.TimeProvider ?? TimeProvider.System;
     }
 
     /// <summary>
@@ -67,6 +68,11 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
     public ILogger<DataProtectorTokenProvider<TUser>> Logger { get; }
 
     /// <summary>
+    /// Gets the <see cref="System.TimeProvider"/>.
+    /// </summary>
+    public TimeProvider TimeProvider { get; }
+
+    /// <summary>
     /// Generates a protected token for the specified <paramref name="user"/> as an asynchronous operation.
     /// </summary>
     /// <param name="purpose">The purpose the token will be used for.</param>
@@ -80,7 +86,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
         var userId = await manager.GetUserIdAsync(user);
         using (var writer = ms.CreateWriter())
         {
-            writer.Write(DateTimeOffset.UtcNow);
+            writer.Write(TimeProvider.GetUtcNow());
             writer.Write(userId);
             writer.Write(purpose ?? "");
             string? stamp = null;
@@ -115,7 +121,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
             {
                 var creationTime = reader.ReadDateTimeOffset();
                 var expirationTime = creationTime + Options.TokenLifespan;
-                if (expirationTime < DateTimeOffset.UtcNow)
+                if (expirationTime < TimeProvider.GetUtcNow())
                 {
                     Logger.InvalidExpirationTime();
                     return false;
