@@ -119,7 +119,7 @@ public class DataProtectionProviderTests
     public void System_UsesProvidedDirectoryAndCertificate()
     {
         var filePath = Path.Combine(GetTestFilesPath(), "TestCert.pfx");
-        using (var imported = new X509Certificate2(filePath, "password", X509KeyStorageFlags.Exportable))
+        using (var imported = X509CertificateLoader.LoadPkcs12FromFile(filePath, "password", X509KeyStorageFlags.Exportable))
         {
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
@@ -145,7 +145,7 @@ public class DataProtectionProviderTests
                     var data = protector.Protect("payload");
 
                     // add a cert without the private key to ensure the decryption will still fallback to the cert store
-                    var certWithoutKey = new X509Certificate2(Path.Combine(GetTestFilesPath(), "TestCertWithoutPrivateKey.pfx"), "password");
+                    var certWithoutKey = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(GetTestFilesPath(), "TestCertWithoutPrivateKey.pfx"), "password");
                     var unprotector = DataProtectionProvider.Create(directory, o => o.UnprotectKeysWithAnyCertificate(certWithoutKey)).CreateProtector("purpose");
                     Assert.Equal("payload", unprotector.Unprotect(data));
 
@@ -173,7 +173,7 @@ public class DataProtectionProviderTests
         using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
         {
             store.Open(OpenFlags.ReadWrite);
-            var certWithoutKey = new X509Certificate2(Path.Combine(GetTestFilesPath(), "TestCert3WithoutPrivateKey.pfx"), "password3", X509KeyStorageFlags.Exportable);
+            var certWithoutKey = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(GetTestFilesPath(), "TestCert3WithoutPrivateKey.pfx"), "password3", X509KeyStorageFlags.Exportable);
             Assert.False(certWithoutKey.HasPrivateKey, "Cert should not have private key");
             store.Add(certWithoutKey);
             store.Close();
@@ -190,7 +190,7 @@ public class DataProtectionProviderTests
 
                 try
                 {
-                    var certWithKey = new X509Certificate2(Path.Combine(GetTestFilesPath(), "TestCert3.pfx"), "password3");
+                    var certWithKey = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(GetTestFilesPath(), "TestCert3.pfx"), "password3");
 
                     var protector = DataProtectionProvider.Create(directory, certWithKey).CreateProtector("purpose");
                     var data = protector.Protect("payload");
@@ -214,7 +214,7 @@ public class DataProtectionProviderTests
     public void System_UsesInMemoryCertificate()
     {
         var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
-        var certificate = new X509Certificate2(filePath, "password");
+        var certificate = X509CertificateLoader.LoadPkcs12FromFile(filePath, "password");
 
         AssetStoreDoesNotContain(certificate);
 
@@ -243,7 +243,7 @@ public class DataProtectionProviderTests
     public void System_UsesCertificate()
     {
         var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
-        var certificate = new X509Certificate2(filePath, "password");
+        var certificate = X509CertificateLoader.LoadPkcs12FromFile(filePath, "password");
 
         AssetStoreDoesNotContain(certificate);
 
@@ -285,7 +285,7 @@ public class DataProtectionProviderTests
     public void System_CanUnprotectWithCert()
     {
         var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
-        var certificate = new X509Certificate2(filePath, "password");
+        var certificate = X509CertificateLoader.LoadPkcs12FromFile(filePath, "password");
 
         WithUniqueTempDirectory(directory =>
         {
