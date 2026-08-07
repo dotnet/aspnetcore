@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using static Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -144,6 +146,33 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return true;
     }
 
+    internal static bool ShouldSkipProperty(IPropertySymbol property, WellKnownTypes wellKnownTypes, INamedTypeSymbol skipValidationAttributeSymbol)
+    {
+        // Skip compiler generated properties, indexers, static properties, properties without
+        // a public getter, and .
+        if (property.IsImplicitlyDeclared
+            || property.IsIndexer
+            || property.IsStatic
+            || property.IsWriteOnly
+            || property.GetMethod is null
+            || property.GetMethod.DeclaredAccessibility is not Accessibility.Public
+            || property.IsEqualityContract(wellKnownTypes))
+        {
+            return true;
+        }
+
+        // Skip property if it or its type are annotated with SkipValidationAttribute
+        // TODO: This logic sounds wrong.
+        // If a property has some validation attributes and its type has SkipValidationAttribute, we
+        // should only skip the "type validation" part of the property, but still validate the property itself.
+        if (property.IsSkippedValidationProperty(skipValidationAttributeSymbol))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
     {
         var members = new List<ValidatableProperty>();
@@ -243,16 +272,13 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Handle properties for classes and any properties not handled by the constructor
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
-            // Skip compiler generated properties, indexers, static properties, properties without
-            // a public getter, and properties already processed via the record processing logic above.
-            if (member.IsImplicitlyDeclared
-                || member.IsIndexer
-                || member.IsStatic
-                || member.IsWriteOnly
-                || member.GetMethod is null
-                || member.GetMethod.DeclaredAccessibility is not Accessibility.Public
-                || member.IsEqualityContract(wellKnownTypes)
-                || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            if (ShouldSkipProperty(member, wellKnownTypes, skipValidationAttributeSymbol))
+            {
+                continue;
+            }
+
+            // Skip properties already processed via the record processing logic above
+            if (resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
                 continue;
             }
@@ -272,12 +298,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
             // Skip properties that have JsonIgnore attribute
             if (member.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
-            {
-                continue;
-            }
-
-            // Skip property if it or its type are annotated with SkipValidationAttribute
-            if (member.IsSkippedValidationProperty(skipValidationAttributeSymbol))
             {
                 continue;
             }

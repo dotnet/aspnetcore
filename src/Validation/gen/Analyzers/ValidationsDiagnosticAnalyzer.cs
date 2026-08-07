@@ -108,12 +108,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
 
         foreach (var property in currentType.GetMembers().OfType<IPropertySymbol>())
         {
-            if (property.IsStatic || property.IsIndexer)
-            {
-                continue;
-            }
-
-            if (property.IsSkippedValidationProperty(skipValidationAttributeSymbol))
+            if (ValidationsGenerator.ShouldSkipProperty(property, wellKnownTypes, skipValidationAttributeSymbol))
             {
                 continue;
             }
