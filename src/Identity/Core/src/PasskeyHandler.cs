@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -342,7 +343,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         var credentialRecord = new UserPasskeyInfo(
             credentialId,
             publicKey: attestedCredentialData.CredentialPublicKey.ToArray(),
-            createdAt: DateTime.UtcNow,
+            createdAt: GetUtcNow(context.HttpContext),
             signCount: authenticatorData.SignCount,
             transports: response.Transports,
             isUserVerified: authenticatorData.IsUserVerified,
@@ -679,4 +680,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
     private string GetServerDomain(HttpContext httpContext)
         => _options.ServerDomain ?? httpContext.Request.Host.Host;
+
+    private static DateTime GetUtcNow(HttpContext httpContext)
+     => (httpContext.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System).GetUtcNow().UtcDateTime;
 }
