@@ -1,4 +1,18 @@
 <Project>
+  <Target Name="_WriteTestingPlatformBuildMarker"
+          AfterTargets="Build">
+    <WriteLinesToFile File="$([System.IO.Path]::ChangeExtension('$(TargetPath)', '.mtp'))"
+                      Lines="Microsoft.Testing.Platform"
+                      Overwrite="true" />
+  </Target>
+
+  <Target Name="_WriteTestingPlatformPublishMarker"
+          AfterTargets="Publish">
+    <WriteLinesToFile File="$(PublishDir)$(AssemblyName).mtp"
+                      Lines="Microsoft.Testing.Platform"
+                      Overwrite="true" />
+  </Target>
+
   <Target Name="RunTests"
           Outputs="%(TestToRun.ResultsStdOutPath)"
           Condition="'@(TestToRun)' != ''">

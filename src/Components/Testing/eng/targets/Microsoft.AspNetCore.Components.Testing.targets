@@ -57,6 +57,13 @@
     AssemblyFile="$(_E2ETasksAssembly)"
     Condition="'$(_E2ETasksAssembly)' != ''" />
 
+  <Target Name="_BuildE2ETasks"
+          Condition="'$(_E2ETasksProject)' != '' and '$(NoBuild)' != 'true'">
+    <MSBuild Projects="$(_E2ETasksProject)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)" />
+  </Target>
+
   <!--
     Inject the artifacts directory into the test assembly as an
     [assembly: AssemblyMetadata("Microsoft.AspNetCore.Components.Testing.ArtifactsPath", ...)]
@@ -88,6 +95,7 @@
   -->
   <Target
     Name="PrepareE2EApps"
+    DependsOnTargets="_BuildE2ETasks"
     AfterTargets="Build;Publish"
     Condition="'$(ExcludeFromBuild)' != 'true'">
 

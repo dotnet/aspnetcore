@@ -376,9 +376,7 @@ public class TestRunner
 
     private static bool IsTestingPlatformTarget(string target)
     {
-        var depsFile = Path.ChangeExtension(target, ".deps.json");
-        return File.Exists(depsFile) &&
-            File.ReadAllText(depsFile).Contains("\"Microsoft.Testing.Platform/", StringComparison.OrdinalIgnoreCase);
+        return File.Exists(Path.ChangeExtension(target, ".mtp"));
     }
 
     public void UploadResults()
