@@ -32,7 +32,7 @@ public static class PlaywrightExtensions
     /// Whether Playwright video recording is enabled for this test run
     /// (set via the <c>PLAYWRIGHT_RECORD_VIDEO=1</c> environment variable).
     /// </summary>
-    public static bool RecordVideoEnabled => s_recordVideo;
+    internal static bool RecordVideoEnabled => s_recordVideo;
 
     /// <summary>
     /// Sets the <c>X-Test-Backend</c> header on browser context options
@@ -59,7 +59,7 @@ public static class PlaywrightExtensions
     /// <param name="options">The browser context options to configure.</param>
     /// <param name="artifactDir">The directory to store video files in.</param>
     /// <returns>The same <paramref name="options"/> instance for chaining.</returns>
-    public static BrowserNewContextOptions WithArtifacts(
+    internal static BrowserNewContextOptions WithArtifacts(
         this BrowserNewContextOptions options, string? artifactDir = null)
     {
         if (s_recordVideo && artifactDir is not null)
@@ -72,20 +72,18 @@ public static class PlaywrightExtensions
     /// <summary>
     /// Starts tracing on an existing browser context. Returns a <see cref="TracingSession"/>
     /// that saves or discards the trace (and video) on disposal based on the
-    /// <paramref name="shouldSave"/> delegate.
+    /// <paramref name="artifactManager"/>.
     /// </summary>
     /// <param name="context">The browser context to trace.</param>
     /// <param name="artifactDir">The directory to store trace artifacts in.</param>
-    /// <param name="shouldSave">Evaluated at disposal time to decide whether to keep artifacts.</param>
-    /// <param name="onArtifactsSaved">Optional callback with the saved artifact file paths.</param>
+    /// <param name="artifactManager">Determines whether artifacts are retained and publishes retained files.</param>
     /// <returns>A <see cref="TracingSession"/> that manages trace lifecycle.</returns>
-    public static async Task<TracingSession> TraceAsync(
-        this IBrowserContext context,
+    internal static async Task<TracingSession> TraceAsync(
+        IBrowserContext context,
         string artifactDir,
-        Func<bool> shouldSave,
-        Action<IReadOnlyList<string>>? onArtifactsSaved = null)
+        ITestArtifactManager artifactManager)
     {
-        return await TracingSession.StartAsync(context, artifactDir, s_recordVideo, shouldSave, onArtifactsSaved)
+        return await TracingSession.StartAsync(context, artifactDir, s_recordVideo, artifactManager)
             .ConfigureAwait(false);
     }
 
@@ -97,22 +95,20 @@ public static class PlaywrightExtensions
     /// <param name="browser">The Playwright browser to create the context on.</param>
     /// <param name="server">The server instance to route traffic to.</param>
     /// <param name="artifactDir">The directory to store trace artifacts in.</param>
-    /// <param name="shouldSave">Evaluated at disposal time to decide whether to keep artifacts.</param>
-    /// <param name="onArtifactsSaved">Optional callback with the saved artifact file paths.</param>
+    /// <param name="artifactManager">Determines whether artifacts are retained and publishes retained files.</param>
     /// <param name="options">Optional browser context options. If <c>null</c>, defaults are used.</param>
     /// <returns>A <see cref="TracedContext"/> wrapping the browser context and tracing session.</returns>
-    public static async Task<TracedContext> NewTracedContextAsync(
-        this IBrowser browser,
+    internal static async Task<TracedContext> NewTracedContextAsync(
+        IBrowser browser,
         ServerInstance server,
         string artifactDir,
-        Func<bool> shouldSave,
-        Action<IReadOnlyList<string>>? onArtifactsSaved = null,
+        ITestArtifactManager artifactManager,
         BrowserNewContextOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(browser);
         ArgumentNullException.ThrowIfNull(server);
         ArgumentNullException.ThrowIfNull(artifactDir);
-        ArgumentNullException.ThrowIfNull(shouldSave);
+        ArgumentNullException.ThrowIfNull(artifactManager);
 
         options ??= new BrowserNewContextOptions();
         options = options
@@ -120,34 +116,32 @@ public static class PlaywrightExtensions
             .WithArtifacts(artifactDir);
 
         var context = await browser.NewContextAsync(options).ConfigureAwait(false);
-        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo, shouldSave, onArtifactsSaved)
+        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo, artifactManager)
             .ConfigureAwait(false);
         // ownsContext: true — the IBrowser overload created the context, so the wrapper owns disposal.
         return new TracedContext(context, session, ownsContext: true);
     }
 
     /// <summary>
-    /// Variant of <see cref="NewTracedContextAsync(IBrowser, ServerInstance, string, Func{bool}, Action{IReadOnlyList{string}}?, BrowserNewContextOptions?)"/>
+    /// Variant of <see cref="NewTracedContextAsync(IBrowser, ServerInstance, string, ITestArtifactManager, BrowserNewContextOptions?)"/>
     /// that starts tracing on an existing <paramref name="context"/> instead of creating a
     /// new one. Use this when you need to configure the context yourself (e.g. with
     /// custom cookies, viewport, etc.) before tracing begins.
     /// </summary>
     /// <param name="context">An existing Playwright browser context. The caller owns its disposal.</param>
     /// <param name="artifactDir">The directory to store trace artifacts in.</param>
-    /// <param name="shouldSave">Evaluated at disposal time to decide whether to keep artifacts.</param>
-    /// <param name="onArtifactsSaved">Optional callback with the saved artifact file paths.</param>
+    /// <param name="artifactManager">Determines whether artifacts are retained and publishes retained files.</param>
     /// <returns>A <see cref="TracedContext"/> wrapping the browser context and tracing session.</returns>
-    public static async Task<TracedContext> NewTracedContextAsync(
+    internal static async Task<TracedContext> NewTracedContextAsync(
         IBrowserContext context,
         string artifactDir,
-        Func<bool> shouldSave,
-        Action<IReadOnlyList<string>>? onArtifactsSaved = null)
+        ITestArtifactManager artifactManager)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(artifactDir);
-        ArgumentNullException.ThrowIfNull(shouldSave);
+        ArgumentNullException.ThrowIfNull(artifactManager);
 
-        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo, shouldSave, onArtifactsSaved)
+        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo, artifactManager)
             .ConfigureAwait(false);
         // ownsContext: false — caller passed the context in and is responsible for disposing it.
         return new TracedContext(context, session, ownsContext: false);

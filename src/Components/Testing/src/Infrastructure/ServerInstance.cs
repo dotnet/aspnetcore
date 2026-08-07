@@ -11,8 +11,7 @@ using System.Text;
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 /// <summary>
-/// Represents a running app instance started via
-/// <see cref="ServerFactory{TTestAssembly}.StartServerAsync{TApp}"/>.
+/// Represents a running app instance started by the E2E test infrastructure.
 /// Each instance has a unique <see cref="Id"/> used for YARP proxy routing
 /// via the <c>X-Test-Backend</c> header.
 /// </summary>
@@ -196,6 +195,15 @@ public class ServerInstance : IAsyncDisposable
             File.WriteAllText(stderrPath, _stderrBuffer.ToString());
         }
         return [stdoutPath, stderrPath];
+    }
+
+    internal IReadOnlyList<string> WriteStartupFailureArtifacts(string directory, Exception exception)
+    {
+        var paths = new List<string>(WriteCapturedOutputTo(directory));
+        var startupPath = Path.Combine(directory, $"{AppName}-{Id}.startup.log");
+        File.WriteAllText(startupPath, exception.ToString());
+        paths.Insert(0, startupPath);
+        return paths;
     }
 
     internal static string ComputeKey(string appName, ServerStartOptions options)

@@ -75,7 +75,9 @@ public class GenerateE2EManifest : Task
                 var entry = new E2EAppEntryModel
                 {
                     Executable = "dotnet",
-                    Arguments = "run --no-launch-profile",
+                    Arguments = isPublishing
+                        ? "run --no-launch-profile"
+                        : "run --no-build --no-restore --no-launch-profile",
                     PublicUrl = publicUrl,
                 };
 

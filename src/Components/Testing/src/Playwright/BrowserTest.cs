@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.Playwright;
 
 namespace Microsoft.AspNetCore.Components.Testing.Playwright;
@@ -19,8 +20,8 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// </para>
 /// <para>
 /// Use <see cref="NewContext"/> to create a per-test <see cref="IBrowserContext"/>; every
-/// context obtained that way is tracked and closed automatically during per-test cleanup
-/// (<see cref="CleanupCoreAsync"/>). The class therefore plays nicely with MSTest's default
+/// context obtained that way is tracked and closed automatically when the per-test instance
+/// is disposed. The class therefore plays nicely with MSTest's default
 /// method-level parallelism — contexts are per-test, no shared mutable browser-page state.
 /// </para>
 /// </remarks>
@@ -28,8 +29,6 @@ public abstract class BrowserTest : PlaywrightTest
 {
     private static IBrowser? s_browser;
     private static readonly SemaphoreSlim s_browserInitLock = new(1, 1);
-
-    private readonly List<IBrowserContext> _trackedContexts = new();
 
     /// <summary>The shared <see cref="IBrowser"/>. Initialized on first use by <see cref="EnsureBrowserAsync"/>.</summary>
     public IBrowser Browser =>
@@ -85,18 +84,34 @@ public abstract class BrowserTest : PlaywrightTest
 
     /// <summary>
     /// Creates a new <see cref="IBrowserContext"/> on the shared browser and tracks it for
-    /// automatic disposal at the end of the current test.
+    /// automatic disposal after the current test outcome has been finalized.
     /// </summary>
     /// <param name="options">Optional browser-context options.</param>
     public async Task<IBrowserContext> NewContext(BrowserNewContextOptions? options = null)
     {
         await EnsureBrowserAsync().ConfigureAwait(false);
         var ctx = await Browser.NewContextAsync(options).ConfigureAwait(false);
-        lock (_trackedContexts)
-        {
-            _trackedContexts.Add(ctx);
-        }
-        return ctx;
+        return RegisterForDisposal(ctx);
+    }
+
+    /// <summary>
+    /// Creates a routed browser context with tracing and optional video capture. The context is
+    /// disposed automatically after the test framework finalizes the test outcome.
+    /// </summary>
+    /// <param name="server">The application server to route requests to.</param>
+    /// <param name="options">Optional browser-context options.</param>
+    /// <returns>The traced browser context.</returns>
+    protected async Task<IBrowserContext> NewTracedContextAsync(
+        ServerInstance server,
+        BrowserNewContextOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(server);
+
+        var directory = ArtifactManager.CreateArtifactDirectory("browser");
+        var tracedContext = await Infrastructure.PlaywrightExtensions.NewTracedContextAsync(
+            Browser, server, directory, ArtifactManager, options).ConfigureAwait(false);
+        RegisterForDisposal(tracedContext);
+        return tracedContext.Context;
     }
 
     /// <summary>Ensures the shared browser is initialized before the test runs.</summary>
@@ -106,28 +121,4 @@ public abstract class BrowserTest : PlaywrightTest
         await EnsureBrowserAsync().ConfigureAwait(false);
     }
 
-    /// <summary>Closes every <see cref="IBrowserContext"/> obtained via <see cref="NewContext"/> during the test.</summary>
-    protected internal override async Task CleanupCoreAsync()
-    {
-        IBrowserContext[] toDispose;
-        lock (_trackedContexts)
-        {
-            toDispose = _trackedContexts.ToArray();
-            _trackedContexts.Clear();
-        }
-
-        foreach (var ctx in toDispose)
-        {
-            try
-            {
-                await ctx.CloseAsync().ConfigureAwait(false);
-            }
-            catch
-            {
-                // context may already be closed (e.g. by TracingSession's video-flush path); ignore
-            }
-        }
-
-        await base.CleanupCoreAsync().ConfigureAwait(false);
-    }
 }

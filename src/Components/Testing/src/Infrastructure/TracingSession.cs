@@ -9,45 +9,40 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// <summary>
 /// Manages the lifecycle of a Playwright trace (and optionally video) for a single
 /// browser context. On disposal the session asks the supplied
-/// <c>shouldSave</c> delegate whether to keep the artifacts, then either saves them
-/// (invoking <c>onArtifactsSaved</c> with the produced file paths) or discards them.
+/// <see cref="ITestArtifactManager"/> whether to keep the artifacts, then either saves and
+/// publishes them or discards them.
 /// </summary>
 /// <remarks>
 /// <para>
 /// This type is intentionally decoupled from any test framework: it does not read a
 /// test outcome or attach files itself. The save decision and the handling of saved
-/// artifacts are provided as plain delegates, so a source-generated adapter in the
+/// artifacts are provided by <see cref="ITestArtifactManager"/>, so a source-generated adapter in the
 /// consumer test assembly can bridge the test framework's outcome/attachment APIs
 /// (for example MSTest's <c>TestContext.CurrentTestOutcome</c> and
 /// <c>TestContext.AddResultFile</c>) without the library taking a dependency on them.
 /// </para>
 /// <para>
-/// The value of <c>shouldSave</c> is evaluated at disposal time. When disposed from a
-/// test-cleanup hook the final outcome is known; when disposed from an
-/// <c>await using</c> inside the test body the outcome is typically still "in progress",
-/// so a conservative adapter saves in that case to avoid losing failures.
+/// <see cref="ITestArtifactManager.ShouldSaveArtifacts"/> is evaluated at disposal time,
+/// after the test framework has finalized the test outcome.
 /// </para>
 /// </remarks>
-public sealed class TracingSession : IAsyncDisposable
+internal sealed class TracingSession : IAsyncDisposable
 {
     private readonly IBrowserContext _context;
     private readonly string _artifactDir;
     private readonly bool _recordVideo;
-    private readonly Func<bool> _shouldSave;
-    private readonly Action<IReadOnlyList<string>>? _onArtifactsSaved;
+    private readonly ITestArtifactManager _artifactManager;
 
     TracingSession(
         IBrowserContext context,
         string artifactDir,
         bool recordVideo,
-        Func<bool> shouldSave,
-        Action<IReadOnlyList<string>>? onArtifactsSaved)
+        ITestArtifactManager artifactManager)
     {
         _context = context;
         _artifactDir = artifactDir;
         _recordVideo = recordVideo;
-        _shouldSave = shouldSave;
-        _onArtifactsSaved = onArtifactsSaved;
+        _artifactManager = artifactManager;
     }
 
     /// <summary>
@@ -56,24 +51,17 @@ public sealed class TracingSession : IAsyncDisposable
     /// <param name="context">The browser context to trace.</param>
     /// <param name="artifactDir">The directory to store trace artifacts in.</param>
     /// <param name="recordVideo">Whether video recording is enabled.</param>
-    /// <param name="shouldSave">
-    /// Evaluated at disposal time to decide whether artifacts are kept (<c>true</c>) or discarded.
-    /// </param>
-    /// <param name="onArtifactsSaved">
-    /// Optional callback invoked at disposal time (only when saving) with the list of artifact
-    /// files that were kept, so the caller can attach them to a test result.
-    /// </param>
+    /// <param name="artifactManager">Determines whether artifacts are retained and publishes retained files.</param>
     /// <returns>A <see cref="TracingSession"/> managing the trace lifecycle.</returns>
-    public static async Task<TracingSession> StartAsync(
+    internal static async Task<TracingSession> StartAsync(
         IBrowserContext context,
         string artifactDir,
         bool recordVideo,
-        Func<bool> shouldSave,
-        Action<IReadOnlyList<string>>? onArtifactsSaved = null)
+        ITestArtifactManager artifactManager)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(artifactDir);
-        ArgumentNullException.ThrowIfNull(shouldSave);
+        ArgumentNullException.ThrowIfNull(artifactManager);
 
         Directory.CreateDirectory(artifactDir);
 
@@ -84,13 +72,13 @@ public sealed class TracingSession : IAsyncDisposable
             Sources = true
         }).ConfigureAwait(false);
 
-        return new TracingSession(context, artifactDir, recordVideo, shouldSave, onArtifactsSaved);
+        return new TracingSession(context, artifactDir, recordVideo, artifactManager);
     }
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        var shouldSave = _shouldSave();
+        var shouldSave = _artifactManager.ShouldSaveArtifacts();
         var savedFiles = new List<string>();
 
         // 1. Stop tracing — save to file or discard
@@ -147,7 +135,7 @@ public sealed class TracingSession : IAsyncDisposable
         {
             if (savedFiles.Count > 0)
             {
-                _onArtifactsSaved?.Invoke(savedFiles);
+                _artifactManager.AddArtifacts(savedFiles);
             }
         }
         else if (Directory.Exists(_artifactDir))

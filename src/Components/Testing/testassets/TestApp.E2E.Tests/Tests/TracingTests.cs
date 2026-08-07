@@ -19,16 +19,15 @@ public partial class TracingTests : BrowserTest
     protected override async Task InitializeCoreAsync()
     {
         await base.InitializeCoreAsync();
-        _server = await TestRoot.Servers.StartServerAsync<App>();
-        DiagnosticServers.Add(_server);
+        _server = await StartServerAsync<App>(TestRoot.Servers);
     }
 
     [TestMethod]
     public async Task HomePage_WithTracing_DisplaysContent()
     {
-        await using var ctx = await Browser.NewTracedContextAsync(TestContext, _server);
+        var context = await NewTracedContextAsync(_server);
 
-        var page = await ctx.NewPageAsync();
+        var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
 
         await Expect(page).ToHaveTitleAsync("Home");
@@ -38,8 +37,8 @@ public partial class TracingTests : BrowserTest
     [TestMethod]
     public async Task Counter_WithTracing_IncrementsOnClick()
     {
-        await using var ctx = await Browser.NewTracedContextAsync(TestContext, _server);
-        var page = await ctx.NewPageAsync();
+        var context = await NewTracedContextAsync(_server);
+        var page = await context.NewPageAsync();
 
         await page.GotoAsync($"{_server.TestUrl}/counter");
 
@@ -55,12 +54,9 @@ public partial class TracingTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task TracedContext_ContextProperty_ExposesUnderlyingContext()
+    public async Task NewTracedContext_ReturnsBrowserContext()
     {
-        await using var traced = await Browser.NewTracedContextAsync(TestContext, _server);
-
-        var context = traced.Context;
-        Assert.IsNotNull(context);
+        var context = await NewTracedContextAsync(_server);
 
         var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
@@ -68,17 +64,13 @@ public partial class TracingTests : BrowserTest
     }
 
     [TestMethod]
-    public async Task ManualTracing_TraceAndWithArtifacts_WorkTogether()
+    public async Task ManualTracing_RegistersContextForArtifacts()
     {
-        var artifactDir = Path.Combine(
-            AppContext.BaseDirectory, "test-artifacts", "manual-tracing-test");
-
         var context = await NewContext(
             new BrowserNewContextOptions()
-                .WithServerRouting(_server)
-                .WithArtifacts(artifactDir));
+                .WithServerRouting(_server));
 
-        await using var tracing = await context.TraceAsync(TestContext, artifactDir);
+        await TraceAsync(context);
 
         var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
@@ -88,7 +80,7 @@ public partial class TracingTests : BrowserTest
     [TestMethod]
     public async Task ArtifactDirectory_IsCreated_WhenTracingStarts()
     {
-        await using var ctx = await Browser.NewTracedContextAsync(TestContext, _server);
+        var context = await NewTracedContextAsync(_server);
 
         var testName = TestContext.TestName ?? "unknown";
         var sanitized = PlaywrightExtensions.SanitizeFileName(testName);
@@ -98,8 +90,40 @@ public partial class TracingTests : BrowserTest
         Assert.IsTrue(Directory.Exists(expectedDir),
             $"Expected artifact directory to exist at: {expectedDir}");
 
-        var page = await ctx.NewPageAsync();
+        var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
         await Expect(page.Locator("h1")).ToHaveTextAsync("Hello, world!");
+    }
+
+    [TestMethod]
+    public async Task ServerStartupFailure_CapturesOutputArtifacts()
+    {
+        const string stdoutMarker = "Intentional startup failure stdout";
+        const string stderrMarker = "Intentional startup failure stderr";
+        var artifactRoot = Path.Combine(
+            E2EArtifactPaths.ForTest(TestContext.TestName ?? "unknown"),
+            "server-output");
+        var existingFiles = Directory.Exists(artifactRoot)
+            ? Directory.GetFiles(artifactRoot, "*", SearchOption.AllDirectories).ToHashSet()
+            : [];
+
+        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => StartServerAsync<App>(
+                TestRoot.Servers,
+                options => options.EnvironmentVariables["E2E_FAIL_ON_STARTUP"] = "1"));
+
+        Assert.Contains("Intentional startup failure", exception.Message);
+
+        var newFiles = Directory.GetFiles(artifactRoot, "*", SearchOption.AllDirectories)
+            .Where(path => !existingFiles.Contains(path))
+            .ToArray();
+        Assert.HasCount(3, newFiles);
+        Assert.IsTrue(newFiles.Any(path => path.EndsWith(".startup.log", StringComparison.Ordinal)));
+        Assert.IsTrue(newFiles.Any(path =>
+            path.EndsWith(".stdout.log", StringComparison.Ordinal) &&
+            File.ReadAllText(path).Contains(stdoutMarker, StringComparison.Ordinal)));
+        Assert.IsTrue(newFiles.Any(path =>
+            path.EndsWith(".stderr.log", StringComparison.Ordinal) &&
+            File.ReadAllText(path).Contains(stderrMarker, StringComparison.Ordinal)));
     }
 }

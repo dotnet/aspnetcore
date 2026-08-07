@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.Playwright;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 
@@ -26,50 +28,64 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// context → page) is established before per-test setup runs.
 /// </para>
 /// </remarks>
-public abstract class UITest
+public abstract class UITest : IAsyncDisposable
 {
-    /// <summary>
-    /// Servers whose captured stdout/stderr should be attached to the test result when the
-    /// test fails. Add the servers a test starts here (typically from an
-    /// <see cref="InitializeCoreAsync"/> override); <see cref="SaveServerDiagnostics"/> reads
-    /// this list from the generated cleanup hook.
-    /// </summary>
-    protected List<ServerInstance> DiagnosticServers { get; } = new();
+    private readonly object _disposablesLock = new();
+    private readonly List<IAsyncDisposable> _disposables = new();
+    private readonly List<ServerInstance> _diagnosticServers = new();
 
-    /// <summary>
-    /// When <paramref name="failed"/> is <c>true</c>, flushes the captured stdout/stderr of every
-    /// server registered in <see cref="DiagnosticServers"/> into the per-test artifacts directory
-    /// and invokes <paramref name="attach"/> once per file produced.
-    /// </summary>
-    /// <remarks>
-    /// This is the framework-agnostic seam the source-generated test cleanup hook calls: the
-    /// generator supplies <paramref name="failed"/> from the test framework's outcome,
-    /// <paramref name="testName"/> from its current test name, and <paramref name="attach"/> from
-    /// its result-file attachment API (for MSTest, <c>TestContext.AddResultFile</c>).
-    /// </remarks>
-    /// <param name="failed">Whether the current test failed (or timed out / errored / aborted).</param>
-    /// <param name="testName">The current test name, used to name the artifacts sub-directory.</param>
-    /// <param name="attach">Invoked with the absolute path of each log file that was written.</param>
-    protected void SaveServerDiagnostics(bool failed, string testName, Action<string> attach)
+    internal ITestArtifactManager ArtifactManager
+        => this as ITestArtifactManager
+            ?? throw new InvalidOperationException(
+                $"{GetType().FullName} must be annotated with UITestAttribute.");
+
+    internal T RegisterForDisposal<T>(T disposable) where T : IAsyncDisposable
     {
-        ArgumentNullException.ThrowIfNull(attach);
-
-        if (!failed || DiagnosticServers.Count == 0)
+        ArgumentNullException.ThrowIfNull(disposable);
+        lock (_disposablesLock)
         {
-            return;
+            _disposables.Add(disposable);
         }
 
-        var dir = E2EArtifacts.GetPath(
-            "server-output",
-            PlaywrightExtensions.SanitizeFileName(testName ?? "unknown"));
+        return disposable;
+    }
 
-        foreach (var server in DiagnosticServers)
+    /// <summary>
+    /// Starts an application server and automatically captures its output when startup or the test fails.
+    /// </summary>
+    /// <typeparam name="TApp">Any public type from the application assembly.</typeparam>
+    /// <param name="factory">The assembly-scoped server factory.</param>
+    /// <param name="configure">Optional server-start configuration.</param>
+    /// <returns>The running server instance.</returns>
+    protected async Task<ServerInstance> StartServerAsync<TApp>(
+        ServerFactory factory,
+        Action<ServerStartOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+
+        var appName = typeof(TApp).Assembly.GetName().Name
+            ?? throw new InvalidOperationException(
+                $"Could not determine assembly name for type '{typeof(TApp).FullName}'.");
+        var server = await factory.StartServerAsync(appName, configure, ArtifactManager).ConfigureAwait(false);
+        lock (_disposablesLock)
         {
-            foreach (var path in server.WriteCapturedOutputTo(dir))
-            {
-                attach(path);
-            }
+            _diagnosticServers.Add(server);
         }
+
+        return server;
+    }
+
+    /// <summary>
+    /// Starts tracing an existing browser context until the current test is disposed.
+    /// </summary>
+    /// <param name="context">The browser context to trace.</param>
+    protected async Task TraceAsync(IBrowserContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var directory = ArtifactManager.CreateArtifactDirectory("browser");
+        var session = await PlaywrightExtensions.TraceAsync(context, directory, ArtifactManager).ConfigureAwait(false);
+        RegisterForDisposal(session);
     }
 
     /// <summary>
@@ -82,4 +98,61 @@ public abstract class UITest
     /// Per-test cleanup. Override to perform teardown; the base chain runs last.
     /// </summary>
     protected internal virtual Task CleanupCoreAsync() => Task.CompletedTask;
+
+    /// <inheritdoc/>
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        IAsyncDisposable[] disposables;
+        ServerInstance[] diagnosticServers;
+        lock (_disposablesLock)
+        {
+            disposables = _disposables.ToArray();
+            _disposables.Clear();
+            diagnosticServers = _diagnosticServers.ToArray();
+            _diagnosticServers.Clear();
+        }
+
+        List<Exception>? exceptions = null;
+        try
+        {
+            if (ArtifactManager.ShouldSaveArtifacts() && diagnosticServers.Length > 0)
+            {
+                try
+                {
+                    var directory = ArtifactManager.CreateArtifactDirectory("server-output");
+                    var paths = diagnosticServers
+                        .SelectMany(server => server.WriteCapturedOutputTo(directory))
+                        .ToArray();
+                    ArtifactManager.AddArtifacts(paths);
+                }
+                catch (Exception exception)
+                {
+                    exceptions ??= new();
+                    exceptions.Add(exception);
+                }
+            }
+
+            for (var i = disposables.Length - 1; i >= 0; i--)
+            {
+                try
+                {
+                    await disposables[i].DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    exceptions ??= new();
+                    exceptions.Add(exception);
+                }
+            }
+        }
+        finally
+        {
+            GC.SuppressFinalize(this);
+        }
+
+        if (exceptions is not null)
+        {
+            throw new AggregateException(exceptions);
+        }
+    }
 }

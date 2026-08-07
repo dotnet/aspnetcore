@@ -20,11 +20,10 @@ public partial class AsyncStateTests : BrowserTest
     protected override async Task InitializeCoreAsync()
     {
         await base.InitializeCoreAsync();
-        _server = await TestRoot.Servers.StartServerAsync<App>(options =>
+        _server = await StartServerAsync<App>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<TestOverrides>(nameof(TestOverrides.LockableWeather));
         });
-        DiagnosticServers.Add(_server);
     }
 
     [TestMethod]

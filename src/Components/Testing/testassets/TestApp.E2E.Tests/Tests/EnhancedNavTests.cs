@@ -20,8 +20,7 @@ public partial class EnhancedNavTests : BrowserTest
     protected override async Task InitializeCoreAsync()
     {
         await base.InitializeCoreAsync();
-        _server = await TestRoot.Servers.StartServerAsync<App>();
-        DiagnosticServers.Add(_server);
+        _server = await StartServerAsync<App>(TestRoot.Servers);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         _page = await context.NewPageAsync();
     }
@@ -33,7 +32,7 @@ public partial class EnhancedNavTests : BrowserTest
         await _page.WaitForBlazorAsync();
 
         var enhancedNav = _page.WaitForEnhancedNavigationAsync();
-        await _page.GetByRole(AriaRole.Link, new() { Name = "Counter" }).ClickAsync();
+        await _page.GetByRole(AriaRole.Link, new() { Name = "Counter", Exact = true }).ClickAsync();
         await enhancedNav;
 
         var heading = _page.Locator("h1");
@@ -65,7 +64,7 @@ public partial class EnhancedNavTests : BrowserTest
         await _page.WaitForBlazorAsync();
 
         var nav1 = _page.WaitForEnhancedNavigationAsync();
-        await _page.GetByRole(AriaRole.Link, new() { Name = "Counter" }).ClickAsync();
+        await _page.GetByRole(AriaRole.Link, new() { Name = "Counter", Exact = true }).ClickAsync();
         await nav1;
 
         await Expect(_page.Locator("h1")).ToHaveTextAsync("Counter");

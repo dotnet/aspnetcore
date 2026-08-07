@@ -21,11 +21,10 @@ public partial class WeatherServiceOverrideTests : BrowserTest
     protected override async Task InitializeCoreAsync()
     {
         await base.InitializeCoreAsync();
-        _server = await TestRoot.Servers.StartServerAsync<App>(options =>
+        _server = await StartServerAsync<App>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<TestOverrides>(nameof(TestOverrides.FakeWeather));
         });
-        DiagnosticServers.Add(_server);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         _page = await context.NewPageAsync();
     }

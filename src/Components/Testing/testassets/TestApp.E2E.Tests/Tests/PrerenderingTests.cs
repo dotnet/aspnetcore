@@ -20,8 +20,7 @@ public partial class PrerenderingTests : BrowserTest
     protected override async Task InitializeCoreAsync()
     {
         await base.InitializeCoreAsync();
-        _server = await TestRoot.Servers.StartServerAsync<App>();
-        DiagnosticServers.Add(_server);
+        _server = await StartServerAsync<App>(TestRoot.Servers);
     }
 
     [TestMethod]
@@ -40,7 +39,7 @@ public partial class PrerenderingTests : BrowserTest
         var heading = page.Locator("h1");
         await Expect(heading).ToHaveTextAsync("Hello, world!");
 
-        var counterLink = page.Locator("a.nav-link", new() { HasText = "Counter" });
+        var counterLink = page.GetByRole(AriaRole.Link, new() { Name = "Counter", Exact = true });
         await Expect(counterLink).ToBeVisibleAsync();
 
         await blazorScript.ReleaseAsync();
@@ -48,7 +47,7 @@ public partial class PrerenderingTests : BrowserTest
         await page.WaitForBlazorAsync();
 
         var enhancedNav = page.WaitForEnhancedNavigationAsync();
-        await page.GetByRole(AriaRole.Link, new() { Name = "Counter" }).ClickAsync();
+        await counterLink.ClickAsync();
         await enhancedNav;
         await page.WaitForURLAsync("**/counter");
 

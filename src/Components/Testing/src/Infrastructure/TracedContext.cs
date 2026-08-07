@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// <remarks>
 /// <para>Supports deconstruction for concise code:</para>
 /// <code>
-/// await using var traced = await this.NewTracedContextAsync(server);
+/// var traced = await NewTracedContextAsync(server);
 /// var (context) = traced;
 /// var page = await context.NewPageAsync();
 /// </code>
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// when you need the full <see cref="IBrowserContext"/> (e.g., for <c>AddCookiesAsync</c>, <c>RouteAsync</c>).
 /// </para>
 /// </remarks>
-public sealed class TracedContext : IAsyncDisposable
+internal sealed class TracedContext : IAsyncDisposable
 {
     private readonly TracingSession _tracing;
     private readonly bool _ownsContext;
@@ -30,7 +30,7 @@ public sealed class TracedContext : IAsyncDisposable
     /// <summary>
     /// The underlying browser context.
     /// </summary>
-    public IBrowserContext Context { get; }
+    internal IBrowserContext Context { get; }
 
     internal TracedContext(IBrowserContext context, TracingSession tracing, bool ownsContext)
     {
@@ -43,16 +43,16 @@ public sealed class TracedContext : IAsyncDisposable
     /// Deconstructs the traced context to extract the underlying <see cref="IBrowserContext"/>.
     /// </summary>
     /// <param name="context">The underlying browser context.</param>
-    public void Deconstruct(out IBrowserContext context) => context = Context;
+    internal void Deconstruct(out IBrowserContext context) => context = Context;
 
     /// <summary>
     /// Creates a new page in the traced browser context.
     /// </summary>
     /// <returns>A new <see cref="IPage"/> in the traced context.</returns>
-    public Task<IPage> NewPageAsync() => Context.NewPageAsync();
+    internal Task<IPage> NewPageAsync() => Context.NewPageAsync();
 
     /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
         // TracingSession finalizes the trace (and may close the context to flush video).
         await _tracing.DisposeAsync().ConfigureAwait(false);
