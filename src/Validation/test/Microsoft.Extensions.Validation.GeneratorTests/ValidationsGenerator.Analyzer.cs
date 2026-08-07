@@ -81,6 +81,11 @@ public class ComponentModel
 {
     [Required] public string? Name { get; set; }
 }
+
+class Program
+{
+    public static void Main(string args[]) { }
+}
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source, filePath: "Components/Pages/MyComponent.razor.g.cs");
         var diagnostic = Assert.Single(diagnostics);
