@@ -68,10 +68,11 @@
   <!-- Pack the MSBuild task assembly into tasks/ folder -->
   <Target Name="_BuildTasksForPackage"
           BeforeTargets="_IncludeTasksInPackage"
-          Condition="'$(NoBuild)' != 'true'">
+          Condition="'$(NoBuild)' != 'true' or !Exists('$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">
     <MSBuild Projects="../tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
              Targets="Build"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration)"
+             RemoveProperties="NoBuild" />
   </Target>
 
   <Target Name="_IncludeTasksInPackage" BeforeTargets="_GetPackageFiles">
