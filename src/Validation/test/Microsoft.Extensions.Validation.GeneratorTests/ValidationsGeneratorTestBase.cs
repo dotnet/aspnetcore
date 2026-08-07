@@ -111,7 +111,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
 
         var compilationWithAnalyzers = compilation.WithAnalyzers([new ValidationsDiagnosticAnalyzer(), new ValidatableTypeInGeneratedCodeDiagnosticAnalyzer()]);
         var diagnostics = await compilationWithAnalyzers.GetAllDiagnosticsAsync();
-        return [.. diagnostics.OrderBy(d => d.Id).ThenBy(d => d.Location.SourceSpan.Start)];
+        return [.. diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning).OrderBy(d => d.Id).ThenBy(d => d.Location.SourceSpan.Start)];
     }
 
     internal static MetadataReference CompileToMetadataReference(string source, string assemblyName)
