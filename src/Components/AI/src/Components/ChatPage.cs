@@ -17,6 +17,9 @@ public sealed class ChatPage : ComponentBase, IDisposable
     public RenderFragment? WelcomeContent { get; set; }
 
     [Parameter]
+    public RenderFragment? MessageListContent { get; set; }
+
+    [Parameter]
     public IReadOnlyList<Suggestion>? Suggestions { get; set; }
 
     [Parameter]
@@ -62,8 +65,9 @@ public sealed class ChatPage : ComponentBase, IDisposable
             inner.AddAttribute(31, "class", "sc-ai-chat-page__body");
 
             inner.OpenComponent<MessageList>(32);
-            inner.AddComponentParameter(33, "ChildContent", WelcomeContent);
-            inner.AddComponentParameter(34, "Footer", (RenderFragment<AgentContext>)(ctx =>
+            inner.AddComponentParameter(33, "ChildContent", MessageListContent);
+            inner.AddComponentParameter(34, "EmptyContent", WelcomeContent);
+            inner.AddComponentParameter(35, "Footer", (RenderFragment<AgentContext>)(ctx =>
                 (RenderFragment)(footerBuilder =>
             {
                 RenderDefaultFooter(footerBuilder, ctx, 0);
@@ -121,7 +125,7 @@ public sealed class ChatPage : ComponentBase, IDisposable
                 builder.AddAttribute(seq + 4, "role", "alert");
                 builder.OpenElement(seq + 5, "span");
                 builder.AddAttribute(seq + 6, "class", "sc-ai-error__message");
-                builder.AddContent(seq + 7, ctx.Error?.Message ?? "Something went wrong.");
+                builder.AddContent(seq + 7, "Something went wrong. Please try again.");
                 builder.CloseElement();
                 builder.OpenElement(seq + 8, "button");
                 builder.AddAttribute(seq + 9, "class", "sc-ai-btn sc-ai-btn--secondary");

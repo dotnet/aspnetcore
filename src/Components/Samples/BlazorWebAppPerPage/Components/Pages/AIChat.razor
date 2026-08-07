@@ -1,211 +1,313 @@
 @page "/ai-chat"
 @rendermode InteractiveServer
+@using System.Text.Json
 @using BlazorWebAppPerPage.Data
 @using Microsoft.AspNetCore.Components.AI
 @using Microsoft.Extensions.AI
 @implements IDisposable
+@inject ILogger<AIChat> Logger
+@inject ILoggerFactory LoggerFactory
 
-<PageTitle>AI chat components</PageTitle>
+<PageTitle>AutoSure claim assistant</PageTitle>
 
-<h1>AI chat components</h1>
-
-<p>
-    Select a chat shell and use the built-in echo client, or connect to an OpenAI-compatible
-    or Azure OpenAI chat-completions endpoint.
-</p>
-
-<div class="chat-configuration">
-    <div>
-        <label for="chat-shell">Chat shell</label>
-        <select id="chat-shell" class="form-select" @bind="_shell">
-            <option value="@ChatShell.Page">Page</option>
-            <option value="@ChatShell.Drawer">Drawer</option>
-            <option value="@ChatShell.Bubble">Bubble</option>
-        </select>
-    </div>
-
-    <div>
-        <label for="chat-provider">Model provider</label>
-        <select id="chat-provider" class="form-select" @bind="_provider">
-            <option value="@ChatProvider.Echo">Echo (no model required)</option>
-            <option value="@ChatProvider.OpenAICompatible">OpenAI-compatible</option>
-            <option value="@ChatProvider.AzureOpenAI">Azure OpenAI</option>
-        </select>
-    </div>
-
-    @if (_provider != ChatProvider.Echo)
-    {
-        <div class="configuration-wide">
-            <label for="chat-endpoint">Endpoint</label>
-            <input id="chat-endpoint"
-                   class="form-control"
-                   type="url"
-                   autocomplete="off"
-                   placeholder="@EndpointPlaceholder"
-                   @bind="_endpoint" />
-        </div>
-
+<div class="claim-app">
+    <header class="claim-header">
         <div>
-            <label for="chat-model">@ModelLabel</label>
-            <input id="chat-model"
-                   class="form-control"
-                   autocomplete="off"
-                   placeholder="@ModelPlaceholder"
-                   @bind="_model" />
+            <span class="claim-eyebrow">AutoSure claims</span>
+            <h1>Vehicle damage assessment</h1>
+            <p>Describe what happened and review the agent's preliminary assessment.</p>
         </div>
-
-        <div>
-            <label for="chat-api-key">@ApiKeyLabel</label>
-            <input id="chat-api-key"
-                   class="form-control"
-                   type="password"
-                   autocomplete="off"
-                   @bind="_apiKey" />
+        <div class="claim-header__actions">
+            <div class="claim-connection" aria-label="Agent connection">
+                <span class="claim-connection__dot" aria-hidden="true"></span>
+                @_conversation.ChatClient.ConnectionDescription
+            </div>
         </div>
-    }
+    </header>
 
-    <div class="configuration-actions">
-        <button id="render-chat" class="btn btn-primary" @onclick="CreateChat">
-            Render chat
-        </button>
-        <span role="status">@_configurationStatus</span>
+    <div class="claim-workspace">
+        <aside class="claim-summary" aria-labelledby="claim-summary-heading">
+            <div class="claim-summary__heading">
+                <div>
+                    <span class="claim-eyebrow">Claim</span>
+                    <h2 id="claim-summary-heading">@ClaimState.ClaimNumber</h2>
+                </div>
+                <span class="claim-status claim-status--@ClaimState.Decision.ToLowerInvariant()">
+                    @ClaimState.Status
+                </span>
+            </div>
+
+            <ClaimVehicleDiagram State="ClaimState" />
+
+            <dl class="claim-details">
+                <div>
+                    <dt>Accident</dt>
+                    <dd>@ClaimState.AccidentSummary</dd>
+                </div>
+                <div>
+                    <dt>Assessment</dt>
+                    <dd>@ClaimState.AssessmentSummary</dd>
+                </div>
+                <div>
+                    <dt>Confidence</dt>
+                    <dd>@(ClaimState.Confidence == 0 ? "Waiting" : $"{ClaimState.Confidence}%")</dd>
+                </div>
+                <div>
+                    <dt>Decision</dt>
+                    <dd>@ClaimState.Decision</dd>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(ClaimState.RejectionReason))
+                {
+                    <div>
+                        <dt>Rejection reason</dt>
+                        <dd>@ClaimState.RejectionReason</dd>
+                    </div>
+                }
+            </dl>
+
+            <div class="claim-scope-note">
+                <strong>POC scope</strong>
+                Image upload and voice input follow after the POC.
+            </div>
+        </aside>
+
+        <section class="claim-chat" aria-label="Claim assistant chat">
+            <ChatPage Agent="_conversation.Agent"
+                      Suggestions="_suggestions"
+                      Placeholder="Describe the accident..."
+                      class="claim-chat-page">
+                <Header>
+                    <div class="claim-chat-header">
+                        <div class="claim-avatar" aria-hidden="true">AI</div>
+                        <div>
+                            <strong>Damage assessment agent</strong>
+                            <span role="status" aria-live="polite">@ClaimState.Status</span>
+                        </div>
+                    </div>
+                </Header>
+                <MessageListContent>
+                    <BlockRenderer TBlock="FunctionInvocationContentBlock"
+                        When="block => block.ToolName == IdentifyVehicleAreasTool"
+                        Context="block">
+                        <VehicleDamageBlock Block="block" />
+                    </BlockRenderer>
+                    <BlockRenderer TBlock="UIActionBlock"
+                        When="block => block.ToolName == DisplayVehicleDamageTool"
+                        Context="block">
+                        <VehicleDiagramAction Block="block" />
+                    </BlockRenderer>
+                    <BlockRenderer TBlock="FunctionApprovalBlock" Context="block">
+                        <ClaimApprovalBlock Block="block"
+                                            OnApproved="RecordApproval"
+                                            OnRejected="RecordRejection" />
+                    </BlockRenderer>
+                </MessageListContent>
+                <WelcomeContent>
+                    <div class="claim-welcome">
+                        <div class="claim-welcome__icon" aria-hidden="true">✦</div>
+                        <div>
+                            <strong>Start your claim</strong>
+                            <p>Include where the vehicle was hit and any visible damage.</p>
+                        </div>
+                    </div>
+                </WelcomeContent>
+                <InputLeadingActions>
+                    <ClaimRunControl />
+                </InputLeadingActions>
+            </ChatPage>
+        </section>
     </div>
 </div>
 
-@if (_provider != ChatProvider.Echo)
-{
-    <p class="alert alert-warning">
-        Development sample only: configuration is kept in this server circuit and isn't persisted.
-        Don't paste production credentials into an untrusted sample host.
-    </p>
-}
-
-@if (_agent is not null)
-{
-    @switch (_activeShell)
-    {
-        case ChatShell.Page:
-            <div class="chat-page-host">
-                <ChatPage @key="_chatVersion"
-                          Agent="_agent"
-                          Placeholder="Ask a question...">
-                    <Header>
-                        <strong>AI chat page</strong>
-                    </Header>
-                    <WelcomeContent>
-                        <p>Send a message to start the conversation.</p>
-                    </WelcomeContent>
-                </ChatPage>
-            </div>
-            break;
-        case ChatShell.Drawer:
-            @if (!_drawerOpen)
-            {
-                <button class="btn btn-secondary" @onclick="OpenDrawer">Open chat drawer</button>
-            }
-            <ChatDrawer @key="_chatVersion"
-                        Agent="_agent"
-                        Title="AI chat drawer"
-                        @bind-Open="_drawerOpen"
-                        Placeholder="Ask a question..." />
-            break;
-        case ChatShell.Bubble:
-            <p class="text-muted">Use the chat button in the bottom-right corner.</p>
-            <ChatBubble @key="_chatVersion"
-                        Agent="_agent"
-                        Title="AI chat bubble"
-                        Placeholder="Ask a question..." />
-            break;
-    }
-}
-
 @code {
-    private enum ChatShell
-    {
-        Page,
-        Drawer,
-        Bubble,
-    }
+    private const string IdentifyVehicleAreasTool = "identify_vehicle_areas";
+    private const string DisplayVehicleDamageTool = "display_vehicle_damage";
 
-    private ChatShell _shell = ChatShell.Page;
-    private ChatShell _activeShell = ChatShell.Page;
-    private ChatProvider _provider = ChatProvider.Echo;
-    private string _endpoint = string.Empty;
-    private string _model = string.Empty;
-    private string _apiKey = string.Empty;
-    private string _configurationStatus = string.Empty;
-    private bool _drawerOpen = true;
-    private int _chatVersion;
-    private UIAgent? _agent;
-    private IChatClient? _chatClient;
+    private readonly IReadOnlyList<Suggestion> _suggestions =
+    [
+        new()
+        {
+            Label = "Front impact",
+            Prompt = "Another car backed into the front of my parked car. The bumper is cracked and the hood looks bent.",
+        },
+        new()
+        {
+            Label = "Side impact",
+            Prompt = "A vehicle hit the driver's side at low speed. The front door and left fender are dented.",
+        },
+        new()
+        {
+            Label = "Windshield damage",
+            Prompt = "Road debris struck the windshield and also chipped the hood.",
+        },
+    ];
 
-    private string EndpointPlaceholder => _provider == ChatProvider.AzureOpenAI
-        ? "https://resource.openai.azure.com"
-        : "https://api.openai.com or http://localhost:11434";
-
-    private string ModelLabel => _provider == ChatProvider.AzureOpenAI
-        ? "Deployment name"
-        : "Model";
-
-    private string ModelPlaceholder => _provider == ChatProvider.AzureOpenAI
-        ? "my-gpt-deployment"
-        : "gpt-4.1-mini";
-
-    private string ApiKeyLabel => _provider == ChatProvider.AzureOpenAI
-        ? "API key (leave empty to use DefaultAzureCredential)"
-        : "API key (optional for local models)";
+    private ClaimConversation _conversation = default!;
+    private ClaimState ClaimState => _conversation.Agent.State.Value;
 
     protected override void OnInitialized()
     {
-        CreateChat();
+        _conversation = CreateConversation("CLM-1042");
     }
 
-    private void CreateChat()
+    private ClaimConversation CreateConversation(string claimNumber)
     {
-        try
+        var state = new ClaimState
         {
-            IChatClient chatClient = _provider switch
+            ClaimNumber = claimNumber,
+        };
+        var conversation = new ClaimConversation
+        {
+            ChatClient = new ConfigurableChatClient(),
+        };
+        UIAgent<ClaimState>? agent = null;
+
+        var identifyVehicleAreas = AIFunctionFactory.Create(
+            (string description) => IdentifyVehicleAreas(description),
+            IdentifyVehicleAreasTool,
+            "Identifies likely affected vehicle areas from an accident description.");
+        var displayVehicleDamage = AIFunctionFactory.Create(
+            (string[] areas) => DisplayVehicleDamage(agent!, areas),
+            DisplayVehicleDamageTool,
+            "Highlights affected areas on the vehicle diagram.");
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [identifyVehicleAreas],
+            RawRepresentationFactory = _ => new ClaimAgUiRunInput
             {
-                ChatProvider.Echo => new SampleEchoChatClient(),
-                _ => CreateRemoteChatClient(),
-            };
+                State = JsonSerializer.SerializeToElement(agent!.State.Value, ClaimStateJson.Options),
+            },
+        };
 
-            _agent?.Dispose();
-            _chatClient?.Dispose();
+        agent = new UIAgent<ClaimState>(
+            conversation.ChatClient,
+            options =>
+            {
+                options.ChatOptions = chatOptions;
+                options.RegisterUIAction(displayVehicleDamage);
+                options.AddBlockHandler(new ClaimErrorContentHandler(Logger));
+                options.StateMapper = context => MapClaimState(agent!, context);
+            },
+            LoggerFactory,
+            state);
+        conversation.Agent = agent;
 
-            _chatClient = chatClient;
-            _agent = new UIAgent(chatClient);
-            _activeShell = _shell;
-            _drawerOpen = true;
-            _chatVersion++;
-            _configurationStatus = _provider == ChatProvider.Echo
-                ? "Echo chat ready."
-                : "Model chat ready.";
-        }
-        catch (Exception exception) when (exception is ArgumentException or UriFormatException)
+        conversation.StateChangedSubscription = agent.State.OnChanged(() =>
         {
-            _configurationStatus = exception.Message;
+            _ = InvokeAsync(StateHasChanged);
+        });
+
+        return conversation;
+    }
+
+    private static bool MapClaimState(
+        UIAgent<ClaimState> agent,
+        StateMapperContext context)
+    {
+        var currentState = agent.State.Value;
+        ClaimState? mappedState = context.Update.RawRepresentation switch
+        {
+            ClaimAgUiStateSnapshotEvent snapshot =>
+                snapshot.Snapshot.Deserialize<ClaimState>(ClaimStateJson.Options),
+            ClaimAgUiStateDeltaEvent delta => ClaimStateJson.ApplyDelta(currentState, delta.Delta),
+            _ => null,
+        };
+
+        if (mappedState is null)
+        {
+            return false;
+        }
+
+        context.SetState(mappedState);
+        return true;
+    }
+
+    private static VehicleAreaAssessment IdentifyVehicleAreas(string description)
+    {
+        var areas = new List<string>();
+        AddAreaWhen(description, areas, "front-bumper", "front", "bumper", "backed into");
+        AddAreaWhen(description, areas, "hood", "hood", "bonnet");
+        AddAreaWhen(description, areas, "windshield", "windshield", "windscreen", "glass");
+        AddAreaWhen(description, areas, "left-fender", "driver", "left", "fender");
+        AddAreaWhen(description, areas, "left-door", "driver door", "left door", "side");
+        AddAreaWhen(description, areas, "right-fender", "passenger", "right fender");
+        AddAreaWhen(description, areas, "right-door", "passenger door", "right door");
+        AddAreaWhen(description, areas, "rear-bumper", "rear", "behind", "back bumper");
+
+        if (areas.Count == 0)
+        {
+            areas.AddRange(["front-bumper", "hood", "left-fender"]);
+        }
+
+        return new VehicleAreaAssessment
+        {
+            Areas = areas.Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+            Severity = areas.Count > 3 ? "Significant" : "Moderate",
+        };
+    }
+
+    private static void AddAreaWhen(
+        string description,
+        List<string> areas,
+        string area,
+        params string[] terms)
+    {
+        if (terms.Any(term => description.Contains(term, StringComparison.OrdinalIgnoreCase)))
+        {
+            areas.Add(area);
         }
     }
 
-    private ConfigurableChatClient CreateRemoteChatClient()
+    private static string DisplayVehicleDamage(
+        UIAgent<ClaimState> agent,
+        string[] areas)
     {
-        if (!Uri.TryCreate(_endpoint, UriKind.Absolute, out var endpoint))
-        {
-            throw new ArgumentException("Enter a valid absolute endpoint URL.");
-        }
+        var updatedState = ClaimStateJson.Clone(agent.State.Value);
+        updatedState.AffectedAreas = areas
+            .Where(area => !string.IsNullOrWhiteSpace(area))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        updatedState.Status = "Vehicle diagram updated";
+        agent.State.Value = updatedState;
 
-        return new ConfigurableChatClient(endpoint, _model, _apiKey, _provider);
+        return JsonSerializer.Serialize(new
+        {
+            displayedAreas = updatedState.AffectedAreas,
+        }, ClaimStateJson.Options);
     }
 
-    private void OpenDrawer()
+    private Task RecordApproval()
     {
-        _drawerOpen = true;
+        var updatedState = ClaimStateJson.Clone(ClaimState);
+        updatedState.RejectionReason = null;
+        _conversation.Agent.State.Value = updatedState;
+
+        return Task.CompletedTask;
+    }
+
+    private Task RecordRejection(string reason)
+    {
+        var updatedState = ClaimStateJson.Clone(ClaimState);
+        updatedState.RejectionReason = reason;
+        _conversation.Agent.State.Value = updatedState;
+
+        return Task.CompletedTask;
     }
 
     public void Dispose()
     {
-        _agent?.Dispose();
-        _chatClient?.Dispose();
+        _conversation.StateChangedSubscription?.Dispose();
+        _conversation.Agent.Dispose();
+        _conversation.ChatClient.Dispose();
+    }
+
+    private sealed class ClaimConversation
+    {
+        public ConfigurableChatClient ChatClient { get; init; } = default!;
+
+        public UIAgent<ClaimState> Agent { get; set; } = default!;
+
+        public IDisposable? StateChangedSubscription { get; set; }
     }
 }

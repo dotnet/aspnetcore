@@ -37,14 +37,15 @@ public class FunctionApprovalBlockTests
     }
 
     [Fact]
-    public void Reject_SetsStatusAndSignalsResume()
+    public async Task Reject_SetsStatusAndSignalsResume()
     {
         var block = CreateBlock();
 
         block.Reject("Not safe");
 
         Assert.Equal(ApprovalStatus.Rejected, block.Status);
-        Assert.True(block.GetResultAsync().IsCompleted);
+        var result = Assert.IsType<ToolApprovalResponseContent>(await block.GetResultAsync());
+        Assert.Equal("Not safe", result.Reason);
     }
 
     [Fact]

@@ -59,7 +59,7 @@ public class MessageInput : IComponent, IDisposable
 
         _statusSub ??= _agentContext.RegisterOnStatusChanged(status =>
         {
-            _isDisabled = status == ConversationStatus.Streaming;
+            _isDisabled = status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
             Render();
         });
 

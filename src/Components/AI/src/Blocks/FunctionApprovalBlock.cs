@@ -43,7 +43,7 @@ public class FunctionApprovalBlock : InteractiveFunctionBlock, IInteractiveBlock
         }
 
         Status = ApprovalStatus.Rejected;
-        var response = ApprovalRequest.CreateResponse(approved: false);
+        var response = ApprovalRequest.CreateResponse(approved: false, reason);
         NotifyChanged();
         _tcs.TrySetResult(response);
     }

@@ -24,6 +24,9 @@ public class MessageList : IComponent, IDisposable
     public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
     public RenderFragment<AgentContext>? Footer { get; set; }
 
     void IComponent.Attach(RenderHandle renderHandle)
@@ -85,6 +88,11 @@ public class MessageList : IComponent, IDisposable
                     if (_childContent is not null)
                     {
                         inner.AddContent(4, _childContent);
+                    }
+
+                    if (_turnRenderers.Count == 0 && EmptyContent is not null)
+                    {
+                        inner.AddContent(5, EmptyContent);
                     }
 
                     var seq = 100;
