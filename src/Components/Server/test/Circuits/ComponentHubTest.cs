@@ -274,10 +274,71 @@ public class ComponentHubTest
         Assert.True(lastCircuit.HasPendingPersistedCircuitState);
     }
 
+    [Fact]
+    public async Task StartCircuitFailsWithUnresolvedCircuitHandlerDependency_NotifiesClientToCheckServerLogs()
+    {
+        var circuitFactoryMock = new Mock<ICircuitFactory>();
+        circuitFactoryMock
+            .Setup(m => m.CreateCircuitHostAsync(
+                It.IsAny<IReadOnlyList<ComponentDescriptor>>(),
+                It.IsAny<CircuitClientProxy>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<IPersistentComponentStateStore>(),
+                It.IsAny<ResourceAssetCollection>()))
+            .ThrowsAsync(new InvalidOperationException("Unable to resolve service for type 'IMyUnresolvedDependency'."));
+
+        var (mockClientProxy, hub) = InitializeComponentHub(circuitFactory: circuitFactoryMock.Object);
+        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
+
+        Assert.Null(circuitSecret);
+        var errorMessage = "The circuit failed to initialize. See the server logs for more information.";
+        mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ResumeCircuitFailsWithUnresolvedCircuitHandlerDependency_NotifiesClientToCheckServerLogs()
+    {
+        var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
+        var providerMock = new Mock<ICircuitPersistenceProvider>();
+        providerMock.Setup(m => m.RestoreCircuitAsync(It.IsAny<CircuitId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PersistedCircuitState
+            {
+                RootComponents = [.. """{}"""u8],
+                ApplicationState = ReadOnlyDictionary<string, byte[]>.Empty,
+            });
+
+        var circuitFactoryMock = new Mock<ICircuitFactory>();
+        circuitFactoryMock
+            .Setup(m => m.CreateCircuitHostAsync(
+                It.IsAny<IReadOnlyList<ComponentDescriptor>>(),
+                It.IsAny<CircuitClientProxy>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<IPersistentComponentStateStore>(),
+                It.IsAny<ResourceAssetCollection>()))
+            .ThrowsAsync(new InvalidOperationException("Unable to resolve service for type 'IMyUnresolvedDependency'."));
+
+        var (mockClientProxy, hub) = InitializeComponentHub(
+            deserializer: null,
+            handleRegistry: handleRegistryMock.Object,
+            provider: providerMock.Object,
+            circuitFactory: circuitFactoryMock.Object);
+        var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
+        var result = await hub.ResumeCircuit(circuitSecret, "https://localhost:5000", "https://localhost:5000/subdir", "[]", "");
+
+        Assert.Null(result);
+        var errorMessage = "The circuit failed to initialize. See the server logs for more information.";
+        mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
     private static (Mock<ISingleClientProxy>, ComponentHub) InitializeComponentHub(
         TestServerComponentDeserializer deserializer = null,
         ICircuitHandleRegistry handleRegistry = null,
-        ICircuitPersistenceProvider provider = null)
+        ICircuitPersistenceProvider provider = null,
+        ICircuitFactory circuitFactory = null)
     {
         deserializer ??= new TestServerComponentDeserializer();
         var ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -288,7 +349,7 @@ public class ComponentHubTest
             ephemeralDataProtectionProvider);
 
         var circuitIdFactory = TestCircuitIdFactory.Instance;
-        var circuitFactory = new TestCircuitFactory(
+        var circuitFactoryInstance = circuitFactory ?? new TestCircuitFactory(
             new Mock<IServiceScopeFactory>().Object,
             NullLoggerFactory.Instance,
             circuitIdFactory,
@@ -301,7 +362,7 @@ public class ComponentHubTest
         var hub = new ComponentHub(
             serializer: deserializer,
             dataProtectionProvider: ephemeralDataProtectionProvider,
-            circuitFactory: circuitFactory,
+            circuitFactory: circuitFactoryInstance,
             circuitIdFactory: circuitIdFactory,
             circuitRegistry: circuitRegistry,
             circuitPersistenceProvider: circuitPersistenceManager,

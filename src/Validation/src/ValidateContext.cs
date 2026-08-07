@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
+
 namespace Microsoft.Extensions.Validation;
 
 /// <summary>
@@ -8,7 +10,7 @@ namespace Microsoft.Extensions.Validation;
 /// </summary>
 public sealed class ValidateContext
 {
-    private Dictionary<string, IReadOnlyList<ValidationError>>? _validationErrors;
+    private Dictionary<string, List<ValidationError>>? _validationErrors;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -44,7 +46,7 @@ public sealed class ValidateContext
     /// There are no guarantees whether or not this dictionary is lazy. Usages should treat null and empty dictionary the same.
     /// </remarks>
     public IReadOnlyDictionary<string, IReadOnlyList<ValidationError>>? ValidationErrors
-        => _validationErrors;
+        => _validationErrors?.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<ValidationError>)kvp.Value.AsReadOnly()).AsReadOnly();
 
     /// <summary>
     /// Gets or sets the current depth in the validation hierarchy.
@@ -60,7 +62,7 @@ public sealed class ValidateContext
     /// <param name="validationError">The validation error to add.</param>
     public void AddValidationError(ValidationError validationError)
     {
-        _validationErrors ??= new Dictionary<string, IReadOnlyList<ValidationError>>();
+        _validationErrors ??= new Dictionary<string, List<ValidationError>>();
 
         if (!_validationErrors.TryGetValue(validationError.Path, out var existingErrors))
         {
@@ -68,7 +70,7 @@ public sealed class ValidateContext
         }
         else
         {
-            ((List<ValidationError>)existingErrors).Add(validationError);
+            existingErrors.Add(validationError);
         }
     }
 }

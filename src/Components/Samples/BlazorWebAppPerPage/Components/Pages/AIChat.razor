@@ -1,0 +1,211 @@
+@page "/ai-chat"
+@rendermode InteractiveServer
+@using BlazorWebAppPerPage.Data
+@using Microsoft.AspNetCore.Components.AI
+@using Microsoft.Extensions.AI
+@implements IDisposable
+
+<PageTitle>AI chat components</PageTitle>
+
+<h1>AI chat components</h1>
+
+<p>
+    Select a chat shell and use the built-in echo client, or connect to an OpenAI-compatible
+    or Azure OpenAI chat-completions endpoint.
+</p>
+
+<div class="chat-configuration">
+    <div>
+        <label for="chat-shell">Chat shell</label>
+        <select id="chat-shell" class="form-select" @bind="_shell">
+            <option value="@ChatShell.Page">Page</option>
+            <option value="@ChatShell.Drawer">Drawer</option>
+            <option value="@ChatShell.Bubble">Bubble</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="chat-provider">Model provider</label>
+        <select id="chat-provider" class="form-select" @bind="_provider">
+            <option value="@ChatProvider.Echo">Echo (no model required)</option>
+            <option value="@ChatProvider.OpenAICompatible">OpenAI-compatible</option>
+            <option value="@ChatProvider.AzureOpenAI">Azure OpenAI</option>
+        </select>
+    </div>
+
+    @if (_provider != ChatProvider.Echo)
+    {
+        <div class="configuration-wide">
+            <label for="chat-endpoint">Endpoint</label>
+            <input id="chat-endpoint"
+                   class="form-control"
+                   type="url"
+                   autocomplete="off"
+                   placeholder="@EndpointPlaceholder"
+                   @bind="_endpoint" />
+        </div>
+
+        <div>
+            <label for="chat-model">@ModelLabel</label>
+            <input id="chat-model"
+                   class="form-control"
+                   autocomplete="off"
+                   placeholder="@ModelPlaceholder"
+                   @bind="_model" />
+        </div>
+
+        <div>
+            <label for="chat-api-key">@ApiKeyLabel</label>
+            <input id="chat-api-key"
+                   class="form-control"
+                   type="password"
+                   autocomplete="off"
+                   @bind="_apiKey" />
+        </div>
+    }
+
+    <div class="configuration-actions">
+        <button id="render-chat" class="btn btn-primary" @onclick="CreateChat">
+            Render chat
+        </button>
+        <span role="status">@_configurationStatus</span>
+    </div>
+</div>
+
+@if (_provider != ChatProvider.Echo)
+{
+    <p class="alert alert-warning">
+        Development sample only: configuration is kept in this server circuit and isn't persisted.
+        Don't paste production credentials into an untrusted sample host.
+    </p>
+}
+
+@if (_agent is not null)
+{
+    @switch (_activeShell)
+    {
+        case ChatShell.Page:
+            <div class="chat-page-host">
+                <ChatPage @key="_chatVersion"
+                          Agent="_agent"
+                          Placeholder="Ask a question...">
+                    <Header>
+                        <strong>AI chat page</strong>
+                    </Header>
+                    <WelcomeContent>
+                        <p>Send a message to start the conversation.</p>
+                    </WelcomeContent>
+                </ChatPage>
+            </div>
+            break;
+        case ChatShell.Drawer:
+            @if (!_drawerOpen)
+            {
+                <button class="btn btn-secondary" @onclick="OpenDrawer">Open chat drawer</button>
+            }
+            <ChatDrawer @key="_chatVersion"
+                        Agent="_agent"
+                        Title="AI chat drawer"
+                        @bind-Open="_drawerOpen"
+                        Placeholder="Ask a question..." />
+            break;
+        case ChatShell.Bubble:
+            <p class="text-muted">Use the chat button in the bottom-right corner.</p>
+            <ChatBubble @key="_chatVersion"
+                        Agent="_agent"
+                        Title="AI chat bubble"
+                        Placeholder="Ask a question..." />
+            break;
+    }
+}
+
+@code {
+    private enum ChatShell
+    {
+        Page,
+        Drawer,
+        Bubble,
+    }
+
+    private ChatShell _shell = ChatShell.Page;
+    private ChatShell _activeShell = ChatShell.Page;
+    private ChatProvider _provider = ChatProvider.Echo;
+    private string _endpoint = string.Empty;
+    private string _model = string.Empty;
+    private string _apiKey = string.Empty;
+    private string _configurationStatus = string.Empty;
+    private bool _drawerOpen = true;
+    private int _chatVersion;
+    private UIAgent? _agent;
+    private IChatClient? _chatClient;
+
+    private string EndpointPlaceholder => _provider == ChatProvider.AzureOpenAI
+        ? "https://resource.openai.azure.com"
+        : "https://api.openai.com or http://localhost:11434";
+
+    private string ModelLabel => _provider == ChatProvider.AzureOpenAI
+        ? "Deployment name"
+        : "Model";
+
+    private string ModelPlaceholder => _provider == ChatProvider.AzureOpenAI
+        ? "my-gpt-deployment"
+        : "gpt-4.1-mini";
+
+    private string ApiKeyLabel => _provider == ChatProvider.AzureOpenAI
+        ? "API key (leave empty to use DefaultAzureCredential)"
+        : "API key (optional for local models)";
+
+    protected override void OnInitialized()
+    {
+        CreateChat();
+    }
+
+    private void CreateChat()
+    {
+        try
+        {
+            IChatClient chatClient = _provider switch
+            {
+                ChatProvider.Echo => new SampleEchoChatClient(),
+                _ => CreateRemoteChatClient(),
+            };
+
+            _agent?.Dispose();
+            _chatClient?.Dispose();
+
+            _chatClient = chatClient;
+            _agent = new UIAgent(chatClient);
+            _activeShell = _shell;
+            _drawerOpen = true;
+            _chatVersion++;
+            _configurationStatus = _provider == ChatProvider.Echo
+                ? "Echo chat ready."
+                : "Model chat ready.";
+        }
+        catch (Exception exception) when (exception is ArgumentException or UriFormatException)
+        {
+            _configurationStatus = exception.Message;
+        }
+    }
+
+    private ConfigurableChatClient CreateRemoteChatClient()
+    {
+        if (!Uri.TryCreate(_endpoint, UriKind.Absolute, out var endpoint))
+        {
+            throw new ArgumentException("Enter a valid absolute endpoint URL.");
+        }
+
+        return new ConfigurableChatClient(endpoint, _model, _apiKey, _provider);
+    }
+
+    private void OpenDrawer()
+    {
+        _drawerOpen = true;
+    }
+
+    public void Dispose()
+    {
+        _agent?.Dispose();
+        _chatClient?.Dispose();
+    }
+}
