@@ -53,27 +53,17 @@
 
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
-        if (new URLSearchParams(location.search).has('captureAuthenticationRefresh')) {
-            const originalFetch = window.fetch;
-            window.authenticationRefreshTest = {
-                negotiateCount: 0,
-                async refresh() {
-                    const url = new URL('_blazor/refresh', document.baseURI);
-                    url.searchParams.set('id', this.connectionToken);
-                    return (await originalFetch(url, { method: 'POST' })).status;
-                },
-            };
-            window.fetch = async (input, init) => {
-                const response = await originalFetch(input, init);
-                if (`${input}`.includes('/negotiate')) {
-                    authenticationRefreshTest.negotiateCount++;
-                    authenticationRefreshTest.connectionToken = (await response.clone().json()).connectionToken;
-                }
-                return response;
-            };
-        }
-
         Blazor.start({
+            configureSignalR: builder => {
+                if (new URLSearchParams(location.search).has('captureAuthenticationRefresh')) {
+                    const build = builder.build.bind(builder);
+                    builder.build = () => {
+                        const connection = build();
+                        window.authenticationRefreshConnection = connection;
+                        return connection;
+                    };
+                }
+            },
             reconnectionOptions: {
                 // It's easier to test the reconnection logic if we wait a bit
                 // before attempting to reconnect

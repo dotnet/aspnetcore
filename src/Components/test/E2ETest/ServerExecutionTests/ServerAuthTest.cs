@@ -58,18 +58,23 @@ public class ServerAuthTest : AuthTest
             appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
 
         var javascript = (IJavaScriptExecutor)Browser;
-        Assert.Equal(1L, javascript.ExecuteScript("return authenticationRefreshTest.negotiateCount;"));
+        var connectionId = Assert.IsType<string>(
+            javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;"));
 
         SignInAs("Someone", "TestRole", useSeparateTab: true);
-        var refreshStatus = javascript.ExecuteAsyncScript("""
+        var refreshError = javascript.ExecuteAsyncScript("""
             const callback = arguments[arguments.length - 1];
-            authenticationRefreshTest.refresh().then(callback, error => callback(String(error)));
+            authenticationRefreshConnection.refreshAuthentication().then(
+                () => callback(),
+                error => callback(String(error)));
             """);
 
-        Assert.Equal(200L, refreshStatus);
+        Assert.Null(refreshError);
         Browser.Equal("Welcome, Someone!", () =>
             appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
-        Assert.Equal(1L, javascript.ExecuteScript("return authenticationRefreshTest.negotiateCount;"));
+        Assert.Equal(
+            connectionId,
+            Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
     }
 
     private void SignInAs(string usernName, string roles, bool useSeparateTab = false) =>
