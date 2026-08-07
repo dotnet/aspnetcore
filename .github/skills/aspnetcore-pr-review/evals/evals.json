@@ -8,6 +8,7 @@
       "files": [],
       "expectations": [
         "The review verifies that the checkout is dotnet/aspnetcore before proceeding.",
+        "The review records a GPT-family orchestrator model and does not run orchestration or final synthesis under an Anthropic model.",
         "The evidence manifest includes repository provenance, status with untracked files, the tracked diff, relevant file hashes, issue text, and validation logs or an explicit statement that logs are unavailable.",
         "The review includes four independent candidates from the configured model panel.",
         "Each candidate states a root-cause hypothesis and assesses whether an alternative is materially better than the current fix.",
@@ -69,6 +70,19 @@
         "The suggested comment includes a concrete example instead of relying on phrases such as product oracle, takeover assertion, or producer boundary.",
         "Internal technical terminology remains available in artifacts but is translated or defined in the GitHub-facing draft.",
         "No GitHub review is posted by the skill."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "The current session is running Claude Sonnet. Use aspnetcore-pr-review to review an open dotnet/aspnetcore pull request.",
+      "expected_output": "The skill stops before evidence collection and clearly requests that the review be restarted in a GPT-family orchestrator session while preserving the configured diverse candidate panel.",
+      "files": [],
+      "expectations": [
+        "The response identifies that the current orchestrator is not a GPT-family model.",
+        "The review does not begin Phase 1 or launch candidate agents.",
+        "The response requests a restart using gpt-5.6-sol or a stronger available GPT model.",
+        "The response does not replace the configured candidate panel with copies of the orchestrator model.",
+        "No repository or GitHub state is modified."
       ]
     }
   ]

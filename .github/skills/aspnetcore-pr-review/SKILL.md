@@ -41,6 +41,16 @@ This skill is intentionally repository-specific. Before using it:
 
 ## Model panel
 
+Run orchestration and final synthesis in a GPT-family session. Prefer
+`gpt-5.6-sol` or the strongest newer GPT model available. Before Phase 1,
+verify the current session model. If it is an Anthropic or other non-GPT model,
+stop and report that the review must be restarted with a GPT orchestrator
+instead of silently continuing.
+
+The orchestrator remains separate from the candidate panel. This prevents the
+two Claude candidates from also controlling evidence selection and final
+synthesis.
+
 Use four different model families/configurations:
 
 | Candidate | Model | Primary challenge |
@@ -402,6 +412,8 @@ Save the synthesized output below to `final/review.md`.
 
 ```markdown
 # Multi-Model Review
+
+**Orchestrator:** <GPT model>
 
 ## Current fix
 <summary>
