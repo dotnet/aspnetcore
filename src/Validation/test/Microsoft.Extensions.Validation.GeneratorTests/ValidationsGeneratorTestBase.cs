@@ -65,6 +65,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
                     MetadataReference.CreateFromFile(typeof(IValidatableInfoResolver).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(EndpointFilterFactoryContext).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(ValidationServiceCollectionExtensions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Localization.IStringLocalizerFactory).Assembly.Location),
                 ]);
         var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],

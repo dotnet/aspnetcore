@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
@@ -15,6 +17,37 @@ internal static class GeneratedValidationTestHelpers
         services.AddValidation(configureOptions);
         var provider = services.BuildServiceProvider();
         return (provider, provider.GetRequiredService<IOptions<ValidationOptions>>().Value);
+    }
+
+    public static (IServiceProvider Provider, ValidationOptions Options) CreateValidationServices(
+        IDictionary<string, string> translations,
+        Action<ValidationOptions>? configureOptions = null)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IStringLocalizerFactory>(new TestStringLocalizerFactory(translations));
+        services.AddValidation(configureOptions);
+        var provider = services.BuildServiceProvider();
+        return (provider, provider.GetRequiredService<IOptions<ValidationOptions>>().Value);
+    }
+
+    private sealed class TestStringLocalizerFactory(IDictionary<string, string> translations) : IStringLocalizerFactory
+    {
+        public IStringLocalizer Create(Type resourceSource) => new TestStringLocalizer(translations);
+        public IStringLocalizer Create(string baseName, string location) => new TestStringLocalizer(translations);
+    }
+
+    private sealed class TestStringLocalizer(IDictionary<string, string> translations) : IStringLocalizer
+    {
+        public LocalizedString this[string name] => translations.TryGetValue(name, out var value)
+            ? new LocalizedString(name, value, resourceNotFound: false)
+            : new LocalizedString(name, name, resourceNotFound: true);
+
+        public LocalizedString this[string name, params object[] arguments] => translations.TryGetValue(name, out var value)
+            ? new LocalizedString(name, string.Format(CultureInfo.CurrentCulture, value, arguments), resourceNotFound: false)
+            : new LocalizedString(name, name, resourceNotFound: true);
+
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+            => throw new NotSupportedException();
     }
 
     public static IValidatableTypeInfo GetTypeInfo<T>(ValidationOptions options)
@@ -39,25 +72,5 @@ internal sealed class CannedValidatableTypeInfo : IValidatableTypeInfo
     {
         validatablePropertyInfo = null;
         return false;
-    }
-}
-
-internal sealed class RecordingValidationLocalizer : IValidationLocalizer
-{
-    public string? DisplayNameResult { get; set; }
-    public string? ErrorMessageResult { get; set; }
-    public List<DisplayNameLocalizationContext> DisplayNameCalls { get; } = [];
-    public List<ErrorMessageLocalizationContext> ErrorMessageCalls { get; } = [];
-
-    public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
-    {
-        DisplayNameCalls.Add(context);
-        return DisplayNameResult;
-    }
-
-    public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context)
-    {
-        ErrorMessageCalls.Add(context);
-        return ErrorMessageResult;
     }
 }

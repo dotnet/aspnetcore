@@ -89,7 +89,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
         {
             // If we have null value here, the only thing we can validate is the type-level attributes.
             // There are no "members" to validate, and there is no IValidatableObject to validate.
-            var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+            var display = DisplayNameInfo?.GetDisplayName(context, Type) ?? Type.Name;
             await ValidateAttributesAsync(
                 context,
                 GetValidationAttributes(),
@@ -125,7 +125,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
             return;
         }
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Type) ?? Type.Name;
 
         // Validate type-level attributes
         var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(value ?? _throwawayObjectInstance, displayName, context.ServiceProvider, null);
@@ -149,7 +149,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
         {
             // If we have null value here, the only thing we can validate is the type-level attributes.
             // There are no "members" to validate, and there is no IValidatableObject to validate.
-            var display = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+            var display = DisplayNameInfo?.GetDisplayName(context, Type) ?? Type.Name;
             ValidateAllAttributesSynchronously(
                 context,
                 GetValidationAttributes(),
@@ -182,7 +182,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
             return;
         }
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Type) ?? Type.Name;
 
         // Validate type-level attributes
         var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(value ?? _throwawayObjectInstance, displayName, context.ServiceProvider, null);
@@ -340,7 +340,7 @@ file abstract class ValidatableTypeInfo : ValidatableInfo, global::Microsoft.Ext
             // Create a validation error for each member name that is provided
             var errorMessage = ResolveAttributeErrorMessage(
                 context,
-                memberName,
+                memberName: memberName,
                 displayName,
                 declaringType: Type,
                 attribute,

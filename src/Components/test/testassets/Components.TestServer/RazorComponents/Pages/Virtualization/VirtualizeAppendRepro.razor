@@ -99,6 +99,10 @@
     [SupplyParameterFromQuery(Name = "comparer")]
     public bool Comparer { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "delay")]
+    public int? DelayQuery { get; set; }
+
     private readonly Dictionary<string, object> _virtualizeAttributes = new();
 
     private int _batchSize;
@@ -125,6 +129,7 @@
     protected override void OnInitialized()
     {
         _batchSize = BatchQuery ?? 30;
+        _providerDelayMs = Math.Max(0, DelayQuery ?? 0);
         _anchorMode = string.Equals(AnchorQuery, "beginning", StringComparison.OrdinalIgnoreCase)
             ? VirtualizeAnchorMode.Start
             : VirtualizeAnchorMode.End;

@@ -49,23 +49,17 @@ file sealed class RuntimeValidatableParameterInfoResolver : global::Microsoft.Ex
         var displayAttribute = global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameterInfo);
         if (displayAttribute is { ResourceType: not null, Name: not null })
         {
-            // Resource-based display name from [Display(ResourceType = ..., Name = ...)] is the
-            // canonical localized source; the IValidationLocalizer is intentionally bypassed.
-            // The DisplayAttribute instance is retained for the lifetime of the resolver, mirroring
-            // the source-generator's static accessor design.
             return new ParameterReflectionDisplayName(displayAttribute);
         }
 
         if (displayAttribute?.Name is not null)
         {
-            // Literal name from [Display(Name = "...")].
             return new LiteralDisplayName(displayAttribute.Name);
         }
 
         var displayNameAttribute = global::System.Reflection.CustomAttributeExtensions.GetCustomAttribute<global::System.ComponentModel.DisplayNameAttribute>(parameterInfo);
         if (displayNameAttribute is not null)
         {
-            // Literal name from [DisplayName("...")].
             return new LiteralDisplayName(displayNameAttribute.DisplayName);
         }
 
@@ -86,28 +80,24 @@ file sealed class RuntimeValidatableParameterInfoResolver : global::Microsoft.Ex
 
     private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
     {
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
         {
-            var localizer = context.ValidationOptions.Localizer;
-            if (localizer is null)
+            var factory = context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) as global::Microsoft.Extensions.Localization.IStringLocalizerFactory;
+            if (factory is null)
             {
                 return literal;
             }
 
-            // The literal acts as both the lookup key for the localizer AND the fallback display
-            // name when the localizer can't translate.
-            return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
-            {
-                Type = type,
-                DisplayName = literal,
-                MemberName = memberName,
-            }) ?? literal;
+            var localizer = LocalizationHelpers.CreateStringLocalizer(context, type, factory);
+            var localizedName = localizer[literal];
+
+            return localizedName.ResourceNotFound ? literal : localizedName.Value;
         }
     }
 
     private sealed class ParameterReflectionDisplayName(global::System.ComponentModel.DataAnnotations.DisplayAttribute attribute) : DisplayNameInfo
     {
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, global::System.Type type)
             => attribute.GetName();
     }
 

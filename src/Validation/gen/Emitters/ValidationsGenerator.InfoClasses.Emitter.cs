@@ -14,6 +14,7 @@ public sealed partial class ValidationsGenerator
     private static readonly string[] s_infoClassTemplates =
     [
         "DisplayNameInfo.cs",
+        "LocalizationHelpers.cs",
         "ValidatableInfo.cs",
         "ValidatableTypeInfo.cs",
         "ValidatablePropertyInfo.cs",

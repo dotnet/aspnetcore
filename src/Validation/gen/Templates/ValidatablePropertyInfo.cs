@@ -78,7 +78,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, DeclaringType) ?? Name;
 
         var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(containingObject, displayName, context.ServiceProvider, null)
         {
@@ -178,7 +178,7 @@ file abstract class ValidatablePropertyInfo : ValidatableInfo, global::Microsoft
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, DeclaringType) ?? Name;
 
         var validationContext = new global::System.ComponentModel.DataAnnotations.ValidationContext(containingObject, displayName, context.ServiceProvider, null)
         {

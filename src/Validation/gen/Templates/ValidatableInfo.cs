@@ -71,25 +71,66 @@ file abstract class ValidatableInfo
         global::Microsoft.Extensions.Validation.ValidateContext context,
         string memberName,
         string displayName,
-        global::System.Type? declaringType,
+        global::System.Type declaringType,
         global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
         global::System.ComponentModel.DataAnnotations.ValidationResult result)
     {
-        if (context.ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
+        if (attribute.ErrorMessageResourceType is not null)
         {
             return result.ErrorMessage;
         }
 
-        var localizationContext = new global::Microsoft.Extensions.Validation.ErrorMessageLocalizationContext
+        if (context.ServiceProvider?.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory)) is not global::Microsoft.Extensions.Localization.IStringLocalizerFactory localizerFactory)
         {
-            MemberName = memberName,
-            DisplayName = displayName,
-            DeclaringType = declaringType,
-            Attribute = attribute,
-        };
+            return result.ErrorMessage;
+        }
 
-        return context.ValidationOptions.Localizer.ResolveErrorMessage(localizationContext) ?? result.ErrorMessage;
+        var lookupKey = !string.IsNullOrEmpty(attribute.ErrorMessage)
+            ? attribute.ErrorMessage
+            : context.ValidationOptions.MessageKeyProvider?.Invoke(new global::Microsoft.Extensions.Validation.ValidationMessageKeyContext
+            {
+                ValidatorType = attribute.GetType(),
+                MemberName = memberName,
+                DeclaringType = declaringType,
+            });
+
+        if (string.IsNullOrEmpty(lookupKey))
+        {
+            return result.ErrorMessage;
+        }
+
+        var localizer = LocalizationHelpers.CreateStringLocalizer(context, declaringType, localizerFactory);
+
+        var localizedTemplate = localizer[lookupKey!];
+        if (localizedTemplate.ResourceNotFound)
+        {
+            return result.ErrorMessage;
+        }
+
+        return FormatErrorMessage(attribute, global::System.Globalization.CultureInfo.CurrentCulture, localizedTemplate.Value, displayName);
     }
+
+    // Keep in sync with DataAnnotationsLocalizer.FormatMessage in
+    // src/Components/Endpoints/src/Forms/DataAnnotationsLocalizer.cs, which mirrors this switch for the
+    // Blazor SSR client-validation payload.
+    private static string FormatErrorMessage(
+        global::System.ComponentModel.DataAnnotations.ValidationAttribute attribute,
+        global::System.Globalization.CultureInfo culture,
+        string messageTemplate,
+        string displayName)
+        => attribute switch
+        {
+            global::Microsoft.Extensions.Validation.IValidationMessageFormatter selfFormatter => selfFormatter.FormatMessage(culture, messageTemplate, displayName),
+            global::System.ComponentModel.DataAnnotations.CompareAttribute a => string.Format(culture, messageTemplate, displayName, a.OtherPropertyDisplayName ?? a.OtherProperty),
+            global::System.ComponentModel.DataAnnotations.FileExtensionsAttribute a => string.Format(culture, messageTemplate, displayName, a.Extensions),
+            global::System.ComponentModel.DataAnnotations.LengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MinimumLength, a.MaximumLength),
+            global::System.ComponentModel.DataAnnotations.MaxLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
+            global::System.ComponentModel.DataAnnotations.MinLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.Length),
+            global::System.ComponentModel.DataAnnotations.RangeAttribute a => string.Format(culture, messageTemplate, displayName, a.Minimum, a.Maximum),
+            global::System.ComponentModel.DataAnnotations.RegularExpressionAttribute a => string.Format(culture, messageTemplate, displayName, a.Pattern),
+            global::System.ComponentModel.DataAnnotations.StringLengthAttribute a => string.Format(culture, messageTemplate, displayName, a.MaximumLength, a.MinimumLength),
+            _ => string.Format(culture, messageTemplate, displayName),
+        };
 
     private protected async global::System.Threading.Tasks.Task ValidateAttributesAsync(
         global::Microsoft.Extensions.Validation.ValidateContext context,
@@ -100,11 +141,6 @@ file abstract class ValidatableInfo
         string displayName,
         global::System.Threading.CancellationToken cancellationToken)
     {
-        // NOTE: In case there are no async validation attributes, there should be no performance impact.
-        // The async state machine is a class only in Debug builds. But in Release it's a struct.
-        // So it will be efficient.
-        // And if this method completed synchronously because no async validation attributes exist, this
-        // will returned the same cached instance as Task.CompletedTask.
         if (ValidateSynchronousOnly(context, validationAttributes, value, container, validationContext, displayName))
         {
             // Only validate async attributes if synchronous validation passed.
