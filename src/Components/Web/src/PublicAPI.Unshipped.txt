@@ -62,6 +62,12 @@ Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.Name.ge
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.Name.set -> void
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.SupplyParameterFromTempDataAttribute() -> void
 virtual Microsoft.AspNetCore.Components.Forms.InputFile.Dispose(bool disposing) -> void
+Microsoft.AspNetCore.Components.Web.ToggleEventArgs
+Microsoft.AspNetCore.Components.Web.ToggleEventArgs.ToggleEventArgs() -> void
+Microsoft.AspNetCore.Components.Web.ToggleEventArgs.NewState.get -> string!
+Microsoft.AspNetCore.Components.Web.ToggleEventArgs.NewState.set -> void
+Microsoft.AspNetCore.Components.Web.ToggleEventArgs.OldState.get -> string!
+Microsoft.AspNetCore.Components.Web.ToggleEventArgs.OldState.set -> void
 Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>
 Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.DisplayName() -> void
 Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
