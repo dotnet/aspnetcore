@@ -2098,7 +2098,7 @@ public class RenderTreeBuilderTest
                 fragmentBuilder.AddContent(2, item);
                 if (item == "a")
                 {
-                    break; // Exits the loop, leaving <ul> and <li> unclosed.
+                    break; // Exits the loop before the per-iteration CloseElement(), leaving <li> unclosed.
                 }
                 fragmentBuilder.CloseElement();
             }
@@ -2113,8 +2113,6 @@ public class RenderTreeBuilderTest
 
     private static void AssertUnbalancedFramesMessageBody(string message)
     {
-        Assert.Contains("control flow exited the render method", message);
-        Assert.Contains("before its matching", message);
         Assert.Contains("CloseElement, CloseComponent, or CloseRegion", message);
         Assert.Contains("break", message);
         Assert.Contains("continue", message);

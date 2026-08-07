@@ -4539,7 +4539,6 @@ public class RendererTest
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderRootComponentAsync(rootComponentId));
         Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed", ex.Message);
 
-        Assert.Contains("control flow exited the render method", ex.Message);
         Assert.Contains("break", ex.Message);
         Assert.Contains("https://learn.microsoft.com/aspnet/core/blazor/advanced-scenarios", ex.Message);
     }

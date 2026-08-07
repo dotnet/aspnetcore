@@ -816,11 +816,11 @@ public sealed class RenderTreeBuilder : IDisposable
             ref var invalidFrame = ref _entries.Buffer[_openElementIndices.Peek()];
             throw new InvalidOperationException(
                 $"Render output is invalid for component of type '{component.GetType().FullName}'. " +
-                $"A frame of type '{invalidFrame.FrameType}' was left unclosed: control flow exited " +
+                $"A frame of type '{invalidFrame.FrameType}' was left unclosed. This occurs when control flow exited " +
                 $"the render method before its matching CloseElement, CloseComponent, or " +
-                $"CloseRegion call was reached commonly via break, continue, return, throw, " +
-                $"goto, or a try/catch that returns early. " +
-                $"https://learn.microsoft.com/aspnet/core/blazor/advanced-scenarios");
+                $"CloseRegion call was reached (commonly via break, continue, return, throw, " +
+                $"goto, or a try/catch that returns early). " +
+                $"See https://learn.microsoft.com/aspnet/core/blazor/advanced-scenarios.");
         }
     }
 
