@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        var request = new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = Navigation.Uri };
+        var extraQueryParams = new Dictionary<string, object> { ["preservedExtraQueryParams"] = "true" };
+        request.TryAddAdditionalParameter("extraQueryParams", extraQueryParams);
+
+        Navigation.NavigateToLogin("authentication/login", request);
+    }
+}
