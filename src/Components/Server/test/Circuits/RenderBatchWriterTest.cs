@@ -270,6 +270,158 @@ public class RenderBatchWriterTest
             }, ReadStringTable(bytes));
     }
 
+    [Fact]
+    public void WritingReferenceFramesDoesNotMutateSourceFrames()
+    {
+        var sourceFrames = new RenderTreeFrame[]
+        {
+            RenderTreeFrame.Attribute(123, "Attribute with string value", "String value"),
+            RenderTreeFrame.Attribute(124, "Attribute with nonstring value", 1),
+            RenderTreeFrame.ChildComponent(126, typeof(object))
+                .WithComponentSubtreeLength(5678)
+                .WithComponent(new ComponentState(new FakeRenderer(), 2000, new FakeComponent(), null)),
+            RenderTreeFrame.Element(128, "Some element")
+                .WithElementSubtreeLength(1234),
+            RenderTreeFrame.ElementReferenceCapture(129, value => { })
+                .WithElementReferenceCaptureId("my unique ID"),
+            RenderTreeFrame.Region(130)
+                .WithRegionSubtreeLength(1234),
+            RenderTreeFrame.Text(131, "Some text"),
+            RenderTreeFrame.Markup(132, "Some markup"),
+            RenderTreeFrame.NamedEvent(135, "SomeEventType", "Some assigned name"),
+            RenderTreeFrame.ComponentRenderModeFrame(136, RenderMode.InteractiveAuto),
+        };
+
+        var renderBatch = new RenderBatch(
+            default,
+            new ArrayRange<RenderTreeFrame>(sourceFrames, sourceFrames.Length),
+            default,
+            default,
+            default);
+
+        var before = sourceFrames.ToArray();
+
+        var bytes = SnapshotRenderBatch(renderBatch);
+
+        // 1) Serialized output must be deterministic and match a second pass
+        //    over the same array — guaranteeing the writer does not depend
+        //    on mutated state between calls.
+        var bytes2 = SnapshotRenderBatch(renderBatch);
+        Assert.Equal(bytes, bytes2);
+
+        // 2) Per-frame field-by-field equality. This catches a regression where
+        //    the writer mutates a frame under the new `ref` parameter (e.g. for
+        //    "padding" purposes) and would otherwise be invisible to a pure
+        //    property-equality check.
+        for (var i = 0; i < sourceFrames.Length; i++)
+        {
+            AssertFrameEqual(before[i], sourceFrames[i], i);
+        }
+    }
+
+    private static void AssertFrameEqual(RenderTreeFrame expected, RenderTreeFrame actual, int index)
+    {
+        Assert.Equal(expected.FrameType, actual.FrameType);
+        switch (expected.FrameType)
+        {
+            case RenderTreeFrameType.Attribute:
+                Assert.Equal(expected.AttributeName, actual.AttributeName);
+                Assert.Equal(expected.AttributeValue, actual.AttributeValue);
+                Assert.Equal(expected.AttributeEventHandlerId, actual.AttributeEventHandlerId);
+                break;
+            case RenderTreeFrameType.Component:
+                Assert.Equal(expected.ComponentId, actual.ComponentId);
+                Assert.Equal(expected.ComponentSubtreeLength, actual.ComponentSubtreeLength);
+                break;
+            case RenderTreeFrameType.Element:
+                Assert.Equal(expected.ElementName, actual.ElementName);
+                Assert.Equal(expected.ElementSubtreeLength, actual.ElementSubtreeLength);
+                break;
+            case RenderTreeFrameType.ElementReferenceCapture:
+                Assert.Equal(expected.ElementReferenceCaptureId, actual.ElementReferenceCaptureId);
+                break;
+            case RenderTreeFrameType.Region:
+                Assert.Equal(expected.RegionSubtreeLength, actual.RegionSubtreeLength);
+                break;
+            case RenderTreeFrameType.Text:
+                Assert.Equal(expected.TextContent, actual.TextContent);
+                break;
+            case RenderTreeFrameType.Markup:
+                Assert.Equal(expected.MarkupContent, actual.MarkupContent);
+                break;
+            case RenderTreeFrameType.NamedEvent:
+                Assert.Equal(expected.NamedEventType, actual.NamedEventType);
+                Assert.Equal(expected.NamedEventAssignedName, actual.NamedEventAssignedName);
+                break;
+            case RenderTreeFrameType.ComponentRenderMode:
+                break;
+        }
+    }
+
+    [Fact]
+    public void RoundTripsEveryFrameType()
+    {
+        var renderer = new FakeRenderer();
+        var frames = new RenderTreeFrame[]
+        {
+            RenderTreeFrame.Attribute(123, "Attribute with string value", "String value"),
+            RenderTreeFrame.Attribute(124, "Attribute with nonstring value", 1),
+            RenderTreeFrame.Attribute(125, "Attribute with delegate value", new Action(() => { }))
+                .WithAttributeEventHandlerId(((ulong)uint.MaxValue) + 1),
+            RenderTreeFrame.ChildComponent(126, typeof(object))
+                .WithComponentSubtreeLength(5678)
+                .WithComponent(new ComponentState(renderer, 2000, new FakeComponent(), null)),
+            RenderTreeFrame.ComponentReferenceCapture(127, value => { }, 1001),
+            RenderTreeFrame.Element(128, "Some element")
+                .WithElementSubtreeLength(1234),
+            RenderTreeFrame.ElementReferenceCapture(129, value => { })
+                .WithElementReferenceCaptureId("my unique ID"),
+            RenderTreeFrame.Region(130)
+                .WithRegionSubtreeLength(1234),
+            RenderTreeFrame.Text(131, "Some text"),
+            RenderTreeFrame.Markup(132, "Some markup"),
+            RenderTreeFrame.Text(133, "\n\t  "),
+            RenderTreeFrame.NamedEvent(135, "SomeEventType", "Some assigned name"),
+            RenderTreeFrame.ComponentRenderModeFrame(136, RenderMode.InteractiveAuto),
+        };
+
+        var bytes = Serialize(new RenderBatch(
+            default,
+            new ArrayRange<RenderTreeFrame>(frames, frames.Length),
+            default,
+            default,
+            default));
+
+        // locate the reference-frames section and verify the entire contents
+        var referenceFramesStartIndex = ReadInt(bytes, bytes.Length - 16);
+        AssertBinaryContents(bytes, referenceFramesStartIndex,
+            frames.Length,
+            RenderTreeFrameType.Attribute, "Attribute with string value", "String value", 0, 0,
+            RenderTreeFrameType.Attribute, "Attribute with nonstring value", NullStringMarker, 0, 0,
+            RenderTreeFrameType.Attribute, "Attribute with delegate value", NullStringMarker, ((ulong)uint.MaxValue) + 1,
+            RenderTreeFrameType.Component, 5678, 2000, 0, 0,
+            RenderTreeFrameType.ComponentReferenceCapture, 0, 0, 0, 0,
+            RenderTreeFrameType.Element, 1234, "Some element", 0, 0,
+            RenderTreeFrameType.ElementReferenceCapture, "my unique ID", 0, 0, 0,
+            RenderTreeFrameType.Region, 1234, 0, 0, 0,
+            RenderTreeFrameType.Text, "Some text", 0, 0, 0,
+            RenderTreeFrameType.Markup, "Some markup", 0, 0, 0,
+            RenderTreeFrameType.Text, "\n\t  ", 0, 0, 0,
+            RenderTreeFrameType.NamedEvent, 0, 0, 0, 0,
+            RenderTreeFrameType.ComponentRenderMode, 0, 0, 0, 0
+        );
+    }
+
+    static byte[] SnapshotRenderBatch(RenderBatch renderBatch)
+    {
+        using var ms = new MemoryStream();
+        using (var writer = new RenderBatchWriter(ms, leaveOpen: false))
+        {
+            writer.Write(renderBatch);
+        }
+        return ms.ToArray();
+    }
+
     private Span<byte> Serialize(RenderBatch renderBatch)
     {
         using (var ms = new MemoryStream())
