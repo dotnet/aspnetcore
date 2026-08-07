@@ -4505,9 +4505,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     private void WindowScrollMidListAndWaitForRender(IJavaScriptExecutor js)
     {
-        js.ExecuteScript("window.scrollTo(0, 5000)");
         Browser.True(() =>
         {
+            js.ExecuteScript("window.scrollTo(0, 5000)");
+
             var scrollY = (long)js.ExecuteScript("return Math.round(window.scrollY)");
             return scrollY > 4000;
         }, TimeSpan.FromSeconds(5));
