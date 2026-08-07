@@ -217,7 +217,6 @@
     <MSTestTestAdapterVersion>$(MSTestVersion)</MSTestTestAdapterVersion>
     <MicrosoftTestingExtensionsTrxReportVersion>2.2.3</MicrosoftTestingExtensionsTrxReportVersion>
     <MicrosoftTestingPlatformMSBuildVersion>2.2.3</MicrosoftTestingPlatformMSBuildVersion>
-    <MicrosoftTestingExtensionsRetryVersion>2.2.3</MicrosoftTestingExtensionsRetryVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>

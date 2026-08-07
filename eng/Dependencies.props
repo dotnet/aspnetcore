@@ -252,7 +252,6 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
     <LatestPackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
     <LatestPackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="$(MicrosoftTestingPlatformMSBuildVersion)" />
-    <LatestPackageReference Include="Microsoft.Testing.Extensions.Retry" Version="$(MicrosoftTestingExtensionsRetryVersion)" />
     <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
     <!-- Components.AI (Microsoft.Extensions.AI) -->
     <LatestPackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
