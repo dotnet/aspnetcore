@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -18,7 +17,6 @@ internal partial class SessionCascadingValueSupplier
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
-    private bool _onStartingRegistered;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
 
@@ -37,10 +35,10 @@ internal partial class SessionCascadingValueSupplier
         SupplyParameterFromSessionAttribute attribute,
         CascadingParameterInfo parameterInfo)
     {
-        if (!_onStartingRegistered && _httpContext is not null)
+        if (_httpContext is not null)
         {
-            _onStartingRegistered = true;
-            _httpContext.Response.OnStarting(PersistAllValues);
+            // Ensure that session cookie is issued to allow for persistence from streaming context
+            SessionEstablishmentHelper.TryRegisterSessionEstablishment(_httpContext);
         }
 
         var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
@@ -62,7 +60,11 @@ internal partial class SessionCascadingValueSupplier
         return new PropertyGetter(type, propertyInfo);
     }
 
-    internal ISession? GetSession() => _httpContext?.Features.Get<ISessionFeature>()?.Session;
+    // A null HttpContext means we're rendering interactively (Server circuit or WebAssembly),
+    // where the session isn't available; yield null instead of failing. When an HttpContext is
+    // present (static SSR) an unavailable session is a misconfiguration and fails fast.
+    internal ISession? GetSession()
+        => _httpContext is null ? null : SessionResolver.GetRequiredSession(_httpContext);
 
     internal void RegisterValueCallback(string sessionKey, Func<object?> valueGetter)
     {
@@ -82,6 +84,7 @@ internal partial class SessionCascadingValueSupplier
         var session = GetSession();
         if (session is null)
         {
+            Log.SessionUnavailable(_logger);
             return Task.CompletedTask;
         }
 
@@ -121,6 +124,9 @@ internal partial class SessionCascadingValueSupplier
 
         [LoggerMessage(2, LogLevel.Warning, "Deserialization of the element from session failed.", EventName = "SessionDeserializeFail")]
         public static partial void SessionDeserializeFail(ILogger logger, Exception exception);
+
+        [LoggerMessage(3, LogLevel.Warning, "No active HttpContext is available (interactive rendering); [SupplyParameterFromSession] is skipped.", EventName = "SessionUnavailable")]
+        public static partial void SessionUnavailable(ILogger logger);
     }
 
     internal partial class SessionSubscription : CascadingParameterSubscription
@@ -154,6 +160,7 @@ internal partial class SessionCascadingValueSupplier
             var session = _owner.GetSession();
             if (session is null)
             {
+                Log.SessionUnavailable(_owner._logger);
                 return null;
             }
 

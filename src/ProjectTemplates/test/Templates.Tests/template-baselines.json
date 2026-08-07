@@ -3757,10 +3757,10 @@
       ]
     }
   },
-  "blazor-wasm-servicedefaults": {
+  "blazorwasm-servicedefaults": {
     "Default": {
-      "Template": "blazor-wasm-servicedefaults",
-      "Arguments": "new blazor-wasm-servicedefaults",
+      "Template": "blazorwasm-servicedefaults",
+      "Arguments": "new blazorwasm-servicedefaults",
       "Files": [
         "BackgroundExportHandler.cs",
         "Extensions.cs",

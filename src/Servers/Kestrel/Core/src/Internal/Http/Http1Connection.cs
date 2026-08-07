@@ -69,6 +69,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     // Tracks whether a HTTP/2 preface was detected during the first request.
     private bool _http2PrefaceDetected;
 
+    // Tracks whether a bare LF line terminator was seen for the current request
+    private bool _sawBareLineFeedTerminator;
+
     public Http1Connection(HttpConnectionContext context)
     {
         Initialize(context);
@@ -388,6 +391,28 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             reader.Advance(trimmedReader.Consumed);
             return HttpParseResult.Complete;
         }
+    }
+
+    public void OnBareLineFeedTerminator(bool rejected)
+    {
+        // Only record the metric and log once per request even if multiple lines use a bare LF terminator.
+        if (_sawBareLineFeedTerminator)
+        {
+            return;
+        }
+
+        _sawBareLineFeedTerminator = true;
+
+        // Bare LF terminators only exist in HTTP/1.x. The per-request version is not always known yet
+        // (e.g. when the request line itself is rejected), so fall back to the representative HTTP/1.x value.
+        var httpVersion = _httpVersion switch
+        {
+            Http.HttpVersion.Http10 => KestrelMetrics.Http10,
+            _ => KestrelMetrics.Http11,
+        };
+
+        Log.Http1BareLineFeedTerminator(ConnectionId, httpVersion, rejected);
+        ServiceContext.Metrics.BareLineFeedRequest(MetricsContext, rejected, httpVersion);
     }
 
     public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
@@ -816,6 +841,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTargetForm = HttpRequestTarget.Unknown;
         _absoluteRequestTarget = null;
         _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
+        _sawBareLineFeedTerminator = false;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 

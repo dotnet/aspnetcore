@@ -57,11 +57,12 @@ internal static class TempDataProviderServiceCollectionExtensions
         var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
         var tempDataInstance = tempDataService.CreateEmpty(httpContext);
         httpContext.Items[HttpContextItemKey] = tempDataInstance;
-        httpContext.Response.OnStarting(() =>
+
+        // Ensure that session cookie is issued to allow for persistence from streaming context
+        if (httpContext.RequestServices.GetService<ITempDataProvider>() is SessionStorageTempDataProvider)
         {
-            tempDataService.Save(httpContext, tempDataInstance);
-            return Task.CompletedTask;
-        });
+            SessionEstablishmentHelper.TryRegisterSessionEstablishment(httpContext);
+        }
 
         return tempDataInstance;
     }

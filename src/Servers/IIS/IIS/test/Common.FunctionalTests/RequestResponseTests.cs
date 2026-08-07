@@ -789,6 +789,28 @@ public class RequestResponseTests
     }
 
     [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task SendTransferEncodingWithTrailingCommaAndContentLength_ContentLengthShouldBeRemoved()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/66720.
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            await connection.Send(
+                "POST /TransferEncodingWithTrailingCommaAndContentLengthShouldBeRemove HTTP/1.1",
+                "Transfer-Encoding: chunked,",
+                "Content-Length: 5",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+        }
+    }
+
+    [ConditionalFact]
     public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
     {
         using (var connection = _fixture.CreateTestConnection())

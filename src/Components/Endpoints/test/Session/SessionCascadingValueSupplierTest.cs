@@ -5,7 +5,9 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -72,6 +74,18 @@ public class SessionCascadingValueSupplierTest
     }
 
     [Fact]
+    public async Task PersistAllValues_KeepsKey_WhenCallbackReturnsValue()
+    {
+        var httpContext = CreateHttpContextWithSession();
+
+        _supplier.RegisterValueCallback("key", () => "value");
+        _supplier.SetRequestContext(httpContext);
+        await _supplier.PersistAllValues();
+
+        Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
+    }
+
+    [Fact]
     public async Task PersistAllValues_HandlesMultipleKeys()
     {
         _supplier.RegisterValueCallback("key1", () => "value1");
@@ -128,7 +142,23 @@ public class SessionCascadingValueSupplierTest
     }
 
     [Fact]
-    public async Task PersistAllValues_NoOp_WhenSessionUnavailable()
+    public async Task PersistAllValues_LogsWarningAndSkips_WhenHttpContextNotSet()
+    {
+        var sink = new TestSink();
+        var supplier = new SessionCascadingValueSupplier(
+            new TestLoggerFactory(sink, enabled: true).CreateLogger<SessionCascadingValueSupplier>());
+        supplier.RegisterValueCallback("key", () => "value");
+
+        // No SetRequestContext: mimics interactive rendering where no HttpContext is available.
+        await supplier.PersistAllValues();
+
+        var write = Assert.Single(sink.Writes);
+        Assert.Equal(LogLevel.Warning, write.LogLevel);
+        Assert.Equal("SessionUnavailable", write.EventId.Name);
+    }
+
+    [Fact]
+    public async Task PersistAllValues_Throws_WhenSessionUnavailable()
     {
         _supplier.RegisterValueCallback("key", () => "value");
 
@@ -136,7 +166,19 @@ public class SessionCascadingValueSupplierTest
         httpContext.Features.Set<IHttpResponseFeature>(new TestHttpResponseFeature());
         _supplier.SetRequestContext(httpContext);
 
-        await _supplier.PersistAllValues();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _supplier.PersistAllValues());
+    }
+
+    [Fact]
+    public async Task PersistAllValues_Throws_WhenSessionIsNull()
+    {
+        _supplier.RegisterValueCallback("key", () => "value");
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Features.Set<ISessionFeature>(new TestSessionFeature(null!));
+        _supplier.SetRequestContext(httpContext);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _supplier.PersistAllValues());
     }
 
     [Fact]
@@ -160,17 +202,17 @@ public class SessionCascadingValueSupplierTest
     }
 
     [Fact]
-    public async Task SetRequestContext_DoesNotRegisterOnStarting_UntilSubscriptionCreated()
+    public async Task SetRequestContext_DoesNotPersist_UntilExplicitlyCalled()
     {
         _supplier.RegisterValueCallback("key", () => "value");
 
-        var httpContext = CreateHttpContextWithSession(out var responseFeature);
+        var httpContext = CreateHttpContextWithSession();
         _supplier.SetRequestContext(httpContext);
 
-        // OnStarting has not been registered yet because no subscription was created
-        await responseFeature.FireOnStartingAsync();
-
         Assert.Null(httpContext.Session.GetString("key"));
+
+        await _supplier.PersistAllValues();
+        Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
     }
 
     internal static DefaultHttpContext CreateHttpContextWithSession()

@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using AngleSharp;
 using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
-using AngleSharp.Extensions;
+using AngleSharp.Html.Dom;
 using AngleSharp.Html;
 using HtmlGenerationWebSite;
 using Microsoft.AspNetCore.Hosting;
