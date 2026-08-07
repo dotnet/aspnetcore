@@ -1,0 +1,75 @@
+{
+  "skill_name": "aspnetcore-pr-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In a dotnet/aspnetcore checkout, run the ASP.NET Core multi-model adversarial review against issue #66479 and the current local ToggleEventArgs implementation. Do not modify the parent checkout or post anything. An isolated disposable child worktree may be used for empirical validation. Determine whether the current fix and strict red/green E2E test are complete and whether any independent alternative is better.",
+      "expected_output": "Four independent model candidates, an adversarial cross-examination, isolated empirical adjudication of the strongest surviving behavioral finding, and a final keep/revise/replace recommendation grounded in strict red/green evidence or explicitly downgraded when execution is blocked.",
+      "files": [],
+      "expectations": [
+        "The review verifies that the checkout is dotnet/aspnetcore before proceeding.",
+        "The evidence manifest includes repository provenance, status with untracked files, the tracked diff, relevant file hashes, issue text, and validation logs or an explicit statement that logs are unavailable.",
+        "The review includes four independent candidates from the configured model panel.",
+        "Each candidate states a root-cause hypothesis and assesses whether an alternative is materially better than the current fix.",
+        "For stateful or lifecycle-sensitive code, candidates trace state entry, ordinary successful exit, interruption exit, ownership, and the observable consequence of stranded state.",
+        "Raw candidate and cross-examination outputs are preserved under deterministic names outside the repository.",
+        "Compatibility, browser-support, API-breaking, and test-execution claims have exact citations or are labeled unsupported.",
+        "The adversarial round explicitly classifies claims or candidates as supported, disputed, or discarded.",
+        "A high-severity falsifiable minority finding can enter empirical adjudication without requiring a second model to agree first.",
+        "The synthesis evaluates the strict red/green evidence and identifies any test coverage gaps.",
+        "After consensus, the strongest testable behavioral finding is adjudicated in empirical mode in an isolated child session or disposable worktree.",
+        "The empirical report records a proof ladder that distinguishes source invariant, consumer behavior, producer/runtime behavior, and production-candidate coverage.",
+        "Empirical adjudication preserves the same discriminating assertion failing at the frozen reviewed state and passing after the candidate correction, with commands, diffs, and complete logs.",
+        "The frozen red fails at the predicted behavioral assertion rather than an infrastructure, build, setup, stale-element, or unrelated harness failure.",
+        "The first green is treated as causal evidence rather than sufficient proof of production readiness.",
+        "Any recommended implementation is challenged with a lifecycle-derived stress matrix and the real producer/runtime path when applicable.",
+        "Timing-sensitive candidates are rerun to detect instability, and inconsistent outcomes prevent a production-proven recommendation.",
+        "Other blocker-caliber behavioral claims are empirically falsified when practical or explicitly downgraded rather than carried forward untested.",
+        "A secondary claim that fails at its predicted frozen-head assertion is promoted using its achieved proof level rather than falling through synthesis.",
+        "Production-candidate stress testing explicitly continues in the same isolated worktree through a sequential empirical try-fix handoff.",
+        "If empirical adjudication cannot run, behavioral findings are reported as blocked on evidence rather than high-confidence implementation blockers.",
+        "The parent checkout remains unchanged throughout empirical validation.",
+        "The final output separately reports finding proof, scenario proof, candidate proof, implementation verdict, merge readiness, and calibrated confidence."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In a dotnet/aspnetcore checkout, review a local patch for a stateful browser component that opens a long list at an initial anchor. The implementation appears to finish the initial state after pixel alignment, but an authoritative maintainer note says the anchor must remain pinned through unrelated content growth and transfer control only after explicit user navigation. Do not post or push. Prove or reject a separate report that boundary keys cannot take over while the initial anchor is active.",
+      "expected_output": "A lifecycle-aware review that treats the maintainer clarification as the product oracle, rejects alignment completion as inferred intent, and proves the separate boundary-key defect with a focused real-browser red/green assertion while preserving retention through one adjacent content change.",
+      "files": [],
+      "expectations": [
+        "The review records a product oracle that distinguishes authoritative maintainer context from behavior inferred from implementation or tests.",
+        "The lifecycle analysis states which events retain the initial anchor and which explicit events transfer control.",
+        "The review does not recommend ending ownership merely because pixel alignment or measurement completed.",
+        "The browser assertion changes only one item immediately above the initial anchor and verifies that the anchor remains pinned before user navigation.",
+        "A real browser or repository E2E test drives the initial anchor followed by a boundary key and obtains a behavioral failure that the final range did not load.",
+        "A stale-element exception, setup failure, build failure, or unrelated timeout is explicitly rejected as behavioral red evidence.",
+        "The report distinguishes unit-level callback proof from proof of the actual browser producer sequence.",
+        "The first candidate green is treated as diagnostic rather than production-ready.",
+        "The identical focused assertion is repeated against frozen head and the candidate in every required execution mode.",
+        "The empirical agent does not replace the focused one-item change with a global layout-mode change.",
+        "A human product clarification overrides earlier model consensus and is reflected in all downstream recommendations.",
+        "Before synthesis, the review compares the live PR head with the frozen evidence head and reruns or narrows evidence if relevant paths changed.",
+        "The final report recommends durable public documentation, internal invariants, paired behavioral tests, or agent guidance for product knowledge that was previously missing.",
+        "Suggested review comments lead with the concrete user action and visible failure instead of unexplained proof terminology.",
+        "The final report separately states finding proof, scenario proof, candidate proof, and whether an exact implementation can safely be recommended.",
+        "No GitHub state or parent worktree is modified."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review a dotnet/aspnetcore pull request with a well-supported browser defect and produce the local-only final review. The internal evidence uses lifecycle and producer-classification terminology, but the target maintainer asked for plain language. While validation is running, the pull request receives a new commit that changes a relevant test.",
+      "expected_output": "The review checks whether the new head invalidates or supersedes the frozen evidence, refreshes affected proof when needed, and drafts a concise maintainer-facing comment that explains the concrete action, visible failure, causal path, and requested change without unexplained internal jargon.",
+      "files": [],
+      "expectations": [
+        "The review records the frozen head and checks the live pull request head again before final synthesis.",
+        "Relevant head drift causes the affected evidence to be rerun or explicitly narrowed rather than presented as current-head proof.",
+        "The suggested comment begins with the concrete action and visible failure.",
+        "The suggested comment explains only the minimum causal code path needed to justify the request.",
+        "The suggested comment includes a concrete example instead of relying on phrases such as product oracle, takeover assertion, or producer boundary.",
+        "Internal technical terminology remains available in artifacts but is translated or defined in the GitHub-facing draft.",
+        "No GitHub review is posted by the skill."
+      ]
+    }
+  ]
+}

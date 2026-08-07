@@ -1,0 +1,22 @@
+{
+  "skill_name": "aspnetcore-try-fix",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In an isolated dotnet/aspnetcore worktree, empirically validate a browser list bug. The supplied assertion contract opens at item 400, increases only item 399's height, confirms item 400 stays pinned, then presses End and expects the last item. Run the identical assertion against frozen head and one candidate in both requested runtime variants for three repetitions. Do not post or push.",
+      "expected_output": "A structured empirical candidate that preserves the exact focused stimulus, reaches the End assertion, reports every execution, and does not substitute a global variable-height or all-items layout change.",
+      "files": [],
+      "expectations": [
+        "The candidate states the product oracle and its source confidence before proposing a fix.",
+        "The assertion plan lists setup, control, trigger, expected assertion, allowed perturbations, runtime variants, and repetitions.",
+        "Only the specified adjacent item is resized before the boundary-key trigger.",
+        "The test does not substitute a global layout-mode or all-items height change.",
+        "A failure before the End trigger is classified as a scenario mismatch or separate finding rather than proof of the requested claim.",
+        "Frozen-head and candidate runs use the identical behavioral assertion.",
+        "The execution matrix contains one result for every requested runtime variant and repetition.",
+        "The response distinguishes finding proof, scenario proof, candidate proof, and assertion fidelity.",
+        "No GitHub state or parent worktree is modified."
+      ]
+    }
+  ]
+}
