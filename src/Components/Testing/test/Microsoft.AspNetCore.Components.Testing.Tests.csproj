@@ -43,6 +43,66 @@
   </ItemGroup>
 
   <!--
+    Package integration tests inspect a real nupkg and prebuilt consumer outputs. Build those
+    prerequisites here rather than restoring/building consumer projects while tests are executing.
+  -->
+  <PropertyGroup>
+    <_PackageConsumerRoot>$(MSBuildThisFileDirectory)..\testassets\PackageConsumer\</_PackageConsumerRoot>
+    <_PackageConsumerProject>$(_PackageConsumerRoot)Tests\PackageConsumer.Tests.csproj</_PackageConsumerProject>
+    <_PackageConsumerVersion>0.0.0-package-integration</_PackageConsumerVersion>
+    <_PackageConsumerFeed>$(ArtifactsTmpDir)ComponentsTestingPackageConsumer\$(Configuration)\feed\</_PackageConsumerFeed>
+    <_PackageConsumerPackagesRoot>$(ArtifactsTmpDir)ComponentsTestingPackageConsumer\packages\</_PackageConsumerPackagesRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ComponentsTestingPackagePath</_Parameter1>
+      <_Parameter2>$(_PackageConsumerFeed)Microsoft.AspNetCore.Components.Testing.$(_PackageConsumerVersion).nupkg</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PackageConsumerRoot</_Parameter1>
+      <_Parameter2>$(_PackageConsumerRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PackageConsumerTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PackageConsumerConfiguration</_Parameter1>
+      <_Parameter2>$(Configuration)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <Target Name="_PrepareComponentsTestingPackageConsumer"
+          AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(NoBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true'">
+    <PropertyGroup>
+      <!-- A unique package root prevents a previously loaded MSBuild task DLL from pinning stale package contents. -->
+      <_PackageConsumerPackagesPath>$(_PackageConsumerPackagesRoot)$([System.Guid]::NewGuid())\</_PackageConsumerPackagesPath>
+      <_PackageConsumerProperties>Configuration=$(Configuration);PackageConsumerVersion=$(_PackageConsumerVersion);PackageConsumerTargetFramework=$(DefaultNetCoreTargetFramework);PackageConsumerMSTestVersion=$(MSTestVersion);PackageConsumerTestingPlatformVersion=$(MicrosoftTestingPlatformMSBuildVersion);RestoreSources=$(_PackageConsumerFeed);RestoreFallbackFolders=$(NuGetPackageRoot);RestorePackagesPath=$(_PackageConsumerPackagesPath)</_PackageConsumerProperties>
+    </PropertyGroup>
+    <RemoveDir Directories="$(_PackageConsumerFeed)" />
+    <MakeDir Directories="$(_PackageConsumerFeed);$(_PackageConsumerPackagesPath)" />
+    <MSBuild Projects="..\src\Microsoft.AspNetCore.Components.Testing.csproj"
+             Targets="Pack"
+             Properties="Configuration=$(Configuration);NoBuild=true;PackageOutputPath=$(_PackageConsumerFeed);PackageVersion=$(_PackageConsumerVersion)"
+             RemoveProperties="TargetFramework" />
+    <RemoveDir Directories="$(_PackageConsumerRoot)App\bin;$(_PackageConsumerRoot)App\obj;$(_PackageConsumerRoot)Tests\bin;$(_PackageConsumerRoot)Tests\obj" />
+    <MSBuild Projects="$(_PackageConsumerProject)"
+             Targets="Restore"
+             Properties="$(_PackageConsumerProperties);RestoreForce=true;RestoreNoCache=true"
+             RemoveProperties="BuildProjectReferences;NoBuild" />
+    <MSBuild Projects="$(_PackageConsumerProject)"
+             Targets="Build"
+             Properties="$(_PackageConsumerProperties)"
+             RemoveProperties="BuildProjectReferences;NoBuild" />
+    <MSBuild Projects="$(_PackageConsumerProject)"
+             Targets="Publish"
+             Properties="$(_PackageConsumerProperties);E2EAppMode=publish;NoBuild=true"
+             RemoveProperties="BuildProjectReferences" />
+  </Target>
+
+  <!--
     xUnit v3 projects are self-executing test runners (OutputType=Exe).
     Arcade's RunTests target is not available because UsingToolXUnit=false
     prevents importing XUnit.targets. Define a minimal RunTests target
