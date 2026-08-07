@@ -119,6 +119,103 @@ public class WebViewBuildBehaviorTests
     }
 
     [ConditionalFact]
+    public void Publish_AppAndRclWithoutJsModulesBothReferencingWebView_ProducesSingleFallbackManifest()
+    {
+        using var build = new ConsumerBuild(_output);
+
+        build.CreateProject("rcl", "rcl.csproj", $"""
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <TargetFramework>{StaticWebAssetsTestData.DefaultTargetFramework}</TargetFramework>
+              </PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="{StaticWebAssetsTestData.PackageVersion}" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        build.CreateProject("app", "app.csproj", $"""
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <TargetFramework>{StaticWebAssetsTestData.DefaultTargetFramework}</TargetFramework>
+                <OutputType>Exe</OutputType>
+              </PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="{StaticWebAssetsTestData.PackageVersion}" />
+                <ProjectReference Include="..\rcl\rcl.csproj" />
+              </ItemGroup>
+            </Project>
+            """);
+        build.CreateFile("app/Program.cs", "class Program { static void Main() { } }");
+
+        var result = build.Run("publish -c Release -v:m", "app/app.csproj");
+        if (result.LooksLikeNetworkFailure)
+        {
+            return;
+        }
+
+        Assert.True(result.Succeeded, $"Publish should succeed.\n{result.Output}");
+        Assert.DoesNotContain("Conflicting assets with the same target path", result.Output);
+
+        var routes = GetModulesManifestRoutes(build.Root);
+        Assert.Equal("_framework/blazor.modules.json", Assert.Single(routes));
+
+        var publishedManifest = FindPublishedFile(build.Root, "blazor.modules.json");
+        Assert.NotNull(publishedManifest);
+        Assert.Equal("[]", File.ReadAllText(publishedManifest!).Trim());
+    }
+
+    [ConditionalFact]
+    public void Publish_AppAndRclWithJsModulesBothReferencingWebView_ProducesSingleModulesManifest()
+    {
+        using var build = new ConsumerBuild(_output);
+
+        build.CreateProject("rcl", "rcl.csproj", $"""
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <TargetFramework>{StaticWebAssetsTestData.DefaultTargetFramework}</TargetFramework>
+              </PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="{StaticWebAssetsTestData.PackageVersion}" />
+              </ItemGroup>
+            </Project>
+            """);
+        build.CreateFile("rcl/wwwroot/rcl.lib.module.js", "export function afterStarted() {}");
+
+        build.CreateProject("app", "app.csproj", $"""
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <TargetFramework>{StaticWebAssetsTestData.DefaultTargetFramework}</TargetFramework>
+                <OutputType>Exe</OutputType>
+              </PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="{StaticWebAssetsTestData.PackageVersion}" />
+                <ProjectReference Include="..\rcl\rcl.csproj" />
+              </ItemGroup>
+            </Project>
+            """);
+        build.CreateFile("app/Program.cs", "class Program { static void Main() { } }");
+
+        var result = build.Run("publish -c Release -v:m", "app/app.csproj");
+        if (result.LooksLikeNetworkFailure)
+        {
+            return;
+        }
+
+        Assert.True(result.Succeeded, $"Publish should succeed.\n{result.Output}");
+        Assert.DoesNotContain("Conflicting assets with the same target path", result.Output);
+
+        var routes = GetModulesManifestRoutes(build.Root);
+        Assert.Equal("_framework/blazor.modules.json", Assert.Single(routes));
+
+        var publishedManifest = FindPublishedFile(build.Root, "blazor.modules.json");
+        Assert.NotNull(publishedManifest);
+        var publishedContent = File.ReadAllText(publishedManifest!);
+        Assert.Contains("_content/rcl/", publishedContent);
+        Assert.Contains(".lib.module.js", publishedContent);
+    }
+
+    [ConditionalFact]
     public void Publish_ProjectReferenceToWebViewWithJsModuleRcl_SucceedsWithSingleModulesManifest()
     {
         // ProjectReference (P2P) variant of the publish repro. An app references the WebView *source
