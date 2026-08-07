@@ -111,6 +111,28 @@ public class ValidatableParameterInfoTests : ValidationTestBase
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public async Task Validate_WithDictionaryOfValidatableType_ValidatesEachValue(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var parameterInfo = GetParameter(nameof(ParameterActions.DictionaryPeopleParameter));
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+        var people = new Dictionary<string, ParameterPerson>
+        {
+            ["valid"] = new() { Name = "Valid" },
+            ["invalid"] = new() // Name is null, should fail
+        };
+
+        await ValidateAsync(paramInfo, people, context, useAsync, default);
+
+        var error = Assert.Single(context.ValidationErrors!);
+        Assert.Equal("people[invalid].Name", error.Key);
+        Assert.Equal("The Name field is required.", error.Value.Select(e => e.ErrorMessage).Single());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task Validate_MultipleErrorsOnSameParameter_CollectsAllErrors(bool useAsync)
     {
         var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
@@ -201,6 +223,7 @@ public static class ParameterActions
     public static void RangeParameter([Display(Name = "Test Parameter")][Range(10, 100)] int testParam) { }
     public static void PersonParameter(ParameterPerson person) { }
     public static void PeopleParameter([Required] IEnumerable<ParameterPerson> people) { }
+    public static void DictionaryPeopleParameter(Dictionary<string, ParameterPerson> people) { }
     public static void MultipleErrorsParameter([Display(Name = "Test Parameter")][Range(10, 100, ErrorMessage = "Range error")][AlwaysFailsValidation(ErrorMessage = "Custom error")] int testParam) { }
     public static void ThrowingParameter([ThrowingValidation] string testParam) { }
 }

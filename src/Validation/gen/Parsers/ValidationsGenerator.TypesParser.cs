@@ -64,7 +64,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     internal static bool TryExtractValidatableType(ITypeSymbol incomingTypeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
     {
-        var typeSymbol = incomingTypeSymbol.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable));
+        var typeSymbol = incomingTypeSymbol.UnwrapType();
         if (typeSymbol.SpecialType != SpecialType.None)
         {
             return false;

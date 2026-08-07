@@ -73,28 +73,38 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
 
             var tracker = new AsyncValidationTracker(context);
 
-            foreach (var item in enumerable)
+            var enumerator = enumerable.GetEnumerator();
+            try
             {
-                if (item != null)
+                while (enumerator.MoveNext())
                 {
-                    if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
-                    {
-                        var currentContext = tracker.NextContext();
+                    var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
 
-                        currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                            ? $"{Name}[{index}]"
-                            : $"{currentPrefix}.{Name}[{index}]";
-                        try
+                    if (item != null)
+                    {
+                        if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                         {
-                            tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
-                        }
-                        catch (global::System.Exception ex)
-                        {
-                            tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
+                            var currentContext = tracker.NextContext();
+
+                            currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                ? $"{Name}[{key}]"
+                                : $"{currentPrefix}.{Name}[{key}]";
+                            try
+                            {
+                                tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
+                            }
+                            catch (global::System.Exception ex)
+                            {
+                                tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
+                            }
                         }
                     }
+                    index++;
                 }
-                index++;
+            }
+            finally
+            {
+                (enumerator as global::System.IDisposable)?.Dispose();
             }
 
             try
@@ -143,26 +153,36 @@ file abstract class ValidatableParameterInfo : ValidatableInfo, global::Microsof
 
             var validationOptions = context.ValidationOptions;
 
-            foreach (var item in enumerable)
+            var enumerator = enumerable.GetEnumerator();
+            try
             {
-                if (item != null)
+                while (enumerator.MoveNext())
                 {
-                    if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                    var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
+
+                    if (item != null)
                     {
-                        context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                            ? $"{Name}[{index}]"
-                            : $"{currentPrefix}.{Name}[{index}]";
-                        try
+                        if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                         {
-                            validatableType.Validate(item, context);
-                        }
-                        finally
-                        {
-                            context.CurrentValidationPath = currentPrefix;
+                            context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                ? $"{Name}[{key}]"
+                                : $"{currentPrefix}.{Name}[{key}]";
+                            try
+                            {
+                                validatableType.Validate(item, context);
+                            }
+                            finally
+                            {
+                                context.CurrentValidationPath = currentPrefix;
+                            }
                         }
                     }
+                    index++;
                 }
-                index++;
+            }
+            finally
+            {
+                (enumerator as global::System.IDisposable)?.Dispose();
             }
         }
         // If not enumerable, validate the single value

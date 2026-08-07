@@ -199,6 +199,9 @@ public class ComplexType
     // Nullable to validate https://github.com/dotnet/aspnetcore/issues/61737
     public List<SubType>? ListOfSubTypes { get; set; } = [];
 
+    // Validates dictionary values are validated https://github.com/dotnet/aspnetcore/issues/61953
+    public Dictionary<string, SubType>? DictionaryOfSubTypes { get; set; } = [];
+
     [DerivedValidation(ErrorMessage = "Value must be an even number")]
     public int IntegerWithDerivedValidationAttribute { get; set; }
 
@@ -265,6 +268,7 @@ public class TestService
             await InvalidRequiredSubtypePropertyProducesError(endpoint);
             await InvalidSubTypeWithInheritancePropertyProducesError(endpoint);
             await InvalidListOfSubTypesProducesError(endpoint);
+            await InvalidDictionaryOfSubTypesProducesError(endpoint);
             await InvalidPropertyWithDerivedValidationAttributeProducesError(endpoint);
             await InvalidPropertyWithMultipleAttributesProducesError(endpoint);
             await InvalidPropertyWithCustomValidationProducesError(endpoint);
@@ -429,6 +433,40 @@ public class TestService
                 kvp =>
                 {
                     Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
+                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                });
+            }
+
+            async Task InvalidDictionaryOfSubTypesProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "DictionaryOfSubTypes": {
+                        "first": {
+                            "RequiredProperty": "",
+                            "StringWithLength": "way-too-long"
+                        },
+                        "second": {
+                            "RequiredProperty": "valid",
+                            "StringWithLength": "valid"
+                        }
+                    }
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors,
+                kvp =>
+                {
+                    Assert.Equal("DictionaryOfSubTypes[first].RequiredProperty", kvp.Key);
+                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("DictionaryOfSubTypes[first].StringWithLength", kvp.Key);
                     Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                 });
             }

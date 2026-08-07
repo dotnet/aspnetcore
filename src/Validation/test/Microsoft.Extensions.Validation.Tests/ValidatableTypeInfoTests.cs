@@ -84,6 +84,31 @@ public class ValidatableTypeInfoTests : ValidationTestBase
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public async Task Validate_HandlesDictionary_OfValidatableTypes(bool useAsync)
+    {
+        var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<GeneratedCatalog>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+        var catalog = new GeneratedCatalog
+        {
+            Items = new()
+            {
+                ["valid"] = new() { ProductName = "Valid", Quantity = 5 },
+                ["invalid"] = new() // ProductName is null, Quantity is 0 (out of range)
+            }
+        };
+
+        await ValidateAsync(typeInfo, catalog, context, useAsync, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Contains("Items[invalid].ProductName", context.ValidationErrors.Keys);
+        Assert.Contains("Items[invalid].Quantity", context.ValidationErrors.Keys);
+        Assert.DoesNotContain("Items[valid].ProductName", context.ValidationErrors.Keys);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task Validate_HandlesNullValues_Appropriately(bool useAsync)
     {
         var (provider, options) = GeneratedValidationTestHelpers.CreateValidationServices();
@@ -229,6 +254,12 @@ public class GeneratedOrderItem
     public string? ProductName { get; set; }
     [Range(1, 100)]
     public int Quantity { get; set; }
+}
+
+[ValidatableType]
+public class GeneratedCatalog
+{
+    public Dictionary<string, GeneratedOrderItem> Items { get; set; } = [];
 }
 
 [ValidatableType]

@@ -1197,34 +1197,45 @@ namespace Microsoft.Extensions.Validation.Generated
             try
             {
                 // Handle enumerable values
-                if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
+                if (IsEnumerable(PropertyType) && propertyValue is global::System.Collections.IEnumerable enumerable)
                 {
                     var index = 0;
                     var currentPrefix = context.CurrentValidationPath;
 
                     var tracker = new AsyncValidationTracker(context);
-                    foreach (var item in enumerable)
-                    {
-                        if (item != null)
-                        {
-                            var itemType = item.GetType();
-                            if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
-                            {
-                                var currentContext = tracker.NextContext();
 
-                                currentContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
-                                try
+                    var enumerator = enumerable.GetEnumerator();
+                    try
+                    {
+                        while (enumerator.MoveNext())
+                        {
+                            var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
+
+                            if (item is not null)
+                            {
+                                var itemType = item.GetType();
+                                if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                                 {
-                                    tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
-                                }
-                                catch (global::System.Exception ex)
-                                {
-                                    tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
+                                    var currentContext = tracker.NextContext();
+
+                                    currentContext.CurrentValidationPath = $"{currentPrefix}[{key}]";
+                                    try
+                                    {
+                                        tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
+                                    }
+                                    catch (global::System.Exception ex)
+                                    {
+                                        tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
+                                    }
                                 }
                             }
-                        }
 
-                        index++;
+                            index++;
+                        }
+                    }
+                    finally
+                    {
+                        (enumerator as global::System.IDisposable)?.Dispose();
                     }
 
                     await tracker.CompleteAsync();
@@ -1297,24 +1308,34 @@ namespace Microsoft.Extensions.Validation.Generated
             try
             {
                 // Handle enumerable values
-                if (IsEnumerable(PropertyType) && propertyValue is System.Collections.IEnumerable enumerable)
+                if (IsEnumerable(PropertyType) && propertyValue is global::System.Collections.IEnumerable enumerable)
                 {
                     var index = 0;
                     var currentPrefix = context.CurrentValidationPath;
 
-                    foreach (var item in enumerable)
+                    var enumerator = enumerable.GetEnumerator();
+                    try
                     {
-                        if (item != null)
+                        while (enumerator.MoveNext())
                         {
-                            var itemType = item.GetType();
-                            if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
-                            {
-                                context.CurrentValidationPath = $"{currentPrefix}[{index}]";
-                                validatableType.Validate(item, context);
-                            }
-                        }
+                            var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
 
-                        index++;
+                            if (item is not null)
+                            {
+                                var itemType = item.GetType();
+                                if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                                {
+                                    context.CurrentValidationPath = $"{currentPrefix}[{key}]";
+                                    validatableType.Validate(item, context);
+                                }
+                            }
+
+                            index++;
+                        }
+                    }
+                    finally
+                    {
+                        (enumerator as global::System.IDisposable)?.Dispose();
                     }
 
                     context.CurrentValidationPath = currentPrefix;
@@ -1436,28 +1457,38 @@ namespace Microsoft.Extensions.Validation.Generated
 
                 var tracker = new AsyncValidationTracker(context);
 
-                foreach (var item in enumerable)
+                var enumerator = enumerable.GetEnumerator();
+                try
                 {
-                    if (item != null)
+                    while (enumerator.MoveNext())
                     {
-                        if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
-                        {
-                            var currentContext = tracker.NextContext();
+                        var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
 
-                            currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                                ? $"{Name}[{index}]"
-                                : $"{currentPrefix}.{Name}[{index}]";
-                            try
+                        if (item != null)
+                        {
+                            if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                             {
-                                tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
-                            }
-                            catch (global::System.Exception ex)
-                            {
-                                tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
+                                var currentContext = tracker.NextContext();
+
+                                currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                    ? $"{Name}[{key}]"
+                                    : $"{currentPrefix}.{Name}[{key}]";
+                                try
+                                {
+                                    tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
+                                }
+                                catch (global::System.Exception ex)
+                                {
+                                    tracker.Track(global::System.Threading.Tasks.Task.FromException(ex));
+                                }
                             }
                         }
+                        index++;
                     }
-                    index++;
+                }
+                finally
+                {
+                    (enumerator as global::System.IDisposable)?.Dispose();
                 }
 
                 try
@@ -1506,26 +1537,36 @@ namespace Microsoft.Extensions.Validation.Generated
 
                 var validationOptions = context.ValidationOptions;
 
-                foreach (var item in enumerable)
+                var enumerator = enumerable.GetEnumerator();
+                try
                 {
-                    if (item != null)
+                    while (enumerator.MoveNext())
                     {
-                        if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                        var (key, item) = enumerator is global::System.Collections.IDictionaryEnumerator de ? (de.Key, de.Value) : ((object)index, enumerator.Current);
+
+                        if (item != null)
                         {
-                            context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                                ? $"{Name}[{index}]"
-                                : $"{currentPrefix}.{Name}[{index}]";
-                            try
+                            if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                             {
-                                validatableType.Validate(item, context);
-                            }
-                            finally
-                            {
-                                context.CurrentValidationPath = currentPrefix;
+                                context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                    ? $"{Name}[{key}]"
+                                    : $"{currentPrefix}.{Name}[{key}]";
+                                try
+                                {
+                                    validatableType.Validate(item, context);
+                                }
+                                finally
+                                {
+                                    context.CurrentValidationPath = currentPrefix;
+                                }
                             }
                         }
+                        index++;
                     }
-                    index++;
+                }
+                finally
+                {
+                    (enumerator as global::System.IDisposable)?.Dispose();
                 }
             }
             // If not enumerable, validate the single value
