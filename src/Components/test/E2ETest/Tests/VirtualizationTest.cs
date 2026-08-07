@@ -5286,15 +5286,17 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
     }
 
-    private void MountAnchorModeForScrollToItem(bool variableHeight = false, bool delay = false)
+    private void MountAnchorModeForScrollToItem(bool useProvider, bool variableHeight = false, bool delay = false)
     {
         Browser.MountTestComponent<VirtualizationAnchorMode>();
         var container = Browser.Exists(By.Id("scroll-container"));
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
-        // All ScrollToItem tests use ItemsProvider per design.
-        Browser.Exists(By.Id("toggle-provider")).Click();
-        Browser.True(() => GetElementCount(container, ".item") > 0);
+        if (useProvider)
+        {
+            Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+        }
 
         if (variableHeight)
         {
@@ -5381,10 +5383,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     private long GetScrollTop(IJavaScriptExecutor js, IWebElement container)
         => (long)js.ExecuteScript("return Math.round(arguments[0].scrollTop)", container);
 
-    [Fact]
-    public void ScrollToItem_FixedHeight_LandsAtTop()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_FixedHeight_LandsAtTop(bool useProvider)
     {
-        MountAnchorModeForScrollToItem(delay: true);
+        MountAnchorModeForScrollToItem(useProvider, delay: useProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -5396,10 +5400,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
     }
 
-    [Fact]
-    public void ScrollToItem_VariableHeight_LandsAtTop()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_VariableHeight_LandsAtTop(bool useProvider)
     {
-        MountAnchorModeForScrollToItem(variableHeight: true, delay: true);
+        MountAnchorModeForScrollToItem(useProvider, variableHeight: true, delay: useProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -5411,10 +5417,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Variable-height: top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
     }
 
-    [Fact]
-    public void ScrollToItem_NegativeIndex_ScrollsToTop()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_NegativeIndex_ScrollsToTop(bool useProvider)
     {
-        MountAnchorModeForScrollToItem(delay: true);
+        MountAnchorModeForScrollToItem(useProvider, delay: useProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -5432,10 +5440,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetTopRenderedIndex(js) == 0);
     }
 
-    [Fact]
-    public void ScrollToItem_MaxIntIndex_ScrollsToLast()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_MaxIntIndex_ScrollsToLast(bool useProvider)
     {
-        MountAnchorModeForScrollToItem(delay: true);
+        MountAnchorModeForScrollToItem(useProvider, delay: useProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
@@ -5464,10 +5474,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "));
     }
 
-    [Fact]
-    public void ScrollToItem_ForwardThenBackward()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_ForwardThenBackward(bool useProvider)
     {
-        MountAnchorModeForScrollToItem(delay: true);
+        MountAnchorModeForScrollToItem(useProvider, delay: useProvider);
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(300);
@@ -5486,7 +5498,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void ScrollToItem_WithProviderDelay_NoPlaceholderAtTarget()
     {
         // When ScrollToItemAsync completes, the target row must show content, not placeholder.
-        MountAnchorModeForScrollToItem(delay: true);
+        MountAnchorModeForScrollToItem(useProvider: true, delay: true);
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(300);
@@ -5513,15 +5525,21 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(1, false)]
-    [InlineData(5, false)]
-    [InlineData(500, false)]
-    [InlineData(1, true)]
-    [InlineData(5, true)]
-    [InlineData(500, true)]
-    public void InitialIndex_OpensAtTargetWithRealContent(int initialIndex, bool variableHeight)
+    [InlineData(1, false, false)]
+    [InlineData(5, false, false)]
+    [InlineData(500, false, false)]
+    [InlineData(1, true, false)]
+    [InlineData(5, true, false)]
+    [InlineData(500, true, false)]
+    [InlineData(1, false, true)]
+    [InlineData(5, false, true)]
+    [InlineData(500, false, true)]
+    [InlineData(1, true, true)]
+    [InlineData(5, true, true)]
+    [InlineData(500, true, true)]
+    public void InitialIndex_OpensAtTargetWithRealContent(int initialIndex, bool variableHeight, bool useProvider)
     {
-        MountAnchorModeForScrollToItem(variableHeight: variableHeight, delay: true);
+        MountAnchorModeForScrollToItem(useProvider, variableHeight: variableHeight, delay: useProvider);
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.Exists(By.Id("unload-list")).Click();
@@ -5534,10 +5552,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
     }
 
-    [Fact]
-    public void InitialIndex_BeyondCount_ClampsToEnd()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InitialIndex_BeyondCount_ClampsToEnd(bool useProvider)
     {
-        MountAnchorModeForScrollToItem(delay: true);
+        MountAnchorModeForScrollToItem(useProvider, delay: useProvider);
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.Exists(By.Id("unload-list")).Click();
@@ -5563,7 +5583,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void ScrollToItem_AsyncProvider_VariableHeight_WithDelay_ReachesTarget(int target)
     {
         // Combines the two hardest dimensions: variable-height measurement and a delayed ItemsProvider.
-        MountAnchorModeForScrollToItem(variableHeight: true, delay: true);
+        MountAnchorModeForScrollToItem(useProvider: true, variableHeight: true, delay: true);
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(target);
@@ -5578,7 +5598,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void ScrollToItem_RapidCalls_OnlyLastTargetReached()
     {
         // Q4: cancel-and-switch — even with 5 calls back-to-back, the final target wins.
-        MountAnchorModeForScrollToItem(delay: true);
+        MountAnchorModeForScrollToItem(useProvider: true, delay: true);
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.Exists(By.Id("scroll-to-item-rapid")).Click();
@@ -5592,7 +5612,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void ScrollToItem_ExternalCancellation_TaskCancels()
     {
-        MountAnchorModeForScrollToItem(delay: true);
+        // Provider-only: external cancellation is meaningful during the 500ms provider fetch window.
+        MountAnchorModeForScrollToItem(useProvider: true, delay: true);
         var js = (IJavaScriptExecutor)Browser;
 
         SetScrollTargetIndex(450);
@@ -5612,7 +5633,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void ScrollToItem_UserScrollDuringProviderFetch_UserScrollWins()
     {
         // While the provider is fetching for ScrollToItemAsync, a real user scroll must win.
-        MountAnchorModeForScrollToItem();
+        // Provider-only, and with no fetch delay: this test gates the provider explicitly instead.
+        MountAnchorModeForScrollToItem(useProvider: true, delay: false);
         var js = (IJavaScriptExecutor)Browser;
         var container = Browser.Exists(By.Id("scroll-container"));
 
@@ -5692,11 +5714,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         return i < 0 ? int.MaxValue : i;
     }
 
-    [Fact]
-    public void ScrollToItem_AnchorStart_AtTop_LandsAtTarget()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_AnchorStart_AtTop_LandsAtTarget(bool useProvider)
     {
         // Anchor restore must NOT fight an active scroll.
-        MountAnchorModeForScrollToItem(delay: true);
+        MountAnchorModeForScrollToItem(useProvider, delay: useProvider);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
