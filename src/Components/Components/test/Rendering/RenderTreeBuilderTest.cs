@@ -2102,12 +2102,13 @@ public class RenderTreeBuilderTest
                 }
                 fragmentBuilder.CloseElement();
             }
+            fragmentBuilder.CloseElement();
         };
 
         builder.AddContent(0, fragment);
 
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed", ex.Message);
+        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed", ex.Message);
         AssertUnbalancedFramesMessageBody(ex.Message);
     }
 
