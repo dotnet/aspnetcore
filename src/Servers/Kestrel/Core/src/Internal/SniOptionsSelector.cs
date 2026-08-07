@@ -117,7 +117,7 @@ internal sealed class SniOptionsSelector
     {
         SniOptions? sniOptions = null;
 
-        if (!string.IsNullOrEmpty(serverName) && !_exactNameOptions.TryGetValue(serverName, out sniOptions))
+        if (IsValidSniServerName(serverName) && !_exactNameOptions.TryGetValue(serverName, out sniOptions))
         {
             foreach (var (suffix, options) in _wildcardPrefixOptions)
             {
@@ -175,6 +175,15 @@ internal sealed class SniOptionsSelector
 
         return (sslOptions, sniOptions.ClientCertificateMode);
     }
+
+    // RFC 6066 §3 requires the SNI server_name to be a syntactically valid DNS hostname and
+    // forbids a trailing dot. Uri.CheckHostName already rejects empty labels, leading dots,
+    // non-LDH characters, embedded nulls, and IP literals, but it accepts a trailing dot as
+    // the DNS root, so that needs an explicit check. The empty-string check has to live here
+    // too (rather than at the call site) so the JIT can see it guards serverName[^1] and skip
+    // the bounds check.
+    private static bool IsValidSniServerName(string serverName) =>
+        !string.IsNullOrEmpty(serverName) && serverName[^1] != '.' && Uri.CheckHostName(serverName) == UriHostNameType.Dns;
 
     public static ValueTask<SslServerAuthenticationOptions> OptionsCallback(TlsHandshakeCallbackContext callbackContext)
     {
