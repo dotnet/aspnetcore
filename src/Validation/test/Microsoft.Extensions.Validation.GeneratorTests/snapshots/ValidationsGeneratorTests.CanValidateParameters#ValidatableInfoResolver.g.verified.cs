@@ -82,22 +82,6 @@ namespace Microsoft.Extensions.Validation.Generated
                 );
                 return true;
             }
-            if (type == typeof(global::System.Collections.Generic.KeyValuePair<string, global::TestService>))
-            {
-                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
-                    type: typeof(global::System.Collections.Generic.KeyValuePair<string, global::TestService>),
-                    members: [
-                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::System.Collections.Generic.KeyValuePair<string, global::TestService>),
-                            propertyType: typeof(global::TestService),
-                            name: "Value",
-                            displayNameInfo: null
-                        ),
-                    ],
-                    displayNameInfo: null
-                );
-                return true;
-            }
 
             return false;
         }

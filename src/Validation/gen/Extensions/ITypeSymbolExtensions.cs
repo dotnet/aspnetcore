@@ -21,6 +21,18 @@ internal static class ITypeSymbolExtensions
             return false;
         }
 
+        // TODO: Remove this check in .NET 12.
+        // It doesn't accurately reflect enumerables.
+        // The given type itself couldn't be generic, but it could be implementing IEnumerable<T>.
+        // For example:
+        // public class StudentList : List<Student> { }
+        // Note that this fix might bring us dictionary support for free.
+        // https://github.com/dotnet/aspnetcore/issues/61953
+        if (type.TypeArguments.Length != 1)
+        {
+            return false;
+        }
+
         if (type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
         {
             elementType = type.TypeArguments[0];
@@ -31,7 +43,9 @@ internal static class ITypeSymbolExtensions
         {
             if (iface.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
             {
-                elementType = iface.TypeArguments[0];
+                // TODO: Use iface.TypeArguments[0] instead of type.TypeArguments[0] in .NET 12.
+                // This is the right way to get the element type of the IEnumerable<T>.
+                elementType = type.TypeArguments[0];
                 return true;
             }
         }
