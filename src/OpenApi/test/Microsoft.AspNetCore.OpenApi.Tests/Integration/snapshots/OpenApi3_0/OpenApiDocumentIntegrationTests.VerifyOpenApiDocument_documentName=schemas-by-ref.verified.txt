@@ -756,6 +756,23 @@
             "description": "OK"
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplexHierarchyModel"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/schemas-by-ref/nullable-array-elements": {
@@ -773,6 +790,51 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-and-non-nullable-array-elements": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "nullableValues",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "enum": [
+                      null
+                    ]
+                  },
+                  {
+                    "$ref": "#/components/schemas/TestEnum"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "values",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TestEnum"
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
