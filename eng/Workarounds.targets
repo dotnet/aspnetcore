@@ -41,39 +41,6 @@
   </Target>
 
   <!--
-    Workaround for https://github.com/NuGet/NuGet.Client/pull/7531 regression with Arcade nuspec templates.
-
-    NuGet.Client PR #7531 introduced GetPackOutputItemsTask (invoked during _GetOutputItemsFromPack).
-    When NuspecFile is set, this task reads the package ID directly from the nuspec XML via NuspecReader.GetId(),
-    overwriting the PackageId MSBuild property value. Arcade nuspec templates use the custom $CommonMetadataElements$
-    composite token for the entire <metadata> section - meaning there is no direct <id> XML element in the file.
-    NuspecReader.GetId() therefore returns an empty string, producing a broken output path like ".{version}.nupkg".
-
-    Fix: temporarily clear NuspecFile immediately before _GetOutputItemsFromPack runs, so GetPackOutputItemsTask
-    skips the nuspec-reading branch and uses the PackageId MSBuild property directly. Restore NuspecFile afterward
-    so that GenerateNuspec can still use the nuspec template as expected.
-
-    The upstream Arcade fix is tracked in https://github.com/dotnet/arcade/pull/17227.
-  -->
-  <Target Name="_SaveNuspecFileBeforePackOutputItems"
-          BeforeTargets="_GetOutputItemsFromPack"
-          Condition="'$(NuspecFile)' != ''">
-    <PropertyGroup>
-      <_SavedNuspecFileForPackOutputItems>$(NuspecFile)</_SavedNuspecFileForPackOutputItems>
-      <NuspecFile />
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="_RestoreNuspecFileAfterPackOutputItems"
-          AfterTargets="_GetOutputItemsFromPack"
-          Condition="'$(_SavedNuspecFileForPackOutputItems)' != ''">
-    <PropertyGroup>
-      <NuspecFile>$(_SavedNuspecFileForPackOutputItems)</NuspecFile>
-      <_SavedNuspecFileForPackOutputItems />
-    </PropertyGroup>
-  </Target>
-
-  <!--
     Work around https://github.com/dotnet/aspnetcore/issues/62807
     Parallel builds race on shared project outputs: a dependency's CopyFilesToOutputDirectory
     can overwrite a DLL/PDB while a consumer's _CopyFilesMarkedCopyLocal reads it, causing
