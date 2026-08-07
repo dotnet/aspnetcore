@@ -1,0 +1,78 @@
+@page "/richtext"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.AI
+@using Microsoft.Extensions.AI
+@implements IDisposable
+
+<PageTitle>Rich Text Demo</PageTitle>
+
+<h1 id="page-title">Rich Text Demo</h1>
+
+<AgentBoundary Agent="_agent">
+    <MessageList />
+    <MessageInput Placeholder="Ask a question..." />
+</AgentBoundary>
+
+@code {
+    private UIAgent _agent = default!;
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent(new RichTextDemoChatClient());
+    }
+
+    public void Dispose()
+    {
+        _agent?.Dispose();
+    }
+
+    private sealed class RichTextDemoChatClient : IChatClient
+    {
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            // Stream text that forms multiple paragraphs via \n\n
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new TextContent("Here is some information about Blazor.")]
+            };
+
+            await Task.Delay(50, cancellationToken);
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new TextContent("\n\nBlazor is a framework for building interactive web UIs using C# instead of JavaScript.")]
+            };
+
+            await Task.Delay(50, cancellationToken);
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new TextContent(" It supports multiple render modes including Server, WebAssembly, and Auto.")]
+            };
+
+            await Task.Delay(50, cancellationToken);
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new TextContent("\n\nWith .NET 10, Blazor continues to evolve with new features like rich text content blocks and source generators.")]
+            };
+        }
+
+        public Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+
+        public void Dispose() { }
+    }
+}

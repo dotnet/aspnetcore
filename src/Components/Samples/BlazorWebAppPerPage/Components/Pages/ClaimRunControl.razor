@@ -1,0 +1,46 @@
+@using Microsoft.AspNetCore.Components.AI
+@implements IDisposable
+
+@if (_status == ConversationStatus.Streaming)
+{
+    <button type="button"
+            class="claim-cancel"
+            aria-label="Cancel claim assessment"
+            @onclick="CancelAsync">
+        Cancel
+    </button>
+}
+
+@code {
+    private AgentContext? _subscribedContext;
+    private IDisposable? _statusSubscription;
+    private ConversationStatus _status;
+
+    [CascadingParameter]
+    public AgentContext AgentContext { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_subscribedContext, AgentContext))
+        {
+            return;
+        }
+
+        _statusSubscription?.Dispose();
+        _subscribedContext = AgentContext;
+        _status = AgentContext.Status;
+        _statusSubscription = AgentContext.RegisterOnStatusChanged(status =>
+        {
+            _status = status;
+            _ = InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private Task CancelAsync()
+        => AgentContext.CancelAsync();
+
+    public void Dispose()
+    {
+        _statusSubscription?.Dispose();
+    }
+}

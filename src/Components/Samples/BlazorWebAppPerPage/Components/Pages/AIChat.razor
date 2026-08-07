@@ -1,0 +1,313 @@
+@page "/ai-chat"
+@rendermode InteractiveServer
+@using System.Text.Json
+@using BlazorWebAppPerPage.Data
+@using Microsoft.AspNetCore.Components.AI
+@using Microsoft.Extensions.AI
+@implements IDisposable
+@inject ILogger<AIChat> Logger
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>AutoSure claim assistant</PageTitle>
+
+<div class="claim-app">
+    <header class="claim-header">
+        <div>
+            <span class="claim-eyebrow">AutoSure claims</span>
+            <h1>Vehicle damage assessment</h1>
+            <p>Describe what happened and review the agent's preliminary assessment.</p>
+        </div>
+        <div class="claim-header__actions">
+            <div class="claim-connection" aria-label="Agent connection">
+                <span class="claim-connection__dot" aria-hidden="true"></span>
+                @_conversation.ChatClient.ConnectionDescription
+            </div>
+        </div>
+    </header>
+
+    <div class="claim-workspace">
+        <aside class="claim-summary" aria-labelledby="claim-summary-heading">
+            <div class="claim-summary__heading">
+                <div>
+                    <span class="claim-eyebrow">Claim</span>
+                    <h2 id="claim-summary-heading">@ClaimState.ClaimNumber</h2>
+                </div>
+                <span class="claim-status claim-status--@ClaimState.Decision.ToLowerInvariant()">
+                    @ClaimState.Status
+                </span>
+            </div>
+
+            <ClaimVehicleDiagram State="ClaimState" />
+
+            <dl class="claim-details">
+                <div>
+                    <dt>Accident</dt>
+                    <dd>@ClaimState.AccidentSummary</dd>
+                </div>
+                <div>
+                    <dt>Assessment</dt>
+                    <dd>@ClaimState.AssessmentSummary</dd>
+                </div>
+                <div>
+                    <dt>Confidence</dt>
+                    <dd>@(ClaimState.Confidence == 0 ? "Waiting" : $"{ClaimState.Confidence}%")</dd>
+                </div>
+                <div>
+                    <dt>Decision</dt>
+                    <dd>@ClaimState.Decision</dd>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(ClaimState.RejectionReason))
+                {
+                    <div>
+                        <dt>Rejection reason</dt>
+                        <dd>@ClaimState.RejectionReason</dd>
+                    </div>
+                }
+            </dl>
+
+            <div class="claim-scope-note">
+                <strong>POC scope</strong>
+                Image upload and voice input follow after the POC.
+            </div>
+        </aside>
+
+        <section class="claim-chat" aria-label="Claim assistant chat">
+            <ChatPage Agent="_conversation.Agent"
+                      Suggestions="_suggestions"
+                      Placeholder="Describe the accident..."
+                      class="claim-chat-page">
+                <Header>
+                    <div class="claim-chat-header">
+                        <div class="claim-avatar" aria-hidden="true">AI</div>
+                        <div>
+                            <strong>Damage assessment agent</strong>
+                            <span role="status" aria-live="polite">@ClaimState.Status</span>
+                        </div>
+                    </div>
+                </Header>
+                <MessageListContent>
+                    <BlockRenderer TBlock="FunctionInvocationContentBlock"
+                        When="block => block.ToolName == IdentifyVehicleAreasTool"
+                        Context="block">
+                        <VehicleDamageBlock Block="block" />
+                    </BlockRenderer>
+                    <BlockRenderer TBlock="UIActionBlock"
+                        When="block => block.ToolName == DisplayVehicleDamageTool"
+                        Context="block">
+                        <VehicleDiagramAction Block="block" />
+                    </BlockRenderer>
+                    <BlockRenderer TBlock="FunctionApprovalBlock" Context="block">
+                        <ClaimApprovalBlock Block="block"
+                                            OnApproved="RecordApproval"
+                                            OnRejected="RecordRejection" />
+                    </BlockRenderer>
+                </MessageListContent>
+                <WelcomeContent>
+                    <div class="claim-welcome">
+                        <div class="claim-welcome__icon" aria-hidden="true">✦</div>
+                        <div>
+                            <strong>Start your claim</strong>
+                            <p>Include where the vehicle was hit and any visible damage.</p>
+                        </div>
+                    </div>
+                </WelcomeContent>
+                <InputLeadingActions>
+                    <ClaimRunControl />
+                </InputLeadingActions>
+            </ChatPage>
+        </section>
+    </div>
+</div>
+
+@code {
+    private const string IdentifyVehicleAreasTool = "identify_vehicle_areas";
+    private const string DisplayVehicleDamageTool = "display_vehicle_damage";
+
+    private readonly IReadOnlyList<Suggestion> _suggestions =
+    [
+        new()
+        {
+            Label = "Front impact",
+            Prompt = "Another car backed into the front of my parked car. The bumper is cracked and the hood looks bent.",
+        },
+        new()
+        {
+            Label = "Side impact",
+            Prompt = "A vehicle hit the driver's side at low speed. The front door and left fender are dented.",
+        },
+        new()
+        {
+            Label = "Windshield damage",
+            Prompt = "Road debris struck the windshield and also chipped the hood.",
+        },
+    ];
+
+    private ClaimConversation _conversation = default!;
+    private ClaimState ClaimState => _conversation.Agent.State.Value;
+
+    protected override void OnInitialized()
+    {
+        _conversation = CreateConversation("CLM-1042");
+    }
+
+    private ClaimConversation CreateConversation(string claimNumber)
+    {
+        var state = new ClaimState
+        {
+            ClaimNumber = claimNumber,
+        };
+        var conversation = new ClaimConversation
+        {
+            ChatClient = new ConfigurableChatClient(),
+        };
+        UIAgent<ClaimState>? agent = null;
+
+        var identifyVehicleAreas = AIFunctionFactory.Create(
+            (string description) => IdentifyVehicleAreas(description),
+            IdentifyVehicleAreasTool,
+            "Identifies likely affected vehicle areas from an accident description.");
+        var displayVehicleDamage = AIFunctionFactory.Create(
+            (string[] areas) => DisplayVehicleDamage(agent!, areas),
+            DisplayVehicleDamageTool,
+            "Highlights affected areas on the vehicle diagram.");
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [identifyVehicleAreas],
+            RawRepresentationFactory = _ => new ClaimAgUiRunInput
+            {
+                State = JsonSerializer.SerializeToElement(agent!.State.Value, ClaimStateJson.Options),
+            },
+        };
+
+        agent = new UIAgent<ClaimState>(
+            conversation.ChatClient,
+            options =>
+            {
+                options.ChatOptions = chatOptions;
+                options.RegisterUIAction(displayVehicleDamage);
+                options.AddBlockHandler(new ClaimErrorContentHandler(Logger));
+                options.StateMapper = context => MapClaimState(agent!, context);
+            },
+            LoggerFactory,
+            state);
+        conversation.Agent = agent;
+
+        conversation.StateChangedSubscription = agent.State.OnChanged(() =>
+        {
+            _ = InvokeAsync(StateHasChanged);
+        });
+
+        return conversation;
+    }
+
+    private static bool MapClaimState(
+        UIAgent<ClaimState> agent,
+        StateMapperContext context)
+    {
+        var currentState = agent.State.Value;
+        ClaimState? mappedState = context.Update.RawRepresentation switch
+        {
+            ClaimAgUiStateSnapshotEvent snapshot =>
+                snapshot.Snapshot.Deserialize<ClaimState>(ClaimStateJson.Options),
+            ClaimAgUiStateDeltaEvent delta => ClaimStateJson.ApplyDelta(currentState, delta.Delta),
+            _ => null,
+        };
+
+        if (mappedState is null)
+        {
+            return false;
+        }
+
+        context.SetState(mappedState);
+        return true;
+    }
+
+    private static VehicleAreaAssessment IdentifyVehicleAreas(string description)
+    {
+        var areas = new List<string>();
+        AddAreaWhen(description, areas, "front-bumper", "front", "bumper", "backed into");
+        AddAreaWhen(description, areas, "hood", "hood", "bonnet");
+        AddAreaWhen(description, areas, "windshield", "windshield", "windscreen", "glass");
+        AddAreaWhen(description, areas, "left-fender", "driver", "left", "fender");
+        AddAreaWhen(description, areas, "left-door", "driver door", "left door", "side");
+        AddAreaWhen(description, areas, "right-fender", "passenger", "right fender");
+        AddAreaWhen(description, areas, "right-door", "passenger door", "right door");
+        AddAreaWhen(description, areas, "rear-bumper", "rear", "behind", "back bumper");
+
+        if (areas.Count == 0)
+        {
+            areas.AddRange(["front-bumper", "hood", "left-fender"]);
+        }
+
+        return new VehicleAreaAssessment
+        {
+            Areas = areas.Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+            Severity = areas.Count > 3 ? "Significant" : "Moderate",
+        };
+    }
+
+    private static void AddAreaWhen(
+        string description,
+        List<string> areas,
+        string area,
+        params string[] terms)
+    {
+        if (terms.Any(term => description.Contains(term, StringComparison.OrdinalIgnoreCase)))
+        {
+            areas.Add(area);
+        }
+    }
+
+    private static string DisplayVehicleDamage(
+        UIAgent<ClaimState> agent,
+        string[] areas)
+    {
+        var updatedState = ClaimStateJson.Clone(agent.State.Value);
+        updatedState.AffectedAreas = areas
+            .Where(area => !string.IsNullOrWhiteSpace(area))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        updatedState.Status = "Vehicle diagram updated";
+        agent.State.Value = updatedState;
+
+        return JsonSerializer.Serialize(new
+        {
+            displayedAreas = updatedState.AffectedAreas,
+        }, ClaimStateJson.Options);
+    }
+
+    private Task RecordApproval()
+    {
+        var updatedState = ClaimStateJson.Clone(ClaimState);
+        updatedState.RejectionReason = null;
+        _conversation.Agent.State.Value = updatedState;
+
+        return Task.CompletedTask;
+    }
+
+    private Task RecordRejection(string reason)
+    {
+        var updatedState = ClaimStateJson.Clone(ClaimState);
+        updatedState.RejectionReason = reason;
+        _conversation.Agent.State.Value = updatedState;
+
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _conversation.StateChangedSubscription?.Dispose();
+        _conversation.Agent.Dispose();
+        _conversation.ChatClient.Dispose();
+    }
+
+    private sealed class ClaimConversation
+    {
+        public ConfigurableChatClient ChatClient { get; init; } = default!;
+
+        public UIAgent<ClaimState> Agent { get; set; } = default!;
+
+        public IDisposable? StateChangedSubscription { get; set; }
+    }
+}

@@ -1,0 +1,27 @@
+@page "/chat"
+@rendermode InteractiveServer
+@inject IChatClient ChatClient
+@implements IDisposable
+
+<PageTitle>Chat</PageTitle>
+
+<h1>Chat</h1>
+
+<AgentBoundary Agent="_agent">
+    <MessageList />
+    <MessageInput Placeholder="Type a message..." />
+</AgentBoundary>
+
+@code {
+    private UIAgent _agent = default!;
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent(ChatClient);
+    }
+
+    public void Dispose()
+    {
+        _agent?.Dispose();
+    }
+}

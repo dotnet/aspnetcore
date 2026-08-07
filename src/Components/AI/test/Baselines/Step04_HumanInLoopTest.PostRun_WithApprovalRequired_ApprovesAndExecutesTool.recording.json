@@ -1,0 +1,20 @@
+[
+  [
+    {
+      "role": "Assistant",
+      "contents": [
+        {
+          "$type": "functionCall",
+          "name": "ApproveExpenseReport",
+          "arguments": {
+            "expenseReportId": "EXP-2024-001"
+          },
+          "informationalOnly": false,
+          "callId": "call_expense_001"
+        }
+      ],
+      "finishReason": "toolCalls",
+      "modelId": "gpt-4o-mini"
+    }
+  ]
+]
