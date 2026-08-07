@@ -397,6 +397,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _measuredItemCount = 0;
         }
 
+        if (_initialIndex.Phase == InitialIndexPhase.None && InitialItemIndex > 0)
+        {
+            MoveWindowToContain(InitialItemIndex);
+        }
+
         if (ItemsProvider != null)
         {
             if (Items != null)
@@ -430,13 +435,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         _itemTemplate = ItemContent ?? ChildContent;
         _placeholder = Placeholder ?? DefaultPlaceholder;
         _emptyContent = EmptyContent;
-
-        // Pre-position the window at InitialItemIndex before the first render so the initial
-        // ItemsProvider fetch targets the right slice and avoids a flash of item 0.
-        if (_initialIndex.Phase == InitialIndexPhase.None && InitialItemIndex > 0)
-        {
-            MoveWindowToContain(InitialItemIndex);
-        }
     }
 
     /// <inheritdoc />
