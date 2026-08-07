@@ -5550,6 +5550,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // The target item must sit at the top of the viewport even for small indices and with a delayed provider.
         Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+
+        container.SendKeys(Keys.End);
+        Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0,
+            TimeSpan.FromSeconds(10),
+            $"After End from InitialItemIndex={initialIndex} (useProvider={useProvider}), the last item (999) should be rendered.");
+
+        container.SendKeys(Keys.Home);
+        Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='0']")).Count > 0,
+            TimeSpan.FromSeconds(10),
+            $"After Home from InitialItemIndex={initialIndex} (useProvider={useProvider}), item 0 should be rendered.");
     }
 
     [Theory]
