@@ -186,7 +186,9 @@ public class DynamicControllerEndpointMatcherPolicyTest
         await policy.ApplyAsync(httpContext, candidates);
 
         // Assert
-        Assert.Same(ControllerEndpoints[0], candidates[0].Endpoint);
+        Assert.Same(
+            ControllerEndpoints[0].Metadata.GetMetadata<ControllerActionDescriptor>(),
+            candidates[0].Endpoint.Metadata.GetMetadata<ControllerActionDescriptor>());
         Assert.Collection(
             candidates[0].Values.OrderBy(kvp => kvp.Key),
             kvp =>
@@ -264,7 +266,9 @@ public class DynamicControllerEndpointMatcherPolicyTest
         await policy.ApplyAsync(httpContext, candidates);
 
         // Assert
-        Assert.Same(ControllerEndpoints[0], candidates[0].Endpoint);
+        Assert.Same(
+            ControllerEndpoints[0].Metadata.GetMetadata<ControllerActionDescriptor>(),
+            candidates[0].Endpoint.Metadata.GetMetadata<ControllerActionDescriptor>());
         Assert.Collection(
             candidates[0].Values.OrderBy(kvp => kvp.Key),
             kvp =>
@@ -430,8 +434,206 @@ public class DynamicControllerEndpointMatcherPolicyTest
         Assert.Equal(2, candidates.Count);
         Assert.True(candidates.IsValidCandidate(0));
         Assert.True(candidates.IsValidCandidate(1));
-        Assert.Same(ControllerEndpoints[1], candidates[0].Endpoint);
-        Assert.Same(ControllerEndpoints[2], candidates[1].Endpoint);
+        Assert.Same(
+            ControllerEndpoints[1].Metadata.GetMetadata<ControllerActionDescriptor>(),
+            candidates[0].Endpoint.Metadata.GetMetadata<ControllerActionDescriptor>());
+        Assert.Same(
+            ControllerEndpoints[2].Metadata.GetMetadata<ControllerActionDescriptor>(),
+            candidates[1].Endpoint.Metadata.GetMetadata<ControllerActionDescriptor>());
+    }
+
+    [Fact]
+    public async Task ApplyAsync_MergesDynamicEndpointMetadata_IntoResolvedEndpoint()
+    {
+        // Arrange
+        var policy = new DynamicControllerEndpointMatcherPolicy(SelectorCache, Comparer);
+
+        var marker = new MetadataMarker("from-dynamic");
+        var dynamicEndpoint = CreateDynamicEndpoint(marker);
+
+        var endpoints = new[] { dynamicEndpoint, };
+        var values = new RouteValueDictionary[] { null, };
+        var scores = new[] { 0, };
+
+        var candidates = new CandidateSet(endpoints, values, scores);
+
+        Transform = (c, values, state) =>
+        {
+            return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+            {
+                controller = "Home",
+                action = "Index",
+            }));
+        };
+
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = Services,
+        };
+
+        // Act
+        await policy.ApplyAsync(httpContext, candidates);
+
+        // Assert
+        var resolved = candidates[0].Endpoint;
+        Assert.NotSame(ControllerEndpoints[0], resolved);
+        Assert.Equal("Test1", resolved.DisplayName);
+        Assert.Same(marker, resolved.Metadata.GetMetadata<MetadataMarker>());
+        Assert.Same(
+            ControllerEndpoints[0].Metadata.GetMetadata<ControllerActionDescriptor>(),
+            resolved.Metadata.GetMetadata<ControllerActionDescriptor>());
+    }
+
+    [Fact]
+    public async Task ApplyAsync_MergesDynamicEndpointMetadata_IntoExpandedEndpoints()
+    {
+        // Arrange
+        var policy = new DynamicControllerEndpointMatcherPolicy(SelectorCache, Comparer);
+
+        var marker = new MetadataMarker("from-dynamic");
+        var dynamicEndpoint = CreateDynamicEndpoint(marker);
+
+        var endpoints = new[] { dynamicEndpoint, };
+        var values = new RouteValueDictionary[] { null, };
+        var scores = new[] { 0, };
+
+        var candidates = new CandidateSet(endpoints, values, scores);
+
+        Transform = (c, values, state) =>
+        {
+            return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+            {
+                controller = "Home",
+                action = "Index",
+            }));
+        };
+
+        Filter = (c, values, state, endpoints) => new ValueTask<IReadOnlyList<Endpoint>>(new[]
+        {
+                ControllerEndpoints[1], ControllerEndpoints[2]
+            });
+
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = Services,
+        };
+
+        // Act
+        await policy.ApplyAsync(httpContext, candidates);
+
+        // Assert
+        Assert.Equal(2, candidates.Count);
+        Assert.Same(marker, candidates[0].Endpoint.Metadata.GetMetadata<MetadataMarker>());
+        Assert.Same(marker, candidates[1].Endpoint.Metadata.GetMetadata<MetadataMarker>());
+    }
+
+    [Fact]
+    public async Task ApplyAsync_ResolvedEndpointMetadata_TakesPrecedenceOverDynamicMetadata()
+    {
+        // Arrange
+        var policy = new DynamicControllerEndpointMatcherPolicy(SelectorCache, Comparer);
+
+        var dynamicMarker = new MetadataMarker("from-dynamic");
+        var resolvedMarker = new MetadataMarker("from-resolved");
+        var dynamicEndpoint = CreateDynamicEndpoint(dynamicMarker);
+
+        var endpoints = new[] { dynamicEndpoint, };
+        var values = new RouteValueDictionary[] { null, };
+        var scores = new[] { 0, };
+
+        var candidates = new CandidateSet(endpoints, values, scores);
+
+        Transform = (c, values, state) =>
+        {
+            return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+            {
+                controller = "Home",
+                action = "Index",
+            }));
+        };
+
+        Filter = (c, values, state, endpoints) => new ValueTask<IReadOnlyList<Endpoint>>(new[]
+        {
+                new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(resolvedMarker), "Resolved")
+            });
+
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = Services,
+        };
+
+        // Act
+        await policy.ApplyAsync(httpContext, candidates);
+
+        // Assert
+        var resolved = candidates[0].Endpoint;
+        Assert.Same(resolvedMarker, resolved.Metadata.GetMetadata<MetadataMarker>());
+        Assert.Equal(
+            new[] { dynamicMarker, resolvedMarker },
+            resolved.Metadata.GetOrderedMetadata<MetadataMarker>());
+    }
+
+    [Fact]
+    public async Task ApplyAsync_DoesNotCopyDynamicMetadata_IntoExpandedEndpoints()
+    {
+        // Arrange
+        var policy = new DynamicControllerEndpointMatcherPolicy(SelectorCache, Comparer);
+
+        var dynamicEndpoint = CreateDynamicEndpoint(new MetadataMarker("from-dynamic"));
+
+        var endpoints = new[] { dynamicEndpoint, };
+        var values = new RouteValueDictionary[] { null, };
+        var scores = new[] { 0, };
+
+        var candidates = new CandidateSet(endpoints, values, scores);
+
+        Transform = (c, values, state) =>
+        {
+            return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+            {
+                controller = "Home",
+                action = "Index",
+            }));
+        };
+
+        Filter = (c, values, state, endpoints) => new ValueTask<IReadOnlyList<Endpoint>>(new[]
+        {
+                ControllerEndpoints[1], ControllerEndpoints[2]
+            });
+
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = Services,
+        };
+
+        // Act
+        await policy.ApplyAsync(httpContext, candidates);
+
+        // Assert
+        // The expanded candidates must not look dynamic. Otherwise the policy would re-process them
+        // within the same ApplyAsync pass and repeatedly ExpandEndpoint (unbounded growth / throw).
+        Assert.Equal(2, candidates.Count);
+        Assert.Null(candidates[0].Endpoint.Metadata.GetMetadata<IDynamicEndpointMetadata>());
+        Assert.Null(candidates[1].Endpoint.Metadata.GetMetadata<IDynamicEndpointMetadata>());
+    }
+
+    private Endpoint CreateDynamicEndpoint(params object[] extraMetadata)
+    {
+        var metadata = new List<object>
+        {
+            new DynamicControllerRouteValueTransformerMetadata(typeof(CustomTransformer), State),
+            new ControllerEndpointDataSourceIdMetadata(1),
+        };
+        metadata.AddRange(extraMetadata);
+
+        return new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(metadata), "dynamic");
+    }
+
+    private sealed class MetadataMarker
+    {
+        public MetadataMarker(string value) => Value = value;
+
+        public string Value { get; }
     }
 
     private class TestDynamicControllerEndpointSelectorCache : DynamicControllerEndpointSelectorCache

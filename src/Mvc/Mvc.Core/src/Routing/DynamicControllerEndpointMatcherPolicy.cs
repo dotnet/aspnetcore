@@ -154,8 +154,16 @@ internal sealed class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IE
             // Update the route values
             candidates.ReplaceEndpoint(i, endpoint, values);
 
+            // Merge the original dynamic endpoint's metadata into each resolved endpoint so that
+            // metadata configured on the fallback/dynamic route (e.g. authorization) is preserved.
+            var mergedEndpoints = new Endpoint[endpoints.Count];
+            for (var j = 0; j < endpoints.Count; j++)
+            {
+                mergedEndpoints[j] = DynamicEndpointMetadataMerger.MergeMetadata(endpoints[j], endpoint.Metadata);
+            }
+
             // Expand the list of endpoints
-            candidates.ExpandEndpoint(i, endpoints, _comparer);
+            candidates.ExpandEndpoint(i, mergedEndpoints, _comparer);
         }
     }
 
