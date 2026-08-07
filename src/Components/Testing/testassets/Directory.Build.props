@@ -32,6 +32,7 @@
     layout) can find it when building inside the aspnetcore repo.
   -->
   <PropertyGroup Condition=" $(IsTestProject) ">
+    <_E2ETasksProject>$(MSBuildThisFileDirectory)..\tasks\Microsoft.AspNetCore.Components.Testing.Tasks.csproj</_E2ETasksProject>
     <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == ''">$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
   </PropertyGroup>
 
