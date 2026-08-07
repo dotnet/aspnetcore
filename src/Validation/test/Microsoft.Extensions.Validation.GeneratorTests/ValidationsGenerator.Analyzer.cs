@@ -470,6 +470,26 @@ public record RecordModel
     }
 
     [Fact]
+    public async Task ReportsValidatableTypeUsedWithoutAddValidation()
+    {
+        var source = """
+using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Validation;
+
+return;
+
+[ValidatableType]
+public class Model
+{
+    [Required] public string Name { get; set; } = "";
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0037", diagnostic.Id);
+    }
+
+    [Fact]
     public async Task DoesNotReportPublicProperty_WhoseTypeComesFromReferencedAssembly()
     {
         var externalReference = CompileToMetadataReference("""
