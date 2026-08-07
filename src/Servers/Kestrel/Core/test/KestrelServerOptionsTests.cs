@@ -3,7 +3,9 @@
 
 using System;
 using System.Net;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -14,6 +16,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class KestrelServerOptionsTests
 {
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void Http2PriorKnowledgeDefaultsToEnabled()
+    {
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            Assert.False(new KestrelServerOptions().DisableHttp2PriorKnowledge);
+        });
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void Http2PriorKnowledgeCanBeDisabledWithAppContextSwitch()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add(KestrelServerOptions.DisableHttp2PriorKnowledgeSwitchKey, "true");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            Assert.True(new KestrelServerOptions().DisableHttp2PriorKnowledge);
+        }, options);
+    }
+
     [Fact]
     public void AllowSynchronousIODefaultsToFalse()
     {
