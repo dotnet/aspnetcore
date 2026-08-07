@@ -314,7 +314,6 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52573")]
     [ConditionalTheory]
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
@@ -324,6 +323,20 @@ public class Http3RequestTests : LoggedTest
         // Arrange
         string contentType = null;
         string authority = null;
+        var pooledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Action<WriteContext> handler = null;
+        if (protocol == HttpProtocols.Http3)
+        {
+            handler = ctx =>
+            {
+                if (ctx.EventId.Name == "StreamPooled" &&
+                    ctx.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic")
+                {
+                    pooledTcs.TrySetResult();
+                }
+            };
+        }
+
         var builder = CreateHostBuilder(async context =>
         {
             contentType = context.Request.ContentType;
@@ -333,38 +346,52 @@ public class Http3RequestTests : LoggedTest
             await context.Response.Body.WriteAsync(data);
         }, protocol: protocol);
 
-        using (var host = builder.Build())
-        using (var client = HttpHelpers.CreateClient())
+        try
         {
-            await host.StartAsync();
-
-            // Act
-            var response1 = await SendRequestAsync(protocol, host, client);
-            var contentType1 = contentType;
-            var authority1 = authority;
-
-            if (protocol == HttpProtocols.Http3)
+            if (handler != null)
             {
-                await WaitForLogAsync(logs =>
-                {
-                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
-                                         w.EventId.Name == "StreamPooled");
-                }, "Wait for server to finish pooling stream.");
+                TestSink.MessageLogged += handler;
             }
 
-            var response2 = await SendRequestAsync(protocol, host, client);
-            var contentType2 = contentType;
-            var authority2 = authority;
+            using (var host = builder.Build())
+            using (var client = HttpHelpers.CreateClient())
+            {
+                await host.StartAsync();
 
-            // Assert
-            Assert.NotNull(contentType1);
-            Assert.NotNull(authority1);
+                // Act
+                var response1 = await SendRequestAsync(protocol, host, client);
+                var contentType1 = contentType;
+                var authority1 = authority;
 
-            // We're testing `Same`, specifically, since we're trying to detect cache misses
-            Assert.Same(contentType1, contentType2);
-            Assert.Same(authority1, authority2);
+                if (protocol == HttpProtocols.Http3)
+                {
+                    // Wait for the server to pool the first request's stream before sending
+                    // the second request, so the second request reuses the same
+                    // HttpRequestHeaders instance and Assert.Same below holds.
+                    await pooledTcs.Task.DefaultTimeout();
+                }
 
-            await host.StopAsync();
+                var response2 = await SendRequestAsync(protocol, host, client);
+                var contentType2 = contentType;
+                var authority2 = authority;
+
+                // Assert
+                Assert.NotNull(contentType1);
+                Assert.NotNull(authority1);
+
+                // We're testing `Same`, specifically, since we're trying to detect cache misses
+                Assert.Same(contentType1, contentType2);
+                Assert.Same(authority1, authority2);
+
+                await host.StopAsync();
+            }
+        }
+        finally
+        {
+            if (handler != null)
+            {
+                TestSink.MessageLogged -= handler;
+            }
         }
 
         static async Task<HttpResponseMessage> SendRequestAsync(HttpProtocols protocol, IHost host, HttpMessageInvoker client)
