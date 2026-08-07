@@ -82,6 +82,46 @@ public class InputTextTest
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
         Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
     }
+    [Fact]
+    public async Task InputText_RemovesAttributeFromChildren_WhenOmittedOnSubsequentRender()
+    {
+        // Regression for issue #56463: when the real InputText component receives a splat attribute
+        // (e.g. via AdditionalAttributes) on one render and the parent omits it on the next, the
+        // diff for the InputText's <input> element must contain a RemoveAttribute edit. Without the
+        // fix in ComponentProperties.SetProperties, no RemoveAttribute edit is generated, leaving
+        // the stale attribute on the DOM.
+        var model = new TestModel();
+        var hostComponent = new TestInputConditionalAttributeHostComponent<string, InputText>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringProperty,
+            IncludeAttribute = true,
+            AttributeName = "data-test-id",
+            AttributeValue = "example-id",
+        };
+
+        var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
+        await _testRenderer.RenderRootComponentAsync(hostComponentId);
+
+        var inputTextComponentId = _testRenderer.Batches.Single()
+            .GetComponentFrames<InputText>().Single().ComponentId;
+
+        var firstRenderFrames = _testRenderer.GetCurrentRenderTreeFrames(inputTextComponentId);
+        Assert.Contains(firstRenderFrames.Array, f =>
+            f.FrameType == RenderTreeFrameType.Attribute &&
+            f.AttributeName == "data-test-id" &&
+            (string)f.AttributeValue == "example-id");
+
+        hostComponent.IncludeAttribute = false;
+        await _testRenderer.RenderRootComponentAsync(hostComponentId);
+
+        var inputTextDiff = _testRenderer.Batches[1]
+            .DiffsByComponentId[inputTextComponentId]
+            .Single();
+        Assert.Contains(
+            inputTextDiff.Edits,
+            edit => edit.Type == RenderTreeEditType.RemoveAttribute && edit.RemovedAttributeName == "data-test-id");
+    }
 
     private async Task<int> RenderAndGetInputTextComponentIdAsync(TestInputHostComponent<string, InputText> hostComponent)
     {
