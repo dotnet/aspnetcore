@@ -963,6 +963,45 @@ public class OpenIdConnectChallengeTests
         var server = settings.CreateTestServer();
         await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
     }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_FailureHandled()
+    {
+        var onPushAuthorizationFailedCalled = false;
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Require;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+
+            // We are NOT setting the endpoint (as if the disco document didn't contain it)
+            //opt.Configuration.PushedAuthorizationRequestEndpoint;
+
+            opt.Events.OnPushAuthorizationFailed = ctx =>
+            {
+                onPushAuthorizationFailedCalled = true;
+                ctx.Response.Redirect("CustomErrorRoute");
+                ctx.Handled = true;
+                return Task.CompletedTask;
+            };
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.True(onPushAuthorizationFailedCalled);
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+        Assert.Equal("CustomErrorRoute", res.Headers.Location.OriginalString);
+    }
 }
 
 class ParMockBackchannel : HttpMessageHandler
