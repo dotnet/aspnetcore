@@ -185,7 +185,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Exists(By.LinkText("Streaming enhanced GET with external redirection")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
-    
 
     [Theory]
     [InlineData(true)]
@@ -292,13 +291,17 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66118")]
     public void NavigationException_InAsyncContext_DoesNotBecomeUnobservedTaskException()
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", false);
 
         // Navigate to the page that triggers the circular redirect.
         Navigate($"{ServerPathBase}/redirect/circular");
+
+        // Wait for the counter element to appear and stabilize.
+        // The circular redirect flow performs 3 retry attempts with multiple render cycles,
+        // so we need to wait for the page to fully settle before asserting.
+        Browser.Exists(By.Id("unobserved-exceptions-count"), TimeSpan.FromSeconds(10));
 
         // The component will stop redirecting after 3 attempts and render the exception count.
         Browser.Equal("0", () => Browser.FindElement(By.Id("unobserved-exceptions-count")).Text);
