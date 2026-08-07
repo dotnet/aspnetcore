@@ -1116,7 +1116,26 @@ public class FormFileModelBindingIntegrationTest
         Assert.True(modelBindingResult.IsModelSet);
         var container = Assert.IsType<MultiDimensionalFormFileContainer>(modelBindingResult.Model);
         Assert.NotNull(container.FormFiles);
-        Assert.Empty(container.FormFiles);
+        Assert.Equal(2, container.FormFiles.Length);
+
+        Assert.Single(container.FormFiles[0]);
+        Assert.Equal(2, container.FormFiles[1].Length);
+
+        Assert.Collection(
+            container.FormFiles,
+            item =>
+            {
+                Assert.Collection(
+                    item,
+                    file => Assert.Equal(data + 1, ReadFormFile(file)));
+            },
+            item =>
+            {
+                Assert.Collection(
+                    item,
+                    file => Assert.Equal(data + 2, ReadFormFile(file)),
+                    file => Assert.Equal(data + 3, ReadFormFile(file)));
+            });
     }
 
     public class MultiDimensionalFormFileContainerLevel2
