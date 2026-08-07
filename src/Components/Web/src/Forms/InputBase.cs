@@ -41,6 +41,9 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// <example>
     /// @bind-Value="model.PropertyName"
     /// </example>
+    /// <remarks>
+    /// Assign a new instance when changing a mutable reference type so the change is detected.
+    /// </remarks>
     [Parameter]
     public TValue? Value { get; set; }
 
@@ -82,7 +85,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
             if (hasChanged)
             {
-                _parsingFailed = false;
+                ResetParsingState();
 
                 // If we don't do this, then when the user edits from A to B, we'd:
                 // - Do a render that changes back to A
@@ -240,6 +243,13 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
     }
 
+    private void ResetParsingState()
+    {
+        _parsingFailed = false;
+        _incomingValueBeforeParsing = null;
+        _parsingValidationMessages?.Clear();
+    }
+
     private string GetFieldName()
         => _formattedValueExpression ??= FieldPrefix?.GetFieldName(ValueExpression!)
             ?? ExpressionFormatter.FormatLambda(ValueExpression!);
@@ -247,7 +257,14 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
+        var previousValue = Value;
         parameters.SetParameterProperties(this);
+
+        if (_hasInitializedParameters && !EqualityComparer<TValue>.Default.Equals(Value, previousValue) && _parsingFailed)
+        {
+            ResetParsingState();
+            EditContext?.NotifyValidationStateChanged();
+        }
 
         if (!_hasInitializedParameters)
         {
@@ -303,7 +320,6 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
     {
         UpdateAdditionalValidationAttributes();
-
         StateHasChanged();
     }
 
