@@ -284,9 +284,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         var current = routeHandlerInvocation.Parent;
         while (current is not null && current is not IExpressionStatementOperation)
         {
-            if (current is IInvocationOperation chainedInvocation &&
-                chainedInvocation.TargetMethod.Name == "DisableValidation" &&
-                chainedInvocation.TargetMethod.ContainingType.Equals(validationEndpointConventionBuilderExtensions, SymbolEqualityComparer.Default))
+            if (IsDisableValidationInvocation(current, validationEndpointConventionBuilderExtensions))
             {
                 return true;
             }
@@ -294,6 +292,53 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
             current = current.Parent;
         }
 
+        // Walk down the receiver chain (e.g. app.MapGroup(...).DisableValidation().MapPost(...))
+        // to determine whether DisableValidation() is applied to a group the endpoint belongs to.
+        var receiver = GetInvocationReceiver(routeHandlerInvocation);
+        while (receiver is not null)
+        {
+            if (receiver is IConversionOperation conversion)
+            {
+                receiver = conversion.Operand;
+                continue;
+            }
+
+            if (receiver is IInvocationOperation receiverInvocation)
+            {
+                if (IsDisableValidationInvocation(receiverInvocation, validationEndpointConventionBuilderExtensions))
+                {
+                    return true;
+                }
+
+                receiver = GetInvocationReceiver(receiverInvocation);
+                continue;
+            }
+
+            break;
+        }
+
         return false;
+    }
+
+    private static bool IsDisableValidationInvocation(IOperation operation, INamedTypeSymbol validationEndpointConventionBuilderExtensions)
+        => operation is IInvocationOperation invocation &&
+            invocation.TargetMethod.Name == "DisableValidation" &&
+            invocation.TargetMethod.ContainingType.Equals(validationEndpointConventionBuilderExtensions, SymbolEqualityComparer.Default);
+
+    private static IOperation? GetInvocationReceiver(IInvocationOperation invocation)
+    {
+        if (invocation.Instance is not null)
+        {
+            return invocation.Instance;
+        }
+
+        // For a reduced extension method invocation (e.g. builder.MapPost(...)), the receiver is
+        // passed as the first argument rather than exposed via Instance.
+        if (invocation.TargetMethod.IsExtensionMethod && !invocation.Arguments.IsEmpty)
+        {
+            return invocation.Arguments[0].Value;
+        }
+
+        return null;
     }
 }

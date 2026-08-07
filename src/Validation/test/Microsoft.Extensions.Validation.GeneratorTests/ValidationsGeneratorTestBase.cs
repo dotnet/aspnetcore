@@ -96,16 +96,39 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
                 MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Localization.IStringLocalizerFactory).Assembly.Location),
             ]);
 
-    internal static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source, string filePath = "Program.cs")
+    internal static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source, string filePath = "Program.cs", IEnumerable<MetadataReference> additionalReferences = null)
     {
+        var references = GetMetadataReferences();
+        if (additionalReferences is not null)
+        {
+            references = references.Concat(additionalReferences);
+        }
+
         var compilation = CSharpCompilation.Create("ValidationsAnalyzerSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: filePath)],
-            GetMetadataReferences(),
+            references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
 
         var compilationWithAnalyzers = compilation.WithAnalyzers([new ValidationsDiagnosticAnalyzer(), new ValidatableTypeInGeneratedCodeDiagnosticAnalyzer()]);
-        var diagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
+        var diagnostics = await compilationWithAnalyzers.GetAllDiagnosticsAsync();
         return [.. diagnostics.OrderBy(d => d.Id).ThenBy(d => d.Location.SourceSpan.Start)];
+    }
+
+    internal static MetadataReference CompileToMetadataReference(string source, string assemblyName)
+    {
+        var compilation = CSharpCompilation.Create(assemblyName,
+            [CSharpSyntaxTree.ParseText(source, options: ParseOptions)],
+            GetMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        using var peStream = new MemoryStream();
+        var emitResult = compilation.Emit(peStream);
+        Assert.True(
+            emitResult.Success,
+            $"Failed to compile referenced assembly '{assemblyName}':{Environment.NewLine}{string.Join(Environment.NewLine, emitResult.Diagnostics)}");
+
+        peStream.Seek(0, SeekOrigin.Begin);
+        return MetadataReference.CreateFromStream(peStream);
     }
 
     internal static async Task VerifyValidatableType(Compilation compilation, string typeName, Func<ValidationOptions, Type, Task> verifyFunc)

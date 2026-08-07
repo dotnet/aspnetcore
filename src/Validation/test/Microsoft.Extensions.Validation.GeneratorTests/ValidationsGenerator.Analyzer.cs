@@ -281,5 +281,217 @@ public sealed class Model
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         Assert.Empty(diagnostics);
     }
-}
 
+    [Fact]
+    public async Task ReportsInaccessibleEndpointParameterType()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/api", (FileModel model) => Results.Ok());
+
+app.Run();
+
+file class FileModel
+{
+    [Required] public string? Name { get; set; }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0034", diagnostic.Id);
+        var message = diagnostic.GetMessage(CultureInfo.InvariantCulture);
+        Assert.Contains("model", message);
+        Assert.Contains("FileModel", message);
+    }
+
+    [Fact]
+    public async Task ReportsInaccessibleProperty_ViaEndpointParameter()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/api", (PublicModel model) => Results.Ok());
+
+app.Run();
+
+public sealed class PublicModel
+{
+    internal TheChild Child { get; } = new();
+    public class TheChild { [Required] public string? Name { get; set; } }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0035", diagnostic.Id);
+        Assert.Contains("Child", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task DoesNotReportNonPublicProperty_WhenSkipValidationIsApplied()
+    {
+        var source = AnalyzerPreamble + """
+
+[ValidatableType]
+public class ModelWithSkippedProperty
+{
+    [SkipValidation]
+    internal TheChild Child { get; } = new();
+    public class TheChild { [Required] public string? Name { get; set; } }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task DoesNotReportInaccessibleEndpointParameter_WhenSkipValidationIsApplied()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/api", ([SkipValidation] FileModel model) => Results.Ok());
+
+app.Run();
+
+file class FileModel
+{
+    [Required] public string? Name { get; set; }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task ReportsSingleDiagnostic_WhenTypeReachedByValidatableTypeAndEndpointParameter()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/api", (SharedModel model) => Results.Ok());
+
+app.Run();
+
+[ValidatableType]
+public sealed class SharedModel
+{
+    internal TheChild Child { get; } = new();
+    public class TheChild { [Required] public string? Name { get; set; } }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0035", diagnostic.Id);
+        Assert.Contains("Child", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task DoesNotReportInaccessibleEndpointParameter_WhenValidationIsDisabledOnGroup()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapGroup("/group").DisableValidation().MapPost("/disabled", (FileModel model) => Results.Ok());
+
+app.Run();
+
+file class FileModel
+{
+    [Required]
+    internal required string P { get; init; }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task ReportsNonPublicProperty_OnRecordType()
+    {
+        var source = AnalyzerPreamble + """
+
+[ValidatableType]
+public record RecordModel
+{
+    internal TheChild Child { get; init; } = new();
+    public record TheChild { [Required] public string? Name { get; init; } }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0035", diagnostic.Id);
+        Assert.Contains("Child", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task DoesNotReportPublicProperty_WhoseTypeComesFromReferencedAssembly()
+    {
+        var externalReference = CompileToMetadataReference("""
+using System.ComponentModel.DataAnnotations;
+
+namespace External;
+
+public class ExternalModel
+{
+    [Required] public string? Name { get; set; }
+}
+""", "ExternalValidationAssembly");
+
+        var source = AnalyzerPreamble + """
+
+[ValidatableType]
+public class ModelWithExternalProperty
+{
+    public External.ExternalModel Child { get; set; } = new();
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source, additionalReferences: [externalReference]);
+        Assert.Empty(diagnostics);
+    }
+}
