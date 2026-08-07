@@ -1891,7 +1891,9 @@ public abstract class ControllerBase
         {
             foreach (var extension in extensions)
             {
-                problemDetails.Extensions.Add(extension);
+                // Use the indexer so caller-supplied extensions override any values
+                // populated by the ProblemDetailsFactory (e.g. "traceId") instead of throwing.
+                problemDetails.Extensions[extension.Key] = extension.Value;
             }
         }
 
@@ -2014,7 +2016,9 @@ public abstract class ControllerBase
         {
             foreach (var extension in extensions)
             {
-                validationProblem.Extensions.Add(extension);
+                // Use the indexer so caller-supplied extensions override any values
+                // populated by the ProblemDetailsFactory (e.g. "traceId") instead of throwing.
+                validationProblem.Extensions[extension.Key] = extension.Value;
             }
         }
 

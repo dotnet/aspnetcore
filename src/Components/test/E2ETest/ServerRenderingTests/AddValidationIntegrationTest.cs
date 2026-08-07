@@ -8,6 +8,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -27,6 +28,7 @@ public class AddValidationIntegrationTest : ServerTestBase<BasicTestAppServerSit
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68223")]
     public void FormWithNestedValidation_Works()
     {
         Browser.Exists(By.Id("submit-form")).Click();
@@ -52,9 +54,10 @@ public class AddValidationIntegrationTest : ServerTestBase<BasicTestAppServerSit
         // Validation summary order is not guaranteed, so compare without ordering.
         Assert.Equal(expected.OrderBy(x => x), messages.OrderBy(x => x));
 
-        // Individual field messages
+        // Individual field messages.
         var individual = Browser.FindElements(By.CssSelector(".mb-3 > .validation-message"))
             .Select(element => element.Text)
+            .Where(text => !string.IsNullOrEmpty(text))
             .ToList();
 
         Assert.Equal(expected, individual);

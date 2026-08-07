@@ -271,6 +271,9 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
         var debuggerTabsListUrl = $"{_browserHost}/json";
         IEnumerable<BrowserTab> availableTabs;
 
+        var targetApplicationUrlEncoded = WebUtility.HtmlEncode(targetApplicationUrl.ToString());
+        var debuggerTabsListUrlEncoded = WebUtility.HtmlEncode(debuggerTabsListUrl);
+
         try
         {
             availableTabs = await GetOpenedBrowserTabs();
@@ -280,17 +283,17 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
             await context.Response.WriteAsync($@"
 <h1>Unable to find debuggable browser tab</h1>
 <p>
-    Could not get a list of browser tabs from <code>{debuggerTabsListUrl}</code>.
+    Could not get a list of browser tabs from <code>{debuggerTabsListUrlEncoded}</code>.
     Ensure your browser is running with debugging enabled.
 </p>
 <h2>Resolution</h2>
 <p>
     <h4>If you are using Google Chrome or Chromium for your development, follow these instructions:</h4>
-    {GetLaunchChromeInstructions(targetApplicationUrl.ToString())}
+    {GetLaunchChromeInstructions(targetApplicationUrlEncoded)}
 </p>
 <p>
     <h4>If you are using Microsoft Edge (80+) for your development, follow these instructions:</h4>
-    {GetLaunchEdgeInstructions(targetApplicationUrl.ToString())}
+    {GetLaunchEdgeInstructions(targetApplicationUrlEncoded)}
 </p>
 <strong>This should launch a new browser window with debugging enabled..</p>
 <h2>Underlying exception:</h2>
@@ -316,8 +319,8 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
 
             var suffix = string.IsNullOrEmpty(targetApplicationUrl)
                 ? string.Empty
-                : $" matching the URL {WebUtility.HtmlEncode(targetApplicationUrl)}";
-            await context.Response.WriteAsync($"<p>The list of targets returned by {WebUtility.HtmlEncode(debuggerTabsListUrl)} contains no entries{suffix}.</p>");
+                : $" matching the URL {targetApplicationUrlEncoded}";
+            await context.Response.WriteAsync($"<p>The list of targets returned by {debuggerTabsListUrlEncoded} contains no entries{suffix}.</p>");
             await context.Response.WriteAsync("<p>Make sure your browser is displaying the target application.</p>");
         }
         else
