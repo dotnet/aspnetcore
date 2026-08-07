@@ -2047,7 +2047,8 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
+        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed", ex.Message);
+        AssertUnbalancedFramesMessageBody(ex.Message);
     }
 
     [Fact]
@@ -2062,7 +2063,8 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Component' was left unclosed.", ex.Message);
+        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Component' was left unclosed", ex.Message);
+        AssertUnbalancedFramesMessageBody(ex.Message);
     }
 
     [Fact]
@@ -2077,7 +2079,49 @@ public class RenderTreeBuilderTest
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
-        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed.", ex.Message);
+        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed", ex.Message);
+        AssertUnbalancedFramesMessageBody(ex.Message);
+    }
+
+    [Fact]
+    public void ReportsBreakInsideRenderLoopAsInvalid()
+    {
+        var builder = new RenderTreeBuilder();
+        var component = new TestComponent();
+
+        RenderFragment fragment = fragmentBuilder =>
+        {
+            fragmentBuilder.OpenElement(0, "ul");
+            foreach (var item in new[] { "a", "b", "c" })
+            {
+                fragmentBuilder.OpenElement(1, "li");
+                fragmentBuilder.AddContent(2, item);
+                if (item == "a")
+                {
+                    break; // Exits the loop before the per-iteration CloseElement(), leaving <li> unclosed.
+                }
+                fragmentBuilder.CloseElement();
+            }
+            fragmentBuilder.CloseElement();
+        };
+
+        builder.AddContent(0, fragment);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => builder.AssertTreeIsValid(component));
+        Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed", ex.Message);
+        AssertUnbalancedFramesMessageBody(ex.Message);
+    }
+
+    private static void AssertUnbalancedFramesMessageBody(string message)
+    {
+        Assert.Contains("CloseElement, CloseComponent, or CloseRegion", message);
+        Assert.Contains("break", message);
+        Assert.Contains("continue", message);
+        Assert.Contains("return", message);
+        Assert.Contains("throw", message);
+        Assert.Contains("goto", message);
+        Assert.Contains("try/catch", message);
+        Assert.Contains("https://learn.microsoft.com/aspnet/core/blazor/advanced-scenarios", message);
     }
 
     [Fact]
