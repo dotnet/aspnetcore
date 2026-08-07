@@ -4794,7 +4794,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0")]
     [InlineData("1")]
     [InlineData("2")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68225")]
     public void AnchorMode_WindowScroll_HomeKeyJumpsToTop(string anchorMode)
     {
         MountWindowScrollAnchorModeComponent(anchorMode);
