@@ -1831,6 +1831,28 @@
         }
       }
     },
+    "/schemas-by-ref/response-array-with-nullable-element": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TestEnum"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/schemas-by-ref/optional-with-default": {
       "get": {
         "tags": [

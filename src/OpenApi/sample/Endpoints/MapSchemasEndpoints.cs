@@ -77,6 +77,8 @@ public static class SchemasEndpointsExtensions
             Id = "id",
             RequiredNested = new NestedModel { Name = "nested" }
         }));
+        // Mirrors the array-of-nullable-elements parameter scenario above, but as a response body.
+        schemas.MapGet("/response-array-with-nullable-element", () => TypedResults.Ok(new TestEnum?[] { TestEnum.Value1, null }));
 
         schemas.MapGet("/optional-with-default", () => TypedResults.Ok(new ModelWithDefaults()));
         schemas.MapGet("/nullable-enum-response", () => TypedResults.Ok(new EnumNullableModel
