@@ -14,7 +14,7 @@
     </label>
 </div>
 
-<div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
+<div id="scroll-container" style="height: @(containerHeight); overflow-y: auto; border: 1px solid black;">
     @if (listLoaded)
     {
         @if (useItemsProvider)
@@ -85,6 +85,7 @@
     <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
     <button id="set-small-count" @onclick="SetSmallCount">Set 5 Items</button>
     <button id="set-console-scenario" @onclick="SetConsoleScenario">Console scenario (40 items, overscan 100)</button>
+    <button id="set-small-overscan" @onclick="SetSmallOverscan">Set overscan 1</button>
     <button id="toggle-provider" @onclick="ToggleProvider">
         Source: @(useItemsProvider ? "ItemsProvider" : "Items")
     </button>
@@ -116,20 +117,24 @@
     private bool useItemsProvider = false;
     private bool omitItemComparer = false;
     private int overscanCount = 15;
+    private string containerHeight = "300px";
     private bool useProviderDelay = false;
     private bool useProviderGate = false;
     private TaskCompletionSource providerGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int providerCallIndex;
     private List<string> providerEvents = new();
     private Virtualize<DynamicItem> virtualizeRef;
-    private int initialItemIndex;
     private int manualInitialIndex;
+    private int initialItemIndex;
     private bool listLoaded = true;
     private int scrollTargetIndex = 200;
     private string scrollStatus = "Idle";
     private CancellationTokenSource _userScrollCts;
     private static readonly IEqualityComparer<DynamicItem> _itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
+
+    [Parameter]
+    public int InitialItemIndex { get; set; }
 
     private static readonly IReadOnlyDictionary<string, object> _emptyComparerSplat =
         new Dictionary<string, object>();
@@ -147,6 +152,7 @@
 
     protected override void OnInitialized()
     {
+        initialItemIndex = InitialItemIndex;
         items = Enumerable.Range(0, 1000)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
@@ -294,6 +300,14 @@
         nextPrependIndex = -1;
         nextAppendIndex = 40;
         statusMessage = "Console scenario: 40 items, overscan 100";
+        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+    }
+
+    private async Task SetSmallOverscan()
+    {
+        overscanCount = 1;
+        containerHeight = "900px";
+        statusMessage = "Overscan set to 1";
         if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
     }
 

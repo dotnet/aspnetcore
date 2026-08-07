@@ -94,7 +94,7 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         // Simulate a JS spacer callback.
-        ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(10f, 50f, 100f);
+        ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(10f, 50f, 100f, SpacerVisibilityReason.ViewportFill);
 
         // Validate that the exception is dispatched through the renderer.
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await testRenderer.RenderRootComponentAsync(componentId));
@@ -124,12 +124,12 @@ public class VirtualizeTest
 
         // First callback triggers distribution calculation and re-render
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 80f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 80f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Second callback — with items now rendered, ProcessMeasurements derives
         // item heights from spacerSeparation and _lastRenderedItemCount
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 80f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 80f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(virtualize._totalMeasuredHeight > 0);
         Assert.True(virtualize._measuredItemCount > 0);
@@ -159,9 +159,9 @@ public class VirtualizeTest
 
         // First callback with valid spacerSeparation establishes measurements
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var heightAfterValid = virtualize._totalMeasuredHeight;
         var countAfterValid = virtualize._measuredItemCount;
@@ -170,7 +170,7 @@ public class VirtualizeTest
         // Callback with zero spacerSeparation should not add measurements
         // (realItemHeight would be zero or negative)
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Equal(heightAfterValid, virtualize._totalMeasuredHeight);
         Assert.Equal(countAfterValid, virtualize._measuredItemCount);
@@ -196,7 +196,7 @@ public class VirtualizeTest
         var countBefore = requests.Count;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(100f, 300f, 500f));
+            callbacks.OnBeforeSpacerVisible(100f, 300f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(requests.Count > countBefore,
             "ItemsProvider should be called when before spacer becomes visible with measurements");
@@ -220,10 +220,10 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f));
+            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Contains(requests, r => r.StartIndex > 0);
     }
@@ -247,16 +247,16 @@ public class VirtualizeTest
 
         // Establish baseline
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, SpacerVisibilityReason.ViewportFill));
         var countAfterBaseline = requests.Count;
         var heightBefore = virtualize._totalMeasuredHeight;
 
         // NaN spacerSeparation should not corrupt measurements or crash
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, float.NaN, 500f));
+            callbacks.OnAfterSpacerVisible(0f, float.NaN, 500f, SpacerVisibilityReason.ViewportFill));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, float.NaN, 500f));
+            callbacks.OnBeforeSpacerVisible(50f, float.NaN, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(requests.Count > countAfterBaseline,
             "Component should still process callbacks after NaN spacerSeparation");
@@ -280,17 +280,17 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, SpacerVisibilityReason.ViewportFill));
         var heightBefore = virtualize._totalMeasuredHeight;
         var countBefore = virtualize._measuredItemCount;
 
         // Negative spacerSeparation produces negative realItemHeight — should not
         // accumulate into the running average.
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, -500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, -500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, -100f, 500f));
+            callbacks.OnBeforeSpacerVisible(50f, -100f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Measurements should not have changed from the negative inputs
         Assert.Equal(heightBefore, virtualize._totalMeasuredHeight);
@@ -315,16 +315,16 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, SpacerVisibilityReason.ViewportFill));
         var countAfterBaseline = requests.Count;
 
         // Extremely large (infinity) spacerSeparation — component should handle
         // without overflow or crash. MaxItemCount caps the visible capacity.
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, float.PositiveInfinity, 500f));
+            callbacks.OnAfterSpacerVisible(0f, float.PositiveInfinity, 500f, SpacerVisibilityReason.ViewportFill));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, float.PositiveInfinity, 500f));
+            callbacks.OnBeforeSpacerVisible(50f, float.PositiveInfinity, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(requests.Count > countAfterBaseline,
             "Component should still process callbacks after infinity spacerSeparation");
@@ -352,7 +352,7 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f));
+            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Items should be rendered directly without wrapper elements
         var hasWrapperElements = testRenderer.Batches
@@ -387,7 +387,7 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f));
+            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
@@ -422,7 +422,7 @@ public class VirtualizeTest
         for (int i = 0; i < 10; i++)
         {
             await testRenderer.Dispatcher.InvokeAsync(() =>
-                callbacks.OnAfterSpacerVisible(0f, 90f, 500f));
+                callbacks.OnAfterSpacerVisible(0f, 90f, 500f, SpacerVisibilityReason.ViewportFill));
         }
 
         // After several cycles, measurements should have accumulated
@@ -461,12 +461,12 @@ public class VirtualizeTest
         // First callback triggers items to render
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(
-                0f, 500f, 500f));
+                0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Second callback: spacerSize=0 means at the very bottom; with items rendered, should trigger scrollToBottom
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(
-                0f, 500f, 500f));
+                0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var scrollToBottomCalled = mockJs.Invocations.Any(i =>
             i.Arguments.Count > 0 &&
@@ -485,7 +485,7 @@ public class VirtualizeTest
 
         // spacerSize=5000 means many items remain after the viewport
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(5000f, 1000f, 500f));
+            callbacks.OnAfterSpacerVisible(5000f, 1000f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.False(virtualize._pendingScrollToBottom);
     }
@@ -514,7 +514,7 @@ public class VirtualizeTest
 
         // First call: real measurements at the bottom — should set pending
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(renderedVirtualize._lastRenderedItemCount > 0,
             "Items should have rendered");
@@ -523,7 +523,7 @@ public class VirtualizeTest
         // Second call: spacerSeparation=0 at the bottom — no new measurements,
         // so _pendingScrollToBottom must NOT be set
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.False(renderedVirtualize._pendingScrollToBottom,
             "scrollToBottom should not be set when ProcessMeasurements did not apply new measurements");
@@ -549,7 +549,7 @@ public class VirtualizeTest
         var callCountAfterMount = requests.Count;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, 500f, 500f));
+            callbacks.OnBeforeSpacerVisible(50f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Equal(callCountAfterMount + 1, requests.Count);
 
@@ -581,13 +581,13 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f));
+            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f, SpacerVisibilityReason.ViewportFill));
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(0f, 150f, 1000f));
+            callbacks.OnBeforeSpacerVisible(0f, 150f, 1000f, SpacerVisibilityReason.ViewportFill));
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f));
+            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f, SpacerVisibilityReason.ViewportFill));
 
         // After multiple callbacks, measurements should accumulate
         Assert.True(renderedVirtualize._measuredItemCount > 0);
@@ -622,11 +622,11 @@ public class VirtualizeTest
 
         // First callback triggers render with items (setting _lastRenderedItemCount)
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f, SpacerVisibilityReason.ViewportFill));
 
         // Second callback accumulates measurements from spacerSeparation
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.True(renderedVirtualize._totalMeasuredHeight > 0);
         Assert.True(renderedVirtualize._measuredItemCount > 0);
@@ -663,13 +663,13 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Single(pendingCalls);
         var firstCall = pendingCalls[0];
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 1000f));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 1000f, SpacerVisibilityReason.ViewportFill));
 
         Assert.Equal(2, pendingCalls.Count);
         var secondCall = pendingCalls[1];
@@ -718,7 +718,7 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var lastRequest = requests.Last();
         Assert.True(lastRequest.Count <= 50,
@@ -910,7 +910,7 @@ public class VirtualizeTest
 
         // Initial IO callback to set up _itemCount
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
 
         var itemsBeforeAfterInit = renderedVirtualize._itemsBefore;
 
@@ -919,7 +919,7 @@ public class VirtualizeTest
 
         // IO-driven refresh (NOT RefreshDataAsync) — triggered by spacer becoming visible
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
 
         // _itemsBefore may change due to normal IO redistribution, but should NOT
         // have been shifted by exactly countDelta (20) which would indicate false
@@ -955,7 +955,7 @@ public class VirtualizeTest
 
         // Initial IO callback to set up _itemCount.
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
 
         var itemsBeforeAfterInit = renderedVirtualize._itemsBefore;
 
@@ -964,7 +964,7 @@ public class VirtualizeTest
 
         // IO-driven refresh re-reads the in-memory list and observes count growth 100 -> 120.
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f, SpacerVisibilityReason.ViewportFill));
 
         var shift = renderedVirtualize._itemsBefore - itemsBeforeAfterInit;
         Assert.True(shift != 20,
@@ -993,7 +993,7 @@ public class VirtualizeTest
 
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(-5); });
@@ -1011,7 +1011,7 @@ public class VirtualizeTest
 
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(99_999); });
@@ -1058,7 +1058,7 @@ public class VirtualizeTest
 
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
 
         var (firstTask, secondTask) = await renderer.Dispatcher.InvokeAsync(() =>
         {
@@ -1125,6 +1125,124 @@ public class VirtualizeTest
 
         Assert.NotNull(renderedVirtualize);
         Assert.Equal(42, renderedVirtualize.InitialItemIndex);
+    }
+
+    // Covers dotnet/aspnetcore#68114 (and #68064): a top-spacer callback classified ProgrammaticScroll
+    // (a transient during our own scroll) MUST be ignored, otherwise it snaps the window back toward index 0
+    // and the InitialItemIndex / ScrollToItem target is lost.
+    [Fact]
+    public async Task OnBeforeSpacerVisible_ProgrammaticScroll_DoesNotResetWindow()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 1000);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        // Establish measurements, then move the window away from the top via a before-spacer whose size
+        // implies many items above the viewport.
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+        var itemsBeforeAtTarget = virtualize._itemsBefore;
+        Assert.True(itemsBeforeAtTarget > 0, "Precondition: the window should have moved away from the top.");
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ProgrammaticScroll));
+
+        Assert.Equal(itemsBeforeAtTarget, virtualize._itemsBefore);
+    }
+
+    // Discrimination check: the SAME top-spacer callback, but classified UserScroll (the user really scrolled
+    // up), must be honored and move the window toward the top. Contrast with the ProgrammaticScroll case above.
+    [Fact]
+    public async Task OnBeforeSpacerVisible_UserScroll_MovesWindowTowardTop()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 1000);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+        var itemsBeforeAtTarget = virtualize._itemsBefore;
+        Assert.True(itemsBeforeAtTarget > 0, "Precondition: the window should have moved away from the top.");
+
+        // A UserScroll before-spacer with spacerSize=0 (top of the list in view) moves the window up.
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.UserScroll));
+
+        Assert.True(virtualize._itemsBefore < itemsBeforeAtTarget,
+            $"A UserScroll before-spacer callback should move the window toward the top; it stayed at {virtualize._itemsBefore}.");
+    }
+
+    // Covers dotnet/aspnetcore#67936: a bottom-spacer callback while the window underfills the viewport is
+    // classified ViewportFill and MUST grow the window to cover the viewport, rather than staying at the
+    // viewport-agnostic OverscanCount*2+1 seed.
+    [Fact]
+    public async Task OnAfterSpacerVisible_ViewportFill_GrowsWindowToCoverViewport()
+    {
+        var requests = new List<ItemsProviderRequest>();
+        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 1000 - request.StartIndex)), 1000));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 1000, customProvider: provider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        // Tall (2000px) viewport, 50px items: the seed capacity (OverscanCount*2+1 = 31) does not cover it.
+        // ViewportFill must grow the window to at least ceil(2000/50) = 40 rows so the viewport is filled.
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 2000f, SpacerVisibilityReason.ViewportFill));
+
+        var minRowsToCoverViewport = (int)Math.Ceiling(2000f / 50f);
+        Assert.True(requests[^1].Count >= minRowsToCoverViewport,
+            $"ViewportFill must grow the window to cover the viewport (>= {minRowsToCoverViewport} rows); it requested {requests[^1].Count}.");
+    }
+
+    // "Display an index that is already on screen": a short list that fully fits the viewport, so aligning to
+    // InitialItemIndex needs no real scroll. Verify the window is not left stuck — it renders from the top
+    // (all items visible, target on screen) and a later bottom-spacer ViewportFill is still honored.
+    [Fact]
+    public async Task InitialIndex_ShortListThatFits_TargetOnScreenWithoutScroll_DoesNotStall()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(1, 10).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", 8);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item)));
+                builder.AddComponentReferenceCapture(5, c => renderedVirtualize = (Virtualize<int>)c);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+        // 10 items with a seed capacity of OverscanCount*2+1 = 31 > 10, so the window clamps to the top and
+        // item 8 is within the rendered range — it is already on screen, no scroll required.
+        Assert.Equal(0, renderedVirtualize._itemsBefore);
+
+        // No user scroll ever occurred; a bottom-spacer ViewportFill must still be processed and must not
+        // push the window off the top (everything already fits).
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, SpacerVisibilityReason.ViewportFill));
+
+        Assert.Equal(0, renderedVirtualize._itemsBefore);
     }
 
     [Fact]

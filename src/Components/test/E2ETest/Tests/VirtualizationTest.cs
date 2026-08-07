@@ -5381,6 +5381,77 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     private long GetScrollTop(IJavaScriptExecutor js, IWebElement container)
         => (long)js.ExecuteScript("return Math.round(arguments[0].scrollTop)", container);
 
+    // Returns the data-index of the bottom-most REAL item that intersects the viewport, or -1 if the
+    // element covering the viewport bottom is a placeholder / missing (i.e. the window underfills).
+    private long GetBottomRenderedIndex(IJavaScriptExecutor js)
+    {
+        return (long)js.ExecuteScript(@"
+            var container = document.getElementById('scroll-container');
+            var rect = container.getBoundingClientRect();
+            var items = container.querySelectorAll('.item, .loading-placeholder');
+            var best = null;
+            var bestBottom = Number.NEGATIVE_INFINITY;
+            for (var i = 0; i < items.length; i++) {
+                var ir = items[i].getBoundingClientRect();
+                if (ir.top >= rect.bottom - 1) continue; // below viewport
+                if (ir.bottom <= rect.top + 1) continue; // above viewport
+                if (ir.bottom > bestBottom) { bestBottom = ir.bottom; best = items[i]; }
+            }
+            if (!best) return -1;
+            if (best.classList.contains('loading-placeholder')) return -1;
+            var idx = best.getAttribute('data-index');
+            return idx === null ? -1 : parseInt(idx, 10);
+        ");
+    }
+
+    private bool ViewportBottomCoveredByRealItem(IJavaScriptExecutor js)
+    {
+        return (bool)js.ExecuteScript(@"
+            var c = document.getElementById('scroll-container');
+            var rect = c.getBoundingClientRect();
+            var items = c.querySelectorAll('.item');
+            var maxBottom = Number.NEGATIVE_INFINITY;
+            for (var i = 0; i < items.length; i++) {
+                var r = items[i].getBoundingClientRect();
+                if (r.bottom <= rect.top + 1) continue; // above viewport
+                if (r.top >= rect.bottom - 1) continue;  // below viewport
+                if (r.bottom > maxBottom) maxBottom = r.bottom;
+            }
+            return maxBottom >= rect.bottom - 2;
+        ");
+    }
+
+    // Covers dotnet/aspnetcore#67933: with a small InitialItemIndex in a tall container, the initial window
+    // must grow to cover the viewport (no gap/placeholder at the bottom) without requiring a user scroll.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Virtualize_InitialIndex_FillsViewport(bool useItemsProvider)
+    {
+        const int initialIndex = 10;
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+        if (useItemsProvider)
+        {
+            Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+        }
+        Browser.Exists(By.Id("set-small-overscan")).Click();
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+        SetManualInitialIndex(initialIndex);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
+        Browser.True(() => ViewportBottomCoveredByRealItem(js),
+            $"Viewport bottom should be covered by a real item, but a gap/placeholder was found " +
+            $"(top={GetTopRenderedIndex(js)}, bottom={GetBottomRenderedIndex(js)}).");
+    }
+
     [Fact]
     public void ScrollToItem_FixedHeight_LandsAtTop()
     {
