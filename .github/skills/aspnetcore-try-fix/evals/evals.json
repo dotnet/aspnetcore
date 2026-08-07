@@ -74,6 +74,32 @@
         "The candidate may be classified production-proven after all required configurations and neighboring tests pass.",
         "The recommendation is not artificially downgraded when every relevant proof dimension is strong."
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "In an isolated ASP.NET Core worktree, assess a registration PR where an independently justified exact-instance assertion passes on untouched frozen head through the real consumer. Reintroducing the removed historical assignment makes it fail. Validate the current fix without inventing a production change.",
+      "expected_output": "A structured no-defect result that records the head pass, labels the historical mutation diagnostic-only, and treats any stronger regression assertion as optional coverage.",
+      "files": [],
+      "expectations": [
+        "Untouched frozen head is executed first and its passing result is preserved.",
+        "The agent does not manufacture a frozen-head red or propose a production correction after head passes.",
+        "The historical mutation is explicitly diagnostic-only.",
+        "The stronger test assertion is optional-regression rather than required-regression.",
+        "The result states that no current-head production defect was proven."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In an isolated ASP.NET Core worktree, validate a one-line stateless lookup fix against an authoritative contract. Frozen head fails the real-path assertion, the candidate passes it, and two nearest key-shape counterexamples pass. No lifecycle or asynchronous state exists.",
+      "expected_output": "A proportionate empirical candidate that uses the real path and relevant key-shape variants without unrelated lifecycle scaffolding.",
+      "files": [],
+      "expectations": [
+        "The identical assertion provides strict frozen-head red and candidate green.",
+        "The matrix varies relevant lookup inputs rather than unrelated lifecycle dimensions.",
+        "The response does not add cancellation, disposal, concurrency, or timing tests solely to upgrade proof.",
+        "The assertion disposition is required-regression.",
+        "Candidate fidelity remains limited by the configurations and platforms actually executed."
+      ]
     }
   ]
 }

@@ -109,7 +109,7 @@
       "expectations": [
         "The review distinguishes structural support for accepting the old payload from authority that the old payload remains supported.",
         "The PR author's compatibility claim is not promoted into accepted product intent.",
-        "The old-payload test is not automatically treated as a merge-candidate assertion merely because the alias makes it green.",
+        "The old-payload test is not automatically treated as required regression coverage merely because the alias makes it green.",
         "The result is blocked on product oracle or presented as a recommendation rather than a high-confidence implementation blocker.",
         "Four candidates choosing the pre-supplied alias helper is not counted as four independent mechanism discoveries.",
         "The final output identifies what maintainer or contract evidence would change the verdict."
@@ -154,6 +154,33 @@
         "The candidate is allowed to become production-proven after the varied lifecycle matrix and exact CI configurations pass.",
         "The final review uses blocked on implementation and high confidence because the current PR still omits the proven producer-fault correction and no weak fidelity dimension remains.",
         "The public comment requests the missing producer-fault correction without adding uncertainty that the evidence has already resolved or claiming the separate candidate is already in the PR."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Review a small ASP.NET Core registration fix. A documented contract says a preconfigured compatible handler instance takes precedence over type fallback. The PR removes the line that discarded that instance and already includes a weaker regression test. A stronger unique-result assertion passes on untouched frozen head through Options, dependency injection, and the real consumer, but no concrete false-pass exists for the checked-in test. Reintroducing the removed line makes the stronger assertion fail. A narrow fallback matrix passes, but the local test needed an unrelated frontend-build bypass. Keep the review local.",
+      "expected_output": "A no-blocker review that keeps the current fix, distinguishes frozen-head success from a diagnostic historical mutation, treats stronger test coverage as optional, and caps candidate proof at targeted-proven.",
+      "files": [],
+      "expectations": [
+        "The untouched frozen-head result is recorded before any mutation or candidate.",
+        "Frozen-head success rejects an implementation blocker even though a historical mutation can produce red.",
+        "The historical mutation is diagnostic-only and is not described as a current-head defect.",
+        "The stronger assertion is optional-regression rather than a required merge change.",
+        "The build bypass caps candidate proof at targeted-proven.",
+        "The final verdict keeps the current fix and reports ready or recommendation-only rather than blocked on implementation."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Review a one-line stateless ASP.NET Core lookup correction with an authoritative contract. The exact real path fails on frozen head and passes after the correction, and the two nearest key-shape counterexamples pass. No ownership, cancellation, concurrency, interop, or background work is involved. Decide how much falsification is required and classify the candidate.",
+      "expected_output": "A proportionate review that accepts a bounded real-path and nearest-counterexample matrix without inventing lifecycle scaffolding, while preserving explicit configuration limits.",
+      "files": [],
+      "expectations": [
+        "The review requires strict frozen-head red and candidate green for the claimed defect.",
+        "The falsification matrix is limited to dimensions that can affect the stateless lookup mechanism.",
+        "The review does not add cancellation, disposal, concurrency, or observer-timeout scaffolding solely to satisfy a template.",
+        "The candidate proof label preserves any untested configuration or platform limits.",
+        "The assertion is required-regression because it proves the authoritative defect and correction."
       ]
     }
   ]

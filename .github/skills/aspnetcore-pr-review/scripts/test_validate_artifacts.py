@@ -22,6 +22,7 @@ Consensus.
 Assessment.
 
 ## Proof status
+**Frozen-head result:** behavioral-fail
 **Finding proof:** empirical
 **Scenario proof:** empirical
 **Candidate proof:** targeted-proven
@@ -29,7 +30,8 @@ Assessment.
 **Oracle fidelity:** authoritative
 **Mechanism fidelity:** reproduced
 **Scenario fidelity:** proxy
-**Assertion disposition:** diagnostic-only
+**Regression assertion disposition:** optional-regression
+**Diagnostic mutation disposition:** not-applicable
 
 ## Final recommendation
 **Implementation verdict:** REVISE
@@ -100,6 +102,35 @@ class ValidateArtifactsTests(unittest.TestCase):
             errors,
         )
 
+    def test_placeholder_proof_value_fails(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Frozen-head result:** behavioral-fail",
+                "**Frozen-head result:** behavioral-fail / pass",
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "invalid calibrated value for Frozen-head result: behavioral-fail / pass",
+            validate(root),
+        )
+
+    def test_duplicate_calibration_marker_fails(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW + "\n**Frozen-head result:** pass\n",
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "final review contains duplicate marker: **Frozen-head result:**",
+            validate(root),
+        )
+
     def test_weak_oracle_cannot_block_on_implementation(self):
         root = self.create_root()
         review_path = root / "final/review.md"
@@ -115,8 +146,8 @@ class ValidateArtifactsTests(unittest.TestCase):
         errors = validate(root)
 
         self.assertIn(
-            "blocked on implementation requires stronger oracle, mechanism, and "
-            "scenario fidelity",
+            "blocked on implementation requires a proven frozen-head defect and "
+            "stronger oracle, mechanism, scenario, and finding proof",
             errors,
         )
 
@@ -135,9 +166,71 @@ class ValidateArtifactsTests(unittest.TestCase):
         errors = validate(root)
 
         self.assertIn(
-            "blocked on implementation requires stronger oracle, mechanism, and "
-            "scenario fidelity",
+            "blocked on implementation requires a proven frozen-head defect and "
+            "stronger oracle, mechanism, scenario, and finding proof",
             errors,
+        )
+
+    def test_passing_head_cannot_block_on_implementation(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Frozen-head result:** behavioral-fail",
+                "**Frozen-head result:** pass",
+            ).replace(
+                "**Merge readiness:** recommendation only",
+                "**Merge readiness:** blocked on implementation",
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "blocked on implementation requires a proven frozen-head defect and "
+            "stronger oracle, mechanism, scenario, and finding proof",
+            validate(root),
+        )
+
+    def test_structural_head_defect_can_block_on_implementation(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Frozen-head result:** behavioral-fail",
+                "**Frozen-head result:** structural-defect",
+            ).replace(
+                "**Finding proof:** empirical",
+                "**Finding proof:** structural",
+            ).replace(
+                "**Scenario proof:** empirical",
+                "**Scenario proof:** structural",
+            ).replace(
+                "**Merge readiness:** recommendation only",
+                "**Merge readiness:** blocked on implementation",
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertEqual([], validate(root))
+
+    def test_behavioral_blocker_requires_empirical_proof(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Finding proof:** empirical",
+                "**Finding proof:** structural",
+            ).replace(
+                "**Merge readiness:** recommendation only",
+                "**Merge readiness:** blocked on implementation",
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "blocked on implementation requires a proven frozen-head defect and "
+            "stronger oracle, mechanism, scenario, and finding proof",
+            validate(root),
         )
 
     def test_production_proven_requires_multiple_stress_cases(self):
@@ -151,6 +244,7 @@ class ValidateArtifactsTests(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "empirical/stress-matrix.md").write_text(
+            "## Executed cases\n"
             "| Configuration | Result |\n|---|---|\n| only | pass |\n",
             encoding="utf-8",
         )
@@ -158,7 +252,7 @@ class ValidateArtifactsTests(unittest.TestCase):
         errors = validate(root)
 
         self.assertIn(
-            "production-proven requires a stress matrix with multiple executed cases",
+            "production-proven requires multiple distinct executed cases",
             errors,
         )
 
@@ -170,12 +264,13 @@ class ValidateArtifactsTests(unittest.TestCase):
                 "**Candidate proof:** targeted-proven",
                 "**Candidate proof:** production-proven",
             ).replace(
-                "**Assertion disposition:** diagnostic-only",
-                "**Assertion disposition:** merge-candidate",
+                "**Regression assertion disposition:** optional-regression",
+                "**Regression assertion disposition:** required-regression",
             ),
             encoding="utf-8",
         )
         (root / "empirical/stress-matrix.md").write_text(
+            "## Executed cases\n"
             "| Configuration | Result |\n"
             "|---|---|\n"
             "| Debug | pass |\n"
@@ -199,8 +294,8 @@ class ValidateArtifactsTests(unittest.TestCase):
                 "**Candidate proof:** targeted-proven",
                 "**Candidate proof:** production-proven",
             ).replace(
-                "**Assertion disposition:** diagnostic-only",
-                "**Assertion disposition:** merge-candidate",
+                "**Regression assertion disposition:** optional-regression",
+                "**Regression assertion disposition:** required-regression",
             ),
             encoding="utf-8",
         )
@@ -210,6 +305,7 @@ class ValidateArtifactsTests(unittest.TestCase):
             "**Applicable configurations/platforms:** passed on exact CI matrix\n"
             "**Neighboring suite:** passed\n"
             "**Cleanup/interruption paths:** not applicable - synchronous API\n\n"
+            "## Executed cases\n"
             "| Configuration | Result |\n"
             "|---|---|\n"
             "| Debug | pass |\n"
@@ -218,6 +314,148 @@ class ValidateArtifactsTests(unittest.TestCase):
         )
 
         self.assertEqual([], validate(root))
+
+    def test_structural_defect_cannot_claim_production_proven(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Candidate proof:** targeted-proven",
+                "**Candidate proof:** production-proven",
+            ).replace(
+                "**Frozen-head result:** behavioral-fail",
+                "**Frozen-head result:** structural-defect",
+            ).replace(
+                "**Finding proof:** empirical",
+                "**Finding proof:** structural",
+            ).replace(
+                "**Regression assertion disposition:** optional-regression",
+                "**Regression assertion disposition:** required-regression",
+            ),
+            encoding="utf-8",
+        )
+        (root / "empirical/stress-matrix.md").write_text(
+            "**Real producer/runtime boundary:** passed\n"
+            "**Varied falsification dimensions:** passed\n"
+            "**Applicable configurations/platforms:** passed\n"
+            "**Neighboring suite:** passed\n"
+            "**Cleanup/interruption paths:** not applicable - synchronous API\n\n"
+            "## Executed cases\n"
+            "| Configuration | Result |\n"
+            "|---|---|\n"
+            "| Debug | pass |\n"
+            "| Release | pass |\n",
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "production-proven requires empirical finding and scenario proof",
+            validate(root),
+        )
+
+    def test_production_proven_rejects_weak_oracle_fidelity(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Candidate proof:** targeted-proven",
+                "**Candidate proof:** production-proven",
+            ).replace(
+                "**Oracle fidelity:** authoritative",
+                "**Oracle fidelity:** hypothesis",
+            ).replace(
+                "**Regression assertion disposition:** optional-regression",
+                "**Regression assertion disposition:** required-regression",
+            ),
+            encoding="utf-8",
+        )
+        (root / "empirical/stress-matrix.md").write_text(
+            "**Real producer/runtime boundary:** passed\n"
+            "**Varied falsification dimensions:** passed\n"
+            "**Applicable configurations/platforms:** passed\n"
+            "**Neighboring suite:** passed\n"
+            "**Cleanup/interruption paths:** not applicable - synchronous API\n\n"
+            "## Executed cases\n"
+            "| Configuration | Result |\n"
+            "|---|---|\n"
+            "| Debug | pass |\n"
+            "| Release | pass |\n",
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "production-proven is incompatible with weak oracle, mechanism, or "
+            "scenario fidelity",
+            validate(root),
+        )
+
+    def test_production_proven_rejects_duplicate_executed_cases(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Candidate proof:** targeted-proven",
+                "**Candidate proof:** production-proven",
+            ).replace(
+                "**Regression assertion disposition:** optional-regression",
+                "**Regression assertion disposition:** required-regression",
+            ),
+            encoding="utf-8",
+        )
+        (root / "empirical/stress-matrix.md").write_text(
+            "**Real producer/runtime boundary:** passed\n"
+            "**Varied falsification dimensions:** passed\n"
+            "**Applicable configurations/platforms:** passed\n"
+            "**Neighboring suite:** passed\n"
+            "**Cleanup/interruption paths:** not applicable - synchronous API\n\n"
+            "## Executed cases\n"
+            "| Configuration | Result |\n"
+            "|---|---|\n"
+            "| Debug | pass |\n"
+            "| Debug | pass |\n",
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "production-proven requires multiple distinct executed cases",
+            validate(root),
+        )
+
+    def test_production_proven_rejects_duplicate_executed_sections(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Candidate proof:** targeted-proven",
+                "**Candidate proof:** production-proven",
+            ).replace(
+                "**Regression assertion disposition:** optional-regression",
+                "**Regression assertion disposition:** required-regression",
+            ),
+            encoding="utf-8",
+        )
+        (root / "empirical/stress-matrix.md").write_text(
+            "**Real producer/runtime boundary:** passed\n"
+            "**Varied falsification dimensions:** passed\n"
+            "**Applicable configurations/platforms:** passed\n"
+            "**Neighboring suite:** passed\n"
+            "**Cleanup/interruption paths:** not applicable - synchronous API\n\n"
+            "## Executed cases\n"
+            "| Configuration | Result |\n"
+            "|---|---|\n"
+            "| Debug | pass |\n"
+            "| Release | pass |\n\n"
+            "## Executed cases\n"
+            "| Configuration | Result |\n"
+            "|---|---|\n"
+            "| Other | pass |\n",
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "production-proven requires exactly one Executed cases section",
+            validate(root),
+        )
 
     def test_diagnostic_only_cannot_claim_high_confidence(self):
         root = self.create_root()
@@ -236,6 +474,54 @@ class ValidateArtifactsTests(unittest.TestCase):
         self.assertIn(
             "diagnostic-only candidate proof is incompatible with high confidence",
             errors,
+        )
+
+    def test_legacy_merge_candidate_disposition_fails(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Regression assertion disposition:** optional-regression",
+                "**Regression assertion disposition:** merge-candidate",
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "regression assertion disposition must use a calibrated severity value",
+            validate(root),
+        )
+
+    def test_negated_assertion_disposition_fails(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Regression assertion disposition:** optional-regression",
+                "**Regression assertion disposition:** not required-regression",
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "regression assertion disposition must use a calibrated severity value",
+            validate(root),
+        )
+
+    def test_invalid_diagnostic_mutation_disposition_fails(self):
+        root = self.create_root()
+        review_path = root / "final/review.md"
+        review_path.write_text(
+            VALID_REVIEW.replace(
+                "**Diagnostic mutation disposition:** not-applicable",
+                "**Diagnostic mutation disposition:** required-regression",
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertIn(
+            "diagnostic mutation disposition must use a calibrated severity value",
+            validate(root),
         )
 
 

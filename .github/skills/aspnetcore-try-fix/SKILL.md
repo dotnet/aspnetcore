@@ -14,9 +14,9 @@ compatibility: Requires a dotnet/aspnetcore checkout, git, and its local .NET/No
 
 Generate one independent fix candidate, test it when isolation permits, and
 return evidence that another reviewer can compare with other candidates.
-When the sibling reviewer skill is available, use
-`../aspnetcore-pr-review/references/proof-calibration.md` as the canonical
-calibration contract; the rules below are the standalone minimum.
+Resolve sibling references from this active `SKILL.md` root. When available,
+use `../aspnetcore-pr-review/references/proof-calibration.md` as the canonical
+contract; never silently mix user-installed and project-installed copies.
 
 ## Repository scope
 
@@ -99,8 +99,9 @@ mechanism is available, return `Blocked` instead of modifying it.
 3. Select the smallest existing build/test command that covers the behavior.
    For Components issues, follow `src/Components/AGENTS.md`, including browser
    reproduction and a permanent E2E test when behavior is browser-observable.
-4. When a test is added for a bug, require strict red/green evidence:
-   the same assertion must fail for the missing behavior and pass with the fix.
+4. Require strict red/green only to prove a defect and correction. Run untouched
+   frozen head first; if it passes, reject the blocker rather than manufacturing
+   a failing mutation.
 5. Treat pre-existing or infrastructure failures separately. Demonstrate them
    with an unchanged baseline test before calling them unrelated.
 6. A documented build-property bypass is allowed only after showing the
@@ -170,7 +171,8 @@ Independent authority for the expected result:
 Allowed perturbations:
 Runtime variants:
 Repetitions:
-Assertion disposition: merge-candidate / diagnostic-only / rejected
+Regression assertion disposition: required-regression / optional-regression / rejected
+Diagnostic mutation disposition: diagnostic-only / rejected / not-applicable
 ```
 
 Preserve the caller's assertion contract. Do not replace a focused stimulus
@@ -182,11 +184,13 @@ Before editing, ask whether this assertion would still be required if the
 candidate were unknown. A synthetic input chosen because it falls between the
 old and proposed thresholds demonstrates the policy difference, but remains
 diagnostic-only unless independent authority says that input must succeed.
+Use `required-regression` only when accepted criteria or a proven defect makes
+that exact coverage necessary; otherwise merge-suitable hardening is optional.
 
 Keep diagnostic assertions and the proposed implementation separable. Capture
 the diagnostic-only diff, implementation-only diff, and combined candidate
 diff. Do not recommend committing a slow, configuration-specific, or synthetic
-assertion without explicitly classifying it as merge-candidate.
+assertion without classifying it as required or optional regression coverage.
 
 If no alternative is viable, return `NO VIABLE ALTERNATIVE` only after naming
 and rejecting at least one mechanism-level alternative with evidence.
@@ -216,13 +220,15 @@ Record only concrete concerns with a failing scenario.
 In `candidate-review`, evaluate whether the supplied validation is sufficient
 and predict the differentiating result. Do not claim `Pass`.
 
-In `empirical`, first require frozen-head failure at the predicted behavioral
-assertion. Infrastructure, build, stale-element, setup, or unrelated assertion
-failures are `Blocked`, not behavioral red. Then run the supplied command with
-the candidate and classify:
+In `empirical`, run the predicted behavioral assertion on untouched frozen head
+first. Infrastructure, build, stale-element, setup, or unrelated assertion
+failures are `Blocked`, not behavioral red. If head passes, report no defect and
+do not create a mutation merely to obtain red. If head fails, run the supplied
+command with the candidate and classify:
 
 | Evidence | Result |
 |---|---|
+| Frozen head passes the approved assertion | `Pass` with no defect; no production correction |
 | Behavioral red/green, stress matrix, and required producer path pass consistently | `Pass` |
 | Targeted assertion turns green but stress/producer validation is incomplete | `Blocked` |
 | Test ran and failed | `Fail` |
@@ -241,8 +247,9 @@ runtime variants, and repetition count match the assertion plan. Report a
 per-execution matrix rather than only an aggregate pass/fail result.
 
 Repeating one deterministic case establishes repeatability, not a complete
-stress matrix. Vary the dimensions that could falsify the mechanism. Preserve
-configuration, platform, and build-bypass limits when classifying proof.
+stress matrix. Vary only dimensions that could falsify the claimed mechanism,
+proportional to severity and statefulness. Do not add scaffolding solely to
+upgrade the proof label; preserve configuration, platform, and bypass limits.
 
 If repeated timing-sensitive runs disagree, return `Fail` until the divergence
 is explained and corrected. Never select only the passing run.
@@ -264,7 +271,8 @@ Use this exact shape:
 **Oracle fidelity:** authoritative / corroborated / hypothesis / unknown
 **Mechanism fidelity:** reproduced / structural / inferred / unknown
 **Scenario fidelity:** exact / proxy / synthetic / missing
-**Assertion disposition:** merge-candidate / diagnostic-only / rejected
+**Regression assertion disposition:** required-regression / optional-regression / rejected
+**Diagnostic mutation disposition:** diagnostic-only / rejected / not-applicable
 
 ### Proposed change
 <specific implementation>

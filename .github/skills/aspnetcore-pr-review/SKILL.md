@@ -11,7 +11,7 @@ description: >-
   worktree before recommending it. Produces one local-only recommendation.
   Do not use in dotnet/maui or any repository other than dotnet/aspnetcore.
   Never posts or pushes.
-compatibility: Requires a dotnet/aspnetcore checkout and the sibling aspnetcore-try-fix project skill
+compatibility: Requires a dotnet/aspnetcore checkout and the sibling aspnetcore-try-fix skill
 ---
 
 # ASP.NET Core Multi-Model Review
@@ -33,11 +33,13 @@ This skill is intentionally repository-specific. Before using it:
 ## Inputs
 
 - Issue/PR number or problem description.
-- Current diff or current fix summary.
-- Target files.
-- Validation evidence and known blockers.
+- Current diff/fix summary, target files, validation evidence, and blockers.
 - An artifact root outside the repository. Prefer the current session's artifact
   directory. If none is available, create a temporary directory and report it.
+
+Resolve `<skill-root>` from the active `SKILL.md` and the candidate only from
+`<skill-root>/../aspnetcore-try-fix/SKILL.md`. Record both paths and hashes;
+stop rather than mix installed and project copies.
 
 ## Model panel
 
@@ -47,9 +49,8 @@ verify the current session model. If it is an Anthropic or other non-GPT model,
 stop and report that the review must be restarted with a GPT orchestrator
 instead of silently continuing.
 
-The orchestrator remains separate from the candidate panel. This prevents the
-two Claude candidates from also controlling evidence selection and final
-synthesis.
+Keep the orchestrator separate so candidate models do not also control evidence
+selection and final synthesis.
 
 Use four different model families/configurations:
 
@@ -60,10 +61,9 @@ Use four different model families/configurations:
 | C | `gpt-5.3-codex` | Repository-pattern alternative |
 | D | `gpt-5.5` | Test falsification and unnecessary-surface removal |
 
-If a model is unavailable, substitute a different available family and record
-the substitution. Preserve four distinct models when possible. If a candidate
-times out or cannot use required tools, record the failure instead of silently
-replacing its result.
+If a model is unavailable, record its substitute and preserve four distinct
+models when possible. Record candidate timeouts/tool failures instead of
+silently replacing their results.
 
 ## Phase 1: Freeze shared evidence
 
@@ -93,6 +93,7 @@ Save the bundle outside the repository using these names:
   empirical/before.diff
   empirical/diagnostic.diff
   empirical/implementation.diff
+  empirical/head.log
   empirical/red.log
   empirical/candidate.diff
   empirical/green.log
@@ -142,8 +143,8 @@ and cannot by itself justify a high-confidence implementation blocker.
 
 ## Phase 3: Independent candidates
 
-Launch all four models with
-`.github/skills/aspnetcore-try-fix/SKILL.md` in `candidate-review` mode.
+Launch all four models with the resolved sibling
+`<skill-root>/../aspnetcore-try-fix/SKILL.md` in `candidate-review` mode.
 
 These invocations are read-only, so run them in parallel. Each prompt must:
 
@@ -245,20 +246,21 @@ merge-readiness verdict.
    A lower rung does not prove a higher-rung scenario. For example, directly
    invoking a callback does not prove which callback a browser interaction
    produces.
-5. Require strict red/green evidence for the review finding:
+5. Run the approved assertion against untouched frozen head first and save the
+   complete result in `empirical/head.log`:
    - add or tighten one assertion that distinguishes the predicted defect;
-   - run it against the frozen PR head and preserve the failing output in
-     `empirical/red.log`;
-   - apply the smallest candidate correction;
-   - run the identical assertion and preserve the passing output in
+   - if head fails behaviorally, copy that result to `empirical/red.log`, apply
+     the smallest correction, and save the identical passing assertion in
      `empirical/green.log`;
-   - save assertion-only changes as both `empirical/before.diff` and
-     `empirical/diagnostic.diff`, production-intended changes as
-     `empirical/implementation.diff`, the combined state as
-     `empirical/candidate.diff`, and the structured result as
-     `empirical/result.md`;
-   - record whether the assertion is `merge-candidate`, `diagnostic-only`, or
-     `rejected`.
+   - if head passes, reject or narrow the blocker. Mark red/green not applicable
+     rather than manufacturing a mutation; any useful mutation is diagnostic
+     only and cannot represent a frozen-head defect;
+   - save assertion changes as `before.diff` and `diagnostic.diff`, production
+     changes as `implementation.diff`, the combined state as `candidate.diff`,
+     and the structured result as `result.md` under `empirical/`;
+   - classify the regression assertion as required, optional, or rejected, and
+     any mutation separately as diagnostic-only, rejected, or not applicable.
+     Required means accepted criteria or a proven defect needs exact coverage.
 6. A valid red must fail at the predicted behavioral assertion. A stale browser
    element, harness timeout before the trigger, build failure, missing asset,
    infrastructure error, unrelated assertion, or different assertion is not
@@ -305,6 +307,8 @@ in the same isolated worktree and save a lifecycle-derived matrix in
 
 - Vary the dimensions that could falsify the mechanism. Repeating one identical
   deterministic scenario demonstrates repeatability, not a complete matrix.
+- Scale the matrix to claim severity and statefulness. Do not add lifecycle
+  scaffolding solely to earn `production-proven`; a lower proof cap is valid.
 - Exercise the real producer/runtime boundary and the narrow neighboring suite.
 - When recommending an observer-only timeout, inspect the inner task states
   after timeout, release or cancel them deterministically, observe exceptions,
@@ -314,7 +318,8 @@ in the same isolated worktree and save a lifecycle-derived matrix in
 - In `empirical/stress-matrix.md`, mark the real producer/runtime boundary,
   varied falsification dimensions, applicable configurations/platforms,
   neighboring suite, and cleanup/interruption paths as `passed` or
-  `not applicable - <specific reason>`.
+  `not applicable - <specific reason>`; list distinct variants under
+  `## Executed cases`.
 - Classify the candidate as `production-proven`, `targeted-proven`,
   `diagnostic-only`, `rejected`, or `blocked`.
 
@@ -442,10 +447,11 @@ Save the synthesized output below to `final/review.md`.
 - <claim and why>
 
 ## Test assessment
-<whether strict red/green and relevant paths are covered; include empirical
-command, red result, green result, and artifact paths, or the exact blocker>
+<frozen-head result and relevant paths; include strict red/green only for a
+proven defect, otherwise state that head passed and no blocker was manufactured>
 
 ## Proof status
+**Frozen-head result:** behavioral-fail / structural-defect / pass / blocked / not-applicable
 **Finding proof:** empirical / structural / missing
 **Scenario proof:** empirical / structural / missing
 **Candidate proof:** production-proven / targeted-proven / diagnostic-only / rejected / blocked / none
@@ -453,7 +459,8 @@ command, red result, green result, and artifact paths, or the exact blocker>
 **Oracle fidelity:** authoritative / corroborated / hypothesis / unknown
 **Mechanism fidelity:** reproduced / structural / inferred / unknown
 **Scenario fidelity:** exact / proxy / synthetic / missing
-**Assertion disposition:** merge-candidate / diagnostic-only / rejected
+**Regression assertion disposition:** required-regression / optional-regression / rejected
+**Diagnostic mutation disposition:** diagnostic-only / rejected / not-applicable
 
 ## Final recommendation
 **Implementation verdict:** KEEP CURRENT FIX / REVISE / REPLACE
@@ -484,10 +491,10 @@ command, red result, green result, and artifact paths, or the exact blocker>
 - Do not let implementation state, model consensus, or a green test substitute
   for an authoritative product oracle.
 - Do not treat infrastructure or harness failure as a behavioral red.
+- Do not manufacture a red after frozen head passes the approved assertion.
 - Do not treat one green run as proof that a production implementation is safe.
 - Do not infer producer behavior from a consumer-only test.
 - Do not collapse disagreement into consensus; preserve unresolved disputes.
 - Never infer the complete change set from `git diff` alone.
 - Never promote an unsupported factual claim into a required change.
-- Never publish internal proof jargon without translating it into concrete
-  maintainer language.
+- Translate internal proof jargon into concrete maintainer language.

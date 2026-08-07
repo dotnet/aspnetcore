@@ -55,7 +55,22 @@ Keep diagnostic and implementation changes separate:
   finding.
 - `implementation.diff`: the smallest change intended for the reviewed patch.
 - `candidate.diff`: the combined state used during validation.
-- `assertion_disposition`: `merge-candidate`, `diagnostic-only`, or `rejected`.
+- `regression_assertion_disposition`: `required-regression`,
+  `optional-regression`, or `rejected`.
+- `diagnostic_mutation_disposition`: `diagnostic-only`, `rejected`, or
+  `not-applicable`.
+
+Classify assertions and mutations in separate fields. A merge-suitable
+hardening assertion may be `optional-regression` while a historical mutation
+used to challenge it remains `diagnostic-only`.
+Use `required-regression` only when authoritative acceptance criteria or a
+proven defect makes that exact coverage necessary.
+
+Run the approved assertion on untouched frozen head before applying a candidate.
+If it passes, the blocker is contradicted. Do not mutate working code merely to
+obtain red. A historical regression mutation may be useful diagnostically, but
+it cannot substitute for a frozen-head failure or justify implementation
+severity.
 
 ## Fidelity dimensions
 
@@ -102,11 +117,19 @@ Record each requirement in `empirical/stress-matrix.md` with these exact labels:
 `Applicable configurations/platforms`, `Neighboring suite`, and
 `Cleanup/interruption paths`. Mark each `passed` or
 `not applicable - <specific reason>` before claiming `production-proven`.
+List the distinct varied rows under an `## Executed cases` heading; duplicate
+rows and unrelated tables do not satisfy the matrix.
 
 Repeated runs of one deterministic scenario are repetition evidence, not a
 stress matrix. A supported build-property bypass can produce
 `targeted-proven`, but cannot imply the bypassed targets or other platforms were
 validated.
+
+Scale falsification to the claim. Stateful lifecycle, concurrency, interop, and
+observer-timeout claims need the dimensions that can strand ownership or leak
+work. A bounded stateless change may need only the real path and its nearest
+counterexamples. Never add unrelated scaffolding solely to upgrade a proof
+label; retain a lower candidate classification instead.
 
 When an observer timeout does not cancel its inner work, the matrix must inspect
 the inner task states after timeout, release or cancel them deterministically,

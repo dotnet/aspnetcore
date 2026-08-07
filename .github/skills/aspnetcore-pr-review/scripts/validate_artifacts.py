@@ -19,6 +19,7 @@ REQUIRED_NONEMPTY = (
     "cross-examination/candidate-c.md",
     "cross-examination/candidate-d.md",
     "empirical/manifest.md",
+    "empirical/head.log",
     "empirical/claim-matrix.md",
     "empirical/stress-matrix.md",
     "empirical/result.md",
@@ -44,6 +45,7 @@ REQUIRED_FINAL_MARKERS = (
     "## Adversarial consensus",
     "## Test assessment",
     "## Proof status",
+    "**Frozen-head result:**",
     "**Finding proof:**",
     "**Scenario proof:**",
     "**Candidate proof:**",
@@ -51,7 +53,8 @@ REQUIRED_FINAL_MARKERS = (
     "**Oracle fidelity:**",
     "**Mechanism fidelity:**",
     "**Scenario fidelity:**",
-    "**Assertion disposition:**",
+    "**Regression assertion disposition:**",
+    "**Diagnostic mutation disposition:**",
     "## Final recommendation",
     "**Implementation verdict:**",
     "**Behavioral evidence:**",
@@ -77,6 +80,14 @@ def extract_label(content: str, label: str) -> str | None:
     return match.group(1).strip().lower() if match else None
 
 
+def count_marker(content: str, marker: str) -> int:
+    if marker.startswith("#"):
+        pattern = rf"^{re.escape(marker)}\s*$"
+    else:
+        pattern = rf"^{re.escape(marker)}.*$"
+    return len(re.findall(pattern, content, re.MULTILINE))
+
+
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
 
@@ -97,26 +108,105 @@ def validate(root: Path) -> list[str]:
 
     content = final_path.read_text(encoding="utf-8", errors="replace")
     for marker in REQUIRED_FINAL_MARKERS:
-        if marker not in content:
+        occurrences = count_marker(content, marker)
+        if occurrences == 0:
             errors.append(f"final review missing marker: {marker}")
+        elif occurrences > 1:
+            errors.append(f"final review contains duplicate marker: {marker}")
 
+    head_result = extract_label(content, "Frozen-head result")
+    finding_proof = extract_label(content, "Finding proof")
+    scenario_proof = extract_label(content, "Scenario proof")
+    product_oracle = extract_label(content, "Product oracle")
     oracle = extract_label(content, "Oracle fidelity")
     mechanism = extract_label(content, "Mechanism fidelity")
     scenario = extract_label(content, "Scenario fidelity")
     candidate = extract_label(content, "Candidate proof")
-    assertion = extract_label(content, "Assertion disposition")
+    regression_assertion = extract_label(content, "Regression assertion disposition")
+    diagnostic_mutation = extract_label(content, "Diagnostic mutation disposition")
     readiness = extract_label(content, "Merge readiness")
     confidence = extract_label(content, "Implementation confidence")
+    implementation_verdict = extract_label(content, "Implementation verdict")
+    behavioral_evidence = extract_label(content, "Behavioral evidence")
+
+    allowed_labels = {
+        "Frozen-head result": (
+            head_result,
+            {"behavioral-fail", "structural-defect", "pass", "blocked", "not-applicable"},
+        ),
+        "Finding proof": (finding_proof, {"empirical", "structural", "missing"}),
+        "Scenario proof": (scenario_proof, {"empirical", "structural", "missing"}),
+        "Candidate proof": (
+            candidate,
+            {
+                "production-proven",
+                "targeted-proven",
+                "diagnostic-only",
+                "rejected",
+                "blocked",
+                "none",
+            },
+        ),
+        "Product oracle": (
+            product_oracle,
+            {"documented", "author-confirmed", "test-encoded", "inferred", "unknown"},
+        ),
+        "Oracle fidelity": (
+            oracle,
+            {"authoritative", "corroborated", "hypothesis", "unknown"},
+        ),
+        "Mechanism fidelity": (
+            mechanism,
+            {"reproduced", "structural", "inferred", "unknown"},
+        ),
+        "Scenario fidelity": (scenario, {"exact", "proxy", "synthetic", "missing"}),
+        "Implementation verdict": (
+            implementation_verdict,
+            {"keep current fix", "revise", "replace"},
+        ),
+        "Behavioral evidence": (
+            behavioral_evidence,
+            {"empirical", "structural", "missing"},
+        ),
+        "Merge readiness": (
+            readiness,
+            {
+                "ready",
+                "recommendation only",
+                "blocked on evidence",
+                "blocked on product oracle",
+                "blocked on implementation",
+            },
+        ),
+        "Implementation confidence": (confidence, {"high", "medium", "low"}),
+    }
+    for label, (value, allowed) in allowed_labels.items():
+        if value not in allowed:
+            errors.append(f"invalid calibrated value for {label}: {value or 'missing'}")
 
     weak_oracle = oracle in {"hypothesis", "unknown"}
     weak_mechanism = mechanism in {"inferred", "unknown"}
     weak_scenario = scenario in {"synthetic", "missing"}
+    proven_head_defect = head_result in {"behavioral-fail", "structural-defect"}
+    proof_matches_head = (
+        head_result == "behavioral-fail"
+        and finding_proof == "empirical"
+        and scenario_proof == "empirical"
+    ) or (
+        head_result == "structural-defect"
+        and finding_proof in {"empirical", "structural"}
+        and scenario_proof in {"empirical", "structural"}
+    )
     if readiness == "blocked on implementation" and (
-        weak_oracle or weak_mechanism or weak_scenario
+        weak_oracle
+        or weak_mechanism
+        or weak_scenario
+        or not proven_head_defect
+        or not proof_matches_head
     ):
         errors.append(
-            "blocked on implementation requires stronger oracle, mechanism, and "
-            "scenario fidelity"
+            "blocked on implementation requires a proven frozen-head defect and "
+            "stronger oracle, mechanism, scenario, and finding proof"
         )
 
     if confidence == "high" and (weak_oracle or weak_mechanism or weak_scenario):
@@ -145,20 +235,79 @@ def validate(root: Path) -> list[str]:
                     f"not-applicable status for: {dimension}"
                 )
 
-        table_rows = [
-            line
-            for line in stress.splitlines()
-            if line.strip().startswith("|")
-            and "---" not in line
-        ]
-        data_rows = table_rows[1:] if table_rows else []
-        if len(data_rows) < 2:
+        executed_headings = list(
+            re.finditer(r"^## Executed cases\s*$", stress, re.MULTILINE)
+        )
+        if not executed_headings:
             errors.append(
-                "production-proven requires a stress matrix with multiple executed cases"
+                "production-proven requires an explicit Executed cases section"
             )
+        elif len(executed_headings) > 1:
+            errors.append(
+                "production-proven requires exactly one Executed cases section"
+            )
+        else:
+            section_start = executed_headings[0].end()
+            next_heading = re.search(
+                r"^## ",
+                stress[section_start:],
+                re.MULTILINE,
+            )
+            section_end = (
+                section_start + next_heading.start()
+                if next_heading is not None
+                else len(stress)
+            )
+            table_rows = [
+                line.strip()
+                for line in stress[section_start:section_end].splitlines()
+                if line.strip().startswith("|") and "---" not in line
+            ]
+            data_rows = table_rows[1:] if table_rows else []
+            distinct_rows = set(data_rows)
+            if len(distinct_rows) < 2:
+                errors.append(
+                    "production-proven requires multiple distinct executed cases"
+                )
 
-    if candidate == "production-proven" and assertion != "merge-candidate":
-        errors.append("production-proven requires a merge-candidate assertion disposition")
+    if regression_assertion not in {
+        "required-regression",
+        "optional-regression",
+        "rejected",
+    }:
+        errors.append(
+            "regression assertion disposition must use a calibrated severity value"
+        )
+
+    if diagnostic_mutation not in {"diagnostic-only", "rejected", "not-applicable"}:
+        errors.append(
+            "diagnostic mutation disposition must use a calibrated severity value"
+        )
+
+    if candidate == "production-proven" and not proven_head_defect:
+        errors.append("production-proven requires a proven frozen-head defect")
+
+    if candidate == "production-proven" and (
+        weak_oracle or weak_mechanism or weak_scenario
+    ):
+        errors.append(
+            "production-proven is incompatible with weak oracle, mechanism, or "
+            "scenario fidelity"
+        )
+
+    if candidate == "production-proven" and (
+        finding_proof != "empirical" or scenario_proof != "empirical"
+    ):
+        errors.append(
+            "production-proven requires empirical finding and scenario proof"
+        )
+
+    if candidate == "production-proven" and (
+        regression_assertion != "required-regression"
+    ):
+        errors.append(
+            "production-proven requires a required-regression assertion disposition"
+        )
 
     return errors
 
