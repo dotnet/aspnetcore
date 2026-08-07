@@ -303,9 +303,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         // so we need to wait for the page to fully settle before asserting.
         Browser.Exists(By.Id("unobserved-exceptions-count"), TimeSpan.FromSeconds(10));
 
-        // Give final render cycles time to complete.
-        Thread.Sleep(500);
-
         // The component will stop redirecting after 3 attempts and render the exception count.
         Browser.Equal("0", () => Browser.FindElement(By.Id("unobserved-exceptions-count")).Text);
     }
