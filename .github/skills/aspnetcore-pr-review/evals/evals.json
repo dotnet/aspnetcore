@@ -84,6 +84,77 @@
         "The response does not replace the configured candidate panel with copies of the orchestrator model.",
         "No repository or GitHub state is modified."
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review a one-file dotnet/aspnetcore test-only PR for an asynchronous cache refresh. The issue records an OperationCanceledException after the test's two-second cancellation token fires, but the original CI logs are unavailable. The PR author says healthy work can remain queued longer than two seconds and replaces the token with an external two-second WaitAsync. All four candidates receive evidence containing an existing repository helper with a fifteen-second Release timeout and recommend it. A new test gates the worker for three seconds, fails at the PR head, and passes with the helper. Keep the review local.",
+      "expected_output": "A calibrated review that recognizes the strict red/green timeout-policy result without treating the synthetic candidate-shaped probe as exact proof of the historical CI mechanism or an independently established correctness blocker.",
+      "files": [],
+      "expectations": [
+        "The product oracle separates the observed cancellation symptom, the patch author's objective, accepted behavior, and the proposed historical cause.",
+        "The PR-author scheduling explanation is classified as a hypothesis unless corroborated by stronger authority.",
+        "The three-second gate is classified as a synthetic diagnostic because its expected success is not independently established.",
+        "The report states that the experiment proves a timeout-policy difference but not the unavailable historical scheduling mechanism.",
+        "The candidate is not classified as production-proven solely because the identical diagnostic passes repeatedly.",
+        "Agreement on the helper is treated as correlated convergence because every candidate received the same helper evidence.",
+        "The final confidence is capped by the weak oracle or scenario fidelity.",
+        "The suggested maintainer comment says what the experiment does not prove and frames the helper as a recommendation unless stronger intent is found."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Review a dotnet/aspnetcore serializer PR that removes a legacy payload alias. The PR author says no supported clients send the old property, but there is no compatibility document, accepted issue criterion, telemetry, or maintainer clarification. Four candidates are shown the same alias helper and propose restoring it. A new old-payload test fails without the alias and passes when it is restored. Do not modify GitHub.",
+      "expected_output": "A review that does not let a clean candidate-shaped red/green test establish an unsupported compatibility contract, preserves the structural evidence, and asks for authoritative product context before declaring a blocker.",
+      "files": [],
+      "expectations": [
+        "The review distinguishes structural support for accepting the old payload from authority that the old payload remains supported.",
+        "The PR author's compatibility claim is not promoted into accepted product intent.",
+        "The old-payload test is not automatically treated as a merge-candidate assertion merely because the alias makes it green.",
+        "The result is blocked on product oracle or presented as a recommendation rather than a high-confidence implementation blocker.",
+        "Four candidates choosing the pre-supplied alias helper is not counted as four independent mechanism discoveries.",
+        "The final output identifies what maintainer or contract evidence would change the verdict."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Complete an ASP.NET Core multi-model review whose narrative looks finished, but the artifact root lacks product-oracle.md, head-drift.md, claim-matrix.md, stress-matrix.md, and repository-oracle.md. The final report also omits the orchestrator and suggested review comment, while claiming production-proven and high confidence. Do not recreate evidence from memory.",
+      "expected_output": "The reviewer runs the artifact validator, rejects incomplete synthesis, creates explicit not-applicable artifacts only when justified, and refuses impossible proof labels until the missing evidence is repaired.",
+      "files": [],
+      "expectations": [
+        "The deterministic artifact validator is run before final synthesis.",
+        "Missing required files are reported rather than assumed to exist because equivalent prose appears elsewhere.",
+        "The final report is not accepted without the orchestrator, proof status, repository oracle gaps, and suggested review comments sections.",
+        "Production-proven is rejected when the stress matrix is missing, lacks multiple executed cases, or omits explicit producer, variation, configuration/platform, neighboring-suite, and cleanup/interruption coverage.",
+        "The reviewer does not override validator failures with a narrative explanation."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Empirically review an ASP.NET Core background-worker test change that replaces cooperative cancellation with an observer-only timeout. The focused C# test can run only after disabling an unrelated web-asset build target in the fresh worktree. The candidate turns the focused assertion green, and the same deterministic assertion passes twenty times. Determine the proof level and any remaining lifecycle validation.",
+      "expected_output": "A scoped result that records the build bypass, avoids cross-platform production claims, distinguishes repetition from a stress matrix, and verifies what happens to inner worker tasks after the observer times out.",
+      "files": [],
+      "expectations": [
+        "The unrelated build failure and property override are recorded separately from behavioral red evidence.",
+        "The candidate is capped at targeted-proven until the standard build or exact CI path validates it.",
+        "Twenty identical deterministic passes are described as repetition evidence rather than a complete stress matrix.",
+        "The lifecycle matrix inspects inner task state after timeout and requires deterministic release or cancellation and exception observation.",
+        "The report does not generalize one local configuration to all CI platforms.",
+        "Diagnostic assertion changes and implementation-intended changes are preserved in separate diffs with an assertion disposition."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Review an ASP.NET Core pooled-resource fix. Accepted issue criteria and a maintainer clarification require every lease to be returned exactly once on normal completion, cancellation, and producer fault. Retained traces show a double return on cancellation. The current PR fixes cancellation but still leaks the lease on producer fault. A separate candidate not present in the PR centralizes release in one ownership exit. The identical real-path assertions fail at the frozen PR head for cancellation and fault, pass with the candidate, and a varied normal/cancel/fault/dispose matrix plus neighboring tests pass on the exact CI configurations. Keep the review local.",
+      "expected_output": "A high-confidence review that blocks the still-incomplete PR implementation while allowing the separate candidate to become production-proven because authoritative intent, reproduced mechanism, exact scenarios, real producer paths, varied stress, and exact CI configurations all align.",
+      "files": [],
+      "expectations": [
+        "The accepted criteria and maintainer clarification produce authoritative oracle fidelity.",
+        "Retained traces and exact frozen-head failures produce reproduced mechanism fidelity.",
+        "The real normal, cancellation, and producer-fault paths produce exact scenario fidelity.",
+        "The candidate is allowed to become production-proven after the varied lifecycle matrix and exact CI configurations pass.",
+        "The final review uses blocked on implementation and high confidence because the current PR still omits the proven producer-fault correction and no weak fidelity dimension remains.",
+        "The public comment requests the missing producer-fault correction without adding uncertainty that the evidence has already resolved or claiming the separate candidate is already in the PR."
+      ]
     }
   ]
 }

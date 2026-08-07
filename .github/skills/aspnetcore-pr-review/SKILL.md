@@ -91,6 +91,8 @@ Save the bundle outside the repository using these names:
   cross-examination/candidate-d.md
   empirical/manifest.md
   empirical/before.diff
+  empirical/diagnostic.diff
+  empirical/implementation.diff
   empirical/red.log
   empirical/candidate.diff
   empirical/green.log
@@ -122,34 +124,21 @@ avoid anchoring.
 
 ## Phase 2: Establish the product oracle
 
-Before asking models to diagnose the implementation, separate intended
-behavior from implementation state. Otherwise independent models can converge
-on the same plausible but incorrect lifecycle and then prove it consistently.
+Read `references/proof-calibration.md` before writing
+`evidence/product-oracle.md`. Separate four things that are easy to conflate:
+the observed symptom, the intended behavior, the patch author's objective, and
+the proposed historical cause.
 
-Write `evidence/product-oracle.md` with:
+Classify each expected-behavior claim using the authority ladder in that
+reference. A PR description can establish what its author is trying to change,
+but cannot by itself establish accepted product intent or prove why an earlier
+failure occurred. Implementation, existing tests, and model agreement remain
+evidence of current behavior rather than automatic product intent.
 
-1. The user-observable behavior being protected.
-2. The source and confidence for each behavioral claim:
-   - `documented`: public API docs or an accepted specification;
-   - `author-confirmed`: issue author, reporter, or maintainer clarification;
-   - `test-encoded`: an existing test whose intent is supported by another
-     authoritative source;
-   - `inferred`: derived only from implementation, naming, or model reasoning;
-   - `unknown`: competing interpretations remain.
-3. For stateful behavior, the current owner of the user-visible state, events
-   that retain ownership, events that transfer ownership, and what the user
-   should observe after each transition.
-4. Any ambiguity that requires human clarification.
-
-Implementation and existing tests are evidence of current behavior, not
-automatic proof of intended behavior. Multi-model agreement cannot promote an
-`inferred` claim to product intent. If a required behavioral claim remains
-`unknown`, continue investigating testable implementation defects but report
-the lifecycle recommendation as `blocked on product oracle`.
-
-When a human later corrects the oracle, preserve the correction and update all
-downstream hypotheses. Do not defend a prior consensus against authoritative
-product context.
+Freeze the expected assertion and its independent authority before selecting a
+candidate correction. If the scenario is justified only by a candidate or
+patch-author hypothesis, it may be explored, but it starts as diagnostic-only
+and cannot by itself justify a high-confidence implementation blocker.
 
 ## Phase 3: Independent candidates
 
@@ -173,6 +162,8 @@ These invocations are read-only, so run them in parallel. Each prompt must:
 - Require every expected-behavior claim to cite the shared product oracle and
   preserve its confidence. Candidates may challenge the oracle with evidence,
   but cannot silently replace it with implementation-derived intent.
+- Require every proposed discriminating assertion to state why the expected
+  result is required independently of that candidate.
 - Label unverifiable claims `UNSUPPORTED`; unsupported claims cannot become
   required follow-ups or consensus findings.
 - Prohibit edits, commits, pushes, comments, and external posting.
@@ -196,6 +187,12 @@ Evidence and citations:
 Known risks:
 Recommendation:
 ```
+
+Before cross-examination, validate each response against the sibling
+`aspnetcore-try-fix` output schema. Allow one correction turn for missing
+required fields or an oversized full-file restatement. Record how many distinct
+root-cause mechanisms survived; four models selecting a helper shown in their
+shared evidence is correlated convergence, not four independent runtime proofs.
 
 Each model must:
 
@@ -235,9 +232,9 @@ merge-readiness verdict.
    SHA, and clean status in `empirical/manifest.md`.
 3. Invoke `aspnetcore-try-fix` in `empirical` mode sequentially, using the
    strongest consensus hypothesis, the exact claim to prove or reject, the
-   relevant product-oracle entries, an exact assertion contract, its allowed
-   perturbations, and the smallest targeted validation command. The empirical
-   agent may edit only its isolated worktree.
+   relevant product-oracle entries, the already-approved candidate-independent
+   assertion contract, its allowed perturbations, and the smallest targeted
+   validation command. The empirical agent may edit only its isolated worktree.
 4. Build a proof ladder in `empirical/claim-matrix.md` and record the highest
    completed rung for each blocker-caliber claim:
    - source invariant or contradictory contract;
@@ -255,9 +252,13 @@ merge-readiness verdict.
    - apply the smallest candidate correction;
    - run the identical assertion and preserve the passing output in
      `empirical/green.log`;
-   - save the assertion-only diff as `empirical/before.diff`, the complete
-     candidate diff as `empirical/candidate.diff`, and the structured result as
-     `empirical/result.md`.
+   - save assertion-only changes as both `empirical/before.diff` and
+     `empirical/diagnostic.diff`, production-intended changes as
+     `empirical/implementation.diff`, the combined state as
+     `empirical/candidate.diff`, and the structured result as
+     `empirical/result.md`;
+   - record whether the assertion is `merge-candidate`, `diagnostic-only`, or
+     `rejected`.
 6. A valid red must fail at the predicted behavioral assertion. A stale browser
    element, harness timeout before the trigger, build failure, missing asset,
    infrastructure error, unrelated assertion, or different assertion is not
@@ -274,6 +275,11 @@ merge-readiness verdict.
 9. Run at most three iterations for the same hypothesis. If the environment,
    browser harness, or target test cannot run, preserve the failure and classify
    adjudication as `Blocked`; do not substitute aggregate CI or model agreement.
+   If a generated asset or unrelated build target blocks the focused command,
+   record the baseline failure before applying a documented property override.
+   Verify the bypassed target cannot affect the exercised behavior and cap the
+   candidate at `targeted-proven` unless the standard build or exact CI path
+   later validates it.
 10. For every other blocker-caliber behavioral claim, execute a narrow
     differentiating test when practical. If frozen head passes, explicitly
     discard or narrow the claim. If frozen head fails at the predicted
@@ -293,37 +299,24 @@ implementation` with high confidence solely from multi-model source reasoning.
 
 ## Phase 6: Production-candidate falsification
 
-Only recommend a specific production implementation after it survives a stress
-matrix derived from the affected lifecycle and producer boundary. Save the
-matrix and results in `empirical/stress-matrix.md`.
+Apply the production-proof rules in `references/proof-calibration.md`. Continue
+in the same isolated worktree and save a lifecycle-derived matrix in
+`empirical/stress-matrix.md`.
 
-Continue in the same isolated Phase 5 worktree. Re-invoke
-`aspnetcore-try-fix` in `empirical` mode sequentially with the diagnostic
-candidate, proof status, and lifecycle-derived stress matrix. A Phase 5
-red/green result reported as `Blocked` solely because stress or producer
-validation remains pending is the expected handoff into this phase, not a
-failed finding adjudication.
-
-1. Start from the transition table, not a generic checklist. Exercise every
-   ordinary exit and applicable interruption path.
-2. For stateful or timing-sensitive behavior, cover applicable cases such as:
-   equal and changed measurements, delayed/out-of-order delivery, no-op
-   operations, repeated or rapid operations, cancellation, disposal, opposite
-   transitions, missing/partial observer batches, and multiple generations.
-3. When browser or JavaScript behavior is part of the claim, run a real
-   interaction using the repository's canonical sample/E2E workflow. Confirm
-   interactivity and inspect relevant console/network failures.
-4. Re-run timing-sensitive tests enough times to expose instability. A single
-   pass followed by a failure means the candidate is not proven; investigate
-   the divergence rather than selecting the passing log.
-5. Run the narrow neighboring existing suite after the candidate.
-6. Distinguish candidate outcomes:
-   - `Production-proven`: behavioral red/green plus applicable stress matrix and
-     real producer path pass consistently.
-   - `Diagnostic-only`: turns the targeted assertion green but has not survived
-     the full relevant matrix.
-   - `Rejected`: introduces a regression, flakes, or contradicts an invariant.
-   - `Blocked`: required execution cannot be completed for a recorded reason.
+- Vary the dimensions that could falsify the mechanism. Repeating one identical
+  deterministic scenario demonstrates repeatability, not a complete matrix.
+- Exercise the real producer/runtime boundary and the narrow neighboring suite.
+- When recommending an observer-only timeout, inspect the inner task states
+  after timeout, release or cancel them deterministically, observe exceptions,
+  and verify cleanup cannot leak into later tests.
+- Preserve configuration and platform limits. A targeted run using a build
+  bypass cannot become cross-platform `production-proven`.
+- In `empirical/stress-matrix.md`, mark the real producer/runtime boundary,
+  varied falsification dimensions, applicable configurations/platforms,
+  neighboring suite, and cleanup/interruption paths as `passed` or
+  `not applicable - <specific reason>`.
+- Classify the candidate as `production-proven`, `targeted-proven`,
+  `diagnostic-only`, `rejected`, or `blocked`.
 
 If no candidate is production-proven, the review may still request changes for
 a proven defect. Describe the required invariant and evidence, but do not
@@ -344,6 +337,19 @@ compare it with the frozen evidence SHA. Save the comparison in
 
 The orchestrator, not any candidate model, synthesizes the result.
 
+Before writing the final report, resolve `<skill-root>` to the directory that
+contains this `SKILL.md` and run:
+
+```bash
+python3 <skill-root>/scripts/validate_artifacts.py \
+  <artifact-root>/aspnetcore-pr-review
+```
+
+Fix missing files or sections before synthesis. If an artifact is legitimately
+not applicable, create it with the reason instead of omitting it. Do not
+override proof-calibration failures merely because the final narrative explains
+them elsewhere.
+
 For each claim:
 
 - **Agree:** at least two models independently support it and no concrete
@@ -359,9 +365,10 @@ For each claim:
 For the empirically adjudicated finding:
 
 - Promote a finding to a required implementation follow-up when frozen head
-  fails at the predicted behavioral assertion and the causal mechanism is
-  supported. A diagnostic correction turning the same assertion green
-  strengthens causality but does not make that correction production-ready.
+  fails at an independently justified behavioral assertion, the relevant oracle
+  is authoritative enough for the requested severity, and the causal mechanism
+  is supported. A candidate-shaped diagnostic turning green proves only its
+  scoped experiment.
 - If adjudication is blocked, preserve the structural concern under `Dispute`
   or as a required evidence follow-up, calibrated to the strongest evidence
   actually obtained.
@@ -398,6 +405,8 @@ language:
 2. Explain the causal code path using only the minimum necessary terminology.
 3. State the requested change.
 4. Include one concrete example when it makes the behavior easier to see.
+5. State what the experiment does not prove whenever scenario, mechanism,
+   configuration, or oracle fidelity is weaker than exact.
 
 Avoid compressed phrases such as "pair the takeover check with a focused
 retention assertion" when plain language can say "change one item above the
@@ -439,13 +448,17 @@ command, red result, green result, and artifact paths, or the exact blocker>
 ## Proof status
 **Finding proof:** empirical / structural / missing
 **Scenario proof:** empirical / structural / missing
-**Candidate proof:** production-proven / diagnostic-only / rejected / blocked / none
+**Candidate proof:** production-proven / targeted-proven / diagnostic-only / rejected / blocked / none
 **Product oracle:** documented / author-confirmed / test-encoded / inferred / unknown
+**Oracle fidelity:** authoritative / corroborated / hypothesis / unknown
+**Mechanism fidelity:** reproduced / structural / inferred / unknown
+**Scenario fidelity:** exact / proxy / synthetic / missing
+**Assertion disposition:** merge-candidate / diagnostic-only / rejected
 
 ## Final recommendation
 **Implementation verdict:** KEEP CURRENT FIX / REVISE / REPLACE
 **Behavioral evidence:** empirical / structural / missing
-**Merge readiness:** ready / blocked on evidence / blocked on product oracle / blocked on implementation
+**Merge readiness:** ready / recommendation only / blocked on evidence / blocked on product oracle / blocked on implementation
 **Implementation confidence:** high / medium / low
 **Reason:** <concise evidence>
 

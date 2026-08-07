@@ -17,6 +17,63 @@
         "The response distinguishes finding proof, scenario proof, candidate proof, and assertion fidelity.",
         "No GitHub state or parent worktree is modified."
       ]
+    },
+    {
+      "id": 2,
+      "prompt": "In empirical mode, evaluate an ASP.NET Core worker-test candidate that changes an observer timeout from two seconds to ten seconds. The only support for allowing longer work is the patch author's hypothesis. A proposed diagnostic gates healthy work for three seconds, so it fails under the old timeout and passes under the candidate. Use an isolated worktree and keep all changes local.",
+      "expected_output": "A structured candidate that can run the synthetic diagnostic while refusing to turn a candidate-shaped threshold probe into authoritative scenario proof or a production-proven implementation.",
+      "files": [],
+      "expectations": [
+        "The output distinguishes accepted behavior from patch intent and the proposed historical cause.",
+        "Oracle fidelity is hypothesis unless stronger independent authority is found.",
+        "The assertion plan states the independent authority for expecting three-second work to succeed.",
+        "If no independent authority exists, the assertion disposition is diagnostic-only.",
+        "Scenario fidelity is synthetic rather than exact.",
+        "A green candidate is not production-proven without a varied stress matrix and real producer validation.",
+        "The response says the experiment proves the timeout-policy difference but not the original failure mechanism."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In candidate-review mode, assess restoring a removed legacy serializer alias. The only claim that old payloads are unsupported comes from the current patch description. A proposed regression test sends the old property and passes only with the alias restored. Do not edit the checkout.",
+      "expected_output": "A read-only candidate that explains the structural compatibility effect but does not treat its own old-payload test as an authoritative compatibility contract.",
+      "files": [],
+      "expectations": [
+        "The candidate identifies whether the old-payload expectation has documentation, accepted criteria, maintainer context, or only patch-author rationale.",
+        "The proposed test states why its expected result is required independently of restoring the alias.",
+        "Without stronger authority, the candidate labels the compatibility requirement unsupported or oracle-blocked.",
+        "The candidate does not claim Pass in candidate-review mode.",
+        "The recommendation is calibrated as a compatibility question or defensive option rather than a proven required change."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In an isolated worktree, empirically assess a test harness that waits on two inner tasks with an observer-only timeout. A focused test runs only with an unrelated frontend build disabled. Preserve a diagnostic assertion, apply one implementation candidate, and determine whether the result is production-ready.",
+      "expected_output": "A scoped empirical result with separate diagnostic and implementation diffs, build-bypass proof limits, a varied stress matrix, and deterministic cleanup of inner tasks after observer timeout.",
+      "files": [],
+      "expectations": [
+        "The diagnostic assertion and implementation candidate are captured separately and given an assertion disposition.",
+        "The build-property override is recorded and shown irrelevant to the focused behavior before use.",
+        "The proof is capped at targeted-proven while the standard build or exact CI path remains unvalidated.",
+        "Repeated identical passes are not substituted for a varied stress matrix.",
+        "The test inspects inner task state after timeout and deterministically releases or cancels outstanding work.",
+        "Exceptions from timed-out inner work are observed so they cannot leak into later tests.",
+        "The final fidelity fields preserve configuration and scenario limits."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In an isolated ASP.NET Core worktree, evaluate one pooled-resource candidate. Accepted criteria require exactly one lease return on normal completion, cancellation, producer fault, and disposal. Frozen-head assertions reproduce a cancellation double-return and a producer-fault leak through the real owner path. The candidate unifies ownership exit, and the identical assertions plus a varied lifecycle matrix pass on every required configuration.",
+      "expected_output": "A structured empirical candidate that can reach production-proven because the oracle, mechanism, scenario, real producer path, stress matrix, and configurations are all strong.",
+      "files": [],
+      "expectations": [
+        "Oracle fidelity is authoritative and cites the accepted criteria.",
+        "Mechanism fidelity is reproduced using the retained failures and frozen-head assertions.",
+        "Scenario fidelity is exact across normal, cancellation, producer-fault, and disposal paths.",
+        "The stress matrix varies lifecycle exits rather than merely repeating one deterministic assertion.",
+        "The candidate may be classified production-proven after all required configurations and neighboring tests pass.",
+        "The recommendation is not artificially downgraded when every relevant proof dimension is strong."
+      ]
     }
   ]
 }

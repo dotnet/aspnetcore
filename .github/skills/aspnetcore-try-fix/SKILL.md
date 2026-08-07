@@ -14,6 +14,9 @@ compatibility: Requires a dotnet/aspnetcore checkout, git, and its local .NET/No
 
 Generate one independent fix candidate, test it when isolation permits, and
 return evidence that another reviewer can compare with other candidates.
+When the sibling reviewer skill is available, use
+`../aspnetcore-pr-review/references/proof-calibration.md` as the canonical
+calibration contract; the rules below are the standalone minimum.
 
 ## Repository scope
 
@@ -77,6 +80,7 @@ mechanism is available, return `Blocked` instead of modifying it.
 | `target_files` | Yes | Relevant files or repository area |
 | `validation` | Yes | Targeted command(s) or known blocker |
 | `product_oracle` | Yes | Expected user-visible behavior, source, and confidence |
+| `oracle_authority` | Yes | Why the expected result is required independently of a candidate |
 | `proof_target` | `empirical` | The exact behavioral claim this candidate must prove or reject |
 | `assertion_contract` | `empirical` | Required setup, control, trigger, and assertion |
 | `allowed_perturbations` | `empirical` | What the empirical test may vary without changing the scenario |
@@ -99,10 +103,13 @@ mechanism is available, return `Blocked` instead of modifying it.
    the same assertion must fail for the missing behavior and pass with the fix.
 5. Treat pre-existing or infrastructure failures separately. Demonstrate them
    with an unchanged baseline test before calling them unrelated.
-6. Never change `global.json`, package manifests, lock files, or NuGet
+6. A documented build-property bypass is allowed only after showing the
+   bypassed target cannot affect the focused behavior. Record it and cap proof
+   at `targeted-proven` until the standard build or exact CI path passes.
+7. Never change `global.json`, package manifests, lock files, or NuGet
    configuration unless the caller explicitly requests it.
-7. Never commit, push, create a PR, post comments, or change branches.
-8. Cite exact repository paths and lines, observed output, or primary sources
+8. Never commit, push, create a PR, post comments, or change branches.
+9. Cite exact repository paths and lines, observed output, or primary sources
    for compatibility, browser-support, API-breaking, test-execution, and
    repository-pattern claims. Label claims `UNSUPPORTED` when they cannot be
    verified; unsupported claims cannot justify a required change.
@@ -118,6 +125,9 @@ State:
 
 - The product oracle and whether each expected behavior is documented,
   author-confirmed, test-encoded, inferred, or unknown.
+- Whether the source establishes accepted behavior, patch intent, an observed
+  symptom, or only a proposed historical cause. A PR-author rationale can state
+  patch intent but is not automatically an accepted contract or causal proof.
 - The observable failure.
 - The likely root cause.
 - The code path that produces the behavior.
@@ -156,15 +166,27 @@ Setup:
 Control:
 Trigger:
 Expected assertion:
+Independent authority for the expected result:
 Allowed perturbations:
 Runtime variants:
 Repetitions:
+Assertion disposition: merge-candidate / diagnostic-only / rejected
 ```
 
 Preserve the caller's assertion contract. Do not replace a focused stimulus
 with a broader one merely because an existing control is convenient. For
 example, changing one adjacent item's size is not equivalent to switching the
 layout model for every item.
+
+Before editing, ask whether this assertion would still be required if the
+candidate were unknown. A synthetic input chosen because it falls between the
+old and proposed thresholds demonstrates the policy difference, but remains
+diagnostic-only unless independent authority says that input must succeed.
+
+Keep diagnostic assertions and the proposed implementation separable. Capture
+the diagnostic-only diff, implementation-only diff, and combined candidate
+diff. Do not recommend committing a slow, configuration-specific, or synthetic
+assertion without explicitly classifying it as merge-candidate.
 
 If no alternative is viable, return `NO VIABLE ALTERNATIVE` only after naming
 and rejecting at least one mechanism-level alternative with evidence.
@@ -178,11 +200,14 @@ Before declaring the candidate viable, attack it:
 - Does a new public API require API baseline or documentation updates?
 - Does serialization/deserialization stay in sync across JS and .NET?
 - Can the test pass without exercising the reported bug?
+- Is the assertion independently justified, or shaped to favor this candidate?
 - What happens for null/default values, repeated events, and opposite state
   transitions?
 - For timing-sensitive state, what happens with equal/changed inputs,
   delayed/out-of-order delivery, no-op operations, rapid generations,
   cancellation, disposal, and partial observer/event batches?
+- If an observer times out without canceling inner work, what state are those
+  tasks in, how are they released, and can they leak into later tests?
 
 Record only concrete concerns with a failing scenario.
 
@@ -215,6 +240,10 @@ After each run, verify that the executed setup, control, trigger, assertion,
 runtime variants, and repetition count match the assertion plan. Report a
 per-execution matrix rather than only an aggregate pass/fail result.
 
+Repeating one deterministic case establishes repeatability, not a complete
+stress matrix. Vary the dimensions that could falsify the mechanism. Preserve
+configuration, platform, and build-bypass limits when classifying proof.
+
 If repeated timing-sensitive runs disagree, return `Fail` until the divergence
 is explained and corrected. Never select only the passing run.
 
@@ -232,6 +261,10 @@ Use this exact shape:
 **Files:** <paths>
 **Result:** Pass / Fail / Blocked / Proposed
 **Product oracle:** documented / author-confirmed / test-encoded / inferred / unknown
+**Oracle fidelity:** authoritative / corroborated / hypothesis / unknown
+**Mechanism fidelity:** reproduced / structural / inferred / unknown
+**Scenario fidelity:** exact / proxy / synthetic / missing
+**Assertion disposition:** merge-candidate / diagnostic-only / rejected
 
 ### Proposed change
 <specific implementation>
@@ -245,7 +278,7 @@ Use this exact shape:
 ### Proof status
 - Finding: empirical / structural / missing
 - Scenario: empirical / structural / missing
-- Candidate: production-proven / diagnostic-only / rejected / blocked
+- Candidate: production-proven / targeted-proven / diagnostic-only / rejected / blocked
 - Assertion fidelity: exact / scenario mismatch / incomplete
 
 ### Claim verification
