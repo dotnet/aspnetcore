@@ -58,10 +58,11 @@
     Condition="'$(_E2ETasksAssembly)' != ''" />
 
   <Target Name="_BuildE2ETasks"
-          Condition="'$(_E2ETasksProject)' != '' and '$(NoBuild)' != 'true'">
+          Condition="'$(_E2ETasksProject)' != '' and ('$(NoBuild)' != 'true' or !Exists('$(_E2ETasksAssembly)'))">
     <MSBuild Projects="$(_E2ETasksProject)"
              Targets="Build"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration)"
+             RemoveProperties="NoBuild" />
   </Target>
 
   <!--
