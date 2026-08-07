@@ -21,6 +21,7 @@ var builder = WebApplication.CreateBuilder();
 builder.Services.AddValidation();
 var app = builder.Build();
 app.Run();
+
 """;
 
     [Fact]
