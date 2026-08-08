@@ -58,30 +58,35 @@
   <!-- Pack the source generator into analyzers/ folder -->
   <Target Name="_IncludeGeneratorInPackage" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Generators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Generators.dll"
+      <None Include="$(_GeneratorAssembly)"
             Pack="true"
             PackagePath="analyzers/dotnet/cs"
             Visible="false" />
     </ItemGroup>
   </Target>
 
-  <!-- Pack the MSBuild task assembly into tasks/ folder -->
-  <Target Name="_BuildTasksForPackage"
-          BeforeTargets="_IncludeTasksInPackage"
-          Condition="'$(NoBuild)' != 'true' or !Exists('$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">
+  <PropertyGroup>
+    <_GeneratorAssembly>$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Generators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Generators.dll</_GeneratorAssembly>
+    <_TasksAssembly>$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_TasksAssembly>
+  </PropertyGroup>
+
+  <!-- Build the package's source generator and MSBuild task before collecting package files. -->
+  <Target Name="_BuildPackageDependencies"
+          BeforeTargets="_IncludeGeneratorInPackage;_IncludeTasksInPackage"
+          Condition="(!Exists('$(_GeneratorAssembly)') or !Exists('$(_TasksAssembly)')) and ('$(BuildProjectReferences)' == 'false' or '$(NoBuild)' == 'true')">
     <PropertyGroup>
-      <_TasksBuildProperties>Configuration=$(Configuration)</_TasksBuildProperties>
-      <_TasksBuildProperties Condition="!Exists('$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(_TasksBuildProperties);_ForceTasksBuild=$([System.Guid]::NewGuid())</_TasksBuildProperties>
+      <_PackageDependenciesBuildProperties>Configuration=$(Configuration)</_PackageDependenciesBuildProperties>
+      <_PackageDependenciesBuildProperties Condition="!Exists('$(_GeneratorAssembly)') or !Exists('$(_TasksAssembly)')">$(_PackageDependenciesBuildProperties);_ForcePackageDependenciesBuild=$([System.Guid]::NewGuid())</_PackageDependenciesBuildProperties>
     </PropertyGroup>
-    <MSBuild Projects="../tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
+    <MSBuild Projects="../gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj;../tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
              Targets="Build"
-             Properties="$(_TasksBuildProperties)"
+             Properties="$(_PackageDependenciesBuildProperties)"
              RemoveProperties="NoBuild" />
   </Target>
 
   <Target Name="_IncludeTasksInPackage" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll"
+      <None Include="$(_TasksAssembly)"
             Pack="true"
             PackagePath="tasks/netstandard2.0"
             Visible="false" />

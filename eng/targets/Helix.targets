@@ -172,7 +172,7 @@
     <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
-             Properties="BuildHelixPayload=true"
+             Properties="_E2EIsPublishing=true;BuildHelixPayload=true"
              RemoveProperties="HelixTargetQueue;TestRunId" />
 
     <!-- Isolate Helix tests from whatever happens to be in a parent directory. -->

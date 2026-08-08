@@ -75,22 +75,25 @@
 
   <Target Name="_PrepareComponentsTestingPackageConsumer"
           AfterTargets="Build"
-          Condition="'$(DesignTimeBuild)' != 'true' and '$(NoBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true' and '$(ExcludeFromBuild)' != 'true' and '$(ExcludeFromSourceOnlyBuild)' != 'true'">
+          BeforeTargets="RunTests"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true' and '$(ExcludeFromBuild)' != 'true' and ('$(DotNetBuildSourceOnly)' != 'true' or '$(ExcludeFromSourceOnlyBuild)' != 'true')">
     <PropertyGroup>
       <!-- A unique package root prevents a previously loaded MSBuild task DLL from pinning stale package contents. -->
       <_PackageConsumerPackagesPath>$(_PackageConsumerPackagesRoot)$([System.Guid]::NewGuid())\</_PackageConsumerPackagesPath>
       <_PackageConsumerProperties>Configuration=$(Configuration);PackageConsumerVersion=$(_PackageConsumerVersion);PackageConsumerTargetFramework=$(DefaultNetCoreTargetFramework);PackageConsumerMSTestVersion=$(MSTestVersion);PackageConsumerTestingPlatformVersion=$(MicrosoftTestingPlatformMSBuildVersion);RestoreAdditionalProjectSources=$(_PackageConsumerFeed);RestoreFallbackFolders=$(NuGetPackageRoot);RestorePackagesPath=$(_PackageConsumerPackagesPath)</_PackageConsumerProperties>
+      <_PackageBuildProperties>BuildProjectReferences=false;Configuration=$(Configuration);_ForcePackageBuild=$([System.Guid]::NewGuid())</_PackageBuildProperties>
     </PropertyGroup>
     <RemoveDir Directories="$(_PackageConsumerFeed)" />
     <MakeDir Directories="$(_PackageConsumerFeed);$(_PackageConsumerPackagesPath)" />
-    <MSBuild Projects="..\src\Microsoft.AspNetCore.Components.Testing.csproj"
+    <MSBuild Projects="..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj;..\tasks\Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
              Targets="Build"
-             Properties="Configuration=$(Configuration)"
+             BuildInParallel="true"
+             Properties="$(_PackageBuildProperties)"
              RemoveProperties="NoBuild" />
     <MSBuild Projects="..\src\Microsoft.AspNetCore.Components.Testing.csproj"
              Targets="Pack"
-             Properties="Configuration=$(Configuration);NoBuild=true;PackageOutputPath=$(_PackageConsumerFeed);PackageVersion=$(_PackageConsumerVersion)"
-             RemoveProperties="IsPackable;TargetFramework" />
+             Properties="$(_PackageBuildProperties);PackageOutputPath=$(_PackageConsumerFeed);PackageVersion=$(_PackageConsumerVersion)"
+             RemoveProperties="IsPackable;NoBuild;TargetFramework" />
     <RemoveDir Directories="$(_PackageConsumerRoot)App\bin;$(_PackageConsumerRoot)App\obj;$(_PackageConsumerRoot)Tests\bin;$(_PackageConsumerRoot)Tests\obj" />
     <MSBuild Projects="$(_PackageConsumerProject)"
              Targets="Restore"
