@@ -52,14 +52,6 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
 
         var options = new OpenApiOptions();
 
-        // While added first, document transformers should run after the operation transformers
-        options.AddDocumentTransformer<MyDocumentationTransformer>();
-        options.AddDocumentTransformer((document, context, cancellationToken) =>
-        {
-            Assert.All(document.Paths.Values.SelectMany(p => p.Operations).Select(p => p.Value), o => Assert.Equal("6", o.Description));
-            return Task.CompletedTask;
-        });
-
         // Operation transforms should run FIFO regardless of which kind of transformer is used
         options.AddOperationTransformer((operation, context, cancellationToken) =>
         {
@@ -85,6 +77,12 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
         {
             Assert.Equal("5", operation.Description);
             operation.Description = "6";
+            return Task.CompletedTask;
+        });
+        options.AddDocumentTransformer<MyDocumentationTransformer>();
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            Assert.All(document.Paths.Values.SelectMany(p => p.Operations).Select(p => p.Value), o => Assert.Equal("6", o.Description));
             return Task.CompletedTask;
         });
 
