@@ -16,3 +16,5 @@
 *REMOVED*static Microsoft.Extensions.DependencyInjection.MvcCoreMvcBuilderExtensions.SetCompatibilityVersion(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder, Microsoft.AspNetCore.Mvc.CompatibilityVersion version) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
 *REMOVED*static Microsoft.Extensions.DependencyInjection.MvcCoreMvcCoreBuilderExtensions.SetCompatibilityVersion(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, Microsoft.AspNetCore.Mvc.CompatibilityVersion version) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
 *REMOVED*virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string? name, TOptions! options) -> void
+Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.SkipStatusCodePages.get -> bool
+Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.SkipStatusCodePages.set -> void
