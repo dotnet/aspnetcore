@@ -7,7 +7,7 @@
 
   <Target Name="_BuildE2ETasks"
           BeforeTargets="PrepareE2EApps"
-          Condition="'$(EnableE2EAppPreparation)' == 'true' and '$(_E2ETasksProject)' != '' and ('$(NoBuild)' != 'true' or !Exists('$(_E2ETasksAssembly)'))">
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true' and '$(_E2ETasksProject)' != '' and ('$(NoBuild)' != 'true' or !Exists('$(_E2ETasksAssembly)'))">
     <PropertyGroup>
       <_E2ETasksBuildProperties>Configuration=$(Configuration)</_E2ETasksBuildProperties>
       <_E2ETasksBuildProperties Condition="!Exists('$(_E2ETasksAssembly)')">$(_E2ETasksBuildProperties);_ForceE2ETasksBuild=$([System.Guid]::NewGuid())</_E2ETasksBuildProperties>
