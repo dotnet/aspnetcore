@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <UsingToolXUnit>false</UsingToolXUnit>
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <DOTNET_HOST_PATH Condition="'$(DOTNET_HOST_PATH)' == ''">$(RepoRoot).dotnet\dotnet.exe</DOTNET_HOST_PATH>
+    <NoWarn>$(NoWarn);NU1605;NU1903;CA1310;ASPNETCORE9004</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Remove="Moq" />
+    <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="xunit.v3" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj" />
+  </ItemGroup>
+
+  <Target Name="RunTests">
+    <Exec Command="dotnet exec &quot;$(TargetPath)&quot; $(TestRunnerAdditionalArguments)" />
+  </Target>
+
+</Project>
