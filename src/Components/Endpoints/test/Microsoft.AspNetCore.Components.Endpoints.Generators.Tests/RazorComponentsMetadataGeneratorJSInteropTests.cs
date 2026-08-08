@@ -452,6 +452,54 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         }
     }
 
+    #region Built-in descriptors
+
+    [Fact]
+    public void FrameworkCallbackProvider_IsIncludedThroughGeneratedUnsafeAccessor()
+    {
+        var result = RunGenerator("""
+            namespace TestComponents;
+
+            public sealed class Marker : Microsoft.AspNetCore.Components.IComponent
+            {
+                public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle)
+                {
+                }
+
+                public System.Threading.Tasks.Task SetParametersAsync(
+                    Microsoft.AspNetCore.Components.ParameterView parameters)
+                    => System.Threading.Tasks.Task.CompletedTask;
+            }
+            """);
+
+        var context = LoadContext(result, out var loaded);
+        using (loaded)
+        {
+            var descriptors = context.JSInvokableMethods
+                .Where(method => method.AssemblyName == "Microsoft.AspNetCore.Components.Web")
+                .ToArray();
+
+            Assert.Equal(7, descriptors.Length);
+            Assert.Equal(
+                [
+                    "AddRootComponent",
+                    "DispatchEventAsync",
+                    "NotifyChange",
+                    "OnSpacerAfterVisible",
+                    "OnSpacerBeforeVisible",
+                    "RemoveRootComponent",
+                    "SetRootComponentParameters",
+                ],
+                descriptors.Select(method => method.Identifier).Order());
+            Assert.All(descriptors, method => Assert.False(method.IsStatic));
+        }
+
+        var generatedSource = GetGeneratedSource(result);
+        Assert.Contains("UnsafeAccessorType(\"Microsoft.JSInterop.Infrastructure.BuiltInJSInvokableMethodDescriptors, Microsoft.AspNetCore.Components.Web\")", generatedSource);
+    }
+
+    #endregion
+
     private static JsonSerializerOptions CreateJsonOptions()
         => new() { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
 }
