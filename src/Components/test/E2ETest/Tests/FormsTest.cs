@@ -1073,6 +1073,30 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.DoesNotExist(By.Id("last-callback"));
     }
 
+    [Fact]
+    public void EditFormCanBeSubmittedProgrammatically()
+    {
+        var appElement = Browser.MountTestComponent<ProgrammaticSubmitComponent>();
+        var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
+        var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
+        var submitFromCodeButton = appElement.FindElement(By.Id("submit-from-code"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        // Submitting programmatically without valid data triggers OnInvalidSubmit
+        submitFromCodeButton.Click();
+        Browser.Equal(new[] { "Please choose a username", "You must accept the terms" }, messagesAccessor);
+        Browser.Equal("OnInvalidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
+
+        // Make the form valid
+        userNameInput.SendKeys("Bert\t");
+        acceptsTermsInput.Click();
+
+        // Submitting programmatically with valid data triggers OnValidSubmit
+        submitFromCodeButton.Click();
+        Browser.Empty(messagesAccessor);
+        Browser.Equal("OnValidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
+    }
+
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement, string messageSelector = ".validation-message")
     {
         return () => appElement.FindElements(By.CssSelector(messageSelector))
