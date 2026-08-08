@@ -17,8 +17,6 @@
                       Version="$(PackageConsumerMSTestVersion)" />
     <PackageReference Include="MSTest.TestAdapter"
                       Version="$(PackageConsumerMSTestVersion)" />
-    <PackageReference Include="Microsoft.Testing.Platform.MSBuild"
-                      Version="$(PackageConsumerTestingPlatformVersion)" />
     <ProjectReference Include="..\App\PackageConsumer.App.csproj">
       <E2EApp>true</E2EApp>
       <E2EPublicUrl>https://package-consumer.invalid</E2EPublicUrl>

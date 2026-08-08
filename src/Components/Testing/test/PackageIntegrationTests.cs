@@ -17,9 +17,9 @@ public class PackageIntegrationTests
     private const string PropsEntry = "buildTransitive/net10.0/Microsoft.AspNetCore.Components.Testing.props";
     private const string TargetsEntry = "buildTransitive/net10.0/Microsoft.AspNetCore.Components.Testing.targets";
 
-    public static bool HasPackageBuildOutputs => string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"));
+    public static bool HasPackageBuildOutputs => File.Exists(TestData.PackagePath);
 
-    [Fact(Skip = "Package build outputs are not available in the Helix work item.", SkipUnless = nameof(HasPackageBuildOutputs))]
+    [Fact(Skip = "Package build outputs are not available in the published test payload.", SkipUnless = nameof(HasPackageBuildOutputs))]
     public void Package_HasExpectedBuildAssets()
     {
         using var package = ZipFile.OpenRead(TestData.PackagePath);
@@ -30,7 +30,7 @@ public class PackageIntegrationTests
         AssertMsBuildProject(package, TargetsEntry);
     }
 
-    [Fact(Skip = "Package build outputs are not available in the Helix work item.", SkipUnless = nameof(HasPackageBuildOutputs))]
+    [Fact(Skip = "Package build outputs are not available in the published test payload.", SkipUnless = nameof(HasPackageBuildOutputs))]
     public void PackageConsumer_Build_UsesGeneratorAndCreatesLocalManifest()
     {
         Assert.True(File.Exists(TestData.ConsumerAssemblyPath), $"Consumer assembly was not built: {TestData.ConsumerAssemblyPath}");
@@ -53,7 +53,7 @@ public class PackageIntegrationTests
             Path.GetFullPath(entry.WorkingDirectory));
     }
 
-    [Fact(Skip = "Package build outputs are not available in the Helix work item.", SkipUnless = nameof(HasPackageBuildOutputs))]
+    [Fact(Skip = "Package build outputs are not available in the published test payload.", SkipUnless = nameof(HasPackageBuildOutputs))]
     public void PackageConsumer_Publish_ManifestPointsToPublishedApp()
     {
         var entry = ReadSingleManifestEntry(TestData.PublishManifestPath);

@@ -1,9 +1,7 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
-  <!-- The E2E test project uses MSTest; disable the Arcade SDK's auto-included xUnit v2. -->
   <PropertyGroup Condition=" $(IsTestProject) ">
-    <UsingToolXUnit>false</UsingToolXUnit>
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
     <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
     <NoWarn>$(NoWarn);NU1903</NoWarn>

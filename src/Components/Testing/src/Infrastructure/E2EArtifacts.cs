@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// <list type="number">
 ///   <item><description>
 ///     The <c>E2E_ARTIFACTS_DIR</c> environment variable, when set (runtime override,
-///     e.g. set by CI/Helix to redirect artifacts to an uploaded results directory).
+///     e.g. set by CI to redirect artifacts to an uploaded results directory).
 ///   </description></item>
 ///   <item><description>
 ///     The build-injected <c>[assembly: AssemblyMetadata("<see cref="ArtifactsPathKey"/>", ...)]</c>
