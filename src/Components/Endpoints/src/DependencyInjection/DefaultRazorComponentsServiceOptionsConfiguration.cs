@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Hosting;
@@ -54,11 +55,15 @@ internal class DefaultRazorComponentsServiceOptionsConfiguration(
                 {
                     if (options.JavaScriptInitializers != null)
                     {
-                        var initializers = JsonSerializer.Deserialize<string[]>(options.JavaScriptInitializers);
+                        var typeInfo = RazorComponentsServiceOptionsJsonContext.Default.StringArray;
+                        var initializers = JsonSerializer.Deserialize(options.JavaScriptInitializers, typeInfo);
                         if (initializers == null || initializers.Length == 0)
                         {
                             options.JavaScriptInitializers = null;
                         }
+
+                        [JsonSerializable(typeof(string[]))]
+                        internal sealed partial class RazorComponentsServiceOptionsJsonContext : JsonSerializerContext;
                     }
                 }
                 catch (Exception)

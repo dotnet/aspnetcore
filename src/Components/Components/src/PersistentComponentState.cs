@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -194,6 +195,38 @@ public class PersistentComponentState
             var reader = new Utf8JsonReader(data);
             instance = JsonSerializer.Deserialize(ref reader, type, JsonSerializerOptionsProvider.Options);
             return true;
+        }
+
+        internal void PersistAsJson<TValue>(string key, TValue instance, JsonTypeInfo<TValue> typeInfo)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            ArgumentNullException.ThrowIfNull(typeInfo);
+
+            if (!PersistingState)
+            {
+                throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
+            }
+
+            if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, typeInfo)))
+            {
+                throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+            }
+        }
+
+        internal bool TryTakeFromJson<TValue>(string key, JsonTypeInfo<TValue> typeInfo, [MaybeNullWhen(false)] out TValue? instance)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            ArgumentNullException.ThrowIfNull(typeInfo);
+
+            if (TryTake(key, out var data))
+            {
+                var reader = new Utf8JsonReader(data);
+                instance = JsonSerializer.Deserialize(ref reader, typeInfo);
+                return true;
+            }
+
+            instance = default;
+            return false;
         }
         else
         {

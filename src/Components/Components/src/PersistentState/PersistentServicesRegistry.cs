@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Internal;
@@ -15,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
-internal sealed class PersistentServicesRegistry
+internal sealed partial class PersistentServicesRegistry
 {
     private static readonly string _registryKey = typeof(PersistentServicesRegistry).FullName!;
     private static readonly RootTypeCache _persistentServiceTypeCache = new();
@@ -88,7 +89,10 @@ internal sealed class PersistentServicesRegistry
             subscriptions.Add((
                 state.RegisterOnPersisting(() =>
                 {
-                    state.PersistAsJson(_registryKey, _registrations);
+                    state.PersistAsJson(
+                        _registryKey,
+                        _registrations,
+                        RegistryJsonContext.Default.IPersistentServiceRegistrationArray);
                     return Task.CompletedTask;
                 }, RenderMode),
                 default));
@@ -118,7 +122,11 @@ internal sealed class PersistentServicesRegistry
     [DynamicDependency(LinkerFlags.JsonSerialized, typeof(PersistentServiceRegistration))]
     private void UpdateRegistrations(PersistentComponentState state)
     {
-        if (state.TryTakeFromJson<PersistentServiceRegistration[]>(_registryKey, out var registry) && registry != null)
+        if (state.TryTakeFromJson(
+            _registryKey,
+            RegistryJsonContext.Default.PersistentServiceRegistrationArray,
+            out var registry) &&
+            registry is not null)
         {
             _registrations = ResolveRegistrations(_registrations.Concat(registry));
         }
@@ -251,4 +259,12 @@ internal sealed class PersistentServicesRegistry
 
         private string GetDebuggerDisplay() => $"{Assembly}::{FullTypeName}";
     }
+
+    [JsonSourceGenerationOptions(
+        PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true,
+        IncludeFields = true)]
+    [JsonSerializable(typeof(IPersistentServiceRegistration[]))]
+    [JsonSerializable(typeof(PersistentServiceRegistration[]))]
+    private sealed partial class RegistryJsonContext : JsonSerializerContext;
 }
