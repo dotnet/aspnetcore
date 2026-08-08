@@ -126,16 +126,6 @@ internal class ComponentApplicationBuilder
         _assemblies.Add(assemblyName, typeInfos);
     }
 
-    internal void AddLibrary(AssemblyComponentLibraryDescriptor libraryBuilder)
-    {
-        ArgumentNullException.ThrowIfNull(libraryBuilder);
-
-        AddLibrary(
-            libraryBuilder.AssemblyName,
-            [.. libraryBuilder.Components.Select(component =>
-                _typeInfoResolver.GetRequiredTypeInfo(component.ComponentType))]);
-    }
-
     /// <summary>
     /// Combines the two <see cref="ComponentApplicationBuilder"/> instances.
     /// </summary>
