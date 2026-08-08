@@ -8,6 +8,12 @@
     <CompilerGeneratedFilesOutputPath Condition="'$(E2ECompileTestHarness)' != 'true'">$(BaseIntermediateOutputPath)generated-normal</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifiers>$(PackageConsumerRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Testing.NativeAot"
                       Version="$(PackageConsumerVersion)"
