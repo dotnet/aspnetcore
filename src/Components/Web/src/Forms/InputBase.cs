@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -260,7 +261,11 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                     $"parameter. Normally this is provided automatically when using 'bind-Value'.");
             }
 
-            FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            var anchorModel = CascadedEditContext?.Model;
+            FieldIdentifier = BindingExpressionEvaluator.CreateFieldIdentifier(
+                ValueExpression,
+                anchorModel,
+                Handle.BindableTypeResolver);
 
             if (CascadedEditContext != null)
             {
