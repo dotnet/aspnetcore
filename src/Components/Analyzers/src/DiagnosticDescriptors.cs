@@ -156,4 +156,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
+
+    public static readonly DiagnosticDescriptor JsInteropUsageWithoutIsInteractiveCheck = new(
+        "BL0017",
+        CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Title)),
+        CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.JsInteropUsageWithoutIsInteractiveCheck_Description)));
 }
