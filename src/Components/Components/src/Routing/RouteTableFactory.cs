@@ -102,20 +102,23 @@ internal class RouteTableFactory
     internal static RouteTable Create(List<Type> componentTypes, IServiceProvider serviceProvider)
     {
         var typeInfoResolver = GetTypeInfoResolver(serviceProvider);
-        var templatesByHandler = new Dictionary<Type, string[]>();
+        var routeableComponents = new List<RouteableComponent>();
         foreach (var componentType in componentTypes)
         {
-            templatesByHandler.Add(
-                componentType,
-                GetTemplates(typeInfoResolver.GetRequiredTypeInfo(componentType)));
+            var typeInfo = typeInfoResolver.GetRequiredTypeInfo(componentType);
+            routeableComponents.Add(new RouteableComponent(typeInfo.Type, GetTemplates(typeInfo)));
         }
 
-        return Create(templatesByHandler, serviceProvider);
+        return Create(routeableComponents, serviceProvider);
     }
 
     private static string[] GetTemplates(ComponentTypeInfo typeInfo)
         => [.. typeInfo.Metadata.OfType<RouteAttribute>().Select(static attribute => attribute.Template)];
 
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2067",
+        Justification = "This test and benchmark overload receives statically known handler types. Production routes flow through annotated RouteableComponent instances.")]
     internal static RouteTable Create(Dictionary<Type, string[]> templatesByHandler, IServiceProvider serviceProvider)
     {
         var routeOptions = Options.Create(new RouteOptions());

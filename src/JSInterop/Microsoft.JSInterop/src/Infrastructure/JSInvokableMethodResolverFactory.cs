@@ -19,6 +19,14 @@ internal static class JSInvokableMethodResolutionFeature
 
 internal static class JSInvokableMethodResolverFactory
 {
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026",
+        Justification = "ReflectionJSInvokableMethodResolver is constructed only when the feature-guarded reflection switch is enabled.")]
+    [UnconditionalSuppressMessage(
+        "AOT",
+        "IL3050",
+        Justification = "ReflectionJSInvokableMethodResolver is constructed only when the feature-guarded reflection switch is enabled.")]
     internal static CompositeJSInvokableMethodResolver Create(JSRuntime runtime)
     {
         var resolvers = new List<IJSInvokableMethodResolver>();

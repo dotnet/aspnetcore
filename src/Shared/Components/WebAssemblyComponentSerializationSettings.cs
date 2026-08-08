@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-#if COMPONENTS || COMPONENTS_WEBASSEMBLY
+#if COMPONENTS
 using Microsoft.AspNetCore.Components.Infrastructure;
 #endif
 
@@ -27,8 +28,10 @@ internal static class WebAssemblyComponentSerializationSettings
         };
 
         options.TypeInfoResolverChain.Add(WebAssemblyComponentJsonContext.Default);
-#if COMPONENTS || COMPONENTS_WEBASSEMBLY
+#if COMPONENTS
         options.TypeInfoResolverChain.Add(ComponentMarkerJsonTypeInfoResolver.Instance);
+#elif COMPONENTS_WEBASSEMBLY
+        options.TypeInfoResolverChain.Add(GetComponentMarkerJsonTypeInfoResolver(null));
 #endif
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
@@ -38,6 +41,14 @@ internal static class WebAssemblyComponentSerializationSettings
 
         return options;
     }
+
+#if COMPONENTS_WEBASSEMBLY
+    [UnsafeAccessor(UnsafeAccessorKind.StaticMethod, Name = "get_Instance")]
+    private static extern IJsonTypeInfoResolver GetComponentMarkerJsonTypeInfoResolver(
+        [UnsafeAccessorType(
+            "Microsoft.AspNetCore.Components.Infrastructure.ComponentMarkerJsonTypeInfoResolver, Microsoft.AspNetCore.Components")]
+        object? target);
+#endif
 
     [UnconditionalSuppressMessage(
         "Trimming",

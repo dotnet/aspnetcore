@@ -22,6 +22,10 @@ internal sealed class ReflectionJSInvokableMethodResolver : IJSInvokableMethodRe
     {
     }
 
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2111",
+        Justification = "The receiver type comes from DotNetObjectReference<T>, which preserves its public JS-invokable methods. This compatibility resolver is feature-switch guarded.")]
     public bool TryResolve(
         in JSInvokableMethodInfo methodInfo,
         [NotNullWhen(true)] out JSInvokableMethodDescriptor? descriptor)
@@ -40,11 +44,9 @@ internal sealed class ReflectionJSInvokableMethodResolver : IJSInvokableMethodRe
 
         // The type is supplied by an object reference whose generic annotation preserves these methods,
         // but the analyzer cannot connect that annotation to this runtime lookup key.
-#pragma warning disable IL2111
         return _cachedMethodsByType
             .GetOrAdd(methodInfo.TargetType!, ScanTypeForCallableMethods)
             .TryGetValue(methodInfo.Identifier, out descriptor);
-#pragma warning restore IL2111
     }
 
     internal static object?[] ParseArguments(
@@ -215,6 +217,7 @@ internal sealed class ReflectionJSInvokableMethodResolver : IJSInvokableMethodRe
         => (IReturnValueAdapter)Activator.CreateInstance(adapterType.MakeGenericType(resultType))!;
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "Application code is configured to retain JSInvokable methods.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2065", Justification = "Application assemblies are configured to retain public static JS-invokable methods.")]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072", Justification = "Application code is configured to retain JSInvokable methods.")]
     [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Application code is configured to retain JSInvokable methods.")]
     private static Dictionary<string, JSInvokableMethodDescriptor> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
