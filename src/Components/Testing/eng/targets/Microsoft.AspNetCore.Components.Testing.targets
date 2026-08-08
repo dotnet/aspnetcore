@@ -95,9 +95,27 @@
 
     <!-- Find all ProjectReferences tagged as E2E apps and split managed/compiled harness publishes. -->
     <ItemGroup>
-      <_E2EAppProjects Include="@(ProjectReference)" Condition="'%(ProjectReference.E2EApp)' == 'true'" />
+      <_E2EAppProjects Include="@(_MSBuildProjectReferenceExistent)" Condition="'%(_MSBuildProjectReferenceExistent.E2EApp)' == 'true'" />
       <_E2ENativeAotAppProjects Include="@(_E2EAppProjects)" Condition="'%(_E2EAppProjects.E2ENativeAot)' == 'true'" />
       <_E2EManagedAppProjects Include="@(_E2EAppProjects)" Condition="'%(_E2EAppProjects.E2ENativeAot)' != 'true'" />
+      <_E2ENativeAotAppProjects>
+        <_E2EPublishProperties>Configuration=$(Configuration)</_E2EPublishProperties>
+      </_E2ENativeAotAppProjects>
+      <_E2ENativeAotAppProjects Condition="'%(_E2ENativeAotAppProjects.SetConfiguration)' != ''">
+        <_E2EPublishProperties>%(_E2ENativeAotAppProjects._E2EPublishProperties);%(_E2ENativeAotAppProjects.SetConfiguration)</_E2EPublishProperties>
+      </_E2ENativeAotAppProjects>
+      <_E2ENativeAotAppProjects Condition="'%(_E2ENativeAotAppProjects.SetPlatform)' != ''">
+        <_E2EPublishProperties>%(_E2ENativeAotAppProjects._E2EPublishProperties);%(_E2ENativeAotAppProjects.SetPlatform)</_E2EPublishProperties>
+      </_E2ENativeAotAppProjects>
+      <_E2ENativeAotAppProjects Condition="'%(_E2ENativeAotAppProjects.SetTargetFramework)' != ''">
+        <_E2EPublishProperties>%(_E2ENativeAotAppProjects._E2EPublishProperties);%(_E2ENativeAotAppProjects.SetTargetFramework)</_E2EPublishProperties>
+      </_E2ENativeAotAppProjects>
+      <_E2ENativeAotAppProjects Condition="'%(_E2ENativeAotAppProjects.AdditionalProperties)' != ''">
+        <_E2EPublishProperties>%(_E2ENativeAotAppProjects._E2EPublishProperties);%(_E2ENativeAotAppProjects.AdditionalProperties)</_E2EPublishProperties>
+      </_E2ENativeAotAppProjects>
+      <_E2ENativeAotAppProjects>
+        <_E2EPublishProperties>%(_E2ENativeAotAppProjects._E2EPublishProperties);E2ECompileTestHarness=true;PublishAot=true;RuntimeIdentifier=%(_E2ENativeAotAppProjects.E2ERuntimeIdentifier)</_E2EPublishProperties>
+      </_E2ENativeAotAppProjects>
     </ItemGroup>
 
     <Error
@@ -139,11 +157,11 @@
       Condition="'$(E2EAppMode)' == 'publish' and '@(_E2ENativeAotAppProjects)' != ''"
       Projects="@(_E2ENativeAotAppProjects)"
       Targets="Restore"
-      Properties="Configuration=$(Configuration);E2ECompileTestHarness=true;PublishAot=true;RuntimeIdentifier=%(_E2ENativeAotAppProjects.E2ERuntimeIdentifier)"
+      Properties="%(_E2ENativeAotAppProjects._E2EPublishProperties)"
       RemoveProperties="NoBuild;BuildProjectReferences" />
     <Exec
       Condition="'$(E2EAppMode)' == 'publish' and '@(_E2ENativeAotAppProjects)' != ''"
-      Command="&quot;$(_E2EDotNetHostPath)&quot; publish &quot;%(_E2ENativeAotAppProjects.FullPath)&quot; --no-restore --configuration &quot;$(Configuration)&quot; --runtime &quot;%(_E2ENativeAotAppProjects.E2ERuntimeIdentifier)&quot; --output &quot;$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2ENativeAotAppProjects.Filename)'))&quot; -p:E2ECompileTestHarness=true -p:PublishAot=true" />
+      Command="&quot;$(_E2EDotNetHostPath)&quot; publish &quot;%(_E2ENativeAotAppProjects.FullPath)&quot; --no-restore --output &quot;$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2ENativeAotAppProjects.Filename)'))&quot; -p:&quot;%(_E2ENativeAotAppProjects._E2EPublishProperties)&quot;" />
     <MSBuild
       Condition="'$(E2EAppMode)' == 'all' and '@(_E2EAppProjects)' != ''"
       Projects="@(_E2EAppProjects)"
