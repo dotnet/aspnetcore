@@ -8,12 +8,6 @@
 
   <PropertyGroup>
     <!--
-      Controls whether E2E app preparation runs during Build and Publish.
-      Set to false to disable app preparation and manifest generation.
-    -->
-    <EnableE2EAppPreparation Condition="'$(EnableE2EAppPreparation)' == ''">true</EnableE2EAppPreparation>
-
-    <!--
       Controls how E2E app projects are prepared at build time.
         build   (default) — copies the project source so 'dotnet run' works (including after publish).
         publish           — publishes the app for faster startup (native exe / framework-dependent).

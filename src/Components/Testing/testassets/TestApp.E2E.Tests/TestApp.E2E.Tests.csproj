@@ -55,9 +55,12 @@
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets" />
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'" />
 
-  <Target Name="_PreparePublishedE2EApps" AfterTargets="Publish">
+  <Target Name="_PreparePublishedE2EApps"
+          AfterTargets="Publish"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="PrepareE2EApps"
              Properties="_E2EIsPublishing=true;E2EAppMode=publish;PublishDir=$(PublishDir)"

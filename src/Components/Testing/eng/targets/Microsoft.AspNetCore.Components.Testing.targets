@@ -81,8 +81,7 @@
   -->
   <Target
     Name="PrepareE2EApps"
-    AfterTargets="Build"
-    Condition="'$(EnableE2EAppPreparation)' == 'true'">
+    AfterTargets="Build">
 
     <PropertyGroup>
       <_E2EIsPublishing Condition="'$(_E2EIsPublishing)' == ''">false</_E2EIsPublishing>
@@ -149,8 +148,7 @@
   </Target>
 
   <Target Name="_PreparePublishedE2EApps"
-          AfterTargets="Publish"
-          Condition="'$(EnableE2EAppPreparation)' == 'true'">
+          AfterTargets="Publish">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="PrepareE2EApps"
              Properties="_E2EIsPublishing=true;PublishDir=$(PublishDir)" />
