@@ -26,8 +26,7 @@ public class RazorComponentEndpointDataSourceTest
         var endpointDataSource = CreateDataSource<App>();
         endpointDataSource.ComponentApplicationBuilderActions.Add(builder =>
         {
-            var assembly = typeof(App).Assembly;
-            IRazorComponentApplication.GetBuilderForAssembly(builder, assembly);
+            builder.AddAssembly(typeof(App).Assembly);
         });
 
         var endpoints = endpointDataSource.Endpoints;
@@ -43,9 +42,7 @@ public class RazorComponentEndpointDataSourceTest
 
         endpointDataSource.ComponentApplicationBuilderActions.Add(builder =>
         {
-            builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-                "TestAssembly",
-                Array.Empty<PageComponentBuilder>(), Array.Empty<ComponentBuilder>()));
+            builder.AddLibrary("TestAssembly", []);
         });
 
         var endpoints = endpointDataSource.Endpoints;
@@ -231,6 +228,7 @@ public class RazorComponentEndpointDataSourceTest
             services?.GetService<IEnumerable<RenderModeEndpointProvider>>() ?? Enumerable.Empty<RenderModeEndpointProvider>(),
             new TestEndpointRouteBuilder(services ?? CreateServices()),
             new RazorComponentEndpointFactory(),
+            services?.GetService<IComponentTypeInfoResolver>() ?? ComponentTypeInfoResolverFactory.Default,
             new HotReloadService() { MetadataUpdateSupported = true });
 
         if (renderModes != null)
