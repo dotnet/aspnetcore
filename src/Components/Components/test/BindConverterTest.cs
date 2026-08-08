@@ -3,7 +3,10 @@
 
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -369,12 +372,199 @@ public class BindConverterTest
         Assert.Null(actual);
     }
 
-    private enum SomeLetters
+    [Theory]
+    [InlineData("A", SomeLetters.A)]
+    [InlineData("Q", SomeLetters.Q)]
+    public void ConvertToEnumDynamicCodeSafe_ParsesDefinedValues(string text, SomeLetters expected)
+    {
+        var successfullyConverted = BindConverter.ConvertToEnumDynamicCodeSafe<SomeLetters>(text, CultureInfo.InvariantCulture, out var actual);
+
+        Assert.True(successfullyConverted);
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public void ConvertToEnumDynamicCodeSafe_TreatsEmptyAsDefault(string text)
+    {
+        var successfullyConverted = BindConverter.ConvertToEnumDynamicCodeSafe<SomeLetters>(text, CultureInfo.InvariantCulture, out var actual);
+
+        Assert.True(successfullyConverted);
+        Assert.Equal(default, actual);
+    }
+
+    [Theory]
+    [InlineData("Z")]
+    [InlineData("42")]
+    public void ConvertToEnumDynamicCodeSafe_RejectsUndefinedValues(string text)
+    {
+        var successfullyConverted = BindConverter.ConvertToEnumDynamicCodeSafe<SomeLetters>(text, CultureInfo.InvariantCulture, out var actual);
+
+        Assert.False(successfullyConverted);
+        Assert.Equal(default, actual);
+    }
+
+    [Fact]
+    public void ConvertToEnumDynamicCodeSafe_MatchesTheDynamicCodePath()
+    {
+        foreach (var text in new[] { "A", "B", "C", "Q", "Z", "", "3" })
+        {
+            var expectedSuccess = BindConverter.TryConvertTo<SomeLetters>(text, CultureInfo.InvariantCulture, out var expected);
+            var actualSuccess = BindConverter.ConvertToEnumDynamicCodeSafe<SomeLetters>(text, CultureInfo.InvariantCulture, out var actual);
+
+            Assert.Equal(expectedSuccess, actualSuccess);
+            Assert.Equal(expected, actual);
+        }
+    }
+
+    [Fact]
+    public void ConvertToNullableEnumDynamicCodeSafe_ParsesDefinedValues()
+    {
+        var successfullyConverted = BindConverter.ConvertToNullableEnumDynamicCodeSafe<SomeLetters?>("C", CultureInfo.InvariantCulture, out var actual);
+
+        Assert.True(successfullyConverted);
+        Assert.Equal(SomeLetters.C, actual);
+    }
+
+    [Fact]
+    public void ConvertToNullableEnumDynamicCodeSafe_TreatsEmptyAsNull()
+    {
+        var successfullyConverted = BindConverter.ConvertToNullableEnumDynamicCodeSafe<SomeLetters?>("", CultureInfo.InvariantCulture, out var actual);
+
+        Assert.True(successfullyConverted);
+        Assert.Null(actual);
+    }
+
+    [Fact]
+    public void ConvertToNullableEnumDynamicCodeSafe_RejectsUndefinedValues()
+    {
+        var successfullyConverted = BindConverter.ConvertToNullableEnumDynamicCodeSafe<SomeLetters?>("Z", CultureInfo.InvariantCulture, out var actual);
+
+        Assert.False(successfullyConverted);
+        Assert.Null(actual);
+    }
+
+    [Fact]
+    public void ConvertToNullableEnumDynamicCodeSafe_MatchesTheDynamicCodePath()
+    {
+        foreach (var text in new[] { "A", "B", "C", "Q", "Z", "", "3" })
+        {
+            var expectedSuccess = BindConverter.TryConvertTo<SomeLetters?>(text, CultureInfo.InvariantCulture, out var expected);
+            var actualSuccess = BindConverter.ConvertToNullableEnumDynamicCodeSafe<SomeLetters?>(text, CultureInfo.InvariantCulture, out var actual);
+
+            Assert.Equal(expectedSuccess, actualSuccess);
+            Assert.Equal(expected, actual);
+        }
+    }
+
+    [Fact]
+    public void ArrayConversionAndFormatting_PreserveExistingSemantics()
+    {
+        Assert.True(BindConverter.TryConvertTo<int[]>(
+            new[] { "1", "2" },
+            CultureInfo.InvariantCulture,
+            out var numbers));
+        Assert.Equal([1, 2], numbers);
+        Assert.Equal("[\"1\", \"2\"]", BindConverter.FormatValue(numbers, CultureInfo.InvariantCulture));
+
+        Assert.True(BindConverter.TryConvertTo<int?[]>(
+            new[] { "1", "" },
+            CultureInfo.InvariantCulture,
+            out var nullableNumbers));
+        Assert.Equal([1, null], nullableNumbers);
+
+        Assert.False(BindConverter.TryConvertTo<int[]>(
+            new[] { "1", "not-a-number" },
+            CultureInfo.InvariantCulture,
+            out _));
+        Assert.False(BindConverter.TryConvertTo<int[]>(
+            "not-an-array",
+            CultureInfo.InvariantCulture,
+            out _));
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void ArrayConversionAndFormatting_WorkWithoutDynamicCode()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add(
+            "System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported",
+            false.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            Assert.False(RuntimeFeature.IsDynamicCodeSupported);
+            TypeDescriptor.RegisterType<Person>();
+
+            Assert.True(BindConverter.TryConvertTo<int[]>(
+                new[] { "1", "2" },
+                CultureInfo.InvariantCulture,
+                out var numbers));
+            Assert.Equal([1, 2], numbers);
+            Assert.Equal("[\"1\", \"2\"]", BindConverter.FormatValue(numbers, CultureInfo.InvariantCulture));
+
+            Assert.True(BindConverter.TryConvertTo<int?[]>(
+                new[] { "1", "" },
+                CultureInfo.InvariantCulture,
+                out var nullableNumbers));
+            Assert.Equal([1, null], nullableNumbers);
+
+            Assert.True(BindConverter.TryConvertTo<SomeLetters[]>(
+                new[] { "A", "Q" },
+                CultureInfo.InvariantCulture,
+                out var letters));
+            Assert.Equal([SomeLetters.A, SomeLetters.Q], letters);
+            Assert.False(BindConverter.TryConvertTo<SomeLetters[]>(
+                new[] { "A", "Z" },
+                CultureInfo.InvariantCulture,
+                out _));
+
+            Assert.True(BindConverter.TryConvertTo<Person[]>(
+                new[] { """{"Name":"Ada","Age":36}""" },
+                CultureInfo.InvariantCulture,
+                out var people));
+            Assert.Equal("Ada", Assert.Single(people).Name);
+            Assert.Contains("Ada", Assert.IsType<string>(BindConverter.FormatValue(people, CultureInfo.InvariantCulture)));
+
+            Assert.True(BindConverter.TryConvertTo<int[][]>(
+                new[] { new[] { "1", "2" }, new[] { "3" } },
+                CultureInfo.InvariantCulture,
+                out var nested));
+            Assert.Equal([1, 2], nested[0]);
+            Assert.Equal([3], nested[1]);
+            Assert.NotNull(BindConverter.FormatValue(nested, CultureInfo.InvariantCulture));
+
+            Assert.False(BindConverter.TryConvertTo<int[]>(
+                new[] { "invalid" },
+                CultureInfo.InvariantCulture,
+                out _));
+            Assert.False(BindConverter.TryConvertTo<int[]>(
+                "not-an-array",
+                CultureInfo.InvariantCulture,
+                out _));
+
+            Assert.Throws<InvalidOperationException>(() =>
+                BindConverter.TryConvertTo<Unconvertible[]>(
+                    Array.Empty<string>(),
+                    CultureInfo.InvariantCulture,
+                    out _));
+            Assert.Throws<InvalidOperationException>(() =>
+                BindConverter.FormatValue(Array.Empty<Unconvertible>(), CultureInfo.InvariantCulture));
+        }, options);
+    }
+
+    public enum SomeLetters
     {
         A,
         B,
         C,
         Q,
+    }
+
+    private sealed class Unconvertible
+    {
     }
 
     [TypeConverter(typeof(PersonConverter))]
