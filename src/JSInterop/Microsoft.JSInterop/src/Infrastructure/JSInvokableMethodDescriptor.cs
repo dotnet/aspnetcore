@@ -38,7 +38,7 @@ namespace Microsoft.JSInterop.Infrastructure;
 /// </code>
 /// </example>
 [Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-internal sealed class JSInvokableMethodDescriptor
+public sealed class JSInvokableMethodDescriptor
 {
     /// <summary>
     /// Gets the name of the assembly declaring the method, which is the key the wire protocol uses for
@@ -110,7 +110,7 @@ internal sealed class JSInvokableMethodDescriptor
 /// Describes how a generated JS-invokable method participates in instance method inheritance.
 /// </summary>
 [Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-internal enum JSInvokableMethodKind
+public enum JSInvokableMethodKind
 {
     /// <summary>
     /// The method does not override a base method.

@@ -21,6 +21,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
     private readonly ConcurrentDictionary<long, IPendingAsyncCall> _pendingTasks = new();
+
+    private CompositeJSInvokableMethodResolver? _invokableMethodResolver;
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
     private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
 
@@ -78,6 +80,34 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
         Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
     private static DefaultJsonTypeInfoResolver CreateReflectionResolver() => new();
+
+    /// <summary>
+    /// Gets the compile-time descriptions of the <see cref="JSInvokableAttribute"/> methods this runtime
+    /// can dispatch to, or <see langword="null"/> when none were supplied.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The dispatcher consults this list before falling back to its reflection-based assembly scan, so a
+    /// runtime that returns <see langword="null"/> - which is the default, and every runtime that exists
+    /// today - behaves exactly as it does now.
+    /// </para>
+    /// <para>
+    /// This API is experimental, unsupported, and subject to change or removal in any release.
+    /// </para>
+    /// </remarks>
+    [Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    protected internal virtual IReadOnlyList<JSInvokableMethodDescriptor>? InvokableMethods => null;
+
+    /// <summary>
+    /// Gets the resolver chain for incoming JS-to-.NET calls.
+    /// </summary>
+    /// <remarks>
+    /// Built on first use rather than in the constructor, because a derived runtime typically resolves
+    /// its descriptors from a container that is not available while the base constructor runs. A race
+    /// can build the chain twice, which is harmless because its inputs are expected to remain constant.
+    /// </remarks>
+    internal CompositeJSInvokableMethodResolver InvokableMethodResolver
+        => _invokableMethodResolver ??= JSInvokableMethodResolverFactory.Create(this);
 
     /// <summary>
     /// Gets or sets the default timeout for asynchronous JavaScript calls.

@@ -24,8 +24,6 @@ public static class DotNetDispatcher
 
     internal static readonly JsonEncodedText DotNetObjectRefKey = JsonEncodedText.Encode("__dotNetObject");
 
-    private static readonly IJSInvokableMethodResolver _reflectionResolver = CreateReflectionResolver();
-
     /// <summary>
     /// Receives a call from JS to .NET, locating and invoking the specified method.
     /// </summary>
@@ -144,7 +142,7 @@ public static class DotNetDispatcher
             methodInfo = new JSInvokableMethodInfo(null, objectReference.Value.GetType(), methodIdentifier);
         }
 
-        var descriptor = ResolveMethod(methodInfo);
+        var descriptor = jsRuntime.InvokableMethodResolver.Resolve(methodInfo);
         try
         {
             return descriptor.Invoke(objectReference?.Value, argsJson ?? "[]", jsRuntime.JsonSerializerOptions);
@@ -154,26 +152,6 @@ public static class DotNetDispatcher
             jsRuntime.ByteArraysToBeRevived.Clear();
         }
     }
-
-    private static JSInvokableMethodDescriptor ResolveMethod(in JSInvokableMethodInfo methodInfo)
-    {
-        if (_reflectionResolver.TryResolve(methodInfo, out var descriptor))
-        {
-            return descriptor;
-        }
-
-        if (methodInfo.IsStatic)
-        {
-            throw new ArgumentException($"The assembly '{methodInfo.AssemblyName}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodInfo.Identifier}\")].");
-        }
-
-        throw new ArgumentException($"The type '{methodInfo.TargetType!.Name}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodInfo.Identifier}\")].");
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This factory creates the reflection-only compatibility resolver.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This factory creates the reflection-only compatibility resolver.")]
-    private static ReflectionJSInvokableMethodResolver CreateReflectionResolver()
-        => new();
 
     private static void EndInvokeDotNetAfterInvocation(ValueTask<string?> result, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo)
     {
