@@ -17,13 +17,13 @@ internal sealed class SerializedRenderFragmentHybridCacheSerializer : IHybridCac
     public SerializedRenderFragment Deserialize(ReadOnlySequence<byte> source)
     {
         var reader = new Utf8JsonReader(source);
-        return JsonSerializer.Deserialize<SerializedRenderFragment>(ref reader, ServerComponentSerializationSettings.JsonSerializationOptions)
+        return JsonSerializer.Deserialize(ref reader, ServerComponentJsonContext.Default.SerializedRenderFragment)
             ?? new SerializedRenderFragment();
     }
 
     public void Serialize(SerializedRenderFragment value, IBufferWriter<byte> target)
     {
         using var writer = new Utf8JsonWriter(target);
-        JsonSerializer.Serialize(writer, value, ServerComponentSerializationSettings.JsonSerializationOptions);
+        JsonSerializer.Serialize(writer, value, ServerComponentJsonContext.Default.SerializedRenderFragment);
     }
 }

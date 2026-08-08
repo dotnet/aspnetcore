@@ -93,7 +93,9 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
     public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
     {
-        var markers = JsonSerializer.Deserialize<IEnumerable<ComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var markers = JsonSerializer.Deserialize(
+            serializedComponentRecords,
+            ServerComponentJsonContext.Default.IEnumerableComponentMarker)!;
         descriptors = new List<ComponentDescriptor>();
         int lastSequence = -1;
 
@@ -256,9 +258,9 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
         try
         {
-            result = JsonSerializer.Deserialize<ServerComponent>(
+            result = JsonSerializer.Deserialize(
                 unprotected,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+                ServerComponentJsonContext.Default.ServerComponent)!;
             return true;
         }
         catch (Exception e)
@@ -299,9 +301,9 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         int[]? seenComponentIdsStorage = null;
         try
         {
-            result = JsonSerializer.Deserialize<RootComponentOperationBatch>(
+            result = JsonSerializer.Deserialize(
                 serializedComponentOperations,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+                ServerComponentJsonContext.Default.RootComponentOperationBatch)!;
             var operations = result.Operations;
 
             Span<int> seenSsrComponentIds = operations.Length <= 128

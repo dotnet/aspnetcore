@@ -48,7 +48,9 @@ internal sealed class ServerComponentSerializer
             values,
             invocationId.Value);
 
-        var serializedServerComponentBytes = JsonSerializer.SerializeToUtf8Bytes(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var serializedServerComponentBytes = JsonSerializer.SerializeToUtf8Bytes(
+            serverComponent,
+            ServerComponentJsonContext.Default.ServerComponent);
         var protectedBytes = _dataProtector.Protect(serializedServerComponentBytes, dataExpiration);
         return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
     }

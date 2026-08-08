@@ -56,9 +56,9 @@ internal sealed partial class ComponentParameterDeserializer
                 try
                 {
                     var value = (JsonElement)parameterValues[i];
-                    var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
+                    var serialized = JsonSerializer.Deserialize(
                         value.GetRawText(),
-                        ServerComponentSerializationSettings.JsonSerializationOptions);
+                        ServerComponentJsonContext.Default.SerializedRenderFragment);
                     parametersDictionary.Add(definition.Name, RenderFragmentSerializer.Deserialize(serialized!.Nodes, ServerComponentSerializationSettings.JsonSerializationOptions, _parametersCache));
                 }
                 catch (Exception e)
@@ -86,20 +86,16 @@ internal sealed partial class ComponentParameterDeserializer
                         // which materializes as a CLR null in the object-typed parameter values array rather than
                         // as a JsonElement. Route the JSON null literal back through the union converter so the
                         // original active case is restored instead of failing the JsonElement cast below.
-                        parameterValue = JsonSerializer.Deserialize(
-                            "null",
-                            parameterType,
-                            ServerComponentSerializationSettings.JsonSerializationOptions);
+                        var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(parameterType);
+                        parameterValue = JsonSerializer.Deserialize("null", typeInfo);
                     }
                     else
                     {
                         // At this point we know the parameter is not null, as we don't serialize the type name or the assembly name
                         // for null parameters.
                         var value = (JsonElement)parameterValues[i];
-                        parameterValue = JsonSerializer.Deserialize(
-                            value.GetRawText(),
-                            parameterType,
-                            ServerComponentSerializationSettings.JsonSerializationOptions);
+                        var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(parameterType);
+                        parameterValue = JsonSerializer.Deserialize(value, typeInfo);
                     }
 
                     parametersDictionary.Add(definition.Name, parameterValue);
