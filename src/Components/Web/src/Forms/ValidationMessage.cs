@@ -56,7 +56,10 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
         }
         else if (For != _previousFieldAccessor)
         {
-            _fieldIdentifier = BindingExpressionEvaluator.CreateFieldIdentifier(For, CurrentEditContext.Model);
+            _fieldIdentifier = BindingExpressionEvaluator.CreateFieldIdentifier(
+                For,
+                CurrentEditContext.Model,
+                Handle.BindableTypeResolver);
             _previousFieldAccessor = For;
         }
 

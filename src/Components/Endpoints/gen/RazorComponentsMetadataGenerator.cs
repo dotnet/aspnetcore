@@ -82,6 +82,7 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var bindableTypes = CollectBindableTypes(contextType, types, diagnostics, cancellationToken);
             models.Add(new MetadataContextModel(
                 Namespace: contextType.ContainingNamespace is { IsGlobalNamespace: false } ns ? ns.ToDisplayString() : null,
                 ContainingTypes: GetContainingTypeNames(contextType),
@@ -89,6 +90,7 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
                 TypeKeyword: contextType.IsRecord ? "record" : "class",
                 DeclaresJsonTypeInfoResolver: DeclaresMember(contextType, "JsonTypeInfoResolver"),
                 BuiltInJSInvokableDescriptorAssemblies: builtInJSInvokableDescriptorAssemblies,
+                BindableTypes: bindableTypes,
                 JSInvokableMethods: jsInvokableMethods));
         }
 
@@ -136,7 +138,10 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
             var nonPartialType = GetFirstNonPartialType(symbol, cancellationToken);
             if (nonPartialType is not null)
             {
-                diagnostics.Add(new DiagnosticInfo(nonPartialType.FullName()));
+                diagnostics.Add(new DiagnosticInfo(
+                    DiagnosticDescriptors.MetadataContextMustBePartial.Id,
+                    nonPartialType.FullName(),
+                    string.Empty));
                 continue;
             }
 
@@ -261,9 +266,17 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         public override int GetHashCode() => ModelComparer.AddRange(0, Models);
     }
 
-    internal sealed record class DiagnosticInfo(string TypeName)
+    internal sealed record class DiagnosticInfo(string Id, string Argument0, string Argument1)
     {
         public Diagnostic ToDiagnostic()
-            => Diagnostic.Create(DiagnosticDescriptors.MetadataContextMustBePartial, Location.None, TypeName);
+        {
+            var descriptor = Id switch
+            {
+                "BLAZORAOT002" => DiagnosticDescriptors.BindableModelNotDescribed,
+                _ => DiagnosticDescriptors.MetadataContextMustBePartial,
+            };
+
+            return Diagnostic.Create(descriptor, Location.None, Argument0, Argument1);
+        }
     }
 }

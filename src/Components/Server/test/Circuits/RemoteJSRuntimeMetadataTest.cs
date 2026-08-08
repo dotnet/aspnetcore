@@ -6,6 +6,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.InternalTesting;
@@ -263,6 +264,8 @@ public class RemoteJSRuntimeMetadataTest
 
     public abstract class TestContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
+
         public override IJsonTypeInfoResolver? JsonTypeInfoResolver => null;
 
         protected static JSInvokableMethodDescriptor CreateDescriptor(

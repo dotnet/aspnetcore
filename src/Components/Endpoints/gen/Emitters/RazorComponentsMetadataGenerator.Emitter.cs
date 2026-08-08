@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Components.Endpoints.Generators.Models;
@@ -13,6 +14,9 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Generators;
 public sealed partial class RazorComponentsMetadataGenerator
 {
     private const string GeneratorName = "Microsoft.AspNetCore.Components.Endpoints.Generators.RazorComponentsMetadataGenerator";
+    private const string BindableTypeDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor";
+    private const string BindableMemberDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor";
+    private const string BindableIndexerDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor";
     private const string JSInvokableDescriptorType = "global::Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor";
     private const string ReadOnlyListType = "global::System.Collections.Generic.IReadOnlyList";
     private const string JsonResolverType = "global::System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver";
@@ -91,6 +95,9 @@ public sealed partial class RazorComponentsMetadataGenerator
         writer.OpenBrace();
 
         writer.WriteLine("/// <inheritdoc />");
+        writer.WriteLine($"public override {ReadOnlyListType}<{BindableTypeDescriptorType}> BindableTypes => __Descriptors.BindableTypes;");
+        writer.WriteLine();
+        writer.WriteLine("/// <inheritdoc />");
         writer.WriteLine($"public override {ReadOnlyListType}<{JSInvokableDescriptorType}> JSInvokableMethods => __Descriptors.JSInvokableMethods;");
         if (!model.DeclaresJsonTypeInfoResolver)
         {
@@ -100,13 +107,29 @@ public sealed partial class RazorComponentsMetadataGenerator
         }
 
         writer.WriteLine();
+        writer.WriteLine(
+            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
+            "\"Trimming\", \"IL2110\", Justification = " +
+            "\"Generated bindable descriptors intentionally store statically analyzable member access delegates.\")]");
+        writer.WriteLine(
+            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
+            "\"Trimming\", \"IL2111\", Justification = " +
+            "\"Generated bindable descriptors intentionally store statically analyzable member access delegates.\")]");
         writer.WriteLine("private static class __Descriptors");
         writer.OpenBrace();
+        EmitBindableTypes(writer, model.BindableTypes);
+        writer.WriteLine();
         EmitJSInvokableMethods(
             writer,
             model.JSInvokableMethods,
             model.BuiltInJSInvokableDescriptorAssemblies);
         writer.CloseBrace();
+
+        if (NeedsBindableAccessors(model))
+        {
+            writer.WriteLine();
+            EmitBindableAccessors(writer, model);
+        }
 
         if (!model.JSInvokableMethods.IsDefaultOrEmpty)
         {
@@ -129,10 +152,81 @@ public sealed partial class RazorComponentsMetadataGenerator
         return writer.ToString();
     }
 
+    private static void EmitBindableTypes(CodeWriter writer, ImmutableArray<BindableTypeModel> bindableTypes)
+    {
+        if (bindableTypes.IsDefaultOrEmpty)
+        {
+            writer.WriteLine($"internal static readonly {BindableTypeDescriptorType}[] BindableTypes = [];");
+            return;
+        }
+
+        writer.WriteLine($"internal static readonly {BindableTypeDescriptorType}[] BindableTypes =");
+        writer.OpenBrace();
+
+        for (var i = 0; i < bindableTypes.Length; i++)
+        {
+            EmitBindableType(writer, bindableTypes[i], i);
+        }
+
+        writer.CloseBraceWithSemicolon();
+    }
+
+    private static void EmitBindableType(CodeWriter writer, BindableTypeModel bindable, int index)
+    {
+        var type = bindable.TypeFullyQualifiedName;
+
+        writer.WriteLine($"new {BindableTypeDescriptorType}");
+        writer.OpenBrace();
+        writer.WriteLine($"Type = typeof({type}),");
+
+        if (!bindable.Members.IsDefaultOrEmpty)
+        {
+            writer.WriteLine($"Members = new {BindableMemberDescriptorType}[]");
+            writer.OpenBrace();
+            for (var i = 0; i < bindable.Members.Length; i++)
+            {
+                var member = bindable.Members[i];
+                var read = member.RequiresGetAccessor
+                    ? $"__Accessors.GetBindable_{index}_{i}(({type})__owner)"
+                    : $"(({type})__owner).{member.Name}";
+
+                writer.WriteLine($"new {BindableMemberDescriptorType}");
+                writer.OpenBrace();
+                writer.WriteLine($"Name = {SymbolHelpers.ToStringLiteral(member.Name)},");
+                writer.WriteLine($"MemberType = typeof({member.MemberTypeFullyQualifiedName}),");
+                writer.WriteLine($"GetValue = static __owner => {read},");
+                writer.CloseBraceWithComma();
+            }
+
+            writer.CloseBraceWithComma();
+        }
+
+        if (!bindable.Indexers.IsDefaultOrEmpty)
+        {
+            writer.WriteLine($"Indexers = new {BindableIndexerDescriptorType}[]");
+            writer.OpenBrace();
+            foreach (var indexer in bindable.Indexers)
+            {
+                writer.WriteLine($"new {BindableIndexerDescriptorType}");
+                writer.OpenBrace();
+                writer.WriteLine($"IndexType = typeof({indexer.IndexTypeFullyQualifiedName}),");
+                writer.WriteLine($"ValueType = typeof({indexer.ValueTypeFullyQualifiedName}),");
+                writer.WriteLine(
+                    $"GetValue = static (__owner, __index) => (({type})__owner)" +
+                    $"[({indexer.IndexTypeFullyQualifiedName})__index!],");
+                writer.CloseBraceWithComma();
+            }
+
+            writer.CloseBraceWithComma();
+        }
+
+        writer.CloseBraceWithComma();
+    }
+
     private static void EmitJSInvokableMethods(
         CodeWriter writer,
-        System.Collections.Immutable.ImmutableArray<JSInvokableMethodModel> methods,
-        System.Collections.Immutable.ImmutableArray<string> builtInDescriptorAssemblies)
+        ImmutableArray<JSInvokableMethodModel> methods,
+        ImmutableArray<string> builtInDescriptorAssemblies)
     {
         writer.WriteLine($"internal static readonly {JSInvokableDescriptorType}[] JSInvokableMethods =");
         writer.OpenBracket();
@@ -177,6 +271,80 @@ public sealed partial class RazorComponentsMetadataGenerator
                 "[global::System.Runtime.CompilerServices.UnsafeAccessorType(" +
                 $"{SymbolHelpers.ToStringLiteral($"{BuiltInJSInvokableDescriptorProviderType}, {builtInDescriptorAssemblies[i]}")})] object? target);");
         }
+    }
+
+    private static bool NeedsBindableAccessors(MetadataContextModel model)
+    {
+        foreach (var bindable in model.BindableTypes)
+        {
+            foreach (var member in bindable.Members)
+            {
+                if (member.RequiresGetAccessor)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static void EmitBindableAccessors(CodeWriter writer, MetadataContextModel model)
+    {
+        writer.WriteLine("private static class __Accessors");
+        writer.OpenBrace();
+
+        for (var b = 0; b < model.BindableTypes.Length; b++)
+        {
+            var bindable = model.BindableTypes[b];
+            for (var i = 0; i < bindable.Members.Length; i++)
+            {
+                var member = bindable.Members[i];
+                if (!member.RequiresGetAccessor)
+                {
+                    continue;
+                }
+
+                if (member.IsField)
+                {
+                    writer.WriteLine(
+                        "[global::System.Runtime.CompilerServices.UnsafeAccessor(" +
+                        "global::System.Runtime.CompilerServices.UnsafeAccessorKind.Field, Name = " +
+                        $"{SymbolHelpers.ToStringLiteral(member.Name)})]");
+                    writer.WriteLine(
+                        $"internal static extern ref {member.MemberTypeFullyQualifiedName} " +
+                        $"GetBindableField_{b}_{i}({bindable.TypeFullyQualifiedName} target);");
+                    writer.WriteLine(
+                        $"internal static {member.MemberTypeFullyQualifiedName} GetBindable_{b}_{i}" +
+                        $"({bindable.TypeFullyQualifiedName} target) => GetBindableField_{b}_{i}(target);");
+                }
+                else
+                {
+                    EmitAccessor(
+                        writer,
+                        $"get_{member.Name}",
+                        $"GetBindable_{b}_{i}",
+                        bindable.TypeFullyQualifiedName,
+                        member.MemberTypeFullyQualifiedName);
+                }
+            }
+        }
+
+        writer.CloseBrace();
+    }
+
+    private static void EmitAccessor(
+        CodeWriter writer,
+        string memberName,
+        string accessorName,
+        string targetType,
+        string valueType)
+    {
+        writer.WriteLine(
+            "[global::System.Runtime.CompilerServices.UnsafeAccessor(" +
+            "global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = " +
+            $"{SymbolHelpers.ToStringLiteral(memberName)})]");
+        writer.WriteLine($"internal static extern {valueType} {accessorName}({targetType} target);");
     }
 
     private static void EmitJSInvocations(CodeWriter writer, MetadataContextModel model)

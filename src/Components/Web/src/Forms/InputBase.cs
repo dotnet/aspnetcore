@@ -263,7 +263,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
             FieldIdentifier = BindingExpressionEvaluator.CreateFieldIdentifier(
                 ValueExpression,
-                CascadedEditContext?.Model);
+                CascadedEditContext?.Model,
+                Handle.BindableTypeResolver);
 
             if (CascadedEditContext != null)
             {

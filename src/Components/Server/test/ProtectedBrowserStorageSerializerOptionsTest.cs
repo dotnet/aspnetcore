@@ -6,6 +6,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop.Infrastructure;
@@ -108,6 +109,8 @@ public class ProtectedBrowserStorageSerializerOptionsTest
 
     private sealed class StubContext(IJsonTypeInfoResolver? resolver) : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
+
         public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];
 
         public override IJsonTypeInfoResolver? JsonTypeInfoResolver { get; } = resolver;

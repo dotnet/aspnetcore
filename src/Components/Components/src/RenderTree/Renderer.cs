@@ -118,7 +118,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
             : serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
+
+        BindableTypeResolver = serviceProvider.GetService<IBindableTypeResolver>();
     }
+
+    internal IBindableTypeResolver? BindableTypeResolver { get; }
 
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _componentsActivitySource;

@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
@@ -60,6 +61,8 @@ public class ComponentJsonMetadataIsolationTest
 
     public sealed class FirstContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
+
         public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];
 
         public override IJsonTypeInfoResolver JsonTypeInfoResolver => FirstJsonContext.Default;
@@ -67,6 +70,8 @@ public class ComponentJsonMetadataIsolationTest
 
     public sealed class SecondContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
+
         public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];
 
         public override IJsonTypeInfoResolver JsonTypeInfoResolver => SecondJsonContext.Default;

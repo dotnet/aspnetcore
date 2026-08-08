@@ -15,8 +15,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class ComponentMetadataServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers a <see cref="RazorComponentsMetadataContext"/> so the framework consults its JSON
-    /// contracts before falling back to reflection.
+    /// Registers a <see cref="RazorComponentsMetadataContext"/> so the framework consults its generated
+    /// binding accessors and JSON contracts before falling back to reflection.
     /// </summary>
     /// <typeparam name="TContext">The metadata context type.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -38,6 +38,9 @@ public static class ComponentMetadataServiceCollectionExtensions
             services.Configure<ComponentJsonMetadataOptions>(options => options.Resolvers.Add(resolver));
         }
         services.AddSingleton<RazorComponentsMetadataContext>(context);
+        services.TryAddSingleton<ComponentBindableTypeResolver>();
+        services.TryAddSingleton<IBindableTypeResolver>(
+            static services => services.GetRequiredService<ComponentBindableTypeResolver>());
 
         return services;
     }

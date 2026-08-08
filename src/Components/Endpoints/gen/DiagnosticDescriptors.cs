@@ -9,6 +9,15 @@ internal static class DiagnosticDescriptors
 {
     private const string Category = "BlazorNativeAot";
 
+    public static readonly DiagnosticDescriptor BindableModelNotDescribed = new(
+        id: "BLAZORAOT002",
+        title: "Form model cannot be described completely",
+        messageFormat: "'{0}' cannot be described for Native AOT because {1}",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The Blazor Native AOT metadata generator describes a form model and every type reachable from it, so that a binding expression can be walked instead of compiled.");
+
     public static readonly DiagnosticDescriptor MetadataContextMustBePartial = new(
         id: "BLAZORAOT003",
         title: "Metadata context declaration must be partial",
