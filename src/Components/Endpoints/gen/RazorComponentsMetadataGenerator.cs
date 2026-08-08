@@ -19,6 +19,11 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Generators;
 [Generator(LanguageNames.CSharp)]
 public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGenerator
 {
+    private static readonly string[] BuiltInJSInvokableDescriptorAssemblies =
+    [
+        "Microsoft.AspNetCore.Components.Web",
+    ];
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -66,6 +71,12 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         }
 
         var jsInvokableMethods = CollectJSInvokableMethods(expanded, types, cancellationToken);
+        var referencedAssemblyNames = new HashSet<string>(
+            expanded.SourceModule.ReferencedAssemblySymbols.Select(static assembly => assembly.Identity.Name),
+            StringComparer.Ordinal);
+        var builtInJSInvokableDescriptorAssemblies = BuiltInJSInvokableDescriptorAssemblies
+            .Where(referencedAssemblyNames.Contains)
+            .ToImmutableArray();
         var models = ImmutableArray.CreateBuilder<MetadataContextModel>();
         foreach (var contextType in contexts)
         {
@@ -77,6 +88,7 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
                 TypeName: contextType.Name,
                 TypeKeyword: contextType.IsRecord ? "record" : "class",
                 DeclaresJsonTypeInfoResolver: DeclaresMember(contextType, "JsonTypeInfoResolver"),
+                BuiltInJSInvokableDescriptorAssemblies: builtInJSInvokableDescriptorAssemblies,
                 JSInvokableMethods: jsInvokableMethods));
         }
 

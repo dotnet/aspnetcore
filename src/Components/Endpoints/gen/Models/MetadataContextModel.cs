@@ -12,6 +12,7 @@ internal sealed record class MetadataContextModel(
     string TypeName,
     string TypeKeyword,
     bool DeclaresJsonTypeInfoResolver,
+    ImmutableArray<string> BuiltInJSInvokableDescriptorAssemblies,
     ImmutableArray<JSInvokableMethodModel> JSInvokableMethods)
 {
     public bool Equals(MetadataContextModel? other)
@@ -20,6 +21,9 @@ internal sealed record class MetadataContextModel(
            string.Equals(TypeName, other.TypeName, StringComparison.Ordinal) &&
            string.Equals(TypeKeyword, other.TypeKeyword, StringComparison.Ordinal) &&
            DeclaresJsonTypeInfoResolver == other.DeclaresJsonTypeInfoResolver &&
+           ModelComparer.SequenceEqual(
+               BuiltInJSInvokableDescriptorAssemblies,
+               other.BuiltInJSInvokableDescriptorAssemblies) &&
            ModelComparer.SequenceEqual(ContainingTypes, other.ContainingTypes) &&
            ModelComparer.SequenceEqual(JSInvokableMethods, other.JSInvokableMethods);
 
@@ -29,6 +33,7 @@ internal sealed record class MetadataContextModel(
         hash = ModelComparer.AddRange(hash, ContainingTypes);
         hash = ModelComparer.Combine(hash, TypeName);
         hash = ModelComparer.Combine(hash, TypeKeyword);
+        hash = ModelComparer.AddRange(hash, BuiltInJSInvokableDescriptorAssemblies);
         return ModelComparer.AddRange(hash, JSInvokableMethods);
     }
 }

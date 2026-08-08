@@ -16,6 +16,8 @@ public sealed partial class RazorComponentsMetadataGenerator
     private const string JSInvokableDescriptorType = "global::Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor";
     private const string ReadOnlyListType = "global::System.Collections.Generic.IReadOnlyList";
     private const string JsonResolverType = "global::System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver";
+    private const string BuiltInJSInvokableDescriptorProviderType =
+        "Microsoft.JSInterop.Infrastructure.BuiltInJSInvokableMethodDescriptors";
 
     private static void Emit(SourceProductionContext context, GenerationResult result)
     {
@@ -100,7 +102,10 @@ public sealed partial class RazorComponentsMetadataGenerator
         writer.WriteLine();
         writer.WriteLine("private static class __Descriptors");
         writer.OpenBrace();
-        EmitJSInvokableMethods(writer, model.JSInvokableMethods);
+        EmitJSInvokableMethods(
+            writer,
+            model.JSInvokableMethods,
+            model.BuiltInJSInvokableDescriptorAssemblies);
         writer.CloseBrace();
 
         if (!model.JSInvokableMethods.IsDefaultOrEmpty)
@@ -126,7 +131,8 @@ public sealed partial class RazorComponentsMetadataGenerator
 
     private static void EmitJSInvokableMethods(
         CodeWriter writer,
-        System.Collections.Immutable.ImmutableArray<JSInvokableMethodModel> methods)
+        System.Collections.Immutable.ImmutableArray<JSInvokableMethodModel> methods,
+        System.Collections.Immutable.ImmutableArray<string> builtInDescriptorAssemblies)
     {
         writer.WriteLine($"internal static readonly {JSInvokableDescriptorType}[] JSInvokableMethods =");
         writer.OpenBracket();
@@ -153,7 +159,24 @@ public sealed partial class RazorComponentsMetadataGenerator
             writer.CloseBraceWithComma();
         }
 
+        for (var i = 0; i < builtInDescriptorAssemblies.Length; i++)
+        {
+            writer.WriteLine($".. GetBuiltInJSInvokableMethodDescriptors_{i}(null),");
+        }
+
         writer.CloseBracketWithSemicolon();
+
+        for (var i = 0; i < builtInDescriptorAssemblies.Length; i++)
+        {
+            writer.WriteLine();
+            writer.WriteLine(
+                "[global::System.Runtime.CompilerServices.UnsafeAccessor(" +
+                "global::System.Runtime.CompilerServices.UnsafeAccessorKind.StaticMethod, Name = \"GetDescriptors\")]");
+            writer.WriteLine(
+                $"private static extern {JSInvokableDescriptorType}[] GetBuiltInJSInvokableMethodDescriptors_{i}(" +
+                "[global::System.Runtime.CompilerServices.UnsafeAccessorType(" +
+                $"{SymbolHelpers.ToStringLiteral($"{BuiltInJSInvokableDescriptorProviderType}, {builtInDescriptorAssemblies[i]}")})] object? target);");
+        }
     }
 
     private static void EmitJSInvocations(CodeWriter writer, MetadataContextModel model)
