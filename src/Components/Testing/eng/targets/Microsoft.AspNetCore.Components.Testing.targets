@@ -99,16 +99,15 @@
     Name="PrepareE2EApps"
     DependsOnTargets="_BuildE2ETasks"
     AfterTargets="Build;Publish"
-    Condition="'$(ExcludeFromBuild)' != 'true' and '$(ExcludeFromSourceOnlyBuild)' != 'true'">
+    Condition="'$(ExcludeFromBuild)' != 'true' and ('$(DotNetBuildSourceOnly)' != 'true' or '$(ExcludeFromSourceOnlyBuild)' != 'true')">
 
     <!--
-      Detect whether we are running during Publish.
-      _E2EIsPublishing is true only when the Publish target has run; during Build
-      the output of "dotnet publish" doesn't exist so this check distinguishes the two.
-      We test for the sentinel file that "dotnet publish" always writes.
+      Detect whether we are running during Publish. Publish orchestration can
+      set _E2EIsPublishing before the Build dependency runs; otherwise the
+      published test assembly is the sentinel.
     -->
     <PropertyGroup>
-      <_E2EIsPublishing>false</_E2EIsPublishing>
+      <_E2EIsPublishing Condition="'$(_E2EIsPublishing)' == ''">false</_E2EIsPublishing>
       <_E2EIsPublishing Condition="Exists('$(PublishDir)$(TargetFileName)')">true</_E2EIsPublishing>
       <_E2EOutputRoot Condition="'$(_E2EIsPublishing)' == 'true'">$(PublishDir)</_E2EOutputRoot>
       <_E2EOutputRoot Condition="'$(_E2EIsPublishing)' != 'true'">$(OutputPath)</_E2EOutputRoot>
