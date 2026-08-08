@@ -228,6 +228,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="NuGet.Versioning" />
     <LatestPackageReference Include="Photino.NET" />
     <LatestPackageReference Include="Microsoft.Playwright" />
+    <LatestPackageReference Include="Microsoft.Playwright.TestAdapter" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="SharpFuzz" />

@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.Playwright;
+using Microsoft.Playwright.TestAdapter;
 
 namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 
@@ -14,9 +15,8 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// <remarks>
 /// <para>
 /// One <see cref="IBrowser"/> is created per test assembly (lazily, on first use) and
-/// shared across every test. Browser type and launch options are controlled via
-/// <see cref="BrowserName"/> and <see cref="GetBrowserLaunchOptions"/>; override in a
-/// derived class to customize.
+/// shared across every test. Browser type and launch options are configured using
+/// Playwright's environment variables and runsettings support.
 /// </para>
 /// <para>
 /// Use <see cref="NewContext"/> to create a per-test <see cref="IBrowserContext"/>; every
@@ -27,24 +27,17 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// </remarks>
 public abstract class BrowserTest : PlaywrightTest
 {
-    private static IBrowser? s_browser;
+    private static BrowserState? s_browserState;
     private static readonly SemaphoreSlim s_browserInitLock = new(1, 1);
 
     /// <summary>The shared <see cref="IBrowser"/>. Initialized on first use by <see cref="EnsureBrowserAsync"/>.</summary>
     public IBrowser Browser =>
-        s_browser ?? throw new InvalidOperationException(
+        s_browserState?.Browser ?? throw new InvalidOperationException(
             $"Browser has not been initialized. {nameof(EnsureBrowserAsync)} is called automatically " +
             "by the BrowserTest initialization hook; ensure your derived class calls base.InitializeCoreAsync().");
 
-    /// <summary>The browser type to launch. Defaults to <c>chromium</c>. Override to use <c>firefox</c> or <c>webkit</c>.</summary>
-    public virtual string BrowserName => "chromium";
-
-    /// <summary>
-    /// Override to customize <see cref="BrowserTypeLaunchOptions"/> passed to
-    /// <see cref="IBrowserType.LaunchAsync"/>. Default returns an empty options object
-    /// (headless launch with no extra arguments).
-    /// </summary>
-    public virtual BrowserTypeLaunchOptions GetBrowserLaunchOptions() => new();
+    /// <summary>Gets the configured browser type shared by all tests in the test assembly.</summary>
+    public string BrowserName { get; private set; } = null!;
 
     /// <summary>
     /// Returns the shared <see cref="IBrowser"/>, creating it on first call. Safe to
@@ -52,9 +45,11 @@ public abstract class BrowserTest : PlaywrightTest
     /// </summary>
     public async Task<IBrowser> EnsureBrowserAsync()
     {
-        if (s_browser is not null)
+        var state = s_browserState;
+        if (state is not null)
         {
-            return s_browser;
+            BrowserName = state.BrowserName;
+            return state.Browser;
         }
 
         var pw = await EnsurePlaywrightAsync().ConfigureAwait(false);
@@ -62,19 +57,20 @@ public abstract class BrowserTest : PlaywrightTest
         await s_browserInitLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            if (s_browser is null)
+            state = s_browserState;
+            if (state is null)
             {
-                var browserType = BrowserName.ToLowerInvariant() switch
-                {
-                    "firefox" => pw.Firefox,
-                    "webkit" => pw.Webkit,
-                    "chromium" => pw.Chromium,
-                    _ => throw new ArgumentException(
-                        $"Unknown browser name '{BrowserName}'. Use 'chromium', 'firefox', or 'webkit'."),
-                };
-                s_browser = await browserType.LaunchAsync(GetBrowserLaunchOptions()).ConfigureAwait(false);
+                PlaywrightSettingsProvider.LoadViaEnvIfNeeded();
+                var browserName = PlaywrightSettingsProvider.BrowserName;
+                var browser = await pw[browserName]
+                    .LaunchAsync(PlaywrightSettingsProvider.LaunchOptions)
+                    .ConfigureAwait(false);
+                state = new(browser, browserName);
+                s_browserState = state;
             }
-            return s_browser;
+
+            BrowserName = state.BrowserName;
+            return state.Browser;
         }
         finally
         {
@@ -121,4 +117,5 @@ public abstract class BrowserTest : PlaywrightTest
         await EnsureBrowserAsync().ConfigureAwait(false);
     }
 
+    private sealed record BrowserState(IBrowser Browser, string BrowserName);
 }

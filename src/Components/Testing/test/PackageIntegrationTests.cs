@@ -28,6 +28,7 @@ public class PackageIntegrationTests
         AssertManagedAssembly(package, TaskEntry, "Microsoft.AspNetCore.Components.Testing.Tasks");
         AssertMsBuildProject(package, PropsEntry);
         AssertMsBuildProject(package, TargetsEntry);
+        AssertPlaywrightDependenciesAligned(package);
     }
 
     [Fact(Skip = "Package build outputs are not available in the published test payload.", SkipUnless = nameof(HasPackageBuildOutputs))]
@@ -99,6 +100,22 @@ public class PackageIntegrationTests
 
         Assert.Equal("Project", document.Root?.Name.LocalName);
         Assert.NotEmpty(document.Root!.Elements());
+    }
+
+    private static void AssertPlaywrightDependenciesAligned(ZipArchive package)
+    {
+        var nuspec = Assert.Single(package.Entries, entry => entry.FullName.EndsWith(".nuspec", StringComparison.Ordinal));
+        using var stream = nuspec.Open();
+        var document = XDocument.Load(stream);
+        var dependencies = document
+            .Descendants()
+            .Where(element => element.Name.LocalName is "dependency")
+            .ToDictionary(
+                element => (string)element.Attribute("id")!,
+                element => (string)element.Attribute("version")!,
+                StringComparer.OrdinalIgnoreCase);
+
+        Assert.Equal(dependencies["Microsoft.Playwright"], dependencies["Microsoft.Playwright.TestAdapter"]);
     }
 
     private static ZipArchiveEntry GetEntry(ZipArchive package, string entryName)

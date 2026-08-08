@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Playwright" />
+    <Reference Include="Microsoft.Playwright.TestAdapter" />
     <Reference Include="Yarp.ReverseProxy" />
   </ItemGroup>
 
