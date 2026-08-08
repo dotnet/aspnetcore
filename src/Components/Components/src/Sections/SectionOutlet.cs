@@ -41,7 +41,7 @@ public sealed class SectionOutlet : IComponent, IDisposable
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
-        parameters.SetParameterProperties(this);
+        parameters.SetParameterProperties(this, _renderHandle);
 
         object? identifier;
 

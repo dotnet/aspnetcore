@@ -12,7 +12,15 @@ internal sealed class PropertySetter
     private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
         typeof(PropertySetter).GetMethod(nameof(CallPropertySetter), BindingFlags.NonPublic | BindingFlags.Static)!;
 
-    private readonly Action<object, object> _setterDelegate;
+    private readonly Action<object, object?> _setterDelegate;
+
+    /// <summary>
+    /// Creates a setter that writes through a pre-built delegate rather than through reflection.
+    /// </summary>
+    public PropertySetter(Action<object, object?> setter)
+    {
+        _setterDelegate = setter;
+    }
 
     [UnconditionalSuppressMessage(
         "ReflectionAnalysis",
@@ -35,7 +43,7 @@ internal sealed class PropertySetter
                 setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(targetType, property.PropertyType));
             var callPropertySetterClosedGenericMethod =
                 CallPropertySetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
-            _setterDelegate = (Action<object, object>)
+            _setterDelegate = (Action<object, object?>)
                 callPropertySetterClosedGenericMethod.CreateDelegate(typeof(Action<object, object>), propertySetterAsAction);
         }
         else
@@ -48,12 +56,12 @@ internal sealed class PropertySetter
 
     public bool AcceptsCascadingParameters { get; init; }
 
-    public void SetValue(object target, object value) => _setterDelegate(target, value);
+    public void SetValue(object target, object? value) => _setterDelegate(target, value);
 
     private static void CallPropertySetter<TTarget, TValue>(
         Action<TTarget, TValue> setter,
         object target,
-        object value)
+        object? value)
         where TTarget : notnull
     {
         if (value == null)
