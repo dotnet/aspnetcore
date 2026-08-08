@@ -330,7 +330,9 @@ public class CircuitPersistenceManagerTest
             });
         var rootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>
         {
-            [2] = new WebRootComponentDescriptor(typeof(RootComponent), new WebRootComponentParameters())
+            [2] = new WebRootComponentDescriptor(
+                ComponentTypeInfoResolverFactory.Default.GetRequiredTypeInfo(typeof(RootComponent)),
+                new WebRootComponentParameters())
         };
         var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, rootComponentDescriptors, "ops");
         Assert.Null(result);
@@ -347,7 +349,9 @@ public class CircuitPersistenceManagerTest
             }, fail: false, deserializeMarker: true);
         var rootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>
         {
-            [1] = new WebRootComponentDescriptor(typeof(RootComponent), new WebRootComponentParameters())
+            [1] = new WebRootComponentDescriptor(
+                ComponentTypeInfoResolverFactory.Default.GetRequiredTypeInfo(typeof(RootComponent)),
+                new WebRootComponentParameters())
         };
         var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, rootComponentDescriptors, "ops");
         Assert.NotNull(result);
@@ -460,7 +464,7 @@ public class CircuitPersistenceManagerTest
     private static ServerComponentDeserializer CreateDeserializer(EphemeralDataProtectionProvider dataProtectionProvider) => new ServerComponentDeserializer(
                     dataProtectionProvider,
                     NullLoggerFactory.Instance.CreateLogger<ServerComponentDeserializer>(),
-                    new RootTypeCache(),
+                    ComponentTypeInfoResolverFactory.Default,
                     new ComponentParameterDeserializer(
                         NullLoggerFactory.Instance.CreateLogger<ComponentParameterDeserializer>(),
                         new ComponentParametersTypeCache()));
@@ -501,7 +505,9 @@ public class CircuitPersistenceManagerTest
                     out It.Ref<WebRootComponentDescriptor>.IsAny))
                 .Callback((ComponentMarker marker, out WebRootComponentDescriptor descriptor) =>
                 {
-                    descriptor = new WebRootComponentDescriptor(typeof(RootComponent), new WebRootComponentParameters());
+                    descriptor = new WebRootComponentDescriptor(
+                        ComponentTypeInfoResolverFactory.Default.GetRequiredTypeInfo(typeof(RootComponent)),
+                        new WebRootComponentParameters());
                 })
                 .Returns(true);
         }
