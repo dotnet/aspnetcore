@@ -3,6 +3,15 @@
   <PropertyGroup>
     <TargetFramework>$(PackageConsumerTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath Condition="'$(E2ECompileTestHarness)' == 'true'">$(BaseIntermediateOutputPath)generated-nativeaot</CompilerGeneratedFilesOutputPath>
+    <CompilerGeneratedFilesOutputPath Condition="'$(E2ECompileTestHarness)' != 'true'">$(BaseIntermediateOutputPath)generated-normal</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Testing.NativeAot"
+                      Version="$(PackageConsumerVersion)"
+                      PrivateAssets="all" />
+  </ItemGroup>
 
 </Project>

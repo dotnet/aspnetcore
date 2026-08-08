@@ -91,10 +91,19 @@
       <_ManifestPath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', '$(AssemblyName).e2e-manifest.json'))</_ManifestPath>
     </PropertyGroup>
 
-    <!-- Find all ProjectReferences tagged as E2E apps -->
+    <!-- Find all ProjectReferences tagged as E2E apps and split managed/compiled harness publishes. -->
     <ItemGroup>
       <_E2EAppProjects Include="@(ProjectReference)" Condition="'%(ProjectReference.E2EApp)' == 'true'" />
+      <_E2ENativeAotAppProjects Include="@(_E2EAppProjects)" Condition="'%(_E2EAppProjects.E2ENativeAot)' == 'true'" />
+      <_E2EManagedAppProjects Include="@(_E2EAppProjects)" Condition="'%(_E2EAppProjects.E2ENativeAot)' != 'true'" />
     </ItemGroup>
+
+    <Error
+      Text="E2EApp ProjectReference '%(_E2ENativeAotAppProjects.Identity)' has E2ENativeAot=true. Native AOT apps require E2EAppMode=publish."
+      Condition="'@(_E2ENativeAotAppProjects)' != '' and '$(E2EAppMode)' != 'publish'" />
+    <Error
+      Text="E2EApp ProjectReference '%(_E2ENativeAotAppProjects.Identity)' has E2ENativeAot=true but no E2ERuntimeIdentifier metadata. Specify exactly one RID for this invocation."
+      Condition="'@(_E2ENativeAotAppProjects)' != '' and '%(_E2ENativeAotAppProjects.E2ERuntimeIdentifier)' == ''" />
 
     <!--
       Copy project source for build/all modes.
@@ -120,10 +129,16 @@
       all mode:     output goes to e2e-apps/publish/<name>/
     -->
     <MSBuild
-      Condition="'$(E2EAppMode)' == 'publish' and '@(_E2EAppProjects)' != ''"
-      Projects="@(_E2EAppProjects)"
+      Condition="'$(E2EAppMode)' == 'publish' and '@(_E2EManagedAppProjects)' != ''"
+      Projects="@(_E2EManagedAppProjects)"
       Targets="Publish"
-      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2EAppProjects.Filename)'))/;Configuration=$(Configuration)" />
+      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2EManagedAppProjects.Filename)'))/;Configuration=$(Configuration)" />
+    <MSBuild
+      Condition="'$(E2EAppMode)' == 'publish' and '@(_E2ENativeAotAppProjects)' != ''"
+      Projects="@(_E2ENativeAotAppProjects)"
+      Targets="Restore;Publish"
+      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2ENativeAotAppProjects.Filename)'))/;Configuration=$(Configuration);E2ECompileTestHarness=true;PublishAot=true;RuntimeIdentifier=%(_E2ENativeAotAppProjects.E2ERuntimeIdentifier)"
+      RemoveProperties="NoBuild;BuildProjectReferences" />
     <MSBuild
       Condition="'$(E2EAppMode)' == 'all' and '@(_E2EAppProjects)' != ''"
       Projects="@(_E2EAppProjects)"
