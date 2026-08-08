@@ -3,7 +3,9 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
@@ -13,7 +15,6 @@ using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -29,90 +30,92 @@ internal class RouteTableFactory
         return result != 0 ? result : string.Compare(x.RoutePattern.RawText, y.RoutePattern.RawText, StringComparison.OrdinalIgnoreCase);
     });
 
-    private readonly ConcurrentDictionary<RouteKey, RouteTable> _cache = new();
+    private readonly ConcurrentDictionary<RouteCacheKey, RouteTable> _cache = new();
 
     public RouteTable Create(RouteKey routeKey, IServiceProvider serviceProvider)
     {
-        if (_cache.TryGetValue(routeKey, out var resolvedComponents))
+        var typeInfoResolver = GetTypeInfoResolver(serviceProvider);
+        var cacheKey = new RouteCacheKey(routeKey, typeInfoResolver);
+        if (_cache.TryGetValue(cacheKey, out var resolvedComponents))
         {
             return resolvedComponents;
         }
 
-        var componentTypes = GetRouteableComponents(routeKey);
-        var routeTable = Create(componentTypes, serviceProvider);
-        _cache.TryAdd(routeKey, routeTable);
+        var routeTable = Create(GetRouteableComponents(routeKey, typeInfoResolver), serviceProvider);
+
+        _cache.TryAdd(cacheKey, routeTable);
         return routeTable;
     }
 
-    public void ClearCaches() => _cache.Clear();
+    internal static IComponentTypeInfoResolver GetTypeInfoResolver(IServiceProvider serviceProvider)
+        => serviceProvider.GetService<IComponentTypeInfoResolver>() ?? ComponentTypeInfoResolverFactory.Default;
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
-    private static List<Type> GetRouteableComponents(RouteKey routeKey)
+    private static List<RouteableComponent> GetRouteableComponents(
+        RouteKey routeKey,
+        IComponentTypeInfoResolver typeInfoResolver)
     {
-        var routeableComponents = new List<Type>();
+        var routeableComponents = new List<RouteableComponent>();
+        var seenTypes = new HashSet<Type>();
         if (routeKey.AppAssembly is not null)
         {
-            GetRouteableComponents(routeableComponents, routeKey.AppAssembly);
+            AddRouteableComponents(routeKey.AppAssembly);
         }
 
         if (routeKey.AdditionalAssemblies is not null)
         {
             foreach (var assembly in routeKey.AdditionalAssemblies)
             {
-                // We don't need process the assembly if it's the app assembly.
                 if (assembly != routeKey.AppAssembly)
                 {
-                    GetRouteableComponents(routeableComponents, assembly);
+                    AddRouteableComponents(assembly);
                 }
             }
         }
 
         return routeableComponents;
 
-        static void GetRouteableComponents(List<Type> routeableComponents, Assembly assembly)
+        void AddRouteableComponents(Assembly assembly)
         {
-            foreach (var type in assembly.ExportedTypes)
+            foreach (var typeInfo in typeInfoResolver.GetRequiredTypeInfos(assembly))
             {
-                if (typeof(IComponent).IsAssignableFrom(type)
-                    && type.IsDefined(typeof(RouteAttribute))
-                    && !type.IsDefined(typeof(ExcludeFromInteractiveRoutingAttribute)))
+                if (typeInfo.Metadata.Any(static item => item is ExcludeFromInteractiveRoutingAttribute))
                 {
-                    routeableComponents.Add(type);
+                    continue;
+                }
+
+                var templates = GetTemplates(typeInfo);
+                if (templates.Length > 0)
+                {
+                    if (!seenTypes.Add(typeInfo.Type))
+                    {
+                        throw new ArgumentException($"An item with the same key has already been added. Key: {typeInfo.Type}");
+                    }
+
+                    routeableComponents.Add(new RouteableComponent(typeInfo.Type, templates));
                 }
             }
         }
     }
 
+    public void ClearCaches() => _cache.Clear();
+
     internal static RouteTable Create(List<Type> componentTypes, IServiceProvider serviceProvider)
     {
+        var typeInfoResolver = GetTypeInfoResolver(serviceProvider);
         var templatesByHandler = new Dictionary<Type, string[]>();
         foreach (var componentType in componentTypes)
         {
-            // We're deliberately using inherit = false here.
-            //
-            // RouteAttribute is defined as non-inherited, because inheriting a route attribute always causes an
-            // ambiguity. You end up with two components (base class and derived class) with the same route.
-            var templates = GetTemplates(componentType);
-
-            templatesByHandler.Add(componentType, templates);
+            templatesByHandler.Add(
+                componentType,
+                GetTemplates(typeInfoResolver.GetRequiredTypeInfo(componentType)));
         }
+
         return Create(templatesByHandler, serviceProvider);
     }
 
-    private static string[] GetTemplates(Type componentType)
-    {
-        var routeAttributes = componentType.GetCustomAttributes(typeof(RouteAttribute), inherit: false);
-        var templates = new string[routeAttributes.Length];
-        for (var i = 0; i < routeAttributes.Length; i++)
-        {
-            var attribute = (RouteAttribute)routeAttributes[i];
-            templates[i] = attribute.Template;
-        }
+    private static string[] GetTemplates(ComponentTypeInfo typeInfo)
+        => [.. typeInfo.Metadata.OfType<RouteAttribute>().Select(static attribute => attribute.Template)];
 
-        return templates;
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
     internal static RouteTable Create(Dictionary<Type, string[]> templatesByHandler, IServiceProvider serviceProvider)
     {
         var routeOptions = Options.Create(new RouteOptions());
@@ -143,6 +146,42 @@ internal class RouteTableFactory
         return new RouteTable(builder.Build());
     }
 
+    private static RouteTable Create(List<RouteableComponent> routeableComponents, IServiceProvider serviceProvider)
+    {
+        var routeOptions = Options.Create(new RouteOptions());
+        if (!OperatingSystem.IsBrowser() || RegexConstraintSupport.IsEnabled)
+        {
+            routeOptions.Value.SetParameterPolicy("regex", typeof(RegexInlineRouteConstraint));
+        }
+        var builder = new TreeRouteBuilder(
+            serviceProvider.GetRequiredService<ILoggerFactory>(),
+            new DefaultInlineConstraintResolver(routeOptions, serviceProvider));
+
+        foreach (var component in routeableComponents)
+        {
+            var result = ComputeTemplateGroupInfo(component.Templates);
+
+            var parsedTemplates = result.ParsedTemplates;
+            var allRouteParameterNames = result.AllRouteParameterNames;
+
+            foreach (var (parsedTemplate, routeParameterNames) in parsedTemplates)
+            {
+                var unusedRouteParameterNames = GetUnusedParameterNames(allRouteParameterNames!, routeParameterNames!);
+                builder.MapInbound(component.Type, parsedTemplate, unusedRouteParameterNames);
+            }
+        }
+
+        DetectAmbiguousRoutes(builder);
+
+        return new RouteTable(builder.Build());
+    }
+
+    private sealed record RouteableComponent(
+        [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+        Type Type,
+        string[] Templates);
+
     private static TemplateGroupInfo ComputeTemplateGroupInfo(string[] templates)
     {
         var result = new TemplateGroupInfo(templates);
@@ -167,9 +206,17 @@ internal class RouteTableFactory
         public (RoutePattern, HashSet<string>)[] ParsedTemplates { get; set; } = new (RoutePattern, HashSet<string>)[templates.Length];
     }
 
-    internal static InboundRouteEntry CreateEntry([DynamicallyAccessedMembers(Component)] Type pageType, string template)
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2067",
+        Justification = "The handler type is used for route identity; component access is resolved through ComponentTypeInfo.")]
+    internal static InboundRouteEntry CreateEntry(
+        Type pageType,
+        string template,
+        IComponentTypeInfoResolver? typeInfoResolver = null)
     {
-        var templates = GetTemplates(pageType);
+        typeInfoResolver ??= ComponentTypeInfoResolverFactory.Default;
+        var templates = GetTemplates(typeInfoResolver.GetRequiredTypeInfo(pageType));
         var result = ComputeTemplateGroupInfo(templates);
 
         RoutePattern? parsedTemplate = null;
@@ -197,6 +244,29 @@ internal class RouteTableFactory
             UnusedRouteParameterNames = GetUnusedParameterNames(result.AllRouteParameterNames, routeParameterNames!),
         };
     }
+
+    private readonly struct RouteCacheKey : IEquatable<RouteCacheKey>
+    {
+        private readonly RouteKey _routeKey;
+        private readonly IComponentTypeInfoResolver _typeInfoResolver;
+
+        public RouteCacheKey(RouteKey routeKey, IComponentTypeInfoResolver typeInfoResolver)
+        {
+            _routeKey = routeKey;
+            _typeInfoResolver = typeInfoResolver;
+        }
+
+        public bool Equals(RouteCacheKey other)
+            => _routeKey.Equals(other._routeKey) &&
+                ReferenceEquals(_typeInfoResolver, other._typeInfoResolver);
+
+        public override bool Equals(object? obj)
+            => obj is RouteCacheKey other && Equals(other);
+
+        public override int GetHashCode()
+            => HashCode.Combine(_routeKey, RuntimeHelpers.GetHashCode(_typeInfoResolver));
+    }
+
     private static void DetectAmbiguousRoutes(TreeRouteBuilder builder)
     {
         var seen = new HashSet<InboundRouteEntry>(new InboundRouteEntryAmbiguityEqualityComparer());

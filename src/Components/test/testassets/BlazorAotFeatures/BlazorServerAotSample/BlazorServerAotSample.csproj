@@ -1,0 +1,115 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Native AOT: enabled here (scoped to this app; referenced framework projects don't inherit
+         it). Local `dotnet run` still JITs; `dotnet publish -r <rid>` produces the native app.
+         Enables the AOT/trim analyzers during build so per-feature blockers surface. -->
+    <PublishAot>true</PublishAot>
+    <!-- Reflection remains enabled by default for every Blazor application. This dedicated test asset
+         explicitly requests complete generated metadata so omissions are build errors. -->
+    <RazorComponentsReflectionEnabledByDefault>false</RazorComponentsReflectionEnabledByDefault>
+    <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
+    <!-- The metadata model is experimental; the sample opts into it deliberately. -->
+    <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BlazorAotStrictMode)' == 'true'">
+    <RuntimeHostConfigurationOption
+        Include="System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"
+        Value="false"
+        Trim="true" />
+    <RuntimeHostConfigurationOption
+        Include="Microsoft.AspNetCore.Components.ComponentMetadata.IsReflectionEnabledByDefault"
+        Value="false"
+        Trim="true" />
+    <RuntimeHostConfigurationOption
+        Include="Microsoft.JSInterop.JSInvokableMethodResolution.IsReflectionEnabledByDefault"
+        Value="false"
+        Trim="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="RazorComponentsReflectionEnabledByDefault" />
+    <!-- The host contains NO Blazor/.razor code; all components live in the Pages library. -->
+    <ProjectReference Include="..\BlazorServerAotSample.Pages\BlazorServerAotSample.Pages.csproj" />
+    <!-- The metadata source generator runs here and walks the referenced Pages library, which is the
+         only place the Razor-compiled component types are visible from. -->
+    <ProjectReference Include="..\..\..\..\Endpoints\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Microsoft.AspNetCore (DefaultBuilder) provides WebApplication.CreateSlimBuilder. -->
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Antiforgery" />
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <Reference Include="Microsoft.AspNetCore.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
+    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+    <Reference Include="Microsoft.AspNetCore.Components.Media" />
+    <Reference Include="Microsoft.AspNetCore.Components.QuickGrid" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.HostFiltering" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections.Common" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.Localization" />
+    <Reference Include="Microsoft.AspNetCore.Metadata" />
+    <Reference Include="Microsoft.AspNetCore.OutputCaching" />
+    <Reference Include="Microsoft.AspNetCore.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Session" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
+    <!-- The Kestrel meta references the Quic transport; UseKestrelCore never calls UseQuic, but under AOT
+         the meta's type refs mean the Quic assembly must be present to load. Reference it explicitly. -->
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.WebSockets" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Features" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
+  </ItemGroup>
+
+</Project>

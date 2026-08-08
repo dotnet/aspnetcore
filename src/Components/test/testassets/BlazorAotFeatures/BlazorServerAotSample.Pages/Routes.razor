@@ -1,0 +1,10 @@
+@using Microsoft.AspNetCore.Components.Web
+@attribute [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2110", Justification = "The generated Router parameter assignment is backed by generated component metadata.")]
+@attribute [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "The generated Router parameter assignment is backed by generated component metadata.")]
+
+<Router AppAssembly="typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
