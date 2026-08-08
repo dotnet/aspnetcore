@@ -27,6 +27,9 @@ public class ComponentMetadataServiceCollectionExtensionsTest
         var resolver = provider.GetRequiredService<IComponentJsonMetadataResolver>().JsonTypeInfoResolver!;
         Assert.NotNull(resolver.GetTypeInfo(typeof(FirstPayload), new JsonSerializerOptions()));
         Assert.NotNull(resolver.GetTypeInfo(typeof(SecondPayload), new JsonSerializerOptions()));
+        var bindableResolver = provider.GetRequiredService<IBindableTypeResolver>();
+        Assert.True(bindableResolver.TryGetBindableTypeDescriptor(typeof(FirstPayload), out _));
+        Assert.True(bindableResolver.TryGetBindableTypeDescriptor(typeof(SecondPayload), out _));
         Assert.Collection(
             provider.GetServices<RazorComponentsMetadataContext>(),
             context => Assert.IsType<FirstContext>(context),
@@ -40,15 +43,21 @@ public class ComponentMetadataServiceCollectionExtensionsTest
         services.AddComponentMetadata<FirstContext>();
         using var firstProvider = services.BuildServiceProvider();
         var firstResolver = firstProvider.GetRequiredService<IComponentJsonMetadataResolver>().JsonTypeInfoResolver!;
+        var firstBindableResolver = firstProvider.GetRequiredService<IBindableTypeResolver>();
 
         services.AddComponentMetadata<SecondContext>();
         using var secondProvider = services.BuildServiceProvider();
         var secondResolver = secondProvider.GetRequiredService<IComponentJsonMetadataResolver>().JsonTypeInfoResolver!;
+        var secondBindableResolver = secondProvider.GetRequiredService<IBindableTypeResolver>();
 
         Assert.NotNull(firstResolver.GetTypeInfo(typeof(FirstPayload), new JsonSerializerOptions()));
         Assert.Null(firstResolver.GetTypeInfo(typeof(SecondPayload), new JsonSerializerOptions()));
         Assert.NotNull(secondResolver.GetTypeInfo(typeof(FirstPayload), new JsonSerializerOptions()));
         Assert.NotNull(secondResolver.GetTypeInfo(typeof(SecondPayload), new JsonSerializerOptions()));
+        Assert.True(firstBindableResolver.TryGetBindableTypeDescriptor(typeof(FirstPayload), out _));
+        Assert.False(firstBindableResolver.TryGetBindableTypeDescriptor(typeof(SecondPayload), out _));
+        Assert.True(secondBindableResolver.TryGetBindableTypeDescriptor(typeof(FirstPayload), out _));
+        Assert.True(secondBindableResolver.TryGetBindableTypeDescriptor(typeof(SecondPayload), out _));
     }
 
     [Fact]
@@ -62,7 +71,13 @@ public class ComponentMetadataServiceCollectionExtensionsTest
 
     public sealed class FirstContext : RazorComponentsMetadataContext
     {
-        public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
+        public override IReadOnlyList<BindableTypeDescriptor> BindableTypes =>
+        [
+            new()
+            {
+                Type = typeof(FirstPayload),
+            },
+        ];
 
         public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];
 
@@ -71,7 +86,13 @@ public class ComponentMetadataServiceCollectionExtensionsTest
 
     public sealed class SecondContext : RazorComponentsMetadataContext
     {
-        public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
+        public override IReadOnlyList<BindableTypeDescriptor> BindableTypes =>
+        [
+            new()
+            {
+                Type = typeof(SecondPayload),
+            },
+        ];
 
         public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];
 
