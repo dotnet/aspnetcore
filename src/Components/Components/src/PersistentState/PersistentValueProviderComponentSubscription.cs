@@ -2,42 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Microsoft.AspNetCore.Components.HotReload;
-using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 internal partial class PersistentValueProviderComponentSubscription : IDisposable
 {
-    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
     private static readonly object _uninitializedSentinel = new();
-
-    static PersistentValueProviderComponentSubscription()
-    {
-        if (HotReloadManager.IsSupported)
-        {
-            HotReloadManager.Default.OnDeltaApplied += ClearCaches;
-        }
-    }
-
-    private static void ClearCaches()
-    {
-        _propertyGetterCache.Clear();
-        _serializerCache.Clear();
-    }
 
     private readonly PersistentComponentState _state;
     private readonly ComponentState _subscriber;
     private readonly string _propertyName;
     private readonly Type _propertyType;
-    private readonly PropertyGetter _propertyGetter;
+    private readonly Func<object, object?> _propertyGetter;
     private readonly IPersistentComponentStateSerializer? _customSerializer;
     private readonly ILogger _logger;
 
@@ -62,8 +41,9 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         _logger = logger;
         var attribute = (PersistentStateAttribute)parameterInfo.Attribute;
 
-        _customSerializer = _serializerCache.GetOrAdd(_propertyType, SerializerFactory, serviceProvider);
-        _propertyGetter = _propertyGetterCache.GetOrAdd((subscriber.Component.GetType(), _propertyName), PropertyGetterFactory);
+        var parameter = ResolveParameter(subscriber.ComponentTypeInfo, _propertyName);
+        _customSerializer = parameter.GetStateSerializer?.Invoke(serviceProvider) as IPersistentComponentStateSerializer;
+        _propertyGetter = parameter.GetValue;
 
         _persistingSubscription = state.RegisterOnPersisting(
             PersistProperty,
@@ -108,7 +88,7 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
                 // In this case, the component might have modified the property value after
                 // we restored it from the persistent state. We don't want to overwrite it
                 // with a previously restored value.
-                var currentPropertyValue = _propertyGetter.GetValue(_subscriber.Component);
+                var currentPropertyValue = _propertyGetter(_subscriber.Component);
                 return currentPropertyValue;
             }
         }
@@ -116,10 +96,14 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         return _lastValue;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2077:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes' in call to target method. The source field does not have matching annotations.", Justification = "Property types on components are preserved through other means.")]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code.",
+        Justification = "Persistent state JSON contracts are supplied through the framework serialization options.")]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2077:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
+        Justification = "Persistent state JSON contracts are supplied through the framework serialization options.")]
     internal void RestoreProperty()
     {
         var skipNotifications = _hasPendingInitialValue;
@@ -136,7 +120,7 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         // The key needs to be computed here, do not move this outside of the lambda.
         _storageKey ??= PersistentStateValueProviderKeyResolver.ComputeKey(_subscriber, _propertyName);
 
-        if (_customSerializer != null)
+        if (_customSerializer is not null)
         {
             if (_state.TryTakeBytes(_storageKey, out var data))
             {
@@ -173,23 +157,27 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2077:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes' in call to target method. The source field does not have matching annotations.", Justification = "Property types on components are preserved through other means.")]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code.",
+        Justification = "Persistent state JSON contracts are supplied through the framework serialization options.")]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2077:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
+        Justification = "Persistent state JSON contracts are supplied through the framework serialization options.")]
     private Task PersistProperty()
     {
         // The key needs to be computed here, do not move this outside of the lambda.
         _storageKey ??= PersistentStateValueProviderKeyResolver.ComputeKey(_subscriber, _propertyName);
 
-        var property = _propertyGetter.GetValue(_subscriber.Component);
-        if (property == null)
+        var property = _propertyGetter(_subscriber.Component);
+        if (property is null)
         {
             Log.SkippedPersistingNullValue(_logger, _storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
             return Task.CompletedTask;
         }
 
-        if (_customSerializer != null)
+        if (_customSerializer is not null)
         {
             Log.PersistingValueToState(_logger, _storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
 
@@ -211,34 +199,26 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         _restoringSubscription?.Dispose();
     }
 
-    private IPersistentComponentStateSerializer? SerializerFactory(Type type, IServiceProvider serviceProvider)
+    private static ComponentParameterDescriptor ResolveParameter(
+        ComponentTypeInfo typeInfo,
+        string propertyName)
     {
-        var serializerType = typeof(PersistentComponentStateSerializer<>).MakeGenericType(type);
-        var serializer = serviceProvider.GetService(serializerType);
-
-        // The generic class now inherits from the internal interface, so we can cast directly
-        return serializer as IPersistentComponentStateSerializer;
-    }
-
-    [UnconditionalSuppressMessage(
-    "Trimming",
-    "IL2077:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The source field does not have matching annotations.",
-    Justification = "Properties of rendered components are preserved through other means and won't get trimmed.")]
-
-    private static PropertyGetter PropertyGetterFactory((Type type, string propertyName) key)
-    {
-        var (type, propertyName) = key;
-        var propertyInfo = GetPropertyInfo(type, propertyName);
-        if (propertyInfo == null || propertyInfo.GetMethod == null || !propertyInfo.GetMethod.IsPublic)
+        if (!typeInfo.IsParameterPubliclyReadable(propertyName))
         {
             throw new InvalidOperationException(
-                $"A public property '{propertyName}' on component type '{type.FullName}' with a public getter wasn't found.");
+                $"A public property '{propertyName}' on component type '{typeInfo.Type.FullName}' with a public getter wasn't found.");
         }
 
-        return new PropertyGetter(type, propertyInfo);
+        foreach (var parameter in typeInfo.Parameters)
+        {
+            if (string.Equals(parameter.Name, propertyName, StringComparison.Ordinal))
+            {
+                return parameter;
+            }
+        }
 
-        static PropertyInfo? GetPropertyInfo([DynamicallyAccessedMembers(LinkerFlags.Component)] Type type, string propertyName)
-            => type.GetProperty(propertyName);
+        throw new InvalidOperationException(
+            $"A public property '{propertyName}' on component type '{typeInfo.Type.FullName}' with a public getter wasn't found.");
     }
 
     private static partial class Log

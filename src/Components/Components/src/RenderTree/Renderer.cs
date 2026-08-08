@@ -41,12 +41,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly ILoggerFactory _loggerFactory;
     private SectionRegistry? _sectionRegistry;
     private readonly ComponentFactory _componentFactory;
+    private readonly IDisposable? _ownedComponentTypeInfoResolver;
     private readonly ComponentsMetrics? _componentsMetrics;
     private readonly ComponentsActivitySource? _componentsActivitySource;
     private readonly object _activityLinksStore = new Dictionary<string, CategoryLink>(StringComparer.OrdinalIgnoreCase);
     internal object ActivityLinksStore => _activityLinksStore;
 
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
+    private ComponentTypeInfo? _componentTypeInfoForNewRootComponent;
     private Task? _ongoingQuiescenceTask;
 
     private int _nextComponentId;
@@ -81,7 +83,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
-        : this(serviceProvider, loggerFactory, GetComponentActivatorOrDefault(serviceProvider))
+        : this(serviceProvider, loggerFactory, componentActivator: null, useDefaultActivator: true)
     {
         // This overload is provided for back-compatibility
     }
@@ -93,18 +95,42 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="componentActivator">The <see cref="IComponentActivator"/>.</param>
     public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
+        : this(serviceProvider, loggerFactory, componentActivator, useDefaultActivator: false)
+    {
+    }
+
+    private Renderer(
+        IServiceProvider serviceProvider,
+        ILoggerFactory loggerFactory,
+        IComponentActivator? componentActivator,
+        bool useDefaultActivator)
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(loggerFactory);
-        ArgumentNullException.ThrowIfNull(componentActivator);
+        if (!useDefaultActivator)
+        {
+            ArgumentNullException.ThrowIfNull(componentActivator);
+        }
 
         _serviceProvider = serviceProvider;
+        var registeredTypeInfoResolver = serviceProvider.GetService<IComponentTypeInfoResolver>();
+        ComponentTypeInfoResolver = registeredTypeInfoResolver
+            ?? ComponentTypeInfoResolverFactory.Create(serviceProvider);
+        if (registeredTypeInfoResolver is null)
+        {
+            _ownedComponentTypeInfoResolver = ComponentTypeInfoResolver as IDisposable;
+        }
+
+        componentActivator ??= serviceProvider.GetService<IComponentActivator>()
+            ?? new DefaultComponentActivator(serviceProvider, ComponentTypeInfoResolver);
+        var propertyActivator = serviceProvider.GetService<IComponentPropertyActivator>()
+            ?? new DefaultComponentPropertyActivator(ComponentTypeInfoResolver);
         // Would normally use ILogger<T> here to get the benefit of the string name being cached but this is a public ctor that
         // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _loggerFactory = loggerFactory;
-        _componentFactory = new ComponentFactory(componentActivator, GetComponentPropertyActivatorOrDefault(serviceProvider), this);
+        _componentFactory = new ComponentFactory(componentActivator, propertyActivator, this);
         if (ComponentsMetrics.IsSupported)
         {
             _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
@@ -122,6 +148,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         BindableTypeResolver = serviceProvider.GetService<IBindableTypeResolver>();
     }
 
+    internal IComponentTypeInfoResolver ComponentTypeInfoResolver { get; }
+
+    internal ComponentTypeInfo GetComponentTypeInfo(Type componentType)
+        => _componentTypeInfoForNewRootComponent is { } rootTypeInfo &&
+            rootTypeInfo.Type == componentType
+                ? rootTypeInfo
+                : ComponentTypeInfoResolver.GetRequiredTypeInfo(componentType);
+
     internal IBindableTypeResolver? BindableTypeResolver { get; }
 
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
@@ -132,18 +166,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
     internal HotReloadManager? HotReloadManager { get; set; } = HotReloadManager.IsSupported ? HotReloadManager.Default : null;
-
-    private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
-    {
-        return serviceProvider.GetService<IComponentActivator>()
-            ?? new DefaultComponentActivator(serviceProvider);
-    }
-
-    private static IComponentPropertyActivator GetComponentPropertyActivatorOrDefault(IServiceProvider serviceProvider)
-    {
-        return serviceProvider.GetService<IComponentPropertyActivator>()
-            ?? new DefaultComponentPropertyActivator();
-    }
 
     /// <summary>
     /// Gets the <see cref="Components.Dispatcher" /> associated with this <see cref="Renderer" />.
@@ -219,10 +241,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
-        ComponentFactory.ClearCache();
         ComponentProperties.ClearCache();
-        DefaultComponentActivator.ClearCache();
-        DefaultComponentPropertyActivator.ClearCache();
 
         await Dispatcher.InvokeAsync(() =>
         {
@@ -256,6 +275,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
         => _componentFactory.InstantiateComponent(_serviceProvider, componentType, null, null);
 
+    internal IComponent InstantiateComponent(ComponentTypeInfo componentTypeInfo)
+        => _componentFactory.InstantiateComponent(_serviceProvider, componentTypeInfo, null, null);
+
     /// <summary>
     /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
     /// an identifier that is unique within the scope of the <see cref="Renderer"/>.
@@ -280,6 +302,20 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         }
 
         return AttachAndInitComponent(component, -1).ComponentId;
+    }
+
+    internal int AssignRootComponentId(IComponent component, ComponentTypeInfo componentTypeInfo)
+    {
+        var previousTypeInfo = _componentTypeInfoForNewRootComponent;
+        _componentTypeInfoForNewRootComponent = componentTypeInfo;
+        try
+        {
+            return AssignRootComponentId(component);
+        }
+        finally
+        {
+            _componentTypeInfoForNewRootComponent = previousTypeInfo;
+        }
     }
 
     /// <summary>
@@ -1316,6 +1352,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _componentStateById.Clear(); // So we know they were all disposed
         _componentStateByComponent.Clear();
         _batchBuilder.Dispose();
+        _ownedComponentTypeInfoResolver?.Dispose();
 
         NotifyExceptions(exceptions);
 

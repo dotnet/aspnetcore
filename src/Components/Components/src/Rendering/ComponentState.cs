@@ -41,6 +41,7 @@ public class ComponentState : IAsyncDisposable
             ? (GetSectionOutletLogicalParent(renderer, (SectionOutlet)parentComponentState!.Component) ?? parentComponentState)
             : parentComponentState;
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        ComponentTypeInfo = renderer.GetComponentTypeInfo(component.GetType());
         _cascadingParameters = CascadingParameterState.FindCascadingParameters(this, out _hasSingleDeliveryCascadingParameters);
         CurrentRenderTree = new RenderTreeBuilder();
         _nextRenderTree = new RenderTreeBuilder();
@@ -80,6 +81,8 @@ public class ComponentState : IAsyncDisposable
     /// Gets the component instance.
     /// </summary>
     public IComponent Component { get; }
+
+    internal ComponentTypeInfo ComponentTypeInfo { get; private set; }
 
     /// <summary>
     /// Gets the <see cref="ComponentState"/> of the parent component, or null if this is a root component.
@@ -172,6 +175,11 @@ public class ComponentState : IAsyncDisposable
         // If we bypass this, the component won't receive the cascading parameters nor
         // will it update its snapshot of direct parameters.
 
+        if (_renderer.IsRenderingOnMetadataUpdate)
+        {
+            ComponentTypeInfo = _renderer.GetComponentTypeInfo(Component.GetType());
+        }
+
         if (_hasAnyCascadingParameterSubscriptions)
         {
             // We may need to replay these direct parameters later (in NotifyCascadingValueChanged),
@@ -242,6 +250,9 @@ public class ComponentState : IAsyncDisposable
     // a consistent set to the recipient.
     private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
     {
+        directAndCascadingParameters = directAndCascadingParameters
+            .WithComponentTypeInfoResolver(_renderer.ComponentTypeInfoResolver)
+            .WithComponentTypeInfo(ComponentTypeInfo);
         var parametersStartTimestamp = ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
 
         // Normalize sync and async exceptions into a Task

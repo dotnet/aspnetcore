@@ -73,9 +73,12 @@ public abstract class WebRenderer : Renderer
     /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
     /// <returns>The new component ID.</returns>
     protected internal int AddRootComponent([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector)
+        => AddRootComponent(ComponentTypeInfoResolver.GetRequiredTypeInfo(componentType), domElementSelector);
+
+    internal int AddRootComponent(ComponentTypeInfo componentTypeInfo, string domElementSelector)
     {
-        var component = InstantiateComponent(componentType);
-        var componentId = AssignRootComponentId(component);
+        var component = InstantiateComponent(componentTypeInfo);
+        var componentId = AssignRootComponentId(component, componentTypeInfo);
         AttachRootComponentToBrowser(componentId, domElementSelector);
         return componentId;
     }
@@ -226,9 +229,13 @@ public abstract class WebRenderer : Renderer
 }
 
 // This should be kept in sync with the argument types in the call to
-// 'Blazor._internal.attachWebRendererInterop'
+// 'Blazor._internal.attachWebRendererInterop', and with the parameter types of the
+// [JSInvokable] methods on 'WebRendererInteropMethods', which the JS interop
+// dispatcher deserializes with these same options.
 [JsonSerializable(typeof(object[]))]
 [JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(JsonElement))]
 [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
 [JsonSerializable(typeof(Dictionary<string, List<string>>))]
 internal sealed partial class WebRendererSerializerContext : JsonSerializerContext;
