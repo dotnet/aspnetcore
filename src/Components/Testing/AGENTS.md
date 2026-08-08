@@ -2,20 +2,30 @@
 
 Read the parent `src/Components/AGENTS.md` first. This file adds narrower rules for work under `src/Components/Testing`.
 
-## Product boundary
+## Design boundary
 
-`Microsoft.AspNetCore.Components.Testing`—including its assembly, generators, tasks, and shipped MSBuild assets—is product code intended to ship as a future NuGet package. It is not ASP.NET Core repository infrastructure.
+Treat the Components.Testing assembly, generators, tasks, and shipped MSBuild assets as product code intended for external package consumers. Keep them independent of the ASP.NET Core repository layout, build graph, source-build conventions, CI providers, and repository-only projects or properties.
 
-The product must work for external consumers without `RepoRoot`, `ArtifactsBinDir`, the ASP.NET Core source layout, source-build flags, Helix-specific behavior, or repository-only projects and properties.
+Distinguish portable product capabilities from environment-specific orchestration. Discovering, building, publishing, packaging, launching, and diagnosing applications under test are product capabilities. Scheduling jobs, provisioning machines, uploading results, and adapting to a particular CI service belong in repository or service integration.
 
-Product capabilities include regular app testing; discovering, building, and publishing apps under test; producing portable manifests and complete test payloads; launching apps; and collecting diagnostics and artifacts. A payload may run on a separately provisioned machine or CI service such as Helix. That portability is product behavior; service-specific orchestration is not.
+Shipped package assets must be self-contained and deterministic:
 
-## Placement
+- Resolve only files included in the package or supplied through documented, product-neutral extension points.
+- Do not depend on source-tree bootstrapping, incidental build order, stale outputs, sentinel files, or callers setting repository globals.
+- Keep Build, Publish, clean, incremental, parallel, and no-build behavior consistent.
+- Produce portable manifests and complete payloads that can run on a separately provisioned machine.
 
-- Keep product-neutral manifest generation and Build/Publish support in product code and shipped package assets.
-- Keep sample consumer configuration, scenarios, ASP.NET Core wiring, and source-tree development hooks under `testassets/**`.
-- Keep `_E2ETasksProject`, `ArtifactsBinDir`, and `DotNetBuildSourceOnly`/`ExcludeFromBuild` gating in `testassets` or other repository integration, never in shipped package assets.
-- Keep source-tree bootstrapping and build hooks outside shipped package assets so they cannot affect package consumers.
-- Do not change a generic Helix runner for this package unless the change is broadly required independently of Components.Testing.
+Keep public APIs focused on customer scenarios. Hide storage layout, path composition, build plumbing, and other implementation details unless customers need to control them directly.
 
-Repository-wide `eng/**` changes are appropriate only for genuinely repository-wide behavior that cannot use existing Arcade, SDK, or ASP.NET Core infrastructure. Search for and reuse those mechanisms before adding new repository infrastructure.
+## Repository integration and validation
+
+Use `testassets/**` for sample consumer configuration, scenarios, and ASP.NET Core source-tree development hooks. Test assets should exercise the package as an external consumer would; they must not cause repository assumptions to leak into shipped assets.
+
+Before changing repository-wide `eng/**` infrastructure, search Arcade, the .NET SDK, and existing ASP.NET Core mechanisms. Add repository-wide behavior only when the requirement is genuinely shared and no suitable extension point exists.
+
+For changes that affect packaging or build integration:
+
+1. Inspect the produced package, not only source-tree outputs.
+2. Validate an isolated consumer using only packaged assets and normal restore sources.
+3. Exercise Build and Publish, plus relevant clean, incremental, parallel, and no-build paths.
+4. Verify the payload contains everything required to execute away from the source checkout.
