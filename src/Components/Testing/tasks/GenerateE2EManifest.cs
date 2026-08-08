@@ -13,7 +13,8 @@ namespace Microsoft.AspNetCore.Components.Testing.Tasks;
 
 /// <summary>
 /// MSBuild task that generates a JSON manifest describing all E2E app projects
-/// under test. The manifest format depends on the <see cref="E2EAppMode"/>:
+/// under test. Each app can override <see cref="E2EAppMode"/> through item metadata.
+/// The manifest format depends on the effective mode:
 /// <list type="bullet">
 ///   <item><c>build</c> (default) — one entry per app using <c>dotnet run</c>.</item>
 ///   <item><c>publish</c> — one entry per app using the published executable.</item>
@@ -54,18 +55,22 @@ public class GenerateE2EManifest : Task
 
     public override bool Execute()
     {
-        var mode = E2EAppMode ?? "build";
         var isPublishing = IsPublishing.Equals("true", StringComparison.OrdinalIgnoreCase);
-        var includeBuild = mode.Equals("build", StringComparison.OrdinalIgnoreCase)
-            || mode.Equals("all", StringComparison.OrdinalIgnoreCase);
-        var includePublish = mode.Equals("publish", StringComparison.OrdinalIgnoreCase)
-            || mode.Equals("all", StringComparison.OrdinalIgnoreCase);
-        var isBothMode = mode.Equals("all", StringComparison.OrdinalIgnoreCase);
-
         var manifest = new E2EManifestModel();
 
         foreach (var item in AppItems)
         {
+            var mode = item.GetMetadata("E2EAppMode");
+            if (string.IsNullOrWhiteSpace(mode))
+            {
+                mode = E2EAppMode ?? "build";
+            }
+
+            var includeBuild = mode.Equals("build", StringComparison.OrdinalIgnoreCase)
+                || mode.Equals("all", StringComparison.OrdinalIgnoreCase);
+            var includePublish = mode.Equals("publish", StringComparison.OrdinalIgnoreCase)
+                || mode.Equals("all", StringComparison.OrdinalIgnoreCase);
+            var isBothMode = mode.Equals("all", StringComparison.OrdinalIgnoreCase);
             var name = item.GetMetadata("Filename");
             var projectPath = item.GetMetadata("FullPath");
             var publicUrl = item.GetMetadata("E2EPublicUrl") ?? "";

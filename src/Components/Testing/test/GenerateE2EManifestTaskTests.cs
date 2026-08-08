@@ -267,6 +267,30 @@ public class GenerateE2EManifestTaskTests : IDisposable
     }
 
     [Fact]
+    public void PerAppMode_OverridesGlobalMode()
+    {
+        var buildProjectDir = CreateFakeProjectDir("BuildApp");
+        var publishProjectDir = CreateFakeProjectDir("PublishApp");
+        var appsOutputDir = Path.Combine(_tempDir, "e2e-apps");
+        CreatePublishedApp(appsOutputDir, "PublishApp", createExe: true);
+        var publishItem = CreateAppItem("PublishApp", publishProjectDir);
+        publishItem.SetMetadata("E2EAppMode", "publish");
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+        var task = CreateTask(
+            apps: [CreateAppItem("BuildApp", buildProjectDir), publishItem],
+            manifestPath: manifestPath,
+            mode: "build",
+            isPublishing: true,
+            appsOutputDir: appsOutputDir);
+
+        Assert.True(task.Execute());
+
+        var manifest = ReadManifest(manifestPath);
+        Assert.Equal("dotnet", manifest.GetApp("BuildApp")!.Executable);
+        Assert.NotEqual("dotnet", manifest.GetApp("PublishApp")!.Executable);
+    }
+
+    [Fact]
     public void NativeAot_BuildMode_FailsValidation()
     {
         var projectDir = CreateFakeProjectDir("MyApp");
@@ -311,7 +335,7 @@ public class GenerateE2EManifestTaskTests : IDisposable
     }
 
     [Fact]
-    public void NativeAot_WithNativeExecutable_UsesCompiledHarnessMode()
+    public void NativeAot_PerAppPublishMode_OverridesGlobalBuildMode()
     {
         var projectDir = CreateFakeProjectDir("MyApp");
         var appsOutputDir = Path.Combine(_tempDir, "e2e-apps");
@@ -319,10 +343,12 @@ public class GenerateE2EManifestTaskTests : IDisposable
         Directory.CreateDirectory(publishedDir);
         File.WriteAllText(Path.Combine(publishedDir, "MyApp.exe"), "fake-native-exe");
         var manifestPath = Path.Combine(_tempDir, "manifest.json");
+        var item = CreateNativeAotAppItem("MyApp", projectDir, "win-x64");
+        item.SetMetadata("E2EAppMode", "publish");
         var task = CreateTask(
-            apps: [CreateNativeAotAppItem("MyApp", projectDir, "win-x64")],
+            apps: [item],
             manifestPath: manifestPath,
-            mode: "publish",
+            mode: "build",
             isPublishing: true,
             appsOutputDir: appsOutputDir);
 

@@ -125,11 +125,16 @@
              RemoveProperties="BuildProjectReferences;NoBuild" />
     <MSBuild Projects="$(_PackageConsumerProject)"
              Targets="Publish"
-             Properties="$(_PackageConsumerProperties);E2EAppMode=publish;NoBuild=true"
+             Properties="$(_PackageConsumerProperties);PackageConsumerAppMode=publish;NoBuild=true"
              RemoveProperties="BuildProjectReferences" />
+    <MSBuild Projects="$(_PackageConsumerRoot)App\PackageConsumer.App.csproj"
+             Targets="Restore"
+             Properties="$(_PackageConsumerProperties);E2ECompileTestHarness=true;PackageConsumerRuntimeIdentifiers=$(PackageConsumerRuntimeIdentifier);RuntimeIdentifier=$(PackageConsumerRuntimeIdentifier);RestoreForce=true;RestoreNoCache=true"
+             RemoveProperties="BuildProjectReferences;NoBuild"
+             Condition="'$(_PackageConsumerNativeAotEnabled)' == 'true'" />
     <MSBuild Projects="$(_PackageConsumerProject)"
              Targets="Publish"
-             Properties="$(_PackageConsumerProperties);E2EAppMode=publish;PackageConsumerEnableNativeAot=true;PackageConsumerRuntimeIdentifier=$(PackageConsumerRuntimeIdentifier);PublishDir=$(_PackageConsumerNativeAotPublishOutput);NoBuild=true"
+             Properties="$(_PackageConsumerProperties);PackageConsumerAppMode=publish;PackageConsumerEnableNativeAot=true;PackageConsumerRuntimeIdentifier=$(PackageConsumerRuntimeIdentifier);PublishDir=$(_PackageConsumerNativeAotPublishOutput);NoBuild=true"
              RemoveProperties="BuildProjectReferences"
              Condition="'$(_PackageConsumerNativeAotEnabled)' == 'true'" />
   </Target>
