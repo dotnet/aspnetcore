@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Blazor Native AOT metadata source generator. Follows the conventions of the other in-repo
+    generators (src/Components/Testing/gen, src/Http/Http.Extensions/gen): a netstandard2.0 Roslyn
+    generator that is not packable on its own and is consumed as an analyzer asset.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsAnalyzersProject>true</IsAnalyzersProject>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
+    <WarnOnNullable>true</WarnOnNullable>
+    <IsPackable>false</IsPackable>
+    <!-- Analyzer release tracking is not needed: this ships with the framework, not standalone. -->
+    <NoWarn>$(NoWarn);RS2008</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Generators.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Records and init-only members need the polyfill when targeting netstandard2.0. -->
+    <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+</Project>

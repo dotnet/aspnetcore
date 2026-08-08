@@ -3,8 +3,8 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -25,24 +25,45 @@ internal static class ComponentProperties
     // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
     // the same name. We don't give you a way to express this in code (would create duplicate properties),
     // and we don't have the ability to represent it in our data structures.
-    private static readonly ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
-        = new ConcurrentDictionary<Type, WritersForType>();
+    private static ConditionalWeakTable<ComponentTypeInfo, WritersForType> _cachedWritersByType = new();
 
-    public static void ClearCache() => _cachedWritersByType.Clear();
+    public static void ClearCache() => _cachedWritersByType = new();
 
     public static void SetProperties(in ParameterView parameters, object target)
+        => SetProperties(in parameters, target, ComponentTypeInfoResolverFactory.Default);
+
+    public static void SetProperties(
+        in ParameterView parameters,
+        object target,
+        IComponentTypeInfoResolver resolver)
     {
         ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(resolver);
 
         var targetType = target.GetType();
-        if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
+        var typeInfo = resolver.GetRequiredTypeInfo(targetType);
+        SetProperties(in parameters, target, typeInfo);
+    }
+
+    internal static void SetProperties(
+        in ParameterView parameters,
+        object target,
+        ComponentTypeInfo typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        var targetType = target.GetType();
+        if (targetType != typeInfo.Type)
         {
-            // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
-            #pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.WritersForType.WritersForType(Type)'.
-            writers = new WritersForType(targetType);
-            #pragma warning restore IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.WritersForType.WritersForType(Type)'.
-            _cachedWritersByType[targetType] = writers;
+            throw new ArgumentException(
+                $"The supplied component metadata describes '{typeInfo.Type.FullName}', but the target is '{targetType.FullName}'.",
+                nameof(typeInfo));
         }
+
+        var writers = _cachedWritersByType.GetValue(
+            typeInfo,
+            static info => new WritersForType(info));
 
         // The logic is split up for simplicity now that we have CaptureUnmatchedValues parameters.
         if (writers.CaptureUnmatchedValuesWriter == null)
@@ -54,11 +75,7 @@ internal static class ComponentProperties
 
                 if (!writers.TryGetValue(parameterName, out var writer))
                 {
-                    // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
-                    #pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.ThrowForUnknownIncomingParameterName(Type, String)'.
-                    // Case 1: There is nowhere to put this value.
-                    ThrowForUnknownIncomingParameterName(targetType, parameterName);
-                    #pragma warning restore IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.ThrowForUnknownIncomingParameterName(Type, String)'.
+                    ThrowForUnknownIncomingParameterName(typeInfo, parameterName);
 
                     throw null; // Unreachable
                 }
@@ -188,34 +205,21 @@ internal static class ComponentProperties
         => MemberAssignment.GetPropertiesIncludingInherited(targetType, BindablePropertyFlags);
 
     [DoesNotReturn]
-    private static void ThrowForUnknownIncomingParameterName([DynamicallyAccessedMembers(Component)] Type targetType,
+    private static void ThrowForUnknownIncomingParameterName(
+        ComponentTypeInfo typeInfo,
         string parameterName)
     {
-        // We know we're going to throw by this stage, so it doesn't matter that the following
-        // reflection code will be slow. We're just trying to help developers see what they did wrong.
-        var propertyInfo = targetType.GetProperty(parameterName, BindablePropertyFlags);
-        if (propertyInfo != null)
-        {
-            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
-                !propertyInfo.GetCustomAttributes().OfType<CascadingParameterAttributeBase>().Any())
-            {
-                throw new InvalidOperationException(
-                    $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-                    $"but it does not have [Parameter], [CascadingParameter], or any other parameter-supplying attribute.");
-            }
-            else
-            {
-                // This should not happen
-                throw new InvalidOperationException(
-                    $"No writer was cached for the property '{propertyInfo.Name}' on type '{targetType.FullName}'.");
-            }
-        }
-        else
+        var targetType = typeInfo.Type;
+        if (typeInfo.UnmatchedPropertyNames?.Contains(parameterName) == true)
         {
             throw new InvalidOperationException(
-                $"Object of type '{targetType.FullName}' does not have a property " +
-                $"matching the name '{parameterName}'.");
+                $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
+                $"but it does not have [Parameter], [CascadingParameter], or any other parameter-supplying attribute.");
         }
+
+        throw new InvalidOperationException(
+            $"Object of type '{targetType.FullName}' does not have a property " +
+            $"matching the name '{parameterName}'.");
     }
 
     [DoesNotReturn]
@@ -244,19 +248,8 @@ internal static class ComponentProperties
     }
 
     [DoesNotReturn]
-    private static void ThrowForMultipleCaptureUnmatchedValuesParameters([DynamicallyAccessedMembers(Component)] Type targetType)
+    private static void ThrowForMultipleCaptureUnmatchedValuesParameters(Type targetType, List<string> propertyNames)
     {
-        var propertyNames = new List<string>();
-        foreach (var property in targetType.GetProperties(BindablePropertyFlags))
-        {
-            if (property.GetCustomAttribute<ParameterAttribute>()?.CaptureUnmatchedValues == true)
-            {
-                propertyNames.Add(property.Name);
-            }
-        }
-
-        propertyNames.Sort(StringComparer.Ordinal);
-
         throw new InvalidOperationException(
             $"Multiple properties were found on component type '{targetType.FullName}' with " +
             $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. Only a single property " +
@@ -265,10 +258,10 @@ internal static class ComponentProperties
     }
 
     [DoesNotReturn]
-    private static void ThrowForInvalidCaptureUnmatchedValuesParameterType(Type targetType, PropertyInfo propertyInfo)
+    private static void ThrowForInvalidCaptureUnmatchedValuesParameterType(Type targetType, string propertyName)
     {
         throw new InvalidOperationException(
-            $"The property '{propertyInfo.Name}' on component type '{targetType.FullName}' cannot be used " +
+            $"The property '{propertyName}' on component type '{targetType.FullName}' cannot be used " +
             $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}' because it has the wrong type. " +
             $"The property must be assignable from 'Dictionary<string, object>'.");
     }
@@ -279,50 +272,47 @@ internal static class ComponentProperties
         private readonly Dictionary<string, PropertySetter> _underlyingWriters;
         private readonly ConcurrentDictionary<string, PropertySetter?> _referenceEqualityWritersCache;
 
-        public WritersForType([DynamicallyAccessedMembers(Component)] Type targetType)
+        public PropertySetter? CaptureUnmatchedValuesWriter { get; }
+
+        public string? CaptureUnmatchedValuesPropertyName { get; }
+
+        /// <summary>
+        /// Builds the writers from compile-time metadata. The parameter roles are decided from the same
+        /// attribute instances the reflection path reads, so the two constructors agree by construction
+        /// rather than by two implementations of the same rules.
+        /// </summary>
+        public WritersForType(ComponentTypeInfo typeInfo)
         {
+            var targetType = typeInfo.Type;
             _underlyingWriters = new Dictionary<string, PropertySetter>(StringComparer.OrdinalIgnoreCase);
             _referenceEqualityWritersCache = new ConcurrentDictionary<string, PropertySetter?>(ReferenceEqualityComparer.Instance);
 
-            foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
+            foreach (var parameter in typeInfo.Parameters)
             {
-                ParameterAttribute? parameterAttribute = null;
-                CascadingParameterAttributeBase? cascadingParameterAttribute = null;
+                var parameterAttribute = parameter.Attribute as ParameterAttribute;
+                var cascadingParameterAttribute = parameter.Attribute as CascadingParameterAttributeBase;
 
-                var attributes = propertyInfo.GetCustomAttributes();
-                foreach (var attribute in attributes)
-                {
-                    switch (attribute)
-                    {
-                        case ParameterAttribute parameter:
-                            parameterAttribute = parameter;
-                            break;
-                        case CascadingParameterAttributeBase cascadingParameter:
-                            cascadingParameterAttribute = cascadingParameter;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                // A property cannot accept direct parameters if it's annotated with a cascading value attribute, unless it's a
-                // SupplyParameterFromQueryAttribute. This is to retain backwards compatibility with previous versions of the
-                // SupplyParameterFromQuery feature that did not utilize cascading values, and thus did not have this limitation.
-                var acceptsDirectParameters = parameterAttribute is not null && cascadingParameterAttribute is null or SupplyParameterFromQueryAttribute;
+                var acceptsDirectParameters = parameterAttribute is not null ||
+                    cascadingParameterAttribute is SupplyParameterFromQueryAttribute;
                 var acceptsCascadingParameters = cascadingParameterAttribute is not null;
                 if (!acceptsDirectParameters && !acceptsCascadingParameters)
                 {
                     continue;
                 }
 
-                var propertyName = propertyInfo.Name;
-                if (parameterAttribute != null && (propertyInfo.SetMethod == null || !propertyInfo.SetMethod.IsPublic))
+                var propertyName = parameter.Name;
+                if (!typeInfo.IsParameterPubliclyWritable(propertyName))
                 {
                     throw new InvalidOperationException(
                         $"The type '{targetType.FullName}' declares a parameter matching the name '{propertyName}' that is not public. Parameters must be public.");
                 }
+                if (!typeInfo.HasParameterSetter(propertyName))
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot provide a value for property '{propertyName}' on type '{targetType.FullName}' because the property has no setter.");
+                }
 
-                var propertySetter = new PropertySetter(targetType, propertyInfo)
+                var propertySetter = new PropertySetter(parameter.SetValue)
                 {
                     AcceptsDirectParameters = acceptsDirectParameters,
                     AcceptsCascadingParameters = acceptsCascadingParameters,
@@ -339,29 +329,31 @@ internal static class ComponentProperties
 
                 if (parameterAttribute != null && parameterAttribute.CaptureUnmatchedValues)
                 {
-                    // This is an "Extra" parameter.
-                    //
-                    // There should only be one of these.
                     if (CaptureUnmatchedValuesWriter != null)
                     {
-                        ThrowForMultipleCaptureUnmatchedValuesParameters(targetType);
+                        var captureUnmatchedValuesNames = new List<string>();
+                        foreach (var candidate in typeInfo.Parameters)
+                        {
+                            if ((candidate.Attribute as ParameterAttribute)?.CaptureUnmatchedValues == true)
+                            {
+                                captureUnmatchedValuesNames.Add(candidate.Name);
+                            }
+                        }
+
+                        captureUnmatchedValuesNames.Sort(StringComparer.Ordinal);
+                        ThrowForMultipleCaptureUnmatchedValuesParameters(targetType, captureUnmatchedValuesNames);
                     }
 
-                    // It must be able to hold a Dictionary<string, object> since that's what we create.
-                    if (!propertyInfo.PropertyType.IsAssignableFrom(typeof(Dictionary<string, object>)))
+                    if (!parameter.ParameterType.IsAssignableFrom(typeof(Dictionary<string, object>)))
                     {
-                        ThrowForInvalidCaptureUnmatchedValuesParameterType(targetType, propertyInfo);
+                        ThrowForInvalidCaptureUnmatchedValuesParameterType(targetType, propertyName);
                     }
 
-                    CaptureUnmatchedValuesWriter = new PropertySetter(targetType, propertyInfo);
-                    CaptureUnmatchedValuesPropertyName = propertyInfo.Name;
+                    CaptureUnmatchedValuesWriter = new PropertySetter(parameter.SetValue);
+                    CaptureUnmatchedValuesPropertyName = propertyName;
                 }
             }
         }
-
-        public PropertySetter? CaptureUnmatchedValuesWriter { get; }
-
-        public string? CaptureUnmatchedValuesPropertyName { get; }
 
         public bool TryGetValue(string parameterName, [MaybeNullWhen(false)] out PropertySetter writer)
         {
