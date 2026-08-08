@@ -260,7 +260,7 @@ internal static partial class RenderFragmentSerializer
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
-    private static void DeserializeNodes(RenderTreeBuilder builder, List<RenderTreeNode> nodes, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
+    private static void DeserializeNodes(RenderTreeBuilder builder, List<RenderTreeNode> nodes, JsonSerializerOptions jsonOptions, ComponentParametersTypeCache typeCache)
     {
         for (var i = 0; i < nodes.Count; i++)
         {
@@ -321,7 +321,7 @@ internal static partial class RenderFragmentSerializer
         }
     }
 
-    private static void DeserializeAttributes(RenderTreeBuilder builder, List<RenderTreeAttribute>? attributes, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
+    private static void DeserializeAttributes(RenderTreeBuilder builder, List<RenderTreeAttribute>? attributes, JsonSerializerOptions jsonOptions, ComponentParametersTypeCache typeCache)
     {
         if (attributes is null)
         {
@@ -337,7 +337,7 @@ internal static partial class RenderFragmentSerializer
         }
     }
 
-    private static void DeserializeComponentParameters(RenderTreeBuilder builder, List<RenderTreeAttribute>? parameters, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
+    private static void DeserializeComponentParameters(RenderTreeBuilder builder, List<RenderTreeAttribute>? parameters, JsonSerializerOptions jsonOptions, ComponentParametersTypeCache typeCache)
     {
         if (parameters is null)
         {
@@ -351,28 +351,29 @@ internal static partial class RenderFragmentSerializer
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "SerializedRenderFragment and its members are preserved by existing DynamicDependency attributes.")]
-    private static object? DeserializeAttributeValue(RenderTreeAttribute attr, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
+    private static object? DeserializeAttributeValue(RenderTreeAttribute attr, JsonSerializerOptions jsonOptions, ComponentParametersTypeCache typeCache)
     {
         if (attr.TypeName == SerializedRenderFragmentValueType)
         {
             var serialized = attr.Value switch
             {
-                JsonElement je => JsonSerializer.Deserialize<SerializedRenderFragment>(je.GetRawText(), jsonOptions),
+                JsonElement je => (SerializedRenderFragment?)JsonSerializer.Deserialize(
+                    je,
+                    jsonOptions.GetTypeInfo(typeof(SerializedRenderFragment))),
                 SerializedRenderFragment sf => sf,
                 _ => throw new InvalidOperationException($"Unexpected value type '{attr.Value?.GetType()}' for serialized RenderFragment attribute '{attr.Name}'.")
             };
-            return Deserialize(serialized!.Nodes, jsonOptions!, typeCache);
+            return Deserialize(serialized!.Nodes, jsonOptions, typeCache);
         }
 
         return attr.Value is JsonElement json ? ConvertTypedValue(json, attr.TypeAssembly!, attr.TypeName!, jsonOptions, typeCache) : attr.Value;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Attribute and key types are primitive or well-known types preserved by the application.")]
-    private static object? ConvertTypedValue(JsonElement json, string assemblyName, string typeName, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
+    private static object? ConvertTypedValue(JsonElement json, string assemblyName, string typeName, JsonSerializerOptions jsonOptions, ComponentParametersTypeCache typeCache)
     {
         var type = typeCache.GetParameterType(assemblyName, typeName) ?? throw new InvalidOperationException($"Could not resolve serialized type '{typeName}' from assembly '{assemblyName}'.");
-        return json.Deserialize(type, jsonOptions);
+        var typeInfo = jsonOptions.GetTypeInfo(type);
+        return JsonSerializer.Deserialize(json, typeInfo);
     }
 
     private static bool IsEventCallback(object? value)

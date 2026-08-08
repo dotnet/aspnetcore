@@ -31,7 +31,8 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
         {
             if (session.TryGetValue(TempDataSessionStateKey, out var value))
             {
-                var dataFromSession = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(value);
+                var typeInfo = JsonTempDataSerializerContext.Default.Options.GetTypeInfo(typeof(Dictionary<string, JsonElement>));
+                var dataFromSession = (Dictionary<string, JsonElement>?)JsonSerializer.Deserialize(value, typeInfo);
                 if (dataFromSession is null)
                 {
                     return new Dictionary<string, object?>();
