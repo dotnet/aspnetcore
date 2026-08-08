@@ -19,7 +19,7 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
     /// <param name="assemblies">The <see cref="Assembly"/> instances to add.</param>
     /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
     /// <remarks>
-    /// The provided assemblies will be scanned for pages that will be mapped as endpoints.
+    /// The provided assemblies will be searched for pages that will be mapped as endpoints.
     /// </remarks>
     public static RazorComponentsEndpointConventionBuilder AddAdditionalAssemblies(
         this RazorComponentsEndpointConventionBuilder builder,

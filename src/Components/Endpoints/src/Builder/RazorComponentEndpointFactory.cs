@@ -22,7 +22,7 @@ internal class RazorComponentEndpointFactory
 #pragma warning restore CA1822 // It's a singleton
         List<Endpoint> endpoints,
         [DynamicallyAccessedMembers(Component)] Type rootComponent,
-        PageComponentInfo pageDefinition,
+        PageComponentDescriptor pageDefinition,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
         ConfiguredRenderModesMetadata configuredRenderModesMetadata)
