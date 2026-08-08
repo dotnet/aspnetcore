@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Components.Testing.Playwright;
 /// <para>
 /// Use <see cref="NewContext"/> to create a per-test <see cref="IBrowserContext"/>; every
 /// context obtained that way is tracked and closed automatically when the per-test instance
-/// is disposed. The class therefore plays nicely with MSTest's default
-/// method-level parallelism — contexts are per-test, no shared mutable browser-page state.
+/// is disposed. MSTest runs tests sequentially by default, and contexts remain isolated
+/// per test if the consumer opts into parallel execution.
 /// </para>
 /// </remarks>
 public abstract class BrowserTest : PlaywrightTest
