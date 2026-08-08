@@ -72,28 +72,34 @@ $digestBytes  = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($signi
 $digestBase64 = [Convert]::ToBase64String($digestBytes)
 
 Write-Host "Signing JWT with key '$KeyName' in vault '$KeyVaultName'..."
+$previousNativeCommandErrorPreference = $PSNativeCommandUseErrorActionPreference
 try {
-    $signResponseJson = az keyvault key sign `
+    # Azure CLI can emit non-fatal Python warnings to stderr even when signing succeeds.
+    # Use the exit code to determine success for this invocation.
+    $PSNativeCommandUseErrorActionPreference = $false
+    $signatureBase64 = az keyvault key sign `
         --vault-name $KeyVaultName `
         --name $KeyName `
         --algorithm RS256 `
-        --digest $digestBase64
+        --digest $digestBase64 `
+        --query signature `
+        --output tsv `
+        --only-show-errors
+    $signExitCode = $LASTEXITCODE
 }
 catch {
     Write-PipelineTelemetryError -Category 'Build' -Message "Failed to sign the JWT via Key Vault (key '$KeyName', vault '$KeyVaultName'): $_. Verify the service connection identity has the 'Key Vault Crypto User' role (Sign action) on the key."
     exit 1
 }
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($signResponseJson)) {
-    Write-PipelineTelemetryError -Category 'Build' -Message "'az keyvault key sign' exited with code $LASTEXITCODE for key '$KeyName' in vault '$KeyVaultName'. Verify the service connection identity has the 'Key Vault Crypto User' role (Sign action) on the key."
+finally {
+    $PSNativeCommandUseErrorActionPreference = $previousNativeCommandErrorPreference
+}
+if ($signExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($signatureBase64)) {
+    Write-PipelineTelemetryError -Category 'Build' -Message "'az keyvault key sign' exited with code $signExitCode for key '$KeyName' in vault '$KeyVaultName'. Verify the service connection identity has the 'Key Vault Crypto User' role (Sign action) on the key."
     exit 1
 }
-$signResponse = $signResponseJson | ConvertFrom-Json
-if ([string]::IsNullOrEmpty($signResponse.signature)) {
-    Write-PipelineTelemetryError -Category 'Build' -Message "Key Vault returned an empty signature for key '$KeyName' in vault '$KeyVaultName'."
-    exit 1
-}
-$signatureUrl  = $signResponse.signature.TrimEnd('=').Replace('+', '-').Replace('/', '_')
-$jwt           = "$signingInput.$signatureUrl"
+$signatureUrl = $signatureBase64.Trim().TrimEnd('=').Replace('+', '-').Replace('/', '_')
+$jwt = "$signingInput.$signatureUrl"
 
 $headers = @{
     Authorization          = "Bearer $jwt"
@@ -104,13 +110,22 @@ $headers = @{
 
 Write-Host "Looking up installation for '$InstallationOwner'..."
 try {
-    $installations = Invoke-RestMethod -Uri 'https://api.github.com/app/installations' -Headers $headers -Method Get
+    $installations = @()
+    $page = 1
+    do {
+        $pageInstallations = @(Invoke-RestMethod `
+            -Uri "https://api.github.com/app/installations?per_page=100&page=$page" `
+            -Headers $headers `
+            -Method Get)
+        $installations += $pageInstallations
+        $page++
+    } while ($pageInstallations.Count -eq 100)
 }
 catch {
     Write-PipelineTelemetryError -Category 'Build' -Message "Failed to list GitHub App installations: $_. The signed JWT may be invalid or the App's Client ID ('$AppClientId') may be incorrect."
     exit 1
 }
-$installation  = $installations | Where-Object { $_.account.login -eq $InstallationOwner } | Select-Object -First 1
+$installation = $installations | Where-Object { $_.account.login -ieq $InstallationOwner } | Select-Object -First 1
 if (-not $installation) {
     $found = ($installations | ForEach-Object { $_.account.login }) -join ', '
     Write-PipelineTelemetryError -Category 'Build' -Message "No installation found for '$InstallationOwner'. App is installed on: $found"
