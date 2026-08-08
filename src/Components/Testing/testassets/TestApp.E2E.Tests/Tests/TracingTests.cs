@@ -83,9 +83,7 @@ public partial class TracingTests : BrowserTest
         var context = await NewTracedContextAsync(_server);
 
         var testName = TestContext.TestName ?? "unknown";
-        var sanitized = PlaywrightExtensions.SanitizeFileName(testName);
-        var expectedDir = Path.Combine(
-            AppContext.BaseDirectory, "test-artifacts", sanitized);
+        var expectedDir = E2EArtifactPaths.ForTest(testName);
 
         Assert.IsTrue(Directory.Exists(expectedDir),
             $"Expected artifact directory to exist at: {expectedDir}");
