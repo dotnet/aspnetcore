@@ -210,9 +210,7 @@
     <!-- MSTest + MTP packages (used by Components.Testing E2E infrastructure) -->
     <MSTestVersion>4.2.3</MSTestVersion>
     <MSTestTestFrameworkVersion>$(MSTestVersion)</MSTestTestFrameworkVersion>
-    <MSTestTestAdapterVersion>$(MSTestVersion)</MSTestTestAdapterVersion>
     <MicrosoftTestingExtensionsTrxReportVersion>2.2.3</MicrosoftTestingExtensionsTrxReportVersion>
-    <MicrosoftTestingPlatformMSBuildVersion>2.2.3</MicrosoftTestingPlatformMSBuildVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>

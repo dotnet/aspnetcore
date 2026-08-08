@@ -80,7 +80,7 @@
     <PropertyGroup>
       <!-- A unique package root prevents a previously loaded MSBuild task DLL from pinning stale package contents. -->
       <_PackageConsumerPackagesPath>$(_PackageConsumerPackagesRoot)$([System.Guid]::NewGuid())\</_PackageConsumerPackagesPath>
-      <_PackageConsumerProperties>Configuration=$(Configuration);PackageConsumerVersion=$(_PackageConsumerVersion);PackageConsumerTargetFramework=$(DefaultNetCoreTargetFramework);PackageConsumerMSTestVersion=$(MSTestVersion);PackageConsumerTestingPlatformVersion=$(MicrosoftTestingPlatformMSBuildVersion);RestoreAdditionalProjectSources=$(_PackageConsumerFeed);RestoreFallbackFolders=$(NuGetPackageRoot);RestorePackagesPath=$(_PackageConsumerPackagesPath)</_PackageConsumerProperties>
+      <_PackageConsumerProperties>Configuration=$(Configuration);PackageConsumerVersion=$(_PackageConsumerVersion);PackageConsumerTargetFramework=$(DefaultNetCoreTargetFramework);PackageConsumerMSTestVersion=$(MSTestVersion);RestoreAdditionalProjectSources=$(_PackageConsumerFeed);RestoreFallbackFolders=$(NuGetPackageRoot);RestorePackagesPath=$(_PackageConsumerPackagesPath)</_PackageConsumerProperties>
       <_PackageBuildProperties>BuildProjectReferences=false;Configuration=$(Configuration);_ForcePackageBuild=$([System.Guid]::NewGuid())</_PackageBuildProperties>
     </PropertyGroup>
     <RemoveDir Directories="$(_PackageConsumerFeed)" />
