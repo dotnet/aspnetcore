@@ -22,6 +22,7 @@
       <E2EPublicUrl>https://package-consumer.invalid</E2EPublicUrl>
       <E2ENativeAot>$(PackageConsumerEnableNativeAot)</E2ENativeAot>
       <E2ERuntimeIdentifier>$(PackageConsumerRuntimeIdentifier)</E2ERuntimeIdentifier>
+      <AdditionalProperties>PackageConsumerTargetFramework=$(PackageConsumerTargetFramework);PackageConsumerVersion=$(PackageConsumerVersion)</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
 
