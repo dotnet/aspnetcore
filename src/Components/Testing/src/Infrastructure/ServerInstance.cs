@@ -32,22 +32,22 @@ public class ServerInstance : IAsyncDisposable
     /// <summary>
     /// Unique identifier for this server instance (used for <c>X-Test-Backend</c> header).
     /// </summary>
-    internal string Id { get; } = Guid.NewGuid().ToString("N")[..8];
+    public string Id { get; } = Guid.NewGuid().ToString("N")[..8];
 
     /// <summary>
     /// The app name (matches the key in the E2E manifest).
     /// </summary>
-    internal string AppName { get; }
+    public string AppName { get; }
 
     /// <summary>
     /// Direct URL of the app process (random port, localhost).
     /// </summary>
-    internal string AppUrl { get; private set; } = "";
+    public string AppUrl { get; private set; } = "";
 
     /// <summary>
     /// Public-facing URL from the manifest (for OAuth redirect URIs, etc.).
     /// </summary>
-    internal string? PublicUrl { get; private set; }
+    public string? PublicUrl { get; private set; }
 
     /// <summary>
     /// URL that tests should navigate to. Always routes through the proxy.
