@@ -11,14 +11,13 @@ using System.Text;
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 /// <summary>
-/// Represents a running app instance started via
-/// <see cref="ServerFixture{TTestAssembly}.StartServerAsync{TApp}"/>.
+/// Represents a running app instance started by the E2E test infrastructure.
 /// Each instance has a unique <see cref="Id"/> used for YARP proxy routing
 /// via the <c>X-Test-Backend</c> header.
 /// </summary>
 /// <remarks>
 /// Disposing a <see cref="ServerInstance"/> kills the app process and unregisters
-/// it from the proxy. Instances are typically disposed by the <see cref="ServerFixture{TTestAssembly}"/>
+/// it from the proxy. Instances are typically disposed by the <see cref="ServerFactory{TTestAssembly}"/>
 /// when the collection is torn down, but tests can also dispose them early for
 /// explicit lifecycle control.
 /// </remarks>
@@ -33,22 +32,22 @@ public class ServerInstance : IAsyncDisposable
     /// <summary>
     /// Unique identifier for this server instance (used for <c>X-Test-Backend</c> header).
     /// </summary>
-    public string Id { get; } = Guid.NewGuid().ToString("N")[..8];
+    internal string Id { get; } = Guid.NewGuid().ToString("N")[..8];
 
     /// <summary>
     /// The app name (matches the key in the E2E manifest).
     /// </summary>
-    public string AppName { get; }
+    internal string AppName { get; }
 
     /// <summary>
     /// Direct URL of the app process (random port, localhost).
     /// </summary>
-    public string AppUrl { get; private set; } = "";
+    internal string AppUrl { get; private set; } = "";
 
     /// <summary>
     /// Public-facing URL from the manifest (for OAuth redirect URIs, etc.).
     /// </summary>
-    public string? PublicUrl { get; private set; }
+    internal string? PublicUrl { get; private set; }
 
     /// <summary>
     /// URL that tests should navigate to. Always routes through the proxy.
@@ -173,6 +172,38 @@ public class ServerInstance : IAsyncDisposable
         }
 
         _process?.Dispose();
+    }
+
+    /// <summary>
+    /// Writes the captured stdout and stderr buffers to two files
+    /// (<c>{AppName}-{Id}.stdout.log</c>, <c>{AppName}-{Id}.stderr.log</c>) under
+    /// <paramref name="directory"/>. The directory is created if it does not exist.
+    /// </summary>
+    /// <param name="directory">Destination directory.</param>
+    /// <returns>The absolute paths of the stdout and stderr log files that were written.</returns>
+    internal IReadOnlyList<string> WriteCapturedOutputTo(string directory)
+    {
+        Directory.CreateDirectory(directory);
+        var stdoutPath = Path.Combine(directory, $"{AppName}-{Id}.stdout.log");
+        var stderrPath = Path.Combine(directory, $"{AppName}-{Id}.stderr.log");
+        lock (_stdoutBuffer)
+        {
+            File.WriteAllText(stdoutPath, _stdoutBuffer.ToString());
+        }
+        lock (_stderrBuffer)
+        {
+            File.WriteAllText(stderrPath, _stderrBuffer.ToString());
+        }
+        return [stdoutPath, stderrPath];
+    }
+
+    internal IReadOnlyList<string> WriteStartupFailureArtifacts(string directory, Exception exception)
+    {
+        var paths = new List<string>(WriteCapturedOutputTo(directory));
+        var startupPath = Path.Combine(directory, $"{AppName}-{Id}.startup.log");
+        File.WriteAllText(startupPath, exception.ToString());
+        paths.Insert(0, startupPath);
+        return paths;
     }
 
     internal static string ComputeKey(string appName, ServerStartOptions options)

@@ -8,15 +8,39 @@ using System.Net.Sockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 using Yarp.ReverseProxy.Configuration;
 
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 /// <summary>
-/// xUnit V3 collection fixture that manages the full E2E test lifecycle:
+/// Non-generic base class for an E2E server factory.
+/// </summary>
+public abstract class ServerFactory : IAsyncDisposable
+{
+    private protected ServerFactory()
+    {
+    }
+
+    internal abstract Task<ServerInstance> StartServerAsync(
+        string appName,
+        Action<ServerStartOptions>? configure,
+        ITestArtifactManager? artifactManager);
+
+    internal abstract ValueTask DisposeAsyncCore();
+
+    ValueTask IAsyncDisposable.DisposeAsync() => DisposeAsyncCore();
+}
+
+/// <summary>
+/// Factory + registry that manages the full E2E test lifecycle:
 /// loads the E2E manifest, runs a YARP reverse proxy on a dynamic port,
-/// and starts app instances on demand via <see cref="StartServerAsync{TApp}"/>.
+/// and starts app instances on demand through
+/// <see cref="Microsoft.AspNetCore.Components.Testing.Playwright.UITest"/>.
+/// <para>
+/// One instance per test assembly. Owned by the consumer (typically a static field
+/// populated from an <c>[AssemblyInitialize]</c> method and disposed from
+/// <c>[AssemblyCleanup]</c>).
+/// </para>
 /// </summary>
 /// <typeparam name="TTestAssembly">
 /// A marker type defined in the test project (e.g., <c>public class E2ETestAssembly;</c>).
@@ -25,27 +49,44 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// </typeparam>
 /// <remarks>
 /// <para>
-/// Tests call <see cref="StartServerAsync{TApp}"/> to start apps.
-/// <c>StartServerAsync</c> is idempotent: same app + same options = same running instance.
+/// Tests derive from <see cref="Microsoft.AspNetCore.Components.Testing.Playwright.UITest"/>
+/// and use its server-start helper. Starting the same app with the same options is idempotent.
 /// </para>
 /// <para>
 /// Usage:
 /// <code>
 /// public class E2ETestAssembly;
 ///
-/// [CollectionDefinition(nameof(E2EAppCollection))]
-/// public class E2EAppCollection : ICollectionFixture&lt;ServerFixture&lt;E2ETestAssembly&gt;&gt;;
-///
-/// [Collection(nameof(E2EAppCollection))]
-/// public class MyTests : BrowserTest
+/// public static class TestRoot
 /// {
-///     private readonly ServerFixture&lt;E2ETestAssembly&gt; _fixture;
-///     public MyTests(ServerFixture&lt;E2ETestAssembly&gt; fixture) =&gt; _fixture = fixture;
+///     public static ServerFactory&lt;E2ETestAssembly&gt; Servers { get; private set; } = null!;
+///
+///     [AssemblyInitialize]
+///     public static async Task Init(TestContext _)
+///     {
+///         Servers = new ServerFactory&lt;E2ETestAssembly&gt;();
+///         await Servers.InitializeAsync();
+///     }
+///
+///     [AssemblyCleanup]
+///     public static Task Cleanup() =&gt; Servers.DisposeAsync().AsTask();
+/// }
+///
+/// [UITest]
+/// public partial class MyTests : Microsoft.AspNetCore.Components.Testing.Playwright.PageTest
+/// {
+///     private ServerInstance _server = null!;
+///
+///     protected override async Task InitializeCoreAsync()
+///     {
+///         await base.InitializeCoreAsync();
+///         _server = await StartServerAsync&lt;App&gt;(TestRoot.Servers);
+///     }
 /// }
 /// </code>
 /// </para>
 /// </remarks>
-public class ServerFixture<TTestAssembly> : IAsyncLifetime where TTestAssembly : class
+public sealed class ServerFactory<TTestAssembly> : ServerFactory where TTestAssembly : class
 {
     private WebApplication? _proxyApp;
     private InMemoryConfigProvider? _configProvider;
@@ -103,31 +144,10 @@ public class ServerFixture<TTestAssembly> : IAsyncLifetime where TTestAssembly :
         _configProvider = _proxyApp.Services.GetRequiredService<InMemoryConfigProvider>();
     }
 
-    /// <summary>
-    /// Starts (or retrieves) an app instance. Idempotent: same app + same options = same instance.
-    /// Derives the app name from <c>typeof(TApp).Assembly.GetName().Name</c>.
-    /// Use any public type from the app's assembly (e.g., a Razor component like <c>App</c>).
-    /// </summary>
-    /// <typeparam name="TApp">Any public type from the app's assembly.</typeparam>
-    /// <param name="configure">Optional callback to configure start options.</param>
-    /// <returns>A <see cref="ServerInstance"/> with the proxy routing info needed for tests.</returns>
-    public Task<ServerInstance> StartServerAsync<TApp>(Action<ServerStartOptions>? configure = null)
-    {
-        var appName = typeof(TApp).Assembly.GetName().Name
-            ?? throw new InvalidOperationException(
-                $"Could not determine assembly name for type '{typeof(TApp).FullName}'.");
-
-        return StartServerAsync(appName, configure);
-    }
-
-    /// <summary>
-    /// Starts (or retrieves) an app instance by name. Idempotent: same app + same options = same instance.
-    /// </summary>
-    /// <param name="appName">The app name as declared in the E2E manifest.</param>
-    /// <param name="configure">Optional callback to configure start options.</param>
-    /// <returns>A <see cref="ServerInstance"/> with the proxy routing info needed for tests.</returns>
-    public async Task<ServerInstance> StartServerAsync(
-        string appName, Action<ServerStartOptions>? configure = null)
+    internal override async Task<ServerInstance> StartServerAsync(
+        string appName,
+        Action<ServerStartOptions>? configure,
+        ITestArtifactManager? artifactManager)
     {
         var options = new ServerStartOptions();
         configure?.Invoke(options);
@@ -171,6 +191,40 @@ public class ServerFixture<TTestAssembly> : IAsyncLifetime where TTestAssembly :
             {
                 await instance.LaunchAsync(appEntry, options, _testAssemblyLocation, _testAssemblyName, readyUrl, readyTcs.Task).ConfigureAwait(false);
             }
+            catch (Exception launchException)
+            {
+                var exceptions = new List<Exception> { launchException };
+
+                if (artifactManager is not null)
+                {
+                    try
+                    {
+                        var directory = artifactManager.CreateArtifactDirectory("server-output");
+                        var paths = instance.WriteStartupFailureArtifacts(directory, launchException);
+                        artifactManager.AddArtifacts(paths);
+                    }
+                    catch (Exception artifactException)
+                    {
+                        exceptions.Add(artifactException);
+                    }
+                }
+
+                try
+                {
+                    await instance.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception disposeException)
+                {
+                    exceptions.Add(disposeException);
+                }
+
+                if (exceptions.Count > 1)
+                {
+                    throw new AggregateException(exceptions);
+                }
+
+                throw;
+            }
             finally
             {
                 // Clean up stale signal if launch failed before the app called back
@@ -198,6 +252,7 @@ public class ServerFixture<TTestAssembly> : IAsyncLifetime where TTestAssembly :
             {
                 await instance.DisposeAsync().ConfigureAwait(false);
             }
+
             catch
             {
                 // Best-effort cleanup
@@ -214,6 +269,8 @@ public class ServerFixture<TTestAssembly> : IAsyncLifetime where TTestAssembly :
 
         _startLock.Dispose();
     }
+
+    internal override ValueTask DisposeAsyncCore() => DisposeAsync();
 
     void UpdateProxyConfig()
     {
