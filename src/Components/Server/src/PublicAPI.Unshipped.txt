@@ -1,4 +1,10 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Server.Circuits.Circuit.RequestCircuitPauseAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorage.SetAsync<TValue>(string! key, TValue value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorage.SetAsync<TValue>(string! purpose, string! key, TValue value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageSerializer<T>
+Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageSerializer<T>.ProtectedBrowserStorageSerializer() -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>?
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.set -> void
+abstract Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageSerializer<T>.Deserialize(string! data) -> T
+abstract Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedBrowserStorageSerializer<T>.Serialize(T value) -> string!
