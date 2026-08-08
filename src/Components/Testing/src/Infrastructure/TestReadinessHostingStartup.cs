@@ -31,17 +31,7 @@ public class TestReadinessHostingStartup : IHostingStartup
     /// <inheritdoc />
     public void Configure(IWebHostBuilder builder)
     {
-        builder.ConfigureServices(services =>
-        {
-            services.AddHostedService<ReadinessNotificationService>();
-            services.AddHostedService<ParentProcessWatcher>();
-
-            // Test infrastructure: session context, lock provider, and middleware.
-            // Always registered; no-op when tests don't use them.
-            services.AddScoped<TestSessionContext>();
-            services.AddSingleton<TestLockProvider>();
-            services.AddTransient<IStartupFilter, TestInfrastructureStartupFilter>();
-        });
+        builder.ConfigureServices(services => services.AddE2ETestInfrastructure());
 
         // Wire up service overrides if the env vars are set
         var overrideTypeName = Environment.GetEnvironmentVariable("E2E_TEST_SERVICES_TYPE");

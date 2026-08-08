@@ -1,0 +1,51 @@
+<!--
+  Microsoft.AspNetCore.Components.Testing.NativeAot.targets
+  =========================================================
+  Injected into an application under test, without the application referencing or importing anything.
+
+  The E2E harness passes this file to the application's nested publish as
+  CustomAfterMicrosoftCommonTargets, together with NativeTesting=true. MSBuild imports it at the end
+  of Microsoft.Common.targets, which is late enough that the application owns none of this and early
+  enough that the analyzer and the symbol still reach CoreCompile.
+
+  The result: the application gains a build-only source generator that writes the harness into its own
+  compilation, and no runtime reference to the testing library, Playwright or YARP.
+
+  A normal build of the same application never sets NativeTesting, never imports this file, and
+  produces exactly the bits it would have produced without the test suite existing.
+-->
+<Project>
+
+  <PropertyGroup>
+    <!--
+      NativeTesting is a global property, so MSBuild flows it to every project in the application's
+      reference graph, including this file's own generator. Only the entry-point application hosts the
+      harness, and referencing the generator from the generator is a circular dependency, so both are
+      excluded here.
+    -->
+    <_ApplyNativeTesting>false</_ApplyNativeTesting>
+    <_ApplyNativeTesting Condition="'$(NativeTesting)' == 'true' and
+                                    '$(OutputType)' == 'Exe' and
+                                    '$(MSBuildProjectFullPath)' != '$(_NativeTestingGeneratorProject)'">true</_ApplyNativeTesting>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_ApplyNativeTesting)' == 'true'">
+    <!-- The generator reads this to decide whether to emit. -->
+    <DefineConstants>$(DefineConstants);NATIVE_TESTING</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_ApplyNativeTesting)' == 'true'">
+    <CompilerVisibleProperty Include="NativeTesting" />
+    <ProjectReference Include="$(_NativeTestingGeneratorProject)"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      Condition="'$(_NativeTestingGeneratorProject)' != ''" />
+  </ItemGroup>
+
+  <Target Name="_WarnIfNativeTestingGeneratorMissing"
+          BeforeTargets="CoreCompile"
+          Condition="'$(NativeTesting)' == 'true' and '$(OutputType)' == 'Exe' and '$(_NativeTestingGeneratorProject)' == ''">
+    <Warning Text="NativeTesting is enabled but _NativeTestingGeneratorProject was not supplied, so the test harness will not be generated and the application will never report readiness." />
+  </Target>
+
+</Project>
