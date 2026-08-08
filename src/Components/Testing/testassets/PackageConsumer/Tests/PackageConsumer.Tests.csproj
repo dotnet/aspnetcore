@@ -20,6 +20,10 @@
     <ProjectReference Include="..\App\PackageConsumer.App.csproj">
       <E2EApp>true</E2EApp>
       <E2EPublicUrl>https://package-consumer.invalid</E2EPublicUrl>
+      <E2EAppMode>$(PackageConsumerAppMode)</E2EAppMode>
+      <E2ENativeAot>$(PackageConsumerEnableNativeAot)</E2ENativeAot>
+      <E2ERuntimeIdentifier>$(PackageConsumerRuntimeIdentifier)</E2ERuntimeIdentifier>
+      <AdditionalProperties>PackageConsumerTargetFramework=$(PackageConsumerTargetFramework);PackageConsumerVersion=$(PackageConsumerVersion)</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
 

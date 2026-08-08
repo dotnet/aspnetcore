@@ -116,6 +116,7 @@ public class GenerateE2EManifestTaskTests : IDisposable
         Assert.Equal(expectedExe, entry!.Executable);
         Assert.Equal("", entry.Arguments);
         Assert.Equal(Path.Combine("e2e-apps", "MyApp"), entry.WorkingDirectory);
+        Assert.Equal("startupHook", entry.HarnessMode);
     }
 
     // ── publish mode + Publish scenario (dll only) ───────────────────
@@ -265,6 +266,123 @@ public class GenerateE2EManifestTaskTests : IDisposable
         Assert.Equal("https://localhost:5001", entry!.PublicUrl);
     }
 
+    [Fact]
+    public void PerAppMode_OverridesGlobalMode()
+    {
+        var buildProjectDir = CreateFakeProjectDir("BuildApp");
+        var publishProjectDir = CreateFakeProjectDir("PublishApp");
+        var appsOutputDir = Path.Combine(_tempDir, "e2e-apps");
+        CreatePublishedApp(appsOutputDir, "PublishApp", createExe: true);
+        var publishItem = CreateAppItem("PublishApp", publishProjectDir);
+        publishItem.SetMetadata("E2EAppMode", "publish");
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+        var task = CreateTask(
+            apps: [CreateAppItem("BuildApp", buildProjectDir), publishItem],
+            manifestPath: manifestPath,
+            mode: "build",
+            isPublishing: true,
+            appsOutputDir: appsOutputDir);
+
+        Assert.True(task.Execute());
+
+        var manifest = ReadManifest(manifestPath);
+        Assert.Equal("dotnet", manifest.GetApp("BuildApp")!.Executable);
+        Assert.NotEqual("dotnet", manifest.GetApp("PublishApp")!.Executable);
+    }
+
+    [Fact]
+    public void NativeAot_BuildMode_FailsValidation()
+    {
+        var projectDir = CreateFakeProjectDir("MyApp");
+        var item = CreateNativeAotAppItem("MyApp", projectDir, "win-x64");
+        var task = CreateTask(
+            apps: [item],
+            manifestPath: Path.Combine(_tempDir, "manifest.json"),
+            mode: "build",
+            isPublishing: false);
+
+        Assert.False(task.Execute());
+    }
+
+    [Fact]
+    public void NativeAot_WithoutRuntimeIdentifier_FailsValidation()
+    {
+        var projectDir = CreateFakeProjectDir("MyApp");
+        var item = CreateNativeAotAppItem("MyApp", projectDir, runtimeIdentifier: "");
+        var task = CreateTask(
+            apps: [item],
+            manifestPath: Path.Combine(_tempDir, "manifest.json"),
+            mode: "publish",
+            isPublishing: true);
+
+        Assert.False(task.Execute());
+    }
+
+    [Fact]
+    public void NativeAot_WithOnlyDll_DoesNotFallBackToDotnet()
+    {
+        var projectDir = CreateFakeProjectDir("MyApp");
+        var appsOutputDir = Path.Combine(_tempDir, "e2e-apps");
+        CreatePublishedApp(appsOutputDir, "MyApp", createExe: false);
+        var task = CreateTask(
+            apps: [CreateNativeAotAppItem("MyApp", projectDir, "win-x64")],
+            manifestPath: Path.Combine(_tempDir, "manifest.json"),
+            mode: "publish",
+            isPublishing: true,
+            appsOutputDir: appsOutputDir);
+
+        Assert.False(task.Execute());
+    }
+
+    [Fact]
+    public void NativeAot_PerAppPublishMode_OverridesGlobalBuildMode()
+    {
+        var projectDir = CreateFakeProjectDir("MyApp");
+        var appsOutputDir = Path.Combine(_tempDir, "e2e-apps");
+        var publishedDir = Path.Combine(appsOutputDir, "MyApp");
+        Directory.CreateDirectory(publishedDir);
+        File.WriteAllText(Path.Combine(publishedDir, "MyApp.exe"), "fake-native-exe");
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+        var item = CreateNativeAotAppItem("MyApp", projectDir, "win-x64");
+        item.SetMetadata("E2EAppMode", "publish");
+        var task = CreateTask(
+            apps: [item],
+            manifestPath: manifestPath,
+            mode: "build",
+            isPublishing: true,
+            appsOutputDir: appsOutputDir);
+
+        Assert.True(task.Execute());
+
+        var entry = Assert.Single(ReadManifest(manifestPath).Apps).Value;
+        Assert.Equal("MyApp.exe", entry.Executable);
+        Assert.Equal("", entry.Arguments);
+        Assert.Equal("compiled", entry.HarnessMode);
+    }
+
+    [Fact]
+    public void NativeAot_NonWindowsRuntimeIdentifier_SelectsExtensionlessExecutable()
+    {
+        var projectDir = CreateFakeProjectDir("MyApp");
+        var appsOutputDir = Path.Combine(_tempDir, "e2e-apps");
+        var publishedDir = Path.Combine(appsOutputDir, "MyApp");
+        Directory.CreateDirectory(publishedDir);
+        File.WriteAllText(Path.Combine(publishedDir, "MyApp"), "fake-native-exe");
+        var manifestPath = Path.Combine(_tempDir, "manifest.json");
+        var task = CreateTask(
+            apps: [CreateNativeAotAppItem("MyApp", projectDir, "linux-x64")],
+            manifestPath: manifestPath,
+            mode: "publish",
+            isPublishing: true,
+            appsOutputDir: appsOutputDir);
+
+        Assert.True(task.Execute());
+
+        var entry = Assert.Single(ReadManifest(manifestPath).Apps).Value;
+        Assert.Equal("MyApp", entry.Executable);
+        Assert.Equal("compiled", entry.HarnessMode);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────
 
     private string CreateFakeProjectDir(string name)
@@ -294,6 +412,14 @@ public class GenerateE2EManifestTaskTests : IDisposable
     {
         var item = new TaskItem(Path.Combine(projectDir, name + ".csproj"));
         item.SetMetadata("E2EApp", "true");
+        return item;
+    }
+
+    private static TaskItem CreateNativeAotAppItem(string name, string projectDir, string runtimeIdentifier)
+    {
+        var item = CreateAppItem(name, projectDir);
+        item.SetMetadata("E2ENativeAot", "true");
+        item.SetMetadata("E2ERuntimeIdentifier", runtimeIdentifier);
         return item;
     }
 
