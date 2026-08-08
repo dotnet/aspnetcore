@@ -14,14 +14,10 @@ internal sealed class FormDataMapperOptions
     private readonly ConcurrentDictionary<Type, FormDataConverter> _converters = new();
     private readonly List<IFormDataConverterFactory> _factories = new();
 
-    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataMapperOptions() : this(NullLoggerFactory.Instance)
-    {        
+    {
     }
 
-    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataMapperOptions(ILoggerFactory loggerFactory)
     {
         _converters = new(WellKnownConverters.Converters);

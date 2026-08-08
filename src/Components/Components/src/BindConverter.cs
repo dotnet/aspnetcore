@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -1651,6 +1652,63 @@ public static class BindConverter
         return true;
     }
 
+    /// <remarks>
+    /// Used instead of <see cref="ConvertToEnum{T}"/> when runtime code generation is unavailable.
+    /// <c>T</c> here is unconstrained, so the generic <see cref="Enum.TryParse{TEnum}(string, out TEnum)"/>
+    /// cannot be called directly and the framework would otherwise have to close it over the runtime
+    /// type. The non-generic overload needs no instantiation to exist, which is what makes this safe
+    /// under Native AOT. This mirrors what <c>ParameterBindingMethodCache</c> does for the same problem
+    /// in minimal API parameter binding.
+    /// </remarks>
+    internal static bool ConvertToEnumDynamicCodeSafe<T>(object? obj, CultureInfo? _, [MaybeNullWhen(false)] out T value)
+    {
+        var text = (string?)obj;
+        if (string.IsNullOrEmpty(text))
+        {
+            value = default!;
+            return true;
+        }
+
+        if (!Enum.TryParse(typeof(T), text, out var converted)
+            || converted is null
+            || !Enum.IsDefined(typeof(T), converted))
+        {
+            value = default;
+            return false;
+        }
+
+        value = (T)converted;
+        return true;
+    }
+
+    /// <remarks>
+    /// The nullable counterpart of <see cref="ConvertToEnumDynamicCodeSafe{T}"/>. <c>T</c> is a
+    /// <see cref="Nullable{T}"/> of an enum, so the enum type is recovered from it and the boxed result
+    /// unboxes directly to <c>T</c>.
+    /// </remarks>
+    internal static bool ConvertToNullableEnumDynamicCodeSafe<T>(object? obj, CultureInfo? _, [MaybeNullWhen(false)] out T value)
+    {
+        var text = (string?)obj;
+        if (string.IsNullOrEmpty(text))
+        {
+            value = default!;
+            return true;
+        }
+
+        var underlyingType = Nullable.GetUnderlyingType(typeof(T))!;
+
+        if (!Enum.TryParse(underlyingType, text, out var converted)
+            || converted is null
+            || !Enum.IsDefined(underlyingType, converted))
+        {
+            value = default;
+            return false;
+        }
+
+        value = (T)converted;
+        return true;
+    }
+
     /// <summary>
     /// Attempts to convert a value to a value of type <typeparamref name="T"/>.
     /// </summary>
@@ -1794,9 +1852,17 @@ public static class BindConverter
                 }
                 else if (typeof(T).IsArray)
                 {
-                    var method = _makeArrayFormatter ??= typeof(FormatterDelegateCache).GetMethod(nameof(MakeArrayFormatter), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    var elementType = typeof(T).GetElementType()!;
-                    formatter = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
+                    if (RuntimeFeature.IsDynamicCodeSupported)
+                    {
+                        var method = _makeArrayFormatter ??= typeof(FormatterDelegateCache).GetMethod(nameof(MakeArrayFormatter), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        var elementType = typeof(T).GetElementType()!;
+                        formatter = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
+                    }
+                    else
+                    {
+                        ParserDelegateCache.EnsureCanFormatElementType(typeof(T).GetElementType()!);
+                        formatter = (BindFormatter<T>)FormatArrayValueDynamicCodeSafe;
+                    }
                 }
                 else
                 {
@@ -1836,6 +1902,37 @@ public static class BindConverter
                 builder.Append(']');
 
                 return builder.ToString();
+            }
+        }
+
+        private static object? FormatArrayValueDynamicCodeSafe<T>(T value, CultureInfo? culture)
+        {
+            var array = (Array)(object)value!;
+            if (array.Length == 0)
+            {
+                return "[]";
+            }
+
+            var elementType = typeof(T).GetElementType()!;
+            var builder = new StringBuilder("[\"");
+            AppendElement(array.GetValue(0));
+
+            for (var i = 1; i < array.Length; i++)
+            {
+                builder.Append(", \"");
+                AppendElement(array.GetValue(i));
+            }
+
+            builder.Append(']');
+            return builder.ToString();
+
+            void AppendElement(object? element)
+            {
+                var formatted = elementType.IsArray
+                    ? ParserDelegateCache.FormatArray(element, elementType.GetElementType()!, culture)
+                    : ParserDelegateCache.FormatElement(element, elementType, culture);
+                builder.Append(JsonEncodedText.Encode(formatted ?? string.Empty).Value);
+                builder.Append('\"');
             }
         }
 
@@ -1997,21 +2094,43 @@ public static class BindConverter
                 }
                 else if (typeof(T).IsEnum)
                 {
-                    // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
-                    var method = _convertToEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    parser = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindParser<T>), target: null);
+                    if (RuntimeFeature.IsDynamicCodeSupported)
+                    {
+                        // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
+                        var method = _convertToEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        parser = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindParser<T>), target: null);
+                    }
+                    else
+                    {
+                        parser = (BindParser<T>)ConvertToEnumDynamicCodeSafe<T>;
+                    }
                 }
                 else if (Nullable.GetUnderlyingType(typeof(T)) is Type innerType && innerType.IsEnum)
                 {
-                    // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
-                    var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    parser = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindParser<T>), target: null);
+                    if (RuntimeFeature.IsDynamicCodeSupported)
+                    {
+                        // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
+                        var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        parser = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindParser<T>), target: null);
+                    }
+                    else
+                    {
+                        parser = (BindParser<T>)ConvertToNullableEnumDynamicCodeSafe<T>;
+                    }
                 }
                 else if (typeof(T).IsArray)
                 {
-                    var method = _makeArrayTypeConverter ??= typeof(ParserDelegateCache).GetMethod(nameof(MakeArrayTypeConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    var elementType = typeof(T).GetElementType()!;
-                    parser = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
+                    if (RuntimeFeature.IsDynamicCodeSupported)
+                    {
+                        var method = _makeArrayTypeConverter ??= typeof(ParserDelegateCache).GetMethod(nameof(MakeArrayTypeConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        var elementType = typeof(T).GetElementType()!;
+                        parser = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
+                    }
+                    else
+                    {
+                        EnsureCanParseElementType(typeof(T).GetElementType()!);
+                        parser = (BindParser<T>)ConvertToArrayDynamicCodeSafe;
+                    }
                 }
                 else
                 {
@@ -2054,6 +2173,35 @@ public static class BindConverter
             }
         }
 
+        private static bool ConvertToArrayDynamicCodeSafe<T>(
+            object? obj,
+            CultureInfo? culture,
+            [MaybeNullWhen(false)] out T value)
+        {
+            if (obj is not Array initialArray)
+            {
+                value = default;
+                return false;
+            }
+
+            var arrayType = typeof(T);
+            var elementType = arrayType.GetElementType()!;
+            var convertedArray = Array.CreateInstanceFromArrayType(arrayType, initialArray.Length);
+            for (var i = 0; i < initialArray.Length; i++)
+            {
+                if (!TryConvertElement(initialArray.GetValue(i), elementType, culture, out var converted))
+                {
+                    value = default;
+                    return false;
+                }
+
+                convertedArray.SetValue(converted, i);
+            }
+
+            value = (T)(object)convertedArray;
+            return true;
+        }
+
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect unknown underlying types are configured by application code to be retained.")]
         private static BindParser<T> MakeTypeConverterConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
@@ -2086,6 +2234,345 @@ public static class BindConverter
                 value = (T)converted;
                 return true;
             }
+        }
+
+        internal static string? FormatArray(object? value, Type elementType, CultureInfo? culture)
+        {
+            var array = (Array)value!;
+            if (array.Length == 0)
+            {
+                return "[]";
+            }
+
+            var builder = new StringBuilder("[\"");
+            AppendElement(array.GetValue(0));
+
+            for (var i = 1; i < array.Length; i++)
+            {
+                builder.Append(", \"");
+                AppendElement(array.GetValue(i));
+            }
+
+            builder.Append(']');
+            return builder.ToString();
+
+            void AppendElement(object? element)
+            {
+                var formatted = elementType.IsArray
+                    ? FormatArray(element, elementType.GetElementType()!, culture)
+                    : FormatElement(element, elementType, culture);
+                builder.Append(JsonEncodedText.Encode(formatted ?? string.Empty).Value);
+                builder.Append('\"');
+            }
+        }
+
+        internal static string? FormatElement(object? value, Type type, CultureInfo? culture)
+        {
+            if (value is null)
+            {
+                return null;
+            }
+
+            if (type == typeof(string))
+            {
+                return (string)value;
+            }
+
+            if (type.IsEnum || Nullable.GetUnderlyingType(type) is Type { IsEnum: true })
+            {
+                return value.ToString();
+            }
+
+            if (type == typeof(bool) || type == typeof(bool?))
+            {
+                return ((bool)value).ToString();
+            }
+
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+            if (underlyingType == typeof(int) ||
+                underlyingType == typeof(long) ||
+                underlyingType == typeof(short) ||
+                underlyingType == typeof(float) ||
+                underlyingType == typeof(double) ||
+                underlyingType == typeof(decimal) ||
+                underlyingType == typeof(DateTime) ||
+                underlyingType == typeof(DateTimeOffset) ||
+                underlyingType == typeof(DateOnly) ||
+                underlyingType == typeof(TimeOnly))
+            {
+                return ((IFormattable)value).ToString(format: null, culture ?? CultureInfo.CurrentCulture);
+            }
+
+            if (underlyingType == typeof(Guid))
+            {
+                return value.ToString();
+            }
+
+            // Native AOT applications using a custom TypeConverter register its type with TypeDescriptor.RegisterType<T>().
+            var converter = TypeDescriptor.GetConverterFromRegisteredType(type);
+            if (!converter.CanConvertTo(typeof(string)))
+            {
+                throw new InvalidOperationException(
+                    $"The type '{type.FullName}' does not have an associated {typeof(TypeConverter).Name} that supports " +
+                    $"conversion to a string. Apply '{typeof(TypeConverterAttribute).Name}' to the type to register a converter.");
+            }
+
+            return converter.ConvertToString(context: null, culture ?? CultureInfo.CurrentCulture, value);
+        }
+
+        internal static void EnsureCanFormatElementType(Type type)
+        {
+            if (type.IsArray)
+            {
+                EnsureCanFormatElementType(type.GetElementType()!);
+                return;
+            }
+
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+            if (underlyingType == typeof(string) ||
+                underlyingType == typeof(bool) ||
+                underlyingType == typeof(int) ||
+                underlyingType == typeof(long) ||
+                underlyingType == typeof(short) ||
+                underlyingType == typeof(float) ||
+                underlyingType == typeof(double) ||
+                underlyingType == typeof(decimal) ||
+                underlyingType == typeof(DateTime) ||
+                underlyingType == typeof(DateTimeOffset) ||
+                underlyingType == typeof(DateOnly) ||
+                underlyingType == typeof(TimeOnly) ||
+                underlyingType == typeof(Guid) ||
+                underlyingType.IsEnum)
+            {
+                return;
+            }
+
+            var converter = TypeDescriptor.GetConverterFromRegisteredType(type);
+            if (!converter.CanConvertTo(typeof(string)))
+            {
+                throw new InvalidOperationException(
+                    $"The type '{type.FullName}' does not have an associated {typeof(TypeConverter).Name} that supports " +
+                    $"conversion to a string. Apply '{typeof(TypeConverterAttribute).Name}' to the type to register a converter.");
+            }
+        }
+
+        private static bool TryConvertElement(object? obj, Type type, CultureInfo? culture, out object? value)
+        {
+            if (type.IsArray)
+            {
+                return TryConvertArray(obj, type, culture, out value);
+            }
+
+            var nullableType = Nullable.GetUnderlyingType(type);
+            var targetType = nullableType ?? type;
+            if (targetType == typeof(string))
+            {
+                return TryConvertElement(ConvertToString, obj, culture, out value);
+            }
+
+            if (targetType == typeof(bool))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToBool, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableBool, obj, culture, out value);
+            }
+
+            if (targetType == typeof(int))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToInt, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableInt, obj, culture, out value);
+            }
+
+            if (targetType == typeof(long))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToLong, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableLong, obj, culture, out value);
+            }
+
+            if (targetType == typeof(short))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToShort, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableShort, obj, culture, out value);
+            }
+
+            if (targetType == typeof(float))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToFloat, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableFloat, obj, culture, out value);
+            }
+
+            if (targetType == typeof(double))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToDoubleDelegate, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableDoubleDelegate, obj, culture, out value);
+            }
+
+            if (targetType == typeof(decimal))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToDecimal, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableDecimal, obj, culture, out value);
+            }
+
+            if (targetType == typeof(DateTime))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToDateTime, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableDateTime, obj, culture, out value);
+            }
+
+            if (targetType == typeof(DateTimeOffset))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToDateTimeOffset, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableDateTimeOffset, obj, culture, out value);
+            }
+
+            if (targetType == typeof(DateOnly))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToDateOnly, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableDateOnly, obj, culture, out value);
+            }
+
+            if (targetType == typeof(TimeOnly))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToTimeOnly, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableTimeOnly, obj, culture, out value);
+            }
+
+            if (targetType == typeof(Guid))
+            {
+                return nullableType is null
+                    ? TryConvertElement(ConvertToGuid, obj, culture, out value)
+                    : TryConvertElement(ConvertToNullableGuid, obj, culture, out value);
+            }
+
+            if (targetType.IsEnum)
+            {
+                var text = (string?)obj;
+                if (string.IsNullOrEmpty(text))
+                {
+                    value = nullableType is null ? Enum.ToObject(targetType, 0) : null;
+                    return true;
+                }
+
+                if (!Enum.TryParse(targetType, text, out var converted) ||
+                    converted is null ||
+                    !Enum.IsDefined(targetType, converted))
+                {
+                    value = null;
+                    return false;
+                }
+
+                value = converted;
+                return true;
+            }
+
+            return TryConvertElementWithTypeConverter(obj, type, culture, out value);
+        }
+
+        private static void EnsureCanParseElementType(Type type)
+        {
+            if (type.IsArray)
+            {
+                EnsureCanParseElementType(type.GetElementType()!);
+                return;
+            }
+
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+            if (underlyingType == typeof(string) ||
+                underlyingType == typeof(bool) ||
+                underlyingType == typeof(int) ||
+                underlyingType == typeof(long) ||
+                underlyingType == typeof(short) ||
+                underlyingType == typeof(float) ||
+                underlyingType == typeof(double) ||
+                underlyingType == typeof(decimal) ||
+                underlyingType == typeof(DateTime) ||
+                underlyingType == typeof(DateTimeOffset) ||
+                underlyingType == typeof(DateOnly) ||
+                underlyingType == typeof(TimeOnly) ||
+                underlyingType == typeof(Guid) ||
+                underlyingType.IsEnum)
+            {
+                return;
+            }
+
+            var converter = TypeDescriptor.GetConverterFromRegisteredType(type);
+            if (!converter.CanConvertFrom(typeof(string)))
+            {
+                throw new InvalidOperationException(
+                    $"The type '{type.FullName}' does not have an associated {typeof(TypeConverter).Name} that supports " +
+                    $"conversion from a string. Apply '{typeof(TypeConverterAttribute).Name}' to the type to register a converter.");
+            }
+        }
+
+        private static bool TryConvertElement<T>(
+            BindParser<T> parser,
+            object? obj,
+            CultureInfo? culture,
+            out object? value)
+        {
+            var result = parser(obj, culture, out var converted);
+            value = converted;
+            return result;
+        }
+
+        private static bool TryConvertArray(object? obj, Type arrayType, CultureInfo? culture, out object? value)
+        {
+            if (obj is not Array initialArray)
+            {
+                value = null;
+                return false;
+            }
+
+            var elementType = arrayType.GetElementType()!;
+            var convertedArray = Array.CreateInstanceFromArrayType(arrayType, initialArray.Length);
+            for (var i = 0; i < initialArray.Length; i++)
+            {
+                if (!TryConvertElement(initialArray.GetValue(i), elementType, culture, out var converted))
+                {
+                    value = null;
+                    return false;
+                }
+
+                convertedArray.SetValue(converted, i);
+            }
+
+            value = convertedArray;
+            return true;
+        }
+
+        private static bool TryConvertElementWithTypeConverter(
+            object? obj,
+            Type type,
+            CultureInfo? culture,
+            out object? value)
+        {
+            // Native AOT applications using a custom TypeConverter register its type with TypeDescriptor.RegisterType<T>().
+            var converter = TypeDescriptor.GetConverterFromRegisteredType(type);
+            if (!converter.CanConvertFrom(typeof(string)))
+            {
+                throw new InvalidOperationException(
+                    $"The type '{type.FullName}' does not have an associated {typeof(TypeConverter).Name} that supports " +
+                    $"conversion from a string. Apply '{typeof(TypeConverterAttribute).Name}' to the type to register a converter.");
+            }
+
+            if (obj is null)
+            {
+                value = null;
+                return true;
+            }
+
+            value = converter.ConvertFrom(context: null, culture ?? CultureInfo.CurrentCulture, obj);
+            return true;
         }
     }
 }
