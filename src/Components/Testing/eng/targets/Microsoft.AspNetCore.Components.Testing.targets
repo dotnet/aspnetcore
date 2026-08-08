@@ -102,7 +102,7 @@
     Name="PrepareE2EApps"
     DependsOnTargets="_BuildE2ETasks"
     AfterTargets="Build;Publish"
-    Condition="'$(ExcludeFromBuild)' != 'true'">
+    Condition="'$(ExcludeFromBuild)' != 'true' and '$(ExcludeFromSourceOnlyBuild)' != 'true'">
 
     <!--
       Detect whether we are running during Publish.
