@@ -1,0 +1,100 @@
+@page "/reflection-fallbacks"
+@using System.Diagnostics.CodeAnalysis
+@attribute [InteractiveServer]
+@inject IJSRuntime JS
+@inject ProtectedSessionStorage SessionStorage
+
+<h1>Reflection fallbacks</h1>
+
+<button id="trigger-component-fallback" @onclick="TriggerComponentFallback">Trigger</button>
+<ErrorBoundary @ref="_componentBoundary">
+    <ChildContent>
+        @if (_showComponent)
+        {
+            @RenderUndescribedComponent()
+        }
+        <span id="component-fallback-success">component-reflection-ok</span>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <span id="component-fallback-error">@ex.Message</span>
+    </ErrorContent>
+</ErrorBoundary>
+
+<button id="trigger-js-fallback" @onclick="TriggerJsFallback">Trigger</button>
+<span id="js-fallback-success">@_jsSuccess</span>
+<span id="js-fallback-error">@_jsError</span>
+
+<button id="trigger-json-fallback" @onclick="TriggerJsonFallback">Trigger</button>
+<span id="json-fallback-success">@_jsonSuccess</span>
+<span id="json-fallback-error">@_jsonError</span>
+
+@code {
+    private ErrorBoundary? _componentBoundary;
+    private bool _showComponent;
+    private string _jsSuccess = "";
+    private string _jsError = "";
+    private string _jsonSuccess = "";
+    private string _jsonError = "";
+
+    private void TriggerComponentFallback()
+    {
+        _componentBoundary?.Recover();
+        _showComponent = true;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2110",
+        Justification = "Intentional compatibility probe for DynamicComponent.Type.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2111",
+        Justification = "Intentional compatibility probe for DynamicComponent.Type.")]
+    private RenderFragment RenderUndescribedComponent() => builder =>
+    {
+        builder.OpenComponent(0, typeof(DynamicComponent));
+        builder.AddComponentParameter(1, nameof(DynamicComponent.Type), typeof(UndescribedComponent));
+        builder.CloseComponent();
+    };
+
+    private async Task TriggerJsFallback()
+    {
+        try
+        {
+            using var objRef = DotNetObjectReference.Create(new UndescribedJsTarget());
+            await JS.InvokeVoidAsync("eval", "window.__jsFallbackProbe = r => r.invokeMethodAsync('Echo')");
+            _jsSuccess = await JS.InvokeAsync<string>("__jsFallbackProbe", objRef);
+        }
+        catch (Exception ex)
+        {
+            _jsError = ex.Message;
+        }
+    }
+
+    private async Task TriggerJsonFallback()
+    {
+        try
+        {
+            await SessionStorage.SetAsync("aot-undescribed", new UndescribedJsonPayload { Value = "json-reflection-ok" });
+            var stored = await SessionStorage.GetAsync<UndescribedJsonPayload>("aot-undescribed");
+            _jsonSuccess = stored is { Success: true, Value: { } value } ? value.Value : "";
+        }
+        catch (Exception ex)
+        {
+            _jsonError = ex.Message;
+        }
+    }
+
+    private sealed class UndescribedComponent : ComponentBase
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+            => builder.AddContent(0, "component-reflection-ok");
+    }
+
+    private sealed class UndescribedJsTarget
+    {
+        [JSInvokable]
+        public string Echo() => "js-reflection-ok";
+    }
+
+    private sealed class UndescribedJsonPayload
+    {
+        public string Value { get; set; } = "";
+    }
+}
