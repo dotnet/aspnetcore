@@ -80,8 +80,7 @@ static Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.EnsureP
 static Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.Expect(Microsoft.Playwright.IAPIResponse! response) -> Microsoft.Playwright.IAPIResponseAssertions!
 static Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.Expect(Microsoft.Playwright.ILocator! locator) -> Microsoft.Playwright.ILocatorAssertions!
 static Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.Expect(Microsoft.Playwright.IPage! page) -> Microsoft.Playwright.IPageAssertions!
-virtual Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.BrowserName.get -> string!
-virtual Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.GetBrowserLaunchOptions() -> Microsoft.Playwright.BrowserTypeLaunchOptions!
+Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.BrowserName.get -> string!
 virtual Microsoft.AspNetCore.Components.Testing.Playwright.ContextTest.GetContextOptions() -> Microsoft.Playwright.BrowserNewContextOptions!
 virtual Microsoft.AspNetCore.Components.Testing.Playwright.UITest.CleanupCoreAsync() -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.Testing.Playwright.UITest.InitializeCoreAsync() -> System.Threading.Tasks.Task!
