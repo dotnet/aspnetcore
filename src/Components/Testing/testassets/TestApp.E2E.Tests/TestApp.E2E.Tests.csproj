@@ -17,8 +17,8 @@
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <!-- NETSDK1023: SDK warns about explicit MSTest.TestAdapter PackageReference; we want the
          explicit one so the version is pinned to MSTest.TestFramework. -->
-    <!-- MSTEST0001: Parallelism analyzer requires opt-in/opt-out at assembly level; opt out
-         until we have a strategy (default is method-level parallelism, which is fine here). -->
+    <!-- MSTEST0001: Parallelism analyzer requires an explicit assembly-level declaration.
+         This project intentionally retains MSTest's sequential default for now. -->
     <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001</NoWarn>
   </PropertyGroup>
 
