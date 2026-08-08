@@ -134,7 +134,7 @@
              Condition="'$(_PackageConsumerNativeAotEnabled)' == 'true'" />
     <MSBuild Projects="$(_PackageConsumerProject)"
              Targets="Publish"
-             Properties="$(_PackageConsumerProperties);PackageConsumerAppMode=publish;PackageConsumerEnableNativeAot=true;PackageConsumerRuntimeIdentifier=$(PackageConsumerRuntimeIdentifier);PublishDir=$(_PackageConsumerNativeAotPublishOutput);NoBuild=true"
+             Properties="$(_PackageConsumerProperties);PackageConsumerAppMode=publish;PackageConsumerEnableNativeAot=true;PackageConsumerRuntimeIdentifiers=$(PackageConsumerRuntimeIdentifier);PackageConsumerRuntimeIdentifier=$(PackageConsumerRuntimeIdentifier);PublishDir=$(_PackageConsumerNativeAotPublishOutput);NoBuild=true"
              RemoveProperties="BuildProjectReferences"
              Condition="'$(_PackageConsumerNativeAotEnabled)' == 'true'" />
   </Target>
