@@ -443,6 +443,19 @@ public class DotNetDispatcherTest
 #pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
+    [Theory]
+    [InlineData("42", 42)]
+    [InlineData("null", null)]
+    public async Task EndInvokeJS_WithNullableValue(string valueJson, int? expected)
+    {
+        var jsRuntime = new TestJSRuntime();
+        var task = jsRuntime.InvokeAsync<int?>("somemethod");
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, {valueJson}]");
+
+        Assert.Equal(expected, await task);
+    }
+
     [Fact]
     public void CanInvokeInstanceMethodWithParams()
     {
