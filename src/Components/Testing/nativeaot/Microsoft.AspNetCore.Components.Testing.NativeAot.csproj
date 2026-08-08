@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Microsoft.AspNetCore.Components.Testing.NativeAot
+    =================================================
+    Source generator that bakes the E2E test harness into an application under test.
+
+    Kept separate from Microsoft.AspNetCore.Components.Testing.Generators on purpose. That generator
+    runs in the *test* project and emits code naming types in the testing library. This one runs in
+    the *application* and emits code that depends on nothing but Microsoft.Extensions.Hosting, so the
+    application never gains a reference to the testing library, Playwright or YARP.
+
+    An application never references this project. The test project does, and the harness injects it
+    into the application's nested publish. See build/Microsoft.AspNetCore.Components.Testing.NativeAot.targets.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsAnalyzersProject>true</IsAnalyzersProject>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
+    <WarnOnNullable>true</WarnOnNullable>
+    <IsPackable>false</IsPackable>
+    <!-- Suppress RS2008: analyzer release tracking. Not needed — this ships as part of the library. -->
+    <NoWarn>$(NoWarn);RS2008</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

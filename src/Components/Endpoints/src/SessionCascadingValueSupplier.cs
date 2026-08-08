@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Reflection;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -14,15 +13,17 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class SessionCascadingValueSupplier
 {
-    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly JsonSerializerOptions _jsonOptions;
     private HttpContext? _httpContext;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
 
-    public SessionCascadingValueSupplier(ILogger<SessionCascadingValueSupplier> logger)
+    public SessionCascadingValueSupplier(
+        ILogger<SessionCascadingValueSupplier> logger,
+        IEnumerable<RazorComponentsMetadataContext>? metadataContexts = null)
     {
         _logger = logger;
+        _jsonOptions = CreateJsonOptions(metadataContexts);
     }
 
     internal void SetRequestContext(HttpContext httpContext)
@@ -42,22 +43,9 @@ internal partial class SessionCascadingValueSupplier
         }
 
         var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
-        var componentType = componentState.Component.GetType();
-        var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
-        Func<object?> valueGetter = () => getter.GetValue(componentState.Component);
+        var valueGetter = ComponentParameterValueGetter.Create(componentState, parameterInfo.PropertyName);
         RegisterValueCallback(sessionKey, valueGetter);
         return new SessionSubscription(this, sessionKey, parameterInfo.PropertyType, valueGetter);
-    }
-
-    private static PropertyGetter PropertyGetterFactory((Type type, string propertyName) key)
-    {
-        var (type, propertyName) = key;
-        var propertyInfo = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (propertyInfo is null)
-        {
-            throw new InvalidOperationException($"A property '{propertyName}' on component type '{type.FullName}' wasn't found.");
-        }
-        return new PropertyGetter(type, propertyInfo);
     }
 
     // A null HttpContext means we're rendering interactively (Server circuit or WebAssembly),
@@ -96,7 +84,8 @@ internal partial class SessionCascadingValueSupplier
                 var value = valueGetter();
                 if (value is not null)
                 {
-                    var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
+                    var typeInfo = _jsonOptions.GetTypeInfo(value.GetType());
+                    var json = JsonSerializer.Serialize(value, typeInfo);
                     session.SetString(sessionKey, json);
                 }
                 else
@@ -171,7 +160,8 @@ internal partial class SessionCascadingValueSupplier
                 {
                     return null;
                 }
-                return JsonSerializer.Deserialize(json, _propertyType, _jsonOptions);
+                var typeInfo = _owner._jsonOptions.GetTypeInfo(_propertyType);
+                return JsonSerializer.Deserialize(json, typeInfo);
             }
             catch (Exception ex)
             {
@@ -185,4 +175,37 @@ internal partial class SessionCascadingValueSupplier
             _owner.DeleteValueCallback(_sessionKey);
         }
     }
+
+    private static JsonSerializerOptions CreateJsonOptions(IEnumerable<RazorComponentsMetadataContext>? metadataContexts)
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        if (metadataContexts is not null)
+        {
+            foreach (var context in metadataContexts)
+            {
+                if (context.JsonTypeInfoResolver is { } resolver &&
+                    !options.TypeInfoResolverChain.Contains(resolver))
+                {
+                    options.TypeInfoResolverChain.Add(resolver);
+                }
+            }
+        }
+
+        if (JsonSerializer.IsReflectionEnabledByDefault)
+        {
+            options.TypeInfoResolverChain.Add(CreateReflectionResolver());
+        }
+
+        return options;
+    }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    [UnconditionalSuppressMessage(
+        "AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    private static DefaultJsonTypeInfoResolver CreateReflectionResolver() => new();
 }

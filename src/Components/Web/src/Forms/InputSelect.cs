@@ -36,6 +36,10 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
     [DisallowNull] public ElementReference? Element { get; protected set; }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage(
+        "AOT",
+        "IL3050",
+        Justification = "TValue is statically closed for each InputSelect instantiation, so any array type used by BindConverter is available to Native AOT.")]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "select");

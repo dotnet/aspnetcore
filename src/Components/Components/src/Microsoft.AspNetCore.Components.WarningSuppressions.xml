@@ -17,7 +17,7 @@
       <argument>ILLink</argument>
       <argument>IL2072</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Reflection.ComponentProperties.SetProperties(Microsoft.AspNetCore.Components.ParameterView@,System.Object)</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Reflection.ComponentProperties.SetProperties(Microsoft.AspNetCore.Components.ParameterView@,System.Object,Microsoft.AspNetCore.Components.IComponentMetadataResolver)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>

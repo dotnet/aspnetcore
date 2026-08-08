@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Per-feature Native AOT coverage for Blazor Server.
+
+       Each AOT-sensitive feature is isolated on its own page and asserted independently, so a
+       regression identifies the feature that broke.
+
+       Every test drives a real interaction - click, type, submit, scroll - because a page that
+       merely renders does not prove the generated descriptors, JS interop contracts and JSON
+       resolvers are correct once the circuit is live.
+
+       Run against a JIT publish of the app (fast iteration):
+         dotnet build <this project> -p:UseIisNativeAssets=false -p:PublishAot=false -r win-x64
+       Run against the Native AOT binary (slow; this is what the asset exists for):
+         dotnet build <this project> -p:UseIisNativeAssets=false -r win-x64
+       then run the produced BlazorAotFeatures.E2E.Tests executable. -->
+
+  <PropertyGroup>
+    <!-- The app under test sets PublishAot, so the harness drives its published output rather than
+         the default source/'dotnet run' mode. Set before the props import, which supplies the
+         'build' default. -->
+    <E2EAppMode Condition="'$(E2EAppMode)' == ''">publish</E2EAppMode>
+  </PropertyGroup>
+
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <!-- 'dotnet test' is the entry point for this suite. xUnit v3 runs on Microsoft.Testing.Platform,
+         where the test project is itself the runner; without these two the SDK routes through VSTest,
+         which cannot discover v3 and reports no tests at all. -->
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Playwright.Xunit.v3" />
+    <Reference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The fixture hosts a YARP reverse proxy in-process. Transitive references from shipping
+         libraries are not copied to a test project's output in this repo, so the parts of the
+         shared framework YARP resolves at runtime are listed explicitly. -->
+    <Reference Include="Microsoft.AspNetCore.RateLimiting" />
+    <Reference Include="Microsoft.AspNetCore.OutputCaching" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <!-- The fixture's readiness endpoint returns IResult values. -->
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <!-- Emits the startup hook and hosting-startup attribute the harness injects into the app.
+         Referenced explicitly rather than relying on the shared testassets props, which gate this
+         on $(IsTestProject) - a property this project does not carry. -->
+    <ProjectReference Include="../../gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../../../test/testassets/BlazorAotFeatures/BlazorServerAotSample/BlazorServerAotSample.csproj">
+      <E2EApp>true</E2EApp>
+      <!-- Publishes natively, so the harness is source-generated into the app instead of injected
+           through a startup hook the native image cannot load. -->
+      <NativeTesting>true</NativeTesting>
+      <ExtraMSBuildProperties Condition="'$(BlazorAotStrictMode)' == 'true'">BlazorAotStrictMode=true</ExtraMSBuildProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets" />
+
+</Project>

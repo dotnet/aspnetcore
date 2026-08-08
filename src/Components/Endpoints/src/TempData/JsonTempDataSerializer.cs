@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -114,6 +115,15 @@ internal class JsonTempDataSerializer : ITempDataSerializer
             return true;
         }
 
+        return JsonSerializer.IsReflectionEnabledByDefault && CanSerializeByGenericInterface(type);
+    }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2070:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
+        Justification = "This JIT compatibility path is guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    private bool CanSerializeByGenericInterface(Type type)
+    {
         var dictionaryInterface = type.GetInterface(typeof(IDictionary<,>).Name);
         if (dictionaryInterface is not null)
         {
@@ -148,7 +158,8 @@ internal class JsonTempDataSerializer : ITempDataSerializer
                 ? Convert.ToInt32(enumValue, CultureInfo.InvariantCulture)
                 : kvp.Value;
         }
-        return JsonSerializer.SerializeToUtf8Bytes<IDictionary<string, object?>>(normalizedData, JsonTempDataSerializerContext.Default.Options);
+        var typeInfo = JsonTempDataSerializerContext.Default.Options.GetTypeInfo(typeof(IDictionary<string, object?>));
+        return JsonSerializer.SerializeToUtf8Bytes(normalizedData, typeInfo);
     }
 }
 
@@ -190,6 +201,7 @@ internal class JsonTempDataSerializer : ITempDataSerializer
 [JsonSerializable(typeof(ICollection<object>))]
 // Serialization of the TempData dictionary
 [JsonSerializable(typeof(IDictionary<string, object?>))]
+[JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 internal sealed partial class JsonTempDataSerializerContext : JsonSerializerContext
 {
 }

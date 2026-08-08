@@ -1,0 +1,28 @@
+@page "/server-state"
+
+<h1>Server state</h1>
+
+<p>Session profile: <span id="session-profile">@(Profile is null ? "(none)" : $"{Profile.Name}:{Profile.Age}")</span></p>
+<p>TempData flash: <span id="tempdata-flash">@(Flash ?? "(none)")</span></p>
+
+@code {
+    [SupplyParameterFromSession(Name = "aot-profile")]
+    public SessionProfile? Profile { get; set; }
+
+    [SupplyParameterFromTempData(Name = "aot-flash")]
+    public string? Flash { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool? Update { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Update == true && Profile is not null)
+        {
+            Profile = new SessionProfile(Profile.Name, Profile.Age + 1);
+        }
+    }
+
+    public sealed record SessionProfile(string Name, int Age);
+}

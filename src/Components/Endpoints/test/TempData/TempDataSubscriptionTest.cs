@@ -253,6 +253,7 @@ public class TempDataSubscriptionTest
 
     private class TestComponent : IComponent
     {
+        [SupplyParameterFromTempData]
         public object Value { get; set; }
 
         public void Attach(RenderHandle renderHandle) { }

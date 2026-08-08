@@ -150,8 +150,8 @@ internal partial class CircuitHost : IAsyncDisposable
                 var pendingRenders = new Task[count];
                 for (var i = 0; i < count; i++)
                 {
-                    var (componentType, parameters, sequence) = Descriptors[i];
-                    pendingRenders[i] = Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
+                    var (componentTypeInfo, parameters, sequence) = Descriptors[i];
+                    pendingRenders[i] = Renderer.AddComponentAsync(componentTypeInfo, parameters, sequence.ToString(CultureInfo.InvariantCulture));
                 }
 
                 // Now we wait for all components to finish rendering.
@@ -901,7 +901,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     case RootComponentOperationType.Add:
                         var task = webRootComponentManager.AddRootComponentAsync(
                             operation.SsrComponentId,
-                            operation.Descriptor.ComponentType,
+                            operation.Descriptor.ComponentTypeInfo,
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
 
@@ -911,7 +911,7 @@ internal partial class CircuitHost : IAsyncDisposable
                         // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
                         _ = webRootComponentManager.UpdateRootComponentAsync(
                             operation.SsrComponentId,
-                            operation.Descriptor.ComponentType,
+                            operation.Descriptor.ComponentTypeInfo,
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
                         break;

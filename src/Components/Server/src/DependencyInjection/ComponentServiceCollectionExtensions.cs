@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Internal;
@@ -39,8 +40,21 @@ public static class ComponentServiceCollectionExtensions
 
         services.AddDataProtection();
 
-        services.TryAddScoped<ProtectedLocalStorage>();
-        services.TryAddScoped<ProtectedSessionStorage>();
+        // The metadata contexts these options are composed from are experimental; the storage services
+        // themselves are not, so the diagnostic is suppressed rather than propagated.
+#pragma warning disable ASPNETCORE9004
+        services.TryAddSingleton<ProtectedBrowserStorageSerializerOptions>();
+        services.TryAddScoped(sp => new ProtectedLocalStorage(
+            sp.GetRequiredService<IJSRuntime>(),
+            sp.GetRequiredService<IDataProtectionProvider>(),
+            sp.GetRequiredService<ProtectedBrowserStorageSerializerOptions>().Options,
+            sp));
+        services.TryAddScoped(sp => new ProtectedSessionStorage(
+            sp.GetRequiredService<IJSRuntime>(),
+            sp.GetRequiredService<IDataProtectionProvider>(),
+            sp.GetRequiredService<ProtectedBrowserStorageSerializerOptions>().Options,
+            sp));
+#pragma warning restore ASPNETCORE9004
 
         // This call INTENTIONALLY uses the AddHubOptions on the SignalR builder, because it will merge
         // the global HubOptions before running the configure callback. We want to ensure that happens
@@ -67,7 +81,7 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddSingleton<CircuitMetrics>();
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
-        services.TryAddSingleton<RootTypeCache>();
+        services.TryAddSingleton<IComponentTypeInfoResolver>(ComponentTypeInfoResolverFactory.Create);
         services.TryAddSingleton<ComponentParameterDeserializer>();
         services.TryAddSingleton<ComponentParametersTypeCache>();
         services.TryAddSingleton<CircuitIdFactory>();

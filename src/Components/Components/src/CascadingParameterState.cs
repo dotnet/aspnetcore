@@ -1,22 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
-using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
-using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
 internal readonly struct CascadingParameterState
     (in CascadingParameterInfo parameterInfo, ICascadingValueSupplier valueSupplier, object? key)
 {
-    private static readonly ConcurrentDictionary<Type, CascadingParameterInfo[]> _cachedInfos = new();
-
     public CascadingParameterInfo ParameterInfo { get; } = parameterInfo;
     public ICascadingValueSupplier ValueSupplier { get; } = valueSupplier;
     public object? Key { get; } = key;
@@ -26,17 +18,12 @@ internal readonly struct CascadingParameterState
 
     public static IReadOnlyList<CascadingParameterState> FindCascadingParameters(ComponentState componentState, out bool hasSingleDeliveryParameters)
     {
-        var componentType = componentState.Component.GetType();
-
-        // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
-        #pragma warning disable IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.CascadingParameterState.GetCascadingParameterInfos(Type)'.
-        var infos = GetCascadingParameterInfos(componentType);
-        #pragma warning restore IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.CascadingParameterState.GetCascadingParameterInfos(Type)'.
+        var infos = GetCascadingParameterInfos(componentState.ComponentTypeInfo);
 
         hasSingleDeliveryParameters = false;
 
         // For components known not to have any cascading parameters, bail out early
-        if (infos.Length == 0)
+        if (infos.Count == 0)
         {
             return Array.Empty<CascadingParameterState>();
         }
@@ -45,15 +32,15 @@ internal readonly struct CascadingParameterState
         // Defer instantiation of the result list until we know there's at least one
         List<CascadingParameterState>? resultStates = null;
 
-        var numInfos = infos.Length;
+        var numInfos = infos.Count;
         for (var infoIndex = 0; infoIndex < numInfos; infoIndex++)
         {
-            ref var info = ref infos[infoIndex];
+            var info = infos[infoIndex];
             var supplier = GetMatchingCascadingValueSupplier(info, componentState.Renderer, componentState.LogicalParentComponentState);
             if (supplier != null)
             {
                 // Although not all parameters might be matched, we know the maximum number
-                resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
+                resultStates ??= new List<CascadingParameterState>(infos.Count - infoIndex);
                 resultStates.Add(new CascadingParameterState(info, supplier, componentState));
 
                 if (info.Attribute.SingleDelivery)
@@ -100,37 +87,22 @@ internal readonly struct CascadingParameterState
         return null;
     }
 
-    private static CascadingParameterInfo[] GetCascadingParameterInfos(
-        [DynamicallyAccessedMembers(Component)] Type componentType)
-    {
-        if (!_cachedInfos.TryGetValue(componentType, out var infos))
-        {
-            infos = CreateCascadingParameterInfos(componentType);
-            _cachedInfos[componentType] = infos;
-        }
-
-        return infos;
-    }
-
-    private static CascadingParameterInfo[] CreateCascadingParameterInfos(
-        [DynamicallyAccessedMembers(Component)] Type componentType)
+    private static IReadOnlyList<CascadingParameterInfo> GetCascadingParameterInfos(
+        ComponentTypeInfo typeInfo)
     {
         List<CascadingParameterInfo>? result = null;
-        var candidateProps = ComponentProperties.GetCandidateBindableProperties(componentType);
-        foreach (var prop in candidateProps)
+        foreach (var parameter in typeInfo.Parameters)
         {
-            var cascadingParameterAttribute = prop.GetCustomAttributes()
-                .OfType<CascadingParameterAttributeBase>().SingleOrDefault();
-            if (cascadingParameterAttribute != null)
+            if (parameter.Attribute is CascadingParameterAttributeBase cascadingParameterAttribute)
             {
                 result ??= new List<CascadingParameterInfo>();
                 result.Add(new CascadingParameterInfo(
                     cascadingParameterAttribute,
-                    prop.Name,
-                    prop.PropertyType));
+                    parameter.Name,
+                    parameter.ParameterType));
             }
         }
 
-        return result?.ToArray() ?? Array.Empty<CascadingParameterInfo>();
+        return result ?? [];
     }
 }

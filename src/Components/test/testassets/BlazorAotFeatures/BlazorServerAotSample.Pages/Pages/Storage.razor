@@ -1,0 +1,51 @@
+@page "/storage"
+@attribute [InteractiveServer]
+@inject ProtectedSessionStorage SessionStorage
+
+<h1>Protected browser storage</h1>
+
+<p>Exercises <code>ProtectedSessionStorage</code>, which serializes through the JSON options composed
+from the registered metadata contexts. Under Native AOT the value must round-trip through a generated
+contract, not the reflection-based resolver.</p>
+
+<button id="save" @onclick="SaveAsync">Save</button>
+<button id="load" @onclick="LoadAsync">Load</button>
+
+<p>Round-tripped: <span id="loaded">@_loaded</span></p>
+
+<p>Also exercises a registered <code>ProtectedBrowserStorageSerializer&lt;Theme&gt;</code>. That type has
+no JSON contract at all, so it can only round-trip if the custom serializer is resolved.</p>
+
+<button id="save-custom" @onclick="SaveThemeAsync">Save theme</button>
+<button id="load-custom" @onclick="LoadThemeAsync">Load theme</button>
+
+<p>Theme: <span id="loaded-custom">@_loadedTheme</span></p>
+
+@code {
+    private const string Key = "aot-probe";
+    private const string ThemeKey = "aot-theme";
+
+    private string _loaded = "(none)";
+    private string _loadedTheme = "(none)";
+
+    private Task SaveAsync() => SessionStorage.SetAsync(Key, new Profile("ada", 36)).AsTask();
+
+    private async Task LoadAsync()
+    {
+        var result = await SessionStorage.GetAsync<Profile>(Key);
+        _loaded = result is { Success: true, Value: { } profile }
+            ? $"{profile.Name}:{profile.Age}"
+            : "(missing)";
+    }
+
+    private Task SaveThemeAsync() => SessionStorage.SetAsync(ThemeKey, new Theme("solarized")).AsTask();
+
+    private async Task LoadThemeAsync()
+    {
+        var result = await SessionStorage.GetAsync<Theme>(ThemeKey);
+        _loadedTheme = result is { Success: true, Value: { } theme } ? theme.Name : "(missing)";
+    }
+
+    /// <summary>Named by a <c>[BindableModel]</c> so the generator emits its JSON contract.</summary>
+    public sealed record Profile(string Name, int Age);
+}

@@ -11,6 +11,8 @@
     <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+    <!-- This assembly declares the experimental Blazor Native AOT metadata model and consumes it internally. -->
+    <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -71,6 +73,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Build.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Authorization.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />

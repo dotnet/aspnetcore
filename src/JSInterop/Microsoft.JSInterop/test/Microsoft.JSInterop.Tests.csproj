@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

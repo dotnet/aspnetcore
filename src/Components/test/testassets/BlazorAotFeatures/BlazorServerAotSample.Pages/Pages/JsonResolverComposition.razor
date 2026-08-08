@@ -1,0 +1,64 @@
+@page "/json-resolver-composition"
+@attribute [InteractiveServer]
+@inject IJSRuntime JS
+@inject ProtectedSessionStorage SessionStorage
+
+<h1>JSON resolver composition</h1>
+
+<button id="exercise-json-resolvers" @onclick="ExerciseAsync">Exercise</button>
+
+<p>Partial A: <span id="json-partial-a">@_partialA</span></p>
+<p>Partial B: <span id="json-partial-b">@_partialB</span></p>
+<p>Interop-only: <span id="json-interop-only">@_interopOnly</span></p>
+<p>Storage-only: <span id="json-storage-only">@_storageOnly</span></p>
+<p>Precedence wire: <span id="json-precedence-wire">@_precedenceWire</span></p>
+
+@code {
+    private string _partialA = "";
+    private string _partialB = "";
+    private string _interopOnly = "";
+    private string _storageOnly = "";
+    private string _precedenceWire = "";
+
+    private async Task ExerciseAsync()
+    {
+        await JS.InvokeVoidAsync("eval", "window.__jsonEchoA = a => a.tag");
+        await JS.InvokeVoidAsync("eval", "window.__jsonEchoB = b => b.tag");
+        await JS.InvokeVoidAsync("eval", "window.__jsonEchoInterop = c => c.tag");
+        await JS.InvokeVoidAsync("eval", "window.__jsonPrecedenceWire = p => JSON.stringify(p)");
+
+        _partialA = await JS.InvokeAsync<string>("__jsonEchoA", new PartialContractA { Tag = "a" });
+        _partialB = await JS.InvokeAsync<string>("__jsonEchoB", new PartialContractB { Tag = "b" });
+        _interopOnly = await JS.InvokeAsync<string>("__jsonEchoInterop", new InteropOnlyContract { Tag = "interop" });
+        _precedenceWire = await JS.InvokeAsync<string>("__jsonPrecedenceWire", new ResolverPrecedencePayload { SomeValue = "first" });
+
+        await SessionStorage.SetAsync("aot-storage-only", new StorageOnlyContract { Tag = "storage" });
+        var stored = await SessionStorage.GetAsync<StorageOnlyContract>("aot-storage-only");
+        _storageOnly = stored is { Success: true, Value: { } value } ? value.Tag : "(missing)";
+    }
+
+    public sealed class PartialContractA
+    {
+        public string Tag { get; set; } = "";
+    }
+
+    public sealed class PartialContractB
+    {
+        public string Tag { get; set; } = "";
+    }
+
+    public sealed class InteropOnlyContract
+    {
+        public string Tag { get; set; } = "";
+    }
+
+    public sealed class StorageOnlyContract
+    {
+        public string Tag { get; set; } = "";
+    }
+
+    public sealed class ResolverPrecedencePayload
+    {
+        public string SomeValue { get; set; } = "";
+    }
+}

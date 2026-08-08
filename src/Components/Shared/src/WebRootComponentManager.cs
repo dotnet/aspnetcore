@@ -6,6 +6,12 @@ using System.Globalization;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
+using ComponentTypeReference = Microsoft.AspNetCore.Components.ComponentTypeInfo;
+#else
+using ComponentTypeReference = System.Type;
+#endif
+
+#if COMPONENTS_SERVER
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 using Renderer = RemoteRenderer;
@@ -33,11 +39,30 @@ internal partial class WebAssemblyRenderer
         private readonly Dictionary<int, WebRootComponent> _webRootComponents = new();
         private Task _currentUpdateTask = Task.CompletedTask;
 
-        public async Task AddRootComponentAsync(
+#if COMPONENTS_SERVER
+        public Task AddRootComponentAsync(
             int ssrComponentId,
             [DynamicallyAccessedMembers(Component)] Type componentType,
             ComponentMarkerKey? key,
             WebRootComponentParameters parameters)
+            => AddRootComponentAsync(
+                ssrComponentId,
+                renderer.ComponentTypeInfoResolver.GetRequiredTypeInfo(componentType),
+                key,
+                parameters);
+
+        internal async Task AddRootComponentAsync(
+            int ssrComponentId,
+            ComponentTypeReference componentTypeInfo,
+            ComponentMarkerKey? key,
+            WebRootComponentParameters parameters)
+#else
+        public async Task AddRootComponentAsync(
+            int ssrComponentId,
+            [DynamicallyAccessedMembers(Component)] ComponentTypeReference componentTypeInfo,
+            ComponentMarkerKey? key,
+            WebRootComponentParameters parameters)
+#endif
         {
 #if COMPONENTS_SERVER
             if (_webRootComponents.Count + 1 > renderer._options.RootComponents.MaxJSRootComponents)
@@ -51,20 +76,39 @@ internal partial class WebAssemblyRenderer
                 throw new InvalidOperationException($"A root component with SSR component ID {ssrComponentId} already exists.");
             }
 
-            var component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters);
+            var component = WebRootComponent.Create(renderer, componentTypeInfo, ssrComponentId, key, parameters);
             _webRootComponents.Add(ssrComponentId, component);
             await _currentUpdateTask;
             await component.RenderAsync(renderer);
         }
 
+#if COMPONENTS_SERVER
         public Task UpdateRootComponentAsync(
             int ssrComponentId,
             [DynamicallyAccessedMembers(Component)] Type newComponentType,
             ComponentMarkerKey? newKey,
             WebRootComponentParameters newParameters)
+            => UpdateRootComponentAsync(
+                ssrComponentId,
+                renderer.ComponentTypeInfoResolver.GetRequiredTypeInfo(newComponentType),
+                newKey,
+                newParameters);
+
+        internal Task UpdateRootComponentAsync(
+            int ssrComponentId,
+            ComponentTypeReference newComponentTypeInfo,
+            ComponentMarkerKey? newKey,
+            WebRootComponentParameters newParameters)
+#else
+        public Task UpdateRootComponentAsync(
+            int ssrComponentId,
+            [DynamicallyAccessedMembers(Component)] ComponentTypeReference newComponentTypeInfo,
+            ComponentMarkerKey? newKey,
+            WebRootComponentParameters newParameters)
+#endif
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
-            return component.UpdateAsync(renderer, newComponentType, newKey, newParameters, _currentUpdateTask);
+            return component.UpdateAsync(renderer, newComponentTypeInfo, newKey, newParameters, _currentUpdateTask);
         }
 
         public void RemoveRootComponent(int ssrComponentId)
@@ -85,11 +129,11 @@ internal partial class WebAssemblyRenderer
         }
 
 #if COMPONENTS_SERVER
-        internal IEnumerable<(int id, ComponentMarkerKey key, (Type componentType, ParameterView parameters))> GetRootComponents()
+        internal IEnumerable<(int id, ComponentMarkerKey key, (ComponentTypeInfo componentTypeInfo, ParameterView parameters))> GetRootComponents()
         {
-            foreach (var (id, (_, key, type, parameters)) in _webRootComponents)
+            foreach (var (id, (_, key, typeInfo, parameters)) in _webRootComponents)
             {
-                yield return (id, key, (type, parameters));
+                yield return (id, key, (typeInfo, parameters));
             }
         }
 
@@ -115,8 +159,10 @@ internal partial class WebAssemblyRenderer
 
         private sealed class WebRootComponent
         {
+#if !COMPONENTS_SERVER
             [DynamicallyAccessedMembers(Component)]
-            private readonly Type _componentType;
+#endif
+            private readonly ComponentTypeReference _componentTypeInfo;
             private readonly string _ssrComponentIdString;
             private readonly ComponentMarkerKey _key;
 
@@ -125,7 +171,10 @@ internal partial class WebAssemblyRenderer
 
             public static WebRootComponent Create(
                 Renderer renderer,
-                [DynamicallyAccessedMembers(Component)] Type componentType,
+#if !COMPONENTS_SERVER
+                [DynamicallyAccessedMembers(Component)]
+#endif
+                ComponentTypeReference componentTypeInfo,
                 int ssrComponentId,
                 ComponentMarkerKey? key,
                 WebRootComponentParameters initialParameters)
@@ -136,19 +185,22 @@ internal partial class WebAssemblyRenderer
                 }
 
                 var ssrComponentIdString = ssrComponentId.ToString(CultureInfo.InvariantCulture);
-                var interactiveComponentId = renderer.AddRootComponent(componentType, ssrComponentIdString);
+                var interactiveComponentId = renderer.AddRootComponent(componentTypeInfo, ssrComponentIdString);
 
-                return new(componentType, ssrComponentIdString, key.Value, interactiveComponentId, initialParameters);
+                return new(componentTypeInfo, ssrComponentIdString, key.Value, interactiveComponentId, initialParameters);
             }
 
             private WebRootComponent(
-                [DynamicallyAccessedMembers(Component)] Type componentType,
+#if !COMPONENTS_SERVER
+                [DynamicallyAccessedMembers(Component)]
+#endif
+                ComponentTypeReference componentTypeInfo,
                 string ssrComponentIdString,
                 ComponentMarkerKey key,
                 int interactiveComponentId,
                 in WebRootComponentParameters initialParameters)
             {
-                _componentType = componentType;
+                _componentTypeInfo = componentTypeInfo;
                 _ssrComponentIdString = ssrComponentIdString;
                 _key = key;
                 _interactiveComponentId = interactiveComponentId;
@@ -158,23 +210,26 @@ internal partial class WebAssemblyRenderer
             public void Deconstruct(
                 out int interactiveComponentId,
                 out ComponentMarkerKey key,
-                out Type componentType,
+                out ComponentTypeReference componentTypeInfo,
                 out ParameterView parameters)
             {
                 interactiveComponentId = _interactiveComponentId;
                 key = _key;
-                componentType = _componentType;
+                componentTypeInfo = _componentTypeInfo;
                 parameters = _latestParameters.Parameters;
             }
 
             public Task UpdateAsync(
                 Renderer renderer,
-                [DynamicallyAccessedMembers(Component)] Type newComponentType,
+#if !COMPONENTS_SERVER
+                [DynamicallyAccessedMembers(Component)]
+#endif
+                ComponentTypeReference newComponentTypeInfo,
                 ComponentMarkerKey? newKey,
                 WebRootComponentParameters newParameters,
                 Task currentUpdateTask)
             {
-                if (_componentType != newComponentType)
+                if (GetComponentType(_componentTypeInfo) != GetComponentType(newComponentTypeInfo))
                 {
                     throw new InvalidOperationException("Cannot update components with mismatching types.");
                 }
@@ -212,7 +267,7 @@ internal partial class WebAssemblyRenderer
                         // match prerendered components with existing components, and we don't want to allow
                         // clients to maliciously assign parameters to the wrong component.
                         renderer.RemoveRootComponent(_interactiveComponentId);
-                        _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
+                        _interactiveComponentId = renderer.AddRootComponent(_componentTypeInfo, _ssrComponentIdString);
                         _latestParameters = newParameters;
                         return RenderAsync(renderer, currentUpdateTask);
                     }
@@ -234,6 +289,13 @@ internal partial class WebAssemblyRenderer
             {
                 renderer.RemoveRootComponent(_interactiveComponentId);
             }
+
+            private static Type GetComponentType(ComponentTypeReference componentTypeInfo)
+#if COMPONENTS_SERVER
+                => componentTypeInfo.Type;
+#else
+                => componentTypeInfo;
+#endif
         }
     }
 }

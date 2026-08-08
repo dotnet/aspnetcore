@@ -1,0 +1,18 @@
+@page "/parameters"
+@attribute [InteractiveServer]
+
+<h1>Parameters &amp; cascading values</h1>
+
+<p>Exercises component parameter binding and cascading values, both driven by the generated
+<code>ComponentDescriptor</code> rather than reflection.</p>
+
+<CascadingValue Value="_theme">
+    <ChildCard Title="First" Count="@_count" OnBump="() => _count++" />
+</CascadingValue>
+
+<button id="bump" @onclick="() => _count++">Bump (@_count)</button>
+
+@code {
+    private int _count;
+    private string _theme = "aot-theme";
+}

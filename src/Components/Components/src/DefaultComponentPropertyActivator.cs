@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Microsoft.AspNetCore.Components.HotReload;
-using Microsoft.AspNetCore.Components.Reflection;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -13,55 +11,59 @@ namespace Microsoft.AspNetCore.Components;
 
 internal sealed class DefaultComponentPropertyActivator : IComponentPropertyActivator
 {
-    private const BindingFlags InjectablePropertyBindingFlags
-        = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+    private readonly IComponentTypeInfoResolver _typeInfoResolver;
+    private readonly ConditionalWeakTable<ComponentTypeInfo, CachedActivator> _propertyActivators = new();
 
-    private static readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedPropertyActivators = new();
-
-    static DefaultComponentPropertyActivator()
+    public DefaultComponentPropertyActivator()
+        : this(ComponentTypeInfoResolverFactory.Default)
     {
-        if (HotReloadManager.IsSupported)
-        {
-            HotReloadManager.Default.OnDeltaApplied += ClearCache;
-        }
     }
 
-    public static void ClearCache() => _cachedPropertyActivators.Clear();
+    internal DefaultComponentPropertyActivator(IComponentTypeInfoResolver typeInfoResolver)
+    {
+        _typeInfoResolver = typeInfoResolver;
+    }
 
     /// <inheritdoc />
     public Action<IServiceProvider, IComponent> GetActivator(
         [DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        // Unfortunately we can't use 'GetOrAdd' here because the DynamicallyAccessedMembers annotation doesn't flow through to the
-        // callback, so it becomes an IL2111 warning. The following is equivalent and thread-safe because it's a ConcurrentDictionary
-        // and it doesn't matter if we build a cache entry more than once.
-        if (!_cachedPropertyActivators.TryGetValue(componentType, out var activator))
-        {
-            activator = CreatePropertyActivator(componentType);
-            _cachedPropertyActivators.TryAdd(componentType, activator);
-        }
+        return GetActivator(_typeInfoResolver.GetRequiredTypeInfo(componentType));
+    }
 
-        return activator;
+    internal Action<IServiceProvider, IComponent> GetActivator(ComponentTypeInfo typeInfo)
+    {
+        return _propertyActivators.GetValue(
+            typeInfo,
+            static info => new CachedActivator(CreatePropertyActivator(info.Type, info.Injectables))).Value;
     }
 
     private static Action<IServiceProvider, IComponent> CreatePropertyActivator(
-        [DynamicallyAccessedMembers(Component)] Type type)
+        Type type,
+        IReadOnlyList<ComponentInjectableDescriptor> descriptors)
     {
-        // Do all the reflection up front
-        List<(string name, Type propertyType, PropertySetter setter, object? serviceKey)>? injectables = null;
-        foreach (var property in MemberAssignment.GetPropertiesIncludingInherited(type, InjectablePropertyBindingFlags))
+        if (descriptors.Count == 0)
         {
-            var injectAttribute = property.GetCustomAttribute<InjectAttribute>();
-            if (injectAttribute is null)
-            {
-                continue;
-            }
-
-            injectables ??= new();
-            injectables.Add((property.Name, property.PropertyType, new PropertySetter(type, property), injectAttribute.Key));
+            return static (_, _) => { };
         }
 
-        if (injectables is null)
+        var injectables = new List<Injectable>(descriptors.Count);
+        foreach (var descriptor in descriptors)
+        {
+            injectables.Add(new Injectable(
+                descriptor.Name,
+                descriptor.ServiceType,
+                descriptor.Attribute.Key,
+                descriptor.HasSetter,
+                descriptor.SetValue));
+        }
+
+        return CreatePropertyActivator(type, injectables);
+    }
+
+    private static Action<IServiceProvider, IComponent> CreatePropertyActivator(Type type, List<Injectable> injectables)
+    {
+        if (injectables.Count == 0)
         {
             return static (_, _) => { };
         }
@@ -72,7 +74,16 @@ internal sealed class DefaultComponentPropertyActivator : IComponentPropertyActi
         // without any further reflection calls (just typecasts)
         void Initialize(IServiceProvider serviceProvider, IComponent component)
         {
-            foreach (var (propertyName, propertyType, setter, serviceKey) in injectables)
+            foreach (var (propertyName, _, _, hasSetter, _) in injectables)
+            {
+                if (!hasSetter)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot provide a value for property '{propertyName}' on type '{type.FullName}' because the property has no setter.");
+                }
+            }
+
+            foreach (var (propertyName, propertyType, serviceKey, _, setValue) in injectables)
             {
                 object? serviceInstance;
 
@@ -99,8 +110,17 @@ internal sealed class DefaultComponentPropertyActivator : IComponentPropertyActi
                         $"registered service of type '{propertyType}'.");
                 }
 
-                setter.SetValue(component, serviceInstance);
+                setValue(component, serviceInstance);
             }
         }
     }
+
+    private readonly record struct Injectable(
+        string PropertyName,
+        Type PropertyType,
+        object? ServiceKey,
+        bool HasSetter,
+        Action<object, object?> SetValue);
+
+    private sealed record CachedActivator(Action<IServiceProvider, IComponent> Value);
 }

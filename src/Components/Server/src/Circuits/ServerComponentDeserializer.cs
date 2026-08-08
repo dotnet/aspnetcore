@@ -59,7 +59,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 {
     private readonly IDataProtector _dataProtector;
     private readonly ILogger<ServerComponentDeserializer> _logger;
-    private readonly RootTypeCache _RootTypeCache;
+    private readonly IComponentTypeInfoResolver _componentTypeInfoResolver;
     private readonly ComponentParameterDeserializer _parametersDeserializer;
 
     // The following fields are only used in TryDeserializeSingleComponentDescriptor.
@@ -72,7 +72,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     public ServerComponentDeserializer(
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerComponentDeserializer> logger,
-        RootTypeCache RootTypeCache,
+        IComponentTypeInfoResolver componentTypeInfoResolver,
         ComponentParameterDeserializer parametersDeserializer)
     {
         // When we protect the data we use a time-limited data protector with the
@@ -87,13 +87,14 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             .ToTimeLimitedDataProtector();
 
         _logger = logger;
-        _RootTypeCache = RootTypeCache;
+        _componentTypeInfoResolver = componentTypeInfoResolver;
         _parametersDeserializer = parametersDeserializer;
     }
 
     public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
     {
-        var markers = JsonSerializer.Deserialize<IEnumerable<ComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var markersTypeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(IEnumerable<ComponentMarker>));
+        var markers = (IEnumerable<ComponentMarker>)JsonSerializer.Deserialize(serializedComponentRecords, markersTypeInfo)!;
         descriptors = new List<ComponentDescriptor>();
         int lastSequence = -1;
 
@@ -187,7 +188,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             return false;
         }
 
-        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
+        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentTypeInfo, out var parameters))
         {
             return false;
         }
@@ -199,17 +200,21 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             serverComponent.ParameterDefinitions.AsReadOnly(),
             serverComponent.ParameterValues.AsReadOnly());
 
-        result = new(componentType, webRootComponentParameters);
+        result = new(componentTypeInfo, webRootComponentParameters);
         return true;
     }
 
-    private bool TryDeserializeComponentTypeAndParameters(ServerComponent serverComponent, [NotNullWhen(true)] out Type? componentType, out ParameterView parameters)
+    private bool TryDeserializeComponentTypeAndParameters(
+        ServerComponent serverComponent,
+        [NotNullWhen(true)] out ComponentTypeInfo? componentTypeInfo,
+        out ParameterView parameters)
     {
         parameters = default;
-        componentType = _RootTypeCache
-            .GetRootType(serverComponent.AssemblyName, serverComponent.TypeName);
+        componentTypeInfo = _componentTypeInfoResolver.GetTypeInfo(
+            serverComponent.AssemblyName,
+            serverComponent.TypeName);
 
-        if (componentType == null)
+        if (componentTypeInfo is null)
         {
             Log.FailedToFindComponent(_logger, serverComponent.TypeName, serverComponent.AssemblyName);
             return false;
@@ -256,9 +261,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
         try
         {
-            result = JsonSerializer.Deserialize<ServerComponent>(
-                unprotected,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+            var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(ServerComponent));
+            result = (ServerComponent)JsonSerializer.Deserialize(unprotected, typeInfo)!;
             return true;
         }
         catch (Exception e)
@@ -276,14 +280,14 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             return default;
         }
 
-        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
+        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentTypeInfo, out var parameters))
         {
             return default;
         }
 
         var componentDescriptor = new ComponentDescriptor
         {
-            ComponentType = componentType,
+            ComponentTypeInfo = componentTypeInfo,
             Parameters = parameters,
             Sequence = serverComponent.Sequence,
         };
@@ -299,9 +303,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         int[]? seenComponentIdsStorage = null;
         try
         {
-            result = JsonSerializer.Deserialize<RootComponentOperationBatch>(
-                serializedComponentOperations,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+            var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(RootComponentOperationBatch));
+            result = (RootComponentOperationBatch)JsonSerializer.Deserialize(serializedComponentOperations, typeInfo)!;
             var operations = result.Operations;
 
             Span<int> seenSsrComponentIds = operations.Length <= 128

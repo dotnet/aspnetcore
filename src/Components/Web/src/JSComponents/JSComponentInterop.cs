@@ -103,13 +103,16 @@ public class JSComponentInterop
                 {
                     ParameterKind.Value => JsonSerializer.Deserialize(
                         parameterJsonValue,
-                        parameterInfo.Type,
-                        jsonOptions),
+                        jsonOptions.GetTypeInfo(parameterInfo.Type)),
                     ParameterKind.EventCallbackWithNoParameters => CreateEventCallbackWithNoParameters(
-                        JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
+                        (IJSObjectReference?)JsonSerializer.Deserialize(
+                            parameterJsonValue,
+                            jsonOptions.GetTypeInfo(typeof(IJSObjectReference)))),
                     ParameterKind.EventCallbackWithSingleParameter => CreateEventCallbackWithSingleParameter(
                         parameterInfo.Type,
-                        JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
+                        (IJSObjectReference?)JsonSerializer.Deserialize(
+                            parameterJsonValue,
+                            jsonOptions.GetTypeInfo(typeof(IJSObjectReference)))),
                     var x => throw new InvalidOperationException($"Invalid {nameof(ParameterKind)} '{x}'.")
                 };
             }

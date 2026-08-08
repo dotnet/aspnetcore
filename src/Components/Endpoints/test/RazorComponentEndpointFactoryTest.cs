@@ -22,7 +22,7 @@ public class RazorComponentEndpointFactoryTest
         var configuredRenderModes = new ConfiguredRenderModesMetadata(new[] { testRenderMode });
         factory.AddEndpoints(
             endpoints,
-            typeof(App), new PageComponentInfo(
+            typeof(App), new PageComponentDescriptor(
             "App",
             typeof(App),
             "/",
@@ -65,7 +65,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(
             endpoints,
             typeof(App),
-            new PageComponentInfo(
+            new PageComponentDescriptor(
                 "App",
                 typeof(App),
                 "/",
@@ -93,7 +93,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(
             endpoints,
             typeof(App),
-            new PageComponentInfo(
+            new PageComponentDescriptor(
                 "App",
                 typeof(App),
                 "/",
@@ -121,7 +121,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(
             endpoints,
             typeof(App),
-            new PageComponentInfo(
+            new PageComponentDescriptor(
                 "App",
                 typeof(App),
                 "/",
@@ -153,7 +153,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(
             endpoints,
             typeof(App),
-            new PageComponentInfo(
+            new PageComponentDescriptor(
                 "App",
                 typeof(App),
                 "/",

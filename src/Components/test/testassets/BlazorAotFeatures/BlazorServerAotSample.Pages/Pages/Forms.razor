@@ -1,0 +1,33 @@
+@page "/forms"
+@attribute [InteractiveServer]
+@using System.ComponentModel.DataAnnotations
+
+<h1>Forms &amp; validation</h1>
+
+<p>Exercises <code>EditForm</code> + <code>DataAnnotationsValidator</code> (interactive server binding,
+not SSR form mapping).</p>
+
+<EditForm Model="Model" OnValidSubmit="HandleValid">
+    <DataAnnotationsValidator />
+    <label>Email: <InputText id="email" @bind-Value="Model.Email" /></label>
+    <ValidationMessage For="() => Model.Email" />
+    <button id="submit" type="submit">Submit</button>
+</EditForm>
+
+<p>Status: <span id="status">@_status</span></p>
+
+@code {
+    private string _status = "(unsubmitted)";
+
+    // Named by a [BindableModel] on the host's metadata context (see DataBinding.razor), so
+    // "() => Model.Email" resolves its FieldIdentifier without compiling the expression.
+    public EmailModel Model { get; } = new();
+
+    private void HandleValid() => _status = $"valid:{Model.Email}";
+
+    public sealed class EmailModel
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+    }
+}

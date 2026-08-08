@@ -1,0 +1,35 @@
+@inherits GeneratedMetadataBase
+
+<div id="generated-root">
+    <span id="generated-activated">yes</span>
+    <span id="base-parameter">@BaseParameter</span>
+    <span id="derived-parameter">@DerivedParameter</span>
+    <span id="named-cascade">@NamedCascade</span>
+    <span id="keyed-injection">@KeyedGreetingText</span>
+    <button id="generated-increment" @onclick="() => _count++">Bump</button>
+    <span id="generated-count">@_count</span>
+    <span id="generated-state-phase">@(_restored ? "restored" : "fresh")</span>
+    <span id="generated-token">@State?.Token</span>
+</div>
+
+@code {
+    private int _count;
+    private bool _restored;
+
+    [Parameter]
+    public int DerivedParameter { get; private set; }
+
+    [PersistentState]
+    public GeneratedState? State { get; private set; }
+
+    protected override void OnInitialized()
+    {
+        _restored = State is not null;
+        State ??= new GeneratedState { Token = Guid.NewGuid().ToString("N") };
+    }
+
+    public sealed class GeneratedState
+    {
+        public string Token { get; set; } = "";
+    }
+}

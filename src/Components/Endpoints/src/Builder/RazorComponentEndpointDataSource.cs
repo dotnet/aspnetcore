@@ -26,6 +26,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private readonly ResourceCollectionResolver _resourceCollectionResolver;
     private readonly RenderModeEndpointProvider[] _renderModeEndpointProviders;
     private readonly RazorComponentEndpointFactory _factory;
+    private readonly IComponentTypeInfoResolver _componentTypeInfoResolver;
     private readonly HotReloadService? _hotReloadService;
     private List<Endpoint>? _endpoints;
     private CancellationTokenSource _cancellationTokenSource;
@@ -41,12 +42,14 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         IEnumerable<RenderModeEndpointProvider> renderModeEndpointProviders,
         IEndpointRouteBuilder endpointRouteBuilder,
         RazorComponentEndpointFactory factory,
+        IComponentTypeInfoResolver componentTypeInfoResolver,
         HotReloadService? hotReloadService = null)
     {
         _endpointRouteBuilder = endpointRouteBuilder;
         _resourceCollectionResolver = new ResourceCollectionResolver(endpointRouteBuilder);
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
+        _componentTypeInfoResolver = componentTypeInfoResolver;
         _hotReloadService = hotReloadService;
         DefaultBuilder = new RazorComponentsEndpointConventionBuilder(
             _lock,
@@ -107,7 +110,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
             var endpoints = new List<Endpoint>();
 
-            var componentApplicationBuilder = new ComponentApplicationBuilder();
+            var componentApplicationBuilder = new ComponentApplicationBuilder(_componentTypeInfoResolver);
 
             foreach (var action in ComponentApplicationBuilderActions)
             {

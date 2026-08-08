@@ -3,6 +3,8 @@
 
 using System;
 using System.Text.Json;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -102,6 +104,28 @@ public class JsonTempDataSerializerTest
 
         // Assert
         Assert.True(result);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void CanSerialize_ReflectionDisabled_OnlyAcceptsGeneratedContracts()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add(
+            "System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault",
+            false.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            Assert.False(JsonSerializer.IsReflectionEnabledByDefault);
+
+            var serializer = CreateSerializer();
+            Assert.True(serializer.CanSerialize(typeof(int)));
+            Assert.True(serializer.CanSerialize(typeof(ICollection<string>)));
+            Assert.True(serializer.CanSerialize(typeof(IDictionary<string, int>)));
+            Assert.False(serializer.CanSerialize(typeof(List<string>)));
+            Assert.False(serializer.CanSerialize(typeof(Dictionary<string, int>)));
+        }, options);
     }
 
     [Fact]

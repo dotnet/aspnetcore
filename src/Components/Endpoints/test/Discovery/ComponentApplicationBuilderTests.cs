@@ -1,442 +1,164 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Infrastructure;
+
 namespace Microsoft.AspNetCore.Components.Discovery;
+
+#nullable enable
 
 public class ComponentApplicationBuilderTests
 {
     [Fact]
     public void ComponentApplicationBuilder_CanAddLibrary()
     {
-        // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App1",
-            CreateApp1Pages("App1"),
-            CreateApp1Components("App1")));
+        builder.AddLibrary("App1", CreateApp1());
 
         var app = builder.Build();
 
-        Assert.NotNull(app);
-
-        Assert.Collection(app.Pages,
-            p => Assert.Equal(typeof(App1Test1), p.Type),
-            p => Assert.Equal(typeof(App1Test2), p.Type),
-            p => Assert.Equal(typeof(App1Test3), p.Type));
-
-        Assert.Collection(app.Pages.Select(p => p.Route),
-            r => Assert.Equal("/App1/Test1", r),
-            r => Assert.Equal("/App1/Test2", r),
-            r => Assert.Equal("/App1/Test3", r));
-
-        Assert.Collection(app.Components,
-            c => Assert.Equal(typeof(App1Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App1OtherComponent), c.ComponentType));
+        Assert.Collection(
+            app.Pages,
+            page => Assert.Equal(typeof(App1Test1), page.Type),
+            page => Assert.Equal(typeof(App1Test2), page.Type),
+            page => Assert.Equal(typeof(App1Test3), page.Type));
+        Assert.Equal(
+            ["/App1/Test1", "/App1/Test2", "/App1/Test3"],
+            app.Pages.Select(static page => page.Route));
+        Assert.Equal(
+            [typeof(App1Test1), typeof(App1Test2), typeof(App1Test3), typeof(App1OtherComponent)],
+            app.Components.Select(static component => component.Type));
     }
 
     [Fact]
     public void ComponentApplicationBuilder_CanAddMultipleLibraries()
     {
-        // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App1",
-            CreateApp1Pages("App1"),
-            CreateApp1Components("App1")));
+        builder.AddLibrary("App1", CreateApp1());
+        builder.AddLibrary("App2", CreateApp2());
 
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App2",
-            CreateApp2Pages("App2"),
-            CreateApp2Components("App2")));
         var app = builder.Build();
 
-        Assert.NotNull(app);
-
-        Assert.Collection(
-            app.Pages,
-            p => Assert.Equal(typeof(App1Test1), p.Type),
-            p => Assert.Equal(typeof(App1Test2), p.Type),
-            p => Assert.Equal(typeof(App1Test3), p.Type),
-            p => Assert.Equal(typeof(App2Test1), p.Type),
-            p => Assert.Equal(typeof(App2Test2), p.Type),
-            p => Assert.Equal(typeof(App2Test3), p.Type));
-
-        Assert.Collection(
-            app.Components,
-            c => Assert.Equal(typeof(App1Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App1OtherComponent), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App2OtherComponent), c.ComponentType));
+        Assert.Equal(6, app.Pages.Count);
+        Assert.Equal(8, app.Components.Count);
     }
 
     [Fact]
     public void ComponentApplicationBuilder_CanRemoveLibrary()
     {
-        // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App1",
-            CreateApp1Pages("App1"),
-            CreateApp1Components("App1")));
-
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App2",
-            CreateApp2Pages("App2"),
-            CreateApp2Components("App2")));
+        builder.AddLibrary("App1", CreateApp1());
+        builder.AddLibrary("App2", CreateApp2());
 
         builder.RemoveLibrary("App1");
-
         var app = builder.Build();
 
-        Assert.NotNull(app);
-
-        Assert.Collection(
-            app.Pages,
-            p => Assert.Equal(typeof(App2Test1), p.Type),
-            p => Assert.Equal(typeof(App2Test2), p.Type),
-            p => Assert.Equal(typeof(App2Test3), p.Type));
-
-        Assert.Collection(
-            app.Components,
-            c => Assert.Equal(typeof(App2Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App2OtherComponent), c.ComponentType));
-    }
-
-    [Fact]
-    public void ComponentApplicationBuilder_CanCombineBuilders()
-    {
-        // Arrange
-        var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App1",
-            CreateApp1Pages("App1"),
-            CreateApp1Components("App1")));
-
-        var builder2 = new ComponentApplicationBuilder();
-        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App2",
-            CreateApp2Pages("App2"),
-            CreateApp2Components("App2")));
-        builder.Combine(builder2);
-        var app = builder.Build();
-
-        Assert.NotNull(app);
-
-        Assert.Collection(
-            app.Pages,
-            p => Assert.Equal(typeof(App1Test1), p.Type),
-            p => Assert.Equal(typeof(App1Test2), p.Type),
-            p => Assert.Equal(typeof(App1Test3), p.Type),
-            p => Assert.Equal(typeof(App2Test1), p.Type),
-            p => Assert.Equal(typeof(App2Test2), p.Type),
-            p => Assert.Equal(typeof(App2Test3), p.Type));
-
-        Assert.Collection(
-            app.Components,
-            c => Assert.Equal(typeof(App1Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App1OtherComponent), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App2OtherComponent), c.ComponentType));
+        Assert.All(app.Pages, static page => Assert.StartsWith("/App2/", page.Route));
+        Assert.Equal(4, app.Components.Count);
     }
 
     [Fact]
     public void ComponentApplicationBuilder_CombiningDoesNotDuplicateSharedDependencies()
     {
-        // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App1",
-            CreateApp1Pages("App1"),
-            CreateApp1Components("App1")));
+        builder.AddLibrary("App1", CreateApp1());
+        builder.AddLibrary("Shared", CreateShared());
+        var other = new ComponentApplicationBuilder();
+        other.AddLibrary("App2", CreateApp2());
+        other.AddLibrary("Shared", CreateShared());
 
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "Shared",
-            CreateSharedPages("Shared"),
-            CreateSharedComponents("Shared")));
-
-        var builder2 = new ComponentApplicationBuilder();
-        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App2",
-            CreateApp2Pages("App2"),
-            CreateApp2Components("App2")));
-
-        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "Shared",
-            CreateSharedPages("Shared"),
-            CreateSharedComponents("Shared")));
-
-        builder.Combine(builder2);
+        builder.Combine(other);
         var app = builder.Build();
 
-        Assert.NotNull(app);
-
-        Assert.Collection(
-            app.Pages,
-            p => Assert.Equal(typeof(App1Test1), p.Type),
-            p => Assert.Equal(typeof(App1Test2), p.Type),
-            p => Assert.Equal(typeof(App1Test3), p.Type),
-            p => Assert.Equal(typeof(SharedTest1), p.Type),
-            p => Assert.Equal(typeof(SharedTest2), p.Type),
-            p => Assert.Equal(typeof(SharedTest3), p.Type),
-            p => Assert.Equal(typeof(App2Test1), p.Type),
-            p => Assert.Equal(typeof(App2Test2), p.Type),
-            p => Assert.Equal(typeof(App2Test3), p.Type));
-
-        Assert.Collection(
-            app.Components,
-            c => Assert.Equal(typeof(App1Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App1OtherComponent), c.ComponentType),
-            c => Assert.Equal(typeof(SharedTest1), c.ComponentType),
-            c => Assert.Equal(typeof(SharedTest2), c.ComponentType),
-            c => Assert.Equal(typeof(SharedTest3), c.ComponentType),
-            c => Assert.Equal(typeof(SharedOtherComponent), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App2Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App2OtherComponent), c.ComponentType));
+        Assert.Equal(9, app.Pages.Count);
+        Assert.Equal(12, app.Components.Count);
     }
 
     [Fact]
     public void ComponentApplicationBuilder_CanExcludeOtherBuilders()
     {
-        // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App1",
-            CreateApp1Pages("App1"),
-            CreateApp1Components("App1")));
+        builder.AddLibrary("App1", CreateApp1());
+        builder.AddLibrary("App2", CreateApp2());
+        builder.AddLibrary("Shared", CreateShared());
+        var excluded = new ComponentApplicationBuilder();
+        excluded.AddLibrary("App2", CreateApp2());
+        excluded.AddLibrary("Shared", CreateShared());
 
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App2",
-            CreateApp2Pages("App2"),
-            CreateApp2Components("App2")));
-
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "Shared",
-            CreateSharedPages("Shared"),
-            CreateSharedComponents("Shared")));
-
-        var builder2 = new ComponentApplicationBuilder();
-        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "App2",
-            CreateApp2Pages("App2"),
-            CreateApp2Components("App2")));
-
-        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "Shared",
-            CreateSharedPages("Shared"),
-            CreateSharedComponents("Shared")));
-
-        builder.Exclude(builder2);
+        builder.Exclude(excluded);
         var app = builder.Build();
 
-        Assert.NotNull(app);
-
-        Assert.Collection(
-            app.Pages,
-            p => Assert.Equal(typeof(App1Test1), p.Type),
-            p => Assert.Equal(typeof(App1Test2), p.Type),
-            p => Assert.Equal(typeof(App1Test3), p.Type));
-
-        Assert.Collection(
-            app.Components,
-            c => Assert.Equal(typeof(App1Test1), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test2), c.ComponentType),
-            c => Assert.Equal(typeof(App1Test3), c.ComponentType),
-            c => Assert.Equal(typeof(App1OtherComponent), c.ComponentType));
+        Assert.Equal(3, app.Pages.Count);
+        Assert.Equal(4, app.Components.Count);
+        Assert.All(app.Components, static component => Assert.StartsWith("App1", component.Type.Name));
     }
 
-    private IReadOnlyList<ComponentBuilder> CreateApp1Components(string assemblyName)
+    [Fact]
+    public void ComponentApplicationBuilder_PreservesNormalizedEndpointMetadata()
     {
-        return new[]
-        {
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(App1Test1),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(App1Test2),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(App1Test3),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(App1OtherComponent),
-            }
-        };
+        var marker = new MarkerAttribute();
+        var builder = new ComponentApplicationBuilder();
+        builder.AddLibrary(
+            "App",
+            [Describe(typeof(App1Test1), "/route", marker)]);
+
+        var page = Assert.Single(builder.Build().Pages);
+
+        Assert.DoesNotContain(page.Metadata, static item => item is RouteAttribute);
+        Assert.Same(marker, Assert.Single(page.Metadata));
     }
 
-    private IReadOnlyList<PageComponentBuilder> CreateApp1Pages(string assemblyName)
+    private static IReadOnlyList<ComponentTypeInfo> CreateApp1()
+        =>
+        [
+            Describe(typeof(App1Test1), "/App1/Test1"),
+            Describe(typeof(App1Test2), "/App1/Test2"),
+            Describe(typeof(App1Test3), "/App1/Test3"),
+            Describe(typeof(App1OtherComponent)),
+        ];
+
+    private static IReadOnlyList<ComponentTypeInfo> CreateApp2()
+        =>
+        [
+            Describe(typeof(App2Test1), "/App2/Test1"),
+            Describe(typeof(App2Test2), "/App2/Test2"),
+            Describe(typeof(App2Test3), "/App2/Test3"),
+            Describe(typeof(App2OtherComponent)),
+        ];
+
+    private static IReadOnlyList<ComponentTypeInfo> CreateShared()
+        =>
+        [
+            Describe(typeof(SharedTest1), "/Shared/Test1"),
+            Describe(typeof(SharedTest2), "/Shared/Test2"),
+            Describe(typeof(SharedTest3), "/Shared/Test3"),
+            Describe(typeof(SharedOtherComponent)),
+        ];
+
+    private static ComponentTypeInfo Describe(Type type, string? route = null, params object[] metadata)
     {
-        return new[]
+        IReadOnlyList<object> normalizedMetadata = route is null
+            ? metadata
+            : [new RouteAttribute(route), .. metadata];
+        return new ComponentTypeInfo(new ComponentDescriptor
         {
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(App1Test1),
-                RouteTemplates = new List<string> { "/App1/Test1" }
-            },
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(App1Test2),
-                RouteTemplates = new List<string> { "/App1/Test2" }
-            },
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(App1Test3),
-                RouteTemplates = new List<string> { "/App1/Test3" }
-            }
-        };
+            Type = type,
+            Metadata = normalizedMetadata,
+        });
     }
 
-    private IReadOnlyList<ComponentBuilder> CreateApp2Components(string assemblyName)
-    {
-        return new[]
-        {
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(App2Test1),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(App2Test2),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(App2Test3),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(App2OtherComponent),
-            }
-        };
-    }
+    private sealed class MarkerAttribute : Attribute;
 
-    private IReadOnlyList<PageComponentBuilder> CreateApp2Pages(string assemblyName)
-    {
-        return new[]
-        {
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(App2Test1),
-                RouteTemplates = new List<string> { "/App2/Test1" }
-            },
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(App2Test2),
-                RouteTemplates = new List<string> { "/App2/Test2" }
-            },
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(App2Test3),
-                RouteTemplates = new List<string> { "/App2/Test3" }
-            }
-        };
-    }
-
-    private IReadOnlyList<ComponentBuilder> CreateSharedComponents(string assemblyName)
-    {
-        return new[]
-        {
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(SharedTest1),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(SharedTest2),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(SharedTest3),
-            },
-            new ComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                ComponentType = typeof(SharedOtherComponent),
-            }
-        };
-    }
-
-    private IReadOnlyList<PageComponentBuilder> CreateSharedPages(string assemblyName)
-    {
-        return new[]
-        {
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(SharedTest1),
-                RouteTemplates = new List<string> { "/Shared/Test1" }
-            },
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(SharedTest2),
-                RouteTemplates = new List<string> { "/Shared/Test2" }
-            },
-            new PageComponentBuilder
-            {
-                AssemblyName = assemblyName,
-                PageType = typeof(SharedTest3),
-                RouteTemplates = new List<string> { "/Shared/Test3" }
-            },
-        };
-    }
-
-    class App1Test1 : ComponentBase { }
-
-    class App1Test2 : ComponentBase { }
-
-    class App1Test3 : ComponentBase { }
-
-    class App1OtherComponent : ComponentBase { }
-
-    class App2Test1 : ComponentBase { }
-
-    class App2Test2 : ComponentBase { }
-
-    class App2Test3 : ComponentBase { }
-
-    class App2OtherComponent : ComponentBase { }
-
-    class SharedTest1 : ComponentBase { }
-
-    class SharedTest2 : ComponentBase { }
-
-    class SharedTest3 : ComponentBase { }
-
-    class SharedOtherComponent : ComponentBase { }
+    private sealed class App1Test1 : ComponentBase;
+    private sealed class App1Test2 : ComponentBase;
+    private sealed class App1Test3 : ComponentBase;
+    private sealed class App1OtherComponent : ComponentBase;
+    private sealed class App2Test1 : ComponentBase;
+    private sealed class App2Test2 : ComponentBase;
+    private sealed class App2Test3 : ComponentBase;
+    private sealed class App2OtherComponent : ComponentBase;
+    private sealed class SharedTest1 : ComponentBase;
+    private sealed class SharedTest2 : ComponentBase;
+    private sealed class SharedTest3 : ComponentBase;
+    private sealed class SharedOtherComponent : ComponentBase;
 }
