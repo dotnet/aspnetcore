@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Internal;
@@ -128,14 +129,47 @@ public abstract class WebRenderer : Renderer
             var newJsonOptions = new JsonSerializerOptions(jsonOptions);
             newJsonOptions.TypeInfoResolverChain.Clear();
             newJsonOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
-            newJsonOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
-            var argsJson = JsonSerializer.Serialize(args, newJsonOptions);
+            newJsonOptions.TypeInfoResolverChain.Add(ConverterBackedTypeInfoResolver.Instance);
+            var argsJson = JsonSerializer.Serialize(args, newJsonOptions.GetTypeInfo(typeof(object[])));
             inProcessRuntime.InvokeJS(JSMethodIdentifier, argsJson, JSCallResultType.JSVoidResult, 0);
         }
         else
         {
+            EnsureJSInteropContracts(jsonOptions);
             jsRuntime.InvokeVoidAsync(JSMethodIdentifier, args).Preserve();
         }
+    }
+
+    private static void EnsureJSInteropContracts(JsonSerializerOptions jsonOptions)
+    {
+        if (jsonOptions.IsReadOnly)
+        {
+            return;
+        }
+
+        var resolvers = jsonOptions.TypeInfoResolverChain;
+        PlaceResolverAt(resolvers, WebRendererSerializerContext.Default, 0);
+        PlaceResolverAt(resolvers, WebJSInteropSerializerContext.Default, 1);
+        PlaceResolverAt(resolvers, ConverterBackedTypeInfoResolver.Instance, 2);
+    }
+
+    private static void PlaceResolverAt(
+        IList<IJsonTypeInfoResolver> resolvers,
+        IJsonTypeInfoResolver resolver,
+        int index)
+    {
+        var existingIndex = resolvers.IndexOf(resolver);
+        if (existingIndex == index)
+        {
+            return;
+        }
+
+        if (existingIndex >= 0)
+        {
+            resolvers.RemoveAt(existingIndex);
+        }
+
+        resolvers.Insert(index, resolver);
     }
 
     /// <summary>

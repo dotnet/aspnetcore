@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -44,12 +45,27 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                     new ByteArrayJsonConverter(this),
                 }
         };
+
+        if (JsonSerializer.IsReflectionEnabledByDefault)
+        {
+            JsonSerializerOptions.TypeInfoResolverChain.Add(CreateReflectionResolver());
+        }
     }
 
     /// <summary>
     /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
     /// </summary>
     protected internal JsonSerializerOptions JsonSerializerOptions { get; }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    [UnconditionalSuppressMessage(
+        "AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    private static DefaultJsonTypeInfoResolver CreateReflectionResolver() => new();
 
     /// <summary>
     /// Gets or sets the default timeout for asynchronous JavaScript calls.
@@ -150,7 +166,9 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 return new ValueTask<TValue>(tcs.Task);
             }
 
-            var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
+            var argsJson = args is not null && args.Length != 0
+                ? JsonSerializer.Serialize(args, JsonSerializerOptions.GetTypeInfo(typeof(object[])))
+                : "[]";
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
             var invocationInfo = new JSInvocationInfo
             {
