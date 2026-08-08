@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Authorization;
 /// Additionally, this component supplies a cascading parameter of type <see cref="Task{AuthenticationState}"/>,
 /// which makes the user's current authentication state available to descendants.
 /// </summary>
-public sealed class AuthorizeRouteView : RouteView
+public sealed partial class AuthorizeRouteView : RouteView
 {
     // We expect applications to supply their own authorizing/not-authorized content, but
     // it's better to have defaults than to make the parameters mandatory because in some

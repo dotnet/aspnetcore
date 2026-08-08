@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Rendering;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -38,9 +38,22 @@ internal class RazorComponentEndpointHost : IComponent
         return Task.CompletedTask;
     }
 
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2110",
+        Justification = "LayoutView parameter binding is backed by built-in component descriptors.")]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2111",
+        Justification = "LayoutView parameter binding is backed by built-in component descriptors.")]
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var pageLayoutType = ComponentType.GetCustomAttribute<LayoutAttribute>()?.LayoutType;
+        var pageLayoutType = _renderHandle.ComponentTypeInfoResolver!
+            .GetRequiredTypeInfo(ComponentType)
+            .Metadata
+            .OfType<LayoutAttribute>()
+            .FirstOrDefault()
+            ?.LayoutType;
 
         builder.OpenComponent<LayoutView>(0);
         builder.AddComponentParameter(1, nameof(LayoutView.Layout), pageLayoutType);
