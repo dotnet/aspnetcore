@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Web;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </remarks>
 /// <example>
 /// <code>
-/// internal sealed class AppMetadata : RazorComponentsMetadataContext
+/// internal sealed partial class AppMetadata : RazorComponentsMetadataContext
 /// {
 ///     public override IJsonTypeInfoResolver? JsonTypeInfoResolver =&gt; AppJsonContext.Default;
 /// }
@@ -31,6 +32,11 @@ public abstract class RazorComponentsMetadataContext
     protected RazorComponentsMetadataContext()
     {
     }
+
+    /// <summary>
+    /// Gets the described <see cref="Microsoft.JSInterop.JSInvokableAttribute"/> methods.
+    /// </summary>
+    public abstract IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods { get; }
 
     /// <summary>
     /// Gets the application's JSON contracts, or <see langword="null"/> when the application supplies none.
