@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Authentication;
 internal sealed class AuthenticationServiceImpl(
     IAuthenticationSchemeProvider schemes,
     IAuthenticationHandlerProvider handlers,
-    IClaimsTransformation transform,
+    IEnumerable<IClaimsTransformation> transforms,
     IOptions<AuthenticationOptions> options,
     AuthenticationMetrics metrics)
-    : AuthenticationService(schemes, handlers, transform, options)
+    : AuthenticationService(schemes, handlers, new CompositeClaimsTransformation(transforms), options)
 {
     public override async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme)
     {
