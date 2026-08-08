@@ -55,7 +55,19 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <summary>
     /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
     /// </summary>
-    protected internal JsonSerializerOptions JsonSerializerOptions { get; }
+    protected internal JsonSerializerOptions JsonSerializerOptions { get; private set; }
+
+    /// <summary>
+    /// Replaces the serializer options used by this runtime.
+    /// </summary>
+    /// <param name="options">The serializer options.</param>
+#pragma warning disable IDE0051 // Accessed by DefaultWebAssemblyJSRuntime through UnsafeAccessor.
+    private void SetJsonSerializerOptions(JsonSerializerOptions options)
+#pragma warning restore IDE0051
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        JsonSerializerOptions = options;
+    }
 
     [UnconditionalSuppressMessage(
         "Trimming",

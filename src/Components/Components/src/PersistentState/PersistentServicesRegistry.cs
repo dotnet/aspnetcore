@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
@@ -22,6 +24,7 @@ internal sealed partial class PersistentServicesRegistry
     private static readonly RootTypeCache _persistentServiceTypeCache = new();
 
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger _logger;
     private IPersistentServiceRegistration[] _registrations;
     private List<(PersistingComponentStateSubscription, RestoringComponentStateSubscription)> _subscriptions = [];
     private static readonly ConcurrentDictionary<Type, PropertiesAccessor> _cachedAccessorsByType = new();
@@ -37,6 +40,8 @@ internal sealed partial class PersistentServicesRegistry
     public PersistentServicesRegistry(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+        _logger = (serviceProvider.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance)
+            .CreateLogger<PersistentServicesRegistry>();
         _registrations = ResolveRegistrations(serviceProvider.GetService<RegisteredPersistentServiceRegistrationCollection>()?.Registrations ?? []);
     }
 
@@ -102,11 +107,17 @@ internal sealed partial class PersistentServicesRegistry
     }
 
     [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson(String, Object, Type)")]
-    private static void PersistInstanceState(object instance, Type type, PersistentComponentState state)
+    private void PersistInstanceState(object instance, Type type, PersistentComponentState state)
     {
         var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
         foreach (var (key, propertyType) in accessors.KeyTypePairs)
         {
+            if (!state.CanSerialize(propertyType))
+            {
+                Log.PersistentServicePropertyNotSerializable(_logger, key, propertyType);
+                continue;
+            }
+
             var (setter, getter, options) = accessors.GetAccessor(key);
             var value = getter.GetValue(instance);
             if (value != null)
@@ -140,6 +151,10 @@ internal sealed partial class PersistentServicesRegistry
         {
             var (setter, getter, options) = accessors.GetAccessor(key);
             if (!state.CurrentContext.ShouldRestore(options))
+            {
+                continue;
+            }
+            if (!state.CanSerialize(propertyType))
             {
                 continue;
             }
@@ -267,4 +282,16 @@ internal sealed partial class PersistentServicesRegistry
     [JsonSerializable(typeof(IPersistentServiceRegistration[]))]
     [JsonSerializable(typeof(PersistentServiceRegistration[]))]
     private sealed partial class RegistryJsonContext : JsonSerializerContext;
+
+    private static partial class Log
+    {
+        [LoggerMessage(1001, LogLevel.Warning,
+            "No JSON contract is available for the persistent state '{Key}' of type '{Type}', so it will not be persisted. " +
+            "Register the type with a JsonSerializerContext or enable reflection-based serialization.",
+            EventName = "PersistentServicePropertyNotSerializable")]
+        private static partial void PersistentServicePropertyNotSerializable(ILogger logger, string key, string type);
+
+        public static void PersistentServicePropertyNotSerializable(ILogger logger, string key, Type type)
+            => PersistentServicePropertyNotSerializable(logger, key, type.FullName ?? type.Name);
+    }
 }

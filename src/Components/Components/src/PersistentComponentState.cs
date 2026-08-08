@@ -16,6 +16,7 @@ public class PersistentComponentState
 {
     private IDictionary<string, byte[]>? _existingState;
     private readonly IDictionary<string, byte[]> _currentState;
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
     private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
@@ -23,11 +24,13 @@ public class PersistentComponentState
     internal PersistentComponentState(
         IDictionary<string, byte[]> currentState,
         List<PersistComponentStateRegistration> pauseCallbacks,
-        List<RestoreComponentStateRegistration> restoringCallbacks)
+        List<RestoreComponentStateRegistration> restoringCallbacks,
+        JsonSerializerOptions? jsonSerializerOptions = null)
     {
         _currentState = currentState;
         _registeredCallbacks = pauseCallbacks;
         _registeredRestoringCallbacks = restoringCallbacks;
+        _jsonSerializerOptions = jsonSerializerOptions ?? PersistentStateSerializationOptions.Create(applicationResolver: null);
     }
 
     internal bool PersistingState { get; set; }
@@ -116,7 +119,7 @@ public class PersistentComponentState
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }
 
-        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options)))
+        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, _jsonSerializerOptions)))
         {
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
@@ -132,7 +135,8 @@ public class PersistentComponentState
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }
 
-        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, type, JsonSerializerOptionsProvider.Options)))
+        var typeInfo = _jsonSerializerOptions.GetTypeInfo(type);
+        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, typeInfo)))
         {
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
@@ -175,7 +179,7 @@ public class PersistentComponentState
         if (TryTake(key, out var data))
         {
             var reader = new Utf8JsonReader(data);
-            instance = JsonSerializer.Deserialize<TValue>(ref reader, JsonSerializerOptionsProvider.Options)!;
+            instance = JsonSerializer.Deserialize<TValue>(ref reader, _jsonSerializerOptions)!;
             return true;
         }
         else
@@ -193,44 +197,58 @@ public class PersistentComponentState
         if (TryTake(key, out var data))
         {
             var reader = new Utf8JsonReader(data);
-            instance = JsonSerializer.Deserialize(ref reader, type, JsonSerializerOptionsProvider.Options);
+            instance = JsonSerializer.Deserialize(ref reader, _jsonSerializerOptions.GetTypeInfo(type));
             return true;
         }
 
-        internal void PersistAsJson<TValue>(string key, TValue instance, JsonTypeInfo<TValue> typeInfo)
+        instance = default;
+        return false;
+    }
+
+    internal void PersistAsJson<TValue>(string key, TValue instance, JsonTypeInfo<TValue> typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        if (!PersistingState)
         {
-            ArgumentNullException.ThrowIfNull(key);
-            ArgumentNullException.ThrowIfNull(typeInfo);
-
-            if (!PersistingState)
-            {
-                throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
-            }
-
-            if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, typeInfo)))
-            {
-                throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
-            }
+            throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }
 
-        internal bool TryTakeFromJson<TValue>(string key, JsonTypeInfo<TValue> typeInfo, [MaybeNullWhen(false)] out TValue? instance)
+        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, typeInfo)))
         {
-            ArgumentNullException.ThrowIfNull(key);
-            ArgumentNullException.ThrowIfNull(typeInfo);
+            throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+        }
+    }
 
-            if (TryTake(key, out var data))
-            {
-                var reader = new Utf8JsonReader(data);
-                instance = JsonSerializer.Deserialize(ref reader, typeInfo);
-                return true;
-            }
+    internal bool TryTakeFromJson<TValue>(string key, JsonTypeInfo<TValue> typeInfo, [MaybeNullWhen(false)] out TValue? instance)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(typeInfo);
 
-            instance = default;
+        if (TryTake(key, out var data))
+        {
+            var reader = new Utf8JsonReader(data);
+            instance = JsonSerializer.Deserialize(ref reader, typeInfo);
+            return true;
+        }
+
+        instance = default;
+        return false;
+    }
+
+    internal bool CanSerialize(Type type)
+    {
+        try
+        {
+            return _jsonSerializerOptions.TryGetTypeInfo(type, out _);
+        }
+        catch (NotSupportedException)
+        {
             return false;
         }
-        else
+        catch (InvalidOperationException)
         {
-            instance = default;
             return false;
         }
     }

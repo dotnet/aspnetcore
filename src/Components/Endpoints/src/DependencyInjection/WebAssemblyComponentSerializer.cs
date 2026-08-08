@@ -8,7 +8,15 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 // See the details of the component serialization protocol in WebAssemblyComponentDeserializer.cs on the Components solution.
 internal sealed class WebAssemblyComponentSerializer
 {
-    public static void SerializeInvocation(ref ComponentMarker marker, Type type, ParameterView parameters)
+    private readonly JsonSerializerOptions _jsonOptions;
+
+    public WebAssemblyComponentSerializer(IServiceProvider? services = null)
+    {
+        _jsonOptions = WebAssemblyComponentSerializationSettings.CreateOptions(
+            ComponentJsonMetadata.GetApplicationResolver(services));
+    }
+
+    public void SerializeInvocation(ref ComponentMarker marker, Type type, ParameterView parameters)
     {
         var assembly = type.Assembly.GetName().Name ?? throw new InvalidOperationException("Cannot prerender components from assemblies with a null name");
         var typeFullName = type.FullName ?? throw new InvalidOperationException("Cannot prerender component types with a null name");
@@ -18,10 +26,10 @@ internal sealed class WebAssemblyComponentSerializer
         // cause the HTML comment to be invalid (like if you serialize a string that contains two consecutive dashes "--").
         var serializedDefinitions = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(
             definitions,
-            WebAssemblyComponentJsonContext.Default.ComponentParameterArray));
+            _jsonOptions.GetTypeInfo(typeof(IList<ComponentParameter>))));
         var serializedValues = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(
             values,
-            WebAssemblyComponentJsonContext.Default.ObjectArray));
+            _jsonOptions.GetTypeInfo(typeof(IList<object>))));
 
         marker.WriteWebAssemblyData(assembly, typeFullName, serializedDefinitions, serializedValues);
     }

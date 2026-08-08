@@ -11,13 +11,17 @@ internal sealed partial class ComponentParameterDeserializer
 {
     private readonly ILogger<ComponentParameterDeserializer> _logger;
     private readonly ComponentParametersTypeCache _parametersCache;
+    private readonly JsonSerializerOptions _jsonOptions;
 
     public ComponentParameterDeserializer(
         ILogger<ComponentParameterDeserializer> logger,
-        ComponentParametersTypeCache parametersCache)
+        ComponentParametersTypeCache parametersCache,
+        IServiceProvider? services = null)
     {
         _logger = logger;
         _parametersCache = parametersCache;
+        _jsonOptions = ServerComponentSerializationSettings.CreateOptions(
+            ComponentJsonMetadata.GetApplicationResolver(services));
     }
 
     public bool TryDeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues, out ParameterView parameters)
@@ -58,8 +62,8 @@ internal sealed partial class ComponentParameterDeserializer
                     var value = (JsonElement)parameterValues[i];
                     var serialized = JsonSerializer.Deserialize(
                         value.GetRawText(),
-                        ServerComponentJsonContext.Default.SerializedRenderFragment);
-                    parametersDictionary.Add(definition.Name, RenderFragmentSerializer.Deserialize(serialized!.Nodes, ServerComponentSerializationSettings.JsonSerializationOptions, _parametersCache));
+                        (JsonTypeInfo<SerializedRenderFragment>)_jsonOptions.GetTypeInfo(typeof(SerializedRenderFragment)));
+                    parametersDictionary.Add(definition.Name, RenderFragmentSerializer.Deserialize(serialized!.Nodes, _jsonOptions, _parametersCache));
                 }
                 catch (Exception e)
                 {
@@ -86,7 +90,7 @@ internal sealed partial class ComponentParameterDeserializer
                         // which materializes as a CLR null in the object-typed parameter values array rather than
                         // as a JsonElement. Route the JSON null literal back through the union converter so the
                         // original active case is restored instead of failing the JsonElement cast below.
-                        var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(parameterType);
+                        var typeInfo = _jsonOptions.GetTypeInfo(parameterType);
                         parameterValue = JsonSerializer.Deserialize("null", typeInfo);
                     }
                     else
@@ -94,7 +98,7 @@ internal sealed partial class ComponentParameterDeserializer
                         // At this point we know the parameter is not null, as we don't serialize the type name or the assembly name
                         // for null parameters.
                         var value = (JsonElement)parameterValues[i];
-                        var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(parameterType);
+                        var typeInfo = _jsonOptions.GetTypeInfo(parameterType);
                         parameterValue = JsonSerializer.Deserialize(value, typeInfo);
                     }
 
@@ -114,8 +118,8 @@ internal sealed partial class ComponentParameterDeserializer
 
     // A C# union is the only typed parameter whose value can legitimately serialize to JSON null while still
     // recording a non-null type name (the box is non-null, but its active case can be a null int? or reference).
-    private static bool IsUnion(Type parameterType)
-        => ServerComponentSerializationSettings.JsonSerializationOptions
+    private bool IsUnion(Type parameterType)
+        => _jsonOptions
             .GetTypeInfo(parameterType).Kind == JsonTypeInfoKind.Union;
 
     private static partial class Log

@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
@@ -25,9 +27,8 @@ public class ComponentStatePersistenceManager
     /// </summary>
     /// <param name="logger"></param>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
+        : this(logger, resolver: null, servicesRegistry: null)
     {
-        State = new PersistentComponentState(_currentState, _registeredCallbacks, _registeredRestoringCallbacks);
-        _logger = logger;
     }
 
     /// <summary>
@@ -35,9 +36,26 @@ public class ComponentStatePersistenceManager
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="serviceProvider"></param>
-    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider) : this(logger)
+    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IServiceProvider serviceProvider)
+        : this(
+            logger,
+            serviceProvider.GetService<IComponentJsonMetadataResolver>()?.JsonTypeInfoResolver,
+            new PersistentServicesRegistry(serviceProvider))
     {
-        _servicesRegistry = new PersistentServicesRegistry(serviceProvider);
+    }
+
+    private ComponentStatePersistenceManager(
+        ILogger<ComponentStatePersistenceManager> logger,
+        IJsonTypeInfoResolver? resolver,
+        PersistentServicesRegistry? servicesRegistry)
+    {
+        State = new PersistentComponentState(
+            _currentState,
+            _registeredCallbacks,
+            _registeredRestoringCallbacks,
+            PersistentStateSerializationOptions.Create(resolver));
+        _logger = logger;
+        _servicesRegistry = servicesRegistry;
     }
 
     // For testing purposes only

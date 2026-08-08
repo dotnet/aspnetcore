@@ -76,3 +76,8 @@ Microsoft.AspNetCore.Components.Forms.Label<TValue>.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.set -> void
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.Label() -> void
+Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext
+abstract Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext.JsonTypeInfoResolver.get -> System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver?
+Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext.RazorComponentsMetadataContext() -> void
+Microsoft.Extensions.DependencyInjection.ComponentMetadataServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.ComponentMetadataServiceCollectionExtensions.AddComponentMetadata<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

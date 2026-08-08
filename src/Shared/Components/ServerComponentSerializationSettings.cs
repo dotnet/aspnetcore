@@ -12,9 +12,9 @@ internal static class ServerComponentSerializationSettings
 {
     public const string DataProtectionProviderPurpose = "Microsoft.AspNetCore.Components.ComponentDescriptorSerializer,V1";
 
-    public static readonly JsonSerializerOptions JsonSerializationOptions = CreateOptions();
+    public static readonly JsonSerializerOptions JsonSerializationOptions = CreateOptions(applicationResolver: null);
 
-    private static JsonSerializerOptions CreateOptions()
+    internal static JsonSerializerOptions CreateOptions(IJsonTypeInfoResolver? applicationResolver)
     {
         var options = new JsonSerializerOptions
         {
@@ -24,6 +24,10 @@ internal static class ServerComponentSerializationSettings
         };
 
         options.TypeInfoResolverChain.Add(ServerComponentJsonContext.Default);
+        if (applicationResolver is not null)
+        {
+            options.TypeInfoResolverChain.Add(applicationResolver);
+        }
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
             options.TypeInfoResolverChain.Add(CreateReflectionResolver());

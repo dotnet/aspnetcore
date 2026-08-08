@@ -44,7 +44,7 @@ public abstract class WebRenderer : Renderer
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
-        AttachWebRendererInterop(jsRuntime, jsonOptions, jsComponentInterop);
+        AttachWebRendererInterop(jsRuntime, jsonOptions, jsComponentInterop, serviceProvider);
     }
 
     /// <summary>
@@ -102,7 +102,11 @@ public abstract class WebRenderer : Renderer
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    private void AttachWebRendererInterop(IJSRuntime jsRuntime, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
+    private void AttachWebRendererInterop(
+        IJSRuntime jsRuntime,
+        JsonSerializerOptions jsonOptions,
+        JSComponentInterop jsComponentInterop,
+        IServiceProvider serviceProvider)
     {
         const string JSMethodIdentifier = "Blazor._internal.attachWebRendererInterop";
 
@@ -135,12 +139,14 @@ public abstract class WebRenderer : Renderer
         }
         else
         {
-            EnsureJSInteropContracts(jsonOptions);
+            EnsureJSInteropContracts(jsonOptions, serviceProvider);
             jsRuntime.InvokeVoidAsync(JSMethodIdentifier, args).Preserve();
         }
     }
 
-    private static void EnsureJSInteropContracts(JsonSerializerOptions jsonOptions)
+    private static void EnsureJSInteropContracts(
+        JsonSerializerOptions jsonOptions,
+        IServiceProvider serviceProvider)
     {
         if (jsonOptions.IsReadOnly)
         {
@@ -151,6 +157,10 @@ public abstract class WebRenderer : Renderer
         PlaceResolverAt(resolvers, WebRendererSerializerContext.Default, 0);
         PlaceResolverAt(resolvers, WebJSInteropSerializerContext.Default, 1);
         PlaceResolverAt(resolvers, ConverterBackedTypeInfoResolver.Instance, 2);
+        if (serviceProvider.GetService<IComponentJsonMetadataResolver>()?.JsonTypeInfoResolver is { } applicationResolver)
+        {
+            PlaceResolverAt(resolvers, applicationResolver, 3);
+        }
     }
 
     private static void PlaceResolverAt(

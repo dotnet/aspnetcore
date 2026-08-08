@@ -61,9 +61,6 @@ internal class DefaultRazorComponentsServiceOptionsConfiguration(
                         {
                             options.JavaScriptInitializers = null;
                         }
-
-                        [JsonSerializable(typeof(string[]))]
-                        internal sealed partial class RazorComponentsServiceOptionsJsonContext : JsonSerializerContext;
                     }
                 }
                 catch (Exception)
@@ -77,3 +74,6 @@ internal class DefaultRazorComponentsServiceOptionsConfiguration(
         }
     }
 }
+
+[JsonSerializable(typeof(string[]))]
+internal sealed partial class RazorComponentsServiceOptionsJsonContext : JsonSerializerContext;

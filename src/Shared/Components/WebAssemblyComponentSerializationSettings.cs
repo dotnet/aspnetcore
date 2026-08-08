@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Components;
 
 internal static class WebAssemblyComponentSerializationSettings
 {
-    public static readonly JsonSerializerOptions JsonSerializationOptions = CreateOptions();
+    public static readonly JsonSerializerOptions JsonSerializationOptions = CreateOptions(applicationResolver: null);
 
-    private static JsonSerializerOptions CreateOptions()
+    internal static JsonSerializerOptions CreateOptions(IJsonTypeInfoResolver? applicationResolver)
     {
         var options = new JsonSerializerOptions
         {
@@ -22,6 +22,10 @@ internal static class WebAssemblyComponentSerializationSettings
         };
 
         options.TypeInfoResolverChain.Add(WebAssemblyComponentJsonContext.Default);
+        if (applicationResolver is not null)
+        {
+            options.TypeInfoResolverChain.Add(applicationResolver);
+        }
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
             options.TypeInfoResolverChain.Add(CreateReflectionResolver());

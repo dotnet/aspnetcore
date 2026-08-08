@@ -12,11 +12,14 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class WebAssemblyComponentParameterDeserializer
 {
     private readonly ComponentParametersTypeCache _parametersCache;
+    private readonly JsonSerializerOptions _jsonOptions;
 
     public WebAssemblyComponentParameterDeserializer(
-        ComponentParametersTypeCache parametersCache)
+        ComponentParametersTypeCache parametersCache,
+        JsonSerializerOptions? jsonOptions = null)
     {
         _parametersCache = parametersCache;
+        _jsonOptions = jsonOptions ?? WebAssemblyComponentSerializationSettings.JsonSerializationOptions;
     }
 
     public static WebAssemblyComponentParameterDeserializer Instance { get; } = new WebAssemblyComponentParameterDeserializer(new ComponentParametersTypeCache());
@@ -59,8 +62,8 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                     var value = (JsonElement)parameterValues[i];
                     var serialized = JsonSerializer.Deserialize(
                         value.GetRawText(),
-                        WebAssemblyComponentJsonContext.Default.SerializedRenderFragment);
-                    parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes, WebAssemblyComponentSerializationSettings.JsonSerializationOptions, _parametersCache);
+                        (JsonTypeInfo<SerializedRenderFragment>)_jsonOptions.GetTypeInfo(typeof(SerializedRenderFragment)));
+                    parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes, _jsonOptions, _parametersCache);
                 }
                 catch (Exception e)
                 {
@@ -78,7 +81,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                 {
                     object? parameterValue;
                     if (parameterValues[i] is null &&
-                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(parameterType).Kind == JsonTypeInfoKind.Union)
+                        _jsonOptions.GetTypeInfo(parameterType).Kind == JsonTypeInfoKind.Union)
                     {
                         // A union whose active case serializes to JSON null (for example a Union(int?, string)
                         // holding a null int?) is still a non-null box, so the prerender protocol records its
@@ -86,13 +89,13 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                         // which materializes as a CLR null in the object-typed parameter values array rather than
                         // as a JsonElement. Route the JSON null literal back through the union converter so the
                         // original active case is restored instead of failing the JsonElement cast below.
-                        var typeInfo = WebAssemblyComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(parameterType);
+                        var typeInfo = _jsonOptions.GetTypeInfo(parameterType);
                         parameterValue = JsonSerializer.Deserialize("null", typeInfo);
                     }
                     else
                     {
                         var value = (JsonElement)parameterValues[i];
-                        var typeInfo = WebAssemblyComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(parameterType);
+                        var typeInfo = _jsonOptions.GetTypeInfo(parameterType);
                         parameterValue = JsonSerializer.Deserialize(value, typeInfo);
                     }
 
