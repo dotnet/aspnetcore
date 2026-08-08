@@ -1,0 +1,20 @@
+@page "/virtualize"
+@attribute [InteractiveServer]
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<h1>Virtualize</h1>
+
+<p>Exercises <code>Virtualize&lt;TItem&gt;</code>, a framework generic component whose spacer callback
+takes a <code>float</code> over JS interop — a parameter type that must be present in the generated
+JS interop serializer contracts or the component silently stops loading rows.</p>
+
+<div id="viewport" style="height: 200px; overflow-y: auto;">
+    <Virtualize Items="_items" Context="item" ItemSize="20">
+        <div class="row" style="height:20px">@item</div>
+    </Virtualize>
+</div>
+
+@code {
+    private readonly List<string> _items =
+        [.. Enumerable.Range(0, 500).Select(i => $"row-{i}")];
+}

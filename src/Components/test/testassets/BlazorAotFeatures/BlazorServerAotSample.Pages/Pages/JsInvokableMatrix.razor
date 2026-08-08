@@ -1,0 +1,84 @@
+@page "/js-invokable-matrix"
+@attribute [InteractiveServer]
+@inject IJSRuntime JS
+
+<h1>JS invokable matrix</h1>
+
+<button id="invoke-js-addressing" @onclick="InvokeAddressingAsync">Invoke addressing</button>
+<p>Static: <span id="js-static">@_static</span></p>
+<p>Instance: <span id="js-instance">@_instance</span></p>
+<p>Base: <span id="js-base">@_base</span></p>
+
+<button id="invoke-js-return-kinds" @onclick="InvokeReturnKindsAsync">Invoke return kinds</button>
+<p>Return kinds: <span id="js-return-kinds">@_returnKinds</span></p>
+<p>Before dispose: <span id="js-dispose-first">@_disposeFirst</span></p>
+<p>After dispose: <span id="js-dispose-second">@_disposeSecond</span></p>
+
+<button id="invoke-js-payloads" @onclick="InvokePayloadsAsync">Invoke payloads</button>
+<p>POCO: <span id="js-poco">@_poco</span></p>
+<p>Polymorphic: <span id="js-polymorphic">@_polymorphic</span></p>
+<p>Wire discriminator: <span id="js-wire-discriminator">@_wireDiscriminator</span></p>
+
+@code {
+    private readonly JsInvokableDerived _target = new();
+    private string _static = "";
+    private string _instance = "";
+    private string _base = "";
+    private string _returnKinds = "";
+    private string _disposeFirst = "";
+    private string _disposeSecond = "";
+    private string _poco = "";
+    private string _polymorphic = "";
+    private string _wireDiscriminator = "";
+
+    private async Task InvokeAddressingAsync()
+    {
+        var objRef = DotNetObjectReference.Create(_target);
+        await JS.InvokeVoidAsync("eval", "window.__jsInstance = r => r.invokeMethodAsync('InstanceEcho', 8)");
+        await JS.InvokeVoidAsync("eval", "window.__jsBase = r => r.invokeMethodAsync('BaseEcho', 9)");
+        _static = await JS.InvokeAsync<string>("eval", "DotNet.invokeMethodAsync('BlazorServerAotSample.Pages', 'StaticEcho', 7)");
+        _instance = await JS.InvokeAsync<string>("__jsInstance", objRef);
+        _base = await JS.InvokeAsync<string>("__jsBase", objRef);
+    }
+
+    private async Task InvokeReturnKindsAsync()
+    {
+        var objRef = DotNetObjectReference.Create(_target);
+        await JS.InvokeVoidAsync("eval", @"window.__jsReturnKinds = async r => {
+            const results = [];
+            results.push('void:' + ((await r.invokeMethodAsync('VoidCall')) ?? 'null'));
+            results.push('sync:' + (await r.invokeMethodAsync('SyncCall')));
+            results.push('task:' + ((await r.invokeMethodAsync('TaskCall')) ?? 'null'));
+            results.push('taskT:' + (await r.invokeMethodAsync('TaskOfTCall')));
+            results.push('valueTask:' + ((await r.invokeMethodAsync('ValueTaskCall')) ?? 'null'));
+            results.push('valueTaskT:' + (await r.invokeMethodAsync('ValueTaskOfTCall')));
+            return results.join('|');
+        }");
+        _returnKinds = await JS.InvokeAsync<string>("__jsReturnKinds", objRef);
+
+        var disposableRef = DotNetObjectReference.Create(new JsInvokableDerived());
+        await JS.InvokeVoidAsync("eval", @"window.__jsDisposeProbe = async r => {
+            const before = await r.invokeMethodAsync('SyncCall');
+            r.dispose();
+            try { await r.invokeMethodAsync('SyncCall'); return before + '|unexpected-success'; }
+            catch { return before + '|disposed'; }
+        }");
+        var parts = (await JS.InvokeAsync<string>("__jsDisposeProbe", disposableRef)).Split('|');
+        _disposeFirst = parts[0] == "sync" ? "before-dispose" : $"unexpected:{parts[0]}";
+        _disposeSecond = parts[1];
+    }
+
+    private async Task InvokePayloadsAsync()
+    {
+        var objRef = DotNetObjectReference.Create(_target);
+        await JS.InvokeVoidAsync("eval", "window.__jsEchoPoco = r => r.invokeMethodAsync('EchoPoco', { name: 'ada', age: 36 })");
+        await JS.InvokeVoidAsync("eval", "window.__jsEchoAnimal = r => r.invokeMethodAsync('EchoAnimal', { '$type': 'cat', name: 'milo', lives: 9 })");
+        await JS.InvokeVoidAsync("eval", "window.__jsEchoAnimalType = r => r.invokeMethodAsync('EchoAnimal', { '$type': 'cat', name: 'milo', lives: 9 }).then(a => a['$type'])");
+
+        var pocoResult = await JS.InvokeAsync<InteropResult>("__jsEchoPoco", objRef);
+        _poco = $"request:ada:36|result:{pocoResult.Name}:{pocoResult.Age}";
+        var animal = await JS.InvokeAsync<Animal>("__jsEchoAnimal", objRef);
+        _polymorphic = animal is Cat cat ? $"cat:{cat.Name}:{cat.Lives}" : "unknown";
+        _wireDiscriminator = await JS.InvokeAsync<string>("__jsEchoAnimalType", objRef);
+    }
+}

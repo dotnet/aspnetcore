@@ -1,0 +1,43 @@
+@page "/custom-events"
+@attribute [InteractiveServer]
+@inject IJSRuntime JS
+
+<h1>Custom events</h1>
+
+<button id="register-aot-event" @onclick="RegisterAsync">Register</button>
+<div id="aot-event-target" @onaotpayload="HandlePayload" tabindex="0">Target</div>
+<button id="dispatch-aot-event" @onclick="DispatchAsync">Dispatch</button>
+
+<p>Registration: <span id="event-registration-status">@(_registered ? "registered" : "pending")</span></p>
+<p>Message: <span id="custom-event-message">@_message</span></p>
+<p>Payload: <span id="custom-event-payload">@_payload</span></p>
+<p>Count: <span id="custom-event-count">@_count</span></p>
+
+@code {
+    private string _message = "(none)";
+    private string _payload = "(none)";
+    private int _count;
+    private bool _registered;
+
+    private async Task RegisterAsync()
+    {
+        await JS.InvokeVoidAsync(
+            "eval",
+            "Blazor.registerCustomEventType('aotpayload', { createEventArgs: e => e.detail })");
+        _registered = true;
+    }
+
+    private Task DispatchAsync() => JS.InvokeVoidAsync(
+        "eval",
+        @"document.querySelector('#aot-event-target').dispatchEvent(new CustomEvent('aotpayload', {
+            bubbles: true,
+            detail: { message: 'hello', payload: { '$type': 'cat', name: 'milo', lives: 9 } }
+        }))").AsTask();
+
+    private void HandlePayload(AotPayloadEventArgs args)
+    {
+        _message = args.Message;
+        _payload = args.Payload is Cat cat ? $"cat:{cat.Name}" : "unknown";
+        _count++;
+    }
+}

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>enable</Nullable>
+    <!-- ThemeStorage.cs derives from the experimental ProtectedBrowserStorageSerializer<T>. -->
+    <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+    <!-- ProtectedSessionStorage, exercised by Pages/Storage.razor. -->
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+  </ItemGroup>
+
+</Project>

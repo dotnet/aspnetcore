@@ -1,0 +1,53 @@
+@page "/dynamic-roots"
+@attribute [InteractiveServer]
+@inject IJSRuntime JS
+
+<h1>Dynamic roots</h1>
+
+<div id="dynamic-root-host"></div>
+<p>Status: <span id="dynamic-root-status">@_status</span></p>
+
+<button id="add-dynamic-root" @onclick="AddAsync">Add</button>
+<button id="update-dynamic-root" @onclick="UpdateAsync">Update</button>
+<button id="remove-dynamic-root" @onclick="RemoveAsync">Remove</button>
+
+@code {
+    private IJSObjectReference? _handle;
+    private string _status = "(none)";
+
+    private async Task AddAsync()
+    {
+        _handle = await JS.InvokeAsync<IJSObjectReference>(
+            "eval",
+            "(function () { return Blazor.rootComponents.add(document.querySelector('#dynamic-root-host'), 'aot-dynamic-root', { label: 'first', step: 1 }); })()");
+        _status = "added";
+    }
+
+    private async Task UpdateAsync()
+    {
+        if (_handle is not null)
+        {
+            await _handle.InvokeVoidAsync(
+                "setParameters",
+                new DynamicRootUpdateParameters { Label = "updated", Step = 4 });
+            _status = "updated";
+        }
+
+    }
+
+    private async Task RemoveAsync()
+    {
+        if (_handle is not null)
+        {
+            await _handle.InvokeVoidAsync("dispose");
+            _status = "disposed";
+        }
+    }
+
+    public sealed class DynamicRootUpdateParameters
+    {
+        public string Label { get; set; } = "";
+
+        public int Step { get; set; }
+    }
+}

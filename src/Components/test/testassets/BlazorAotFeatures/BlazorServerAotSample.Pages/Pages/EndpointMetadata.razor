@@ -1,0 +1,36 @@
+@page "/endpoint-metadata"
+@page "/endpoint-metadata/{Id:int}"
+@inherits EndpointMetadataBase
+@attribute [AotEndpointMarker("derived")]
+@using Microsoft.AspNetCore.Http
+@using System.Linq
+
+<h1>Endpoint metadata</h1>
+
+<p>Route id: <span id="route-id">@(Id?.ToString() ?? "(none)")</span></p>
+<p>Endpoint markers: <span id="endpoint-markers">@Markers</span></p>
+
+<button id="metadata-increment" @onclick="() => _count++">Bump</button>
+<p>Count: <span id="metadata-count">@_count</span></p>
+
+@code {
+    private int _count;
+
+    [Parameter]
+    public int? Id { get; set; }
+
+    [CascadingParameter]
+    public HttpContext? Ctx { get; set; }
+
+    [PersistentState]
+    public string? Markers { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Markers is null)
+        {
+            var markers = Ctx?.GetEndpoint()?.Metadata.GetOrderedMetadata<AotEndpointMarkerAttribute>();
+            Markers = markers is null ? "" : string.Join(",", markers.Select(marker => marker.Tag));
+        }
+    }
+}
