@@ -13,6 +13,8 @@ internal sealed class ComponentMarkerJsonTypeInfoResolver : IJsonTypeInfoResolve
 
     public static ComponentMarkerJsonTypeInfoResolver Instance { get; } = new();
 
+    internal static IJsonTypeInfoResolver GetResolver() => Instance;
+
     public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
     {
         var resolvers = Volatile.Read(ref _resolvers);

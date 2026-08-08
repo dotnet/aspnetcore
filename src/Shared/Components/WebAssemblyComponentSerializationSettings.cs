@@ -43,7 +43,7 @@ internal static class WebAssemblyComponentSerializationSettings
     }
 
 #if COMPONENTS_WEBASSEMBLY
-    [UnsafeAccessor(UnsafeAccessorKind.StaticMethod, Name = "get_Instance")]
+    [UnsafeAccessor(UnsafeAccessorKind.StaticMethod, Name = "GetResolver")]
     private static extern IJsonTypeInfoResolver GetComponentMarkerJsonTypeInfoResolver(
         [UnsafeAccessorType(
             "Microsoft.AspNetCore.Components.Infrastructure.ComponentMarkerJsonTypeInfoResolver, Microsoft.AspNetCore.Components")]
