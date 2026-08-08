@@ -132,6 +132,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// <summary>
     /// Gets the schema version used for versioning.
     /// </summary>
+    [Obsolete("SchemaVersion is not used by IdentityUserContext. Configure the schema version using IdentityOptions.Stores.SchemaVersion instead.")]
     protected virtual Version SchemaVersion { get => GetStoreOptions()?.SchemaVersion ?? IdentitySchemaVersions.Version1; }
 
     private StoreOptions? GetStoreOptions() => this.GetService<IDbContextOptions>()
