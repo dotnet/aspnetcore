@@ -44,6 +44,8 @@
   <PropertyGroup>
     <!-- NuGet package layout: buildTransitive/net10.0/ (MSBuildThisFileDirectory) → ../../tasks/ -->
     <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)../../tasks/netstandard2.0/Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(MSBuildThisFileDirectory)../../tasks/netstandard2.0/Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
+    <_E2EDotNetHostPath Condition="'$(DOTNET_HOST_PATH)' != ''">$(DOTNET_HOST_PATH)</_E2EDotNetHostPath>
+    <_E2EDotNetHostPath Condition="'$(_E2EDotNetHostPath)' == ''">dotnet</_E2EDotNetHostPath>
   </PropertyGroup>
 
   <UsingTask
@@ -136,9 +138,12 @@
     <MSBuild
       Condition="'$(E2EAppMode)' == 'publish' and '@(_E2ENativeAotAppProjects)' != ''"
       Projects="@(_E2ENativeAotAppProjects)"
-      Targets="Restore;Publish"
-      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2ENativeAotAppProjects.Filename)'))/;Configuration=$(Configuration);E2ECompileTestHarness=true;PublishAot=true;RuntimeIdentifier=%(_E2ENativeAotAppProjects.E2ERuntimeIdentifier)"
+      Targets="Restore"
+      Properties="Configuration=$(Configuration);E2ECompileTestHarness=true;PublishAot=true;RuntimeIdentifier=%(_E2ENativeAotAppProjects.E2ERuntimeIdentifier)"
       RemoveProperties="NoBuild;BuildProjectReferences" />
+    <Exec
+      Condition="'$(E2EAppMode)' == 'publish' and '@(_E2ENativeAotAppProjects)' != ''"
+      Command="&quot;$(_E2EDotNetHostPath)&quot; publish &quot;%(_E2ENativeAotAppProjects.FullPath)&quot; --no-restore --configuration &quot;$(Configuration)&quot; --runtime &quot;%(_E2ENativeAotAppProjects.E2ERuntimeIdentifier)&quot; --output &quot;$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2ENativeAotAppProjects.Filename)'))&quot; -p:E2ECompileTestHarness=true -p:PublishAot=true" />
     <MSBuild
       Condition="'$(E2EAppMode)' == 'all' and '@(_E2EAppProjects)' != ''"
       Projects="@(_E2EAppProjects)"
