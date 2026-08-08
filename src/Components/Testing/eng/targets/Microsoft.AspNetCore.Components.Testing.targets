@@ -59,9 +59,13 @@
 
   <Target Name="_BuildE2ETasks"
           Condition="'$(_E2ETasksProject)' != '' and ('$(NoBuild)' != 'true' or !Exists('$(_E2ETasksAssembly)'))">
+    <PropertyGroup>
+      <_E2ETasksBuildProperties>Configuration=$(Configuration)</_E2ETasksBuildProperties>
+      <_E2ETasksBuildProperties Condition="!Exists('$(_E2ETasksAssembly)')">$(_E2ETasksBuildProperties);_ForceE2ETasksBuild=$([System.Guid]::NewGuid())</_E2ETasksBuildProperties>
+    </PropertyGroup>
     <MSBuild Projects="$(_E2ETasksProject)"
              Targets="Build"
-             Properties="Configuration=$(Configuration)"
+             Properties="$(_E2ETasksBuildProperties)"
              RemoveProperties="NoBuild" />
   </Target>
 

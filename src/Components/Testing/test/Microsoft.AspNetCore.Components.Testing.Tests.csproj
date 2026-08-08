@@ -79,10 +79,14 @@
     <PropertyGroup>
       <!-- A unique package root prevents a previously loaded MSBuild task DLL from pinning stale package contents. -->
       <_PackageConsumerPackagesPath>$(_PackageConsumerPackagesRoot)$([System.Guid]::NewGuid())\</_PackageConsumerPackagesPath>
-      <_PackageConsumerProperties>Configuration=$(Configuration);PackageConsumerVersion=$(_PackageConsumerVersion);PackageConsumerTargetFramework=$(DefaultNetCoreTargetFramework);PackageConsumerMSTestVersion=$(MSTestVersion);PackageConsumerTestingPlatformVersion=$(MicrosoftTestingPlatformMSBuildVersion);RestoreSources=$(_PackageConsumerFeed);RestoreFallbackFolders=$(NuGetPackageRoot);RestorePackagesPath=$(_PackageConsumerPackagesPath)</_PackageConsumerProperties>
+      <_PackageConsumerProperties>Configuration=$(Configuration);PackageConsumerVersion=$(_PackageConsumerVersion);PackageConsumerTargetFramework=$(DefaultNetCoreTargetFramework);PackageConsumerMSTestVersion=$(MSTestVersion);PackageConsumerTestingPlatformVersion=$(MicrosoftTestingPlatformMSBuildVersion);RestoreAdditionalProjectSources=$(_PackageConsumerFeed);RestoreFallbackFolders=$(NuGetPackageRoot);RestorePackagesPath=$(_PackageConsumerPackagesPath)</_PackageConsumerProperties>
     </PropertyGroup>
     <RemoveDir Directories="$(_PackageConsumerFeed)" />
     <MakeDir Directories="$(_PackageConsumerFeed);$(_PackageConsumerPackagesPath)" />
+    <MSBuild Projects="..\src\Microsoft.AspNetCore.Components.Testing.csproj"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)"
+             RemoveProperties="NoBuild" />
     <MSBuild Projects="..\src\Microsoft.AspNetCore.Components.Testing.csproj"
              Targets="Pack"
              Properties="Configuration=$(Configuration);NoBuild=true;PackageOutputPath=$(_PackageConsumerFeed);PackageVersion=$(_PackageConsumerVersion)"

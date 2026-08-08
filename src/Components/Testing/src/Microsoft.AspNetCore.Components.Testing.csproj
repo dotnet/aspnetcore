@@ -69,9 +69,13 @@
   <Target Name="_BuildTasksForPackage"
           BeforeTargets="_IncludeTasksInPackage"
           Condition="'$(NoBuild)' != 'true' or !Exists('$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">
+    <PropertyGroup>
+      <_TasksBuildProperties>Configuration=$(Configuration)</_TasksBuildProperties>
+      <_TasksBuildProperties Condition="!Exists('$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(_TasksBuildProperties);_ForceTasksBuild=$([System.Guid]::NewGuid())</_TasksBuildProperties>
+    </PropertyGroup>
     <MSBuild Projects="../tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
              Targets="Build"
-             Properties="Configuration=$(Configuration)"
+             Properties="$(_TasksBuildProperties)"
              RemoveProperties="NoBuild" />
   </Target>
 
