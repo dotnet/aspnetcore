@@ -1,5 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Testing.Infrastructure.E2EArtifactPaths
 Microsoft.AspNetCore.Components.Testing.Infrastructure.IE2EServiceOverrideResolver
 Microsoft.AspNetCore.Components.Testing.Infrastructure.IE2EServiceOverrideResolver.TryResolve(string! assemblyQualifiedTypeName, string! methodName) -> System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>?
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ITestArtifactManager
@@ -30,6 +29,7 @@ Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.Enviro
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ReadinessTimeoutMs.get -> int
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ReadinessTimeoutMs.set -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ServerStartOptions() -> void
+Microsoft.AspNetCore.Components.Testing.Infrastructure.TestArtifactDirectory
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockClient
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockClient.Lock(string! name) -> Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockProvider
@@ -67,8 +67,7 @@ Microsoft.AspNetCore.Components.Testing.Playwright.UITestAttribute.UITestAttribu
 override Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.InitializeCoreAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Testing.Playwright.ContextTest.InitializeCoreAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Testing.Playwright.PageTest.InitializeCoreAsync() -> System.Threading.Tasks.Task!
-static Microsoft.AspNetCore.Components.Testing.Infrastructure.E2EArtifactPaths.ForTest(string! testName) -> string!
-static Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions.SanitizeFileName(string! name) -> string!
+static Microsoft.AspNetCore.Components.Testing.Infrastructure.TestArtifactDirectory.GetPath(string! testName) -> string!
 static Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions.SetTestSession(this Microsoft.Playwright.IBrowserContext! context, Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance! server, string! sessionId) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions.WaitForBlazorAsync(this Microsoft.Playwright.IPage! page) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions.WaitForEnhancedNavigationAsync(this Microsoft.Playwright.IPage! page) -> System.Threading.Tasks.Task!

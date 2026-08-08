@@ -3,6 +3,7 @@
 
   <PropertyGroup Condition=" $(IsTestProject) ">
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <EnableE2EAppPreparation Condition="'$(ExcludeFromBuild)' == 'true' or ('$(DotNetBuildSourceOnly)' == 'true' and '$(ExcludeFromSourceOnlyBuild)' == 'true')">false</EnableE2EAppPreparation>
     <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
     <NoWarn>$(NoWarn);NU1903</NoWarn>
   </PropertyGroup>
