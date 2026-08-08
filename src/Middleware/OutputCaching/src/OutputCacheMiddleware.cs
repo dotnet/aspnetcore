@@ -171,6 +171,16 @@ internal sealed class OutputCacheMiddleware
                         {
                             await _next(httpContext);
 
+                            // If the request was aborted, do not cache the response — it may be truncated.
+                            // httpContext.Abort() is the standard pattern used by action results when
+                            // OperationCanceledException is caught mid-write, so RequestAborted being
+                            // canceled here is a strong signal that the response body is incomplete.
+                            if (httpContext.RequestAborted.IsCancellationRequested)
+                            {
+                                _logger.ResponseNotCached();
+                                return null;
+                            }
+
                             // The next middleware might change the policy
                             foreach (var policy in policies)
                             {
@@ -419,6 +429,17 @@ internal sealed class OutputCacheMiddleware
         if (context.AllowCacheStorage && context.OutputCacheStream.BufferingEnabled
             && context.CachedResponse is not null)
         {
+            // Do not cache a response whose originating request was aborted. The response body
+            // may be truncated: a decorator stream above OutputCacheStream (e.g. GZipStream from
+            // ResponseCompression) can throw OperationCanceledException before the write reaches
+            // OutputCacheStream, leaving BufferingEnabled=true with a partial buffer. The caller
+            // is expected to call httpContext.Abort() in that case, which cancels RequestAborted.
+            if (context.HttpContext.RequestAborted.IsCancellationRequested)
+            {
+                _logger.ResponseNotCached();
+                return;
+            }
+
             // If AllowCacheLookup is false, the cache key was not created
             CreateCacheKey(context);
 
