@@ -368,7 +368,8 @@ function appendDomNode(child: Node, parent: LogicalElement) {
   // This function only puts 'child' into the DOM in the right place relative to 'parent'
   // It does not update the logical children array of anything
   if (parent instanceof Element || parent instanceof DocumentFragment) {
-    parent.appendChild(child);
+    const domContainer = getLogicalDomNodeContainer(parent);
+    domContainer.appendChild(child);
   } else if (parent instanceof Comment) {
     const parentLogicalNextSibling = getLogicalNextSibling(parent) as any as Node;
     if (parentLogicalNextSibling) {
@@ -383,6 +384,13 @@ function appendDomNode(child: Node, parent: LogicalElement) {
     // Should never happen
     throw new Error(`Cannot append node because the parent is not a valid logical element. Parent: ${parent}`);
   }
+}
+
+function getLogicalDomNodeContainer(parent: Node): Element | DocumentFragment {
+  if (parent instanceof HTMLTemplateElement) {
+    return parent.content;
+  }
+  return parent as Element | DocumentFragment;
 }
 
 // Returns the final node (in depth-first evaluation order) that is a descendant of the logical element.
