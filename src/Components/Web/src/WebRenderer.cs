@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Internal;
@@ -43,7 +44,7 @@ public abstract class WebRenderer : Renderer
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
-        AttachWebRendererInterop(jsRuntime, jsonOptions, jsComponentInterop);
+        AttachWebRendererInterop(jsRuntime, jsonOptions, jsComponentInterop, serviceProvider);
     }
 
     /// <summary>
@@ -72,9 +73,12 @@ public abstract class WebRenderer : Renderer
     /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
     /// <returns>The new component ID.</returns>
     protected internal int AddRootComponent([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector)
+        => AddRootComponent(ComponentTypeInfoResolver.GetRequiredTypeInfo(componentType), domElementSelector);
+
+    internal int AddRootComponent(ComponentTypeInfo componentTypeInfo, string domElementSelector)
     {
-        var component = InstantiateComponent(componentType);
-        var componentId = AssignRootComponentId(component);
+        var component = InstantiateComponent(componentTypeInfo);
+        var componentId = AssignRootComponentId(component, componentTypeInfo);
         AttachRootComponentToBrowser(componentId, domElementSelector);
         return componentId;
     }
@@ -101,7 +105,7 @@ public abstract class WebRenderer : Renderer
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    private void AttachWebRendererInterop(IJSRuntime jsRuntime, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
+    private void AttachWebRendererInterop(IJSRuntime jsRuntime, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop, IServiceProvider serviceProvider)
     {
         const string JSMethodIdentifier = "Blazor._internal.attachWebRendererInterop";
 
@@ -128,14 +132,62 @@ public abstract class WebRenderer : Renderer
             var newJsonOptions = new JsonSerializerOptions(jsonOptions);
             newJsonOptions.TypeInfoResolverChain.Clear();
             newJsonOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
-            newJsonOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
-            var argsJson = JsonSerializer.Serialize(args, newJsonOptions);
+            newJsonOptions.TypeInfoResolverChain.Add(ConverterBackedTypeInfoResolver.Instance);
+            var typeInfo = newJsonOptions.GetTypeInfo(typeof(object[]));
+            var argsJson = JsonSerializer.Serialize(args, typeInfo);
             inProcessRuntime.InvokeJS(JSMethodIdentifier, argsJson, JSCallResultType.JSVoidResult, 0);
         }
         else
         {
+            EnsureJSInteropContracts(jsonOptions, serviceProvider);
             jsRuntime.InvokeVoidAsync(JSMethodIdentifier, args).Preserve();
         }
+    }
+
+    // Out-of-process runtimes serialize interop payloads with the JS runtime's own options, which carry
+    // no resolver of their own. With reflection-based serialization disabled even the framework's own
+    // calls would fail, and because the attach call is fire-and-forget that first failure would be
+    // invisible: the renderer would simply never attach on the JS side. Contributing the generated
+    // contracts before the first call keeps the plumbing working.
+    //
+    // The application's own contracts follow the framework's and precede the JIT-only reflection
+    // fallback, because every value an application passes to or receives from JS interop is serialized
+    // with these same options.
+    private static void EnsureJSInteropContracts(JsonSerializerOptions jsonOptions, IServiceProvider serviceProvider)
+    {
+        if (jsonOptions.IsReadOnly)
+        {
+            return;
+        }
+
+        var resolvers = jsonOptions.TypeInfoResolverChain;
+        PlaceResolverAt(resolvers, WebRendererSerializerContext.Default, 0);
+        PlaceResolverAt(resolvers, WebJSInteropSerializerContext.Default, 1);
+        PlaceResolverAt(resolvers, ConverterBackedTypeInfoResolver.Instance, 2);
+
+        if (serviceProvider.GetService<IComponentJsonMetadataResolver>()?.JsonTypeInfoResolver is { } applicationResolver)
+        {
+            PlaceResolverAt(resolvers, applicationResolver, 3);
+        }
+    }
+
+    private static void PlaceResolverAt(
+        IList<IJsonTypeInfoResolver> resolvers,
+        IJsonTypeInfoResolver resolver,
+        int index)
+    {
+        var existingIndex = resolvers.IndexOf(resolver);
+        if (existingIndex == index)
+        {
+            return;
+        }
+
+        if (existingIndex >= 0)
+        {
+            resolvers.RemoveAt(existingIndex);
+        }
+
+        resolvers.Insert(index, resolver);
     }
 
     /// <summary>
@@ -182,9 +234,13 @@ public abstract class WebRenderer : Renderer
 }
 
 // This should be kept in sync with the argument types in the call to
-// 'Blazor._internal.attachWebRendererInterop'
+// 'Blazor._internal.attachWebRendererInterop', and with the parameter types of the
+// [JSInvokable] methods on 'WebRendererInteropMethods', which the JS interop
+// dispatcher deserializes with these same options.
 [JsonSerializable(typeof(object[]))]
 [JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(JsonElement))]
 [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
 [JsonSerializable(typeof(Dictionary<string, List<string>>))]
 internal sealed partial class WebRendererSerializerContext : JsonSerializerContext;
