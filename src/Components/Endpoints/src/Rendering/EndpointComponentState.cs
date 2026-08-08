@@ -1,32 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
-using System.Reflection.Metadata;
-using Microsoft.AspNetCore.Components.Endpoints;
-using Microsoft.AspNetCore.Components.HotReload;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
-
-[assembly: MetadataUpdateHandler(typeof(EndpointComponentState))]
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class EndpointComponentState : ComponentState
 {
-    private static readonly ConcurrentDictionary<Type, StreamRenderingAttribute?> _streamRenderingAttributeByComponentType = new();
-
     private static readonly string _cacheViewTypeName = typeof(CacheView).FullName!;
-
-    static EndpointComponentState()
-    {
-        if (HotReloadManager.IsSupported)
-        {
-            HotReloadManager.Default.OnDeltaApplied += _streamRenderingAttributeByComponentType.Clear;
-        }
-    }
 
     private readonly EndpointHtmlRenderer _renderer;
 
@@ -35,8 +19,9 @@ internal sealed class EndpointComponentState : ComponentState
     {
         _renderer = (EndpointHtmlRenderer)renderer;
 
-        var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
-            type => type.GetCustomAttribute<StreamRenderingAttribute>());
+        var streamRenderingAttribute = ComponentTypeInfo.Metadata
+            .OfType<StreamRenderingAttribute>()
+            .FirstOrDefault();
 
         if (streamRenderingAttribute is not null)
         {
@@ -66,7 +51,7 @@ internal sealed class EndpointComponentState : ComponentState
 
     public bool StreamRendering { get; }
 
-    protected override object? GetComponentKey()
+    protected internal override object? GetComponentKey()
     {
         if (ParentComponentState != null && ParentComponentState.Component is SSRRenderModeBoundary boundary)
         {
@@ -81,11 +66,6 @@ internal sealed class EndpointComponentState : ComponentState
         // Fall back to the default implementation
         return base.GetComponentKey();
     }
-
-    /// <summary>
-    /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
-    /// </summary>
-    public static void UpdateApplication(Type[]? _) => _streamRenderingAttributeByComponentType.Clear();
 
     private static string ComputeTreePositionKey(string ancestorTypeName, int sequence, string? keyString)
     {

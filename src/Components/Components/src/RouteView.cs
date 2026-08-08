@@ -3,10 +3,8 @@
 
 #nullable disable warnings
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Microsoft.AspNetCore.Components.HotReload;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
@@ -18,16 +16,6 @@ namespace Microsoft.AspNetCore.Components;
 public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
-    private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
-
-    static RouteView()
-    {
-        if (HotReloadManager.IsSupported)
-        {
-            HotReloadManager.Default.OnDeltaApplied += _layoutAttributeCache.Clear;
-        }
-    }
-
     /// <summary>
     /// Gets or sets the route data. This determines the page that will be
     /// displayed and the parameter values that will be supplied to the page.
@@ -53,7 +41,7 @@ public class RouteView : IComponent
     /// <inheritdoc />
     public Task SetParametersAsync(ParameterView parameters)
     {
-        parameters.SetParameterProperties(this);
+        parameters.SetParameterProperties(this, _renderHandle);
 
         if (RouteData == null)
         {
@@ -68,13 +56,16 @@ public class RouteView : IComponent
     /// Renders the component.
     /// </summary>
     /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
-    [UnconditionalSuppressMessage("Trimming", "IL2110", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2110", Justification = "Layout components are resolved through ComponentTypeInfo.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "Layout components are resolved through ComponentTypeInfo.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
-        var pageLayoutType = _layoutAttributeCache
-            .GetOrAdd(RouteData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
+        var pageLayoutType = _renderHandle.ComponentTypeInfoResolver!
+            .GetRequiredTypeInfo(RouteData.PageType)
+            .Metadata
+            .OfType<LayoutAttribute>()
+            .FirstOrDefault()
+            ?.LayoutType
             ?? DefaultLayout;
 
         builder.OpenComponent<LayoutView>(0);

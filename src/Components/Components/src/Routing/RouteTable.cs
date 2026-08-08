@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 internal sealed class RouteTable(TreeRouter treeRouter)
 {
     private readonly TreeRouter _router = treeRouter;
-    private static readonly ConcurrentDictionary<(Type, string), InboundRouteEntry> _routeEntryCache = new();
+    private static readonly ConcurrentDictionary<(Type, string, IComponentTypeInfoResolver), InboundRouteEntry> _routeEntryCache = new();
 
     static RouteTable()
     {
@@ -28,13 +28,16 @@ internal sealed class RouteTable(TreeRouter treeRouter)
         "Trimming",
         "IL2077:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The source field does not have matching annotations.",
         Justification = "We don't trim the user assemblies and this code is only used on the server.")]
-    internal static RouteData ProcessParameters(RouteData endpointRouteData)
+    internal static RouteData ProcessParameters(
+        RouteData endpointRouteData,
+        IComponentTypeInfoResolver? typeInfoResolver = null)
     {
         if (endpointRouteData.Template != null)
         {
+            typeInfoResolver ??= ComponentTypeInfoResolverFactory.Default;
             var entry = _routeEntryCache.GetOrAdd(
-                (endpointRouteData.PageType, endpointRouteData.Template),
-                ((Type page, string template) key) => RouteTableFactory.CreateEntry(key.page, key.template));
+                (endpointRouteData.PageType, endpointRouteData.Template, typeInfoResolver),
+                static key => RouteTableFactory.CreateEntry(key.Item1, key.Item2, key.Item3));
 
             var routeValueDictionary = new RouteValueDictionary(endpointRouteData.RouteValues);
             foreach (var kvp in endpointRouteData.RouteValues)

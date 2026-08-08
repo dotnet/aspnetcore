@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Discovery;
@@ -12,35 +13,34 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 internal class RazorComponentApplication
 {
-    private readonly PageComponentInfo[] _pages;
-    private readonly ComponentInfo[] _components;
+    private readonly PageComponentDescriptor[] _pages;
+    private readonly ComponentDescriptor[] _components;
 
     internal RazorComponentApplication(
-        PageComponentInfo[] pageCollection,
-        ComponentInfo[] componentCollection)
+        PageComponentDescriptor[] pageCollection,
+        ComponentDescriptor[] componentCollection)
     {
         _pages = pageCollection;
         _components = componentCollection;
     }
 
     /// <summary>
-    /// Gets the list of <see cref="PageComponentInfo"/> associated with the application.
+    /// Gets the list of <see cref="PageComponentDescriptor"/> associated with the application.
     /// </summary>
     /// <returns>The list of pages.</returns>
-    public IReadOnlyList<PageComponentInfo> Pages => _pages;
+    public IReadOnlyList<PageComponentDescriptor> Pages => _pages;
 
     /// <summary>
-    /// Gets the list of <see cref="ComponentInfo"/> associated with the application.
+    /// Gets the list of <see cref="ComponentDescriptor"/> associated with the application.
     /// </summary>
-    public IReadOnlyList<ComponentInfo> Components => _components;
+    public IReadOnlyList<ComponentDescriptor> Components => _components;
 
     public ISet<IComponentRenderMode> GetDeclaredRenderModesByDiscoveredComponents()
     {
         var set = new HashSet<IComponentRenderMode>();
         for (var i = 0; i < Components.Count; i++)
         {
-            var component = Components[i];
-            switch (component.RenderMode)
+            switch (GetRenderMode(Components[i]))
             {
                 case InteractiveServerRenderMode:
                     set.Add(RenderMode.InteractiveServer);
@@ -58,6 +58,22 @@ internal class RazorComponentApplication
         }
 
         return set;
+
+        // The render mode is carried as a RenderModeAttribute in the descriptor's metadata rather than
+        // as a named member, which is the same shape a reflective attribute lookup produces and keeps
+        // the descriptor open to further routing and rendering attributes.
+        static IComponentRenderMode? GetRenderMode(ComponentDescriptor descriptor)
+        {
+            for (var i = 0; i < descriptor.Metadata.Count; i++)
+            {
+                if (descriptor.Metadata[i] is RenderModeAttribute renderModeAttribute)
+                {
+                    return renderModeAttribute.Mode;
+                }
+            }
+
+            return null;
+        }
     }
 
     private string GetDebuggerDisplay()
