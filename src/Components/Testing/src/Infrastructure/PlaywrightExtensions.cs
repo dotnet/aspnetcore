@@ -11,15 +11,6 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// </summary>
 public static class PlaywrightExtensions
 {
-    // Cross-platform invalid file name characters. Path.GetInvalidFileNameChars()
-    // is OS-dependent (Linux only returns '/' and '\0'), so we use a fixed set
-    // covering Windows, macOS, and Linux to ensure consistent sanitization.
-    private static readonly HashSet<char> s_invalidFileNameChars =
-    [
-        '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0',
-        .. Enumerable.Range(1, 31).Select(i => (char)i)
-    ];
-
     // Toggle video recording via environment variable.
     // Set PLAYWRIGHT_RECORD_VIDEO=1 to enable video capture for all tests.
     private static readonly bool s_recordVideo =
@@ -221,15 +212,4 @@ public static class PlaywrightExtensions
         await navTask.ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Replaces characters that are invalid in file names with underscores.
-    /// Uses a fixed cross-platform set of invalid characters so that file names
-    /// are safe on Windows, macOS, and Linux regardless of the current OS.
-    /// </summary>
-    /// <param name="name">The file name to sanitize.</param>
-    /// <returns>A sanitized file name safe for use on the file system.</returns>
-    public static string SanitizeFileName(string name)
-    {
-        return string.Concat(name.Select(c => s_invalidFileNameChars.Contains(c) ? '_' : c));
-    }
 }

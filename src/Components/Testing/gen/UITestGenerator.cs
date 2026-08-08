@@ -90,7 +90,7 @@ internal sealed class UITestGenerator : IIncrementalGenerator
         sb.AppendLine();
         sb.AppendLine("    string ITestArtifactManager.CreateArtifactDirectory(string category)");
         sb.AppendLine("        => Path.Combine(");
-        sb.AppendLine("            E2EArtifactPaths.ForTest(TestContext.TestName ?? \"unknown\"),");
+        sb.AppendLine("            TestArtifactDirectory.GetPath(TestContext.TestName ?? \"unknown\"),");
         sb.AppendLine("            category,");
         sb.AppendLine("            Guid.NewGuid().ToString(\"N\"));");
         sb.AppendLine();

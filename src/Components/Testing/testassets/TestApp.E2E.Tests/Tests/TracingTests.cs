@@ -83,7 +83,7 @@ public partial class TracingTests : BrowserTest
         var context = await NewTracedContextAsync(_server);
 
         var testName = TestContext.TestName ?? "unknown";
-        var expectedDir = E2EArtifactPaths.ForTest(testName);
+        var expectedDir = TestArtifactDirectory.GetPath(testName);
 
         Assert.IsTrue(Directory.Exists(expectedDir),
             $"Expected artifact directory to exist at: {expectedDir}");
@@ -99,7 +99,7 @@ public partial class TracingTests : BrowserTest
         const string stdoutMarker = "Intentional startup failure stdout";
         const string stderrMarker = "Intentional startup failure stderr";
         var artifactRoot = Path.Combine(
-            E2EArtifactPaths.ForTest(TestContext.TestName ?? "unknown"),
+            TestArtifactDirectory.GetPath(TestContext.TestName ?? "unknown"),
             "server-output");
         var existingFiles = Directory.Exists(artifactRoot)
             ? Directory.GetFiles(artifactRoot, "*", SearchOption.AllDirectories).ToHashSet()

@@ -2,11 +2,17 @@
   Microsoft.AspNetCore.Components.Testing.props
   =========================
   Default property values for E2E test projects that reference Microsoft.AspNetCore.Components.Testing.
-  Imported automatically via NuGet (buildTransitive) or via direct Import in dev scenarios.
+  Imported automatically via NuGet (buildTransitive).
 -->
 <Project>
 
   <PropertyGroup>
+    <!--
+      Controls whether E2E app preparation runs during Build and Publish.
+      Set to false to disable app preparation and manifest generation.
+    -->
+    <EnableE2EAppPreparation Condition="'$(EnableE2EAppPreparation)' == ''">true</EnableE2EAppPreparation>
+
     <!--
       Controls how E2E app projects are prepared at build time.
         build   (default) — copies the project source so 'dotnet run' works (including after publish).
@@ -24,8 +30,8 @@
     <!--
       Directory that E2E test artifacts (screenshots, console logs, server output,
       Playwright traces/videos) are written to. Injected into the test assembly as an
-      [assembly: AssemblyMetadata] value and read at runtime, so artifacts stay within
-      build/output locations instead of the machine temp folder.
+      [assembly: AssemblyMetadata] value and read by TestArtifactDirectory at runtime,
+      so artifacts stay within build/output locations instead of the machine temp folder.
       A relative value is resolved against the test assembly directory at runtime; an
       absolute value is used as-is. The E2E_ARTIFACTS_DIR environment variable still
       takes precedence at runtime.

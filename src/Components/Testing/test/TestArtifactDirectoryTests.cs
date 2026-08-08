@@ -5,15 +5,13 @@ using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Testing.Tests;
 
-public class SanitizeFileNameTests
+public class TestArtifactDirectoryTests
 {
     [Fact]
     public void NormalName_ReturnsUnchanged()
     {
-        // Arrange & Act
-        var result = PlaywrightExtensions.SanitizeFileName("MyTestName");
+        var result = GetDirectoryName("MyTestName");
 
-        // Assert
         Assert.Equal("MyTestName", result);
     }
 
@@ -24,64 +22,55 @@ public class SanitizeFileNameTests
     [InlineData("test\"name", "test_name")]
     public void SpecialChars_ReplacedWithUnderscore(string input, string expected)
     {
-        // Act
-        var result = PlaywrightExtensions.SanitizeFileName(input);
+        var result = GetDirectoryName(input);
 
-        // Assert
         Assert.Equal(expected, result);
     }
 
     [Fact]
     public void PathSeparators_ReplacedWithUnderscore()
     {
-        // Arrange & Act
-        var result = PlaywrightExtensions.SanitizeFileName("path/to\\test");
+        var result = GetDirectoryName("path/to\\test");
 
-        // Assert
         Assert.DoesNotContain("/", result);
         Assert.DoesNotContain("\\", result);
     }
 
     [Fact]
-    public void EmptyString_ReturnsEmpty()
+    public void EmptyString_ReturnsArtifactRoot()
     {
-        // Act
-        var result = PlaywrightExtensions.SanitizeFileName("");
+        var result = TestArtifactDirectory.GetPath("");
+        var artifactRoot = Path.GetDirectoryName(TestArtifactDirectory.GetPath("test"));
 
-        // Assert
-        Assert.Equal("", result);
+        Assert.NotNull(artifactRoot);
+        Assert.Equal(
+            Path.TrimEndingDirectorySeparator(artifactRoot),
+            Path.TrimEndingDirectorySeparator(result));
     }
 
     [Fact]
     public void DotsAndDashes_Preserved()
     {
-        // Act
-        var result = PlaywrightExtensions.SanitizeFileName("my-test.name_v2");
+        var result = GetDirectoryName("my-test.name_v2");
 
-        // Assert
         Assert.Equal("my-test.name_v2", result);
     }
 
     [Fact]
     public void Spaces_Preserved()
     {
-        // Act
-        var result = PlaywrightExtensions.SanitizeFileName("my test name");
+        var result = GetDirectoryName("my test name");
 
-        // Assert
         Assert.Equal("my test name", result);
     }
 
     [Fact]
     public void LongName_ReturnsAllCharacters()
     {
-        // Arrange
         var longName = new string('a', 300);
 
-        // Act
-        var result = PlaywrightExtensions.SanitizeFileName(longName);
+        var result = GetDirectoryName(longName);
 
-        // Assert
         Assert.Equal(300, result.Length);
         Assert.Equal(longName, result);
     }
@@ -89,20 +78,16 @@ public class SanitizeFileNameTests
     [Fact]
     public void QuestionMarkAndAsterisk_Replaced()
     {
-        // Act
-        var result = PlaywrightExtensions.SanitizeFileName("test?name*here");
+        var result = GetDirectoryName("test?name*here");
 
-        // Assert
         Assert.Equal("test_name_here", result);
     }
 
     [Fact]
     public void NullChar_Replaced()
     {
-        // Act
-        var result = PlaywrightExtensions.SanitizeFileName("test\0name");
+        var result = GetDirectoryName("test\0name");
 
-        // Assert
         Assert.Equal("test_name", result);
     }
 
@@ -111,11 +96,14 @@ public class SanitizeFileNameTests
     [InlineData("TestClass.TestMethod [variant \"special\"]")]
     public void TypicalTestDisplayNames_Sanitized(string displayName)
     {
-        // Act
-        var result = PlaywrightExtensions.SanitizeFileName(displayName);
+        var result = GetDirectoryName(displayName);
 
-        // Assert — must not contain any cross-platform invalid file name chars
         char[] invalidChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0'];
         Assert.DoesNotContain(result, c => invalidChars.Contains(c));
+    }
+
+    private static string GetDirectoryName(string testName)
+    {
+        return Path.GetFileName(TestArtifactDirectory.GetPath(testName));
     }
 }
