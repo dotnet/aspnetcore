@@ -264,6 +264,90 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task EmptyQueryStringValueTreatedAsNullForNullableBool()
+    {
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create((bool? value, HttpContext httpContext) =>
+        {
+            httpContext.Items["value"] = value;
+        });
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["value"] = ""  // Empty string should be treated as null
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["value"]);
+    }
+
+    [Fact] 
+    public async Task EmptyQueryStringValueTreatedAsNullForNullableInt()
+    {
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create((int? value, HttpContext httpContext) =>
+        {
+            httpContext.Items["value"] = value;
+        });
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["value"] = ""  // Empty string should be treated as null
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["value"]);
+    }
+
+    [Fact]
+    public async Task NonEmptyQueryStringValueParsedCorrectlyForNullableBool()
+    {
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create((bool? value, HttpContext httpContext) =>
+        {
+            httpContext.Items["value"] = value;
+        });
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["value"] = "true"
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.True((bool?)httpContext.Items["value"]);
+    }
+
+    [Fact]
+    public async Task NonEmptyQueryStringValueParsedCorrectlyForNullableInt()
+    {
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create((int? value, HttpContext httpContext) =>
+        {
+            httpContext.Items["value"] = value;
+        });
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["value"] = "42"
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(42, (int?)httpContext.Items["value"]);
+    }
+
+    [Fact]
     public async Task CreatingDelegateWithInstanceMethodInfoCreatesInstancePerCall()
     {
         var methodInfo = typeof(HttpHandler).GetMethod(nameof(HttpHandler.Handle));
