@@ -26,5 +26,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.ResponseCaching.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.ResponseCaching.Microbenchmarks" />
   </ItemGroup>
 </Project>
