@@ -52,7 +52,8 @@
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
-                      ReferenceOutputAssembly="false" />
+                      ReferenceOutputAssembly="false"
+                      SetTargetFramework="TargetFramework=netstandard2.0" />
   </ItemGroup>
 
   <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets"
