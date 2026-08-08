@@ -1472,13 +1472,20 @@ public partial class HubConnection : IAsyncDisposable
         switch (message)
         {
             case InvocationBindingFailureMessage bindingFailure:
-                // The server can't receive a response, so we just drop the message and log
-                // REVIEW: Is this the right approach?
-                Log.ArgumentBindingFailure(_logger, bindingFailure.InvocationId, bindingFailure.Target, bindingFailure.BindingFailure.SourceException);
+                // The server can't receive a response, so we just drop the message and log.
+                // A missing client handler is an intentional, benign case (e.g. the server broadcasts a method
+                // that only some clients handle); the binder already logged it as a warning, so don't escalate it
+                // to an error here. Any other binding failure is a genuine problem and is logged as before.
+                var methodDoesNotExist = bindingFailure.BindingFailure.SourceException is HubMethodDoesNotExistException;
+                if (!methodDoesNotExist)
+                {
+                    Log.ArgumentBindingFailure(_logger, bindingFailure.InvocationId, bindingFailure.Target, bindingFailure.BindingFailure.SourceException);
+                }
 
                 if (!string.IsNullOrEmpty(bindingFailure.InvocationId))
                 {
-                    await SendWithLock(connectionState, CompletionMessage.WithError(bindingFailure.InvocationId, "Client failed to parse argument(s)."), cancellationToken: default).ConfigureAwait(false);
+                    var error = methodDoesNotExist ? "Client didn't provide a result." : "Client failed to parse argument(s).";
+                    await SendWithLock(connectionState, CompletionMessage.WithError(bindingFailure.InvocationId, error), cancellationToken: default).ConfigureAwait(false);
                 }
                 break;
             case StreamBindingFailureMessage bindingFailure:
@@ -2607,7 +2614,10 @@ public partial class HubConnection : IAsyncDisposable
             if (!_hubConnection._handlers.TryGetValue(methodName, out var invocationHandlerList))
             {
                 Log.MissingHandler(_logger, methodName);
-                return Type.EmptyTypes;
+                // Throwing (rather than returning an empty list) matches the server's DefaultHubDispatcher and lets
+                // hub protocols report "method does not exist" instead of a misleading argument-count mismatch. The
+                // dedicated type lets the message loop treat this benign case as a warning rather than an error.
+                throw new HubMethodDoesNotExistException(methodName);
             }
 
             // We use the parameter types of the first handler
