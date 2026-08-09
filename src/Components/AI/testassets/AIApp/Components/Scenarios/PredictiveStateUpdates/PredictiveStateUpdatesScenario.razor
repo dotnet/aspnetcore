@@ -1,0 +1,140 @@
+@using System.Text.Json
+@inject IChatClient ChatClient
+@implements IDisposable
+
+<div class="dojo-scenario predictive-state-updates" data-dojo-scenario="predictive-state-updates">
+    <div class="predictive-layout">
+        <div class="document-panel @(_isStreaming ? "document-panel--streaming" : "")">
+            <DocumentPreview Document="@_agent.State.Value.Document"
+                             IsStreaming="_isStreaming" />
+        </div>
+
+        <div class="predictive-chat">
+            <header class="dojo-scenario__header">
+                <h2>AI Document Editor</h2>
+                <button class="dojo-reset-button" @onclick="Reset">&times;</button>
+            </header>
+
+            <AgentBoundary @key="_agent" Agent="_agent">
+                <div class="sc-ai-root dojo-chat-panel">
+                    <MessageList>
+                        <DojoWelcome />
+                        <ComponentBlockRenderer TBlock="UIActionBlock"
+                                                TRenderer="ConfirmChangesDialog"
+                                                When="@(b => b.ToolName == "confirm_changes")" />
+                    </MessageList>
+                    <SuggestionList Suggestions="_suggestions" />
+                    <MessageInput Placeholder="Type a message..." />
+                </div>
+            </AgentBoundary>
+        </div>
+    </div>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
+
+    private UIAgent<DocumentState> _agent = default!;
+    private IDisposable? _stateChangedRegistration;
+    private string _confirmedDocument = "";
+    private bool _isStreaming;
+
+    private static readonly Suggestion[] _suggestions =
+    [
+        new() { Label = "Write a pirate story", Prompt = "Write a short pirate story" },
+        new() { Label = "Write a mermaid story", Prompt = "Write a short mermaid story" },
+        new() { Label = "Add character", Prompt = "Add a new character to the story" },
+    ];
+
+    protected override void OnInitialized()
+    {
+        SetAgent(CreateAgent(new DocumentState()));
+    }
+
+    private UIAgent<DocumentState> CreateAgent(DocumentState initialState)
+    {
+        return new UIAgent<DocumentState>(ChatClient, options =>
+        {
+            options.ChatOptions = new ChatOptions
+            {
+                RawRepresentationFactory = _ => _agent.State.Value,
+            };
+
+            options.StateMapper = context =>
+            {
+                if (context.Update.RawRepresentation is not JsonElement snapshot)
+                {
+                    return false;
+                }
+
+                var state = snapshot.Deserialize<DocumentState>(_jsonOptions);
+                if (state is null)
+                {
+                    return false;
+                }
+
+                context.SetState(state);
+                _ = InvokeAsync(() =>
+                {
+                    _isStreaming = true;
+                    StateHasChanged();
+                });
+                return true;
+            };
+
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                ConfirmChanges,
+                name: "confirm_changes",
+                description: "Confirm the document changes with the user."));
+        }, initialState);
+    }
+
+    private async Task<string> ConfirmChanges(bool accepted = true)
+    {
+        await InvokeAsync(() =>
+        {
+            _isStreaming = false;
+
+            if (accepted)
+            {
+                _confirmedDocument = _agent.State.Value.Document;
+            }
+            else
+            {
+                _agent.State.Value = new DocumentState { Document = _confirmedDocument };
+            }
+
+            StateHasChanged();
+        });
+
+        return accepted
+            ? "The user confirmed the changes."
+            : "The user rejected the changes.";
+    }
+
+    private void Reset()
+    {
+        _confirmedDocument = "";
+        _isStreaming = false;
+        SetAgent(CreateAgent(new DocumentState()));
+    }
+
+    private void SetAgent(UIAgent<DocumentState> agent)
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+        _agent = agent;
+        _stateChangedRegistration = _agent.State.OnChanged(OnStateChanged);
+    }
+
+    private void OnStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+    }
+}

@@ -52,6 +52,12 @@ class ChatClientOverrides
         services.AddScoped<IChatClient, GatedReplayChatClient>();
     }
 
+    public static void PredictiveStateUpdates(IServiceCollection services)
+    {
+        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_PredictiveStateUpdates.recording.json"));
+        services.AddScoped<IChatClient, GatedReplayChatClient>();
+    }
+
     public static void SingleTurnEcho(IServiceCollection services)
     {
         services.AddScoped<IChatClient>(

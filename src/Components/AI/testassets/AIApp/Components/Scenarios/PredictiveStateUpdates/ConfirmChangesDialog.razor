@@ -1,0 +1,64 @@
+@if (_isResponded)
+{
+    <div class="confirm-changes confirm-changes--responded">
+        @if (_wasAccepted)
+        {
+            <span class="confirm-changes__status confirm-changes__status--accepted">
+                &#x2713; Accepted
+            </span>
+        }
+        else
+        {
+            <span class="confirm-changes__status confirm-changes__status--rejected">
+                &#x2717; Rejected
+            </span>
+        }
+    </div>
+}
+else
+{
+    <div class="confirm-changes">
+        <div class="confirm-changes__header">
+            <h3>Confirm Changes</h3>
+        </div>
+        <p class="confirm-changes__message">
+            Do you want to accept the changes?
+        </p>
+        <div class="confirm-changes__actions">
+            <button class="confirm-changes__btn confirm-changes__btn--reject"
+                    @onclick="RejectAsync">
+                Reject
+            </button>
+            <button class="confirm-changes__btn confirm-changes__btn--accept"
+                    @onclick="AcceptAsync">
+                Confirm
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public UIActionBlock Block { get; set; } = default!;
+
+    private bool _isResponded;
+    private bool _wasAccepted;
+
+    private async Task AcceptAsync()
+    {
+        Block.Call!.Arguments ??= new Dictionary<string, object?>();
+        Block.Call.Arguments["accepted"] = true;
+        await Block.InvokeAsync();
+        _wasAccepted = true;
+        _isResponded = true;
+    }
+
+    private async Task RejectAsync()
+    {
+        Block.Call!.Arguments ??= new Dictionary<string, object?>();
+        Block.Call.Arguments["accepted"] = false;
+        await Block.InvokeAsync();
+        _wasAccepted = false;
+        _isResponded = true;
+    }
+}

@@ -1,0 +1,86 @@
+{
+  "calls": [
+    {
+      "request": {
+        "lastUserMessage": "Write a short pirate story",
+        "messageCount": 1,
+        "toolNames": [
+          "confirm_changes"
+        ],
+        "state": {
+          "document": ""
+        }
+      },
+      "frames": [
+        {
+          "name": "pirate-title",
+          "updates": [],
+          "state": {
+            "document": "# The Adventures of Captain Ember"
+          }
+        },
+        {
+          "name": "pirate-content",
+          "updates": [],
+          "state": {
+            "document": "# The Adventures of Captain Ember\n\nCaptain Ember sailed the moonlit sea in search of the legendary Star Compass."
+          }
+        },
+        {
+          "name": "pirate-confirmation",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "functionCall",
+                  "name": "confirm_changes",
+                  "arguments": {},
+                  "informationalOnly": false,
+                  "callId": "predictive-confirm-1"
+                }
+              ],
+              "finishReason": "tool_calls"
+            }
+          ],
+          "state": {
+            "document": "# The Adventures of Captain Ember\n\nCaptain Ember sailed the moonlit sea in search of the legendary Star Compass.\n\nWhen a storm scattered her crew, she followed a brave parrot's song through the fog and brought everyone safely home."
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "lastUserMessage": "Write a short pirate story",
+        "messageCount": 3,
+        "toolNames": [
+          "confirm_changes"
+        ],
+        "state": {
+          "document": "# The Adventures of Captain Ember\n\nCaptain Ember sailed the moonlit sea in search of the legendary Star Compass.\n\nWhen a storm scattered her crew, she followed a brave parrot's song through the fog and brought everyone safely home."
+        },
+        "functionResult": {
+          "callId": "predictive-confirm-1",
+          "result": "The user confirmed the changes."
+        }
+      },
+      "frames": [
+        {
+          "name": "pirate-summary-final",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "I wrote a short pirate adventure about Captain Ember finding her crew with courage and a parrot's song."
+                }
+              ],
+              "finishReason": "stop"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

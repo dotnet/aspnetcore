@@ -1,0 +1,29 @@
+.predictive-layout {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+}
+
+.document-panel {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 24px 32px;
+    background: #fff;
+}
+
+.document-panel--streaming {
+    border-right: 3px solid #6366f1;
+}
+
+.predictive-chat {
+    width: 360px;
+    min-width: 360px;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #e5e7eb;
+    background: #fff;
+}

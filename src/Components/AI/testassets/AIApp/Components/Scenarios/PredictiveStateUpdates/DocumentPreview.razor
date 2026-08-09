@@ -1,0 +1,113 @@
+@using System.Text
+@using System.Text.Encodings.Web
+@using System.Text.RegularExpressions
+
+@if (string.IsNullOrWhiteSpace(Document))
+{
+    <div class="document-preview document-preview--empty">
+        <p class="document-preview__placeholder">
+            Write whatever you want here in Markdown format...
+        </p>
+    </div>
+}
+else
+{
+    <div class="document-preview @(IsStreaming ? "document-preview--streaming" : "")">
+        <div class="document-preview__content">
+            @((MarkupString)RenderMarkdown(Document))
+        </div>
+        @if (IsStreaming)
+        {
+            <span class="document-preview__cursor">&#x258A;</span>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Document { get; set; } = "";
+
+    [Parameter]
+    public bool IsStreaming { get; set; }
+
+    private static string RenderMarkdown(string markdown)
+    {
+        var builder = new StringBuilder();
+        var paragraph = new List<string>();
+        var inList = false;
+
+        void CloseList()
+        {
+            if (inList)
+            {
+                builder.Append("</ul>");
+                inList = false;
+            }
+        }
+
+        void FlushParagraph()
+        {
+            if (paragraph.Count > 0)
+            {
+                builder.Append("<p>")
+                    .Append(RenderInline(string.Join(' ', paragraph)))
+                    .Append("</p>");
+                paragraph.Clear();
+            }
+        }
+
+        foreach (var line in markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                FlushParagraph();
+                CloseList();
+            }
+            else if (line.StartsWith("# ", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                CloseList();
+                builder.Append("<h1>").Append(RenderInline(line[2..])).Append("</h1>");
+            }
+            else if (line.StartsWith("## ", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                CloseList();
+                builder.Append("<h2>").Append(RenderInline(line[3..])).Append("</h2>");
+            }
+            else if (line.StartsWith("### ", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                CloseList();
+                builder.Append("<h3>").Append(RenderInline(line[4..])).Append("</h3>");
+            }
+            else if (line.StartsWith("- ", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                if (!inList)
+                {
+                    builder.Append("<ul>");
+                    inList = true;
+                }
+
+                builder.Append("<li>").Append(RenderInline(line[2..])).Append("</li>");
+            }
+            else
+            {
+                CloseList();
+                paragraph.Add(line);
+            }
+        }
+
+        FlushParagraph();
+        CloseList();
+
+        return builder.ToString();
+    }
+
+    private static string RenderInline(string text)
+    {
+        var encoded = HtmlEncoder.Default.Encode(text);
+        return Regex.Replace(encoded, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+    }
+}
