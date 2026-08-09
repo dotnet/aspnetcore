@@ -1,16 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../../Testing/eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
+  <Import Project="../../../Testing/eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestRunnerName>Microsoft.Testing.Platform</TestRunnerName>
+    <TestCaptureOutput>false</TestCaptureOutput>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
+    <TestRunnerAdditionalArguments>--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --filter "TestCategory!=Quarantined"</TestRunnerAdditionalArguments>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <!-- Use xUnit v3 instead of the Arcade SDK's auto-included xUnit v2 -->
-    <UsingToolXUnit>false</UsingToolXUnit>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
-    <NoWarn>$(NoWarn);NU1903</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001;NU1903</NoWarn>
     <!--
       Publish the app under test instead of launching it with 'dotnet run'. Each test starts
       its own app instance, and concurrent 'dotnet run' invocations rebuild the same project
@@ -19,22 +23,26 @@
     <E2EAppMode>publish</E2EAppMode>
   </PropertyGroup>
 
-  <!-- Remove auto-added xUnit v2 test infra from CSharp.Common.props -->
   <ItemGroup>
     <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
     <Reference Remove="Moq" />
     <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+    <Using Remove="Xunit" />
   </ItemGroup>
 
-  <!-- Full ASP.NET Core shared framework references for in-process YARP proxy -->
   <ItemGroup>
     <Reference Include="@(AspNetCoreAppReference)" />
     <Reference Include="@(AspNetCoreAppReferenceAndPackage)" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Playwright.Xunit.v3" />
-    <Reference Include="xunit.v3" />
+    <Reference Include="Microsoft.Playwright" />
+    <Reference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <Reference Include="MSTest.TestFramework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,36 +51,27 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Testing" />
-    <ProjectReference Include="../testassets/AIApp/AIApp.csproj">
+    <ProjectReference Include="../AIApp/AIApp.csproj">
       <E2EApp>true</E2EApp>
     </ProjectReference>
   </ItemGroup>
 
-  <!--
-    Development layout: point the tasks assembly to the artifacts bin output so that
-    Microsoft.AspNetCore.Components.Testing.targets (which only handles the NuGet package
-    layout) can find it when building inside the aspnetcore repo. The ProjectReference
-    guarantees the tasks assembly is built before this project needs it.
-  -->
   <PropertyGroup>
+    <_ImportComponentsTestingTargets>true</_ImportComponentsTestingTargets>
     <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == ''">$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference
-      Include="../../Testing/tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
+      Include="../../../Testing/tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework" />
   </ItemGroup>
 
-  <!--
-    Development layout: add the source generator as an analyzer from the local project.
-    When the library is consumed via NuGet the generator is picked up from analyzers/dotnet/cs/.
-  -->
   <ItemGroup>
     <ProjectReference
-      Include="../../Testing/gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+      Include="../../../Testing/gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false" />
   </ItemGroup>
@@ -95,6 +94,7 @@
     </None>
   </ItemGroup>
 
-  <Import Project="../../Testing/eng/targets/Microsoft.AspNetCore.Components.Testing.targets" />
+  <Import Project="../../../Testing/eng/targets/Microsoft.AspNetCore.Components.Testing.targets"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'" />
 
 </Project>

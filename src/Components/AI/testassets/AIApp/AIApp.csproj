@@ -34,7 +34,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.AI" />
-    <ProjectReference Include="..\..\..\AI\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
+    <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
   </ItemGroup>

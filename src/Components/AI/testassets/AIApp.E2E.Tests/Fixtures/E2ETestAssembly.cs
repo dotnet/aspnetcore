@@ -3,5 +3,5 @@
 
 namespace AIApp.E2E.Tests.Fixtures;
 
-// Marker type used by ServerFixture<T> to locate the test assembly and its manifest.
+// Marker type used by ServerFactory<T> to locate the test assembly and its manifest.
 public class E2ETestAssembly;

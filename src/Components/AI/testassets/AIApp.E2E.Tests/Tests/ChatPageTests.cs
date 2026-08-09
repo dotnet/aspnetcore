@@ -2,32 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
 using AIApp.Components;
 using AIApp.E2E.Tests.Fixtures;
 using AIApp.E2E.Tests.ServiceOverrides;
 using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AIApp.E2E.Tests.Tests;
 
-[Collection(nameof(E2ECollection))]
-public class ChatPageTests : BrowserTest
+[UITest]
+public partial class ChatPageTests : BrowserTest
 {
     private const string SendButtonSelector = ".sc-ai-input__send";
     private const string TextareaSelector = ".sc-ai-input__textarea";
     private const string TurnSelector = ".sc-ai-turn";
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
-
-    public ChatPageTests(ServerFixture<E2ETestAssembly> fixture)
-    {
-        _fixture = fixture;
-    }
-
-    [Fact]
+    [TestMethod]
     public async Task ChatPage_RendersInputAndSendButton()
     {
-        var server = await _fixture.StartServerAsync<App>();
+        var server = await StartServerAsync<App>(TestRoot.Servers);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(server));
         var page = await context.NewPageAsync();
 
@@ -42,10 +35,10 @@ public class ChatPageTests : BrowserTest
         await Expect(sendButton).ToBeEnabledAsync();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SingleTurn_DisplaysAssistantResponse()
     {
-        var server = await _fixture.StartServerAsync<App>(options =>
+        var server = await StartServerAsync<App>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<ChatClientOverrides>(
                 nameof(ChatClientOverrides.SingleTurnEcho));
@@ -67,10 +60,10 @@ public class ChatPageTests : BrowserTest
         await Expect(responseBlock).ToBeVisibleAsync();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SingleTurn_DisplaysUserMessage()
     {
-        var server = await _fixture.StartServerAsync<App>(options =>
+        var server = await StartServerAsync<App>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<ChatClientOverrides>(
                 nameof(ChatClientOverrides.SingleTurnEcho));
@@ -91,10 +84,10 @@ public class ChatPageTests : BrowserTest
         await Expect(userBlock).ToBeVisibleAsync();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultiTokenStreaming_AssemblesFullResponse()
     {
-        var server = await _fixture.StartServerAsync<App>(options =>
+        var server = await StartServerAsync<App>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<ChatClientOverrides>(
                 nameof(ChatClientOverrides.MultiTokenStreaming));
@@ -114,10 +107,10 @@ public class ChatPageTests : BrowserTest
         await Expect(responseBlock).ToBeVisibleAsync();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultiTurn_RendersMultipleConversationTurns()
     {
-        var server = await _fixture.StartServerAsync<App>(options =>
+        var server = await StartServerAsync<App>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<ChatClientOverrides>(
                 nameof(ChatClientOverrides.MultiTurn));
@@ -153,10 +146,10 @@ public class ChatPageTests : BrowserTest
         await Expect(page.Locator(".sc-ai-message--assistant")).ToHaveCountAsync(2);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SendMessage_ClearsTextarea()
     {
-        var server = await _fixture.StartServerAsync<App>(options =>
+        var server = await StartServerAsync<App>(TestRoot.Servers, options =>
         {
             options.ConfigureServices<ChatClientOverrides>(
                 nameof(ChatClientOverrides.SingleTurnEcho));
@@ -175,10 +168,10 @@ public class ChatPageTests : BrowserTest
         await Expect(textarea).ToHaveValueAsync("");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task EmptyMessage_DoesNotSend()
     {
-        var server = await _fixture.StartServerAsync<App>();
+        var server = await StartServerAsync<App>(TestRoot.Servers);
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(server));
         var page = await context.NewPageAsync();
 
