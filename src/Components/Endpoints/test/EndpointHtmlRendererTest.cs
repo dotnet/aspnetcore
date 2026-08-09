@@ -88,6 +88,13 @@ public class EndpointHtmlRendererTest
 
         // Assert
         Assert.True(match.Success);
+        using (var markerDocument = JsonDocument.Parse(match.Groups[1].Value))
+        {
+            Assert.Equal("webassembly", markerDocument.RootElement.GetProperty("type").GetString());
+            Assert.False(markerDocument.RootElement.TryGetProperty("Type", out _));
+            Assert.False(markerDocument.RootElement.TryGetProperty("prerenderId", out _));
+            Assert.False(markerDocument.RootElement.TryGetProperty("descriptor", out _));
+        }
         var marker = JsonSerializer.Deserialize<ComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Null(marker.PrerenderId);
         Assert.Equal("webassembly", marker.Type);
@@ -179,6 +186,13 @@ public class EndpointHtmlRendererTest
         // Assert
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
+        using (var preambleDocument = JsonDocument.Parse(preamble))
+        {
+            Assert.Equal("webassembly", preambleDocument.RootElement.GetProperty("type").GetString());
+            Assert.True(preambleDocument.RootElement.TryGetProperty("prerenderId", out _));
+            Assert.False(preambleDocument.RootElement.TryGetProperty("Type", out _));
+            Assert.False(preambleDocument.RootElement.TryGetProperty("descriptor", out _));
+        }
         var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.Equal("webassembly", preambleMarker.Type);
@@ -189,6 +203,13 @@ public class EndpointHtmlRendererTest
         Assert.Equal("<h1>Hello from SimpleComponent</h1>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
+        using (var epilogueDocument = JsonDocument.Parse(epilogue))
+        {
+            Assert.True(epilogueDocument.RootElement.TryGetProperty("prerenderId", out _));
+            Assert.False(epilogueDocument.RootElement.TryGetProperty("PrerenderId", out _));
+            Assert.False(epilogueDocument.RootElement.TryGetProperty("type", out _));
+            Assert.False(epilogueDocument.RootElement.TryGetProperty("assembly", out _));
+        }
         var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
         Assert.Null(epilogueMarker.Assembly);

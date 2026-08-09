@@ -346,7 +346,8 @@ internal partial class EndpointHtmlRenderer
                 EmitBrowserConfigurationOnce(output);
             }
 
-            var serializedStartRecord = JsonSerializer.Serialize(marker, ServerComponentJsonContext.Default.ComponentMarker);
+            var markerTypeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(ComponentMarker));
+            var serializedStartRecord = JsonSerializer.Serialize(marker, markerTypeInfo);
             output.Write("<!--Blazor:");
             output.Write(serializedStartRecord);
             output.Write("-->");
@@ -370,7 +371,8 @@ internal partial class EndpointHtmlRenderer
 
         if (endMarkerOrNull is { } endMarker)
         {
-            var serializedEndRecord = JsonSerializer.Serialize(endMarker, ServerComponentJsonContext.Default.ComponentEndMarker);
+            var endMarkerTypeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(ComponentEndMarker));
+            var serializedEndRecord = JsonSerializer.Serialize(endMarker, endMarkerTypeInfo);
             output.Write("<!--Blazor:");
             output.Write(serializedEndRecord);
             output.Write("-->");

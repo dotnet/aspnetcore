@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -17,13 +18,17 @@ internal sealed class SerializedRenderFragmentHybridCacheSerializer : IHybridCac
     public SerializedRenderFragment Deserialize(ReadOnlySequence<byte> source)
     {
         var reader = new Utf8JsonReader(source);
-        return JsonSerializer.Deserialize(ref reader, ServerComponentJsonContext.Default.SerializedRenderFragment)
+        var typeInfo = (JsonTypeInfo<SerializedRenderFragment>)ServerComponentSerializationSettings.JsonSerializationOptions
+            .GetTypeInfo(typeof(SerializedRenderFragment));
+        return JsonSerializer.Deserialize(ref reader, typeInfo)
             ?? new SerializedRenderFragment();
     }
 
     public void Serialize(SerializedRenderFragment value, IBufferWriter<byte> target)
     {
         using var writer = new Utf8JsonWriter(target);
-        JsonSerializer.Serialize(writer, value, ServerComponentJsonContext.Default.SerializedRenderFragment);
+        var typeInfo = (JsonTypeInfo<SerializedRenderFragment>)ServerComponentSerializationSettings.JsonSerializationOptions
+            .GetTypeInfo(typeof(SerializedRenderFragment));
+        JsonSerializer.Serialize(writer, value, typeInfo);
     }
 }
