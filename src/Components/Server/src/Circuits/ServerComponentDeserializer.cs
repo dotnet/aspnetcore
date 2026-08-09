@@ -299,9 +299,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         int[]? seenComponentIdsStorage = null;
         try
         {
-            result = JsonSerializer.Deserialize<RootComponentOperationBatch>(
-                serializedComponentOperations,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+            var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(RootComponentOperationBatch));
+            result = (RootComponentOperationBatch)JsonSerializer.Deserialize(serializedComponentOperations, typeInfo)!;
             var operations = result.Operations;
 
             Span<int> seenSsrComponentIds = operations.Length <= 128

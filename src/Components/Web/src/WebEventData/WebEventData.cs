@@ -58,6 +58,8 @@ internal sealed class WebEventData
 
     public EventArgs EventArgs { get; }
 
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+        Justification = "We are already using the appropriate overload")]
     private static EventArgs ParseEventArgsJson(
         Renderer renderer,
         JsonSerializerOptions jsonSerializerOptions,
@@ -74,13 +76,7 @@ internal sealed class WebEventData
 
             // For custom events, the args type is determined from the associated delegate
             var eventArgsType = renderer.GetEventArgsType(eventHandlerId);
-            if (eventArgsType == typeof(EventArgs))
-            {
-                return EventArgs.Empty;
-            }
-
-            var eventArgsTypeInfo = jsonSerializerOptions.GetTypeInfo(eventArgsType);
-            return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsTypeInfo)!;
+            return (EventArgs)JsonSerializer.Deserialize(eventArgsJson.GetRawText(), eventArgsType, jsonSerializerOptions)!;
         }
         catch (Exception e)
         {
