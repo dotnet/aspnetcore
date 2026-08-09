@@ -12,6 +12,27 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Generators.Tests;
 public sealed class RazorComponentsMetadataGeneratorComponentTests : RazorComponentsMetadataGeneratorTestBase
 {
     [TestMethod]
+    public void DynamicallyAccessedMembersParameter_EmitsSuppressedGeneratedBridge()
+    {
+        var result = RunGenerator("""
+            namespace TestComponents;
+
+            public sealed class DynamicComponent : Microsoft.AspNetCore.Components.ComponentBase
+            {
+                [Microsoft.AspNetCore.Components.Parameter]
+                [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(
+                    System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All)]
+                public System.Type Type { get; set; } = default!;
+            }
+            """);
+
+        var source = GetGeneratedSource(result);
+        StringAssert.Contains(source, "UnconditionalSuppressMessage(\"Trimming\", \"IL2067\"");
+        StringAssert.Contains(source, "UnconditionalSuppressMessage(\"Trimming\", \"IL2111\"");
+        StringAssert.Contains(source, "target.Type = value;");
+    }
+
+    [TestMethod]
     public void PublicComponent_EmitsWorkingActivationAndParameterDescriptor()
     {
         var result = RunGenerator("""
