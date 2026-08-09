@@ -1,13 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder;
 
-internal sealed class CircuitJavaScriptInitializationMiddleware
+internal sealed partial class CircuitJavaScriptInitializationMiddleware
 {
     private readonly IList<string> _initializers;
 
@@ -20,6 +21,11 @@ internal sealed class CircuitJavaScriptInitializationMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        await context.Response.WriteAsJsonAsync(_initializers);
+        // The contract is generated rather than reflected over so that the endpoint keeps working in an
+        // application that disabled reflection-based serialization, which Native AOT does by default.
+        await context.Response.WriteAsJsonAsync(_initializers, JavaScriptInitializersJsonContext.Default.IListString);
     }
+
+    [JsonSerializable(typeof(IList<string>))]
+    private sealed partial class JavaScriptInitializersJsonContext : JsonSerializerContext;
 }
