@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +13,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class SessionCascadingValueSupplier
 {
-    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private readonly JsonSerializerOptions _jsonOptions;
     private HttpContext? _httpContext;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
@@ -52,22 +48,9 @@ internal partial class SessionCascadingValueSupplier
         }
 
         var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
-        var componentType = componentState.Component.GetType();
-        var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
-        Func<object?> valueGetter = () => getter.GetValue(componentState.Component);
+        var valueGetter = ComponentParameterValueGetter.Create(componentState, parameterInfo.PropertyName);
         RegisterValueCallback(sessionKey, valueGetter);
         return new SessionSubscription(this, sessionKey, parameterInfo.PropertyType, valueGetter);
-    }
-
-    private static PropertyGetter PropertyGetterFactory((Type type, string propertyName) key)
-    {
-        var (type, propertyName) = key;
-        var propertyInfo = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (propertyInfo is null)
-        {
-            throw new InvalidOperationException($"A property '{propertyName}' on component type '{type.FullName}' wasn't found.");
-        }
-        return new PropertyGetter(type, propertyInfo);
     }
 
     // A null HttpContext means we're rendering interactively (Server circuit or WebAssembly),
