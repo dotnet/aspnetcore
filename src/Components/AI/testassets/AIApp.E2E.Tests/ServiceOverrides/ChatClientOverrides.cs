@@ -17,62 +17,38 @@ namespace AIApp.E2E.Tests.ServiceOverrides;
 class ChatClientOverrides
 {
     public static void AgenticChat(IServiceCollection services)
-    {
-        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_AgenticChat.recording.json"));
-        services.AddScoped<IChatClient, GatedReplayChatClient>();
-    }
+        => AddReplay(services, "Dojo_AgenticChat.recording.json");
 
     public static void BackendToolRendering(IServiceCollection services)
-    {
-        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_BackendToolRendering.recording.json"));
-        services.AddScoped<IChatClient, GatedReplayChatClient>();
-    }
+        => AddReplay(services, "Dojo_BackendToolRendering.recording.json");
 
     public static void HumanInTheLoop(IServiceCollection services)
-    {
-        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_HumanInTheLoop.recording.json"));
-        services.AddScoped<IChatClient, GatedReplayChatClient>();
-    }
+        => AddReplay(services, "Dojo_HumanInTheLoop.recording.json");
 
     public static void ToolBasedGenerativeUI(IServiceCollection services)
-    {
-        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_ToolBasedGenerativeUI.recording.json"));
-        services.AddScoped<IChatClient, GatedReplayChatClient>();
-    }
+        => AddReplay(services, "Dojo_ToolBasedGenerativeUI.recording.json");
 
     public static void AgenticGenerativeUI(IServiceCollection services)
-    {
-        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_AgenticGenerativeUI.recording.json"));
-        services.AddScoped<IChatClient, GatedReplayChatClient>();
-    }
+        => AddReplay(services, "Dojo_AgenticGenerativeUI.recording.json");
 
     public static void SharedState(IServiceCollection services)
-    {
-        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_SharedState.recording.json"));
-        services.AddScoped<IChatClient, GatedReplayChatClient>();
-    }
+        => AddReplay(services, "Dojo_SharedState.recording.json");
 
     public static void PredictiveStateUpdates(IServiceCollection services)
-    {
-        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_PredictiveStateUpdates.recording.json"));
-        services.AddScoped<IChatClient, GatedReplayChatClient>();
-    }
+        => AddReplay(services, "Dojo_PredictiveStateUpdates.recording.json");
 
     public static void SingleTurnEcho(IServiceCollection services)
-    {
-        services.AddScoped<IChatClient>(
-            _ => BaselineReplayClient.FromBaseline("E2E_SingleTurnEcho.recording.json"));
-    }
+        => AddReplay(services, "E2E_SingleTurnEcho.recording.json");
 
     public static void MultiTokenStreaming(IServiceCollection services)
-    {
-        services.AddScoped<IChatClient>(
-            _ => BaselineReplayClient.FromBaseline("E2E_MultiTokenStreaming.recording.json"));
-    }
+        => AddReplay(services, "E2E_MultiTokenStreaming.recording.json");
 
     public static void MultiTurn(IServiceCollection services)
+        => AddReplay(services, "E2E_MultiTurn.recording.json");
+
+    private static void AddReplay(IServiceCollection services, string recordingFileName)
     {
-        services.AddScoped<IChatClient>(
-            _ => BaselineReplayClient.FromBaseline("E2E_MultiTurn.recording.json"));
+        services.AddScoped(_ => ReplayCheckpointScript.Load(recordingFileName));
+        services.AddScoped<IChatClient, GatedReplayChatClient>();
     }
 }

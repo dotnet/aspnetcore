@@ -9,7 +9,22 @@
 <h1 id="page-title">ToolBlock Demo</h1>
 
 <AgentBoundary Agent="_agent">
-    <MessageList />
+    <MessageList>
+        <BlockRenderer TBlock="WeatherToolBlock">
+            <ChildContent Context="weather">
+                <article class="weather-tool-block"
+                         data-tool-name="@weather.ToolName"
+                         data-complete="@weather.HasResult.ToString().ToLowerInvariant()">
+                    <span class="weather-tool-block__location">@weather.Location</span>
+                    <span class="weather-tool-block__units">@weather.TemperatureUnits</span>
+                    @if (weather.Result is not null)
+                    {
+                        <output class="weather-tool-block__result">@weather.Result.Result</output>
+                    }
+                </article>
+            </ChildContent>
+        </BlockRenderer>
+    </MessageList>
     <MessageInput Placeholder="Ask about weather..." />
 </AgentBoundary>
 
@@ -42,7 +57,8 @@
                 Contents = [new TextContent("Let me check the weather for you.")]
             };
 
-            await Task.Delay(100, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
 
             yield return new ChatResponseUpdate
             {
@@ -55,14 +71,16 @@
                     }) { InformationalOnly = true }]
             };
 
-            await Task.Delay(200, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
 
             yield return new ChatResponseUpdate
             {
                 Contents = [new FunctionResultContent("call-1", "Sunny, 72°F")]
             };
 
-            await Task.Delay(100, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
 
             yield return new ChatResponseUpdate
             {

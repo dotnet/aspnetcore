@@ -72,15 +72,18 @@ internal sealed class GatedReplayChatClient : IChatClient
                 };
             }
 
-            var lockKey = $"{sessionId}:{_script.GetLockName(callIndex, checkpointIndex)}";
-            _checkpointState?.SetCheckpoint(frame.Name);
-            try
+            if (sessionId is not null)
             {
-                await _locks.WaitOn(lockKey).WaitAsync(cancellationToken);
-            }
-            finally
-            {
-                _checkpointState?.ClearCheckpoint();
+                var lockKey = $"{sessionId}:{_script.GetLockName(callIndex, checkpointIndex)}";
+                _checkpointState?.SetCheckpoint(frame.Name);
+                try
+                {
+                    await _locks.WaitOn(lockKey).WaitAsync(cancellationToken);
+                }
+                finally
+                {
+                    _checkpointState?.ClearCheckpoint();
+                }
             }
         }
     }
@@ -99,7 +102,7 @@ internal sealed class GatedReplayChatClient : IChatClient
     {
     }
 
-    private string GetSessionId()
+    private string? GetSessionId()
     {
         if (_session.Id is not null)
         {
@@ -115,7 +118,7 @@ internal sealed class GatedReplayChatClient : IChatClient
             return _session.Id;
         }
 
-        throw new InvalidOperationException("A test session is required for gated replay.");
+        return null;
     }
 
     private void AssertRequest(

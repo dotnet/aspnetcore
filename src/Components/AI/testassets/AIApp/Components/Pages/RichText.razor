@@ -40,7 +40,8 @@
                 Contents = [new TextContent("Here is some information about Blazor.")]
             };
 
-            await Task.Delay(50, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
 
             yield return new ChatResponseUpdate
             {
@@ -48,7 +49,8 @@
                 Contents = [new TextContent("\n\nBlazor is a framework for building interactive web UIs using C# instead of JavaScript.")]
             };
 
-            await Task.Delay(50, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
 
             yield return new ChatResponseUpdate
             {
@@ -56,7 +58,8 @@
                 Contents = [new TextContent(" It supports multiple render modes including Server, WebAssembly, and Auto.")]
             };
 
-            await Task.Delay(50, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
 
             yield return new ChatResponseUpdate
             {

@@ -185,4 +185,75 @@ public partial class ChatPageTests : BrowserTest
         var turns = page.Locator(TurnSelector);
         await Expect(turns).ToHaveCountAsync(0);
     }
+
+    [TestMethod]
+    public async Task Attachments_CanBePreviewedAndRemoved()
+    {
+        var server = await StartServerAsync<App>(TestRoot.Servers);
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(server));
+        var page = await context.NewPageAsync();
+
+        await page.GotoAsync($"{server.TestUrl}/chat");
+        await page.WaitForInteractiveAsync(SendButtonSelector);
+
+        const string fileName = "attachment-smoke-test.png";
+        await page.Locator(".sc-ai-input__file").SetInputFilesAsync(new FilePayload
+        {
+            Name = fileName,
+            MimeType = "image/png",
+            Buffer = [0x89, 0x50, 0x4e, 0x47],
+        });
+
+        var preview = page.Locator(".sc-ai-attachment-preview");
+        await Expect(preview).ToHaveCountAsync(1);
+        await Expect(preview.Locator(".sc-ai-attachment-preview__file")).ToHaveTextAsync(fileName);
+
+        await preview.Locator($".sc-ai-attachment-preview__remove[aria-label='Remove {fileName}']")
+            .ClickAsync();
+
+        await Expect(preview).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task RichText_RendersExactParagraphs()
+    {
+        var server = await StartServerAsync<App>(TestRoot.Servers);
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(server));
+        var page = await context.NewPageAsync();
+
+        await page.GotoAsync($"{server.TestUrl}/richtext");
+        await page.WaitForInteractiveAsync(SendButtonSelector);
+        await page.Locator(TextareaSelector).FillAsync("Tell me about Blazor");
+        await page.Locator(SendButtonSelector).ClickAsync();
+
+        const string expected =
+            "Here is some information about Blazor.\n\n" +
+            "Blazor is a framework for building interactive web UIs using C# instead of JavaScript. " +
+            "It supports multiple render modes including Server, WebAssembly, and Auto.\n\n" +
+            "With .NET 10, Blazor continues to evolve with new features like rich text content blocks and source generators.";
+        var response = page.Locator(".sc-ai-message--assistant .sc-ai-message__content");
+        await Expect(response).ToHaveTextAsync(expected);
+
+        Assert.AreEqual(expected, await response.TextContentAsync());
+    }
+
+    [TestMethod]
+    public async Task ToolBlocks_RendersGeneratedBlockAndResult()
+    {
+        var server = await StartServerAsync<App>(TestRoot.Servers);
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(server));
+        var page = await context.NewPageAsync();
+
+        await page.GotoAsync($"{server.TestUrl}/toolblocks");
+        await page.WaitForInteractiveAsync(SendButtonSelector);
+        await page.Locator(TextareaSelector).FillAsync("What is the weather?");
+        await page.Locator(SendButtonSelector).ClickAsync();
+
+        var toolBlock = page.Locator(".weather-tool-block");
+        await Expect(toolBlock).ToHaveAttributeAsync("data-tool-name", "get_weather");
+        await Expect(toolBlock).ToHaveAttributeAsync("data-complete", "true");
+        await Expect(toolBlock.Locator(".weather-tool-block__location")).ToHaveTextAsync("Seattle");
+        await Expect(toolBlock.Locator(".weather-tool-block__units")).ToHaveTextAsync("fahrenheit");
+        await Expect(toolBlock.Locator(".weather-tool-block__result")).ToHaveTextAsync("Sunny, 72°F");
+    }
 }

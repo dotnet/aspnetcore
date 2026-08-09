@@ -99,6 +99,21 @@ public class ReplayInfrastructureTests
     }
 
     [TestMethod]
+    public async Task GatedReplayChatClient_ReplaysWithoutSession()
+    {
+        var script = CreateSingleFrameScript();
+        using var client = new GatedReplayChatClient(
+            script,
+            new TestLockProvider(),
+            new TestSessionContext());
+
+        var response = await client.GetResponseAsync(
+            [new ChatMessage(ChatRole.User, "hello")]);
+
+        Assert.AreEqual("hello back", response.Text);
+    }
+
+    [TestMethod]
     public async Task GatedReplayChatClient_IsolatesSessionsAndCalls()
     {
         var script = new ReplayCheckpointScript
