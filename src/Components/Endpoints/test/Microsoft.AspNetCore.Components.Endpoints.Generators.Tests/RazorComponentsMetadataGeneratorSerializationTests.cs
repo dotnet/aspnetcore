@@ -36,7 +36,8 @@ public sealed class RazorComponentsMetadataGeneratorSerializationTests : RazorCo
         var context = LoadContext(result, out var loaded);
         using (loaded)
         {
-            var parameter = Assert.ContainsSingle(Assert.ContainsSingle(context.Components).Parameters);
+            var parameter = Assert.ContainsSingle(
+                Assert.ContainsSingle(GetReferencedComponents(context, result)).Parameters);
             Assert.IsNotNull(parameter.GetStateSerializer);
 
             var marker = new object();
@@ -74,7 +75,7 @@ public sealed class RazorComponentsMetadataGeneratorSerializationTests : RazorCo
         using (loaded)
         {
             Assert.IsInstanceOfType<DefaultJsonTypeInfoResolver>(context.JsonTypeInfoResolver);
-            Assert.ContainsSingle(context.Components);
+            Assert.ContainsSingle(GetReferencedComponents(context, result));
         }
     }
 
