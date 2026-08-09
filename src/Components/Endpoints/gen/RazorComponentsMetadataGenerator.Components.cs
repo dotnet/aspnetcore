@@ -174,6 +174,21 @@ public sealed partial class RazorComponentsMetadataGenerator
                     [-1, 0]);
                 return true;
             }
+
+            if (IsTypeDefinition(
+                    current,
+                    "Microsoft.AspNetCore.Components.QuickGrid",
+                    "Microsoft.AspNetCore.Components.QuickGrid",
+                    "ColumnBase`1"))
+            {
+                factory = new BuiltInDescriptorFactoryModel(
+                    "Microsoft.AspNetCore.Components.QuickGrid",
+                    "CreateColumnBaseDescriptors",
+                    [current.TypeArguments[0].AnnotatedFullName(), componentType.FullName()],
+                    [$"where T1 : global::Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<T0>"],
+                    [0, -1]);
+                return true;
+            }
         }
 
         factory = null!;
@@ -213,6 +228,30 @@ public sealed partial class RazorComponentsMetadataGenerator
             {
                 return "CreateVirtualizeDescriptors";
             }
+        }
+
+        if (string.Equals(
+                definition.ContainingAssembly.Identity.Name,
+                "Microsoft.AspNetCore.Components.QuickGrid",
+                StringComparison.Ordinal))
+        {
+            return definition.MetadataName switch
+            {
+                "QuickGrid`1" => "CreateQuickGridDescriptors",
+                "PropertyColumn`2" => "CreatePropertyColumnDescriptors",
+                "TemplateColumn`1" => "CreateTemplateColumnDescriptors",
+                "ColumnsCollectedNotifier`1" => "CreateColumnsCollectedNotifierDescriptors",
+                _ => null,
+            };
+        }
+
+        if (IsTypeDefinition(
+                definition,
+                "Microsoft.AspNetCore.Components.WebAssembly.Authentication",
+                "Microsoft.AspNetCore.Components.WebAssembly.Authentication",
+                "RemoteAuthenticatorViewCore`1"))
+        {
+            return "CreateRemoteAuthenticatorViewCoreDescriptors";
         }
 
         return null;

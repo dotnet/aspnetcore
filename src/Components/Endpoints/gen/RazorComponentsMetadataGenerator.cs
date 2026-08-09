@@ -33,7 +33,11 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         "Microsoft.AspNetCore.Components",
         "Microsoft.AspNetCore.Components.Web",
         "Microsoft.AspNetCore.Components.Forms",
+        "Microsoft.AspNetCore.Components.Authorization",
         "Microsoft.AspNetCore.Components.Endpoints",
+        "Microsoft.AspNetCore.Components.QuickGrid",
+        "Microsoft.AspNetCore.Components.Media",
+        "Microsoft.AspNetCore.Components.WebAssembly.Authentication",
     ];
 
     private static readonly string[] BuiltInJSInvokableDescriptorAssemblies =
