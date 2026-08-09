@@ -1,0 +1,151 @@
+@using System.Text.Json
+
+@if (_isResponded)
+{
+    <div class="task-steps-card task-steps-card--responded">
+        @if (_wasAccepted)
+        {
+            <span class="task-steps-status task-steps-status--accepted">&#x2713; Accepted</span>
+        }
+        else
+        {
+            <span class="task-steps-status task-steps-status--rejected">&#x2717; Rejected</span>
+        }
+    </div>
+}
+else
+{
+    <div class="task-steps-card">
+        <div class="task-steps-card__header">
+            <h3>Select Steps</h3>
+            <span class="task-steps-card__count">
+                @SelectedCount / @_steps.Count selected
+            </span>
+        </div>
+
+        <div class="task-steps-card__progress">
+            <div class="task-steps-card__progress-bar"
+                 style="width: @ProgressPercent%"></div>
+        </div>
+
+        <ul class="task-steps-card__list">
+            @foreach (var step in _steps)
+            {
+                <li class="task-step-item @(step.IsSelected ? "task-step-item--selected" : "")">
+                    <label>
+                        <input type="checkbox"
+                               checked="@step.IsSelected"
+                               @onchange="() => ToggleStep(step)" />
+                        @step.Description
+                    </label>
+                </li>
+            }
+        </ul>
+
+        <div class="task-steps-card__actions">
+            <button class="task-steps-btn task-steps-btn--reject"
+                    @onclick="RejectAsync">
+                Reject
+            </button>
+            <button class="task-steps-btn task-steps-btn--confirm"
+                    @onclick="ConfirmAsync">
+                Confirm
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public UIActionBlock Block { get; set; } = default!;
+
+    private List<TaskStepItem> _steps = new();
+    private bool _isResponded;
+    private bool _wasAccepted;
+
+    private int SelectedCount => _steps.Count(s => s.IsSelected);
+
+    private double ProgressPercent => _steps.Count > 0
+        ? (double)SelectedCount / _steps.Count * 100
+        : 0;
+
+    protected override void OnInitialized()
+    {
+        if (Block.Arguments?.TryGetValue("steps", out var stepsObj) == true)
+        {
+            List<TaskStep>? parsed = null;
+            if (stepsObj is JsonElement element)
+            {
+                if (element.ValueKind == JsonValueKind.Array)
+                {
+                    parsed = element.Deserialize<List<TaskStep>>();
+                }
+                else if (element.ValueKind == JsonValueKind.String)
+                {
+                    parsed = JsonSerializer.Deserialize<List<TaskStep>>(element.GetString()!);
+                }
+            }
+            else
+            {
+                var stepsJson = stepsObj?.ToString() ?? "[]";
+                parsed = JsonSerializer.Deserialize<List<TaskStep>>(stepsJson);
+            }
+
+            if (parsed is not null)
+            {
+                _steps = parsed.Select(s => new TaskStepItem
+                {
+                    Description = s.Description,
+                    IsSelected = s.Status != "disabled"
+                }).ToList();
+            }
+        }
+    }
+
+    private void ToggleStep(TaskStepItem step)
+    {
+        step.IsSelected = !step.IsSelected;
+    }
+
+    private async Task ConfirmAsync()
+    {
+        var modifiedSteps = _steps.Select(s => new TaskStep
+        {
+            Description = s.Description,
+            Status = s.IsSelected ? "enabled" : "disabled"
+        }).ToList();
+
+        if (Block.Call?.Arguments is not null)
+        {
+            Block.Call.Arguments["steps"] = JsonSerializer.SerializeToElement(modifiedSteps);
+        }
+
+        await Block.InvokeAsync();
+        _wasAccepted = true;
+        _isResponded = true;
+    }
+
+    private async Task RejectAsync()
+    {
+        var rejectedSteps = _steps.Select(s => new TaskStep
+        {
+            Description = s.Description,
+            Status = "disabled"
+        }).ToList();
+
+        if (Block.Call?.Arguments is not null)
+        {
+            Block.Call.Arguments["steps"] = JsonSerializer.SerializeToElement(rejectedSteps);
+        }
+
+        await Block.InvokeAsync();
+        _wasAccepted = false;
+        _isResponded = true;
+    }
+
+    private sealed class TaskStepItem
+    {
+        public string Description { get; set; } = "";
+        public bool IsSelected { get; set; }
+    }
+}

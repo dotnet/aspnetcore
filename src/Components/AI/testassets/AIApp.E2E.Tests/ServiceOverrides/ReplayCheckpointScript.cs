@@ -61,6 +61,15 @@ internal sealed class ReplayRequestExpectation
     public int? MessageCount { get; init; }
 
     public List<string>? ToolNames { get; init; }
+
+    public ReplayFunctionResultExpectation? FunctionResult { get; init; }
+}
+
+internal sealed class ReplayFunctionResultExpectation
+{
+    public required string CallId { get; init; }
+
+    public required string Result { get; init; }
 }
 
 internal sealed class ReplayFrame

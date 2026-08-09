@@ -28,6 +28,12 @@ class ChatClientOverrides
         services.AddScoped<IChatClient, GatedReplayChatClient>();
     }
 
+    public static void HumanInTheLoop(IServiceCollection services)
+    {
+        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_HumanInTheLoop.recording.json"));
+        services.AddScoped<IChatClient, GatedReplayChatClient>();
+    }
+
     public static void SingleTurnEcho(IServiceCollection services)
     {
         services.AddScoped<IChatClient>(

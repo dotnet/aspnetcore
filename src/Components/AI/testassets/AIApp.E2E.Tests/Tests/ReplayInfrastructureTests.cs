@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using AIApp.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.AI;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -254,6 +255,81 @@ public class ReplayInfrastructureTests
         var finalText = turn.ResponseBlocks.OfType<RichContentBlock>().Single().RawText;
         Assert.AreEqual(
             "The weather in San Francisco is sunny with a temperature of 20\u00b0C.",
+            finalText);
+    }
+
+    [TestMethod]
+    public async Task HumanInTheLoopScript_DecodesSelectionResultAndContinues()
+    {
+        var script = ReplayCheckpointScript.Load("Dojo_HumanInTheLoop.recording.json");
+        var locks = new TestLockProvider();
+        const string sessionId = "human-in-the-loop-unit";
+        for (var callIndex = 0; callIndex < script.Calls.Count; callIndex++)
+        {
+            for (var checkpointIndex = 0;
+                checkpointIndex < script.Calls[callIndex].Frames.Count;
+                checkpointIndex++)
+            {
+                locks.Release($"{sessionId}:{script.GetLockName(callIndex, checkpointIndex)}");
+            }
+        }
+
+        IReadOnlyList<(string Description, string Status)>? capturedSteps = null;
+        string GenerateTaskSteps(List<Dictionary<string, string>> steps)
+        {
+            capturedSteps = steps
+                .Select(step => (step["description"], step["status"]))
+                .ToList();
+            var selected = capturedSteps
+                .Where(step => step.Status != "disabled")
+                .Select(step => step.Description);
+            return $"The user selected the following steps: {string.Join(", ", selected)}";
+        }
+
+        using var client = new GatedReplayChatClient(
+            script,
+            locks,
+            new TestSessionContext { Id = sessionId });
+        using var agent = new UIAgent(client, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                (Func<List<Dictionary<string, string>>, string>)GenerateTaskSteps,
+                name: "generate_task_steps",
+                description: "Generate task steps."));
+        });
+        var context = new AgentContext(agent);
+        context.RegisterOnStatusChanged(status =>
+        {
+            if (status == ConversationStatus.AwaitingInput)
+            {
+                var block = context.Turns[^1].ResponseBlocks
+                    .OfType<UIActionBlock>()
+                    .Single();
+                var steps = (JsonElement)block.Call!.Arguments!["steps"]!;
+                var updatedSteps = steps.Deserialize<List<Dictionary<string, string>>>()!;
+                updatedSteps[1]["status"] = "disabled";
+                updatedSteps[2]["status"] = "enabled";
+                block.Call.Arguments["steps"] = JsonSerializer.SerializeToElement(updatedSteps);
+                block.InvokeAsync().GetAwaiter().GetResult();
+            }
+        });
+
+        await context.SendMessageAsync(
+            "Help me organize a birthday party for my friend next Saturday. " +
+            "Generate the task steps I need to complete.");
+
+        Assert.IsNotNull(capturedSteps);
+        Assert.HasCount(3, capturedSteps);
+        Assert.AreEqual(("Book a party venue", "enabled"), capturedSteps[0]);
+        Assert.AreEqual(("Order a birthday cake", "disabled"), capturedSteps[1]);
+        Assert.AreEqual(("Send invitations", "enabled"), capturedSteps[2]);
+        var turn = context.Turns.Single();
+        var action = turn.ResponseBlocks.OfType<UIActionBlock>().Single();
+        Assert.IsTrue(action.IsComplete);
+        Assert.AreEqual("generate_task_steps", action.ToolName);
+        var finalText = turn.ResponseBlocks.OfType<RichContentBlock>().Single().RawText;
+        Assert.AreEqual(
+            "I'll move forward with booking a party venue and sending invitations.",
             finalText);
     }
 

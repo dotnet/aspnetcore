@@ -1,0 +1,111 @@
+.task-steps-card {
+    border-radius: 12px;
+    border: 1px solid var(--sc-ai-color-border, #e5e7eb);
+    overflow: hidden;
+    max-width: 400px;
+    margin: 8px 0;
+}
+
+.task-steps-card--responded {
+    padding: 12px 16px;
+    background: var(--sc-ai-color-surface-subtle, #f3f4f6);
+}
+
+.task-steps-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+}
+
+.task-steps-card__header h3 {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.task-steps-card__count {
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+.task-steps-card__progress {
+    height: 4px;
+    background: var(--sc-ai-color-surface-subtle, #f3f4f6);
+}
+
+.task-steps-card__progress-bar {
+    height: 100%;
+    background: #6366f1;
+    transition: width 0.3s ease;
+}
+
+.task-steps-card__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.task-step-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--sc-ai-color-border, #e5e7eb);
+    transition: background 0.15s ease;
+}
+
+.task-step-item:last-child {
+    border-bottom: none;
+}
+
+.task-step-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.task-step-item--selected {
+    background: color-mix(in srgb, #6366f1 5%, transparent);
+}
+
+.task-steps-card__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--sc-ai-color-border, #e5e7eb);
+}
+
+.task-steps-btn {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.task-steps-btn--reject {
+    background: var(--sc-ai-color-surface-subtle, #f3f4f6);
+    color: var(--sc-ai-color-text-primary, #333);
+}
+
+.task-steps-btn--confirm {
+    background: #6366f1;
+    color: white;
+}
+
+.task-steps-status {
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.task-steps-status--accepted {
+    color: #22c55e;
+}
+
+.task-steps-status--rejected {
+    color: #ef4444;
+}

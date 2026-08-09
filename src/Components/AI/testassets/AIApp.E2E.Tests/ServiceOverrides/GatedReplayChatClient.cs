@@ -149,5 +149,34 @@ internal sealed class GatedReplayChatClient : IChatClient
                     $"but received [{string.Join(", ", actualToolNames)}].");
             }
         }
+
+        if (expectation.FunctionResult is { } expectedFunctionResult)
+        {
+            var actualFunctionResult = messageList
+                .Where(message => message.Role == ChatRole.Tool)
+                .SelectMany(message => message.Contents.OfType<FunctionResultContent>())
+                .LastOrDefault();
+            if (actualFunctionResult is null)
+            {
+                throw new InvalidOperationException(
+                    $"Replay call {callIndex + 1} expected a function result but received none.");
+            }
+
+            var actualResult = actualFunctionResult.Result?.ToString();
+            if (!string.Equals(
+                    expectedFunctionResult.CallId,
+                    actualFunctionResult.CallId,
+                    StringComparison.Ordinal) ||
+                !string.Equals(
+                    expectedFunctionResult.Result,
+                    actualResult,
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Replay call {callIndex + 1} expected function result " +
+                    $"'{expectedFunctionResult.CallId}: {expectedFunctionResult.Result}' but received " +
+                    $"'{actualFunctionResult.CallId}: {actualResult}'.");
+            }
+        }
     }
 }
