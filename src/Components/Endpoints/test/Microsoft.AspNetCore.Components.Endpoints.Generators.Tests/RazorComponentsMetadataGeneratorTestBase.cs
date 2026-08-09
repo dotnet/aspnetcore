@@ -182,8 +182,12 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
     {
         // Touch the application assemblies before enumerating the loaded set.
         _ = typeof(IComponent);
+        _ = typeof(Microsoft.AspNetCore.Components.Authorization.AuthorizeView);
         _ = typeof(Microsoft.AspNetCore.Components.ConfigureBrowser);
+        _ = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>);
+        _ = typeof(Microsoft.AspNetCore.Components.Media.Image);
         _ = typeof(RazorComponentsMetadataContext);
+        _ = typeof(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorView);
         _ = typeof(JSInvokableAttribute);
         _ = typeof(System.Text.Json.JsonSerializer);
 
