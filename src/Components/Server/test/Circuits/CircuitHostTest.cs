@@ -225,7 +225,7 @@ public class CircuitHostTest
         {
             descriptors.Add(new()
             {
-                ComponentType = typeof(RenderInParallelComponent),
+                ComponentTypeInfo = ComponentTypeInfoResolverFactory.Default.GetRequiredTypeInfo(typeof(RenderInParallelComponent)),
                 Parameters = ParameterView.Empty,
                 Sequence = 0
             });
@@ -1271,7 +1271,7 @@ public class CircuitHostTest
                     [nameof(DynamicallyAddedComponent.Message)] = "New Component 2"
                 }),
                 Descriptor = new(
-                    componentType: typeof(DynamicallyAddedComponent),
+                    componentTypeInfo: ComponentTypeInfoResolverFactory.Default.GetRequiredTypeInfo(typeof(DynamicallyAddedComponent)),
                     parameters: CreateWebRootComponentParameters(new Dictionary<string, object>
                     {
                         [nameof(DynamicallyAddedComponent.Message)] = "New Component 2"
@@ -1293,7 +1293,7 @@ public class CircuitHostTest
                     [nameof(DynamicallyAddedComponent.Message)] = "Replaced Component 1"
                 }),
                 Descriptor = new(
-                    componentType: typeof(DynamicallyAddedComponent),
+                    componentTypeInfo: ComponentTypeInfoResolverFactory.Default.GetRequiredTypeInfo(typeof(DynamicallyAddedComponent)),
                     parameters: CreateWebRootComponentParameters(new Dictionary<string, object>
                     {
                         [nameof(DynamicallyAddedComponent.Message)] = "Replaced Component 1"
@@ -1336,7 +1336,7 @@ public class CircuitHostTest
             SsrComponentId = ssrComponentId,
             Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
             Descriptor = new(
-                componentType: typeof(TComponent),
+                componentTypeInfo: ComponentTypeInfoResolverFactory.Default.GetRequiredTypeInfo(typeof(TComponent)),
                 parameters: CreateWebRootComponentParameters(parameters)),
         };
 
@@ -1352,7 +1352,7 @@ public class CircuitHostTest
             SsrComponentId = ssrComponentId,
             Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
             Descriptor = new(
-                componentType: typeof(TComponent),
+                componentTypeInfo: ComponentTypeInfoResolverFactory.Default.GetRequiredTypeInfo(typeof(TComponent)),
                 parameters: CreateWebRootComponentParameters(parameters)),
         };
 
@@ -1379,7 +1379,7 @@ public class CircuitHostTest
 
     private ServerComponentDeserializer CreateDeserializer()
     {
-        return new ServerComponentDeserializer(_ephemeralDataProtectionProvider, NullLogger<ServerComponentDeserializer>.Instance, new RootTypeCache(), new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
+        return new ServerComponentDeserializer(_ephemeralDataProtectionProvider, NullLogger<ServerComponentDeserializer>.Instance, ComponentTypeInfoResolverFactory.Default, new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
 
     private static TestRemoteRenderer GetRemoteRenderer()
