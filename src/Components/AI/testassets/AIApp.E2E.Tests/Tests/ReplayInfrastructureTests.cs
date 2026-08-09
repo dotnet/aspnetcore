@@ -195,6 +195,68 @@ public class ReplayInfrastructureTests
         Assert.AreEqual("Background changed to a sunset gradient.", finalText);
     }
 
+    [TestMethod]
+    public async Task BackendToolRenderingScript_DecodesToolCallAndContinues()
+    {
+        var script = ReplayCheckpointScript.Load("Dojo_BackendToolRendering.recording.json");
+        var locks = new TestLockProvider();
+        const string sessionId = "backend-tool-rendering-unit";
+        for (var callIndex = 0; callIndex < script.Calls.Count; callIndex++)
+        {
+            for (var checkpointIndex = 0;
+                checkpointIndex < script.Calls[callIndex].Frames.Count;
+                checkpointIndex++)
+            {
+                locks.Release($"{sessionId}:{script.GetLockName(callIndex, checkpointIndex)}");
+            }
+        }
+
+        string? capturedLocation = null;
+        object GetWeather(string location)
+        {
+            capturedLocation = location;
+            return new
+            {
+                Temperature = 20,
+                Conditions = "sunny",
+                Humidity = 50,
+                WindSpeed = 10,
+                FeelsLike = 25,
+            };
+        }
+
+        using var client = new GatedReplayChatClient(
+            script,
+            locks,
+            new TestSessionContext { Id = sessionId });
+        using var agent = new UIAgent(
+            client,
+            new ChatOptions
+            {
+                Tools =
+                [
+                    AIFunctionFactory.Create(
+                        (Func<string, object>)GetWeather,
+                        name: "get_weather",
+                        description: "Get the weather for a given location.")
+                ],
+            });
+        var context = new AgentContext(agent);
+
+        await context.SendMessageAsync("What is the weather in San Francisco?");
+
+        Assert.AreEqual("San Francisco", capturedLocation);
+        var turn = context.Turns.Single();
+        var weatherBlock = turn.ResponseBlocks.OfType<FunctionInvocationContentBlock>().Single();
+        Assert.AreEqual("get_weather", weatherBlock.ToolName);
+        Assert.IsTrue(weatherBlock.HasResult);
+        Assert.AreEqual("San Francisco", weatherBlock.Arguments!["location"]?.ToString());
+        var finalText = turn.ResponseBlocks.OfType<RichContentBlock>().Single().RawText;
+        Assert.AreEqual(
+            "The weather in San Francisco is sunny with a temperature of 20\u00b0C.",
+            finalText);
+    }
+
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(
         IEnumerable<ChatResponseUpdate> updates,
         [EnumeratorCancellation] CancellationToken cancellationToken)
