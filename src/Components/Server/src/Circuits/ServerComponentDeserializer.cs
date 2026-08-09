@@ -93,7 +93,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
     public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
     {
-        var markers = JsonSerializer.Deserialize<IEnumerable<ComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var markersTypeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(IEnumerable<ComponentMarker>));
+        var markers = (IEnumerable<ComponentMarker>)JsonSerializer.Deserialize(serializedComponentRecords, markersTypeInfo)!;
         descriptors = new List<ComponentDescriptor>();
         int lastSequence = -1;
 
@@ -256,9 +257,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
         try
         {
-            result = JsonSerializer.Deserialize<ServerComponent>(
-                unprotected,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+            var typeInfo = ServerComponentSerializationSettings.JsonSerializationOptions.GetTypeInfo(typeof(ServerComponent));
+            result = (ServerComponent)JsonSerializer.Deserialize(unprotected, typeInfo)!;
             return true;
         }
         catch (Exception e)

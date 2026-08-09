@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -19,7 +20,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
-    private readonly ConcurrentDictionary<long, object> _pendingTasks = new();
+    private readonly ConcurrentDictionary<long, IPendingAsyncCall> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
     private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
 
@@ -44,7 +45,16 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                     new ByteArrayJsonConverter(this),
                 }
         };
+
+        if (JsonSerializer.IsReflectionEnabledByDefault)
+        {
+            JsonSerializerOptions.TypeInfoResolverChain.Add(CreateReflectionResolver());
+        }
     }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    private static DefaultJsonTypeInfoResolver CreateReflectionResolver() => new();
 
     /// <summary>
     /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
@@ -129,25 +139,25 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         object?[]? args)
     {
         var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-        var tcs = new TaskCompletionSource<TValue>();
+        var pendingCall = new PendingAsyncCall<TValue>();
         if (cancellationToken.CanBeCanceled)
         {
             _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
             {
-                tcs.TrySetCanceled(cancellationToken);
+                pendingCall.Cancel(cancellationToken);
                 CleanupTasksAndRegistrations(taskId);
             });
         }
-        _pendingTasks[taskId] = tcs;
+        _pendingTasks[taskId] = pendingCall;
 
         try
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                tcs.TrySetCanceled(cancellationToken);
+                pendingCall.Cancel(cancellationToken);
                 CleanupTasksAndRegistrations(taskId);
 
-                return new ValueTask<TValue>(tcs.Task);
+                return new ValueTask<TValue>(pendingCall.Task);
             }
 
             var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
@@ -164,7 +174,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
             BeginInvokeJS(invocationInfo);
 
-            return new ValueTask<TValue>(tcs.Task);
+            return new ValueTask<TValue>(pendingCall.Task);
         }
         catch
         {
@@ -273,7 +283,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
     internal bool EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
     {
-        if (!_pendingTasks.TryRemove(taskId, out var tcs))
+        if (!_pendingTasks.TryRemove(taskId, out var pendingCall))
         {
             // We should simply return if we can't find an id for the invocation.
             // This likely means that the method that initiated the call defined a timeout and stopped waiting.
@@ -286,16 +296,12 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             if (succeeded)
             {
-                var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
-
-                var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
-                ByteArraysToBeRevived.Clear();
-                TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                pendingCall.Complete(this, ref jsonReader);
             }
             else
             {
                 var exceptionText = jsonReader.GetString() ?? string.Empty;
-                TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(exceptionText));
+                pendingCall.Fail(new JSException(exceptionText));
             }
 
             return true;
@@ -303,7 +309,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         catch (Exception exception)
         {
             var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
-            TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
+            pendingCall.Fail(new JSException(message, exception));
             return false;
         }
     }

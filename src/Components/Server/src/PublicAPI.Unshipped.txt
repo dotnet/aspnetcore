@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Server.CircuitOptions.JSInteropTypeInfoResolvers.get -> System.Collections.Generic.IList<System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver!>!
 Microsoft.AspNetCore.Components.Server.Circuits.Circuit.RequestCircuitPauseAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>?
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.set -> void

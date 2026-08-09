@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Microsoft.AspNetCore.Components.Server;
@@ -103,6 +105,12 @@ public sealed class CircuitOptions
     /// Defaults to <c>1 minute</c>.
     /// </value>
     public TimeSpan JSInteropDefaultCallTimeout { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>
+    /// Gets the JSON metadata resolvers used by JavaScript interop for application-owned payloads.
+    /// </summary>
+    [Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public IList<IJsonTypeInfoResolver> JSInteropTypeInfoResolvers { get; } = new List<IJsonTypeInfoResolver>();
 
     /// <summary>
     /// Gets or sets the maximum number of render batches that a circuit will buffer until an acknowledgement for the batch is
