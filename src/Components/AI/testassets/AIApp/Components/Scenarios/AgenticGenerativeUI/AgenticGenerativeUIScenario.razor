@@ -1,0 +1,87 @@
+@using System.Text.Json
+@inject IChatClient ChatClient
+@implements IDisposable
+
+<div class="dojo-scenario agentic-generative-ui" data-dojo-scenario="agentic-generative-ui">
+    <AgentBoundary @key="_agent" Agent="_agent">
+        <div class="sc-ai-root dojo-chat-panel">
+            <div class="plan-content">
+                <MessageList>
+                    <DojoWelcome />
+                </MessageList>
+
+                @if (_agent.State.Value.Steps.Count > 0)
+                {
+                    <PlanProgressCard Plan="_agent.State.Value" />
+                }
+            </div>
+            <SuggestionList Suggestions="_suggestions" />
+            <MessageInput Placeholder="Type a message..." />
+        </div>
+    </AgentBoundary>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
+
+    private UIAgent<PlanState> _agent = default!;
+    private IDisposable? _stateChangedRegistration;
+
+    private static readonly Suggestion[] _suggestions =
+    [
+        new() { Label = "Simple plan", Prompt = "Create a plan for learning to bake bread" },
+        new() { Label = "Complex plan", Prompt = "Create a plan for a trip to Mars" },
+    ];
+
+    protected override void OnInitialized()
+    {
+        SetAgent(CreateAgent());
+    }
+
+    private UIAgent<PlanState> CreateAgent()
+    {
+        return new UIAgent<PlanState>(ChatClient, options =>
+        {
+            options.StateMapper = context =>
+            {
+                if (context.Update.RawRepresentation is not JsonElement snapshot)
+                {
+                    return false;
+                }
+
+                var planState = snapshot.Deserialize<PlanState>(_jsonOptions);
+                if (planState is null)
+                {
+                    return false;
+                }
+
+                context.SetState(planState);
+                return true;
+            };
+        });
+    }
+
+    private void Reset()
+    {
+        SetAgent(CreateAgent());
+    }
+
+    private void SetAgent(UIAgent<PlanState> agent)
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+        _agent = agent;
+        _stateChangedRegistration = _agent.State.OnChanged(OnStateChanged);
+    }
+
+    private void OnStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+    }
+}

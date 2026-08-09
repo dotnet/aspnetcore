@@ -1,0 +1,112 @@
+.plan-progress-card {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.plan-progress-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f9fafb;
+}
+
+    .plan-progress-card__header h3 {
+        margin: 0;
+        font-size: 1em;
+        font-weight: 600;
+    }
+
+.plan-progress-card__count {
+    font-size: 0.85em;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.plan-progress-card__bar {
+    height: 4px;
+    background: #f3f4f6;
+}
+
+.plan-progress-card__bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    transition: width 0.5s ease;
+}
+
+.plan-progress-card__steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.plan-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background 0.3s ease;
+}
+
+    .plan-step:last-child {
+        border-bottom: none;
+    }
+
+.plan-step__icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75em;
+    flex-shrink: 0;
+}
+
+.plan-step__description {
+    font-size: 0.9em;
+}
+
+/* Completed */
+.plan-step--completed {
+    background: color-mix(in srgb, #22c55e 5%, transparent);
+}
+
+    .plan-step--completed .plan-step__icon {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+    }
+
+/* Executing (current) */
+.plan-step--executing {
+    background: color-mix(in srgb, #6366f1 5%, transparent);
+}
+
+    .plan-step--executing .plan-step__icon {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        animation: spin 1s linear infinite;
+    }
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Pending */
+.plan-step--pending {
+    opacity: 0.6;
+}
+
+    .plan-step--pending .plan-step__icon {
+        background: #f3f4f6;
+        color: #9ca3af;
+    }

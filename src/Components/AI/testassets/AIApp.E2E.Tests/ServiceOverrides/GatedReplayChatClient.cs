@@ -61,6 +61,16 @@ internal sealed class GatedReplayChatClient : IChatClient
                 yield return update;
             }
 
+            if (frame.State is { } state)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    RawRepresentation = state,
+                };
+            }
+
             var lockKey = $"{sessionId}:{_script.GetLockName(callIndex, checkpointIndex)}";
             _checkpointState?.SetCheckpoint(frame.Name);
             try

@@ -1,0 +1,77 @@
+<div class="plan-progress-card">
+    <div class="plan-progress-card__header">
+        <h3>Task Progress</h3>
+        <span class="plan-progress-card__count">
+            @CompletedCount / @TotalCount
+        </span>
+    </div>
+
+    <div class="plan-progress-card__bar">
+        <div class="plan-progress-card__bar-fill"
+             style="width: @ProgressPercent%"></div>
+    </div>
+
+    <ul class="plan-progress-card__steps">
+        @for (var i = 0; i < Plan.Steps.Count; i++)
+        {
+            var step = Plan.Steps[i];
+            var stepClass = GetStepClass(step, i);
+            <li class="plan-step @stepClass">
+                <span class="plan-step__icon">@GetStepIcon(step, i)</span>
+                <span class="plan-step__description">@step.Description</span>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public PlanState Plan { get; set; } = default!;
+
+    private int CompletedCount => Plan.Steps.Count(s => s.Status == "completed");
+    private int TotalCount => Plan.Steps.Count;
+    private double ProgressPercent => TotalCount > 0
+        ? (double)CompletedCount / TotalCount * 100
+        : 0;
+
+    private int CurrentStepIndex
+    {
+        get
+        {
+            for (var i = 0; i < Plan.Steps.Count; i++)
+            {
+                if (Plan.Steps[i].Status == "pending")
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+    }
+
+    private string GetStepClass(PlanStep step, int index)
+    {
+        if (step.Status == "completed")
+        {
+            return "plan-step--completed";
+        }
+        if (index == CurrentStepIndex)
+        {
+            return "plan-step--executing";
+        }
+        return "plan-step--pending";
+    }
+
+    private string GetStepIcon(PlanStep step, int index)
+    {
+        if (step.Status == "completed")
+        {
+            return "\u2713";
+        }
+        if (index == CurrentStepIndex)
+        {
+            return "\u27f3";
+        }
+        return "\u23f0";
+    }
+}

@@ -77,4 +77,6 @@ internal sealed class ReplayFrame
     public required string Name { get; init; }
 
     public required List<ChatResponseUpdate> Updates { get; init; }
+
+    public JsonElement? State { get; init; }
 }

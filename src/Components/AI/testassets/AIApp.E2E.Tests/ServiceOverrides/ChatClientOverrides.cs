@@ -40,6 +40,12 @@ class ChatClientOverrides
         services.AddScoped<IChatClient, GatedReplayChatClient>();
     }
 
+    public static void AgenticGenerativeUI(IServiceCollection services)
+    {
+        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_AgenticGenerativeUI.recording.json"));
+        services.AddScoped<IChatClient, GatedReplayChatClient>();
+    }
+
     public static void SingleTurnEcho(IServiceCollection services)
     {
         services.AddScoped<IChatClient>(

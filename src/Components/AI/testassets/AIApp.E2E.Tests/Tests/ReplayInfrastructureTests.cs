@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using AIApp.Components.Scenarios.AgenticGenerativeUI;
 using AIApp.E2E.Tests.ServiceOverrides;
 using Microsoft.AspNetCore.Components.AI;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -409,6 +410,65 @@ public class ReplayInfrastructureTests
         Assert.AreEqual(
             "Your nature haiku is ready\u2014a quiet pond awakened by a frog.",
             finalText);
+    }
+
+    [TestMethod]
+    public async Task AgenticGenerativeUIScript_MapsEveryPlanState()
+    {
+        var script = ReplayCheckpointScript.Load("Dojo_AgenticGenerativeUI.recording.json");
+        var locks = new TestLockProvider();
+        const string sessionId = "agentic-generative-ui-unit";
+        for (var checkpointIndex = 0;
+            checkpointIndex < script.Calls[0].Frames.Count;
+            checkpointIndex++)
+        {
+            locks.Release($"{sessionId}:{script.GetLockName(0, checkpointIndex)}");
+        }
+
+        using var client = new GatedReplayChatClient(
+            script,
+            locks,
+            new TestSessionContext { Id = sessionId });
+        using var agent = new UIAgent<PlanState>(client, options =>
+        {
+            options.StateMapper = context =>
+            {
+                if (context.Update.RawRepresentation is not JsonElement snapshot)
+                {
+                    return false;
+                }
+
+                var state = snapshot.Deserialize<PlanState>(
+                    new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                if (state is null)
+                {
+                    return false;
+                }
+
+                context.SetState(state);
+                return true;
+            };
+        });
+        var states = new List<PlanState>();
+        using var registration = agent.State.OnChanged(() => states.Add(agent.State.Value));
+        var context = new AgentContext(agent);
+
+        await context.SendMessageAsync("Create a plan for learning to bake bread");
+
+        Assert.HasCount(6, states);
+        for (var stateIndex = 0; stateIndex < states.Count; stateIndex++)
+        {
+            Assert.HasCount(5, states[stateIndex].Steps);
+            Assert.AreEqual(
+                stateIndex,
+                states[stateIndex].Steps.Count(step => step.Status == "completed"));
+        }
+
+        CollectionAssert.AreEqual(
+            new[] { "Gather ingredients", "Mix dough", "Let it rise", "Shape loaves", "Bake" },
+            states[^1].Steps.Select(step => step.Description).ToArray());
+        Assert.IsTrue(states[^1].Steps.All(step => step.Status == "completed"));
+        Assert.AreEqual(0, context.Turns.Single().ResponseBlocks.Count);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(

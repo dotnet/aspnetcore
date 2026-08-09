@@ -1,0 +1,181 @@
+{
+  "calls": [
+    {
+      "request": {
+        "lastUserMessage": "Create a plan for learning to bake bread",
+        "messageCount": 1,
+        "toolNames": []
+      },
+      "frames": [
+        {
+          "name": "plan-created",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Gather ingredients",
+                "status": "pending"
+              },
+              {
+                "description": "Mix dough",
+                "status": "pending"
+              },
+              {
+                "description": "Let it rise",
+                "status": "pending"
+              },
+              {
+                "description": "Shape loaves",
+                "status": "pending"
+              },
+              {
+                "description": "Bake",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "ingredients-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Gather ingredients",
+                "status": "completed"
+              },
+              {
+                "description": "Mix dough",
+                "status": "pending"
+              },
+              {
+                "description": "Let it rise",
+                "status": "pending"
+              },
+              {
+                "description": "Shape loaves",
+                "status": "pending"
+              },
+              {
+                "description": "Bake",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mixing-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Gather ingredients",
+                "status": "completed"
+              },
+              {
+                "description": "Mix dough",
+                "status": "completed"
+              },
+              {
+                "description": "Let it rise",
+                "status": "pending"
+              },
+              {
+                "description": "Shape loaves",
+                "status": "pending"
+              },
+              {
+                "description": "Bake",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rising-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Gather ingredients",
+                "status": "completed"
+              },
+              {
+                "description": "Mix dough",
+                "status": "completed"
+              },
+              {
+                "description": "Let it rise",
+                "status": "completed"
+              },
+              {
+                "description": "Shape loaves",
+                "status": "pending"
+              },
+              {
+                "description": "Bake",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "shaping-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Gather ingredients",
+                "status": "completed"
+              },
+              {
+                "description": "Mix dough",
+                "status": "completed"
+              },
+              {
+                "description": "Let it rise",
+                "status": "completed"
+              },
+              {
+                "description": "Shape loaves",
+                "status": "completed"
+              },
+              {
+                "description": "Bake",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "plan-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Gather ingredients",
+                "status": "completed"
+              },
+              {
+                "description": "Mix dough",
+                "status": "completed"
+              },
+              {
+                "description": "Let it rise",
+                "status": "completed"
+              },
+              {
+                "description": "Shape loaves",
+                "status": "completed"
+              },
+              {
+                "description": "Bake",
+                "status": "completed"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
