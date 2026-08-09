@@ -1,0 +1,44 @@
+.haiku-carousel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.haiku-carousel__nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.haiku-carousel__btn {
+    background: #fff;
+    color: #333;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+
+    .haiku-carousel__btn:hover:not(:disabled) {
+        background: #f3f4f6;
+    }
+
+    .haiku-carousel__btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+.haiku-carousel__counter {
+    font-size: 0.85rem;
+    color: #6b7280;
+    min-width: 50px;
+    text-align: center;
+}

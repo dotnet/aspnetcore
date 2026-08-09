@@ -1,0 +1,34 @@
+.tool-based-generative-ui {
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+}
+
+.haiku-layout {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    gap: 0;
+}
+
+.haiku-display {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: #f5f5f7;
+}
+
+.haiku-chat {
+    width: 380px;
+    min-width: 320px;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #e5e7eb;
+    background: #fff;
+}

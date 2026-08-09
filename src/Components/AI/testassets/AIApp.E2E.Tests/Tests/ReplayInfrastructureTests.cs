@@ -333,6 +333,84 @@ public class ReplayInfrastructureTests
             finalText);
     }
 
+    [TestMethod]
+    public async Task ToolBasedGenerativeUIScript_DecodesHaikuResultAndContinues()
+    {
+        var script = ReplayCheckpointScript.Load("Dojo_ToolBasedGenerativeUI.recording.json");
+        var locks = new TestLockProvider();
+        const string sessionId = "tool-based-generative-ui-unit";
+        for (var callIndex = 0; callIndex < script.Calls.Count; callIndex++)
+        {
+            for (var checkpointIndex = 0;
+                checkpointIndex < script.Calls[callIndex].Frames.Count;
+                checkpointIndex++)
+            {
+                locks.Release($"{sessionId}:{script.GetLockName(callIndex, checkpointIndex)}");
+            }
+        }
+
+        List<string>? capturedJapanese = null;
+        List<string>? capturedEnglish = null;
+        string? capturedImageName = null;
+        string? capturedGradient = null;
+        string GenerateHaiku(
+            List<string> japanese,
+            List<string> english,
+            string image_name,
+            string gradient)
+        {
+            capturedJapanese = japanese;
+            capturedEnglish = english;
+            capturedImageName = image_name;
+            capturedGradient = gradient;
+            return "Haiku displayed to user.";
+        }
+
+        using var client = new GatedReplayChatClient(
+            script,
+            locks,
+            new TestSessionContext { Id = sessionId });
+        using var agent = new UIAgent(client, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                (Func<List<string>, List<string>, string, string, string>)GenerateHaiku,
+                name: "generate_haiku",
+                description: "Generate a haiku."));
+        });
+        var context = new AgentContext(agent);
+        context.RegisterOnStatusChanged(status =>
+        {
+            if (status == ConversationStatus.AwaitingInput)
+            {
+                context.Turns[^1].ResponseBlocks
+                    .OfType<UIActionBlock>()
+                    .Single()
+                    .InvokeAsync()
+                    .GetAwaiter()
+                    .GetResult();
+            }
+        });
+
+        await context.SendMessageAsync("Write me a haiku about nature");
+
+        CollectionAssert.AreEqual(
+            new[] { "古池や", "蛙飛びこむ", "水の音" },
+            capturedJapanese);
+        CollectionAssert.AreEqual(
+            new[] { "An ancient pond\u2014", "A frog leaps in,", "The sound of water." },
+            capturedEnglish);
+        Assert.AreEqual("ancient-pond", capturedImageName);
+        Assert.AreEqual("linear-gradient(135deg, #134e5e, #71b280)", capturedGradient);
+        var turn = context.Turns.Single();
+        var action = turn.ResponseBlocks.OfType<UIActionBlock>().Single();
+        Assert.IsTrue(action.IsComplete);
+        Assert.AreEqual("generate_haiku", action.ToolName);
+        var finalText = turn.ResponseBlocks.OfType<RichContentBlock>().Single().RawText;
+        Assert.AreEqual(
+            "Your nature haiku is ready\u2014a quiet pond awakened by a frog.",
+            finalText);
+    }
+
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(
         IEnumerable<ChatResponseUpdate> updates,
         [EnumeratorCancellation] CancellationToken cancellationToken)
