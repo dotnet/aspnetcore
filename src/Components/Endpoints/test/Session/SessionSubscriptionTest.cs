@@ -181,6 +181,7 @@ public class SessionSubscriptionTest
 
     private class TestComponent : IComponent
     {
+        [SupplyParameterFromSession]
         public object? Value { get; set; }
 
         public void Attach(RenderHandle renderHandle) { }
