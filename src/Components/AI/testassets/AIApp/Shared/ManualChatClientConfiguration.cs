@@ -13,6 +13,7 @@ internal static class ManualChatClientConfiguration
     public const string DeploymentEnvironmentVariable = "COMPONENTS_AI_AZURE_OPENAI_DEPLOYMENT";
     public const string CapturePathEnvironmentVariable = "COMPONENTS_AI_CAPTURE_PATH";
     public const string ReplayPathEnvironmentVariable = "COMPONENTS_AI_MANUAL_REPLAY_PATH";
+    public const string DojoSimulationEnvironmentVariable = "COMPONENTS_AI_DOJO_SIMULATION";
 
     public static bool IsLiveCaptureEnabled =>
         string.Equals(
@@ -22,6 +23,25 @@ internal static class ManualChatClientConfiguration
 
     public static bool IsManualReplayEnabled =>
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ReplayPathEnvironmentVariable));
+
+    public static bool IsDojoSimulationEnabled =>
+        string.Equals(
+            Environment.GetEnvironmentVariable(DojoSimulationEnvironmentVariable),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+
+    public static void ValidateModeSelection()
+    {
+        var enabledModeCount =
+            (IsLiveCaptureEnabled ? 1 : 0) +
+            (IsManualReplayEnabled ? 1 : 0) +
+            (IsDojoSimulationEnabled ? 1 : 0);
+        if (enabledModeCount > 1)
+        {
+            throw new InvalidOperationException(
+                "Live capture, manual replay, and dojo simulation modes are mutually exclusive.");
+        }
+    }
 
     public static CapturingChatClient CreateLiveCapture(
         string contentRootPath,
@@ -37,9 +57,10 @@ internal static class ManualChatClientConfiguration
                 $"Live capture is disabled. Set {CaptureEnabledEnvironmentVariable}=true explicitly.");
         }
 
-        if (IsManualReplayEnabled)
+        if (IsManualReplayEnabled || IsDojoSimulationEnabled)
         {
-            throw new InvalidOperationException("Live capture and manual replay cannot be enabled together.");
+            throw new InvalidOperationException(
+                "Live capture cannot be combined with manual replay or dojo simulation.");
         }
 
         var endpoint = Environment.GetEnvironmentVariable(EndpointEnvironmentVariable);
@@ -67,9 +88,10 @@ internal static class ManualChatClientConfiguration
 
     public static ManualReplayChatClient CreateManualReplay()
     {
-        if (IsLiveCaptureEnabled)
+        if (IsLiveCaptureEnabled || IsDojoSimulationEnabled)
         {
-            throw new InvalidOperationException("Live capture and manual replay cannot be enabled together.");
+            throw new InvalidOperationException(
+                "Manual replay cannot be combined with live capture or dojo simulation.");
         }
 
         var replayPath = Environment.GetEnvironmentVariable(ReplayPathEnvironmentVariable);

@@ -12,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+ManualChatClientConfiguration.ValidateModeSelection();
+
 if (ManualChatClientConfiguration.IsLiveCaptureEnabled)
 {
     builder.Services.AddScoped<IChatClient>(services =>
@@ -38,6 +40,12 @@ else if (ManualChatClientConfiguration.IsManualReplayEnabled)
     builder.Services.AddScoped<IChatClient>(_ =>
         ManualChatClientConfiguration.CreateManualReplay());
 }
+else if (ManualChatClientConfiguration.IsDojoSimulationEnabled)
+{
+    builder.Services.AddSingleton<IDojoSimulationDelay>(
+        new DojoSimulationDelay(TimeSpan.FromMilliseconds(750)));
+    builder.Services.AddScoped<IChatClient, DojoSimulationChatClient>();
+}
 else
 {
     builder.Services.AddSingleton<IChatClient>(new EchoChatClient());
@@ -54,7 +62,9 @@ app.Logger.LogInformation(
         ? "live capture"
         : ManualChatClientConfiguration.IsManualReplayEnabled
             ? "manual replay"
-            : "echo");
+            : ManualChatClientConfiguration.IsDojoSimulationEnabled
+                ? "dojo simulation"
+                : "echo");
 
 if (!app.Environment.IsDevelopment())
 {
