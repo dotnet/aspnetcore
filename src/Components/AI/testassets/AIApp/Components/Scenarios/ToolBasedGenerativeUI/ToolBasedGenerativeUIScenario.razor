@@ -1,4 +1,5 @@
 @inject IChatClient ChatClient
+@inject ReplayCheckpointState ReplayCheckpoint
 @implements IDisposable
 
 <div class="dojo-scenario tool-based-generative-ui" data-dojo-scenario="tool-based-generative-ui">
@@ -12,7 +13,7 @@
         <div class="haiku-chat">
             <header class="dojo-scenario__header">
                 <h2>Haiku Generator</h2>
-                <button class="dojo-reset-button" @onclick="Reset">&times;</button>
+                <button class="dojo-reset-button" aria-label="Reset" @onclick="Reset">&times;</button>
             </header>
 
             <AgentBoundary @key="_agent" Agent="_agent">
@@ -90,6 +91,7 @@
 
     private void Reset()
     {
+        ReplayCheckpoint.ResetReplay();
         ResetHaikus();
         _agent.Dispose();
         _agent = CreateAgent();

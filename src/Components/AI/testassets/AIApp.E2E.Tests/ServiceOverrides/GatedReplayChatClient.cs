@@ -43,48 +43,59 @@ internal sealed class GatedReplayChatClient : IChatClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var sessionId = GetSessionId();
-        var callIndex = _callIndex++;
-        if (callIndex >= _script.Calls.Count)
+        var callIndex = _checkpointState?.BeginReplayCall() ?? _callIndex++;
+        var generation = _checkpointState?.Generation ?? 0;
+        try
         {
-            throw new InvalidOperationException(
-                $"Replay script has {_script.Calls.Count} calls but call {callIndex + 1} was requested.");
+            if (callIndex >= _script.Calls.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Replay script has {_script.Calls.Count} calls but call {callIndex + 1} was requested.");
+            }
+
+            var call = _script.Calls[callIndex];
+            AssertRequest(call.Request, messages, options, callIndex);
+
+            for (var checkpointIndex = 0; checkpointIndex < call.Frames.Count; checkpointIndex++)
+            {
+                var frame = call.Frames[checkpointIndex];
+                foreach (var update in frame.Updates)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    yield return update;
+                }
+
+                if (frame.State is { } state)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    yield return new ChatResponseUpdate
+                    {
+                        Role = ChatRole.Assistant,
+                        RawRepresentation = state,
+                    };
+                }
+
+                if (sessionId is not null)
+                {
+                    var lockName = GetGenerationLockName(
+                        generation,
+                        _script.GetLockName(callIndex, checkpointIndex));
+                    var lockKey = $"{sessionId}:{lockName}";
+                    _checkpointState?.SetCheckpoint(frame.Name);
+                    try
+                    {
+                        await _locks.WaitOn(lockKey).WaitAsync(cancellationToken);
+                    }
+                    finally
+                    {
+                        _checkpointState?.ClearCheckpoint();
+                    }
+                }
+            }
         }
-
-        var call = _script.Calls[callIndex];
-        AssertRequest(call.Request, messages, options, callIndex);
-
-        for (var checkpointIndex = 0; checkpointIndex < call.Frames.Count; checkpointIndex++)
+        finally
         {
-            var frame = call.Frames[checkpointIndex];
-            foreach (var update in frame.Updates)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                yield return update;
-            }
-
-            if (frame.State is { } state)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                yield return new ChatResponseUpdate
-                {
-                    Role = ChatRole.Assistant,
-                    RawRepresentation = state,
-                };
-            }
-
-            if (sessionId is not null)
-            {
-                var lockKey = $"{sessionId}:{_script.GetLockName(callIndex, checkpointIndex)}";
-                _checkpointState?.SetCheckpoint(frame.Name);
-                try
-                {
-                    await _locks.WaitOn(lockKey).WaitAsync(cancellationToken);
-                }
-                finally
-                {
-                    _checkpointState?.ClearCheckpoint();
-                }
-            }
+            _checkpointState?.EndReplayCall();
         }
     }
 
@@ -120,6 +131,9 @@ internal sealed class GatedReplayChatClient : IChatClient
 
         return null;
     }
+
+    internal static string GetGenerationLockName(int generation, string lockName)
+        => generation == 0 ? lockName : $"replay-generation-{generation + 1}:{lockName}";
 
     private void AssertRequest(
         ReplayRequestExpectation? expectation,

@@ -178,6 +178,85 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
             await Expect(send).ToBeEnabledAsync();
             await Expect(input).ToHaveValueAsync("");
         }
+
+        await scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Reset", Exact = true }).ClickAsync();
+        await Expect(preview).ToHaveClassAsync("document-preview document-preview--empty");
+        await Expect(preview.Locator(".document-preview__placeholder"))
+            .ToHaveTextAsync("Write whatever you want here in Markdown format...");
+        await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(0);
+
+        session.ResetReplay();
+        var resetTitleFrame = session.Lock(script.GetLockName(0, 0));
+        var resetContentFrame = session.Lock(script.GetLockName(0, 1));
+        var resetConfirmationFrame = session.Lock(script.GetLockName(0, 2));
+        var resetSummaryFinal = session.Lock(script.GetLockName(1, 0));
+        await using (resetTitleFrame)
+        await using (resetContentFrame)
+        await using (resetConfirmationFrame)
+        await using (resetSummaryFinal)
+        {
+            await scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Write a pirate story", Exact = true }).ClickAsync();
+
+            await AssertDocumentAsync(
+                panel,
+                preview,
+                content,
+                PirateTitle,
+                [],
+                expectedWordCount: 5,
+                isStreaming: true);
+            await AssertCheckpointAsync(checkpoint, "pirate-title");
+
+            await resetTitleFrame.ReleaseAsync();
+
+            await AssertDocumentAsync(
+                panel,
+                preview,
+                content,
+                PirateTitle,
+                [PirateOpening],
+                expectedWordCount: 18,
+                isStreaming: true);
+            await AssertCheckpointAsync(checkpoint, "pirate-content");
+
+            await resetContentFrame.ReleaseAsync();
+
+            await AssertDocumentAsync(
+                panel,
+                preview,
+                content,
+                PirateTitle,
+                [PirateOpening, PirateEnding],
+                expectedWordCount: 38,
+                isStreaming: true);
+            var resetDialog = scenario.Locator(".confirm-changes");
+            await Expect(resetDialog.Locator(".confirm-changes__message"))
+                .ToHaveTextAsync("Do you want to accept the changes?");
+            await AssertCheckpointAsync(checkpoint, "pirate-confirmation");
+
+            await resetConfirmationFrame.ReleaseAsync();
+            await resetDialog.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Confirm", Exact = true }).ClickAsync();
+
+            var resetAssistant = scenario
+                .Locator(".sc-ai-turn")
+                .Last
+                .Locator(".sc-ai-message--assistant .sc-ai-message__content");
+            await Expect(resetAssistant).ToHaveTextAsync(
+                "I wrote a short pirate adventure about Captain Ember finding her crew with " +
+                "courage and a parrot's song.");
+            await AssertCheckpointAsync(checkpoint, "pirate-summary-final");
+
+            await resetSummaryFinal.ReleaseAsync();
+
+            await Expect(checkpoint).ToHaveCountAsync(0);
+            await Expect(send).ToBeEnabledAsync();
+        }
     }
 
     private static async Task AssertDocumentAsync(

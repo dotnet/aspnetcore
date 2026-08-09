@@ -47,27 +47,7 @@ public partial class SharedStateScenarioTests : BrowserTest
             ],
             ["Preheat oven to 350\u00b0F (175\u00b0C)"]);
 
-        await editor.Locator("input[type='text']").First.FillAsync("Sunday Garden Pasta");
-        await editor.Locator(".recipe-editor__row select").Nth(0).SelectOptionAsync("Beginner");
-        await editor.Locator(".recipe-editor__row select").Nth(1).SelectOptionAsync("30 min");
-        await editor.GetByLabel("High Protein", new() { Exact = true }).CheckAsync();
-
-        var ingredients = editor.Locator(".ingredient-row");
-        await ingredients.Nth(0).Locator(".ingredient-row__name").FillAsync("Zucchini");
-        await ingredients.Nth(0).Locator(".ingredient-row__amount").FillAsync("2, sliced");
-        await ingredients.Nth(1).Locator(".recipe-editor__remove-btn").ClickAsync();
-        await editor.GetByRole(
-            AriaRole.Button,
-            new() { Name = "+ Add Ingredient", Exact = true }).ClickAsync();
-        await ingredients.Nth(1).Locator(".ingredient-row__icon").FillAsync("\U0001F345");
-        await ingredients.Nth(1).Locator(".ingredient-row__name").FillAsync("Tomatoes");
-        await ingredients.Nth(1).Locator(".ingredient-row__amount").FillAsync("4, chopped");
-
-        await editor.GetByRole(
-            AriaRole.Button,
-            new() { Name = "+ Add Step", Exact = true }).ClickAsync();
-        await editor.Locator(".recipe-editor__instruction input").Nth(1)
-            .FillAsync("Serve immediately");
+        await CustomizeRecipeAsync(editor);
 
         await AssertRecipeAsync(
             editor,
@@ -241,6 +221,88 @@ public partial class SharedStateScenarioTests : BrowserTest
             ],
             ["Preheat oven to 350\u00b0F (175\u00b0C)"]);
         await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(0);
+
+        await CustomizeRecipeAsync(editor);
+        session.ResetReplay();
+        var resetItalianTitle = session.Lock(script.GetLockName(0, 0));
+        var resetItalianIngredients = session.Lock(script.GetLockName(0, 1));
+        var resetItalianComplete = session.Lock(script.GetLockName(0, 2));
+        await using (resetItalianTitle)
+        await using (resetItalianIngredients)
+        await using (resetItalianComplete)
+        {
+            await scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Create Italian recipe", Exact = true }).ClickAsync();
+
+            await Expect(editor.Locator("input[type='text']").First)
+                .ToHaveValueAsync("Italian Garden Pasta");
+            await AssertCheckpointAsync(checkpoint, "italian-title");
+
+            await resetItalianTitle.ReleaseAsync();
+
+            var resetIngredients = editor.Locator(".ingredient-row");
+            await Expect(resetIngredients).ToHaveCountAsync(3);
+            await Expect(resetIngredients.Nth(0).Locator(".ingredient-row__name"))
+                .ToHaveValueAsync("Spaghetti");
+            await AssertCheckpointAsync(checkpoint, "italian-ingredients");
+
+            await resetItalianIngredients.ReleaseAsync();
+
+            await AssertRecipeAsync(
+                editor,
+                "Italian Garden Pasta",
+                "Intermediate",
+                "30 min",
+                ["Vegetarian", "High Protein"],
+                [
+                    ("\U0001F35D", "Spaghetti", "400g"),
+                    ("\U0001F952", "Zucchini", "2, sliced"),
+                    ("\U0001F345", "Tomatoes", "4, chopped"),
+                    ("\U0001F9C0", "Ricotta", "1 cup"),
+                ],
+                [
+                    "Cook spaghetti until al dente",
+                    "Saut\u00e9 zucchini and tomatoes until tender",
+                    "Toss with ricotta and serve immediately",
+                ]);
+            var resetTurn = scenario.Locator(".sc-ai-turn").Last;
+            await Expect(resetTurn.Locator(".sc-ai-message--assistant .sc-ai-message__content"))
+                .ToHaveTextAsync(
+                    "I've turned your recipe into an Italian garden pasta with spaghetti, " +
+                    "zucchini, tomatoes, and a protein-rich ricotta sauce.");
+            await AssertCheckpointAsync(checkpoint, "italian-complete");
+
+            await resetItalianComplete.ReleaseAsync();
+
+            await Expect(checkpoint).ToHaveCountAsync(0);
+            await Expect(send).ToBeEnabledAsync();
+        }
+    }
+
+    private static async Task CustomizeRecipeAsync(ILocator editor)
+    {
+        await editor.Locator("input[type='text']").First.FillAsync("Sunday Garden Pasta");
+        await editor.Locator(".recipe-editor__row select").Nth(0).SelectOptionAsync("Beginner");
+        await editor.Locator(".recipe-editor__row select").Nth(1).SelectOptionAsync("30 min");
+        await editor.GetByLabel("High Protein", new() { Exact = true }).CheckAsync();
+
+        var ingredients = editor.Locator(".ingredient-row");
+        await ingredients.Nth(0).Locator(".ingredient-row__name").FillAsync("Zucchini");
+        await ingredients.Nth(0).Locator(".ingredient-row__amount").FillAsync("2, sliced");
+        await ingredients.Nth(1).Locator(".recipe-editor__remove-btn").ClickAsync();
+        await editor.GetByRole(
+            AriaRole.Button,
+            new() { Name = "+ Add Ingredient", Exact = true }).ClickAsync();
+        await ingredients.Nth(1).Locator(".ingredient-row__icon").FillAsync("\U0001F345");
+        await ingredients.Nth(1).Locator(".ingredient-row__name").FillAsync("Tomatoes");
+        await ingredients.Nth(1).Locator(".ingredient-row__amount").FillAsync("4, chopped");
+
+        await editor.GetByRole(
+            AriaRole.Button,
+            new() { Name = "+ Add Step", Exact = true }).ClickAsync();
+        await editor.Locator(".recipe-editor__instruction input").Nth(1)
+            .FillAsync("Serve immediately");
     }
 
     private static async Task AssertRecipeAsync(

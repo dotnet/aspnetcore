@@ -1,5 +1,6 @@
 @using System.Text.Json
 @inject IChatClient ChatClient
+@inject ReplayCheckpointState ReplayCheckpoint
 @implements IDisposable
 
 <div class="dojo-scenario predictive-state-updates" data-dojo-scenario="predictive-state-updates">
@@ -12,7 +13,7 @@
         <div class="predictive-chat">
             <header class="dojo-scenario__header">
                 <h2>AI Document Editor</h2>
-                <button class="dojo-reset-button" @onclick="Reset">&times;</button>
+                <button class="dojo-reset-button" aria-label="Reset" @onclick="Reset">&times;</button>
             </header>
 
             <AgentBoundary @key="_agent" Agent="_agent">
@@ -114,6 +115,7 @@
 
     private void Reset()
     {
+        ReplayCheckpoint.ResetReplay();
         _confirmedDocument = "";
         _isStreaming = false;
         SetAgent(CreateAgent(new DocumentState()));

@@ -1,5 +1,6 @@
 @using System.Text.Json
 @inject IChatClient ChatClient
+@inject ReplayCheckpointState ReplayCheckpoint
 @implements IDisposable
 
 <div class="dojo-scenario shared-state" data-dojo-scenario="shared-state">
@@ -81,6 +82,7 @@
 
     private void Reset()
     {
+        ReplayCheckpoint.ResetReplay();
         SetAgent(CreateAgent(CreateDefaultRecipe()));
     }
 

@@ -13,6 +13,7 @@ internal sealed class ReplayTestSession
     private readonly TestLockClient _locks;
     private readonly ServerInstance _server;
     private readonly string _sessionId;
+    private int _generation;
 
     private ReplayTestSession(TestLockClient locks, ServerInstance server, string sessionId)
     {
@@ -35,5 +36,10 @@ internal sealed class ReplayTestSession
         => $"{_server.TestUrl}{path}?{QueryParameterName}={Uri.EscapeDataString(_sessionId)}";
 
     public RemoteLock Lock(string name)
-        => _locks.Lock(name);
+        => _locks.Lock(GatedReplayChatClient.GetGenerationLockName(_generation, name));
+
+    public void ResetReplay()
+    {
+        _generation++;
+    }
 }

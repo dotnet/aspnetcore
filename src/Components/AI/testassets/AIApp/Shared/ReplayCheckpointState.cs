@@ -8,15 +8,66 @@ namespace AIApp.Shared;
 /// </summary>
 public sealed class ReplayCheckpointState
 {
+    private int _nextCallIndex;
+    private bool _callActive;
+
     /// <summary>
     /// Gets the name of the current checkpoint, or <see langword="null"/> when replay is not blocked.
     /// </summary>
     public string? CurrentCheckpoint { get; private set; }
 
     /// <summary>
+    /// Gets the replay generation. The initial generation is zero and each reset increments it.
+    /// </summary>
+    public int Generation { get; private set; }
+
+    /// <summary>
     /// Occurs when <see cref="CurrentCheckpoint"/> changes.
     /// </summary>
     public event Action? Changed;
+
+    /// <summary>
+    /// Starts the next replay call.
+    /// </summary>
+    /// <returns>The zero-based call index for the current replay generation.</returns>
+    public int BeginReplayCall()
+    {
+        if (_callActive)
+        {
+            throw new InvalidOperationException("A replay call is already active.");
+        }
+
+        _callActive = true;
+        return _nextCallIndex++;
+    }
+
+    /// <summary>
+    /// Marks the current replay call as complete.
+    /// </summary>
+    public void EndReplayCall()
+    {
+        if (!_callActive)
+        {
+            throw new InvalidOperationException("No replay call is active.");
+        }
+
+        _callActive = false;
+    }
+
+    /// <summary>
+    /// Starts a new replay generation at call zero.
+    /// </summary>
+    public void ResetReplay()
+    {
+        if (_callActive)
+        {
+            throw new InvalidOperationException("Replay cannot be reset while a call is active.");
+        }
+
+        _nextCallIndex = 0;
+        Generation++;
+        ClearCheckpoint();
+    }
 
     /// <summary>
     /// Sets the checkpoint currently blocking replay.
@@ -34,6 +85,11 @@ public sealed class ReplayCheckpointState
     /// </summary>
     public void ClearCheckpoint()
     {
+        if (CurrentCheckpoint is null)
+        {
+            return;
+        }
+
         CurrentCheckpoint = null;
         Changed?.Invoke();
     }

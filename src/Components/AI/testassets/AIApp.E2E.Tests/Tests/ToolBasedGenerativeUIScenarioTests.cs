@@ -113,6 +113,57 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
             await Expect(send).ToBeEnabledAsync();
             await Expect(input).ToHaveValueAsync("");
         }
+
+        await scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Reset", Exact = true }).ClickAsync();
+        await AssertPlaceholderHaikuAsync(carousel);
+        await Expect(carousel.Locator(".haiku-carousel__nav")).ToHaveCountAsync(0);
+        await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(0);
+
+        session.ResetReplay();
+        var resetAction = session.Lock(script.GetLockName(0, 0));
+        var resetSummaryStart = session.Lock(script.GetLockName(1, 0));
+        var resetSummaryFinal = session.Lock(script.GetLockName(1, 1));
+        await using (resetAction)
+        await using (resetSummaryStart)
+        await using (resetSummaryFinal)
+        {
+            await scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Nature Haiku", Exact = true }).ClickAsync();
+
+            var resetTurn = scenario.Locator(".sc-ai-turn").Last;
+            await Expect(resetTurn.Locator(".sc-ai-message--user .sc-ai-message__content"))
+                .ToHaveTextAsync("Write me a haiku about nature");
+            await AssertGeneratedHaikuAsync(carousel);
+            await AssertGeneratedCarouselControlsAsync(carousel);
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "haiku-action");
+
+            await resetAction.ReleaseAsync();
+
+            var resetAssistant = resetTurn.Locator(
+                ".sc-ai-message--assistant .sc-ai-message__content");
+            await Expect(resetAssistant).ToHaveTextAsync("Your nature haiku is ready");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "haiku-summary-start");
+
+            await resetSummaryStart.ReleaseAsync();
+
+            await Expect(resetAssistant).ToHaveTextAsync(
+                "Your nature haiku is ready\u2014a quiet pond awakened by a frog.");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "haiku-summary-final");
+
+            await resetSummaryFinal.ReleaseAsync();
+
+            await Expect(checkpoint).ToHaveCountAsync(0);
+            await Expect(send).ToBeEnabledAsync();
+        }
     }
 
     private static async Task AssertPlaceholderHaikuAsync(ILocator carousel)

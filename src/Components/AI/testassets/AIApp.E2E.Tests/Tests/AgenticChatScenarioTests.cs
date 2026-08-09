@@ -84,6 +84,51 @@ public partial class AgenticChatScenarioTests : BrowserTest
             await Expect(scenario.Locator(".dojo-welcome__heading"))
                 .ToHaveTextAsync("How can I help you today?");
         }
+
+        session.ResetReplay();
+        var resetActionFrame = session.Lock(script.GetLockName(0, 0));
+        var resetConfirmationStart = session.Lock(script.GetLockName(1, 0));
+        var resetConfirmationFinal = session.Lock(script.GetLockName(1, 1));
+        await using (resetActionFrame)
+        await using (resetConfirmationStart)
+        await using (resetConfirmationFinal)
+        {
+            await scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Change background", Exact = true }).ClickAsync();
+
+            var resetTurn = scenario.Locator(".sc-ai-turn").Last;
+            await Expect(resetTurn.Locator(".sc-ai-message--user .sc-ai-message__content"))
+                .ToHaveTextAsync("Change the background to something new");
+            await Expect(scenario).ToHaveAttributeAsync(
+                "style",
+                "background: linear-gradient(135deg, #ff9a9e, #fad0c4);");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "background-action");
+
+            await resetActionFrame.ReleaseAsync();
+
+            var resetAssistant = resetTurn.Locator(
+                ".sc-ai-message--assistant .sc-ai-message__content");
+            await Expect(resetAssistant).ToHaveTextAsync("Background changed");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "confirmation-start");
+
+            await resetConfirmationStart.ReleaseAsync();
+
+            await Expect(resetAssistant)
+                .ToHaveTextAsync("Background changed to a sunset gradient.");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "confirmation-final");
+
+            await resetConfirmationFinal.ReleaseAsync();
+
+            await Expect(checkpoint).ToHaveCountAsync(0);
+            await Expect(send).ToBeEnabledAsync();
+        }
     }
 
     [TestMethod]

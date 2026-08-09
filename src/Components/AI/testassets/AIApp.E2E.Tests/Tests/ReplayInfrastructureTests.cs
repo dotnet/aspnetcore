@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using AIApp.Components.Scenarios.AgenticGenerativeUI;
 using AIApp.E2E.Tests.ServiceOverrides;
+using AIApp.Shared;
 using Microsoft.AspNetCore.Components.AI;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.Extensions.AI;
@@ -111,6 +112,42 @@ public class ReplayInfrastructureTests
             [new ChatMessage(ChatRole.User, "hello")]);
 
         Assert.AreEqual("hello back", response.Text);
+    }
+
+    [TestMethod]
+    public async Task GatedReplayChatClient_ResetStartsNewGenerationAtFirstCall()
+    {
+        var script = CreateSingleFrameScript();
+        var locks = new TestLockProvider();
+        var replayState = new ReplayCheckpointState();
+        const string sessionId = "reset-session";
+        using var client = new GatedReplayChatClient(
+            script,
+            locks,
+            new TestSessionContext { Id = sessionId },
+            checkpointState: replayState);
+
+        await AssertSingleFrameCallAsync(client, locks, script, sessionId, generation: 0);
+
+        replayState.ResetReplay();
+
+        await AssertSingleFrameCallAsync(client, locks, script, sessionId, generation: 1);
+    }
+
+    [TestMethod]
+    public void ReplayCheckpointState_RejectsResetWhileCallIsActive()
+    {
+        var replayState = new ReplayCheckpointState();
+
+        Assert.AreEqual(0, replayState.BeginReplayCall());
+        Assert.Throws<InvalidOperationException>(replayState.ResetReplay);
+
+        replayState.EndReplayCall();
+        replayState.ResetReplay();
+
+        Assert.AreEqual(1, replayState.Generation);
+        Assert.AreEqual(0, replayState.BeginReplayCall());
+        replayState.EndReplayCall();
     }
 
     [TestMethod]
@@ -497,6 +534,29 @@ public class ReplayInfrastructureTests
         }
 
         await Task.CompletedTask;
+    }
+
+    private static async Task AssertSingleFrameCallAsync(
+        GatedReplayChatClient client,
+        TestLockProvider locks,
+        ReplayCheckpointScript script,
+        string sessionId,
+        int generation)
+    {
+        await using var enumerator = client.GetStreamingResponseAsync(
+            [new ChatMessage(ChatRole.User, "hello")]).GetAsyncEnumerator();
+
+        Assert.IsTrue(await enumerator.MoveNextAsync());
+        Assert.AreEqual("hello back", enumerator.Current.Text);
+
+        var completion = enumerator.MoveNextAsync().AsTask();
+        Assert.IsFalse(completion.IsCompleted);
+        var lockName = GatedReplayChatClient.GetGenerationLockName(
+            generation,
+            script.GetLockName(0, 0));
+        locks.Release($"{sessionId}:{lockName}");
+
+        Assert.IsFalse(await completion);
     }
 
     private static ReplayCheckpointScript CreateSingleFrameScript()
