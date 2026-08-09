@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
+    <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
     <!-- Tests need hot reload support enabled even in Release to test HotReloadManager behavior -->
     <MetadataUpdaterSupport>true</MetadataUpdaterSupport>
   </PropertyGroup>
