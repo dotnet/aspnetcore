@@ -233,7 +233,9 @@ internal class SSRRenderModeBoundary : IComponent
 
         if (RenderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode)
         {
-            var webAssemblyComponentSerializer = httpContext.RequestServices.GetRequiredService<WebAssemblyComponentSerializer>();
+            var webAssemblyComponentSerializer =
+                httpContext.RequestServices.GetService<WebAssemblyComponentSerializer>() ??
+                new WebAssemblyComponentSerializer(httpContext.RequestServices);
             webAssemblyComponentSerializer.SerializeInvocation(ref marker, _componentType, serializableParameters);
         }
 
