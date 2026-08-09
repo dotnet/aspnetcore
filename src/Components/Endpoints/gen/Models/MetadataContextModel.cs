@@ -15,7 +15,9 @@ internal sealed record class MetadataContextModel(
     string TypeName,
     string TypeKeyword,
     bool DeclaresJsonTypeInfoResolver,
+    ImmutableArray<string> BuiltInDescriptorAssemblies,
     ImmutableArray<string> BuiltInJSInvokableDescriptorAssemblies,
+    ImmutableArray<BuiltInDescriptorFactoryModel> BuiltInDescriptorFactories,
     ImmutableArray<DescribedComponentModel> Components,
     ImmutableArray<BindableTypeModel> BindableTypes,
     ImmutableArray<JSInvokableMethodModel> JSInvokableMethods)
@@ -26,9 +28,11 @@ internal sealed record class MetadataContextModel(
            string.Equals(TypeName, other.TypeName, StringComparison.Ordinal) &&
            string.Equals(TypeKeyword, other.TypeKeyword, StringComparison.Ordinal) &&
            DeclaresJsonTypeInfoResolver == other.DeclaresJsonTypeInfoResolver &&
+           ModelComparer.SequenceEqual(BuiltInDescriptorAssemblies, other.BuiltInDescriptorAssemblies) &&
            ModelComparer.SequenceEqual(
                BuiltInJSInvokableDescriptorAssemblies,
                other.BuiltInJSInvokableDescriptorAssemblies) &&
+           ModelComparer.SequenceEqual(BuiltInDescriptorFactories, other.BuiltInDescriptorFactories) &&
            ModelComparer.SequenceEqual(ContainingTypes, other.ContainingTypes) &&
            ModelComparer.SequenceEqual(Components, other.Components) &&
            ModelComparer.SequenceEqual(BindableTypes, other.BindableTypes) &&
@@ -40,13 +44,42 @@ internal sealed record class MetadataContextModel(
         hash = ModelComparer.AddRange(hash, ContainingTypes);
         hash = ModelComparer.Combine(hash, TypeName);
         hash = ModelComparer.Combine(hash, TypeKeyword);
+        hash = ModelComparer.AddRange(hash, BuiltInDescriptorAssemblies);
         hash = ModelComparer.AddRange(hash, BuiltInJSInvokableDescriptorAssemblies);
+        hash = ModelComparer.AddRange(hash, BuiltInDescriptorFactories);
         hash = ModelComparer.AddRange(hash, Components);
         hash = ModelComparer.AddRange(hash, BindableTypes);
         hash = ModelComparer.AddRange(hash, JSInvokableMethods);
         return hash;
     }
 
+}
+
+internal sealed record class BuiltInDescriptorFactoryModel(
+    string AssemblyName,
+    string MethodName,
+    ImmutableArray<string> TypeArgumentFullyQualifiedNames,
+    ImmutableArray<string> TypeParameterConstraintClauses,
+    ImmutableArray<int> TypeParameterDynamicallyAccessedMemberValues)
+{
+    public bool Equals(BuiltInDescriptorFactoryModel? other)
+        => other is not null &&
+           string.Equals(AssemblyName, other.AssemblyName, StringComparison.Ordinal) &&
+           string.Equals(MethodName, other.MethodName, StringComparison.Ordinal) &&
+           ModelComparer.SequenceEqual(TypeArgumentFullyQualifiedNames, other.TypeArgumentFullyQualifiedNames) &&
+           ModelComparer.SequenceEqual(TypeParameterConstraintClauses, other.TypeParameterConstraintClauses) &&
+           ModelComparer.SequenceEqual(
+               TypeParameterDynamicallyAccessedMemberValues,
+               other.TypeParameterDynamicallyAccessedMemberValues);
+
+    public override int GetHashCode()
+    {
+        var hash = ModelComparer.Combine(0, AssemblyName);
+        hash = ModelComparer.Combine(hash, MethodName);
+        hash = ModelComparer.AddRange(hash, TypeArgumentFullyQualifiedNames);
+        hash = ModelComparer.AddRange(hash, TypeParameterConstraintClauses);
+        return ModelComparer.AddRange(hash, TypeParameterDynamicallyAccessedMemberValues);
+    }
 }
 
 internal sealed record class ContainingTypeModel(

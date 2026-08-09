@@ -8,11 +8,269 @@ using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Components.Endpoints.Generators.Models;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Generators;
 
 public sealed partial class RazorComponentsMetadataGenerator
 {
+    private static ImmutableArray<BuiltInDescriptorFactoryModel> CollectImplicitBuiltInDescriptorFactories(
+        Compilation compilation,
+        WellKnownTypes types,
+        CancellationToken cancellationToken)
+    {
+        var factories = ImmutableArray.CreateBuilder<BuiltInDescriptorFactoryModel>();
+        foreach (var type in SymbolHelpers.EnumerateApplicationTypes(compilation, cancellationToken))
+        {
+            if (TypeAccessibility.IsNameable(type, compilation.Assembly) &&
+                IsComponentCandidate(type, types, allowConstructedGeneric: false) &&
+                TryCreateBuiltInDescriptorFactory(type, out var factory))
+            {
+                factories.Add(factory);
+            }
+        }
+
+        return factories.ToImmutable();
+    }
+
+    private static (
+        ImmutableArray<DescribedComponentModel> Components,
+        ImmutableArray<BuiltInDescriptorFactoryModel> Factories) CollectExplicitComponents(
+        INamedTypeSymbol contextType,
+        Compilation compilation,
+        WellKnownTypes types,
+        ImmutableArray<DiagnosticInfo>.Builder diagnostics,
+        CancellationToken cancellationToken)
+    {
+        var builder = ImmutableArray.CreateBuilder<DescribedComponentModel>();
+        var factories = ImmutableArray.CreateBuilder<BuiltInDescriptorFactoryModel>();
+        var generatedIn = contextType.ContainingAssembly;
+
+        foreach (var syntaxReference in contextType.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax(cancellationToken) is not ClassDeclarationSyntax declaration)
+            {
+                continue;
+            }
+
+            var semanticModel = compilation.GetSemanticModel(declaration.SyntaxTree);
+            foreach (var attributeList in declaration.AttributeLists)
+            {
+                foreach (var attribute in attributeList.Attributes)
+                {
+                    var attributeName = attribute.Name.ToString();
+                    if (attributeName is not ("ComponentTypeInfo" or "ComponentTypeInfoAttribute") &&
+                        !attributeName.EndsWith(".ComponentTypeInfo", StringComparison.Ordinal) &&
+                        !attributeName.EndsWith(".ComponentTypeInfoAttribute", StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    if (attribute.ArgumentList?.Arguments.FirstOrDefault()?.Expression is not TypeOfExpressionSyntax typeOfExpression ||
+                        semanticModel.GetTypeInfo(typeOfExpression.Type, cancellationToken).Type is not INamedTypeSymbol componentType ||
+                        !IsComponentCandidate(componentType, types, allowConstructedGeneric: true))
+                    {
+                        continue;
+                    }
+
+                    var hasBuiltInFactory = TryCreateBuiltInDescriptorFactory(componentType, out var factory);
+                    if (hasBuiltInFactory)
+                    {
+                        factories.Add(factory);
+                    }
+
+                    if (!TryDescribeComponent(
+                            componentType,
+                            types,
+                            generatedIn,
+                            diagnostics,
+                            publicMembersOnly: hasBuiltInFactory ||
+                                IsBuiltInDescriptorAssembly(componentType.ContainingAssembly.Identity.Name),
+                            out var model,
+                            out var reason))
+                    {
+                        if (!hasBuiltInFactory)
+                        {
+                            diagnostics.Add(new DiagnosticInfo(
+                                DiagnosticDescriptors.ComponentNotFullyDescribed.Id,
+                                componentType.FullName(),
+                                reason));
+                        }
+
+                        continue;
+                    }
+
+                    builder.Add(model);
+                }
+            }
+        }
+
+        return (builder.ToImmutable(), factories.ToImmutable());
+    }
+
+    private static bool TryCreateBuiltInDescriptorFactory(
+        INamedTypeSymbol componentType,
+        out BuiltInDescriptorFactoryModel factory)
+    {
+        var definition = componentType.OriginalDefinition;
+        var methodName = GetBuiltInDescriptorFactoryMethod(definition);
+        if (methodName is not null)
+        {
+            factory = CreateBuiltInDescriptorFactoryModel(componentType, methodName);
+            return true;
+        }
+
+        for (var current = componentType.BaseType; current is not null; current = current.BaseType)
+        {
+            if (string.Equals(
+                    current.ContainingAssembly.Identity.Name,
+                    WellKnownTypes.ComponentsAssemblyName,
+                    StringComparison.Ordinal) &&
+                current.MetadataName is "OwningComponentBase" or "OwningComponentBase`1")
+            {
+                factory = new BuiltInDescriptorFactoryModel(
+                    WellKnownTypes.ComponentsAssemblyName,
+                    "CreateOwningComponentBaseDescriptors",
+                    [componentType.FullName()],
+                    [],
+                    [-1]);
+                return true;
+            }
+
+            if (IsTypeDefinition(
+                    current,
+                    "Microsoft.AspNetCore.Components.Web",
+                    "Microsoft.AspNetCore.Components.Forms",
+                    "InputBase`1") &&
+                !string.Equals(
+                    componentType.ContainingAssembly.Identity.Name,
+                    "Microsoft.AspNetCore.Components.Web",
+                    StringComparison.Ordinal))
+            {
+                factory = new BuiltInDescriptorFactoryModel(
+                    "Microsoft.AspNetCore.Components.Web",
+                    "CreateInputBaseDescriptors",
+                    [componentType.FullName(), current.TypeArguments[0].AnnotatedFullName()],
+                    [$"where T0 : global::Microsoft.AspNetCore.Components.Forms.InputBase<T1>"],
+                    [-1, 0]);
+                return true;
+            }
+
+            if (IsTypeDefinition(
+                    current,
+                    "Microsoft.AspNetCore.Components.Web",
+                    "Microsoft.AspNetCore.Components.Forms",
+                    "Editor`1") &&
+                !string.Equals(
+                    componentType.ContainingAssembly.Identity.Name,
+                    "Microsoft.AspNetCore.Components.Web",
+                    StringComparison.Ordinal))
+            {
+                factory = new BuiltInDescriptorFactoryModel(
+                    "Microsoft.AspNetCore.Components.Web",
+                    "CreateEditorDescriptors",
+                    [componentType.FullName(), current.TypeArguments[0].AnnotatedFullName()],
+                    [$"where T0 : global::Microsoft.AspNetCore.Components.Forms.Editor<T1>"],
+                    [-1, 0]);
+                return true;
+            }
+        }
+
+        factory = null!;
+        return false;
+    }
+
+    private static string? GetBuiltInDescriptorFactoryMethod(INamedTypeSymbol definition)
+    {
+        if (string.Equals(
+                definition.ContainingAssembly.Identity.Name,
+                "Microsoft.AspNetCore.Components.Web",
+                StringComparison.Ordinal))
+        {
+            if (string.Equals(
+                    definition.ContainingNamespace.ToDisplayString(),
+                    "Microsoft.AspNetCore.Components.Forms",
+                    StringComparison.Ordinal))
+            {
+                return definition.MetadataName switch
+                {
+                    "InputDate`1" => "CreateInputDateDescriptors",
+                    "InputNumber`1" => "CreateInputNumberDescriptors",
+                    "InputRadio`1" => "CreateInputRadioDescriptors",
+                    "InputRadioGroup`1" => "CreateInputRadioGroupDescriptors",
+                    "InputSelect`1" => "CreateInputSelectDescriptors",
+                    "Label`1" => "CreateLabelDescriptors",
+                    "ValidationMessage`1" => "CreateValidationMessageDescriptors",
+                    _ => null,
+                };
+            }
+
+            if (string.Equals(
+                    definition.ContainingNamespace.ToDisplayString(),
+                    "Microsoft.AspNetCore.Components.Web.Virtualization",
+                    StringComparison.Ordinal) &&
+                string.Equals(definition.MetadataName, "Virtualize`1", StringComparison.Ordinal))
+            {
+                return "CreateVirtualizeDescriptors";
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsTypeDefinition(
+        INamedTypeSymbol type,
+        string assemblyName,
+        string namespaceName,
+        string metadataName)
+    {
+        var definition = type.OriginalDefinition;
+        return string.Equals(definition.ContainingAssembly.Identity.Name, assemblyName, StringComparison.Ordinal) &&
+               string.Equals(definition.ContainingNamespace.ToDisplayString(), namespaceName, StringComparison.Ordinal) &&
+               string.Equals(definition.MetadataName, metadataName, StringComparison.Ordinal);
+    }
+
+    private static BuiltInDescriptorFactoryModel CreateBuiltInDescriptorFactoryModel(
+        INamedTypeSymbol componentType,
+        string methodName)
+    {
+        var definition = componentType.OriginalDefinition;
+        var constraints = GetConstraintClauses(definition);
+        for (var i = 0; i < definition.TypeParameters.Length; i++)
+        {
+            constraints = constraints
+                .Select(clause => clause.Replace(
+                    $"where {definition.TypeParameters[i].Name} ",
+                    $"where T{i} "))
+                .ToImmutableArray();
+        }
+
+        return new BuiltInDescriptorFactoryModel(
+            definition.ContainingAssembly.Identity.Name,
+            methodName,
+            [.. componentType.TypeArguments.Select(static argument => argument.AnnotatedFullName())],
+            constraints,
+            [.. definition.TypeParameters.Select(GetDynamicallyAccessedMemberValue)]);
+    }
+
+    private static int GetDynamicallyAccessedMemberValue(ITypeParameterSymbol parameter)
+    {
+        foreach (var attribute in parameter.GetAttributes())
+        {
+            if (string.Equals(
+                    attribute.AttributeClass?.ToDisplayString(),
+                    "System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute",
+                    StringComparison.Ordinal) &&
+                attribute.ConstructorArguments.Length == 1 &&
+                attribute.ConstructorArguments[0].Value is int value)
+            {
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
     private static ImmutableArray<DescribedComponentModel> CollectComponents(
         Compilation compilation,
         WellKnownTypes types,
@@ -27,12 +285,7 @@ public sealed partial class RazorComponentsMetadataGenerator
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (SymbolHelpers.IsFrameworkAssembly(type.ContainingAssembly))
-            {
-                continue;
-            }
-
-            if (!IsComponentCandidate(type, types))
+            if (!IsComponentCandidate(type, types, allowConstructedGeneric: false))
             {
                 continue;
             }
@@ -44,9 +297,20 @@ public sealed partial class RazorComponentsMetadataGenerator
                 continue;
             }
 
-            if (!TryDescribeComponent(type, types, generatedIn, diagnostics, out var model, out var reason))
+            var hasBuiltInFactory = TryCreateBuiltInDescriptorFactory(type, out _);
+            if (!TryDescribeComponent(
+                    type,
+                    types,
+                    generatedIn,
+                    diagnostics,
+                    publicMembersOnly: hasBuiltInFactory ||
+                        IsBuiltInDescriptorAssembly(type.ContainingAssembly.Identity.Name),
+                    out var model,
+                    out var reason))
             {
-                if (!string.IsNullOrEmpty(reason))
+                if (!hasBuiltInFactory &&
+                    !string.IsNullOrEmpty(reason) &&
+                    !SymbolHelpers.IsFrameworkAssembly(type.ContainingAssembly))
                 {
                     diagnostics.Add(new DiagnosticInfo(
                         DiagnosticDescriptors.ComponentNotFullyDescribed.Id,
@@ -69,10 +333,17 @@ public sealed partial class RazorComponentsMetadataGenerator
         return builder.ToImmutable();
     }
 
-    private static bool IsComponentCandidate(INamedTypeSymbol type, WellKnownTypes types)
+    private static bool IsComponentCandidate(
+        INamedTypeSymbol type,
+        WellKnownTypes types,
+        bool allowConstructedGeneric)
     {
         if (type.TypeKind is not TypeKind.Class || type.IsAbstract || type.IsStatic ||
-            type.IsGenericType || type.IsImplicitlyDeclared)
+            type.IsImplicitlyDeclared ||
+            (type.IsGenericType &&
+             (!allowConstructedGeneric ||
+              type.IsUnboundGenericType ||
+              type.TypeArguments.Any(static argument => argument.TypeKind is TypeKind.TypeParameter))))
         {
             return false;
         }
@@ -89,6 +360,7 @@ public sealed partial class RazorComponentsMetadataGenerator
         WellKnownTypes types,
         IAssemblySymbol generatedIn,
         ImmutableArray<DiagnosticInfo>.Builder diagnostics,
+        bool publicMembersOnly,
         out DescribedComponentModel model,
         out string reason)
     {
@@ -106,6 +378,15 @@ public sealed partial class RazorComponentsMetadataGenerator
             foreach (var member in current.GetMembers())
             {
                 if (member is not IPropertySymbol property || property.IsStatic || property.IsIndexer)
+                {
+                    continue;
+                }
+
+                if (publicMembersOnly &&
+                    IsBuiltInDescriptorAssembly(property.ContainingAssembly.Identity.Name) &&
+                    (property.DeclaredAccessibility is not Accessibility.Public ||
+                     property.GetMethod?.DeclaredAccessibility is not Accessibility.Public ||
+                     property.SetMethod?.DeclaredAccessibility is not Accessibility.Public))
                 {
                     continue;
                 }
