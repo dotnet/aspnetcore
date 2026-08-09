@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using AIApp.Components;
+using AIApp.Shared;
 using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<IChatClient>(new EchoChatClient());
+builder.Services.AddSingleton<ScenarioRegistry>();
 
 var app = builder.Build();
 

@@ -1,7 +1,28 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Components.AI Dojo</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="dojo-home">
+    <div class="dojo-home__content">
+        <h1>Components.AI Dojo</h1>
+        <p>Select a scenario from the sidebar to explore the capabilities of the Components.AI library.</p>
 
-Welcome to your new app.
+        <div class="dojo-home__scenarios">
+            @foreach (var scenario in Registry.AllScenarios)
+            {
+                <a href="/demo/@scenario.Id" class="dojo-home__card">
+                    <span class="dojo-home__card-icon">@scenario.Icon</span>
+                    <div class="dojo-home__card-body">
+                        <span class="dojo-home__card-title">@scenario.Title</span>
+                        <span class="dojo-home__card-desc">@scenario.Description</span>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    private ScenarioRegistry Registry { get; set; } = default!;
+}

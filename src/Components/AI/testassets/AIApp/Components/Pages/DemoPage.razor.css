@@ -1,0 +1,19 @@
+.dojo-demo {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.dojo-demo-not-found {
+    padding: 40px;
+}
+
+.dojo-scenario-placeholder {
+    margin: auto;
+    max-width: 40rem;
+    padding: 2rem;
+    text-align: center;
+}
