@@ -60,6 +60,7 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
             "Write whatever you want here in Markdown format...");
         await editor.FillAsync(InitialDocument);
         await Expect(editor).ToHaveValueAsync(InitialDocument);
+        await AssertNoInternalMetadataAsync(editor);
         await AssertSuggestionsAsync(scenario);
 
         var pirateTitle = session.Lock(script.GetLockName(0, 0));
@@ -117,6 +118,7 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
             await Expect(editor).ToContainTextAsync(PirateDocument);
             await Expect(editor.Locator("em")).ToHaveCountAsync(0);
             await Expect(editor.Locator("s")).ToHaveCountAsync(0);
+            await AssertNoInternalMetadataAsync(editor);
             await Expect(dialog.Locator(".confirm-changes__status"))
                 .ToHaveTextAsync("\u2713 Accepted");
             await Expect(scenario.Locator(".sc-ai-turn").Last
@@ -128,6 +130,7 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
 
             await Expect(editor).ToHaveClassAsync("document-editor__input");
             await Expect(editor).ToHaveValueAsync(PirateDocument);
+            await AssertNoInternalMetadataAsync(editor);
             await Expect(send).ToBeEnabledAsync();
             await Expect(reset).ToBeEnabledAsync();
             await Expect(checkpoint).ToHaveCountAsync(0);
@@ -149,13 +152,16 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
                 AriaRole.Button,
                 new() { Name = "Add character", Exact = true }).ClickAsync();
 
-            await AssertReadOnlyDiffAsync(editor, contains: "Courage joined the crew");
+            await AssertReadOnlyDiffAsync(
+                editor,
+                contains: "Courage joined the crew",
+                expectRemoval: false);
             await Expect(editor).Not.ToContainTextAsync("offered to guide");
             await AssertCheckpointAsync(checkpoint, "courage-draft");
 
             await courageDraft.ReleaseAsync();
 
-            await AssertReadOnlyDiffAsync(editor, contains: CourageDocument);
+            await AssertReadOnlyDiffAsync(editor, contains: CourageDocument, expectRemoval: false);
             await Expect(scenario.GetByRole(
                 AriaRole.Button,
                 new() { Name = "Reject", Exact = true })).ToHaveCountAsync(0);
@@ -174,6 +180,7 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
             await Expect(editor).ToHaveClassAsync("document-editor__surface");
             await Expect(editor).ToContainTextAsync(EditedPirateDocument);
             await Expect(editor).Not.ToContainTextAsync("Courage joined the crew");
+            await AssertNoInternalMetadataAsync(editor);
             await Expect(dialog.Locator(".confirm-changes__status"))
                 .ToHaveTextAsync("\u2717 Rejected");
             await Expect(scenario.Locator(".sc-ai-turn").Last
@@ -185,6 +192,7 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
 
             await Expect(editor).ToHaveClassAsync("document-editor__input");
             await Expect(editor).ToHaveValueAsync(EditedPirateDocument);
+            await AssertNoInternalMetadataAsync(editor);
             await Expect(send).ToBeEnabledAsync();
             await Expect(reset).ToBeEnabledAsync();
             await Expect(checkpoint).ToHaveCountAsync(0);
@@ -204,6 +212,7 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
         await using (resetFrames[0])
         await using (resetFrames[1])
         await using (resetFrames[2])
+        await using (resetFrames[3])
         await using (resetSummary)
         {
             await scenario.GetByRole(
@@ -241,13 +250,50 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
             new() { Name = "Add character", Exact = true })).ToBeEnabledAsync();
     }
 
-    private static async Task AssertReadOnlyDiffAsync(ILocator editor, string contains)
+    private static async Task AssertReadOnlyDiffAsync(
+        ILocator editor,
+        string contains,
+        bool expectRemoval = true)
     {
         await Expect(editor).ToHaveClassAsync("document-editor__surface");
         await Expect(editor).ToHaveAttributeAsync("aria-readonly", "true");
-        await Expect(editor).ToContainTextAsync(contains);
+        var proposedDocument = await editor.Locator(".document-editor__diff").EvaluateAsync<string>(
+            """
+            element => {
+                const clone = element.cloneNode(true);
+                clone.querySelectorAll('s').forEach(item => item.remove());
+                return clone.textContent;
+            }
+            """);
+        StringAssert.Contains(proposedDocument, contains);
         Assert.IsGreaterThan(0, await editor.Locator("em").CountAsync());
-        Assert.IsGreaterThan(0, await editor.Locator("s").CountAsync());
+        if (expectRemoval)
+        {
+            Assert.IsGreaterThan(0, await editor.Locator("s").CountAsync());
+        }
+        else
+        {
+            await Expect(editor.Locator("s")).ToHaveCountAsync(0);
+        }
+        await AssertNoInternalMetadataAsync(editor);
+    }
+
+    private static async Task AssertNoInternalMetadataAsync(ILocator editor)
+    {
+        var forbiddenValues = new[]
+        {
+            "runStartDocument",
+            "_runStartDocument",
+            "write_document_local",
+            "confirm_changes",
+        };
+        var html = await editor.InnerHTMLAsync();
+        var text = await editor.TextContentAsync() ?? "";
+        foreach (var value in forbiddenValues)
+        {
+            Assert.DoesNotContain(value, text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain(value, html, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     private static async Task AssertCheckpointAsync(ILocator checkpoint, string name)

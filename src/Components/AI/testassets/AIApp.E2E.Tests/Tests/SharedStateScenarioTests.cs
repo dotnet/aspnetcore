@@ -54,11 +54,14 @@ public partial class SharedStateScenarioTests : BrowserTest
 
         await CustomizeRecipeAsync(editor);
         await AssertCustomizedRecipeAsync(editor);
+        var stableEditorHeight = await GetEditorHeightAsync(editor);
 
         var italianTitle = session.Lock(script.GetLockName(0, 0));
-        var italianIngredients = session.Lock(script.GetLockName(0, 1));
-        var italianComplete = session.Lock(script.GetLockName(0, 2));
+        var italianDetails = session.Lock(script.GetLockName(0, 1));
+        var italianIngredients = session.Lock(script.GetLockName(0, 2));
+        var italianComplete = session.Lock(script.GetLockName(0, 3));
         await using (italianTitle)
+        await using (italianDetails)
         await using (italianIngredients)
         await using (italianComplete)
         {
@@ -69,10 +72,8 @@ public partial class SharedStateScenarioTests : BrowserTest
             await Expect(scenario.Locator(".sc-ai-turn").Last
                 .Locator(".sc-ai-message--user .sc-ai-message__content"))
                 .ToHaveTextAsync("Create a delicious Italian pasta recipe.");
-            await Expect(editor.Locator(".recipe-editor__section--changed"))
-                .ToHaveCountAsync(1);
-            await Expect(editor.Locator(".recipe-editor__section--changed > label"))
-                .ToHaveTextAsync("Title");
+            await AssertChangedSectionAsync(editor, "title");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
             await Expect(editor.Locator("input[type='text']").First)
                 .ToHaveValueAsync("Italian Garden Pasta");
             await Expect(send).ToBeDisabledAsync();
@@ -84,16 +85,26 @@ public partial class SharedStateScenarioTests : BrowserTest
 
             await italianTitle.ReleaseAsync();
 
-            await Expect(editor.Locator(".recipe-editor__section--changed > label"))
-                .ToHaveTextAsync("Ingredients");
+            await AssertChangedSectionAsync(editor, "details");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
+            await Expect(editor.Locator(".recipe-editor__row select").Nth(0))
+                .ToHaveValueAsync("Intermediate");
+            await AssertCheckpointAsync(checkpoint, "italian-details");
+
+            await italianDetails.ReleaseAsync();
+
+            await AssertChangedSectionAsync(editor, "ingredients");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
             var ingredientRows = editor.Locator(".ingredient-row");
-            await Expect(ingredientRows).ToHaveCountAsync(3);
+            await Expect(ingredientRows).ToHaveCountAsync(4);
             await Expect(ingredientRows.Nth(0).Locator(".ingredient-row__name"))
                 .ToHaveValueAsync("Spaghetti");
             await AssertCheckpointAsync(checkpoint, "italian-ingredients");
 
             await italianIngredients.ReleaseAsync();
 
+            await AssertChangedSectionAsync(editor, "instructions");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
             await AssertItalianRecipeAsync(editor);
             await Expect(scenario.Locator(".sc-ai-turn").Last
                 .Locator(".sc-ai-message--assistant .sc-ai-message__content"))
@@ -109,11 +120,15 @@ public partial class SharedStateScenarioTests : BrowserTest
             await Expect(improve).ToBeEnabledAsync();
             await Expect(improve).ToHaveTextAsync("Improve with AI");
             await Expect(reset).ToBeEnabledAsync();
+            await AssertNoChangedSectionsAsync(editor);
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
         }
 
-        var healthySubstitution = session.Lock(script.GetLockName(1, 0));
-        var healthyComplete = session.Lock(script.GetLockName(1, 1));
-        await using (healthySubstitution)
+        var healthyTitle = session.Lock(script.GetLockName(1, 0));
+        var healthyIngredients = session.Lock(script.GetLockName(1, 1));
+        var healthyComplete = session.Lock(script.GetLockName(1, 2));
+        await using (healthyTitle)
+        await using (healthyIngredients)
         await using (healthyComplete)
         {
             await scenario.GetByRole(
@@ -125,21 +140,37 @@ public partial class SharedStateScenarioTests : BrowserTest
                 .ToHaveTextAsync("Make the recipe healthier with more vegetables.");
             await Expect(editor.Locator("input[type='text']").First)
                 .ToHaveValueAsync("Healthy Italian Garden Pasta");
-            await AssertCheckpointAsync(checkpoint, "healthy-substitution");
+            await AssertChangedSectionAsync(editor, "title");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
+            await AssertCheckpointAsync(checkpoint, "healthy-title");
 
-            await healthySubstitution.ReleaseAsync();
+            await healthyTitle.ReleaseAsync();
 
+            await AssertChangedSectionAsync(editor, "ingredients");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
+            await Expect(editor.Locator(".ingredient-row").First
+                .Locator(".ingredient-row__name")).ToHaveValueAsync("Whole-Wheat Spaghetti");
+            await AssertCheckpointAsync(checkpoint, "healthy-ingredients");
+
+            await healthyIngredients.ReleaseAsync();
+
+            await AssertChangedSectionAsync(editor, "instructions");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
             await Expect(editor.Locator(".recipe-editor__instruction input").Nth(0))
                 .ToHaveValueAsync("Cook whole-wheat spaghetti until al dente");
             await AssertCheckpointAsync(checkpoint, "healthy-complete");
 
             await healthyComplete.ReleaseAsync();
             await Expect(checkpoint).ToHaveCountAsync(0);
+            await AssertNoChangedSectionsAsync(editor);
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
         }
 
         var improveIngredients = session.Lock(script.GetLockName(2, 0));
-        var improveComplete = session.Lock(script.GetLockName(2, 1));
+        var improveTitle = session.Lock(script.GetLockName(2, 1));
+        var improveComplete = session.Lock(script.GetLockName(2, 2));
         await using (improveIngredients)
+        await using (improveTitle)
         await using (improveComplete)
         {
             await improve.ClickAsync();
@@ -152,14 +183,24 @@ public partial class SharedStateScenarioTests : BrowserTest
             await Expect(editor.Locator(".ingredient-row")).ToHaveCountAsync(5);
             await Expect(editor.Locator(".ingredient-row").Last
                 .Locator(".ingredient-row__name")).ToHaveValueAsync("Fresh Basil");
+            await AssertChangedSectionAsync(editor, "ingredients");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
             await AssertCheckpointAsync(checkpoint, "improve-ingredients");
 
             await improveIngredients.ReleaseAsync();
 
             await Expect(editor.Locator("input[type='text']").First)
                 .ToHaveValueAsync("Herbed Healthy Italian Garden Pasta");
+            await AssertChangedSectionAsync(editor, "title");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
+            await AssertCheckpointAsync(checkpoint, "improve-title");
+
+            await improveTitle.ReleaseAsync();
+
             await Expect(editor.Locator(".recipe-editor__instruction input").Last)
                 .ToHaveValueAsync("Finish with fresh basil");
+            await AssertChangedSectionAsync(editor, "instructions");
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
             await Expect(scenario.Locator(".sc-ai-turn").Last
                 .Locator(".sc-ai-message--assistant .sc-ai-message__content"))
                 .ToHaveTextAsync(
@@ -173,6 +214,8 @@ public partial class SharedStateScenarioTests : BrowserTest
             await Expect(improve).ToHaveTextAsync("Improve with AI");
             await Expect(send).ToBeEnabledAsync();
             await Expect(input).ToHaveValueAsync("");
+            await AssertNoChangedSectionsAsync(editor);
+            await AssertStableLayoutAsync(editor, stableEditorHeight);
         }
 
         await reset.ClickAsync();
@@ -191,22 +234,25 @@ public partial class SharedStateScenarioTests : BrowserTest
 
         await CustomizeRecipeAsync(editor);
         session.ResetReplay();
-        var resetFrames = Enumerable.Range(0, 3)
+        var resetFrames = Enumerable.Range(0, 4)
             .Select(index => session.Lock(script.GetLockName(0, index)))
             .ToArray();
         await using (resetFrames[0])
         await using (resetFrames[1])
         await using (resetFrames[2])
+        await using (resetFrames[3])
         {
             await scenario.GetByRole(
                 AriaRole.Button,
                 new() { Name = "Create Italian recipe", Exact = true }).ClickAsync();
             await AssertCheckpointAsync(checkpoint, "italian-title");
             await resetFrames[0].ReleaseAsync();
-            await AssertCheckpointAsync(checkpoint, "italian-ingredients");
+            await AssertCheckpointAsync(checkpoint, "italian-details");
             await resetFrames[1].ReleaseAsync();
-            await AssertCheckpointAsync(checkpoint, "italian-complete");
+            await AssertCheckpointAsync(checkpoint, "italian-ingredients");
             await resetFrames[2].ReleaseAsync();
+            await AssertCheckpointAsync(checkpoint, "italian-complete");
+            await resetFrames[3].ReleaseAsync();
             await Expect(checkpoint).ToHaveCountAsync(0);
             await AssertItalianRecipeAsync(editor);
             await Expect(send).ToBeEnabledAsync();
@@ -336,5 +382,29 @@ public partial class SharedStateScenarioTests : BrowserTest
     private static async Task AssertCheckpointAsync(ILocator checkpoint, string name)
     {
         await Expect(checkpoint).ToHaveAttributeAsync("data-replay-checkpoint", name);
+    }
+
+    private static async Task AssertChangedSectionAsync(ILocator editor, string section)
+    {
+        var changed = editor.Locator(".recipe-editor__section--changed");
+        await Expect(changed).ToHaveCountAsync(1);
+        await Expect(changed).ToHaveAttributeAsync("data-section", section);
+        await Expect(changed).ToHaveAttributeAsync("data-agent-changed", "true");
+    }
+
+    private static async Task AssertNoChangedSectionsAsync(ILocator editor)
+    {
+        await Expect(editor.Locator(".recipe-editor__section--changed")).ToHaveCountAsync(0);
+        await Expect(editor.Locator(".recipe-editor__section[data-agent-changed='true']"))
+            .ToHaveCountAsync(0);
+    }
+
+    private static Task<double> GetEditorHeightAsync(ILocator editor)
+        => editor.EvaluateAsync<double>("element => element.getBoundingClientRect().height");
+
+    private static async Task AssertStableLayoutAsync(ILocator editor, double expectedHeight)
+    {
+        var actualHeight = await GetEditorHeightAsync(editor);
+        Assert.AreEqual(expectedHeight, actualHeight, 0.5);
     }
 }

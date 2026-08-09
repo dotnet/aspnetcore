@@ -143,36 +143,57 @@ internal sealed class DojoSimulationChatClient(IDojoSimulationDelay delay) : ICh
         var current = CloneRecipe(currentState.Recipe);
         var target = CreateTargetRecipe(prompt, current);
 
-        current = current with
+        if (current.Title != target.Title)
         {
-            Title = target.Title,
-            SkillLevel = target.SkillLevel,
-            CookingTime = target.CookingTime,
-        };
-        yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            current = current with { Title = target.Title };
+            yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            await delay.DelayAsync(cancellationToken);
+        }
 
-        await delay.DelayAsync(cancellationToken);
-        current = current with
+        if (current.SkillLevel != target.SkillLevel ||
+            current.CookingTime != target.CookingTime)
         {
-            SpecialPreferences = [.. target.SpecialPreferences],
-        };
-        yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            current = current with
+            {
+                SkillLevel = target.SkillLevel,
+                CookingTime = target.CookingTime,
+            };
+            yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            await delay.DelayAsync(cancellationToken);
+        }
 
-        await delay.DelayAsync(cancellationToken);
-        current = current with
+        if (!current.SpecialPreferences.SequenceEqual(
+                target.SpecialPreferences,
+                StringComparer.Ordinal))
         {
-            Ingredients = [.. target.Ingredients.Select(CloneIngredient)],
-        };
-        yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            current = current with
+            {
+                SpecialPreferences = [.. target.SpecialPreferences],
+            };
+            yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            await delay.DelayAsync(cancellationToken);
+        }
 
-        await delay.DelayAsync(cancellationToken);
-        current = current with
+        if (!current.Ingredients.SequenceEqual(target.Ingredients))
         {
-            Instructions = [.. target.Instructions],
-        };
-        yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            current = current with
+            {
+                Ingredients = [.. target.Ingredients.Select(CloneIngredient)],
+            };
+            yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            await delay.DelayAsync(cancellationToken);
+        }
 
-        await delay.DelayAsync(cancellationToken);
+        if (!current.Instructions.SequenceEqual(target.Instructions, StringComparer.Ordinal))
+        {
+            current = current with
+            {
+                Instructions = [.. target.Instructions],
+            };
+            yield return CreateStateUpdate(new RecipeState { Recipe = current });
+            await delay.DelayAsync(cancellationToken);
+        }
+
         yield return CreateTextUpdate(GetRecipeAcknowledgement(prompt));
     }
 

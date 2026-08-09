@@ -9,7 +9,8 @@
             <div class="recipe-panel">
                 <RecipeEditor Recipe="_agent.State.Value.Recipe"
                               RecipeChanged="HandleRecipeChanged"
-                              ChangedSections="_changedSections" />
+                              ChangedSections="_changedSections"
+                              StatusChanged="HandleConversationStatusChanged" />
             </div>
 
             <div class="shared-state-chat">
@@ -40,6 +41,7 @@
     private IDisposable? _stateChangedRegistration;
     private Recipe _lastRecipe = default!;
     private bool _isApplyingLocalState;
+    private ConversationStatus _lastStatus = ConversationStatus.Idle;
     private readonly HashSet<string> _changedSections = new(StringComparer.Ordinal);
 
     private static readonly Suggestion[] _suggestions =
@@ -123,6 +125,7 @@
         _agent?.Dispose();
         _agent = agent;
         _lastRecipe = _agent.State.Value.Recipe;
+        _lastStatus = ConversationStatus.Idle;
         _changedSections.Clear();
         _stateChangedRegistration = _agent.State.OnChanged(OnStateChanged);
     }
@@ -148,6 +151,17 @@
         }
 
         _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleConversationStatusChanged(ConversationStatus status)
+    {
+        if ((status == ConversationStatus.Streaming && _lastStatus != ConversationStatus.Streaming) ||
+            status is ConversationStatus.Idle or ConversationStatus.Error)
+        {
+            _changedSections.Clear();
+        }
+
+        _lastStatus = status;
     }
 
     private void AddChangedSections(Recipe previous, Recipe current)

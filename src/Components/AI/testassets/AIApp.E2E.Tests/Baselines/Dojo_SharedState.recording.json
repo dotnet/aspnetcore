@@ -66,12 +66,42 @@
           }
         },
         {
+          "name": "italian-details",
+          "updates": [],
+          "state": {
+            "recipe": {
+              "title": "Italian Garden Pasta",
+              "skill_level": "Intermediate",
+              "cooking_time": "30 min",
+              "special_preferences": [
+                "High Protein"
+              ],
+              "ingredients": [
+                {
+                  "icon": "\ud83e\udd55",
+                  "name": "Zucchini",
+                  "amount": "2, sliced"
+                },
+                {
+                  "icon": "\ud83c\udf45",
+                  "name": "Tomatoes",
+                  "amount": "4, chopped"
+                }
+              ],
+              "instructions": [
+                "Preheat oven to 350\u00b0F (175\u00b0C)",
+                "Serve immediately"
+              ]
+            }
+          }
+        },
+        {
           "name": "italian-ingredients",
           "updates": [],
           "state": {
             "recipe": {
               "title": "Italian Garden Pasta",
-              "skill_level": "Beginner",
+              "skill_level": "Intermediate",
               "cooking_time": "30 min",
               "special_preferences": [
                 "High Protein"
@@ -91,6 +121,11 @@
                   "icon": "\ud83c\udf45",
                   "name": "Tomatoes",
                   "amount": "4, chopped"
+                },
+                {
+                  "icon": "\ud83e\uddc0",
+                  "name": "Ricotta",
+                  "amount": "1 cup"
                 }
               ],
               "instructions": [
@@ -201,7 +236,48 @@
       },
       "frames": [
         {
-          "name": "healthy-substitution",
+          "name": "healthy-title",
+          "updates": [],
+          "state": {
+            "recipe": {
+              "title": "Healthy Italian Garden Pasta",
+              "skill_level": "Intermediate",
+              "cooking_time": "30 min",
+              "special_preferences": [
+                "High Protein"
+              ],
+              "ingredients": [
+                {
+                  "icon": "\ud83c\udf5d",
+                  "name": "Spaghetti",
+                  "amount": "400g"
+                },
+                {
+                  "icon": "\ud83e\udd52",
+                  "name": "Zucchini",
+                  "amount": "2, sliced"
+                },
+                {
+                  "icon": "\ud83c\udf45",
+                  "name": "Tomatoes",
+                  "amount": "4, chopped"
+                },
+                {
+                  "icon": "\ud83e\uddc0",
+                  "name": "Ricotta",
+                  "amount": "1 cup"
+                }
+              ],
+              "instructions": [
+                "Cook spaghetti until al dente",
+                "Saut\u00e9 zucchini and tomatoes until tender",
+                "Toss with ricotta and serve immediately"
+              ]
+            }
+          }
+        },
+        {
+          "name": "healthy-ingredients",
           "updates": [],
           "state": {
             "recipe": {
@@ -347,6 +423,52 @@
           "state": {
             "recipe": {
               "title": "Healthy Italian Garden Pasta",
+              "skill_level": "Intermediate",
+              "cooking_time": "30 min",
+              "special_preferences": [
+                "High Protein"
+              ],
+              "ingredients": [
+                {
+                  "icon": "\ud83c\udf5d",
+                  "name": "Whole-Wheat Spaghetti",
+                  "amount": "400g"
+                },
+                {
+                  "icon": "\ud83e\udd52",
+                  "name": "Zucchini",
+                  "amount": "2, sliced"
+                },
+                {
+                  "icon": "\ud83c\udf45",
+                  "name": "Tomatoes",
+                  "amount": "4, chopped"
+                },
+                {
+                  "icon": "\ud83e\uddc0",
+                  "name": "Part-Skim Ricotta",
+                  "amount": "1 cup"
+                },
+                {
+                  "icon": "\ud83c\udf3f",
+                  "name": "Fresh Basil",
+                  "amount": "1 handful"
+                }
+              ],
+              "instructions": [
+                "Cook whole-wheat spaghetti until al dente",
+                "Saut\u00e9 zucchini and tomatoes with olive oil",
+                "Toss with part-skim ricotta and serve immediately"
+              ]
+            }
+          }
+        },
+        {
+          "name": "improve-title",
+          "updates": [],
+          "state": {
+            "recipe": {
+              "title": "Herbed Healthy Italian Garden Pasta",
               "skill_level": "Intermediate",
               "cooking_time": "30 min",
               "special_preferences": [

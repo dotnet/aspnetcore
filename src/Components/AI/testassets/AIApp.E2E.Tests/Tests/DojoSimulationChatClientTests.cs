@@ -56,7 +56,15 @@ public class DojoSimulationChatClientTests
             client,
             "Make the recipe healthier with more vegetables.",
             CreateOptions(recipe, "generate_recipe"));
-        recipe = GetStates<RecipeState>(healthier)[^1];
+        var healthierStates = GetStates<RecipeState>(healthier);
+        Assert.HasCount(3, healthierStates);
+        CollectionAssert.AreEqual(
+            recipe.Recipe.Ingredients,
+            healthierStates[0].Recipe.Ingredients);
+        CollectionAssert.AreEqual(
+            recipe.Recipe.Instructions,
+            healthierStates[1].Recipe.Instructions);
+        recipe = healthierStates[^1];
         StringAssert.StartsWith(recipe.Recipe.Title, "Healthy ");
         Assert.IsTrue(recipe.Recipe.Ingredients.Any(ingredient => ingredient.Name == "Zucchini"));
 
@@ -83,6 +91,31 @@ public class DojoSimulationChatClientTests
             "All 5 steps in the Mars mission plan are complete.",
             agentic[^1].Text);
 
+        var initialRecipe = CreateInitialRecipe();
+        var shared = await CollectAsync(
+            client,
+            "Improve the recipe",
+            CreateOptions(initialRecipe, "generate_recipe"));
+        var recipeStates = GetStates<RecipeState>(shared);
+        Assert.HasCount(5, recipeStates);
+        Assert.AreEqual("Herbed Garden Vegetable Bake", recipeStates[0].Recipe.Title);
+        Assert.AreEqual(initialRecipe.Recipe.SkillLevel, recipeStates[0].Recipe.SkillLevel);
+        Assert.AreEqual("Beginner", recipeStates[1].Recipe.SkillLevel);
+        CollectionAssert.AreEqual(
+            initialRecipe.Recipe.SpecialPreferences,
+            recipeStates[1].Recipe.SpecialPreferences);
+        CollectionAssert.Contains(recipeStates[2].Recipe.SpecialPreferences, "Vegetarian");
+        CollectionAssert.AreEqual(
+            initialRecipe.Recipe.Ingredients,
+            recipeStates[2].Recipe.Ingredients);
+        Assert.AreEqual("Fresh Basil", recipeStates[3].Recipe.Ingredients[^1].Name);
+        CollectionAssert.AreEqual(
+            initialRecipe.Recipe.Instructions,
+            recipeStates[3].Recipe.Instructions);
+        Assert.AreEqual(
+            "Finish with fresh basil before serving.",
+            recipeStates[4].Recipe.Instructions[^1]);
+
         var predictive = await CollectAsync(
             client,
             "Please write a story about a pirate named Candy Beard.",
@@ -97,6 +130,13 @@ public class DojoSimulationChatClientTests
         StringAssert.Contains(documentStates[1].Document, "Sugar Star");
         Assert.DoesNotContain(documentStates[1].Document, "dark clouds");
         StringAssert.Contains(documentStates[2].Document, "dark clouds");
+        foreach (var state in documentStates)
+        {
+            Assert.DoesNotContain("runStartDocument", state.Document);
+            Assert.DoesNotContain("_runStartDocument", state.Document);
+            Assert.DoesNotContain("write_document_local", state.Document);
+            Assert.DoesNotContain("confirm_changes", state.Document);
+        }
         Assert.IsInstanceOfType<FunctionCallContent>(predictive[^1].Contents.Single());
     }
 

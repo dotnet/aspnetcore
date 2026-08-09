@@ -8,7 +8,7 @@
         <div class="predictive-layout">
             <div class="document-panel @(_runActive ? "document-panel--streaming" : "")">
                 <DocumentPreview Document="@_agent.State.Value.Document"
-                                 BaselineDocument="_runStartDocument"
+                                 BaselineDocument="@_runStartDocument"
                                  IsReadOnly="_runActive"
                                  ShowDiff="_showDiff"
                                  IsComplete="_candidateComplete"

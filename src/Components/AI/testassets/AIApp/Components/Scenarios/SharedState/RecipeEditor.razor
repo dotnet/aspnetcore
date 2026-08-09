@@ -1,22 +1,27 @@
 @implements IDisposable
 
 <div class="recipe-editor">
-    <div class="@GetSectionClass("title")" data-agent-changed="@IsChanged("title")">
+    <div class="@GetSectionClass("title")"
+         data-section="title"
+         data-agent-changed="@(IsChanged("title") ? "true" : "false")">
         <label>Title</label>
         <input type="text" value="@Recipe.Title" @oninput="UpdateTitleAsync" />
     </div>
 
-    <div class="recipe-editor__row">
-        <div class="@GetSectionClass("details")" data-agent-changed="@IsChanged("details")">
+    <div class="@GetSectionClass("details")"
+         data-section="details"
+         data-agent-changed="@(IsChanged("details") ? "true" : "false")">
+        <div class="recipe-editor__row">
+            <div class="recipe-editor__field">
             <label>Skill Level</label>
             <select value="@Recipe.SkillLevel" @onchange="UpdateSkillLevelAsync">
                 <option>Beginner</option>
                 <option>Intermediate</option>
                 <option>Advanced</option>
             </select>
-        </div>
+            </div>
 
-        <div class="@GetSectionClass("details")" data-agent-changed="@IsChanged("details")">
+            <div class="recipe-editor__field">
             <label>Cooking Time</label>
             <select value="@Recipe.CookingTime" @onchange="UpdateCookingTimeAsync">
                 <option>15 min</option>
@@ -26,10 +31,13 @@
                 <option>1.5 hr</option>
                 <option>2 hr</option>
             </select>
+            </div>
         </div>
     </div>
 
-    <div class="@GetSectionClass("preferences")" data-agent-changed="@IsChanged("preferences")">
+    <div class="@GetSectionClass("preferences")"
+         data-section="preferences"
+         data-agent-changed="@(IsChanged("preferences") ? "true" : "false")">
         <label>Dietary Preferences</label>
         <div class="recipe-editor__checkboxes">
             @foreach (var pref in _allPreferences)
@@ -44,7 +52,9 @@
         </div>
     </div>
 
-    <div class="@GetSectionClass("ingredients")" data-agent-changed="@IsChanged("ingredients")">
+    <div class="@GetSectionClass("ingredients")"
+         data-section="ingredients"
+         data-agent-changed="@(IsChanged("ingredients") ? "true" : "false")">
         <label>Ingredients</label>
         @for (var i = 0; i < Recipe.Ingredients.Count; i++)
         {
@@ -59,7 +69,9 @@
         </button>
     </div>
 
-    <div class="@GetSectionClass("instructions")" data-agent-changed="@IsChanged("instructions")">
+    <div class="@GetSectionClass("instructions")"
+         data-section="instructions"
+         data-agent-changed="@(IsChanged("instructions") ? "true" : "false")">
         <label>Instructions</label>
         @for (var i = 0; i < Recipe.Instructions.Count; i++)
         {
@@ -102,6 +114,9 @@
     [Parameter]
     public IReadOnlySet<string> ChangedSections { get; set; } = new HashSet<string>();
 
+    [Parameter]
+    public EventCallback<ConversationStatus> StatusChanged { get; set; }
+
     private static readonly string[] _allPreferences =
     {
         "Vegetarian", "Vegan", "Gluten-Free", "High Protein", "Low Carb", "Spicy"
@@ -116,9 +131,17 @@
         {
             _statusChangedRegistration?.Dispose();
             _registeredContext = AgentContext;
-            _statusChangedRegistration = AgentContext.RegisterOnStatusChanged(
-                status => _ = InvokeAsync(StateHasChanged));
+            _statusChangedRegistration = AgentContext.RegisterOnStatusChanged(OnStatusChanged);
         }
+    }
+
+    private void OnStatusChanged(ConversationStatus status)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await StatusChanged.InvokeAsync(status);
+            StateHasChanged();
+        });
     }
 
     private Task UpdateTitleAsync(ChangeEventArgs args)
@@ -190,7 +213,7 @@
         => AgentContext.SendMessageAsync("Improve the recipe");
 
     private bool IsChanged(string section)
-        => ChangedSections.Contains(section);
+        => IsRunning && ChangedSections.Contains(section);
 
     private string GetSectionClass(string section)
         => IsChanged(section)
