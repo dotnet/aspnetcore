@@ -13,7 +13,10 @@
         <div class="shared-state-chat">
             <header class="dojo-scenario__header">
                 <h2>AI Recipe Assistant</h2>
-                <button class="dojo-reset-button" aria-label="Reset" @onclick="Reset">&times;</button>
+                <button class="dojo-reset-button"
+                        aria-label="Reset"
+                        disabled="@ReplayCheckpoint.IsReplayActive"
+                        @onclick="Reset">&times;</button>
             </header>
 
             <AgentBoundary @key="_agent" Agent="_agent">
@@ -44,6 +47,7 @@
 
     protected override void OnInitialized()
     {
+        ReplayCheckpoint.Changed += OnReplayCheckpointChanged;
         SetAgent(CreateAgent(CreateDefaultRecipe()));
     }
 
@@ -82,6 +86,11 @@
 
     private void Reset()
     {
+        if (ReplayCheckpoint.IsReplayActive)
+        {
+            return;
+        }
+
         ReplayCheckpoint.ResetReplay();
         SetAgent(CreateAgent(CreateDefaultRecipe()));
     }
@@ -95,6 +104,11 @@
     }
 
     private void OnStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnReplayCheckpointChanged()
     {
         _ = InvokeAsync(StateHasChanged);
     }
@@ -121,6 +135,7 @@
 
     public void Dispose()
     {
+        ReplayCheckpoint.Changed -= OnReplayCheckpointChanged;
         _stateChangedRegistration?.Dispose();
         _agent?.Dispose();
     }

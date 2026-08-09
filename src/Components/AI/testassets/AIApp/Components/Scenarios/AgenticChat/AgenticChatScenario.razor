@@ -3,7 +3,10 @@
 @implements IDisposable
 
 <div class="dojo-scenario agentic-chat" data-dojo-scenario="agentic-chat" style="@GetBackgroundStyle()">
-    <button type="button" class="agentic-chat__reset" @onclick="Reset">Reset</button>
+    <button type="button"
+            class="agentic-chat__reset"
+            disabled="@ReplayCheckpoint.IsReplayActive"
+            @onclick="Reset">Reset</button>
     <AgentBoundary @key="_agent" Agent="_agent">
         <div class="sc-ai-root dojo-chat-panel">
             <MessageList>
@@ -30,6 +33,7 @@
 
     protected override void OnInitialized()
     {
+        ReplayCheckpoint.Changed += OnReplayCheckpointChanged;
         _agent = CreateAgent();
     }
 
@@ -62,14 +66,25 @@
 
     private void Reset()
     {
+        if (ReplayCheckpoint.IsReplayActive)
+        {
+            return;
+        }
+
         ReplayCheckpoint.ResetReplay();
         _backgroundColor = null;
         _agent.Dispose();
         _agent = CreateAgent();
     }
 
+    private void OnReplayCheckpointChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     public void Dispose()
     {
+        ReplayCheckpoint.Changed -= OnReplayCheckpointChanged;
         _agent.Dispose();
     }
 }

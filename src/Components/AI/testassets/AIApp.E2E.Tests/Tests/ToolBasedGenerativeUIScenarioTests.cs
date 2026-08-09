@@ -34,6 +34,9 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
         var carousel = scenario.Locator(".haiku-carousel");
         var input = scenario.Locator(".sc-ai-input__textarea");
         var send = scenario.Locator(".sc-ai-input__send");
+        var reset = scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Reset", Exact = true });
         var checkpoint = demo.Locator(".replay-checkpoint-status");
 
         await Expect(scenario.Locator(".dojo-scenario__header h2")).ToHaveTextAsync("Haiku Generator");
@@ -58,6 +61,13 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
             await AssertGeneratedHaikuAsync(carousel);
             await AssertGeneratedCarouselControlsAsync(carousel);
             await Expect(send).ToBeDisabledAsync();
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "haiku-action");
+            await Expect(reset).ToBeDisabledAsync();
+            await reset.EvaluateAsync("button => button.click()");
+            await AssertGeneratedHaikuAsync(carousel);
+            await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(1);
             await Expect(checkpoint).ToHaveAttributeAsync(
                 "data-replay-checkpoint",
                 "haiku-action");
@@ -111,12 +121,11 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
                 AriaRole.Status,
                 new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
             await Expect(send).ToBeEnabledAsync();
+            await Expect(reset).ToBeEnabledAsync();
             await Expect(input).ToHaveValueAsync("");
         }
 
-        await scenario.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Reset", Exact = true }).ClickAsync();
+        await reset.ClickAsync();
         await AssertPlaceholderHaikuAsync(carousel);
         await Expect(carousel.Locator(".haiku-carousel__nav")).ToHaveCountAsync(0);
         await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(0);

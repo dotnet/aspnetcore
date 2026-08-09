@@ -32,6 +32,9 @@ public partial class AgenticChatScenarioTests : BrowserTest
         var scenario = demo.Locator("[data-dojo-scenario='agentic-chat']");
         var input = scenario.Locator(".sc-ai-input__textarea");
         var send = scenario.Locator(".sc-ai-input__send");
+        var reset = scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Reset", Exact = true });
         var checkpoint = demo.Locator(".replay-checkpoint-status");
         var actionFrame = session.Lock(script.GetLockName(0, 0));
         var confirmationStart = session.Lock(script.GetLockName(1, 0));
@@ -48,6 +51,15 @@ public partial class AgenticChatScenarioTests : BrowserTest
             await Expect(scenario).ToHaveAttributeAsync(
                 "style",
                 "background: linear-gradient(135deg, #ff9a9e, #fad0c4);");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "background-action");
+            await Expect(reset).ToBeDisabledAsync();
+            await reset.EvaluateAsync("button => button.click()");
+            await Expect(scenario).ToHaveAttributeAsync(
+                "style",
+                "background: linear-gradient(135deg, #ff9a9e, #fad0c4);");
+            await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(1);
             await Expect(checkpoint).ToHaveAttributeAsync(
                 "data-replay-checkpoint",
                 "background-action");
@@ -75,9 +87,10 @@ public partial class AgenticChatScenarioTests : BrowserTest
                 AriaRole.Status,
                 new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
             await Expect(send).ToBeEnabledAsync();
+            await Expect(reset).ToBeEnabledAsync();
             await Expect(input).ToHaveValueAsync("");
 
-            await scenario.GetByRole(AriaRole.Button, new() { Name = "Reset", Exact = true }).ClickAsync();
+            await reset.ClickAsync();
 
             await Expect(scenario).ToHaveAttributeAsync("style", "");
             await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(0);

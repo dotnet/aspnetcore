@@ -44,6 +44,9 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
         var checkpoint = demo.Locator(".replay-checkpoint-status");
         var input = scenario.Locator(".sc-ai-input__textarea");
         var send = scenario.Locator(".sc-ai-input__send");
+        var reset = scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Reset", Exact = true });
 
         await Expect(scenario.Locator(".predictive-chat .dojo-scenario__header h2"))
             .ToHaveTextAsync("AI Document Editor");
@@ -87,6 +90,17 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
                 isStreaming: true);
             await Expect(scenario.Locator(".confirm-changes")).ToHaveCountAsync(0);
             await Expect(send).ToBeDisabledAsync();
+            await AssertCheckpointAsync(checkpoint, "pirate-title");
+            await Expect(reset).ToBeDisabledAsync();
+            await reset.EvaluateAsync("button => button.click()");
+            await AssertDocumentAsync(
+                panel,
+                preview,
+                content,
+                PirateTitle,
+                [],
+                expectedWordCount: 5,
+                isStreaming: true);
             await AssertCheckpointAsync(checkpoint, "pirate-title");
 
             await titleFrame.ReleaseAsync();
@@ -176,12 +190,11 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
                 AriaRole.Status,
                 new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
             await Expect(send).ToBeEnabledAsync();
+            await Expect(reset).ToBeEnabledAsync();
             await Expect(input).ToHaveValueAsync("");
         }
 
-        await scenario.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Reset", Exact = true }).ClickAsync();
+        await reset.ClickAsync();
         await Expect(preview).ToHaveClassAsync("document-preview document-preview--empty");
         await Expect(preview.Locator(".document-preview__placeholder"))
             .ToHaveTextAsync("Write whatever you want here in Markdown format...");

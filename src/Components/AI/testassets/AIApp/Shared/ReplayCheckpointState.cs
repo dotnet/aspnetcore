@@ -22,7 +22,12 @@ public sealed class ReplayCheckpointState
     public int Generation { get; private set; }
 
     /// <summary>
-    /// Occurs when <see cref="CurrentCheckpoint"/> changes.
+    /// Gets a value indicating whether a replay call is active.
+    /// </summary>
+    public bool IsReplayActive => _callActive;
+
+    /// <summary>
+    /// Occurs when the replay activity, generation, or checkpoint changes.
     /// </summary>
     public event Action? Changed;
 
@@ -38,7 +43,9 @@ public sealed class ReplayCheckpointState
         }
 
         _callActive = true;
-        return _nextCallIndex++;
+        var callIndex = _nextCallIndex++;
+        Changed?.Invoke();
+        return callIndex;
     }
 
     /// <summary>
@@ -52,6 +59,7 @@ public sealed class ReplayCheckpointState
         }
 
         _callActive = false;
+        Changed?.Invoke();
     }
 
     /// <summary>
@@ -66,7 +74,8 @@ public sealed class ReplayCheckpointState
 
         _nextCallIndex = 0;
         Generation++;
-        ClearCheckpoint();
+        CurrentCheckpoint = null;
+        Changed?.Invoke();
     }
 
     /// <summary>

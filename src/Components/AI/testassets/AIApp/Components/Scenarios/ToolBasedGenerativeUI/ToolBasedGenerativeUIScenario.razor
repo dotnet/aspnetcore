@@ -13,7 +13,10 @@
         <div class="haiku-chat">
             <header class="dojo-scenario__header">
                 <h2>Haiku Generator</h2>
-                <button class="dojo-reset-button" aria-label="Reset" @onclick="Reset">&times;</button>
+                <button class="dojo-reset-button"
+                        aria-label="Reset"
+                        disabled="@ReplayCheckpoint.IsReplayActive"
+                        @onclick="Reset">&times;</button>
             </header>
 
             <AgentBoundary @key="_agent" Agent="_agent">
@@ -46,6 +49,7 @@
 
     protected override void OnInitialized()
     {
+        ReplayCheckpoint.Changed += OnReplayCheckpointChanged;
         ResetHaikus();
         _agent = CreateAgent();
     }
@@ -91,10 +95,20 @@
 
     private void Reset()
     {
+        if (ReplayCheckpoint.IsReplayActive)
+        {
+            return;
+        }
+
         ReplayCheckpoint.ResetReplay();
         ResetHaikus();
         _agent.Dispose();
         _agent = CreateAgent();
+    }
+
+    private void OnReplayCheckpointChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private void ResetHaikus()
@@ -113,6 +127,7 @@
 
     public void Dispose()
     {
+        ReplayCheckpoint.Changed -= OnReplayCheckpointChanged;
         _agent.Dispose();
     }
 }

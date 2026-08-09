@@ -138,16 +138,27 @@ public class ReplayInfrastructureTests
     public void ReplayCheckpointState_RejectsResetWhileCallIsActive()
     {
         var replayState = new ReplayCheckpointState();
+        var changes = 0;
+        replayState.Changed += () => changes++;
 
+        Assert.IsFalse(replayState.IsReplayActive);
         Assert.AreEqual(0, replayState.BeginReplayCall());
+        Assert.IsTrue(replayState.IsReplayActive);
+        Assert.AreEqual(1, changes);
         Assert.Throws<InvalidOperationException>(replayState.ResetReplay);
 
         replayState.EndReplayCall();
+        Assert.IsFalse(replayState.IsReplayActive);
+        Assert.AreEqual(2, changes);
         replayState.ResetReplay();
 
         Assert.AreEqual(1, replayState.Generation);
+        Assert.AreEqual(3, changes);
         Assert.AreEqual(0, replayState.BeginReplayCall());
+        Assert.IsTrue(replayState.IsReplayActive);
         replayState.EndReplayCall();
+        Assert.IsFalse(replayState.IsReplayActive);
+        Assert.AreEqual(5, changes);
     }
 
     [TestMethod]

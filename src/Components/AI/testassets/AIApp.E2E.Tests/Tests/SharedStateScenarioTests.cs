@@ -34,6 +34,9 @@ public partial class SharedStateScenarioTests : BrowserTest
         var checkpoint = demo.Locator(".replay-checkpoint-status");
         var input = scenario.Locator(".sc-ai-input__textarea");
         var send = scenario.Locator(".sc-ai-input__send");
+        var reset = scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Reset", Exact = true });
 
         await AssertRecipeAsync(
             editor,
@@ -85,6 +88,11 @@ public partial class SharedStateScenarioTests : BrowserTest
                 ["Preheat oven to 350\u00b0F (175\u00b0C)", "Serve immediately"]);
             await AssertCheckpointAsync(checkpoint, "italian-title");
             await Expect(send).ToBeDisabledAsync();
+            await Expect(reset).ToBeDisabledAsync();
+            await reset.EvaluateAsync("button => button.click()");
+            await Expect(editor.Locator("input[type='text']").First)
+                .ToHaveValueAsync("Italian Garden Pasta");
+            await AssertCheckpointAsync(checkpoint, "italian-title");
 
             await italianTitle.ReleaseAsync();
 
@@ -137,6 +145,7 @@ public partial class SharedStateScenarioTests : BrowserTest
                 AriaRole.Status,
                 new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
             await Expect(send).ToBeEnabledAsync();
+            await Expect(reset).ToBeEnabledAsync();
             await Expect(input).ToHaveValueAsync("");
         }
 
@@ -206,9 +215,7 @@ public partial class SharedStateScenarioTests : BrowserTest
             await Expect(input).ToHaveValueAsync("");
         }
 
-        await scenario.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Reset", Exact = true }).ClickAsync();
+        await reset.ClickAsync();
         await AssertRecipeAsync(
             editor,
             "Make Your Recipe",
