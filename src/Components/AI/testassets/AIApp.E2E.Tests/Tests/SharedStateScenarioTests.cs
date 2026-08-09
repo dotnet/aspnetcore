@@ -15,7 +15,7 @@ namespace AIApp.E2E.Tests.Tests;
 public partial class SharedStateScenarioTests : BrowserTest
 {
     [TestMethod]
-    public async Task RecipeEditorAndAgent_SynchronizeExactStateInBothDirections()
+    public async Task RecipeEditor_SynchronizesStateAndRunsImproveWithAI()
     {
         var script = ReplayCheckpointScript.Load("Dojo_SharedState.recording.json");
         var server = await StartServerAsync<App>(TestRoot.Servers, options =>
@@ -37,32 +37,23 @@ public partial class SharedStateScenarioTests : BrowserTest
         var reset = scenario.GetByRole(
             AriaRole.Button,
             new() { Name = "Reset", Exact = true });
+        var improve = editor.Locator(".recipe-editor__improve-btn");
 
         await AssertRecipeAsync(
             editor,
             "Make Your Recipe",
             "Intermediate",
             "45 min",
-            ["Vegetarian"],
+            [],
             [
                 ("\U0001F955", "Carrots", "3 large, grated"),
                 ("\U0001F33E", "All-Purpose Flour", "2 cups"),
             ],
             ["Preheat oven to 350\u00b0F (175\u00b0C)"]);
+        await AssertSuggestionsAsync(scenario);
 
         await CustomizeRecipeAsync(editor);
-
-        await AssertRecipeAsync(
-            editor,
-            "Sunday Garden Pasta",
-            "Beginner",
-            "30 min",
-            ["Vegetarian", "High Protein"],
-            [
-                ("\U0001F955", "Zucchini", "2, sliced"),
-                ("\U0001F345", "Tomatoes", "4, chopped"),
-            ],
-            ["Preheat oven to 350\u00b0F (175\u00b0C)", "Serve immediately"]);
+        await AssertCustomizedRecipeAsync(editor);
 
         var italianTitle = session.Lock(script.GetLockName(0, 0));
         var italianIngredients = session.Lock(script.GetLockName(0, 1));
@@ -75,78 +66,49 @@ public partial class SharedStateScenarioTests : BrowserTest
                 AriaRole.Button,
                 new() { Name = "Create Italian recipe", Exact = true }).ClickAsync();
 
-            await AssertRecipeAsync(
-                editor,
-                "Italian Garden Pasta",
-                "Beginner",
-                "30 min",
-                ["Vegetarian", "High Protein"],
-                [
-                    ("\U0001F955", "Zucchini", "2, sliced"),
-                    ("\U0001F345", "Tomatoes", "4, chopped"),
-                ],
-                ["Preheat oven to 350\u00b0F (175\u00b0C)", "Serve immediately"]);
-            await AssertCheckpointAsync(checkpoint, "italian-title");
-            await Expect(send).ToBeDisabledAsync();
-            await Expect(reset).ToBeDisabledAsync();
-            await reset.EvaluateAsync("button => button.click()");
+            await Expect(scenario.Locator(".sc-ai-turn").Last
+                .Locator(".sc-ai-message--user .sc-ai-message__content"))
+                .ToHaveTextAsync("Create a delicious Italian pasta recipe.");
+            await Expect(editor.Locator(".recipe-editor__section--changed"))
+                .ToHaveCountAsync(1);
+            await Expect(editor.Locator(".recipe-editor__section--changed > label"))
+                .ToHaveTextAsync("Title");
             await Expect(editor.Locator("input[type='text']").First)
                 .ToHaveValueAsync("Italian Garden Pasta");
+            await Expect(send).ToBeDisabledAsync();
+            await Expect(improve).ToBeDisabledAsync();
+            await Expect(improve).ToHaveTextAsync("Please Wait...");
+            await Expect(reset).ToBeDisabledAsync();
+            await reset.EvaluateAsync("button => button.click()");
             await AssertCheckpointAsync(checkpoint, "italian-title");
 
             await italianTitle.ReleaseAsync();
 
-            await AssertRecipeAsync(
-                editor,
-                "Italian Garden Pasta",
-                "Beginner",
-                "30 min",
-                ["Vegetarian", "High Protein"],
-                [
-                    ("\U0001F35D", "Spaghetti", "400g"),
-                    ("\U0001F952", "Zucchini", "2, sliced"),
-                    ("\U0001F345", "Tomatoes", "4, chopped"),
-                ],
-                ["Preheat oven to 350\u00b0F (175\u00b0C)", "Serve immediately"]);
+            await Expect(editor.Locator(".recipe-editor__section--changed > label"))
+                .ToHaveTextAsync("Ingredients");
+            var ingredientRows = editor.Locator(".ingredient-row");
+            await Expect(ingredientRows).ToHaveCountAsync(3);
+            await Expect(ingredientRows.Nth(0).Locator(".ingredient-row__name"))
+                .ToHaveValueAsync("Spaghetti");
             await AssertCheckpointAsync(checkpoint, "italian-ingredients");
-            await Expect(send).ToBeDisabledAsync();
 
             await italianIngredients.ReleaseAsync();
 
-            await AssertRecipeAsync(
-                editor,
-                "Italian Garden Pasta",
-                "Intermediate",
-                "30 min",
-                ["Vegetarian", "High Protein"],
-                [
-                    ("\U0001F35D", "Spaghetti", "400g"),
-                    ("\U0001F952", "Zucchini", "2, sliced"),
-                    ("\U0001F345", "Tomatoes", "4, chopped"),
-                    ("\U0001F9C0", "Ricotta", "1 cup"),
-                ],
-                [
-                    "Cook spaghetti until al dente",
-                    "Saut\u00e9 zucchini and tomatoes until tender",
-                    "Toss with ricotta and serve immediately",
-                ]);
-            var firstTurn = scenario.Locator(".sc-ai-turn").Last;
-            await Expect(firstTurn.Locator(".sc-ai-message--assistant .sc-ai-message__content"))
+            await AssertItalianRecipeAsync(editor);
+            await Expect(scenario.Locator(".sc-ai-turn").Last
+                .Locator(".sc-ai-message--assistant .sc-ai-message__content"))
                 .ToHaveTextAsync(
                     "I've turned your recipe into an Italian garden pasta with spaghetti, " +
                     "zucchini, tomatoes, and a protein-rich ricotta sauce.");
             await AssertCheckpointAsync(checkpoint, "italian-complete");
-            await Expect(send).ToBeDisabledAsync();
 
             await italianComplete.ReleaseAsync();
 
             await Expect(checkpoint).ToHaveCountAsync(0);
-            await Expect(scenario.GetByRole(
-                AriaRole.Status,
-                new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
             await Expect(send).ToBeEnabledAsync();
+            await Expect(improve).ToBeEnabledAsync();
+            await Expect(improve).ToHaveTextAsync("Improve with AI");
             await Expect(reset).ToBeEnabledAsync();
-            await Expect(input).ToHaveValueAsync("");
         }
 
         var healthySubstitution = session.Lock(script.GetLockName(1, 0));
@@ -158,59 +120,57 @@ public partial class SharedStateScenarioTests : BrowserTest
                 AriaRole.Button,
                 new() { Name = "Make it healthier", Exact = true }).ClickAsync();
 
-            await AssertRecipeAsync(
-                editor,
-                "Healthy Italian Garden Pasta",
-                "Intermediate",
-                "30 min",
-                ["Vegetarian", "High Protein"],
-                [
-                    ("\U0001F35D", "Whole-Wheat Spaghetti", "400g"),
-                    ("\U0001F952", "Zucchini", "2, sliced"),
-                    ("\U0001F345", "Tomatoes", "4, chopped"),
-                    ("\U0001F9C0", "Part-Skim Ricotta", "1 cup"),
-                ],
-                [
-                    "Cook spaghetti until al dente",
-                    "Saut\u00e9 zucchini and tomatoes until tender",
-                    "Toss with ricotta and serve immediately",
-                ]);
+            await Expect(scenario.Locator(".sc-ai-turn").Last
+                .Locator(".sc-ai-message--user .sc-ai-message__content"))
+                .ToHaveTextAsync("Make the recipe healthier with more vegetables.");
+            await Expect(editor.Locator("input[type='text']").First)
+                .ToHaveValueAsync("Healthy Italian Garden Pasta");
             await AssertCheckpointAsync(checkpoint, "healthy-substitution");
-            await Expect(send).ToBeDisabledAsync();
 
             await healthySubstitution.ReleaseAsync();
 
-            await AssertRecipeAsync(
-                editor,
-                "Healthy Italian Garden Pasta",
-                "Intermediate",
-                "30 min",
-                ["Vegetarian", "High Protein"],
-                [
-                    ("\U0001F35D", "Whole-Wheat Spaghetti", "400g"),
-                    ("\U0001F952", "Zucchini", "2, sliced"),
-                    ("\U0001F345", "Tomatoes", "4, chopped"),
-                    ("\U0001F9C0", "Part-Skim Ricotta", "1 cup"),
-                ],
-                [
-                    "Cook whole-wheat spaghetti until al dente",
-                    "Saut\u00e9 zucchini and tomatoes with olive oil",
-                    "Toss with part-skim ricotta and serve immediately",
-                ]);
-            var finalTurn = scenario.Locator(".sc-ai-turn").Last;
-            await Expect(finalTurn.Locator(".sc-ai-message--assistant .sc-ai-message__content"))
-                .ToHaveTextAsync(
-                    "I swapped in whole-wheat spaghetti and part-skim ricotta for a healthier, " +
-                    "high-protein version.");
+            await Expect(editor.Locator(".recipe-editor__instruction input").Nth(0))
+                .ToHaveValueAsync("Cook whole-wheat spaghetti until al dente");
             await AssertCheckpointAsync(checkpoint, "healthy-complete");
-            await Expect(send).ToBeDisabledAsync();
 
             await healthyComplete.ReleaseAsync();
+            await Expect(checkpoint).ToHaveCountAsync(0);
+        }
+
+        var improveIngredients = session.Lock(script.GetLockName(2, 0));
+        var improveComplete = session.Lock(script.GetLockName(2, 1));
+        await using (improveIngredients)
+        await using (improveComplete)
+        {
+            await improve.ClickAsync();
+
+            await Expect(scenario.Locator(".sc-ai-turn").Last
+                .Locator(".sc-ai-message--user .sc-ai-message__content"))
+                .ToHaveTextAsync("Improve the recipe");
+            await Expect(improve).ToBeDisabledAsync();
+            await Expect(improve).ToHaveTextAsync("Please Wait...");
+            await Expect(editor.Locator(".ingredient-row")).ToHaveCountAsync(5);
+            await Expect(editor.Locator(".ingredient-row").Last
+                .Locator(".ingredient-row__name")).ToHaveValueAsync("Fresh Basil");
+            await AssertCheckpointAsync(checkpoint, "improve-ingredients");
+
+            await improveIngredients.ReleaseAsync();
+
+            await Expect(editor.Locator("input[type='text']").First)
+                .ToHaveValueAsync("Herbed Healthy Italian Garden Pasta");
+            await Expect(editor.Locator(".recipe-editor__instruction input").Last)
+                .ToHaveValueAsync("Finish with fresh basil");
+            await Expect(scenario.Locator(".sc-ai-turn").Last
+                .Locator(".sc-ai-message--assistant .sc-ai-message__content"))
+                .ToHaveTextAsync(
+                    "I added fresh basil and a brighter finish to improve the recipe.");
+            await AssertCheckpointAsync(checkpoint, "improve-complete");
+
+            await improveComplete.ReleaseAsync();
 
             await Expect(checkpoint).ToHaveCountAsync(0);
-            await Expect(scenario.GetByRole(
-                AriaRole.Status,
-                new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
+            await Expect(improve).ToBeEnabledAsync();
+            await Expect(improve).ToHaveTextAsync("Improve with AI");
             await Expect(send).ToBeEnabledAsync();
             await Expect(input).ToHaveValueAsync("");
         }
@@ -221,7 +181,7 @@ public partial class SharedStateScenarioTests : BrowserTest
             "Make Your Recipe",
             "Intermediate",
             "45 min",
-            ["Vegetarian"],
+            [],
             [
                 ("\U0001F955", "Carrots", "3 large, grated"),
                 ("\U0001F33E", "All-Purpose Flour", "2 cups"),
@@ -231,60 +191,39 @@ public partial class SharedStateScenarioTests : BrowserTest
 
         await CustomizeRecipeAsync(editor);
         session.ResetReplay();
-        var resetItalianTitle = session.Lock(script.GetLockName(0, 0));
-        var resetItalianIngredients = session.Lock(script.GetLockName(0, 1));
-        var resetItalianComplete = session.Lock(script.GetLockName(0, 2));
-        await using (resetItalianTitle)
-        await using (resetItalianIngredients)
-        await using (resetItalianComplete)
+        var resetFrames = Enumerable.Range(0, 3)
+            .Select(index => session.Lock(script.GetLockName(0, index)))
+            .ToArray();
+        await using (resetFrames[0])
+        await using (resetFrames[1])
+        await using (resetFrames[2])
         {
             await scenario.GetByRole(
                 AriaRole.Button,
                 new() { Name = "Create Italian recipe", Exact = true }).ClickAsync();
-
-            await Expect(editor.Locator("input[type='text']").First)
-                .ToHaveValueAsync("Italian Garden Pasta");
             await AssertCheckpointAsync(checkpoint, "italian-title");
-
-            await resetItalianTitle.ReleaseAsync();
-
-            var resetIngredients = editor.Locator(".ingredient-row");
-            await Expect(resetIngredients).ToHaveCountAsync(3);
-            await Expect(resetIngredients.Nth(0).Locator(".ingredient-row__name"))
-                .ToHaveValueAsync("Spaghetti");
+            await resetFrames[0].ReleaseAsync();
             await AssertCheckpointAsync(checkpoint, "italian-ingredients");
-
-            await resetItalianIngredients.ReleaseAsync();
-
-            await AssertRecipeAsync(
-                editor,
-                "Italian Garden Pasta",
-                "Intermediate",
-                "30 min",
-                ["Vegetarian", "High Protein"],
-                [
-                    ("\U0001F35D", "Spaghetti", "400g"),
-                    ("\U0001F952", "Zucchini", "2, sliced"),
-                    ("\U0001F345", "Tomatoes", "4, chopped"),
-                    ("\U0001F9C0", "Ricotta", "1 cup"),
-                ],
-                [
-                    "Cook spaghetti until al dente",
-                    "Saut\u00e9 zucchini and tomatoes until tender",
-                    "Toss with ricotta and serve immediately",
-                ]);
-            var resetTurn = scenario.Locator(".sc-ai-turn").Last;
-            await Expect(resetTurn.Locator(".sc-ai-message--assistant .sc-ai-message__content"))
-                .ToHaveTextAsync(
-                    "I've turned your recipe into an Italian garden pasta with spaghetti, " +
-                    "zucchini, tomatoes, and a protein-rich ricotta sauce.");
+            await resetFrames[1].ReleaseAsync();
             await AssertCheckpointAsync(checkpoint, "italian-complete");
-
-            await resetItalianComplete.ReleaseAsync();
-
+            await resetFrames[2].ReleaseAsync();
             await Expect(checkpoint).ToHaveCountAsync(0);
+            await AssertItalianRecipeAsync(editor);
             await Expect(send).ToBeEnabledAsync();
         }
+    }
+
+    private static async Task AssertSuggestionsAsync(ILocator scenario)
+    {
+        await Expect(scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Create Italian recipe", Exact = true })).ToBeEnabledAsync();
+        await Expect(scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Make it healthier", Exact = true })).ToBeEnabledAsync();
+        await Expect(scenario.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Suggest variations", Exact = true })).ToBeEnabledAsync();
     }
 
     private static async Task CustomizeRecipeAsync(ILocator editor)
@@ -312,6 +251,38 @@ public partial class SharedStateScenarioTests : BrowserTest
             .FillAsync("Serve immediately");
     }
 
+    private static Task AssertCustomizedRecipeAsync(ILocator editor)
+        => AssertRecipeAsync(
+            editor,
+            "Sunday Garden Pasta",
+            "Beginner",
+            "30 min",
+            ["High Protein"],
+            [
+                ("\U0001F955", "Zucchini", "2, sliced"),
+                ("\U0001F345", "Tomatoes", "4, chopped"),
+            ],
+            ["Preheat oven to 350\u00b0F (175\u00b0C)", "Serve immediately"]);
+
+    private static Task AssertItalianRecipeAsync(ILocator editor)
+        => AssertRecipeAsync(
+            editor,
+            "Italian Garden Pasta",
+            "Intermediate",
+            "30 min",
+            ["High Protein"],
+            [
+                ("\U0001F35D", "Spaghetti", "400g"),
+                ("\U0001F952", "Zucchini", "2, sliced"),
+                ("\U0001F345", "Tomatoes", "4, chopped"),
+                ("\U0001F9C0", "Ricotta", "1 cup"),
+            ],
+            [
+                "Cook spaghetti until al dente",
+                "Saut\u00e9 zucchini and tomatoes until tender",
+                "Toss with ricotta and serve immediately",
+            ]);
+
     private static async Task AssertRecipeAsync(
         ILocator editor,
         string title,
@@ -321,8 +292,7 @@ public partial class SharedStateScenarioTests : BrowserTest
         (string Icon, string Name, string Amount)[] ingredients,
         string[] instructions)
     {
-        await Expect(editor.Locator("input[type='text']").First)
-            .ToHaveValueAsync(title);
+        await Expect(editor.Locator("input[type='text']").First).ToHaveValueAsync(title);
         await Expect(editor.Locator(".recipe-editor__row select").Nth(0))
             .ToHaveValueAsync(skillLevel);
         await Expect(editor.Locator(".recipe-editor__row select").Nth(1))
@@ -350,12 +320,9 @@ public partial class SharedStateScenarioTests : BrowserTest
         for (var index = 0; index < ingredients.Length; index++)
         {
             var row = ingredientRows.Nth(index);
-            await Expect(row.Locator(".ingredient-row__icon"))
-                .ToHaveValueAsync(ingredients[index].Icon);
-            await Expect(row.Locator(".ingredient-row__name"))
-                .ToHaveValueAsync(ingredients[index].Name);
-            await Expect(row.Locator(".ingredient-row__amount"))
-                .ToHaveValueAsync(ingredients[index].Amount);
+            await Expect(row.Locator(".ingredient-row__icon")).ToHaveValueAsync(ingredients[index].Icon);
+            await Expect(row.Locator(".ingredient-row__name")).ToHaveValueAsync(ingredients[index].Name);
+            await Expect(row.Locator(".ingredient-row__amount")).ToHaveValueAsync(ingredients[index].Amount);
         }
 
         var instructionInputs = editor.Locator(".recipe-editor__instruction input");

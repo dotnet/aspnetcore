@@ -43,6 +43,7 @@
 }
 
 .plan-step {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -70,7 +71,19 @@
     font-size: 0.9em;
 }
 
-/* Completed */
+.plan-step__content {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.plan-step__processing {
+    margin-top: 2px;
+    color: #4f46e5;
+    font-size: 0.78em;
+    font-weight: 600;
+}
+
 .plan-step--completed {
     background: color-mix(in srgb, #22c55e 5%, transparent);
 }
@@ -80,12 +93,11 @@
         color: white;
     }
 
-/* Executing (current) */
-.plan-step--executing {
+.plan-step--current {
     background: color-mix(in srgb, #6366f1 5%, transparent);
 }
 
-    .plan-step--executing .plan-step__icon {
+    .plan-step--current .plan-step__icon {
         background: linear-gradient(135deg, #6366f1, #8b5cf6);
         color: white;
         animation: spin 1s linear infinite;
@@ -101,7 +113,6 @@
     }
 }
 
-/* Pending */
 .plan-step--pending {
     opacity: 0.6;
 }

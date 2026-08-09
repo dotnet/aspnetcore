@@ -3,7 +3,7 @@
 
 namespace AIApp.Components.Scenarios.PredictiveStateUpdates;
 
-public sealed class DocumentState
+public sealed record DocumentState
 {
     public string Document { get; set; } = "";
 }

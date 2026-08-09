@@ -570,6 +570,19 @@ public class ReplayInfrastructureTests
             new TestSessionContext { Id = sessionId });
         using var agent = new UIAgent<PlanState>(client, options =>
         {
+            options.ChatOptions = new ChatOptions
+            {
+                Tools =
+                [
+                    AIFunctionFactory.Create(
+                        () => "Plan created.",
+                        name: "create_plan"),
+                    AIFunctionFactory.Create(
+                        () => "Plan step updated.",
+                        name: "update_plan_step"),
+                ],
+            };
+
             options.StateMapper = context =>
             {
                 if (context.Update.RawRepresentation is not JsonElement snapshot)
@@ -592,7 +605,7 @@ public class ReplayInfrastructureTests
         using var registration = agent.State.OnChanged(() => states.Add(agent.State.Value));
         var context = new AgentContext(agent);
 
-        await context.SendMessageAsync("Create a plan for learning to bake bread");
+        await context.SendMessageAsync("Please build a plan to go to mars in 5 steps.");
 
         Assert.HasCount(6, states);
         for (var stateIndex = 0; stateIndex < states.Count; stateIndex++)
@@ -604,10 +617,19 @@ public class ReplayInfrastructureTests
         }
 
         CollectionAssert.AreEqual(
-            new[] { "Gather ingredients", "Mix dough", "Let it rise", "Shape loaves", "Bake" },
+            new[]
+            {
+                "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                "Select and train astronaut crew for the mission.",
+                "Establish communication systems and infrastructure for Mars exploration.",
+                "Launch the spacecraft and execute the mission to Mars.",
+            },
             states[^1].Steps.Select(step => step.Description).ToArray());
         Assert.IsTrue(states[^1].Steps.All(step => step.Status == "completed"));
-        Assert.AreEqual(0, context.Turns.Single().ResponseBlocks.Count);
+        Assert.AreEqual(
+            "All five steps in the Mars mission plan are complete.",
+            context.Turns.Single().ResponseBlocks.OfType<RichContentBlock>().Single().RawText);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(

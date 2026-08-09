@@ -2,7 +2,7 @@
     <div class="plan-progress-card__header">
         <h3>Task Progress</h3>
         <span class="plan-progress-card__count">
-            @CompletedCount / @TotalCount
+            @CompletedCount/@TotalCount Complete
         </span>
     </div>
 
@@ -16,9 +16,16 @@
         {
             var step = Plan.Steps[i];
             var stepClass = GetStepClass(step, i);
-            <li class="plan-step @stepClass">
+            var state = GetStepState(step, i);
+            <li class="plan-step @stepClass" data-step-state="@state">
                 <span class="plan-step__icon">@GetStepIcon(step, i)</span>
-                <span class="plan-step__description">@step.Description</span>
+                <span class="plan-step__content">
+                    <span class="plan-step__description">@step.Description</span>
+                    @if (state == "current")
+                    {
+                        <span class="plan-step__processing">Processing...</span>
+                    }
+                </span>
             </li>
         }
     </ul>
@@ -50,16 +57,19 @@
     }
 
     private string GetStepClass(PlanStep step, int index)
+        => $"plan-step--{GetStepState(step, index)}";
+
+    private string GetStepState(PlanStep step, int index)
     {
         if (step.Status == "completed")
         {
-            return "plan-step--completed";
+            return "completed";
         }
         if (index == CurrentStepIndex)
         {
-            return "plan-step--executing";
+            return "current";
         }
-        return "plan-step--pending";
+        return "pending";
     }
 
     private string GetStepIcon(PlanStep step, int index)

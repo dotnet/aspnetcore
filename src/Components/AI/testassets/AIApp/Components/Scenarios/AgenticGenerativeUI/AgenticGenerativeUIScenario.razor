@@ -7,13 +7,33 @@
         <div class="sc-ai-root dojo-chat-panel">
             <div class="plan-content">
                 <MessageList>
-                    <DojoWelcome />
+                    <ChildContent>
+                        <DojoWelcome />
+                    </ChildContent>
+                    <Footer Context="context">
+                        @if (_agent.State.Value.Steps.Count > 0)
+                        {
+                            var isRunning = IsRunning(context.Status);
+                            <div class="plan-activity"
+                                 data-task-status="@(isRunning ? "running" : "done")">
+                                <div class="plan-activity__header">
+                                    <span class="plan-activity__title">create_plan</span>
+                                    <span class="plan-activity__status"
+                                          role="status">@(isRunning ? "Running" : "Done")</span>
+                                </div>
+                                <PlanProgressCard Plan="_agent.State.Value" />
+                            </div>
+                        }
+                        else if (IsRunning(context.Status))
+                        {
+                            <div class="sc-ai-typing" role="status" aria-label="Agent is typing">
+                                <span class="sc-ai-typing__dot"></span>
+                                <span class="sc-ai-typing__dot"></span>
+                                <span class="sc-ai-typing__dot"></span>
+                            </div>
+                        }
+                    </Footer>
                 </MessageList>
-
-                @if (_agent.State.Value.Steps.Count > 0)
-                {
-                    <PlanProgressCard Plan="_agent.State.Value" />
-                }
             </div>
             <SuggestionList Suggestions="_suggestions" />
             <MessageInput Placeholder="Type a message..." />
@@ -29,8 +49,8 @@
 
     private static readonly Suggestion[] _suggestions =
     [
-        new() { Label = "Simple plan", Prompt = "Create a plan for learning to bake bread" },
-        new() { Label = "Complex plan", Prompt = "Create a plan for a trip to Mars" },
+        new() { Label = "Simple plan", Prompt = "Please build a plan to go to mars in 5 steps." },
+        new() { Label = "Complex plan", Prompt = "Please build a plan to go to make pizza in 10 steps." },
     ];
 
     protected override void OnInitialized()
@@ -42,6 +62,21 @@
     {
         return new UIAgent<PlanState>(ChatClient, options =>
         {
+            options.ChatOptions = new ChatOptions
+            {
+                Tools =
+                [
+                    AIFunctionFactory.Create(
+                        CreatePlan,
+                        name: "create_plan",
+                        description: "Create a plan with multiple steps."),
+                    AIFunctionFactory.Create(
+                        UpdatePlanStep,
+                        name: "update_plan_step",
+                        description: "Update a step in the plan."),
+                ],
+            };
+
             options.StateMapper = context =>
             {
                 if (context.Update.RawRepresentation is not JsonElement snapshot)
@@ -61,6 +96,21 @@
         });
     }
 
+    private static PlanState CreatePlan(List<string> steps)
+        => new()
+        {
+            Steps =
+            [
+                .. steps.Select(description => new PlanStep { Description = description }),
+            ],
+        };
+
+    private static string UpdatePlanStep(
+        int index,
+        string? description = null,
+        string? status = null)
+        => $"Updated plan step {index}: {description ?? "unchanged"} ({status ?? "unchanged"}).";
+
     private void Reset()
     {
         SetAgent(CreateAgent());
@@ -78,6 +128,9 @@
     {
         _ = InvokeAsync(StateHasChanged);
     }
+
+    private static bool IsRunning(ConversationStatus status)
+        => status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
 
     public void Dispose()
     {

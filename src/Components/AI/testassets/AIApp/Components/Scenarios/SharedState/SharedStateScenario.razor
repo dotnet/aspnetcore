@@ -4,22 +4,23 @@
 @implements IDisposable
 
 <div class="dojo-scenario shared-state" data-dojo-scenario="shared-state">
-    <div class="shared-state-layout">
-        <div class="recipe-panel">
-            <RecipeEditor Recipe="_agent.State.Value.Recipe"
-                          OnChanged="HandleRecipeChanged" />
-        </div>
+    <AgentBoundary @key="_agent" Agent="_agent">
+        <div class="shared-state-layout">
+            <div class="recipe-panel">
+                <RecipeEditor Recipe="_agent.State.Value.Recipe"
+                              RecipeChanged="HandleRecipeChanged"
+                              ChangedSections="_changedSections" />
+            </div>
 
-        <div class="shared-state-chat">
-            <header class="dojo-scenario__header">
-                <h2>AI Recipe Assistant</h2>
-                <button class="dojo-reset-button"
-                        aria-label="Reset"
-                        disabled="@ReplayCheckpoint.IsReplayActive"
-                        @onclick="Reset">&times;</button>
-            </header>
+            <div class="shared-state-chat">
+                <header class="dojo-scenario__header">
+                    <h2>AI Recipe Assistant</h2>
+                    <button class="dojo-reset-button"
+                            aria-label="Reset"
+                            disabled="@ReplayCheckpoint.IsReplayActive"
+                            @onclick="Reset">&times;</button>
+                </header>
 
-            <AgentBoundary @key="_agent" Agent="_agent">
                 <div class="sc-ai-root dojo-chat-panel">
                     <MessageList>
                         <DojoWelcome />
@@ -27,9 +28,9 @@
                     <SuggestionList Suggestions="_suggestions" />
                     <MessageInput Placeholder="Type a message..." />
                 </div>
-            </AgentBoundary>
+            </div>
         </div>
-    </div>
+    </AgentBoundary>
 </div>
 
 @code {
@@ -37,12 +38,15 @@
 
     private UIAgent<RecipeState> _agent = default!;
     private IDisposable? _stateChangedRegistration;
+    private Recipe _lastRecipe = default!;
+    private bool _isApplyingLocalState;
+    private readonly HashSet<string> _changedSections = new(StringComparer.Ordinal);
 
     private static readonly Suggestion[] _suggestions =
     [
-        new() { Label = "Create Italian recipe", Prompt = "Turn this into an Italian pasta recipe" },
-        new() { Label = "Make it healthier", Prompt = "Make this recipe healthier with substitutions" },
-        new() { Label = "Suggest variations", Prompt = "Suggest three creative variations" },
+        new() { Label = "Create Italian recipe", Prompt = "Create a delicious Italian pasta recipe." },
+        new() { Label = "Make it healthier", Prompt = "Make the recipe healthier with more vegetables." },
+        new() { Label = "Suggest variations", Prompt = "Suggest some creative variations of this recipe." },
     ];
 
     protected override void OnInitialized()
@@ -58,6 +62,13 @@
             options.ChatOptions = new ChatOptions
             {
                 RawRepresentationFactory = _ => _agent.State.Value,
+                Tools =
+                [
+                    AIFunctionFactory.Create(
+                        GenerateRecipe,
+                        name: "generate_recipe",
+                        description: "Generate or update the shared recipe."),
+                ],
             };
 
             options.StateMapper = context =>
@@ -79,9 +90,20 @@
         }, initialState);
     }
 
-    private void HandleRecipeChanged()
+    private static RecipeState GenerateRecipe(Recipe recipe)
+        => new() { Recipe = recipe };
+
+    private void HandleRecipeChanged(Recipe recipe)
     {
-        StateHasChanged();
+        _isApplyingLocalState = true;
+        try
+        {
+            _agent.State.Value = new RecipeState { Recipe = recipe };
+        }
+        finally
+        {
+            _isApplyingLocalState = false;
+        }
     }
 
     private void Reset()
@@ -100,17 +122,59 @@
         _stateChangedRegistration?.Dispose();
         _agent?.Dispose();
         _agent = agent;
+        _lastRecipe = _agent.State.Value.Recipe;
+        _changedSections.Clear();
         _stateChangedRegistration = _agent.State.OnChanged(OnStateChanged);
     }
 
     private void OnStateChanged()
     {
+        var recipe = _agent.State.Value.Recipe;
+        _changedSections.Clear();
+        if (!_isApplyingLocalState)
+        {
+            AddChangedSections(_lastRecipe, recipe);
+        }
+
+        _lastRecipe = recipe;
         _ = InvokeAsync(StateHasChanged);
     }
 
     private void OnReplayCheckpointChanged()
     {
+        if (!ReplayCheckpoint.IsReplayActive)
+        {
+            _changedSections.Clear();
+        }
+
         _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void AddChangedSections(Recipe previous, Recipe current)
+    {
+        if (previous.Title != current.Title)
+        {
+            _changedSections.Add("title");
+        }
+        if (previous.SkillLevel != current.SkillLevel ||
+            previous.CookingTime != current.CookingTime)
+        {
+            _changedSections.Add("details");
+        }
+        if (!previous.SpecialPreferences.SequenceEqual(
+                current.SpecialPreferences,
+                StringComparer.Ordinal))
+        {
+            _changedSections.Add("preferences");
+        }
+        if (!previous.Ingredients.SequenceEqual(current.Ingredients))
+        {
+            _changedSections.Add("ingredients");
+        }
+        if (!previous.Instructions.SequenceEqual(current.Instructions, StringComparer.Ordinal))
+        {
+            _changedSections.Add("instructions");
+        }
     }
 
     private static RecipeState CreateDefaultRecipe()
@@ -122,7 +186,7 @@
                 Title = "Make Your Recipe",
                 SkillLevel = "Intermediate",
                 CookingTime = "45 min",
-                SpecialPreferences = new() { "Vegetarian" },
+                SpecialPreferences = new(),
                 Ingredients = new()
                 {
                     new Ingredient { Icon = "\U0001F955", Name = "Carrots", Amount = "3 large, grated" },

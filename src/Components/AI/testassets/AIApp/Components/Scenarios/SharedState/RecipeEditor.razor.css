@@ -7,8 +7,28 @@
 }
 
 .recipe-editor__section {
+    position: relative;
     margin-bottom: 20px;
+    border-radius: 8px;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
 }
+
+.recipe-editor__section--changed {
+    background: rgba(232, 121, 90, 0.1);
+    box-shadow: inset 3px 0 #e8795a;
+}
+
+    .recipe-editor__section--changed::after {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #e8795a;
+        box-shadow: 0 0 0 4px rgba(232, 121, 90, 0.2);
+        content: "";
+    }
 
     .recipe-editor__section > label:first-child {
         display: block;
@@ -142,4 +162,9 @@
 
 .recipe-editor__improve-btn:hover {
     background: #d6674a;
+}
+
+.recipe-editor__improve-btn:disabled {
+    cursor: wait;
+    opacity: 0.7;
 }

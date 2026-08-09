@@ -14,15 +14,21 @@ namespace AIApp.E2E.Tests.Tests;
 [UITest]
 public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
 {
-    private const string PirateTitle = "The Adventures of Captain Ember";
+    private const string InitialDocument =
+        "# Harbor Notes\n\nThe crew is preparing for a quiet voyage.";
     private const string PirateOpening =
-        "Captain Ember sailed the moonlit sea in search of the legendary Star Compass.";
-    private const string PirateEnding =
-        "When a storm scattered her crew, she followed a brave parrot's song through the fog " +
-        "and brought everyone safely home.";
+        "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.";
+    private const string PirateDocument =
+        "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star." +
+        "\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.";
+    private const string EditedPirateDocument =
+        PirateDocument + "\n\nThe map now points toward Mermaid Lagoon.";
+    private const string CourageDocument =
+        EditedPirateDocument +
+        "\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon.";
 
     [TestMethod]
-    public async Task DocumentState_StreamsIntoPreviewAndWaitsForConfirmation()
+    public async Task DocumentEditor_StreamsDiffAndSupportsAcceptAndReject()
     {
         var script = ReplayCheckpointScript.Load("Dojo_PredictiveStateUpdates.recording.json");
         var server = await StartServerAsync<App>(TestRoot.Servers, options =>
@@ -39,21 +45,191 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
         await Expect(demo).ToHaveAttributeAsync("data-interactive", "true");
         var scenario = demo.Locator("[data-dojo-scenario='predictive-state-updates']");
         var panel = scenario.Locator(".document-panel");
-        var preview = panel.Locator(".document-preview");
-        var content = preview.Locator(".document-preview__content");
+        var editor = panel.GetByRole(
+            AriaRole.Textbox,
+            new() { Name = "Document editor", Exact = true });
         var checkpoint = demo.Locator(".replay-checkpoint-status");
-        var input = scenario.Locator(".sc-ai-input__textarea");
         var send = scenario.Locator(".sc-ai-input__send");
         var reset = scenario.GetByRole(
             AriaRole.Button,
             new() { Name = "Reset", Exact = true });
 
-        await Expect(scenario.Locator(".predictive-chat .dojo-scenario__header h2"))
-            .ToHaveTextAsync("AI Document Editor");
-        await Expect(scenario.Locator(".dojo-reset-button")).ToHaveTextAsync("\u00d7");
-        await Expect(preview).ToHaveClassAsync("document-preview document-preview--empty");
-        await Expect(preview.Locator(".document-preview__placeholder"))
-            .ToHaveTextAsync("Write whatever you want here in Markdown format...");
+        await Expect(editor).ToHaveClassAsync("document-editor__input");
+        await Expect(editor).ToHaveAttributeAsync(
+            "placeholder",
+            "Write whatever you want here in Markdown format...");
+        await editor.FillAsync(InitialDocument);
+        await Expect(editor).ToHaveValueAsync(InitialDocument);
+        await AssertSuggestionsAsync(scenario);
+
+        var pirateTitle = session.Lock(script.GetLockName(0, 0));
+        var pirateOpening = session.Lock(script.GetLockName(0, 1));
+        var pirateCandidateComplete = session.Lock(script.GetLockName(0, 2));
+        var pirateConfirmation = session.Lock(script.GetLockName(0, 3));
+        var pirateSummary = session.Lock(script.GetLockName(1, 0));
+        await using (pirateTitle)
+        await using (pirateOpening)
+        await using (pirateCandidateComplete)
+        await using (pirateConfirmation)
+        await using (pirateSummary)
+        {
+            await scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Write a pirate story", Exact = true }).ClickAsync();
+
+            await AssertReadOnlyDiffAsync(editor, contains: "Candy Beard's Voyage");
+            await Expect(editor).Not.ToContainTextAsync("Sugar Star");
+            await Expect(editor).Not.ToContainTextAsync("shared their courage");
+            await Expect(scenario.Locator(".confirm-changes")).ToHaveCountAsync(0);
+            await Expect(send).ToBeDisabledAsync();
+            await Expect(reset).ToBeDisabledAsync();
+            await reset.EvaluateAsync("button => button.click()");
+            await AssertCheckpointAsync(checkpoint, "pirate-title");
+
+            await pirateTitle.ReleaseAsync();
+
+            await AssertReadOnlyDiffAsync(editor, contains: PirateOpening);
+            await Expect(editor).Not.ToContainTextAsync("shared their courage");
+            await Expect(scenario.Locator(".confirm-changes")).ToHaveCountAsync(0);
+            await AssertCheckpointAsync(checkpoint, "pirate-opening");
+
+            await pirateOpening.ReleaseAsync();
+
+            await AssertReadOnlyDiffAsync(editor, contains: PirateDocument);
+            await Expect(scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Confirm", Exact = true })).ToHaveCountAsync(0);
+            await AssertCheckpointAsync(checkpoint, "pirate-candidate-complete");
+
+            await pirateCandidateComplete.ReleaseAsync();
+
+            var dialog = scenario.Locator(".confirm-changes").Last;
+            await Expect(dialog.Locator(".confirm-changes__message"))
+                .ToHaveTextAsync("Do you want to accept the changes?");
+            await AssertCheckpointAsync(checkpoint, "pirate-confirmation");
+
+            await pirateConfirmation.ReleaseAsync();
+            await dialog.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Confirm", Exact = true }).ClickAsync();
+
+            await Expect(editor).ToHaveClassAsync("document-editor__surface");
+            await Expect(editor).ToContainTextAsync(PirateDocument);
+            await Expect(editor.Locator("em")).ToHaveCountAsync(0);
+            await Expect(editor.Locator("s")).ToHaveCountAsync(0);
+            await Expect(dialog.Locator(".confirm-changes__status"))
+                .ToHaveTextAsync("\u2713 Accepted");
+            await Expect(scenario.Locator(".sc-ai-turn").Last
+                .Locator(".sc-ai-message--assistant .sc-ai-message__content"))
+                .ToHaveTextAsync("Candy Beard's voyage is ready.");
+            await AssertCheckpointAsync(checkpoint, "pirate-summary-final");
+
+            await pirateSummary.ReleaseAsync();
+
+            await Expect(editor).ToHaveClassAsync("document-editor__input");
+            await Expect(editor).ToHaveValueAsync(PirateDocument);
+            await Expect(send).ToBeEnabledAsync();
+            await Expect(reset).ToBeEnabledAsync();
+            await Expect(checkpoint).ToHaveCountAsync(0);
+        }
+
+        await editor.FillAsync(EditedPirateDocument);
+        await Expect(editor).ToHaveValueAsync(EditedPirateDocument);
+
+        var courageDraft = session.Lock(script.GetLockName(2, 0));
+        var courageCandidateComplete = session.Lock(script.GetLockName(2, 1));
+        var courageConfirmation = session.Lock(script.GetLockName(2, 2));
+        var courageSummary = session.Lock(script.GetLockName(3, 0));
+        await using (courageDraft)
+        await using (courageCandidateComplete)
+        await using (courageConfirmation)
+        await using (courageSummary)
+        {
+            await scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Add character", Exact = true }).ClickAsync();
+
+            await AssertReadOnlyDiffAsync(editor, contains: "Courage joined the crew");
+            await Expect(editor).Not.ToContainTextAsync("offered to guide");
+            await AssertCheckpointAsync(checkpoint, "courage-draft");
+
+            await courageDraft.ReleaseAsync();
+
+            await AssertReadOnlyDiffAsync(editor, contains: CourageDocument);
+            await Expect(scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Reject", Exact = true })).ToHaveCountAsync(0);
+            await AssertCheckpointAsync(checkpoint, "courage-candidate-complete");
+
+            await courageCandidateComplete.ReleaseAsync();
+
+            var dialog = scenario.Locator(".confirm-changes").Last;
+            await AssertCheckpointAsync(checkpoint, "courage-confirmation");
+
+            await courageConfirmation.ReleaseAsync();
+            await dialog.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Reject", Exact = true }).ClickAsync();
+
+            await Expect(editor).ToHaveClassAsync("document-editor__surface");
+            await Expect(editor).ToContainTextAsync(EditedPirateDocument);
+            await Expect(editor).Not.ToContainTextAsync("Courage joined the crew");
+            await Expect(dialog.Locator(".confirm-changes__status"))
+                .ToHaveTextAsync("\u2717 Rejected");
+            await Expect(scenario.Locator(".sc-ai-turn").Last
+                .Locator(".sc-ai-message--assistant .sc-ai-message__content"))
+                .ToHaveTextAsync("I left the document unchanged.");
+            await AssertCheckpointAsync(checkpoint, "courage-summary-final");
+
+            await courageSummary.ReleaseAsync();
+
+            await Expect(editor).ToHaveClassAsync("document-editor__input");
+            await Expect(editor).ToHaveValueAsync(EditedPirateDocument);
+            await Expect(send).ToBeEnabledAsync();
+            await Expect(reset).ToBeEnabledAsync();
+            await Expect(checkpoint).ToHaveCountAsync(0);
+        }
+
+        await reset.ClickAsync();
+        await Expect(editor).ToHaveClassAsync("document-editor__input");
+        await Expect(editor).ToHaveValueAsync("");
+        await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(0);
+
+        await editor.FillAsync(InitialDocument);
+        session.ResetReplay();
+        var resetFrames = Enumerable.Range(0, 4)
+            .Select(index => session.Lock(script.GetLockName(0, index)))
+            .ToArray();
+        var resetSummary = session.Lock(script.GetLockName(1, 0));
+        await using (resetFrames[0])
+        await using (resetFrames[1])
+        await using (resetFrames[2])
+        await using (resetSummary)
+        {
+            await scenario.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Write a pirate story", Exact = true }).ClickAsync();
+            await AssertCheckpointAsync(checkpoint, "pirate-title");
+            await resetFrames[0].ReleaseAsync();
+            await AssertCheckpointAsync(checkpoint, "pirate-opening");
+            await resetFrames[1].ReleaseAsync();
+            await AssertCheckpointAsync(checkpoint, "pirate-candidate-complete");
+            await resetFrames[2].ReleaseAsync();
+            await AssertCheckpointAsync(checkpoint, "pirate-confirmation");
+            await resetFrames[3].ReleaseAsync();
+            await scenario.Locator(".confirm-changes").Last.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Confirm", Exact = true }).ClickAsync();
+            await AssertCheckpointAsync(checkpoint, "pirate-summary-final");
+            await resetSummary.ReleaseAsync();
+            await Expect(editor).ToHaveClassAsync("document-editor__input");
+            await Expect(editor).ToHaveValueAsync(PirateDocument);
+            await Expect(send).ToBeEnabledAsync();
+        }
+    }
+
+    private static async Task AssertSuggestionsAsync(ILocator scenario)
+    {
         await Expect(scenario.GetByRole(
             AriaRole.Button,
             new() { Name = "Write a pirate story", Exact = true })).ToBeEnabledAsync();
@@ -63,245 +239,15 @@ public partial class PredictiveStateUpdatesScenarioTests : BrowserTest
         await Expect(scenario.GetByRole(
             AriaRole.Button,
             new() { Name = "Add character", Exact = true })).ToBeEnabledAsync();
-        await Expect(input).ToHaveAttributeAsync("placeholder", "Type a message...");
-        await Expect(send).ToBeEnabledAsync();
-        await Expect(checkpoint).ToHaveCountAsync(0);
-
-        var titleFrame = session.Lock(script.GetLockName(0, 0));
-        var contentFrame = session.Lock(script.GetLockName(0, 1));
-        var confirmationFrame = session.Lock(script.GetLockName(0, 2));
-        var summaryFinal = session.Lock(script.GetLockName(1, 0));
-        await using (titleFrame)
-        await using (contentFrame)
-        await using (confirmationFrame)
-        await using (summaryFinal)
-        {
-            await scenario.GetByRole(
-                AriaRole.Button,
-                new() { Name = "Write a pirate story", Exact = true }).ClickAsync();
-
-            await AssertDocumentAsync(
-                panel,
-                preview,
-                content,
-                PirateTitle,
-                [],
-                expectedWordCount: 5,
-                isStreaming: true);
-            await Expect(scenario.Locator(".confirm-changes")).ToHaveCountAsync(0);
-            await Expect(send).ToBeDisabledAsync();
-            await AssertCheckpointAsync(checkpoint, "pirate-title");
-            await Expect(reset).ToBeDisabledAsync();
-            await reset.EvaluateAsync("button => button.click()");
-            await AssertDocumentAsync(
-                panel,
-                preview,
-                content,
-                PirateTitle,
-                [],
-                expectedWordCount: 5,
-                isStreaming: true);
-            await AssertCheckpointAsync(checkpoint, "pirate-title");
-
-            await titleFrame.ReleaseAsync();
-
-            await AssertDocumentAsync(
-                panel,
-                preview,
-                content,
-                PirateTitle,
-                [PirateOpening],
-                expectedWordCount: 18,
-                isStreaming: true);
-            await Expect(scenario.Locator(".confirm-changes")).ToHaveCountAsync(0);
-            await Expect(send).ToBeDisabledAsync();
-            await AssertCheckpointAsync(checkpoint, "pirate-content");
-
-            await contentFrame.ReleaseAsync();
-
-            await AssertDocumentAsync(
-                panel,
-                preview,
-                content,
-                PirateTitle,
-                [PirateOpening, PirateEnding],
-                expectedWordCount: 38,
-                isStreaming: true);
-            var dialog = scenario.Locator(".confirm-changes");
-            await Expect(dialog).ToHaveClassAsync("confirm-changes");
-            await Expect(dialog.Locator(".confirm-changes__header h3"))
-                .ToHaveTextAsync("Confirm Changes");
-            await Expect(dialog.Locator(".confirm-changes__message"))
-                .ToHaveTextAsync("Do you want to accept the changes?");
-            var reject = dialog.GetByRole(
-                AriaRole.Button,
-                new() { Name = "Reject", Exact = true });
-            await Expect(reject).ToHaveClassAsync(
-                "confirm-changes__btn confirm-changes__btn--reject");
-            await Expect(reject).ToBeEnabledAsync();
-            var confirm = dialog.GetByRole(
-                AriaRole.Button,
-                new() { Name = "Confirm", Exact = true });
-            await Expect(confirm).ToHaveClassAsync(
-                "confirm-changes__btn confirm-changes__btn--accept");
-            await Expect(confirm).ToBeEnabledAsync();
-            await Expect(send).ToBeDisabledAsync();
-            await AssertCheckpointAsync(checkpoint, "pirate-confirmation");
-
-            await confirmationFrame.ReleaseAsync();
-            await confirm.ClickAsync();
-
-            await AssertDocumentAsync(
-                panel,
-                preview,
-                content,
-                PirateTitle,
-                [PirateOpening, PirateEnding],
-                expectedWordCount: 38,
-                isStreaming: false);
-            await Expect(dialog).ToHaveClassAsync(
-                "confirm-changes confirm-changes--responded");
-            await Expect(dialog.Locator(".confirm-changes__status"))
-                .ToHaveClassAsync(
-                    "confirm-changes__status confirm-changes__status--accepted");
-            await Expect(dialog.Locator(".confirm-changes__status"))
-                .ToHaveTextAsync("\u2713 Accepted");
-            await Expect(dialog.GetByRole(AriaRole.Button)).ToHaveCountAsync(0);
-            var assistant = scenario
-                .Locator(".sc-ai-turn")
-                .Last
-                .Locator(".sc-ai-message--assistant .sc-ai-message__content");
-            await Expect(assistant).ToHaveTextAsync(
-                "I wrote a short pirate adventure about Captain Ember finding her crew with " +
-                "courage and a parrot's song.");
-            await Expect(assistant).ToHaveClassAsync(
-                "sc-ai-message__content sc-ai-message__content--streaming");
-            await Expect(send).ToBeDisabledAsync();
-            await AssertCheckpointAsync(checkpoint, "pirate-summary-final");
-
-            await summaryFinal.ReleaseAsync();
-
-            await Expect(assistant).ToHaveTextAsync(
-                "I wrote a short pirate adventure about Captain Ember finding her crew with " +
-                "courage and a parrot's song.");
-            await Expect(assistant).ToHaveClassAsync("sc-ai-message__content");
-            await Expect(checkpoint).ToHaveCountAsync(0);
-            await Expect(scenario.GetByRole(
-                AriaRole.Status,
-                new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
-            await Expect(send).ToBeEnabledAsync();
-            await Expect(reset).ToBeEnabledAsync();
-            await Expect(input).ToHaveValueAsync("");
-        }
-
-        await reset.ClickAsync();
-        await Expect(preview).ToHaveClassAsync("document-preview document-preview--empty");
-        await Expect(preview.Locator(".document-preview__placeholder"))
-            .ToHaveTextAsync("Write whatever you want here in Markdown format...");
-        await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(0);
-
-        session.ResetReplay();
-        var resetTitleFrame = session.Lock(script.GetLockName(0, 0));
-        var resetContentFrame = session.Lock(script.GetLockName(0, 1));
-        var resetConfirmationFrame = session.Lock(script.GetLockName(0, 2));
-        var resetSummaryFinal = session.Lock(script.GetLockName(1, 0));
-        await using (resetTitleFrame)
-        await using (resetContentFrame)
-        await using (resetConfirmationFrame)
-        await using (resetSummaryFinal)
-        {
-            await scenario.GetByRole(
-                AriaRole.Button,
-                new() { Name = "Write a pirate story", Exact = true }).ClickAsync();
-
-            await AssertDocumentAsync(
-                panel,
-                preview,
-                content,
-                PirateTitle,
-                [],
-                expectedWordCount: 5,
-                isStreaming: true);
-            await AssertCheckpointAsync(checkpoint, "pirate-title");
-
-            await resetTitleFrame.ReleaseAsync();
-
-            await AssertDocumentAsync(
-                panel,
-                preview,
-                content,
-                PirateTitle,
-                [PirateOpening],
-                expectedWordCount: 18,
-                isStreaming: true);
-            await AssertCheckpointAsync(checkpoint, "pirate-content");
-
-            await resetContentFrame.ReleaseAsync();
-
-            await AssertDocumentAsync(
-                panel,
-                preview,
-                content,
-                PirateTitle,
-                [PirateOpening, PirateEnding],
-                expectedWordCount: 38,
-                isStreaming: true);
-            var resetDialog = scenario.Locator(".confirm-changes");
-            await Expect(resetDialog.Locator(".confirm-changes__message"))
-                .ToHaveTextAsync("Do you want to accept the changes?");
-            await AssertCheckpointAsync(checkpoint, "pirate-confirmation");
-
-            await resetConfirmationFrame.ReleaseAsync();
-            await resetDialog.GetByRole(
-                AriaRole.Button,
-                new() { Name = "Confirm", Exact = true }).ClickAsync();
-
-            var resetAssistant = scenario
-                .Locator(".sc-ai-turn")
-                .Last
-                .Locator(".sc-ai-message--assistant .sc-ai-message__content");
-            await Expect(resetAssistant).ToHaveTextAsync(
-                "I wrote a short pirate adventure about Captain Ember finding her crew with " +
-                "courage and a parrot's song.");
-            await AssertCheckpointAsync(checkpoint, "pirate-summary-final");
-
-            await resetSummaryFinal.ReleaseAsync();
-
-            await Expect(checkpoint).ToHaveCountAsync(0);
-            await Expect(send).ToBeEnabledAsync();
-        }
     }
 
-    private static async Task AssertDocumentAsync(
-        ILocator panel,
-        ILocator preview,
-        ILocator content,
-        string title,
-        string[] paragraphs,
-        int expectedWordCount,
-        bool isStreaming)
+    private static async Task AssertReadOnlyDiffAsync(ILocator editor, string contains)
     {
-        await Expect(panel).ToHaveClassAsync(
-            isStreaming
-                ? "document-panel document-panel--streaming"
-                : "document-panel ");
-        await Expect(preview).ToHaveClassAsync(
-            isStreaming
-                ? "document-preview document-preview--streaming"
-                : "document-preview ");
-        await Expect(content.Locator("h1")).ToHaveTextAsync(title);
-        var paragraphLocators = content.Locator("p");
-        await Expect(paragraphLocators).ToHaveCountAsync(paragraphs.Length);
-        for (var index = 0; index < paragraphs.Length; index++)
-        {
-            await Expect(paragraphLocators.Nth(index)).ToHaveTextAsync(paragraphs[index]);
-        }
-
-        var wordCount = await content.EvaluateAsync<int>(
-            "element => element.innerText.match(/\\S+/g)?.length ?? 0");
-        Assert.AreEqual(expectedWordCount, wordCount);
-        await Expect(preview.Locator(".document-preview__cursor"))
-            .ToHaveCountAsync(isStreaming ? 1 : 0);
+        await Expect(editor).ToHaveClassAsync("document-editor__surface");
+        await Expect(editor).ToHaveAttributeAsync("aria-readonly", "true");
+        await Expect(editor).ToContainTextAsync(contains);
+        Assert.IsGreaterThan(0, await editor.Locator("em").CountAsync());
+        Assert.IsGreaterThan(0, await editor.Locator("s").CountAsync());
     }
 
     private static async Task AssertCheckpointAsync(ILocator checkpoint, string name)

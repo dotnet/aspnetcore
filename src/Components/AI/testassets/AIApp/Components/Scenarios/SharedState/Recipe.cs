@@ -5,12 +5,12 @@ using System.Text.Json.Serialization;
 
 namespace AIApp.Components.Scenarios.SharedState;
 
-public sealed class RecipeState
+public sealed record RecipeState
 {
     public Recipe Recipe { get; set; } = new();
 }
 
-public sealed class Recipe
+public sealed record Recipe
 {
     public string Title { get; set; } = "";
 
@@ -28,7 +28,7 @@ public sealed class Recipe
     public List<string> Instructions { get; set; } = new();
 }
 
-public sealed class Ingredient
+public sealed record Ingredient
 {
     public string Icon { get; set; } = "";
     public string Name { get; set; } = "";
