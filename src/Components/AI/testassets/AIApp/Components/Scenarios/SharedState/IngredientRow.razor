@@ -1,0 +1,25 @@
+<div class="ingredient-row">
+    <input type="text" class="ingredient-row__icon"
+           @bind="Ingredient.Icon" @bind:event="oninput"
+           @bind:after="() => OnChanged.InvokeAsync()" />
+    <input type="text" class="ingredient-row__name"
+           @bind="Ingredient.Name" @bind:event="oninput"
+           @bind:after="() => OnChanged.InvokeAsync()"
+           placeholder="Ingredient name" />
+    <input type="text" class="ingredient-row__amount"
+           @bind="Ingredient.Amount" @bind:event="oninput"
+           @bind:after="() => OnChanged.InvokeAsync()"
+           placeholder="Amount" />
+    <button class="recipe-editor__remove-btn" @onclick="OnRemove">&times;</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Ingredient Ingredient { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+}

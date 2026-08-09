@@ -1,0 +1,138 @@
+<div class="recipe-editor">
+    <div class="recipe-editor__section">
+        <label>Title</label>
+        <input type="text" @bind="Recipe.Title" @bind:event="oninput"
+               @bind:after="NotifyChanged" />
+    </div>
+
+    <div class="recipe-editor__row">
+        <div class="recipe-editor__section">
+            <label>Skill Level</label>
+            <select @bind="Recipe.SkillLevel" @bind:after="NotifyChanged">
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+            </select>
+        </div>
+
+        <div class="recipe-editor__section">
+            <label>Cooking Time</label>
+            <select @bind="Recipe.CookingTime" @bind:after="NotifyChanged">
+                <option>15 min</option>
+                <option>30 min</option>
+                <option>45 min</option>
+                <option>1 hr</option>
+                <option>1.5 hr</option>
+                <option>2 hr</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="recipe-editor__section">
+        <label>Dietary Preferences</label>
+        <div class="recipe-editor__checkboxes">
+            @foreach (var pref in _allPreferences)
+            {
+                var isChecked = Recipe.SpecialPreferences.Contains(pref);
+                <label class="recipe-editor__checkbox">
+                    <input type="checkbox" checked="@isChecked"
+                           @onchange="() => TogglePreference(pref)" />
+                    @pref
+                </label>
+            }
+        </div>
+    </div>
+
+    <div class="recipe-editor__section">
+        <label>Ingredients</label>
+        @for (var i = 0; i < Recipe.Ingredients.Count; i++)
+        {
+            var index = i;
+            var ingredient = Recipe.Ingredients[index];
+            <IngredientRow Ingredient="ingredient"
+                           OnRemove="() => RemoveIngredient(index)"
+                           OnChanged="NotifyChanged" />
+        }
+        <button class="recipe-editor__add-btn" @onclick="AddIngredient">
+            + Add Ingredient
+        </button>
+    </div>
+
+    <div class="recipe-editor__section">
+        <label>Instructions</label>
+        @for (var i = 0; i < Recipe.Instructions.Count; i++)
+        {
+            var index = i;
+            <div class="recipe-editor__instruction">
+                <span class="recipe-editor__step-num">@(index + 1).</span>
+                <input type="text" @bind="Recipe.Instructions[index]"
+                       @bind:event="oninput"
+                       @bind:after="NotifyChanged" />
+                <button class="recipe-editor__remove-btn"
+                        @onclick="() => RemoveInstruction(index)">&times;</button>
+            </div>
+        }
+        <button class="recipe-editor__add-btn" @onclick="AddInstruction">
+            + Add Step
+        </button>
+    </div>
+
+    <button class="recipe-editor__improve-btn">
+        Improve with AI
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Recipe Recipe { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private static readonly string[] _allPreferences =
+    {
+        "Vegetarian", "Vegan", "Gluten-Free", "High Protein", "Low Carb", "Spicy"
+    };
+
+    private void TogglePreference(string pref)
+    {
+        if (Recipe.SpecialPreferences.Contains(pref))
+        {
+            Recipe.SpecialPreferences.Remove(pref);
+        }
+        else
+        {
+            Recipe.SpecialPreferences.Add(pref);
+        }
+        NotifyChanged();
+    }
+
+    private void AddIngredient()
+    {
+        Recipe.Ingredients.Add(new Ingredient { Icon = "\U0001F37D\uFE0F", Name = "", Amount = "" });
+        NotifyChanged();
+    }
+
+    private void RemoveIngredient(int index)
+    {
+        Recipe.Ingredients.RemoveAt(index);
+        NotifyChanged();
+    }
+
+    private void AddInstruction()
+    {
+        Recipe.Instructions.Add("");
+        NotifyChanged();
+    }
+
+    private void RemoveInstruction(int index)
+    {
+        Recipe.Instructions.RemoveAt(index);
+        NotifyChanged();
+    }
+
+    private void NotifyChanged()
+    {
+        OnChanged.InvokeAsync();
+    }
+}

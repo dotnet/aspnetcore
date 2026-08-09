@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using AIApp.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
@@ -117,7 +118,7 @@ internal sealed class GatedReplayChatClient : IChatClient
         throw new InvalidOperationException("A test session is required for gated replay.");
     }
 
-    private static void AssertRequest(
+    private void AssertRequest(
         ReplayRequestExpectation? expectation,
         IEnumerable<ChatMessage> messages,
         ChatOptions? options,
@@ -157,6 +158,28 @@ internal sealed class GatedReplayChatClient : IChatClient
                 throw new InvalidOperationException(
                     $"Replay call {callIndex + 1} expected tools [{string.Join(", ", orderedExpectedToolNames)}] " +
                     $"but received [{string.Join(", ", actualToolNames)}].");
+            }
+        }
+
+        if (expectation.State is { } expectedState)
+        {
+            var rawState = options?.RawRepresentationFactory?.Invoke(this);
+            if (rawState is null)
+            {
+                throw new InvalidOperationException(
+                    $"Replay call {callIndex + 1} expected shared state but received none.");
+            }
+
+            var actualState = rawState is JsonElement jsonElement
+                ? jsonElement
+                : JsonSerializer.SerializeToElement(
+                    rawState,
+                    ReplayCheckpointScript.SerializerOptions);
+            if (!JsonElement.DeepEquals(expectedState, actualState))
+            {
+                throw new InvalidOperationException(
+                    $"Replay call {callIndex + 1} expected state '{expectedState}' " +
+                    $"but received '{actualState}'.");
             }
         }
 

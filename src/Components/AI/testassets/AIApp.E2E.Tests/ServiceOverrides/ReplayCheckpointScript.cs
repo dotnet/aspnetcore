@@ -62,6 +62,8 @@ internal sealed class ReplayRequestExpectation
 
     public List<string>? ToolNames { get; init; }
 
+    public JsonElement? State { get; init; }
+
     public ReplayFunctionResultExpectation? FunctionResult { get; init; }
 }
 

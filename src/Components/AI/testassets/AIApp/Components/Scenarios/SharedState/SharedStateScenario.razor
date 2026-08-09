@@ -1,0 +1,125 @@
+@using System.Text.Json
+@inject IChatClient ChatClient
+@implements IDisposable
+
+<div class="dojo-scenario shared-state" data-dojo-scenario="shared-state">
+    <div class="shared-state-layout">
+        <div class="recipe-panel">
+            <RecipeEditor Recipe="_agent.State.Value.Recipe"
+                          OnChanged="HandleRecipeChanged" />
+        </div>
+
+        <div class="shared-state-chat">
+            <header class="dojo-scenario__header">
+                <h2>AI Recipe Assistant</h2>
+                <button class="dojo-reset-button" aria-label="Reset" @onclick="Reset">&times;</button>
+            </header>
+
+            <AgentBoundary @key="_agent" Agent="_agent">
+                <div class="sc-ai-root dojo-chat-panel">
+                    <MessageList>
+                        <DojoWelcome />
+                    </MessageList>
+                    <SuggestionList Suggestions="_suggestions" />
+                    <MessageInput Placeholder="Type a message..." />
+                </div>
+            </AgentBoundary>
+        </div>
+    </div>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
+
+    private UIAgent<RecipeState> _agent = default!;
+    private IDisposable? _stateChangedRegistration;
+
+    private static readonly Suggestion[] _suggestions =
+    [
+        new() { Label = "Create Italian recipe", Prompt = "Turn this into an Italian pasta recipe" },
+        new() { Label = "Make it healthier", Prompt = "Make this recipe healthier with substitutions" },
+        new() { Label = "Suggest variations", Prompt = "Suggest three creative variations" },
+    ];
+
+    protected override void OnInitialized()
+    {
+        SetAgent(CreateAgent(CreateDefaultRecipe()));
+    }
+
+    private UIAgent<RecipeState> CreateAgent(RecipeState initialState)
+    {
+        return new UIAgent<RecipeState>(ChatClient, options =>
+        {
+            options.ChatOptions = new ChatOptions
+            {
+                RawRepresentationFactory = _ => _agent.State.Value,
+            };
+
+            options.StateMapper = context =>
+            {
+                if (context.Update.RawRepresentation is not JsonElement snapshot)
+                {
+                    return false;
+                }
+
+                var recipeState = snapshot.Deserialize<RecipeState>(_jsonOptions);
+                if (recipeState?.Recipe is null)
+                {
+                    return false;
+                }
+
+                context.SetState(recipeState);
+                return true;
+            };
+        }, initialState);
+    }
+
+    private void HandleRecipeChanged()
+    {
+        StateHasChanged();
+    }
+
+    private void Reset()
+    {
+        SetAgent(CreateAgent(CreateDefaultRecipe()));
+    }
+
+    private void SetAgent(UIAgent<RecipeState> agent)
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+        _agent = agent;
+        _stateChangedRegistration = _agent.State.OnChanged(OnStateChanged);
+    }
+
+    private void OnStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private static RecipeState CreateDefaultRecipe()
+    {
+        return new RecipeState
+        {
+            Recipe = new Recipe
+            {
+                Title = "Make Your Recipe",
+                SkillLevel = "Intermediate",
+                CookingTime = "45 min",
+                SpecialPreferences = new() { "Vegetarian" },
+                Ingredients = new()
+                {
+                    new Ingredient { Icon = "\U0001F955", Name = "Carrots", Amount = "3 large, grated" },
+                    new Ingredient { Icon = "\U0001F33E", Name = "All-Purpose Flour", Amount = "2 cups" }
+                },
+                Instructions = new() { "Preheat oven to 350\u00B0F (175\u00B0C)" }
+            }
+        };
+    }
+
+    public void Dispose()
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+    }
+}
