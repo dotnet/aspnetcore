@@ -2,7 +2,7 @@
   "calls": [
     {
       "request": {
-        "lastUserMessage": "Help me organize a birthday party for my friend next Saturday. Generate the task steps I need to complete.",
+        "lastUserMessage": "Please plan a trip to mars in 5 steps.",
         "messageCount": 1,
         "toolNames": [
           "generate_task_steps"
@@ -21,16 +21,24 @@
                   "arguments": {
                     "steps": [
                       {
-                        "description": "Book a party venue",
+                        "description": "Define mission goals and timeline",
                         "status": "enabled"
                       },
                       {
-                        "description": "Order a birthday cake",
+                        "description": "Design and test the spacecraft",
                         "status": "enabled"
                       },
                       {
-                        "description": "Send invitations",
-                        "status": "disabled"
+                        "description": "Select and train the astronaut crew",
+                        "status": "enabled"
+                      },
+                      {
+                        "description": "Plan launch and Mars surface operations",
+                        "status": "enabled"
+                      },
+                      {
+                        "description": "Prepare communications and contingency plans",
+                        "status": "enabled"
                       }
                     ]
                   },
@@ -46,14 +54,14 @@
     },
     {
       "request": {
-        "lastUserMessage": "Help me organize a birthday party for my friend next Saturday. Generate the task steps I need to complete.",
+        "lastUserMessage": "Please plan a trip to mars in 5 steps.",
         "messageCount": 3,
         "toolNames": [
           "generate_task_steps"
         ],
         "functionResult": {
           "callId": "human-in-the-loop-steps-1",
-          "result": "The user selected the following steps: Book a party venue, Send invitations"
+          "result": "The user selected the following steps: Define mission goals and timeline, Select and train the astronaut crew, Prepare communications and contingency plans"
         }
       },
       "frames": [
@@ -65,7 +73,7 @@
               "contents": [
                 {
                   "$type": "text",
-                  "text": "I'll move forward with booking a party venue"
+                  "text": "I'll move forward with the selected tasks: Define mission goals and timeline"
                 }
               ]
             }
@@ -79,7 +87,7 @@
               "contents": [
                 {
                   "$type": "text",
-                  "text": " and sending invitations."
+                  "text": ", Select and train the astronaut crew, Prepare communications and contingency plans."
                 }
               ],
               "finishReason": "stop"

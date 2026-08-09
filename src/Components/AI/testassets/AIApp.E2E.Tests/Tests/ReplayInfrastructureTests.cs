@@ -448,28 +448,32 @@ public class ReplayInfrastructureTests
                 var steps = (JsonElement)block.Call!.Arguments!["steps"]!;
                 var updatedSteps = steps.Deserialize<List<Dictionary<string, string>>>()!;
                 updatedSteps[1]["status"] = "disabled";
-                updatedSteps[2]["status"] = "enabled";
+                updatedSteps[3]["status"] = "disabled";
                 block.Call.Arguments["steps"] = JsonSerializer.SerializeToElement(updatedSteps);
                 block.InvokeAsync().GetAwaiter().GetResult();
             }
         });
 
-        await context.SendMessageAsync(
-            "Help me organize a birthday party for my friend next Saturday. " +
-            "Generate the task steps I need to complete.");
+        await context.SendMessageAsync("Please plan a trip to mars in 5 steps.");
 
         Assert.IsNotNull(capturedSteps);
-        Assert.HasCount(3, capturedSteps);
-        Assert.AreEqual(("Book a party venue", "enabled"), capturedSteps[0]);
-        Assert.AreEqual(("Order a birthday cake", "disabled"), capturedSteps[1]);
-        Assert.AreEqual(("Send invitations", "enabled"), capturedSteps[2]);
+        Assert.HasCount(5, capturedSteps);
+        Assert.AreEqual(("Define mission goals and timeline", "enabled"), capturedSteps[0]);
+        Assert.AreEqual(("Design and test the spacecraft", "disabled"), capturedSteps[1]);
+        Assert.AreEqual(("Select and train the astronaut crew", "enabled"), capturedSteps[2]);
+        Assert.AreEqual(("Plan launch and Mars surface operations", "disabled"), capturedSteps[3]);
+        Assert.AreEqual(
+            ("Prepare communications and contingency plans", "enabled"),
+            capturedSteps[4]);
         var turn = context.Turns.Single();
         var action = turn.ResponseBlocks.OfType<UIActionBlock>().Single();
         Assert.IsTrue(action.IsComplete);
         Assert.AreEqual("generate_task_steps", action.ToolName);
         var finalText = turn.ResponseBlocks.OfType<RichContentBlock>().Single().RawText;
         Assert.AreEqual(
-            "I'll move forward with booking a party venue and sending invitations.",
+            "I'll move forward with the selected tasks: Define mission goals and timeline, " +
+            "Select and train the astronaut crew, " +
+            "Prepare communications and contingency plans.",
             finalText);
     }
 

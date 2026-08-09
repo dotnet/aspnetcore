@@ -48,26 +48,31 @@ public partial class HumanInTheLoopScenarioTests : BrowserTest
             var turn = scenario.Locator(".sc-ai-turn").Last;
             await Expect(scenario.Locator(".sc-ai-turn")).ToHaveCountAsync(1);
             await Expect(turn.Locator(".sc-ai-message--user .sc-ai-message__content"))
-                .ToHaveTextAsync(
-                    "Help me organize a birthday party for my friend next Saturday. " +
-                    "Generate the task steps I need to complete.");
+                .ToHaveTextAsync("Please plan a trip to mars in 5 steps.");
             var card = turn.Locator(".task-steps-card");
             await Expect(card).ToHaveCountAsync(1);
             await Expect(card.Locator("h3")).ToHaveTextAsync("Select Steps");
-            await Expect(card.Locator(".task-steps-card__count")).ToHaveTextAsync("2 / 3 selected");
+            await Expect(card.Locator(".task-steps-card__count")).ToHaveTextAsync("5 / 5 selected");
             var steps = card.Locator(".task-step-item");
-            await Expect(steps).ToHaveCountAsync(3);
-            await Expect(steps.Nth(0)).ToHaveTextAsync("Book a party venue");
-            await Expect(steps.Nth(1)).ToHaveTextAsync("Order a birthday cake");
-            await Expect(steps.Nth(2)).ToHaveTextAsync("Send invitations");
+            await Expect(steps).ToHaveCountAsync(5);
+            await Expect(steps.Nth(0)).ToHaveTextAsync("Define mission goals and timeline");
+            await Expect(steps.Nth(1)).ToHaveTextAsync("Design and test the spacecraft");
+            await Expect(steps.Nth(2)).ToHaveTextAsync("Select and train the astronaut crew");
+            await Expect(steps.Nth(3)).ToHaveTextAsync("Plan launch and Mars surface operations");
+            await Expect(steps.Nth(4)).ToHaveTextAsync(
+                "Prepare communications and contingency plans");
             await Expect(steps.Nth(0)).ToHaveClassAsync("task-step-item task-step-item--selected");
             await Expect(steps.Nth(1)).ToHaveClassAsync("task-step-item task-step-item--selected");
-            await Expect(steps.Nth(2)).ToHaveClassAsync("task-step-item ");
+            await Expect(steps.Nth(2)).ToHaveClassAsync("task-step-item task-step-item--selected");
+            await Expect(steps.Nth(3)).ToHaveClassAsync("task-step-item task-step-item--selected");
+            await Expect(steps.Nth(4)).ToHaveClassAsync("task-step-item task-step-item--selected");
             var checkboxes = card.GetByRole(AriaRole.Checkbox);
-            await Expect(checkboxes).ToHaveCountAsync(3);
+            await Expect(checkboxes).ToHaveCountAsync(5);
             await Expect(checkboxes.Nth(0)).ToBeCheckedAsync();
             await Expect(checkboxes.Nth(1)).ToBeCheckedAsync();
-            await Expect(checkboxes.Nth(2)).Not.ToBeCheckedAsync();
+            await Expect(checkboxes.Nth(2)).ToBeCheckedAsync();
+            await Expect(checkboxes.Nth(3)).ToBeCheckedAsync();
+            await Expect(checkboxes.Nth(4)).ToBeCheckedAsync();
             await Expect(card.GetByRole(
                 AriaRole.Button,
                 new() { Name = "Reject", Exact = true })).ToBeEnabledAsync();
@@ -80,15 +85,19 @@ public partial class HumanInTheLoopScenarioTests : BrowserTest
                 "task-steps-review");
 
             await checkboxes.Nth(1).ClickAsync();
-            await checkboxes.Nth(2).ClickAsync();
+            await checkboxes.Nth(3).ClickAsync();
 
-            await Expect(card.Locator(".task-steps-card__count")).ToHaveTextAsync("2 / 3 selected");
+            await Expect(card.Locator(".task-steps-card__count")).ToHaveTextAsync("3 / 5 selected");
             await Expect(steps.Nth(0)).ToHaveClassAsync("task-step-item task-step-item--selected");
             await Expect(steps.Nth(1)).ToHaveClassAsync("task-step-item ");
             await Expect(steps.Nth(2)).ToHaveClassAsync("task-step-item task-step-item--selected");
+            await Expect(steps.Nth(3)).ToHaveClassAsync("task-step-item ");
+            await Expect(steps.Nth(4)).ToHaveClassAsync("task-step-item task-step-item--selected");
             await Expect(checkboxes.Nth(0)).ToBeCheckedAsync();
             await Expect(checkboxes.Nth(1)).Not.ToBeCheckedAsync();
             await Expect(checkboxes.Nth(2)).ToBeCheckedAsync();
+            await Expect(checkboxes.Nth(3)).Not.ToBeCheckedAsync();
+            await Expect(checkboxes.Nth(4)).ToBeCheckedAsync();
             await Expect(checkpoint).ToHaveAttributeAsync(
                 "data-replay-checkpoint",
                 "task-steps-review");
@@ -104,7 +113,8 @@ public partial class HumanInTheLoopScenarioTests : BrowserTest
             await Expect(card.GetByRole(AriaRole.Checkbox)).ToHaveCountAsync(0);
             var assistant = turn.Locator(".sc-ai-message--assistant .sc-ai-message__content");
             await Expect(assistant)
-                .ToHaveTextAsync("I'll move forward with booking a party venue");
+                .ToHaveTextAsync(
+                    "I'll move forward with the selected tasks: Define mission goals and timeline");
             await Expect(checkpoint).ToHaveAttributeAsync(
                 "data-replay-checkpoint",
                 "selection-summary-start");
@@ -112,7 +122,12 @@ public partial class HumanInTheLoopScenarioTests : BrowserTest
             await summaryStart.ReleaseAsync();
 
             await Expect(assistant).ToHaveTextAsync(
-                "I'll move forward with booking a party venue and sending invitations.");
+                "I'll move forward with the selected tasks: Define mission goals and timeline, " +
+                "Select and train the astronaut crew, " +
+                "Prepare communications and contingency plans.");
+            await Expect(assistant).Not.ToContainTextAsync("Design and test the spacecraft");
+            await Expect(assistant).Not.ToContainTextAsync(
+                "Plan launch and Mars surface operations");
             await Expect(assistant).ToHaveClassAsync(
                 "sc-ai-message__content sc-ai-message__content--streaming");
             await Expect(checkpoint).ToHaveAttributeAsync(
@@ -122,7 +137,9 @@ public partial class HumanInTheLoopScenarioTests : BrowserTest
             await summaryFinal.ReleaseAsync();
 
             await Expect(assistant).ToHaveTextAsync(
-                "I'll move forward with booking a party venue and sending invitations.");
+                "I'll move forward with the selected tasks: Define mission goals and timeline, " +
+                "Select and train the astronaut crew, " +
+                "Prepare communications and contingency plans.");
             await Expect(assistant).ToHaveClassAsync("sc-ai-message__content");
             await Expect(checkpoint).ToHaveCountAsync(0);
             await Expect(scenario.GetByRole(

@@ -4,6 +4,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using AIApp.Components.Scenarios.AgenticGenerativeUI;
+using AIApp.Components.Scenarios.HumanInTheLoop;
 using AIApp.Components.Scenarios.PredictiveStateUpdates;
 using AIApp.Components.Scenarios.SharedState;
 using Microsoft.Extensions.AI;
@@ -27,6 +28,7 @@ internal sealed class DojoSimulationChatClient(IDojoSimulationDelay delay) : ICh
         new(AIJsonUtilities.DefaultOptions);
 
     private int _confirmationIndex;
+    private int _humanInTheLoopIndex;
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -38,7 +40,17 @@ internal sealed class DojoSimulationChatClient(IDojoSimulationDelay delay) : ICh
             .Select(tool => tool.Name)
             .ToHashSet(StringComparer.Ordinal) ?? [];
 
-        if (toolNames.Contains("create_plan") && toolNames.Contains("update_plan_step"))
+        if (toolNames.Contains("generate_task_steps"))
+        {
+            await foreach (var update in SimulateHumanInTheLoopAsync(
+                messageList,
+                GetLastUserMessage(messageList),
+                cancellationToken))
+            {
+                yield return update;
+            }
+        }
+        else if (toolNames.Contains("create_plan") && toolNames.Contains("update_plan_step"))
         {
             await foreach (var update in SimulateAgenticAsync(
                 GetLastUserMessage(messageList),
@@ -170,20 +182,7 @@ internal sealed class DojoSimulationChatClient(IDojoSimulationDelay delay) : ICh
         DocumentState currentState,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var lastUserMessageIndex = Enumerable.Range(0, messages.Count)
-            .Last(index => messages[index].Role == ChatRole.User);
-        var currentRunContents = messages
-            .Skip(lastUserMessageIndex + 1)
-            .SelectMany(message => message.Contents)
-            .ToList();
-        var confirmationCallIds = currentRunContents
-            .OfType<FunctionCallContent>()
-            .Where(call => call.Name == "confirm_changes")
-            .Select(call => call.CallId)
-            .ToHashSet(StringComparer.Ordinal);
-        var result = currentRunContents
-            .OfType<FunctionResultContent>()
-            .LastOrDefault(result => confirmationCallIds.Contains(result.CallId));
+        var result = GetCurrentRunFunctionResult(messages, "confirm_changes");
         if (result is not null)
         {
             var rejected = result.Result?.ToString()?.Contains(
@@ -209,6 +208,62 @@ internal sealed class DojoSimulationChatClient(IDojoSimulationDelay delay) : ICh
             Role = ChatRole.Assistant,
             MessageId = Guid.NewGuid().ToString("N"),
             Contents = [new FunctionCallContent(callId, "confirm_changes", arguments: null)],
+            FinishReason = ChatFinishReason.ToolCalls,
+        };
+    }
+
+    private async IAsyncEnumerable<ChatResponseUpdate> SimulateHumanInTheLoopAsync(
+        IReadOnlyList<ChatMessage> messages,
+        string prompt,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var result = GetCurrentRunFunctionResult(messages, "generate_task_steps");
+        if (result is not null)
+        {
+            await delay.DelayAsync(cancellationToken);
+            var resultText = result.Result?.ToString() ?? "";
+            const string selectedPrefix = "The user selected the following steps:";
+            if (resultText.StartsWith(selectedPrefix, StringComparison.Ordinal))
+            {
+                var selectedTasks = resultText[selectedPrefix.Length..].Trim();
+                yield return CreateTextUpdate(
+                    string.IsNullOrEmpty(selectedTasks)
+                        ? "No tasks were selected, so I won't move forward with any proposed steps."
+                        : $"I'll move forward with the selected tasks: {selectedTasks}.");
+            }
+            else if (resultText.Contains(
+                "rejected all proposed steps",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                yield return CreateTextUpdate(
+                    "No tasks were selected, so I won't move forward with any proposed steps.");
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Unsupported generate_task_steps result: '{resultText}'.");
+            }
+
+            yield break;
+        }
+
+        var steps = GetHumanInTheLoopSteps(prompt);
+        await delay.DelayAsync(cancellationToken);
+        var callId = $"dojo-task-steps-{Interlocked.Increment(ref _humanInTheLoopIndex)}";
+        yield return new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = Guid.NewGuid().ToString("N"),
+            Contents =
+            [
+                new FunctionCallContent(
+                    callId,
+                    "generate_task_steps",
+                    new Dictionary<string, object?>
+                    {
+                        ["steps"] = JsonSerializer.SerializeToElement(steps, _jsonOptions),
+                    }),
+            ],
             FinishReason = ChatFinishReason.ToolCalls,
         };
     }
@@ -245,6 +300,40 @@ internal sealed class DojoSimulationChatClient(IDojoSimulationDelay delay) : ICh
         }
 
         throw new InvalidOperationException($"Unsupported agentic planning prompt: '{prompt}'.");
+    }
+
+    private static IReadOnlyList<TaskStep> GetHumanInTheLoopSteps(string prompt)
+    {
+        if (prompt.Contains("mars", StringComparison.OrdinalIgnoreCase))
+        {
+            return
+            [
+                new() { Description = "Define mission goals and timeline" },
+                new() { Description = "Design and test the spacecraft" },
+                new() { Description = "Select and train the astronaut crew" },
+                new() { Description = "Plan launch and Mars surface operations" },
+                new() { Description = "Prepare communications and contingency plans" },
+            ];
+        }
+
+        if (prompt.Contains("pasta", StringComparison.OrdinalIgnoreCase))
+        {
+            return
+            [
+                new() { Description = "Choose the pasta dish" },
+                new() { Description = "Gather the ingredients" },
+                new() { Description = "Prepare the vegetables and aromatics" },
+                new() { Description = "Bring the pasta water to a boil" },
+                new() { Description = "Cook the pasta until al dente" },
+                new() { Description = "Prepare the sauce" },
+                new() { Description = "Combine the pasta and sauce" },
+                new() { Description = "Adjust the seasoning" },
+                new() { Description = "Plate the pasta" },
+                new() { Description = "Add the garnish and serve" },
+            ];
+        }
+
+        throw new InvalidOperationException($"Unsupported human-in-the-loop prompt: '{prompt}'.");
     }
 
     private static Recipe CreateTargetRecipe(string prompt, Recipe current)
@@ -396,6 +485,27 @@ internal sealed class DojoSimulationChatClient(IDojoSimulationDelay delay) : ICh
     private static string GetLastUserMessage(IReadOnlyList<ChatMessage> messages)
         => messages.LastOrDefault(message => message.Role == ChatRole.User)?.Text
             ?? throw new InvalidOperationException("The dojo simulator requires a user message.");
+
+    private static FunctionResultContent? GetCurrentRunFunctionResult(
+        IReadOnlyList<ChatMessage> messages,
+        string functionName)
+    {
+        var lastUserMessageIndex = Enumerable.Range(0, messages.Count)
+            .Last(index => messages[index].Role == ChatRole.User);
+        var currentRunContents = messages
+            .Skip(lastUserMessageIndex + 1)
+            .SelectMany(message => message.Contents)
+            .ToList();
+        var callIds = currentRunContents
+            .OfType<FunctionCallContent>()
+            .Where(call => call.Name == functionName)
+            .Select(call => call.CallId)
+            .ToHashSet(StringComparer.Ordinal);
+
+        return currentRunContents
+            .OfType<FunctionResultContent>()
+            .LastOrDefault(result => callIds.Contains(result.CallId));
+    }
 
     private TState GetState<TState>(ChatOptions? options)
         where TState : new()

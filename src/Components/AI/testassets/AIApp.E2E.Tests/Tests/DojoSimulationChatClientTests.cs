@@ -147,6 +147,71 @@ public class DojoSimulationChatClientTests
     }
 
     [TestMethod]
+    public async Task HumanInTheLoopUsesCurrentSelectionAndSupportsRepeatedRequests()
+    {
+        using var client = new DojoSimulationChatClient(new RecordingDelay());
+        var options = CreateOptions(state: null, "generate_task_steps");
+        const string simplePrompt = "Please plan a trip to mars in 5 steps.";
+        var simpleUpdates = await CollectAsync(client, simplePrompt, options);
+        var simpleCall = simpleUpdates.SelectMany(update => update.Contents)
+            .OfType<FunctionCallContent>()
+            .Single();
+        var simpleSteps = ((JsonElement)simpleCall.Arguments!["steps"]!)
+            .Deserialize<List<Dictionary<string, string>>>()!;
+        Assert.HasCount(5, simpleSteps);
+
+        var selected = new[]
+        {
+            simpleSteps[0]["description"],
+            simpleSteps[2]["description"],
+            simpleSteps[4]["description"],
+        };
+        var selectedResult =
+            $"The user selected the following steps: {string.Join(", ", selected)}";
+        var selectedMessages = new List<ChatMessage>
+        {
+            new(ChatRole.User, simplePrompt),
+            new(ChatRole.Assistant, [simpleCall]),
+            new(
+                ChatRole.Tool,
+                [new FunctionResultContent(simpleCall.CallId, selectedResult)]),
+        };
+
+        var selectedResponse = await client.GetResponseAsync(selectedMessages, options);
+
+        Assert.AreEqual(
+            $"I'll move forward with the selected tasks: {string.Join(", ", selected)}.",
+            selectedResponse.Text);
+        Assert.DoesNotContain(selectedResponse.Text, simpleSteps[1]["description"]);
+        Assert.DoesNotContain(selectedResponse.Text, simpleSteps[3]["description"]);
+
+        const string complexPrompt = "Please plan a pasta dish in 10 steps.";
+        var complexMessages = selectedMessages
+            .Append(new ChatMessage(ChatRole.User, complexPrompt))
+            .ToList();
+        var complexUpdates = await CollectAsync(client, complexMessages, options);
+        var complexCall = complexUpdates.SelectMany(update => update.Contents)
+            .OfType<FunctionCallContent>()
+            .Single();
+        var complexSteps = ((JsonElement)complexCall.Arguments!["steps"]!)
+            .Deserialize<List<Dictionary<string, string>>>()!;
+        Assert.HasCount(10, complexSteps);
+
+        complexMessages.Add(new ChatMessage(ChatRole.Assistant, [complexCall]));
+        complexMessages.Add(new ChatMessage(
+            ChatRole.Tool,
+            [new FunctionResultContent(
+                complexCall.CallId,
+                "The user rejected all proposed steps.")]));
+
+        var rejectedResponse = await client.GetResponseAsync(complexMessages, options);
+
+        Assert.AreEqual(
+            "No tasks were selected, so I won't move forward with any proposed steps.",
+            rejectedResponse.Text);
+    }
+
+    [TestMethod]
     public async Task CancellationStopsBetweenVisibleFrames()
     {
         using var client = new DojoSimulationChatClient(new CancellationDelay());
@@ -169,10 +234,19 @@ public class DojoSimulationChatClientTests
         IChatClient client,
         string prompt,
         ChatOptions options)
+        => await CollectAsync(
+            client,
+            [new ChatMessage(ChatRole.User, prompt)],
+            options);
+
+    private static async Task<List<ChatResponseUpdate>> CollectAsync(
+        IChatClient client,
+        IEnumerable<ChatMessage> messages,
+        ChatOptions options)
     {
         var updates = new List<ChatResponseUpdate>();
         await foreach (var update in client.GetStreamingResponseAsync(
-            [new ChatMessage(ChatRole.User, prompt)],
+            messages,
             options))
         {
             updates.Add(update);
