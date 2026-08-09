@@ -1,0 +1,22 @@
+@attribute [InteractiveServer]
+
+<div>
+    <span id="dynamic-root-label">@Label</span>
+    <span id="dynamic-root-step">@Step</span>
+    <span id="dynamic-root-injected">@Greeting?.Greeting</span>
+    <button id="dynamic-root-increment" @onclick="() => _count += Step">Bump</button>
+    <span id="dynamic-root-count">@_count</span>
+</div>
+
+@code {
+    private int _count;
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public int Step { get; set; }
+
+    [Inject]
+    public IGreetingService? Greeting { get; set; }
+}

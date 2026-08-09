@@ -1,0 +1,32 @@
+@page "/persistence"
+@attribute [InteractiveServer]
+
+<h1>Persistent component state</h1>
+
+<p>Exercises <code>[PersistentState]</code>. The value is produced during prerendering, serialized
+into the response, and restored when the circuit starts — a round trip that must go through a
+generated persistent-state contract under Native AOT.</p>
+
+<p>Rendered by: <span id="phase">@(_restored ? "circuit (restored)" : "prerender (fresh)")</span></p>
+<p>Token: <span id="token">@State?.Token</span></p>
+
+@code {
+    private bool _restored;
+
+    [PersistentState]
+    public Snapshot? State { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // A restored value proves the prerendered state survived; a fresh one is created only on the
+        // first (prerender) pass, so the token is identical across both renders when it worked.
+        _restored = State is not null;
+        State ??= new Snapshot { Token = Guid.NewGuid().ToString("N") };
+    }
+
+    /// <summary>Named by a <c>[BindableModel]</c> so the generator emits its JSON contract.</summary>
+    public sealed class Snapshot
+    {
+        public string Token { get; set; } = "";
+    }
+}

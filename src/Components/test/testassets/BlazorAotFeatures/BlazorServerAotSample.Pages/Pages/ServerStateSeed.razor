@@ -1,0 +1,17 @@
+@page "/server-state/seed"
+@inject NavigationManager Nav
+
+@code {
+    [SupplyParameterFromSession(Name = "aot-profile")]
+    public ServerState.SessionProfile? Profile { get; set; }
+
+    [SupplyParameterFromTempData(Name = "aot-flash")]
+    public string? Flash { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Profile = new ServerState.SessionProfile("ada", 36);
+        Flash = "seeded";
+        Nav.NavigateTo("/server-state");
+    }
+}

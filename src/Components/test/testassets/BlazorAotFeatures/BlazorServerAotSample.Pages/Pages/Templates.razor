@@ -1,0 +1,27 @@
+@page "/templates"
+@attribute [InteractiveServer]
+
+<h1>Templates, generics and @@key</h1>
+
+<p>Exercises <code>RenderFragment&lt;T&gt;</code>, a <code>@@typeparam</code> component and
+<code>@@key</code>-driven diffing. All three depend on the generated component descriptor carrying an
+open generic definition and a templated parameter, rather than on reflection over the closed type.</p>
+
+<TypedList Id="names" Items="_names" Context="name">
+    <ItemTemplate><strong>@name.ToUpperInvariant()</strong></ItemTemplate>
+</TypedList>
+
+<TypedList Id="numbers" Items="_numbers" Context="n">
+    <ItemTemplate>#@(n * 2)</ItemTemplate>
+</TypedList>
+
+<button id="reverse" @onclick="Reverse">Reverse</button>
+
+@code {
+    private List<string> _names = ["alpha", "beta", "gamma"];
+    private readonly List<int> _numbers = [1, 2, 3];
+
+    // Reversing a @key-ed list moves the existing elements instead of re-rendering them in place,
+    // which is what makes the key path observable from a test.
+    private void Reverse() => _names = [.. Enumerable.Reverse(_names)];
+}

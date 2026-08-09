@@ -1,0 +1,24 @@
+<div class="card" style="border:1px solid #ccc; padding:1rem; margin:0.5rem 0;">
+    <h3 id="child-title">@Title</h3>
+    <p>Count: <span id="child-count">@Count</span></p>
+    <p>Theme (cascaded): <span id="child-theme">@Theme</span></p>
+    <p>Greeting (injected): <span id="child-greeting">@Greeting?.Greeting</span></p>
+    <button id="child-bump" @onclick="OnBump">Bump from child</button>
+</div>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public int Count { get; set; }
+
+    [Parameter]
+    public EventCallback OnBump { get; set; }
+
+    [CascadingParameter]
+    public string? Theme { get; set; }
+
+    [Inject]
+    public IGreetingService? Greeting { get; set; }
+}

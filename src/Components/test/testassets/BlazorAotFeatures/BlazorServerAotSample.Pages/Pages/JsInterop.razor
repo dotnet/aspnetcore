@@ -1,0 +1,43 @@
+@page "/jsinterop"
+@attribute [InteractiveServer]
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<h1>JS interop</h1>
+
+<p>Exercises <code>IJSRuntime</code> and <code>[JSInvokable]</code> via <code>DotNetObjectReference</code>
+— dispatched through the generated <code>JSInvokableMethodDescriptor</code> rather than
+<code>DotNetDispatcher</code>'s reflection path.</p>
+
+<button id="prompt" @onclick="CallJs">Set message from JS</button>
+<p>Message: <span id="msg">@_message</span></p>
+
+@code {
+    private string _message = "(none)";
+    private DotNetObjectReference<JsInterop>? _selfRef;
+
+    private async Task CallJs()
+    {
+        _selfRef ??= DotNetObjectReference.Create(this);
+
+        // Outgoing: eval returns a value directly, round-tripping JSON through the runtime options.
+        var fromJs = await JS.InvokeAsync<string>("eval", "'hello from js ' + (1+1)");
+
+        // Incoming: JS calls back into [JSInvokable] EchoFromJs, which the generated descriptor
+        // dispatches without reflecting over the method.
+        await JS.InvokeVoidAsync("eval", "window.__echo = r => r.invokeMethodAsync('EchoFromJs', 'hi')");
+        var echoed = await JS.InvokeAsync<string>("__echo", _selfRef);
+
+        _message = $"{fromJs} | {echoed}";
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public string EchoFromJs(string value) => $"echo:{value}";
+
+    public ValueTask DisposeAsync()
+    {
+        _selfRef?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

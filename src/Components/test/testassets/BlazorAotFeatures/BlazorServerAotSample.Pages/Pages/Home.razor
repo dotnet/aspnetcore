@@ -1,0 +1,22 @@
+@page "/"
+
+<h1>Blazor Server AOT feature matrix</h1>
+
+<p>
+    Two-assembly layout: the host app contains no Blazor code; all pages/components live in this
+    class library. Each page isolates one AOT-sensitive feature so it can be validated on its own,
+    against both a JIT and a Native AOT publish of the host.
+</p>
+
+<ul>
+    <li><a href="counter">Counter</a> — interactive server render mode, <code>@@onclick</code>, re-render</li>
+    <li><a href="parameters">Parameters</a> — <code>[Parameter]</code>, <code>[CascadingParameter]</code>, <code>EventCallback</code>, <code>[Inject]</code></li>
+    <li><a href="databinding">Data binding</a> — <code>@@bind</code>, <code>InputText</code>, <code>ValueExpression</code></li>
+    <li><a href="forms">Forms</a> — <code>EditForm</code>, <code>DataAnnotationsValidator</code>, validation messages</li>
+    <li><a href="jsinterop">JS interop</a> — <code>IJSRuntime</code>, <code>[JSInvokable]</code>, <code>DotNetObjectReference</code>, <code>IAsyncDisposable</code></li>
+    <li><a href="templates">Templates</a> — <code>RenderFragment&lt;T&gt;</code>, <code>@@typeparam</code>, <code>@@key</code></li>
+    <li><a href="query">Query</a> — <code>[SupplyParameterFromQuery]</code></li>
+    <li><a href="virtualize">Virtualize</a> — framework generic component over JS interop</li>
+    <li><a href="storage">Storage</a> — <code>ProtectedSessionStorage</code> JSON round trip</li>
+    <li><a href="persistence">Persistence</a> — <code>[PersistentState]</code> prerender-to-circuit round trip</li>
+</ul>

@@ -1,0 +1,17 @@
+@page "/counter"
+@attribute [InteractiveServer]
+
+<h1>Counter</h1>
+
+<p role="status">Current count: <span id="count">@_currentCount</span></p>
+
+<button id="increment" class="btn" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int _currentCount;
+
+    private void IncrementCount()
+    {
+        _currentCount++;
+    }
+}
