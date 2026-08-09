@@ -21,6 +21,23 @@ namespace BlazorServerAotSample;
 [BindableModel(ModelType = typeof(Pages.Pages.Storage.Profile))]
 [BindableModel(ModelType = typeof(Pages.Pages.Persistence.Snapshot))]
 [BindableModel(ModelType = typeof(Pages.BindingRoot))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.CascadingValue<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.CascadingValue<global::Microsoft.AspNetCore.Components.Forms.EditContext>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.Forms.ValidationMessage<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<string>))]
+[ComponentTypeInfo(typeof(global::BlazorServerAotSample.Pages.TypedList<string>))]
+[ComponentTypeInfo(typeof(global::BlazorServerAotSample.Pages.TypedList<int>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.Forms.InputDate<DateTime>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.Forms.InputNumber<int>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.Forms.InputRadio<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.Forms.InputRadioGroup<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.Forms.InputSelect<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.Forms.Label<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<string, string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.QuickGrid.Infrastructure.ColumnsCollectedNotifier<string>))]
+[ComponentTypeInfo(typeof(global::Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<global::Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState>))]
 internal sealed partial class SampleMetadata : RazorComponentsMetadataContext
 {
     /// <summary>
