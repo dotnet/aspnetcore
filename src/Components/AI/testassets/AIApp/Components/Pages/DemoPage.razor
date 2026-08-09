@@ -13,11 +13,18 @@
 else
 {
     <div class="dojo-demo" data-scenario="@ScenarioId" data-interactive="@_interactive.ToString().ToLowerInvariant()">
-        <div class="dojo-scenario-placeholder">
-            <h1>@_scenario.Title</h1>
-            <p>@_scenario.Description</p>
-            <p>This scenario is being ported to the Components.AI test app.</p>
-        </div>
+        @if (ScenarioId == "agentic_chat")
+        {
+            <AgenticChatScenario />
+        }
+        else
+        {
+            <div class="dojo-scenario-placeholder">
+                <h1>@_scenario.Title</h1>
+                <p>@_scenario.Description</p>
+                <p>This scenario is being ported to the Components.AI test app.</p>
+            </div>
+        }
     </div>
 }
 

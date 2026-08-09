@@ -1,0 +1,73 @@
+@inject IChatClient ChatClient
+@implements IDisposable
+
+<div class="dojo-scenario agentic-chat" data-dojo-scenario="agentic-chat" style="@GetBackgroundStyle()">
+    <button type="button" class="agentic-chat__reset" @onclick="Reset">Reset</button>
+    <AgentBoundary @key="_agent" Agent="_agent">
+        <div class="sc-ai-root dojo-chat-panel">
+            <MessageList>
+                <DojoWelcome />
+                <ComponentBlockRenderer TBlock="UIActionBlock"
+                                        TRenderer="AutoInvokeAction"
+                                        When="@(b => b.ToolName == "change_background")" />
+            </MessageList>
+            <SuggestionList Suggestions="_suggestions" />
+            <MessageInput Placeholder="Type a message..." />
+        </div>
+    </AgentBoundary>
+</div>
+
+@code {
+    private UIAgent _agent = default!;
+    private string? _backgroundColor;
+
+    private static readonly Suggestion[] _suggestions =
+    [
+        new() { Label = "Change background", Prompt = "Change the background to something new" },
+        new() { Label = "Generate sonnet", Prompt = "Write a short sonnet about AI" },
+    ];
+
+    protected override void OnInitialized()
+    {
+        _agent = CreateAgent();
+    }
+
+    private UIAgent CreateAgent()
+    {
+        return new UIAgent(ChatClient, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                ChangeBackground,
+                name: "change_background",
+                description: "Change the chat background color. Use a CSS gradient or color value."));
+        });
+    }
+
+    private async Task<string> ChangeBackground(string background)
+    {
+        _backgroundColor = background;
+        await InvokeAsync(StateHasChanged);
+        return "Background changed successfully.";
+    }
+
+    private string GetBackgroundStyle()
+    {
+        if (string.IsNullOrEmpty(_backgroundColor))
+        {
+            return "";
+        }
+        return $"background: {_backgroundColor};";
+    }
+
+    private void Reset()
+    {
+        _backgroundColor = null;
+        _agent.Dispose();
+        _agent = CreateAgent();
+    }
+
+    public void Dispose()
+    {
+        _agent.Dispose();
+    }
+}

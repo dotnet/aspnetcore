@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.AI;
 
 namespace AIApp.E2E.Tests.ServiceOverrides;
@@ -12,12 +14,14 @@ internal sealed class GatedReplayChatClient : IChatClient
     private readonly ReplayCheckpointScript _script;
     private readonly TestLockProvider _locks;
     private readonly TestSessionContext _session;
+    private readonly NavigationManager? _navigation;
     private int _callIndex;
 
     public GatedReplayChatClient(
         ReplayCheckpointScript script,
         TestLockProvider locks,
-        TestSessionContext session)
+        TestSessionContext session,
+        NavigationManager? navigation = null)
     {
         ArgumentNullException.ThrowIfNull(script);
         ArgumentNullException.ThrowIfNull(locks);
@@ -25,6 +29,7 @@ internal sealed class GatedReplayChatClient : IChatClient
         _script = script;
         _locks = locks;
         _session = session;
+        _navigation = navigation;
     }
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
@@ -32,8 +37,7 @@ internal sealed class GatedReplayChatClient : IChatClient
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var sessionId = _session.Id ?? throw new InvalidOperationException(
-            "A test session is required for gated replay.");
+        var sessionId = GetSessionId();
         var callIndex = _callIndex++;
         if (callIndex >= _script.Calls.Count)
         {
@@ -70,6 +74,25 @@ internal sealed class GatedReplayChatClient : IChatClient
 
     public void Dispose()
     {
+    }
+
+    private string GetSessionId()
+    {
+        if (_session.Id is not null)
+        {
+            return _session.Id;
+        }
+
+        if (_navigation is not null &&
+            QueryHelpers.ParseQuery(new Uri(_navigation.Uri).Query)
+                .TryGetValue(ReplayTestSession.QueryParameterName, out var sessionId) &&
+            !string.IsNullOrEmpty(sessionId))
+        {
+            _session.Id = sessionId.ToString();
+            return _session.Id;
+        }
+
+        throw new InvalidOperationException("A test session is required for gated replay.");
     }
 
     private static void AssertRequest(

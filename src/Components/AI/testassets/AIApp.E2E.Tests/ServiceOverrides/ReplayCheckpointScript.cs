@@ -15,7 +15,9 @@ internal sealed class ReplayCheckpointScript
     public static ReplayCheckpointScript Load(string recordingFileName)
     {
         ArgumentException.ThrowIfNullOrEmpty(recordingFileName);
-        var path = Path.Combine(AppContext.BaseDirectory, "Baselines", recordingFileName);
+        var assemblyDirectory = Path.GetDirectoryName(typeof(ReplayCheckpointScript).Assembly.Location)
+            ?? throw new InvalidOperationException("Could not locate the E2E test assembly.");
+        var path = Path.Combine(assemblyDirectory, "Baselines", recordingFileName);
         if (!File.Exists(path))
         {
             throw new FileNotFoundException($"Replay checkpoint script not found: {path}", path);

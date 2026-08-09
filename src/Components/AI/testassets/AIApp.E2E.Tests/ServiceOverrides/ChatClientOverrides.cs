@@ -16,6 +16,12 @@ namespace AIApp.E2E.Tests.ServiceOverrides;
 // singleton would be exhausted by the first test that sends a message.
 class ChatClientOverrides
 {
+    public static void AgenticChat(IServiceCollection services)
+    {
+        services.AddScoped(_ => ReplayCheckpointScript.Load("Dojo_AgenticChat.recording.json"));
+        services.AddScoped<IChatClient, GatedReplayChatClient>();
+    }
+
     public static void SingleTurnEcho(IServiceCollection services)
     {
         services.AddScoped<IChatClient>(

@@ -1,0 +1,74 @@
+{
+  "calls": [
+    {
+      "request": {
+        "lastUserMessage": "Change the background to something new",
+        "messageCount": 1,
+        "toolNames": [
+          "change_background"
+        ]
+      },
+      "frames": [
+        {
+          "name": "background-action",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "functionCall",
+                  "name": "change_background",
+                  "arguments": {
+                    "background": "linear-gradient(135deg, #ff9a9e, #fad0c4)"
+                  },
+                  "informationalOnly": false,
+                  "callId": "agentic-chat-background-1"
+                }
+              ],
+              "finishReason": "tool_calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": {
+        "lastUserMessage": "Change the background to something new",
+        "toolNames": [
+          "change_background"
+        ]
+      },
+      "frames": [
+        {
+          "name": "confirmation-start",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "Background changed"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "confirmation-final",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": " to a sunset gradient."
+                }
+              ],
+              "finishReason": "stop"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
