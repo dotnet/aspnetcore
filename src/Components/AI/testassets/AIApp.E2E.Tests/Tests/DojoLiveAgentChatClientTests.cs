@@ -381,7 +381,12 @@ public class DojoLiveAgentChatClientTests
 
             StringAssert.Contains(messages[0].Text, "Do not call any tools");
             Assert.IsEmpty(options?.Tools ?? []);
-            return [new ChatResponseUpdate(ChatRole.Assistant, "Updated the recipe.")];
+            Assert.AreEqual(ChatToolMode.None, options?.ToolMode);
+            return
+            [
+                new ChatResponseUpdate(ChatRole.Assistant, "Updated"),
+                new ChatResponseUpdate(ChatRole.Assistant, " the recipe."),
+            ];
         });
         using var client = new DojoLiveAgentChatClient(model, new ImmediateDelay());
         var initialState = CreateInitialRecipe();
@@ -404,7 +409,60 @@ public class DojoLiveAgentChatClientTests
             resultUpdates[0].RawRepresentation);
         var state = stateEvent.Snapshot.Deserialize<RecipeState>(AIJsonUtilities.DefaultOptions)!;
         Assert.AreEqual("Garden Pasta", state.Recipe.Title);
+        Assert.HasCount(2, resultUpdates);
         Assert.AreEqual("Updated the recipe.", resultUpdates[^1].Text);
+    }
+
+    [TestMethod]
+    public async Task SharedStateRejectsUnexpectedSummaryToolCallBeforePublishingState()
+    {
+        var invocation = 0;
+        var model = new RecordingModelClient((_, _, _) =>
+        {
+            invocation++;
+            return invocation == 1
+                ?
+                [
+                    new ChatResponseUpdate(ChatRole.Assistant, "Created"),
+                    CreateFunctionCallUpdate(
+                        "duplicate",
+                        "generate_recipe",
+                        ("recipe", CreateInitialRecipe().Recipe)),
+                ]
+                : [new ChatResponseUpdate(ChatRole.Assistant, "Created the recipe.")];
+        });
+        using var client = new DojoLiveAgentChatClient(model, new ImmediateDelay());
+        var recipe = CreateInitialRecipe().Recipe;
+        var call = new FunctionCallContent(
+            "recipe",
+            "generate_recipe",
+            new Dictionary<string, object?>
+            {
+                ["recipe"] = JsonSerializer.SerializeToElement(
+                    recipe,
+                    AIJsonUtilities.DefaultOptions),
+            });
+        var messages = new ChatMessage[]
+        {
+            new(ChatRole.User, "Create an Italian recipe."),
+            new(ChatRole.Assistant, [call]),
+            new(ChatRole.Tool, [new FunctionResultContent(call.CallId, "created")]),
+        };
+        var options = CreateOptions(CreateInitialRecipe(), "generate_recipe");
+        var publishedUpdates = new List<ChatResponseUpdate>();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var update in client.GetStreamingResponseAsync(messages, options))
+            {
+                publishedUpdates.Add(update);
+            }
+        });
+
+        Assert.IsEmpty(publishedUpdates);
+        var retry = await CollectAsync(client, messages, options);
+        Assert.IsInstanceOfType<DojoStateSnapshotEvent>(retry[0].RawRepresentation);
+        Assert.AreEqual("Created the recipe.", retry[^1].Text);
     }
 
     [TestMethod]
@@ -478,6 +536,9 @@ public class DojoLiveAgentChatClientTests
                 .SelectMany(message => message.Contents)
                 .OfType<FunctionCallContent>()
                 .Any(call => call.Name == "confirm_changes"));
+            Assert.IsFalse(messages
+                .Skip(1)
+                .Any(message => message.Text.Contains("rejected", StringComparison.OrdinalIgnoreCase)));
             StringAssert.Contains(messages[^1].Text, "confirmed");
             return [new ChatResponseUpdate(ChatRole.Assistant, "The document is committed.")];
         });
@@ -487,8 +548,18 @@ public class DojoLiveAgentChatClientTests
             new DocumentState { Document = "# Existing" },
             "confirm_changes",
             "write_document_local");
+        var oldConfirmation = new FunctionCallContent(
+            "old-confirm",
+            "confirm_changes",
+            arguments: null);
         var messages = new List<ChatMessage>
         {
+            new(ChatRole.User, "Write an earlier document."),
+            new(ChatRole.Assistant, [oldConfirmation]),
+            new(
+                ChatRole.Tool,
+                [new FunctionResultContent(oldConfirmation.CallId, "The user rejected the changes.")]),
+            new(ChatRole.Assistant, "The earlier change was rejected."),
             new(ChatRole.User, "Write any short pirate story."),
         };
 

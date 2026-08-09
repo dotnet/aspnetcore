@@ -1,5 +1,7 @@
 @implements IDisposable
 
+@inject ILogger<RecipeEditor> Logger
+
 <div class="recipe-editor">
     <div class="@GetSectionClass("title")"
          data-section="title"
@@ -137,6 +139,16 @@
 
     private void OnStatusChanged(ConversationStatus status)
     {
+        if (status == ConversationStatus.Error && AgentContext.Error is { } exception)
+        {
+            Logger.LogError(
+                "Shared State conversation failed. Exception type: {ExceptionType}; " +
+                "inner exception type: {InnerExceptionType}; stack: {StackTrace}",
+                exception.GetType().FullName,
+                exception.InnerException?.GetType().FullName ?? "none",
+                exception.StackTrace ?? "unavailable");
+        }
+
         _ = InvokeAsync(async () =>
         {
             await StatusChanged.InvokeAsync(status);

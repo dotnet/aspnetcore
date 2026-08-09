@@ -25,7 +25,8 @@ if (ManualChatClientConfiguration.IsDojoLiveAgentEnabled)
             new AzureOpenAIClient(endpoint, CreateDefaultAzureCredential())
                 .GetChatClient(deployment)
                 .AsIChatClient(),
-            services.GetRequiredService<IDojoLiveAgentDelay>()));
+            services.GetRequiredService<IDojoLiveAgentDelay>(),
+            services.GetRequiredService<ILogger<DojoLiveAgentChatClient>>()));
 }
 else if (ManualChatClientConfiguration.IsLiveCaptureEnabled)
 {

@@ -7,6 +7,7 @@ using AIApp.Components.Scenarios.AgenticGenerativeUI;
 using AIApp.Components.Scenarios.PredictiveStateUpdates;
 using AIApp.Components.Scenarios.SharedState;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AIApp.Shared;
 
@@ -25,13 +26,18 @@ internal sealed class DojoLiveAgentChatClient : IChatClient
 {
     private readonly IChatClient _modelClient;
     private readonly IReadOnlyList<DojoLiveScenarioHandler> _handlers;
+    private readonly ILogger _logger;
 
-    public DojoLiveAgentChatClient(IChatClient modelClient, IDojoLiveAgentDelay delay)
+    public DojoLiveAgentChatClient(
+        IChatClient modelClient,
+        IDojoLiveAgentDelay delay,
+        ILogger<DojoLiveAgentChatClient>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(modelClient);
         ArgumentNullException.ThrowIfNull(delay);
 
         _modelClient = modelClient;
+        _logger = logger is null ? NullLogger.Instance : logger;
         _handlers =
         [
             new AgenticGenerativeUILiveScenarioHandler(modelClient),
@@ -67,7 +73,59 @@ internal sealed class DojoLiveAgentChatClient : IChatClient
                 $"The dojo live agent does not recognize tools [{string.Join(", ", toolNames)}].");
         }
 
-        return handler.GetStreamingResponseAsync(messageList, options, cancellationToken);
+        return GetStreamingResponseCoreAsync(handler, messageList, options, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseCoreAsync(
+        DojoLiveScenarioHandler handler,
+        IReadOnlyList<ChatMessage> messages,
+        ChatOptions? options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await using var enumerator = handler.GetStreamingResponseAsync(
+            messages,
+            options,
+            cancellationToken).GetAsyncEnumerator(cancellationToken);
+        while (true)
+        {
+            ChatResponseUpdate update;
+            try
+            {
+                if (!await enumerator.MoveNextAsync())
+                {
+                    break;
+                }
+
+                update = enumerator.Current;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                LogFailure(handler, exception);
+                throw;
+            }
+
+            yield return update;
+        }
+    }
+
+    private void LogFailure(DojoLiveScenarioHandler handler, Exception exception)
+    {
+        var status = exception.GetType().GetProperty("Status")?.GetValue(exception);
+        var errorCode = exception.GetType().GetProperty("ErrorCode")?.GetValue(exception);
+        _logger.LogError(
+            "Dojo live-agent request failed. Handler: {Handler}; exception type: {ExceptionType}; " +
+            "status: {Status}; error code: {ErrorCode}; inner exception type: {InnerExceptionType}; " +
+            "stack: {StackTrace}",
+            handler.GetType().Name,
+            exception.GetType().FullName,
+            status ?? "unavailable",
+            errorCode ?? "unavailable",
+            exception.InnerException?.GetType().FullName ?? "none",
+            exception.StackTrace ?? "unavailable");
     }
 
     public Task<ChatResponse> GetResponseAsync(
@@ -211,6 +269,58 @@ internal abstract class DojoLiveScenarioHandler(IChatClient modelClient)
         return update;
     }
 
+    protected async Task<IReadOnlyList<ChatResponseUpdate>> GetBufferedModelUpdatesAsync(
+        IReadOnlyList<ChatMessage> messages,
+        ChatOptions? options,
+        CancellationToken cancellationToken)
+    {
+        var streamedUpdates = new List<ChatResponseUpdate>();
+        await foreach (var update in ModelClient.GetStreamingResponseAsync(
+            messages,
+            options,
+            cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            streamedUpdates.Add(update);
+        }
+
+        var response = streamedUpdates.ToChatResponse();
+        var bufferedUpdates = new List<ChatResponseUpdate>(response.Messages.Count);
+        for (var index = 0; index < response.Messages.Count; index++)
+        {
+            var message = response.Messages[index];
+            bufferedUpdates.Add(NormalizeModelUpdate(new ChatResponseUpdate
+            {
+                Role = message.Role,
+                Contents = [.. message.Contents],
+                FinishReason = index == response.Messages.Count - 1
+                    ? response.FinishReason
+                    : null,
+            }));
+        }
+
+        return bufferedUpdates;
+    }
+
+    protected static void EnsureTextOnlyResponse(
+        IReadOnlyList<ChatResponseUpdate> updates,
+        string operation)
+    {
+        if (updates.SelectMany(update => update.Contents).OfType<FunctionCallContent>().Any())
+        {
+            throw new InvalidOperationException(
+                $"The model called a tool while generating the {operation} response.");
+        }
+
+        if (!updates.SelectMany(update => update.Contents)
+            .OfType<TextContent>()
+            .Any(content => !string.IsNullOrWhiteSpace(content.Text)))
+        {
+            throw new InvalidOperationException(
+                $"The model did not generate text for the {operation} response.");
+        }
+    }
+
     protected sealed record ToolExchange(
         FunctionCallContent Call,
         FunctionResultContent Result);
@@ -230,13 +340,14 @@ internal sealed class PassThroughLiveScenarioHandler(
         ChatOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var update in ModelClient.GetStreamingResponseAsync(
+        var updates = await GetBufferedModelUpdatesAsync(
             AddSystemPrompt(messages, systemPrompt),
             PrepareModelOptions(options),
-            cancellationToken).ConfigureAwait(false))
+            cancellationToken);
+        foreach (var update in updates)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return NormalizeModelUpdate(update);
+            yield return update;
         }
     }
 }
@@ -270,13 +381,14 @@ internal sealed class HumanInTheLoopLiveScenarioHandler(IChatClient modelClient)
             yield break;
         }
 
-        await foreach (var update in ModelClient.GetStreamingResponseAsync(
+        var updates = await GetBufferedModelUpdatesAsync(
             AddSystemPrompt(messages, DojoLivePrompts.HumanInTheLoop),
             PrepareModelOptions(options),
-            cancellationToken).ConfigureAwait(false))
+            cancellationToken);
+        foreach (var update in updates)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return NormalizeModelUpdate(update);
+            yield return update;
         }
     }
 }
@@ -394,14 +506,10 @@ internal sealed class AgenticGenerativeUILiveScenarioHandler(IChatClient modelCl
             modelOptions.AllowMultipleToolCalls = false;
         }
 
-        var modelUpdates = new List<ChatResponseUpdate>();
-        await foreach (var update in ModelClient.GetStreamingResponseAsync(
+        var modelUpdates = await GetBufferedModelUpdatesAsync(
             AddSystemPrompt(messages, DojoLivePrompts.AgenticGenerativeUI),
             modelOptions,
-            cancellationToken).ConfigureAwait(false))
-        {
-            modelUpdates.Add(NormalizeModelUpdate(update));
-        }
+            cancellationToken);
 
         var response = modelUpdates.ToChatResponse();
         var modelToolCall = response.Messages
@@ -512,6 +620,22 @@ internal sealed class SharedStateLiveScenarioHandler(IChatClient modelClient)
         if (exchange is not null)
         {
             var recipe = GetRequiredArgument<Recipe>(exchange.Call, "recipe");
+            var summaryOptions = PrepareModelOptions(options);
+            if (summaryOptions is not null)
+            {
+                summaryOptions.Tools = [];
+                summaryOptions.ToolMode = ChatToolMode.None;
+            }
+
+            var summaryUpdates = await GetBufferedModelUpdatesAsync(
+                AddSystemPrompt(
+                    messages,
+                    "The recipe tool has completed. Do not call any tools. " +
+                    "Provide a concise summary of the recipe state changes in at most two sentences."),
+                summaryOptions,
+                cancellationToken);
+            EnsureTextOnlyResponse(summaryUpdates, "Shared State summary");
+
             cancellationToken.ThrowIfCancellationRequested();
             _processedCallIds.Add(exchange.Call.CallId);
             yield return CreateRawEventUpdate(new DojoStateSnapshotEvent
@@ -521,22 +645,10 @@ internal sealed class SharedStateLiveScenarioHandler(IChatClient modelClient)
                     JsonOptions),
             });
 
-            var summaryOptions = PrepareModelOptions(options);
-            if (summaryOptions is not null)
-            {
-                summaryOptions.Tools = [];
-            }
-
-            await foreach (var update in ModelClient.GetStreamingResponseAsync(
-                AddSystemPrompt(
-                    messages,
-                    "The recipe tool has completed. Do not call any tools. " +
-                    "Provide a concise summary of the recipe state changes in at most two sentences."),
-                summaryOptions,
-                cancellationToken).ConfigureAwait(false))
+            foreach (var update in summaryUpdates)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                yield return NormalizeModelUpdate(update);
+                yield return update;
             }
 
             yield break;
@@ -548,13 +660,14 @@ internal sealed class SharedStateLiveScenarioHandler(IChatClient modelClient)
             "Here is the current shared recipe state in JSON format:\n" +
             JsonSerializer.Serialize(state, JsonOptions);
 
-        await foreach (var update in ModelClient.GetStreamingResponseAsync(
+        var updates = await GetBufferedModelUpdatesAsync(
             AddSystemPrompt(messages, prompt),
             PrepareModelOptions(options),
-            cancellationToken).ConfigureAwait(false))
+            cancellationToken);
+        foreach (var update in updates)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return NormalizeModelUpdate(update);
+            yield return update;
         }
     }
 }
@@ -596,7 +709,13 @@ internal sealed class PredictiveStateUpdatesLiveScenarioHandler(
         {
             var pendingDocument = _pendingDocument;
 
-            var continuationMessages = pendingDocument.Messages.ToList();
+            var continuationMessages = new List<ChatMessage>();
+            var request = pendingDocument.Messages.LastOrDefault(message => message.Role == ChatRole.User);
+            if (request is not null)
+            {
+                continuationMessages.Add(request);
+            }
+
             continuationMessages.Add(new ChatMessage(
                 ChatRole.Assistant,
                 [pendingDocument.WriteCall]));
@@ -613,18 +732,21 @@ internal sealed class PredictiveStateUpdatesLiveScenarioHandler(
             if (summaryOptions is not null)
             {
                 summaryOptions.Tools = [];
+                summaryOptions.ToolMode = ChatToolMode.None;
             }
 
-            await foreach (var update in ModelClient.GetStreamingResponseAsync(
+            var summaryUpdates = await GetBufferedModelUpdatesAsync(
                 AddSystemPrompt(
                     continuationMessages,
                     "The document change has already been reviewed. Do not call any tools. " +
                     "Briefly summarize whether the change was confirmed or rejected in at most two sentences."),
                 summaryOptions,
-                cancellationToken).ConfigureAwait(false))
+                cancellationToken);
+            EnsureTextOnlyResponse(summaryUpdates, "Predictive State Updates summary");
+            foreach (var update in summaryUpdates)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                yield return NormalizeModelUpdate(update);
+                yield return update;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -646,14 +768,10 @@ internal sealed class PredictiveStateUpdatesLiveScenarioHandler(
             "Here is the current document state in JSON format:\n" +
             JsonSerializer.Serialize(state, JsonOptions);
         var sanitizedMessages = RemoveConfirmationMessages(messages);
-        var modelUpdates = new List<ChatResponseUpdate>();
-        await foreach (var update in ModelClient.GetStreamingResponseAsync(
+        var modelUpdates = await GetBufferedModelUpdatesAsync(
             AddSystemPrompt(sanitizedMessages, prompt),
             PrepareModelOptions(options),
-            cancellationToken).ConfigureAwait(false))
-        {
-            modelUpdates.Add(NormalizeModelUpdate(update));
-        }
+            cancellationToken);
 
         var response = modelUpdates.ToChatResponse();
         var writeCall = response.Messages
@@ -691,7 +809,7 @@ internal sealed class PredictiveStateUpdatesLiveScenarioHandler(
                 break;
             }
 
-            await delay.DelayAsync(cancellationToken).ConfigureAwait(false);
+            await delay.DelayAsync(cancellationToken);
         }
 
         cancellationToken.ThrowIfCancellationRequested();
