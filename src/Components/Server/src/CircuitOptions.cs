@@ -107,10 +107,13 @@ public sealed class CircuitOptions
     public TimeSpan JSInteropDefaultCallTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
-    /// Gets the JSON metadata resolvers used by JavaScript interop for application-owned payloads.
+    /// Gets the JSON metadata resolvers used for application-owned circuit payloads.
     /// </summary>
+    /// <remarks>
+    /// Resolvers are queried in registration order before the reflection-based fallback.
+    /// </remarks>
     [Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-    public IList<IJsonTypeInfoResolver> JSInteropTypeInfoResolvers { get; } = new List<IJsonTypeInfoResolver>();
+    public IList<IJsonTypeInfoResolver> JsonTypeInfoResolvers { get; } = new List<IJsonTypeInfoResolver>();
 
     /// <summary>
     /// Gets or sets the maximum number of render batches that a circuit will buffer until an acknowledgement for the batch is

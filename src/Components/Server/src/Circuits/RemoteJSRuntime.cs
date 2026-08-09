@@ -49,9 +49,9 @@ internal partial class RemoteJSRuntime : JSRuntime
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
 #pragma warning disable ASPNETCORE9004 // The framework implements this experimental extension point.
-        for (var i = _options.JSInteropTypeInfoResolvers.Count - 1; i >= 0; i--)
+        for (var i = _options.JsonTypeInfoResolvers.Count - 1; i >= 0; i--)
         {
-            JsonSerializerOptions.TypeInfoResolverChain.Insert(0, _options.JSInteropTypeInfoResolvers[i]);
+            JsonSerializerOptions.TypeInfoResolverChain.Insert(0, _options.JsonTypeInfoResolvers[i]);
         }
 #pragma warning restore ASPNETCORE9004
     }
