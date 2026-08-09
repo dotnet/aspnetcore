@@ -44,8 +44,13 @@ public partial class DojoShellTests : BrowserTest
         await Expect(demo).ToHaveAttributeAsync("data-scenario", "agentic_chat");
         await Expect(demo).ToHaveAttributeAsync("data-interactive", "true");
 
-        var placeholder = demo.Locator(".dojo-scenario-placeholder");
-        await Expect(placeholder.Locator("h1")).ToHaveTextAsync("Agentic Chat");
-        await Expect(placeholder.Locator("p")).ToHaveCountAsync(2);
+        var scenario = demo.Locator("[data-dojo-scenario='agentic-chat']");
+        await Expect(scenario).ToHaveCountAsync(1);
+        await Expect(scenario.Locator(".dojo-welcome__heading"))
+            .ToHaveTextAsync("How can I help you today?");
+        await Expect(scenario.Locator(".sc-ai-suggestions__chip")).ToHaveCountAsync(2);
+        await Expect(scenario.Locator(".sc-ai-input__textarea"))
+            .ToHaveAttributeAsync("placeholder", "Type a message...");
+        await Expect(demo.Locator(".dojo-scenario-placeholder")).ToHaveCountAsync(0);
     }
 }
