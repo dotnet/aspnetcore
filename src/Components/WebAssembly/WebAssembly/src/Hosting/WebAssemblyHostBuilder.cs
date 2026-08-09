@@ -172,8 +172,10 @@ public sealed class WebAssemblyHostBuilder
         }
 
         var serializationContext = services.GetRequiredService<WebAssemblyHostSerializationContext>();
-        foreach (var registeredComponent in registeredComponents)
+        var registeredMappings = new RootComponentMapping[registeredComponents.Length];
+        for (var i = 0; i < registeredComponents.Length; i++)
         {
+            var registeredComponent = registeredComponents[i];
             var componentType = _rootComponentCache!.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
             if (componentType is null)
             {
@@ -183,7 +185,15 @@ public sealed class WebAssemblyHostBuilder
             }
 
             var parameters = serializationContext.DeserializeComponentParameters(registeredComponent);
-            RootComponents.Add(componentType, registeredComponent.PrerenderId!, parameters.Parameters);
+            registeredMappings[i] = new RootComponentMapping(
+                componentType,
+                registeredComponent.PrerenderId!,
+                parameters.Parameters);
+        }
+
+        for (var i = 0; i < registeredMappings.Length; i++)
+        {
+            RootComponents.Insert(i, registeredMappings[i]);
         }
     }
 
