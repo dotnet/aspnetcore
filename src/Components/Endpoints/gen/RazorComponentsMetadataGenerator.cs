@@ -14,8 +14,17 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Microsoft.AspNetCore.Components.Endpoints.Generators;
 
 /// <summary>
-/// Generates application metadata for JS-invokable methods declared by a Razor components application.
+/// Implements the members of an application's <c>RazorComponentsMetadataContext</c> partial, so that
+/// component discovery, activation, parameter binding, form binding and JS interop dispatch can all
+/// run without reflection or runtime code generation.
 /// </summary>
+/// <remarks>
+/// The generator runs on the host application and walks referenced assembly metadata rather than the
+/// current syntax tree. Source generators all observe the same input compilation and cannot see each
+/// other's output, so Razor-compiled component types are never in the compilation of the project that
+/// declares the <c>.razor</c> files. They are in its <em>references</em>, which is why components live
+/// in a class library and the metadata context lives in the host.
+/// </remarks>
 [Generator(LanguageNames.CSharp)]
 public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGenerator
 {
@@ -40,6 +49,8 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         context.RegisterSourceOutput(models, static (spc, result) => Emit(spc, result));
     }
 
+    // Cheap syntactic filter: a class declaration that has a base list. The semantic check that the
+    // base type really is RazorComponentsMetadataContext happens once, against the compilation.
     private static bool IsCandidateContextDeclaration(SyntaxNode node)
         => node is ClassDeclarationSyntax { BaseList: not null };
 
@@ -53,6 +64,10 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
             return GenerationResult.Empty;
         }
 
+        // Reading private members is what makes an ordinary Blazor application describable: Razor emits
+        // `@inject` as a private property, and a page's `@rendermode` as a private nested attribute.
+        // Roslyn hides both under the default import options, so the walk runs against a compilation
+        // that imports everything and reaches them through UnsafeAccessor rather than reflection.
         var expanded = compilation.Options is CSharpCompilationOptions options
             ? compilation.WithOptions(options.WithMetadataImportOptions(MetadataImportOptions.All))
             : compilation;
@@ -70,6 +85,9 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
             return new GenerationResult(ImmutableArray<MetadataContextModel>.Empty, diagnostics.ToImmutable());
         }
 
+        // The component and JS interop sets describe the whole application, so they are computed once
+        // and shared: two contexts in one application describe the same application.
+        var components = CollectComponents(expanded, types, diagnostics, cancellationToken);
         var jsInvokableMethods = CollectJSInvokableMethods(expanded, types, cancellationToken);
         var referencedAssemblyNames = new HashSet<string>(
             expanded.SourceModule.ReferencedAssemblySymbols.Select(static assembly => assembly.Identity.Name),
@@ -77,6 +95,7 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         var builtInJSInvokableDescriptorAssemblies = BuiltInJSInvokableDescriptorAssemblies
             .Where(referencedAssemblyNames.Contains)
             .ToImmutableArray();
+
         var models = ImmutableArray.CreateBuilder<MetadataContextModel>();
         foreach (var contextType in contexts)
         {
@@ -90,6 +109,7 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
                 TypeKeyword: contextType.IsRecord ? "record" : "class",
                 DeclaresJsonTypeInfoResolver: DeclaresMember(contextType, "JsonTypeInfoResolver"),
                 BuiltInJSInvokableDescriptorAssemblies: builtInJSInvokableDescriptorAssemblies,
+                Components: components,
                 BindableTypes: bindableTypes,
                 JSInvokableMethods: jsInvokableMethods));
         }
@@ -111,6 +131,8 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            // The candidates were gathered from the original compilation; re-resolving them here keeps
+            // every symbol in this method rooted in the compilation the rest of the pass uses.
             var tree = compilation.SyntaxTrees.FirstOrDefault(t => t.FilePath == candidate.SyntaxTree.FilePath)
                 ?? candidate.SyntaxTree;
             if (!compilation.ContainsSyntaxTree(tree))
@@ -249,6 +271,8 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         return clauses.ToImmutable();
     }
 
+    // A member the application already wrote is left alone, so an application can override the JSON
+    // resolver (the common case) without losing the generated members beside it.
     private static bool DeclaresMember(INamedTypeSymbol type, string name)
         => type.GetMembers(name).Length > 0;
 
@@ -266,6 +290,8 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
         public override int GetHashCode() => ModelComparer.AddRange(0, Models);
     }
 
+    // Diagnostics are carried as data rather than as Diagnostic instances so that the pipeline's cache
+    // key stays free of Location objects, which are not value-equatable across compilations.
     internal sealed record class DiagnosticInfo(string Id, string Argument0, string Argument1)
     {
         public Diagnostic ToDiagnostic()
@@ -273,7 +299,9 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
             var descriptor = Id switch
             {
                 "BLAZORAOT002" => DiagnosticDescriptors.BindableModelNotDescribed,
-                _ => DiagnosticDescriptors.MetadataContextMustBePartial,
+                "BLAZORAOT003" => DiagnosticDescriptors.MetadataContextMustBePartial,
+                "BLAZORAOT004" => DiagnosticDescriptors.ComponentAttributeNotDescribed,
+                _ => DiagnosticDescriptors.ComponentNotFullyDescribed,
             };
 
             return Diagnostic.Create(descriptor, Location.None, Argument0, Argument1);

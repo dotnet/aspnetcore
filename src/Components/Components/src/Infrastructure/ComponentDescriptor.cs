@@ -32,7 +32,8 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// </code>
 /// </example>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal sealed class ComponentDescriptor
+[Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+public sealed class ComponentDescriptor
 {
     /// <summary>
     /// Gets the component <see cref="Type"/>.

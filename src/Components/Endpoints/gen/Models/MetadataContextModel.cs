@@ -6,6 +6,9 @@ using System.Collections.Immutable;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Generators.Models;
 
+// Everything the emitter needs to write one metadata context partial. Every field is a string, a bool
+// or an immutable array of the same, so the model is structurally equatable and the incremental
+// pipeline can cache on it without holding onto Roslyn symbols.
 internal sealed record class MetadataContextModel(
     string? Namespace,
     ImmutableArray<ContainingTypeModel> ContainingTypes,
@@ -13,6 +16,7 @@ internal sealed record class MetadataContextModel(
     string TypeKeyword,
     bool DeclaresJsonTypeInfoResolver,
     ImmutableArray<string> BuiltInJSInvokableDescriptorAssemblies,
+    ImmutableArray<DescribedComponentModel> Components,
     ImmutableArray<BindableTypeModel> BindableTypes,
     ImmutableArray<JSInvokableMethodModel> JSInvokableMethods)
 {
@@ -26,6 +30,7 @@ internal sealed record class MetadataContextModel(
                BuiltInJSInvokableDescriptorAssemblies,
                other.BuiltInJSInvokableDescriptorAssemblies) &&
            ModelComparer.SequenceEqual(ContainingTypes, other.ContainingTypes) &&
+           ModelComparer.SequenceEqual(Components, other.Components) &&
            ModelComparer.SequenceEqual(BindableTypes, other.BindableTypes) &&
            ModelComparer.SequenceEqual(JSInvokableMethods, other.JSInvokableMethods);
 
@@ -36,9 +41,12 @@ internal sealed record class MetadataContextModel(
         hash = ModelComparer.Combine(hash, TypeName);
         hash = ModelComparer.Combine(hash, TypeKeyword);
         hash = ModelComparer.AddRange(hash, BuiltInJSInvokableDescriptorAssemblies);
+        hash = ModelComparer.AddRange(hash, Components);
         hash = ModelComparer.AddRange(hash, BindableTypes);
-        return ModelComparer.AddRange(hash, JSInvokableMethods);
+        hash = ModelComparer.AddRange(hash, JSInvokableMethods);
+        return hash;
     }
+
 }
 
 internal sealed record class ContainingTypeModel(
@@ -59,10 +67,64 @@ internal sealed record class ContainingTypeModel(
         var hash = ModelComparer.Combine(0, Name);
         hash = ModelComparer.Combine(hash, TypeKeyword);
         hash = ModelComparer.AddRange(hash, TypeParameters);
-        return ModelComparer.AddRange(hash, ConstraintClauses);
+        hash = ModelComparer.AddRange(hash, ConstraintClauses);
+        return hash;
     }
 }
 
+// A component the generator could describe completely: it can be constructed, and every one of its
+// parameter and injectable members can be reached from the generated code.
+internal sealed record class DescribedComponentModel(
+    string TypeFullyQualifiedName,
+    bool CanConstruct,
+    ImmutableArray<ComponentParameterModel> Parameters,
+    ImmutableArray<ComponentInjectableModel> Injectables,
+    ImmutableArray<string> MetadataExpressions)
+{
+    public bool Equals(DescribedComponentModel? other)
+        => other is not null &&
+           string.Equals(TypeFullyQualifiedName, other.TypeFullyQualifiedName, StringComparison.Ordinal) &&
+           CanConstruct == other.CanConstruct &&
+           ModelComparer.SequenceEqual(Parameters, other.Parameters) &&
+           ModelComparer.SequenceEqual(Injectables, other.Injectables) &&
+           ModelComparer.SequenceEqual(MetadataExpressions, other.MetadataExpressions);
+
+    public override int GetHashCode()
+    {
+        var hash = ModelComparer.Combine(0, TypeFullyQualifiedName);
+        hash = ModelComparer.AddRange(hash, Parameters);
+        hash = ModelComparer.AddRange(hash, Injectables);
+        hash = ModelComparer.AddRange(hash, MetadataExpressions);
+        return hash;
+    }
+}
+
+// A [Parameter] or cascading parameter property. AttributeExpression is the C# that reconstructs the
+// attribute instance the descriptor carries, so a new cascading parameter kind needs no change here.
+internal sealed record class ComponentParameterModel(
+    string Name,
+    string DeclaringTypeFullyQualifiedName,
+    string PropertyTypeFullyQualifiedName,
+    // The same type with its nullable annotations, for casts and accessor signatures. The
+    // unannotated name above is what typeof() requires.
+    string PropertyTypeAnnotatedName,
+    string AttributeExpression,
+    bool IsPersistentState,
+    bool RequiresDamSuppression,
+    bool RequiresGetAccessor,
+    bool RequiresSetAccessor);
+
+// An [Inject] property, together with the expression that rebuilds its InjectAttribute (which carries
+// the key for a keyed service). RequiresSetAccessor is set for a Razor `@inject`, which the compiler
+// emits as a private property and which is therefore assigned through an UnsafeAccessor.
+internal sealed record class ComponentInjectableModel(
+    string Name,
+    string DeclaringTypeFullyQualifiedName,
+    string ServiceTypeFullyQualifiedName,
+    string AttributeExpression,
+    bool RequiresSetAccessor);
+
+// A form model type and the members a binding expression can walk through.
 internal sealed record class BindableTypeModel(
     string TypeFullyQualifiedName,
     ImmutableArray<BindableMemberModel> Members,
@@ -93,6 +155,8 @@ internal sealed record class BindableIndexerModel(
     string IndexTypeFullyQualifiedName,
     string ValueTypeFullyQualifiedName);
 
+// A [JSInvokable] method. The parameter and return types are what let the emitter make the serializer
+// calls on concrete type arguments.
 internal sealed record class JSInvokableMethodModel(
     string AssemblyName,
     string TypeFullyQualifiedName,
@@ -122,7 +186,8 @@ internal sealed record class JSInvokableMethodModel(
     {
         var hash = ModelComparer.Combine(0, TypeFullyQualifiedName);
         hash = ModelComparer.Combine(hash, Identifier);
-        return ModelComparer.AddRange(hash, ParameterTypeFullyQualifiedNames);
+        hash = ModelComparer.AddRange(hash, ParameterTypeFullyQualifiedNames);
+        return hash;
     }
 }
 

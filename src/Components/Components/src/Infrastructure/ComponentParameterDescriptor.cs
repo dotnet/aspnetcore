@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 /// <summary>
@@ -31,7 +33,8 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// }
 /// </code>
 /// </example>
-internal sealed class ComponentParameterDescriptor
+[Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+public sealed class ComponentParameterDescriptor
 {
     /// <summary>
     /// Gets the name of the property, used to match an incoming parameter value.
