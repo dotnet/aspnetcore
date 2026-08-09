@@ -3,6 +3,8 @@
 
 using AIApp.Components;
 using AIApp.Shared;
+using Azure.AI.OpenAI;
+using Azure.Identity;
 using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,11 +12,49 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddSingleton<IChatClient>(new EchoChatClient());
+if (ManualChatClientConfiguration.IsLiveCaptureEnabled)
+{
+    builder.Services.AddScoped<IChatClient>(services =>
+        ManualChatClientConfiguration.CreateLiveCapture(
+            builder.Environment.ContentRootPath,
+            static (endpoint, deployment) =>
+                new AzureOpenAIClient(endpoint, CreateDefaultAzureCredential())
+                    .GetChatClient(deployment)
+                    .AsIChatClient(),
+            exception =>
+            {
+                var status = exception.GetType().GetProperty("Status")?.GetValue(exception)
+                    ?? "unavailable";
+                services.GetRequiredService<ILogger<CapturingChatClient>>().LogError(
+                    "Live capture failed. Exception type: {ExceptionType}; status: {Status}; " +
+                    "inner exception type: {InnerExceptionType}.",
+                    exception.GetType().FullName,
+                    status,
+                    exception.InnerException?.GetType().FullName ?? "none");
+            }));
+}
+else if (ManualChatClientConfiguration.IsManualReplayEnabled)
+{
+    builder.Services.AddScoped<IChatClient>(_ =>
+        ManualChatClientConfiguration.CreateManualReplay());
+}
+else
+{
+    builder.Services.AddSingleton<IChatClient>(new EchoChatClient());
+}
+
 builder.Services.AddSingleton<ScenarioRegistry>();
 builder.Services.AddScoped<ReplayCheckpointState>();
 
 var app = builder.Build();
+
+app.Logger.LogInformation(
+    "AIApp chat client mode: {ChatClientMode}.",
+    ManualChatClientConfiguration.IsLiveCaptureEnabled
+        ? "live capture"
+        : ManualChatClientConfiguration.IsManualReplayEnabled
+            ? "manual replay"
+            : "echo");
 
 if (!app.Environment.IsDevelopment())
 {
@@ -28,6 +68,22 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+static DefaultAzureCredential CreateDefaultAzureCredential()
+{
+    return new DefaultAzureCredential(new DefaultAzureCredentialOptions
+    {
+        ExcludeEnvironmentCredential = true,
+        ExcludeWorkloadIdentityCredential = true,
+        ExcludeManagedIdentityCredential = true,
+        ExcludeSharedTokenCacheCredential = true,
+        ExcludeVisualStudioCredential = true,
+        ExcludeVisualStudioCodeCredential = true,
+        ExcludeAzurePowerShellCredential = true,
+        ExcludeAzureDeveloperCliCredential = true,
+        ExcludeInteractiveBrowserCredential = true,
+    });
+}
 
 // Default echo client — returns the user's message back
 internal sealed class EchoChatClient : IChatClient

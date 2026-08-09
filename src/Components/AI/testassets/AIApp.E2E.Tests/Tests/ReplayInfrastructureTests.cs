@@ -23,9 +23,13 @@ public class ReplayInfrastructureTests
         fake.Enqueue((messages, _, cancellationToken) =>
         {
             Assert.AreEqual("hello", messages.Single().Text);
-            return YieldAsync(
-                [new ChatResponseUpdate(ChatRole.Assistant, "captured")],
-                cancellationToken);
+            return YieldAsync([
+                new ChatResponseUpdate(ChatRole.Assistant, "captured")
+                {
+                    ModelId = "deployment-name",
+                    RawRepresentation = new { Credential = "provider metadata" },
+                },
+            ], cancellationToken);
         });
         using var client = new CapturingChatClient(fake);
 
@@ -36,6 +40,78 @@ public class ReplayInfrastructureTests
         Assert.HasCount(1, client.Calls);
         Assert.AreEqual("hello", client.Calls[0].Messages.Single().Text);
         Assert.AreEqual("captured", client.Calls[0].Updates.Single().Text);
+        Assert.IsNull(client.Calls[0].Updates.Single().ModelId);
+        Assert.IsNull(client.Calls[0].Updates.Single().RawRepresentation);
+    }
+
+    [TestMethod]
+    public async Task CapturingChatClient_SavesDecodedRecordingForOfflineReplay()
+    {
+        var recordingPath = Path.Combine(
+            Path.GetTempPath(),
+            $"AIApp-{Guid.NewGuid():N}.recording.json");
+        try
+        {
+            var fake = new FakeChatClient();
+            fake.Enqueue((_, _, cancellationToken) =>
+                YieldAsync(
+                    [
+                        new ChatResponseUpdate(ChatRole.Assistant, "captured "),
+                        new ChatResponseUpdate(ChatRole.Assistant, "response"),
+                    ],
+                    cancellationToken));
+            using (var capture = new CapturingChatClient(fake, recordingPath))
+            {
+                var response = await capture.GetResponseAsync(
+                    [new ChatMessage(ChatRole.User, "hello")]);
+                Assert.AreEqual("captured response", response.Text);
+            }
+
+            using var replay = new ManualReplayChatClient(
+                DecodedChatRecording.Load(recordingPath));
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                replay.GetResponseAsync([new ChatMessage(ChatRole.User, "different")]));
+
+            var replayedResponse = await replay.GetResponseAsync(
+                [new ChatMessage(ChatRole.User, "hello")]);
+
+            Assert.AreEqual("captured response", replayedResponse.Text);
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                replay.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")]));
+        }
+        finally
+        {
+            File.Delete(recordingPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CapturingChatClient_RejectsCredentialLikeRecording()
+    {
+        var recordingPath = Path.Combine(
+            Path.GetTempPath(),
+            $"AIApp-{Guid.NewGuid():N}.recording.json");
+        try
+        {
+            var fake = new FakeChatClient();
+            fake.Enqueue((_, _, cancellationToken) =>
+                YieldAsync(
+                    [new ChatResponseUpdate(ChatRole.Assistant, "configured-endpoint")],
+                    cancellationToken));
+            using var client = new CapturingChatClient(
+                fake,
+                recordingPath,
+                reportError: null,
+                "configured-endpoint");
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")]));
+            Assert.IsFalse(File.Exists(recordingPath));
+        }
+        finally
+        {
+            File.Delete(recordingPath);
+        }
     }
 
     [TestMethod]
