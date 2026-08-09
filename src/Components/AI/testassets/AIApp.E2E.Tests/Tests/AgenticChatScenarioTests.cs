@@ -32,6 +32,7 @@ public partial class AgenticChatScenarioTests : BrowserTest
         var scenario = demo.Locator("[data-dojo-scenario='agentic-chat']");
         var input = scenario.Locator(".sc-ai-input__textarea");
         var send = scenario.Locator(".sc-ai-input__send");
+        var checkpoint = demo.Locator(".replay-checkpoint-status");
         var actionFrame = session.Lock(script.GetLockName(0, 0));
         var confirmationStart = session.Lock(script.GetLockName(1, 0));
         var confirmationFinal = session.Lock(script.GetLockName(1, 1));
@@ -47,19 +48,29 @@ public partial class AgenticChatScenarioTests : BrowserTest
             await Expect(scenario).ToHaveAttributeAsync(
                 "style",
                 "background: linear-gradient(135deg, #ff9a9e, #fad0c4);");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "background-action");
 
             await actionFrame.ReleaseAsync();
 
             var assistant = turn.Locator(".sc-ai-message--assistant .sc-ai-message__content");
             await Expect(assistant).ToHaveTextAsync("Background changed");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "confirmation-start");
 
             await confirmationStart.ReleaseAsync();
 
             await Expect(assistant).ToHaveTextAsync("Background changed to a sunset gradient.");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "confirmation-final");
 
             await confirmationFinal.ReleaseAsync();
 
             await Expect(assistant).ToHaveTextAsync("Background changed to a sunset gradient.");
+            await Expect(checkpoint).ToHaveCountAsync(0);
             await Expect(scenario.GetByRole(
                 AriaRole.Status,
                 new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
@@ -95,6 +106,8 @@ public partial class AgenticChatScenarioTests : BrowserTest
         await Expect(secondPage.Locator(".dojo-demo")).ToHaveAttributeAsync("data-interactive", "true");
         var firstScenario = firstPage.Locator("[data-dojo-scenario='agentic-chat']");
         var secondScenario = secondPage.Locator("[data-dojo-scenario='agentic-chat']");
+        var firstCheckpoint = firstPage.Locator(".replay-checkpoint-status");
+        var secondCheckpoint = secondPage.Locator(".replay-checkpoint-status");
         var firstAction = firstSession.Lock(script.GetLockName(0, 0));
         var firstStart = firstSession.Lock(script.GetLockName(1, 0));
         var firstFinal = firstSession.Lock(script.GetLockName(1, 1));
@@ -118,6 +131,12 @@ public partial class AgenticChatScenarioTests : BrowserTest
             const string expectedStyle = "background: linear-gradient(135deg, #ff9a9e, #fad0c4);";
             await Expect(firstScenario).ToHaveAttributeAsync("style", expectedStyle);
             await Expect(secondScenario).ToHaveAttributeAsync("style", expectedStyle);
+            await Expect(firstCheckpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "background-action");
+            await Expect(secondCheckpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "background-action");
 
             await firstAction.ReleaseAsync();
 
@@ -127,17 +146,34 @@ public partial class AgenticChatScenarioTests : BrowserTest
                 ".sc-ai-turn .sc-ai-message--assistant .sc-ai-message__content");
             await Expect(firstAssistant).ToHaveTextAsync("Background changed");
             await Expect(secondAssistant).ToHaveCountAsync(0);
+            await Expect(firstCheckpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "confirmation-start");
+            await Expect(secondCheckpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "background-action");
 
             await secondAction.ReleaseAsync();
             await Expect(secondAssistant).ToHaveTextAsync("Background changed");
+            await Expect(secondCheckpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "confirmation-start");
 
             await firstStart.ReleaseAsync();
             await secondStart.ReleaseAsync();
             await Expect(firstAssistant).ToHaveTextAsync("Background changed to a sunset gradient.");
             await Expect(secondAssistant).ToHaveTextAsync("Background changed to a sunset gradient.");
+            await Expect(firstCheckpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "confirmation-final");
+            await Expect(secondCheckpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "confirmation-final");
 
             await firstFinal.ReleaseAsync();
             await secondFinal.ReleaseAsync();
+            await Expect(firstCheckpoint).ToHaveCountAsync(0);
+            await Expect(secondCheckpoint).ToHaveCountAsync(0);
             await Expect(firstScenario.Locator(".sc-ai-input__send")).ToBeEnabledAsync();
             await Expect(secondScenario.Locator(".sc-ai-input__send")).ToBeEnabledAsync();
         }

@@ -12,6 +12,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSingleton<IChatClient>(new EchoChatClient());
 builder.Services.AddSingleton<ScenarioRegistry>();
+builder.Services.AddScoped<ReplayCheckpointState>();
 
 var app = builder.Build();
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using AIApp.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -15,13 +16,15 @@ internal sealed class GatedReplayChatClient : IChatClient
     private readonly TestLockProvider _locks;
     private readonly TestSessionContext _session;
     private readonly NavigationManager? _navigation;
+    private readonly ReplayCheckpointState? _checkpointState;
     private int _callIndex;
 
     public GatedReplayChatClient(
         ReplayCheckpointScript script,
         TestLockProvider locks,
         TestSessionContext session,
-        NavigationManager? navigation = null)
+        NavigationManager? navigation = null,
+        ReplayCheckpointState? checkpointState = null)
     {
         ArgumentNullException.ThrowIfNull(script);
         ArgumentNullException.ThrowIfNull(locks);
@@ -30,6 +33,7 @@ internal sealed class GatedReplayChatClient : IChatClient
         _locks = locks;
         _session = session;
         _navigation = navigation;
+        _checkpointState = checkpointState;
     }
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
@@ -58,7 +62,15 @@ internal sealed class GatedReplayChatClient : IChatClient
             }
 
             var lockKey = $"{sessionId}:{_script.GetLockName(callIndex, checkpointIndex)}";
-            await _locks.WaitOn(lockKey).WaitAsync(cancellationToken).ConfigureAwait(false);
+            _checkpointState?.SetCheckpoint(frame.Name);
+            try
+            {
+                await _locks.WaitOn(lockKey).WaitAsync(cancellationToken);
+            }
+            finally
+            {
+                _checkpointState?.ClearCheckpoint();
+            }
         }
     }
 

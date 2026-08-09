@@ -13,6 +13,7 @@
 else
 {
     <div class="dojo-demo" data-scenario="@ScenarioId" data-interactive="@_interactive.ToString().ToLowerInvariant()">
+        <ReplayCheckpointStatus />
         @if (ScenarioId == "agentic_chat")
         {
             <AgenticChatScenario />

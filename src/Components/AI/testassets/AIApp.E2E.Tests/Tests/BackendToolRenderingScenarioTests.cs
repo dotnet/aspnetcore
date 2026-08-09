@@ -33,6 +33,7 @@ public partial class BackendToolRenderingScenarioTests : BrowserTest
         var scenario = demo.Locator("[data-dojo-scenario='backend-tool-rendering']");
         var input = scenario.Locator(".sc-ai-input__textarea");
         var send = scenario.Locator(".sc-ai-input__send");
+        var checkpoint = demo.Locator(".replay-checkpoint-status");
         var toolCall = session.Lock(script.GetLockName(0, 0));
         var summaryStart = session.Lock(script.GetLockName(1, 0));
         var summaryFinal = session.Lock(script.GetLockName(1, 1));
@@ -52,6 +53,9 @@ public partial class BackendToolRenderingScenarioTests : BrowserTest
             await Expect(turn.Locator(".weather-card--loading"))
                 .ToHaveTextAsync("\u2699\ufe0f Retrieving weather...");
             await Expect(send).ToBeDisabledAsync();
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "weather-tool-call");
 
             await toolCall.ReleaseAsync();
 
@@ -69,6 +73,9 @@ public partial class BackendToolRenderingScenarioTests : BrowserTest
 
             var assistant = turn.Locator(".sc-ai-message--assistant .sc-ai-message__content");
             await Expect(assistant).ToHaveTextAsync("The weather in San Francisco is sunny");
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "weather-summary-start");
 
             await summaryStart.ReleaseAsync();
 
@@ -76,15 +83,15 @@ public partial class BackendToolRenderingScenarioTests : BrowserTest
                 .ToHaveTextAsync("The weather in San Francisco is sunny with a temperature of 20\u00b0C.");
             await Expect(assistant).ToHaveClassAsync(
                 "sc-ai-message__content sc-ai-message__content--streaming");
-            await Expect(scenario.GetByRole(
-                AriaRole.Status,
-                new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
-            await Expect(send).ToBeEnabledAsync();
+            await Expect(checkpoint).ToHaveAttributeAsync(
+                "data-replay-checkpoint",
+                "weather-summary-final");
 
             await summaryFinal.ReleaseAsync();
 
             await Expect(assistant)
                 .ToHaveTextAsync("The weather in San Francisco is sunny with a temperature of 20\u00b0C.");
+            await Expect(checkpoint).ToHaveCountAsync(0);
             await Expect(scenario.GetByRole(
                 AriaRole.Status,
                 new() { Name = "Agent is typing", Exact = true })).ToHaveCountAsync(0);
