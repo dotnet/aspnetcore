@@ -23,7 +23,15 @@ internal static class ComponentTypeInfoResolverExtensions
         ArgumentNullException.ThrowIfNull(resolver);
         ArgumentNullException.ThrowIfNull(assembly);
 
-        return resolver.GetTypeInfos(assembly);
+        var typeInfos = resolver.GetTypeInfos(assembly);
+        if (typeInfos.Count == 0 && !ComponentMetadataFeature.IsReflectionEnabledByDefault)
+        {
+            throw new NotSupportedException(
+                $"Component metadata for assembly '{assembly.GetName().Name}' could not be resolved. " +
+                "Register generated component metadata for every explicitly requested component assembly.");
+        }
+
+        return typeInfos;
     }
 
     public static ComponentTypeInfo GetRequiredTypeInfo(

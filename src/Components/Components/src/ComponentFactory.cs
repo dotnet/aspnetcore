@@ -60,6 +60,13 @@ internal sealed class ComponentFactory
         int? parentComponentId)
     {
         var componentType = typeInfo.Type;
+        if (!ComponentMetadataFeature.IsReflectionEnabledByDefault &&
+            _componentActivator is not DefaultComponentActivator)
+        {
+            throw new NotSupportedException(
+                $"The custom {nameof(IComponentActivator)} contract cannot be used when component metadata reflection is disabled.");
+        }
+
         var componentTypeRenderMode = GetComponentTypeRenderMode(typeInfo);
         IComponent component;
 
@@ -87,6 +94,13 @@ internal sealed class ComponentFactory
 
         if (!_propertyInjectionDisabled)
         {
+            if (!ComponentMetadataFeature.IsReflectionEnabledByDefault &&
+                _propertyActivator is not DefaultComponentPropertyActivator)
+            {
+                throw new NotSupportedException(
+                    $"The custom {nameof(IComponentPropertyActivator)} contract cannot be used when component metadata reflection is disabled.");
+            }
+
             PerformPropertyInjection(serviceProvider, component, typeInfo);
         }
 

@@ -56,6 +56,12 @@ internal sealed class DefaultComponentActivator : IComponentActivator
             return createInstance(_serviceProvider);
         }
 
+        if (!ComponentMetadataFeature.IsReflectionEnabledByDefault)
+        {
+            throw new NotSupportedException(
+                $"Component metadata for type '{componentType.FullName}' does not provide an activation factory.");
+        }
+
         var factory = ActivatorUtilities.CreateFactory(componentType, Type.EmptyTypes);
         return (IComponent)factory(_serviceProvider, []);
     }
