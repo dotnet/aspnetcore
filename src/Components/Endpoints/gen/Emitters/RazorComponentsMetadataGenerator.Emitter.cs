@@ -30,11 +30,14 @@ public sealed partial class RazorComponentsMetadataGenerator
     private const string BuiltInJSInvokableDescriptorProviderType =
         "Microsoft.JSInterop.Infrastructure.BuiltInJSInvokableMethodDescriptors";
 
-    private static void Emit(SourceProductionContext context, GenerationResult result)
+    private static void Emit(
+        SourceProductionContext context,
+        GenerationResult result,
+        bool reflectionEnabledByDefault)
     {
         foreach (var diagnostic in result.Diagnostics)
         {
-            context.ReportDiagnostic(diagnostic.ToDiagnostic());
+            context.ReportDiagnostic(diagnostic.ToDiagnostic(reflectionEnabledByDefault));
         }
 
         foreach (var model in result.Models)

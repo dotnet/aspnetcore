@@ -5,18 +5,60 @@
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseIisNativeAssets>false</UseIisNativeAssets>
+    <!-- Native AOT: enabled here (scoped to this app; referenced framework projects don't inherit
+         it). Local `dotnet run` still JITs; `dotnet publish -r <rid>` produces the native app.
+         Enables the AOT/trim analyzers during build so per-feature blockers surface. -->
+    <PublishAot>true</PublishAot>
+    <!-- Reflection remains enabled by default for every Blazor application. This dedicated test asset
+         explicitly requests complete generated metadata so omissions are build errors. -->
+    <RazorComponentsReflectionEnabledByDefault>false</RazorComponentsReflectionEnabledByDefault>
+    <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
     <!-- The metadata model is experimental; the sample opts into it deliberately. -->
     <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
+    <DefineConstants>$(DefineConstants);E2E_COMPILE_TEST_HARNESS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BlazorAotStrictMode)' == 'true'">
+    <RuntimeHostConfigurationOption
+        Include="System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"
+        Value="false"
+        Trim="true" />
+    <RuntimeHostConfigurationOption
+        Include="Microsoft.AspNetCore.Components.ComponentMetadata.IsReflectionEnabledByDefault"
+        Value="false"
+        Trim="true" />
+    <RuntimeHostConfigurationOption
+        Include="Microsoft.JSInterop.JSInvokableMethodResolution.IsReflectionEnabledByDefault"
+        Value="false"
+        Trim="true" />
+  </ItemGroup>
+
+  <!-- HTTP form mapping is not part of this feature matrix and remains unsupported under Native AOT.
+       Remove its private implementation only from the strict proof image without suppressing warnings. -->
+  <Target Name="AddStrictFormMappingSubstitutions"
+          BeforeTargets="WriteIlcRspFileForCompilation"
+          Condition="'$(BlazorAotStrictMode)' == 'true' and '$(PublishAot)' == 'true'">
+    <ItemGroup>
+      <IlcArg Include="--substitution:$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)BlazorServerAotSample.ILLink.Substitutions.xml'))" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
+    <CompilerVisibleProperty Include="RazorComponentsReflectionEnabledByDefault" />
+    <CompilerVisibleProperty Include="E2ECompileTestHarness" />
     <!-- The host contains NO Blazor/.razor code; all components live in the Pages library. -->
     <ProjectReference Include="..\BlazorServerAotSample.Pages\BlazorServerAotSample.Pages.csproj" />
     <!-- The metadata source generator runs here and walks the referenced Pages library, which is the
          only place the Razor-compiled component types are visible from. -->
     <ProjectReference Include="..\..\..\..\Endpoints\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj"
                       OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <!-- Source-tree equivalent of the package's buildTransitive analyzer hook. -->
+    <ProjectReference Include="..\..\..\..\Testing\nativeaot\Microsoft.AspNetCore.Components.Testing.NativeAot.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -73,8 +115,6 @@
     <!-- The Kestrel meta references the Quic transport; UseKestrelCore never calls UseQuic, but under AOT
          the meta's type refs mean the Quic assembly must be present to load. Reference it explicitly. -->
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
-    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
-    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Generators;
@@ -20,6 +21,9 @@ internal static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: "The Blazor Native AOT metadata generator only describes a component when every member it needs is reachable from the generated code.");
+
+    public static readonly DiagnosticDescriptor ComponentNotFullyDescribedError =
+        CreateError(ComponentNotFullyDescribed);
 
     // A [BindableModel] named something the generator cannot walk, so any @bind expression rooted at
     // it falls back to the MemberInfo walk.
@@ -52,5 +56,20 @@ internal static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: "Endpoint-visible component attributes must be reconstructable so generated metadata preserves routing, authorization, caching, and rendering behavior.");
+
+    public static readonly DiagnosticDescriptor ComponentAttributeNotDescribedError =
+        CreateError(ComponentAttributeNotDescribed);
+
+    private static DiagnosticDescriptor CreateError(DiagnosticDescriptor descriptor)
+        => new(
+            descriptor.Id,
+            descriptor.Title,
+            descriptor.MessageFormat,
+            descriptor.Category,
+            DiagnosticSeverity.Error,
+            descriptor.IsEnabledByDefault,
+            descriptor.Description,
+            descriptor.HelpLinkUri,
+            descriptor.CustomTags.ToArray());
 
 }

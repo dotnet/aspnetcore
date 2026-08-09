@@ -48,6 +48,9 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
     private static bool IsBuiltInDescriptorAssembly(string assemblyName)
         => BuiltInDescriptorAssemblies.Contains(assemblyName, StringComparer.Ordinal);
 
+    private const string ReflectionEnabledByDefaultPropertyName =
+        "build_property.RazorComponentsReflectionEnabledByDefault";
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -80,7 +83,14 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
             .Combine(candidates)
             .Select(static (pair, cancellationToken) => Build(pair.Left, pair.Right, cancellationToken));
 
-        context.RegisterSourceOutput(models, static (spc, result) => Emit(spc, result));
+        var reflectionEnabledByDefault = context.AnalyzerConfigOptionsProvider
+            .Select(static (provider, _) =>
+                !provider.GlobalOptions.TryGetValue(ReflectionEnabledByDefaultPropertyName, out var value) ||
+                !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase));
+
+        context.RegisterSourceOutput(
+            models.Combine(reflectionEnabledByDefault),
+            static (spc, pair) => Emit(spc, pair.Left, pair.Right));
     }
 
     // Cheap syntactic filter: a class declaration that has a base list. The semantic check that the
@@ -343,13 +353,15 @@ public sealed partial class RazorComponentsMetadataGenerator : IIncrementalGener
     // key stays free of Location objects, which are not value-equatable across compilations.
     internal sealed record class DiagnosticInfo(string Id, string Argument0, string Argument1)
     {
-        public Diagnostic ToDiagnostic()
+        public Diagnostic ToDiagnostic(bool reflectionEnabledByDefault)
         {
-            var descriptor = Id switch
+            var descriptor = (Id, reflectionEnabledByDefault) switch
             {
-                "BLAZORAOT002" => DiagnosticDescriptors.BindableModelNotDescribed,
-                "BLAZORAOT003" => DiagnosticDescriptors.MetadataContextMustBePartial,
-                "BLAZORAOT004" => DiagnosticDescriptors.ComponentAttributeNotDescribed,
+                ("BLAZORAOT001", false) => DiagnosticDescriptors.ComponentNotFullyDescribedError,
+                ("BLAZORAOT004", false) => DiagnosticDescriptors.ComponentAttributeNotDescribedError,
+                ("BLAZORAOT002", _) => DiagnosticDescriptors.BindableModelNotDescribed,
+                ("BLAZORAOT003", _) => DiagnosticDescriptors.MetadataContextMustBePartial,
+                ("BLAZORAOT004", _) => DiagnosticDescriptors.ComponentAttributeNotDescribed,
                 _ => DiagnosticDescriptors.ComponentNotFullyDescribed,
             };
 

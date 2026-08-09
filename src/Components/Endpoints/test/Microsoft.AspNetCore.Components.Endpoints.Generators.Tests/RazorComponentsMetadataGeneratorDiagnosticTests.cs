@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Generators.Tests;
 public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorComponentsMetadataGeneratorTestBase
 {
     [TestMethod]
-    public void BlazorAot001_IncompleteParameter_ReportsWarning()
+    [DataRow(null, DiagnosticSeverity.Warning)]
+    [DataRow(false, DiagnosticSeverity.Error)]
+    public void BlazorAot001_IncompleteParameter_SeverityFollowsReflectionMode(
+        bool? reflectionEnabledByDefault,
+        DiagnosticSeverity expectedSeverity)
     {
         var result = RunGenerator("""
             namespace TestComponents;
@@ -21,9 +25,10 @@ public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorCompo
                 private int ReadOnly { get; } = 1;
             }
             """,
+            razorComponentsReflectionEnabledByDefault: reflectionEnabledByDefault,
             expectedDiagnosticIds: ["BLAZORAOT001"]);
 
-        var diagnostic = AssertDiagnostic(result, "BLAZORAOT001", DiagnosticSeverity.Warning);
+        var diagnostic = AssertDiagnostic(result, "BLAZORAOT001", expectedSeverity);
         StringAssert.Contains(diagnostic.GetMessage(CultureInfo.InvariantCulture), "TestComponents.BrokenComponent");
         StringAssert.Contains(diagnostic.GetMessage(CultureInfo.InvariantCulture), "missing a getter or a setter");
 
@@ -137,7 +142,12 @@ public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorCompo
     }
 
     [TestMethod]
-    public void BlazorAot004_PartialAssembly_ReportsWarning()
+    [DataRow(null, DiagnosticSeverity.Warning)]
+    [DataRow(true, DiagnosticSeverity.Warning)]
+    [DataRow(false, DiagnosticSeverity.Error)]
+    public void BlazorAot004_PartialAssembly_SeverityFollowsReflectionMode(
+        bool? reflectionEnabledByDefault,
+        DiagnosticSeverity expectedSeverity)
     {
         var result = RunGenerator("""
             namespace TestComponents;
@@ -159,9 +169,10 @@ public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorCompo
                 }
             }
             """,
+            razorComponentsReflectionEnabledByDefault: reflectionEnabledByDefault,
             expectedDiagnosticIds: ["BLAZORAOT004"]);
 
-        AssertDiagnostic(result, "BLAZORAOT004", DiagnosticSeverity.Warning);
+        AssertDiagnostic(result, "BLAZORAOT004", expectedSeverity);
         StringAssert.Contains(GetGeneratedSource(result), "ValidComponent");
         Assert.IsFalse(GetGeneratedSource(result).Contains("OmittedComponent", StringComparison.Ordinal));
     }

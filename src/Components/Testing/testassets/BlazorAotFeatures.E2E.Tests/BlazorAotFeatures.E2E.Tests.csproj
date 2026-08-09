@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Per-feature generated-metadata coverage for Blazor Server.
+  <!-- Per-feature Native AOT coverage for Blazor Server.
 
        Each AOT-sensitive feature is isolated on its own page and asserted independently, so a
        regression identifies the feature that broke.
@@ -9,8 +9,11 @@
        merely renders does not prove the generated descriptors, JS interop contracts and JSON
        resolvers are correct once the circuit is live.
 
-       This layer runs the matrix through the normal JIT build. The harness remains capable of
-       source-generating its startup integration for a later Native AOT lane. -->
+       Run against a JIT publish of the app (fast iteration):
+         dotnet build <this project> -p:UseIisNativeAssets=false -p:PublishAot=false -r win-x64
+       Run against the Native AOT binary (slow; this is what the asset exists for):
+         dotnet build <this project> -p:UseIisNativeAssets=false -r win-x64
+       then run the produced BlazorAotFeatures.E2E.Tests executable. -->
 
   <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
 
@@ -50,6 +53,9 @@
       <E2EApp>true</E2EApp>
       <E2EAppMode>publish</E2EAppMode>
       <AdditionalProperties>UseIisNativeAssets=false</AdditionalProperties>
+      <AdditionalProperties Condition="'$(BlazorAotStrictMode)' == 'true'">UseIisNativeAssets=false;BlazorAotStrictMode=true</AdditionalProperties>
+      <E2ENativeAot>true</E2ENativeAot>
+      <E2ERuntimeIdentifier>$(RuntimeIdentifier)</E2ERuntimeIdentifier>
     </ProjectReference>
   </ItemGroup>
 
