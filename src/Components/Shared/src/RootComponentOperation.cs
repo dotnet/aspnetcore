@@ -26,10 +26,20 @@ internal sealed class RootComponentOperation
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 internal sealed class WebRootComponentDescriptor(
+#if COMPONENTS_SERVER
+    ComponentTypeInfo componentTypeInfo,
+#else
     Type componentType,
+#endif
     WebRootComponentParameters parameters)
 {
+#if COMPONENTS_SERVER
+    public ComponentTypeInfo ComponentTypeInfo { get; } = componentTypeInfo;
+
+    public Type ComponentType => ComponentTypeInfo.Type;
+#else
     public Type ComponentType { get; } = componentType;
+#endif
 
     public WebRootComponentParameters Parameters { get; } = parameters;
 

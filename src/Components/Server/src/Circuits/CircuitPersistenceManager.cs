@@ -216,10 +216,10 @@ internal partial class CircuitPersistenceManager(
             var localRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
             var maxRetention = distributedRetention > localRetention ? distributedRetention : localRetention;
 
-            foreach (var (id, componentKey, (componentType, parameters)) in components)
+            foreach (var (id, componentKey, (componentTypeInfo, parameters)) in components)
             {
                 var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, prerendered: false, componentKey);
-                serverComponentSerializer.SerializeInvocation(ref marker, invocation, componentType, parameters, maxRetention);
+                serverComponentSerializer.SerializeInvocation(ref marker, invocation, componentTypeInfo.Type, parameters, maxRetention);
                 persistedComponents.Add(id, marker);
             }
 

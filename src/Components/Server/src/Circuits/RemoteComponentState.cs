@@ -19,7 +19,7 @@ internal sealed class RemoteComponentState : ComponentState
     {
     }
 
-    protected override object? GetComponentKey()
+    protected internal override object? GetComponentKey()
     {
         var markerKey = ((RemoteRenderer)Renderer).GetMarkerKey(this);
 
