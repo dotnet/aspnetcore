@@ -75,7 +75,13 @@
 
             options.StateMapper = context =>
             {
-                if (context.Update.RawRepresentation is not JsonElement snapshot)
+                var snapshot = context.Update.RawRepresentation switch
+                {
+                    DojoStateSnapshotEvent snapshotEvent => snapshotEvent.Snapshot,
+                    JsonElement directSnapshot => directSnapshot,
+                    _ => default,
+                };
+                if (snapshot.ValueKind == JsonValueKind.Undefined)
                 {
                     return false;
                 }

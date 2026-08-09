@@ -14,7 +14,20 @@ builder.Services.AddRazorComponents()
 
 ManualChatClientConfiguration.ValidateModeSelection();
 
-if (ManualChatClientConfiguration.IsLiveCaptureEnabled)
+if (ManualChatClientConfiguration.IsDojoLiveAgentEnabled)
+{
+    var (endpoint, deployment) =
+        ManualChatClientConfiguration.GetAzureOpenAIConfiguration("Dojo live-agent mode");
+    builder.Services.AddSingleton<IDojoLiveAgentDelay>(
+        new DojoLiveAgentDelay(TimeSpan.FromMilliseconds(50)));
+    builder.Services.AddScoped<IChatClient>(services =>
+        new DojoLiveAgentChatClient(
+            new AzureOpenAIClient(endpoint, CreateDefaultAzureCredential())
+                .GetChatClient(deployment)
+                .AsIChatClient(),
+            services.GetRequiredService<IDojoLiveAgentDelay>()));
+}
+else if (ManualChatClientConfiguration.IsLiveCaptureEnabled)
 {
     builder.Services.AddScoped<IChatClient>(services =>
         ManualChatClientConfiguration.CreateLiveCapture(
@@ -58,13 +71,15 @@ var app = builder.Build();
 
 app.Logger.LogInformation(
     "AIApp chat client mode: {ChatClientMode}.",
-    ManualChatClientConfiguration.IsLiveCaptureEnabled
-        ? "live capture"
-        : ManualChatClientConfiguration.IsManualReplayEnabled
-            ? "manual replay"
-            : ManualChatClientConfiguration.IsDojoSimulationEnabled
-                ? "dojo simulation"
-                : "echo");
+    ManualChatClientConfiguration.IsDojoLiveAgentEnabled
+        ? "dojo live agent"
+        : ManualChatClientConfiguration.IsLiveCaptureEnabled
+            ? "live capture"
+            : ManualChatClientConfiguration.IsManualReplayEnabled
+                ? "manual replay"
+                : ManualChatClientConfiguration.IsDojoSimulationEnabled
+                    ? "dojo simulation"
+                    : "echo");
 
 if (!app.Environment.IsDevelopment())
 {

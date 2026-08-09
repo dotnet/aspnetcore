@@ -79,7 +79,19 @@
 
             options.StateMapper = context =>
             {
-                if (context.Update.RawRepresentation is not JsonElement snapshot)
+                if (context.Update.RawRepresentation is DojoStateDeltaEvent delta)
+                {
+                    context.SetState(ApplyPlanDelta(_agent.State.Value, delta.Delta));
+                    return true;
+                }
+
+                var snapshot = context.Update.RawRepresentation switch
+                {
+                    DojoStateSnapshotEvent snapshotEvent => snapshotEvent.Snapshot,
+                    JsonElement directSnapshot => directSnapshot,
+                    _ => default,
+                };
+                if (snapshot.ValueKind == JsonValueKind.Undefined)
                 {
                     return false;
                 }
@@ -110,6 +122,51 @@
         string? description = null,
         string? status = null)
         => $"Updated plan step {index}: {description ?? "unchanged"} ({status ?? "unchanged"}).";
+
+    private static PlanState ApplyPlanDelta(PlanState current, JsonElement delta)
+    {
+        var next = new PlanState
+        {
+            Steps =
+            [
+                .. current.Steps.Select(step => new PlanStep
+                {
+                    Description = step.Description,
+                    Status = step.Status,
+                }),
+            ],
+        };
+
+        foreach (var operation in delta.EnumerateArray())
+        {
+            if (operation.GetProperty("op").GetString() != "replace")
+            {
+                continue;
+            }
+
+            var pathSegments = operation.GetProperty("path").GetString()?
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (pathSegments is not ["steps", var indexText, var property] ||
+                !int.TryParse(indexText, out var index) ||
+                index < 0 ||
+                index >= next.Steps.Count)
+            {
+                continue;
+            }
+
+            var value = operation.GetProperty("value").GetString() ?? "";
+            if (property == "description")
+            {
+                next.Steps[index].Description = value;
+            }
+            else if (property == "status")
+            {
+                next.Steps[index].Status = value;
+            }
+        }
+
+        return next;
+    }
 
     private void Reset()
     {
