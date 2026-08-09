@@ -5,6 +5,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Internal;
@@ -32,6 +33,35 @@ public class WebRendererJsonResolverTest
         Assert.Same(WebJSInteropSerializerContext.Default, runtime.Options.TypeInfoResolverChain[1]);
         Assert.Same(ConverterBackedTypeInfoResolver.Instance, runtime.Options.TypeInfoResolverChain[2]);
         Assert.IsType<DefaultJsonTypeInfoResolver>(runtime.Options.TypeInfoResolverChain[3]);
+    }
+
+    [Fact]
+    public async Task FrameworkCallbackContractsIncludeBrowserFiles()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            TypeInfoResolver = WebJSInteropSerializerContext.Default,
+        };
+        Assert.NotNull(options.GetTypeInfo(typeof(BrowserFile)));
+        Assert.NotNull(options.GetTypeInfo(typeof(BrowserFile[])));
+
+        var callbacks = new CapturingInputFileCallbacks();
+        using var relay = new InputFileJsCallbacksRelay(callbacks);
+        var descriptor = Assert.Single(
+            BuiltInJSInvokableMethodDescriptors.GetDescriptors(),
+            descriptor => descriptor.Identifier == nameof(InputFileJsCallbacksRelay.NotifyChange));
+
+        await descriptor.Invoke(
+            relay,
+            """[[{"id":1,"name":"test.txt","size":12,"contentType":"text/plain"}]]""",
+            options);
+
+        var file = Assert.Single(callbacks.Files);
+        Assert.Equal(1, file.Id);
+        Assert.Equal("test.txt", file.Name);
+        Assert.Equal(12, file.Size);
+        Assert.Equal("text/plain", file.ContentType);
     }
 
     [ConditionalFact]
@@ -122,6 +152,17 @@ public class WebRendererJsonResolverTest
             DotNetInvocationInfo invocationInfo,
             in DotNetInvocationResult invocationResult)
         {
+        }
+    }
+
+    private sealed class CapturingInputFileCallbacks : IInputFileJsCallbacks
+    {
+        public BrowserFile[] Files { get; private set; } = [];
+
+        public Task NotifyChange(BrowserFile[] files)
+        {
+            Files = files;
+            return Task.CompletedTask;
         }
     }
 
