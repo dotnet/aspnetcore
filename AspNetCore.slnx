@@ -48,8 +48,10 @@
   </Folder>
   <Folder Name="/src/Components/AI/">
     <Project Path="src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj" />
+    <Project Path="src/Components/AI/test/Microsoft.AspNetCore.Components.AI.Tests.csproj" />
     <Project Path="src/Components/AI/testassets/AGUIDojoApi/AGUIDojoApi.csproj" />
     <Project Path="src/Components/AI/testassets/DojoClient/DojoClient.csproj" />
+    <Project Path="src/Components/AI/testassets/DojoClient.E2E.Tests/DojoClient.E2E.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/Authorization/">
     <Project Path="src/Components/Authorization/src/Microsoft.AspNetCore.Components.Authorization.csproj" />
