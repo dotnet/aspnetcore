@@ -86,4 +86,34 @@ public class ServerInstanceTests
         // Assert
         Assert.NotEqual(key1, key2);
     }
+
+    [Fact]
+    public void WriteStartupFailureArtifacts_WritesStartupStdoutAndStderrFiles()
+    {
+        var directory = Path.Combine(
+            Path.GetTempPath(),
+            nameof(ServerInstanceTests),
+            Guid.NewGuid().ToString("N"));
+        var instance = new ServerInstance("TestApp", "key", "http://localhost", onDisposed: null);
+
+        try
+        {
+            var paths = instance.WriteStartupFailureArtifacts(
+                directory,
+                new InvalidOperationException("Intentional startup failure"));
+
+            Assert.Equal(3, paths.Count);
+            Assert.Contains(paths, path => path.EndsWith(".startup.log", StringComparison.Ordinal));
+            Assert.Contains(paths, path => path.EndsWith(".stdout.log", StringComparison.Ordinal));
+            Assert.Contains(paths, path => path.EndsWith(".stderr.log", StringComparison.Ordinal));
+            Assert.Contains("Intentional startup failure", File.ReadAllText(paths[0]));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
 }
