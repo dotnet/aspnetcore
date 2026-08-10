@@ -8,6 +8,8 @@
       "src\\Components\\Analyzers\\src\\Microsoft.AspNetCore.Components.Analyzers.csproj",
       "src\\Components\\Analyzers\\test\\Microsoft.AspNetCore.Components.Analyzers.Tests.csproj",
       "src\\Components\\AI\\src\\Microsoft.AspNetCore.Components.AI.csproj",
+      "src\\Components\\AI\\testassets\\AGUIDojoApi\\AGUIDojoApi.csproj",
+      "src\\Components\\AI\\testassets\\DojoClient\\DojoClient.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
       "src\\Components\\Authorization\\test\\Microsoft.AspNetCore.Components.Authorization.Tests.csproj",
       "src\\Components\\Components\\perf\\Microsoft.AspNetCore.Components.Performance.csproj",

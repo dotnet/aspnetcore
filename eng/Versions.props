@@ -221,6 +221,13 @@
     <!-- Components.AI dependencies (Microsoft.Extensions.AI) -->
     <MicrosoftExtensionsAIVersion>10.6.0</MicrosoftExtensionsAIVersion>
     <MicrosoftExtensionsAIAbstractionsVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIAbstractionsVersion>
+    <MicrosoftExtensionsAIOpenAIVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIOpenAIVersion>
+    <!-- AG-UI packages (used by the Components.AI dojo test assets) -->
+    <AGUIVersion>0.0.5</AGUIVersion>
+    <AGUIAbstractionsVersion>$(AGUIVersion)</AGUIAbstractionsVersion>
+    <AGUIClientVersion>$(AGUIVersion)</AGUIClientVersion>
+    <AGUIFormattingVersion>$(AGUIVersion)</AGUIFormattingVersion>
+    <AGUIServerVersion>$(AGUIVersion)</AGUIServerVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
     <DotnetServeVersion>1.10.93</DotnetServeVersion>
