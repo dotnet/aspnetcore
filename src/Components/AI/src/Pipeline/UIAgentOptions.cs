@@ -11,6 +11,8 @@ public class UIAgentOptions
 
     public Func<StateMapperContext, bool>? StateMapper { get; set; }
 
+    public IConversationThread? Thread { get; set; }
+
     internal List<IHandlerRegistration> HandlerRegistrations { get; } = new();
 
     internal Dictionary<string, AIFunction> UIActions { get; } = new();

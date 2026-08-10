@@ -31,6 +31,12 @@ public sealed class ChatPage : ComponentBase, IDisposable
     [Parameter]
     public RenderFragment? InputTrailingActions { get; set; }
 
+    [Parameter]
+    public bool AllowAttachments { get; set; }
+
+    [Parameter]
+    public string? AcceptFileTypes { get; set; }
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -80,6 +86,8 @@ public sealed class ChatPage : ComponentBase, IDisposable
             inner.AddComponentParameter(55, "Placeholder", Placeholder);
             inner.AddComponentParameter(56, "LeadingActions", InputLeadingActions);
             inner.AddComponentParameter(57, "TrailingActions", InputTrailingActions);
+            inner.AddComponentParameter(58, "AllowAttachments", AllowAttachments);
+            inner.AddComponentParameter(59, "AcceptFileTypes", AcceptFileTypes);
             inner.CloseComponent(); // MessageInput
 
             inner.CloseElement(); // input-container

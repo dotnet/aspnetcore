@@ -15,4 +15,10 @@
     <Reference Include="Microsoft.Extensions.AI" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 </Project>

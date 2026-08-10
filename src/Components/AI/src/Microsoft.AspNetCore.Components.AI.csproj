@@ -34,4 +34,19 @@
     <Reference Include="Microsoft.Extensions.AI.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="_IncludeSourceGeneratorInPackage" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.AI.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.AI.SourceGenerators.dll"
+            Pack="true"
+            PackagePath="analyzers/dotnet/cs"
+            Visible="false" />
+    </ItemGroup>
+  </Target>
+
 </Project>

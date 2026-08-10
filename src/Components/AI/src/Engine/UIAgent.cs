@@ -56,6 +56,9 @@ public class UIAgent : IDisposable
 
         _history.Add(message);
 
+        var thread = _options.Thread;
+        thread?.AppendUserMessage(message);
+
         var pipeline = new BlockMappingPipeline(_options, _logger);
 
         // Process user message through pipeline
@@ -79,6 +82,13 @@ public class UIAgent : IDisposable
         string? turnId = null;
         var chatOptions = BuildChatOptions();
 
+        // If the thread detected a stateful LLM, propagate the ConversationId
+        if (thread is { IsStateful: true, ConversationId: not null })
+        {
+            chatOptions ??= new ChatOptions();
+            chatOptions.ConversationId = thread.ConversationId;
+        }
+
         var updateIndex = 0;
         await foreach (var update in _chatClient.GetStreamingResponseAsync(
             _history, chatOptions, cancellationToken).ConfigureAwait(false))
@@ -88,6 +98,8 @@ public class UIAgent : IDisposable
 
             assistantUpdates.Add(update);
             turnId ??= update.ResponseId;
+
+            thread?.AppendUpdate(update);
 
             var processUpdate = ApplyStateMapper(update);
             if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
@@ -116,10 +128,111 @@ public class UIAgent : IDisposable
             _history.Add(msg);
         }
 
+        thread?.CompleteTurn();
+
         UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
     }
 
     internal virtual object? AgentStateObject => null;
+
+    public async Task<IReadOnlyList<ContentBlock>> RestoreAsync(
+        CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        var thread = _options.Thread;
+        if (thread is null)
+        {
+            return Array.Empty<ContentBlock>();
+        }
+
+        var updates = thread.GetUpdates();
+        if (updates.Count == 0)
+        {
+            return Array.Empty<ContentBlock>();
+        }
+
+        _history.Clear();
+
+        var blocks = new List<ContentBlock>();
+        var pipeline = new BlockMappingPipeline(_options, _logger);
+        var assistantUpdates = new List<ChatResponseUpdate>();
+
+        foreach (var update in updates)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (update.Role == ChatRole.User)
+            {
+                // Flush previous assistant group into history
+                if (assistantUpdates.Count > 0)
+                {
+                    var response = assistantUpdates.ToChatResponse();
+                    foreach (var msg in response.Messages)
+                    {
+                        _history.Add(msg);
+                    }
+                    assistantUpdates.Clear();
+
+                    // Finalize the previous turn's pipeline and start a new one
+                    foreach (var block in pipeline.Finalize())
+                    {
+                        blocks.Add(block);
+                    }
+                    pipeline = new BlockMappingPipeline(_options, _logger);
+                }
+
+                // Add user message to history
+                var userMessage = new ChatMessage(update.Role ?? ChatRole.User, [.. update.Contents]);
+                _history.Add(userMessage);
+
+                // Process user update through pipeline
+                await foreach (var block in pipeline.Process(update, cancellationToken).ConfigureAwait(false))
+                {
+                    blocks.Add(block);
+                }
+                foreach (var block in pipeline.Finalize())
+                {
+                    blocks.Add(block);
+                }
+
+                // Start a new pipeline for the assistant response
+                pipeline = new BlockMappingPipeline(_options, _logger);
+            }
+            else
+            {
+                assistantUpdates.Add(update);
+
+                var processUpdate = ApplyStateMapper(update);
+                if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
+                {
+                    continue;
+                }
+
+                await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
+                {
+                    blocks.Add(block);
+                }
+            }
+        }
+
+        // Flush trailing assistant group
+        if (assistantUpdates.Count > 0)
+        {
+            var response = assistantUpdates.ToChatResponse();
+            foreach (var msg in response.Messages)
+            {
+                _history.Add(msg);
+            }
+        }
+
+        foreach (var block in pipeline.Finalize())
+        {
+            blocks.Add(block);
+        }
+
+        return blocks;
+    }
 
     internal virtual ChatResponseUpdate ApplyStateMapper(ChatResponseUpdate update)
     {
