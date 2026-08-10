@@ -30,7 +30,7 @@ The following contains a description of each sub-directory in the `Components` d
 ## Development Setup
 
 **Note**: To build other specific projects from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
-**Note**: You also need to prepare your environment according to the steps in [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md) - there will be build errors if you don't.
+**Note**: You also need to prepare your environment according to the steps in [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md).
 
 
 ### Building ASP.NET Core Components
