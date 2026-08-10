@@ -661,10 +661,6 @@
     <Project Path="src/Mvc/Mvc.Analyzers/src/Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
     <Project Path="src/Mvc/Mvc.Analyzers/test/Mvc.Analyzers.Test.csproj" />
   </Folder>
-  <Folder Name="/src/Mvc/Mvc.Api.Analyzers/">
-    <Project Path="src/Mvc/Mvc.Api.Analyzers/src/Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj" />
-    <Project Path="src/Mvc/Mvc.Api.Analyzers/test/Mvc.Api.Analyzers.Test.csproj" />
-  </Folder>
   <Folder Name="/src/Mvc/Mvc.ApiExplorer/">
     <Project Path="src/Mvc/Mvc.ApiExplorer/src/Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
     <Project Path="src/Mvc/Mvc.ApiExplorer/test/Microsoft.AspNetCore.Mvc.ApiExplorer.Test.csproj" />
@@ -813,6 +809,12 @@
   <Folder Name="/src/Security/Authentication/Cookies/samples/">
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSample/CookieSample.csproj" />
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSessionSample/CookieSessionSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/">
+    <Project Path="src/Security/Authentication/DeviceBoundSessions/src/Microsoft.AspNetCore.Authentication.DeviceBoundSessions.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/samples/">
+    <Project Path="src/Security/Authentication/DeviceBoundSessions/samples/DbscDebugServer/DbscDebugServer.csproj" />
   </Folder>
   <Folder Name="/src/Security/Authentication/Core/">
     <Project Path="src/Security/Authentication/Core/src/Microsoft.AspNetCore.Authentication.csproj" />
@@ -1178,10 +1180,6 @@
   <Folder Name="/src/Tools/dotnet-user-secrets/">
     <Project Path="src/Tools/dotnet-user-secrets/src/dotnet-user-secrets.csproj" />
     <Project Path="src/Tools/dotnet-user-secrets/test/dotnet-user-secrets.Tests.csproj" />
-  </Folder>
-  <Folder Name="/src/Tools/Extensions.ApiDescription.Client/">
-    <Project Path="src/Tools/Extensions.ApiDescription.Client/src/Microsoft.Extensions.ApiDescription.Client.csproj" />
-    <Project Path="src/Tools/Extensions.ApiDescription.Client/test/Microsoft.Extensions.ApiDescription.Client.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Tools/Extensions.ApiDescription.Server/">
     <Project Path="src/Tools/Extensions.ApiDescription.Server/src/Microsoft.Extensions.ApiDescription.Server.csproj" />

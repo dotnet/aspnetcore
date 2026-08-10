@@ -2,7 +2,7 @@
 
 ## Analyzer Warnings
 
-### ASP (`ASP0000-ASP0030`)
+### ASP (`ASP0000-ASP0032`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -36,6 +36,8 @@
 |  __`ASP0028`__ | Consider using ListenAnyIP() instead of Listen(IPAddress.Any) |
 |  __`ASP0029`__ | Experimental warning for validations resolver APIs |
 |  __`ASP0030`__ | Experimental warning for QuickGrid virtualization anchoring APIs |
+|  __`ASP0031`__ | Experimental warning for Device Bound Sessions (DBSC) APIs |
+|  __`ASP0032`__ | Experimental warning for RenderFragment serialization APIs |
 
 ### API (`API1000-API1003`)
 
