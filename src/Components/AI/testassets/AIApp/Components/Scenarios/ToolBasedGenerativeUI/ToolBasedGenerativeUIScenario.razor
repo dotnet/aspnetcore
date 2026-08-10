@@ -1,0 +1,133 @@
+@inject IChatClient ChatClient
+@inject ReplayCheckpointState ReplayCheckpoint
+@implements IDisposable
+
+<div class="dojo-scenario tool-based-generative-ui" data-dojo-scenario="tool-based-generative-ui">
+    <div class="haiku-layout">
+        <div class="haiku-display">
+            <HaikuCarousel Haikus="_haikus"
+                           CurrentIndex="_currentIndex"
+                           OnNavigate="NavigateToHaiku" />
+        </div>
+
+        <div class="haiku-chat">
+            <header class="dojo-scenario__header">
+                <h2>Haiku Generator</h2>
+                <button class="dojo-reset-button"
+                        aria-label="Reset"
+                        disabled="@ReplayCheckpoint.IsReplayActive"
+                        @onclick="Reset">&times;</button>
+            </header>
+
+            <AgentBoundary @key="_agent" Agent="_agent">
+                <div class="sc-ai-root dojo-chat-panel">
+                    <MessageList>
+                        <DojoWelcome />
+                        <ComponentBlockRenderer TBlock="UIActionBlock"
+                                                TRenderer="AutoInvokeAction"
+                                                When="@(b => b.ToolName == "generate_haiku")" />
+                    </MessageList>
+                    <SuggestionList Suggestions="_suggestions" />
+                    <MessageInput Placeholder="Type a message..." />
+                </div>
+            </AgentBoundary>
+        </div>
+    </div>
+</div>
+
+@code {
+    private UIAgent _agent = default!;
+    private List<HaikuData> _haikus = new();
+    private int _currentIndex;
+
+    private static readonly Suggestion[] _suggestions =
+    [
+        new() { Label = "Nature Haiku", Prompt = "Write me a haiku about nature" },
+        new() { Label = "Ocean Haiku", Prompt = "Write me a haiku about the ocean" },
+        new() { Label = "Spring Haiku", Prompt = "Write me a haiku about spring" },
+    ];
+
+    protected override void OnInitialized()
+    {
+        ReplayCheckpoint.Changed += OnReplayCheckpointChanged;
+        ResetHaikus();
+        _agent = CreateAgent();
+    }
+
+    private UIAgent CreateAgent()
+    {
+        return new UIAgent(ChatClient, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                GenerateHaiku,
+                name: "generate_haiku",
+                description: "Generate a haiku with Japanese text, English translation, an image, and a gradient background."));
+        });
+    }
+
+    private string GenerateHaiku(
+        List<string> japanese,
+        List<string> english,
+        string image_name,
+        string gradient)
+    {
+        var haiku = new HaikuData
+        {
+            Japanese = japanese,
+            English = english,
+            ImageName = image_name,
+            Gradient = gradient
+        };
+
+        _haikus.Add(haiku);
+        _currentIndex = _haikus.Count - 1;
+        InvokeAsync(StateHasChanged);
+        return "Haiku displayed to user.";
+    }
+
+    private void NavigateToHaiku(int index)
+    {
+        if (index >= 0 && index < _haikus.Count)
+        {
+            _currentIndex = index;
+        }
+    }
+
+    private void Reset()
+    {
+        if (ReplayCheckpoint.IsReplayActive)
+        {
+            return;
+        }
+
+        ReplayCheckpoint.ResetReplay();
+        ResetHaikus();
+        _agent.Dispose();
+        _agent = CreateAgent();
+    }
+
+    private void OnReplayCheckpointChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void ResetHaikus()
+    {
+        _haikus =
+        [
+            new()
+            {
+                Japanese = ["ここに一句", "仮のうた置く", "春を待つ"],
+                English = ["A placeholder verse\u2014", "Resting here for now,", "Awaiting your words."],
+                Gradient = "linear-gradient(135deg, #667eea, #764ba2)"
+            }
+        ];
+        _currentIndex = 0;
+    }
+
+    public void Dispose()
+    {
+        ReplayCheckpoint.Changed -= OnReplayCheckpointChanged;
+        _agent.Dispose();
+    }
+}

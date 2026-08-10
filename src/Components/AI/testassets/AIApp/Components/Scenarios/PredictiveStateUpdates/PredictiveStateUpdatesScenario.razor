@@ -1,0 +1,228 @@
+@using System.Text.Json
+@inject IChatClient ChatClient
+@inject ReplayCheckpointState ReplayCheckpoint
+@implements IDisposable
+
+<div class="dojo-scenario predictive-state-updates" data-dojo-scenario="predictive-state-updates">
+    <AgentBoundary @key="_agent" Agent="_agent">
+        <div class="predictive-layout">
+            <div class="document-panel @(_runActive ? "document-panel--streaming" : "")">
+                <DocumentPreview Document="@_agent.State.Value.Document"
+                                 BaselineDocument="@_runStartDocument"
+                                 IsReadOnly="_runActive"
+                                 ShowDiff="_showDiff"
+                                 IsComplete="_candidateComplete"
+                                 DocumentChanged="UpdateDocument"
+                                 StatusChanged="HandleConversationStatusChanged" />
+            </div>
+
+            <div class="predictive-chat">
+                <header class="dojo-scenario__header">
+                    <h2>AI Document Editor</h2>
+                    <button class="dojo-reset-button"
+                            aria-label="Reset"
+                            disabled="@(ReplayCheckpoint.IsReplayActive || _runActive)"
+                            @onclick="Reset">&times;</button>
+                </header>
+
+                <div class="sc-ai-root dojo-chat-panel">
+                    <MessageList>
+                        <DojoWelcome />
+                        <ComponentBlockRenderer TBlock="UIActionBlock"
+                                                TRenderer="ConfirmChangesDialog"
+                                                When="@(block => block.ToolName == "confirm_changes")" />
+                    </MessageList>
+                    <SuggestionList Suggestions="_suggestions" />
+                    <MessageInput Placeholder="Type a message..." />
+                </div>
+            </div>
+        </div>
+    </AgentBoundary>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
+
+    private UIAgent<DocumentState> _agent = default!;
+    private IDisposable? _stateChangedRegistration;
+    private string _runStartDocument = "";
+    private bool _runActive;
+    private bool _showDiff;
+    private bool _candidateComplete;
+    private bool _candidateAccepted;
+
+    private static readonly Suggestion[] _suggestions =
+    [
+        new() { Label = "Write a pirate story", Prompt = "Please write a story about a pirate named Candy Beard." },
+        new() { Label = "Write a mermaid story", Prompt = "Please write a story about a mermaid named Luna." },
+        new() { Label = "Add character", Prompt = "Please add a character named Courage." },
+    ];
+
+    protected override void OnInitialized()
+    {
+        ReplayCheckpoint.Changed += OnReplayCheckpointChanged;
+        SetAgent(CreateAgent(new DocumentState()));
+    }
+
+    private UIAgent<DocumentState> CreateAgent(DocumentState initialState)
+    {
+        return new UIAgent<DocumentState>(ChatClient, options =>
+        {
+            options.ChatOptions = new ChatOptions
+            {
+                RawRepresentationFactory = _ => _agent.State.Value,
+                Tools =
+                [
+                    AIFunctionFactory.Create(
+                        WriteDocument,
+                        name: "write_document_local",
+                        description: "Write the full document in Markdown format."),
+                ],
+            };
+
+            options.StateMapper = context =>
+            {
+                if (context.Update.Contents
+                    .OfType<FunctionCallContent>()
+                    .Any(call => call.Name == "confirm_changes"))
+                {
+                    _candidateComplete = true;
+                    _ = InvokeAsync(StateHasChanged);
+                }
+
+                var snapshot = context.Update.RawRepresentation switch
+                {
+                    DojoStateSnapshotEvent snapshotEvent => snapshotEvent.Snapshot,
+                    JsonElement directSnapshot => directSnapshot,
+                    _ => default,
+                };
+                if (snapshot.ValueKind == JsonValueKind.Undefined)
+                {
+                    return false;
+                }
+
+                var state = snapshot.Deserialize<DocumentState>(_jsonOptions);
+                if (state is null)
+                {
+                    return false;
+                }
+
+                context.SetState(state);
+                return true;
+            };
+
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                ConfirmChanges,
+                name: "confirm_changes",
+                description: "Confirm the document changes with the user."));
+        }, initialState);
+    }
+
+    private static string WriteDocument(string document)
+        => "Document written.";
+
+    private async Task<string> ConfirmChanges(bool accepted = true)
+    {
+        await InvokeAsync(() =>
+        {
+            _candidateAccepted = accepted;
+            if (!accepted)
+            {
+                _agent.State.Value = new DocumentState { Document = _runStartDocument };
+            }
+
+            _showDiff = false;
+            StateHasChanged();
+        });
+
+        return accepted
+            ? "The user confirmed the changes."
+            : "The user rejected the changes.";
+    }
+
+    private void Reset()
+    {
+        if (ReplayCheckpoint.IsReplayActive || _runActive)
+        {
+            return;
+        }
+
+        ReplayCheckpoint.ResetReplay();
+        _runStartDocument = "";
+        _runActive = false;
+        _showDiff = false;
+        _candidateComplete = false;
+        _candidateAccepted = false;
+        SetAgent(CreateAgent(new DocumentState()));
+    }
+
+    private void SetAgent(UIAgent<DocumentState> agent)
+    {
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+        _agent = agent;
+        _runStartDocument = agent.State.Value.Document;
+        _stateChangedRegistration = _agent.State.OnChanged(OnStateChanged);
+    }
+
+    private void UpdateDocument(string document)
+    {
+        if (!_runActive)
+        {
+            _agent.State.Value = new DocumentState { Document = document };
+        }
+    }
+
+    private void HandleConversationStatusChanged(ConversationStatus status)
+    {
+        if (status == ConversationStatus.Streaming && !_runActive)
+        {
+            _runStartDocument = _agent.State.Value.Document;
+            _runActive = true;
+            _showDiff = true;
+            _candidateComplete = false;
+            _candidateAccepted = false;
+        }
+        else if (status == ConversationStatus.Error && _runActive)
+        {
+            if (!_candidateAccepted)
+            {
+                _agent.State.Value = new DocumentState { Document = _runStartDocument };
+            }
+
+            CompleteRun();
+        }
+        else if (status == ConversationStatus.Idle && _runActive)
+        {
+            CompleteRun();
+        }
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void CompleteRun()
+    {
+        _runActive = false;
+        _showDiff = false;
+        _candidateComplete = false;
+        _candidateAccepted = false;
+        _runStartDocument = _agent.State.Value.Document;
+    }
+
+    private void OnStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnReplayCheckpointChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ReplayCheckpoint.Changed -= OnReplayCheckpointChanged;
+        _stateChangedRegistration?.Dispose();
+        _agent?.Dispose();
+    }
+}

@@ -1,0 +1,11 @@
+@if (AgentContext?.Turns.Count is 0)
+{
+    <div class="dojo-welcome">
+        <h1 class="dojo-welcome__heading">How can I help you today?</h1>
+    </div>
+}
+
+@code {
+    [CascadingParameter]
+    public AgentContext? AgentContext { get; set; }
+}

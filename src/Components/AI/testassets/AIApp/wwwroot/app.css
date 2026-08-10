@@ -1,0 +1,158 @@
+/* ==========================================================================
+   Dojo Client — Global App Styles
+   ========================================================================== */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #ffffff;
+    color: #212529;
+}
+
+/* ==========================================================================
+   Scenario — Shared Layout Primitives
+   ========================================================================== */
+
+.dojo-scenario {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+}
+
+.dojo-scenario__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.dojo-scenario__header h2 {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Reset / Close Button
+   ========================================================================== */
+
+.dojo-reset-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 0.9em;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dojo-reset-button:hover {
+    background: #f3f4f6;
+    color: #333;
+}
+
+/* ==========================================================================
+   Chat Panel — used inside AgentBoundary in most scenarios
+   ========================================================================== */
+
+.dojo-chat-panel {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dojo-chat-panel > .sc-ai-message-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure the sc-ai-root scope applies to dojo chat panels */
+.dojo-chat-panel .sc-ai-suggestions {
+    flex-shrink: 0;
+    padding: var(--sc-ai-spacing-sm, 0.5rem) var(--sc-ai-spacing-lg, 1.5rem);
+    justify-content: center;
+}
+
+.dojo-chat-panel .sc-ai-input {
+    flex-shrink: 0;
+    margin: 0 auto var(--sc-ai-spacing-md, 1rem);
+    max-width: var(--sc-ai-max-width, 48rem);
+    width: calc(100% - 2 * var(--sc-ai-spacing-lg, 1.5rem));
+}
+
+/* ==========================================================================
+   Welcome Heading — centered "How can I help you today?"
+   ========================================================================== */
+
+.dojo-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 30vh;
+}
+
+.dojo-welcome__heading {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+/* ==========================================================================
+   Disclaimer Text
+   ========================================================================== */
+
+.dojo-disclaimer {
+    text-align: center;
+    font-size: 0.75em;
+    color: #9ca3af;
+    padding: 4px 0 0;
+}
+
+/* ==========================================================================
+   Blazor Error UI
+   ========================================================================== */
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 12px 16px;
+    background: #fef2f2;
+    border-top: 1px solid #fecaca;
+    font-size: 0.85em;
+    color: #991b1b;
+    z-index: 1000;
+}
+
+#blazor-error-ui .reload {
+    font-weight: 600;
+    margin-left: 8px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#blazor-error-ui .dismiss {
+    float: right;
+    cursor: pointer;
+    font-size: 1.2em;
+}

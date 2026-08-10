@@ -1,0 +1,90 @@
+{
+  "calls": [
+    {
+      "request": {
+        "lastUserMessage": "Write me a haiku about nature",
+        "messageCount": 1,
+        "toolNames": [
+          "generate_haiku"
+        ]
+      },
+      "frames": [
+        {
+          "name": "haiku-action",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "functionCall",
+                  "name": "generate_haiku",
+                  "arguments": {
+                    "japanese": [
+                      "古池や",
+                      "蛙飛びこむ",
+                      "水の音"
+                    ],
+                    "english": [
+                      "An ancient pond\u2014",
+                      "A frog leaps in,",
+                      "The sound of water."
+                    ],
+                    "image_name": "ancient-pond",
+                    "gradient": "linear-gradient(135deg, #134e5e, #71b280)"
+                  },
+                  "informationalOnly": false,
+                  "callId": "tool-generative-ui-haiku-1"
+                }
+              ],
+              "finishReason": "tool_calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": {
+        "lastUserMessage": "Write me a haiku about nature",
+        "messageCount": 3,
+        "toolNames": [
+          "generate_haiku"
+        ],
+        "functionResult": {
+          "callId": "tool-generative-ui-haiku-1",
+          "result": "Haiku displayed to user."
+        }
+      },
+      "frames": [
+        {
+          "name": "haiku-summary-start",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "Your nature haiku is ready"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "haiku-summary-final",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "\u2014a quiet pond awakened by a frog."
+                }
+              ],
+              "finishReason": "stop"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

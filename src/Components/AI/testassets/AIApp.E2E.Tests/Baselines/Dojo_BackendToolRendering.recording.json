@@ -1,0 +1,75 @@
+{
+  "calls": [
+    {
+      "request": {
+        "lastUserMessage": "What is the weather in San Francisco?",
+        "messageCount": 1,
+        "toolNames": [
+          "get_weather"
+        ]
+      },
+      "frames": [
+        {
+          "name": "weather-tool-call",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "functionCall",
+                  "name": "get_weather",
+                  "arguments": {
+                    "location": "San Francisco"
+                  },
+                  "informationalOnly": false,
+                  "callId": "backend-tool-weather-1"
+                }
+              ],
+              "finishReason": "tool_calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": {
+        "lastUserMessage": "What is the weather in San Francisco?",
+        "messageCount": 3,
+        "toolNames": [
+          "get_weather"
+        ]
+      },
+      "frames": [
+        {
+          "name": "weather-summary-start",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "The weather in San Francisco is sunny"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "weather-summary-final",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": " with a temperature of 20\u00b0C."
+                }
+              ],
+              "finishReason": "stop"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

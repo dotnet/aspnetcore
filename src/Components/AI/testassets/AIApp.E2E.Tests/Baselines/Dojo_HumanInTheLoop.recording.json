@@ -1,0 +1,100 @@
+{
+  "calls": [
+    {
+      "request": {
+        "lastUserMessage": "Please plan a trip to mars in 5 steps.",
+        "messageCount": 1,
+        "toolNames": [
+          "generate_task_steps"
+        ]
+      },
+      "frames": [
+        {
+          "name": "task-steps-review",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "functionCall",
+                  "name": "generate_task_steps",
+                  "arguments": {
+                    "steps": [
+                      {
+                        "description": "Define mission goals and timeline",
+                        "status": "enabled"
+                      },
+                      {
+                        "description": "Design and test the spacecraft",
+                        "status": "enabled"
+                      },
+                      {
+                        "description": "Select and train the astronaut crew",
+                        "status": "enabled"
+                      },
+                      {
+                        "description": "Plan launch and Mars surface operations",
+                        "status": "enabled"
+                      },
+                      {
+                        "description": "Prepare communications and contingency plans",
+                        "status": "enabled"
+                      }
+                    ]
+                  },
+                  "informationalOnly": false,
+                  "callId": "human-in-the-loop-steps-1"
+                }
+              ],
+              "finishReason": "tool_calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": {
+        "lastUserMessage": "Please plan a trip to mars in 5 steps.",
+        "messageCount": 3,
+        "toolNames": [
+          "generate_task_steps"
+        ],
+        "functionResult": {
+          "callId": "human-in-the-loop-steps-1",
+          "result": "The user selected the following steps: Define mission goals and timeline, Select and train the astronaut crew, Prepare communications and contingency plans"
+        }
+      },
+      "frames": [
+        {
+          "name": "selection-summary-start",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "I'll move forward with the selected tasks: Define mission goals and timeline"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "selection-summary-final",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": ", Select and train the astronaut crew, Prepare communications and contingency plans."
+                }
+              ],
+              "finishReason": "stop"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

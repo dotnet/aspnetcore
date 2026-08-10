@@ -1,0 +1,173 @@
+{
+  "calls": [
+    {
+      "request": {
+        "lastUserMessage": "Please write a story about a pirate named Candy Beard.",
+        "messageCount": 1,
+        "toolNames": [
+          "confirm_changes",
+          "write_document_local"
+        ],
+        "state": {
+          "document": "# Harbor Notes\n\nThe crew is preparing for a quiet voyage."
+        }
+      },
+      "frames": [
+        {
+          "name": "pirate-title",
+          "updates": [],
+          "state": {
+            "document": "# Candy Beard's Voyage"
+          }
+        },
+        {
+          "name": "pirate-opening",
+          "updates": [],
+          "state": {
+            "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star."
+          }
+        },
+        {
+          "name": "pirate-candidate-complete",
+          "updates": [],
+          "state": {
+            "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home."
+          }
+        },
+        {
+          "name": "pirate-confirmation",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "functionCall",
+                  "name": "confirm_changes",
+                  "arguments": {},
+                  "informationalOnly": false,
+                  "callId": "predictive-confirm-1"
+                }
+              ],
+              "finishReason": "tool_calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": {
+        "lastUserMessage": "Please write a story about a pirate named Candy Beard.",
+        "messageCount": 3,
+        "toolNames": [
+          "confirm_changes",
+          "write_document_local"
+        ],
+        "state": {
+          "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home."
+        },
+        "functionResult": {
+          "callId": "predictive-confirm-1",
+          "result": "The user confirmed the changes."
+        }
+      },
+      "frames": [
+        {
+          "name": "pirate-summary-final",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "Candy Beard's voyage is ready."
+                }
+              ],
+              "finishReason": "stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": {
+        "lastUserMessage": "Please add a character named Courage.",
+        "messageCount": 5,
+        "toolNames": [
+          "confirm_changes",
+          "write_document_local"
+        ],
+        "state": {
+          "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon."
+        }
+      },
+      "frames": [
+        {
+          "name": "courage-draft",
+          "updates": [],
+          "state": {
+            "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon.\n\nCourage joined the crew"
+          }
+        },
+        {
+          "name": "courage-candidate-complete",
+          "updates": [],
+          "state": {
+            "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon.\n\nCourage joined the crew and offered to guide them through Mermaid Lagoon."
+          }
+        },
+        {
+          "name": "courage-confirmation",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "functionCall",
+                  "name": "confirm_changes",
+                  "arguments": {},
+                  "informationalOnly": false,
+                  "callId": "predictive-confirm-2"
+                }
+              ],
+              "finishReason": "tool_calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "request": {
+        "lastUserMessage": "Please add a character named Courage.",
+        "messageCount": 7,
+        "toolNames": [
+          "confirm_changes",
+          "write_document_local"
+        ],
+        "state": {
+          "document": "# Candy Beard's Voyage\n\nCandy Beard sailed from Gumdrop Harbor in search of the Sugar Star.\n\nWhen dark clouds gathered, the crew shared their courage and found the way home.\n\nThe map now points toward Mermaid Lagoon."
+        },
+        "functionResult": {
+          "callId": "predictive-confirm-2",
+          "result": "The user rejected the changes."
+        }
+      },
+      "frames": [
+        {
+          "name": "courage-summary-final",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "I left the document unchanged."
+                }
+              ],
+              "finishReason": "stop"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

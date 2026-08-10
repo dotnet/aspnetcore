@@ -1,0 +1,27 @@
+.ingredient-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.ingredient-row__icon {
+    width: 40px !important;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 1.2em;
+}
+
+.ingredient-row__name {
+    flex: 2;
+}
+
+.ingredient-row__amount {
+    flex: 1;
+    color: #6b7280;
+    font-size: 0.85em;
+}

@@ -1,0 +1,32 @@
+.dojo-scenario.agentic-chat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: background 0.5s ease;
+}
+
+.agentic-chat__reset {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    z-index: 1;
+}
+
+.background-change-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--sc-ai-color-surface-subtle);
+    font-size: 0.85em;
+}
+
+.background-swatch {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--sc-ai-color-border);
+}

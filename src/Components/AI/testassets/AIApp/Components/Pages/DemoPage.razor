@@ -1,0 +1,79 @@
+@page "/demo/{ScenarioId}"
+@rendermode InteractiveServer
+
+<PageTitle>@(_scenario?.Title ?? "Dojo")</PageTitle>
+
+@if (_scenario is null)
+{
+    <div class="dojo-demo-not-found">
+        <p>Scenario "@ScenarioId" was not found.</p>
+        <a href="/">Return to home</a>
+    </div>
+}
+else
+{
+    <div class="dojo-demo" data-scenario="@ScenarioId" data-interactive="@_interactive.ToString().ToLowerInvariant()">
+        <ReplayCheckpointStatus />
+        @if (ScenarioId == "agentic_chat")
+        {
+            <AgenticChatScenario />
+        }
+        else if (ScenarioId == "backend_tool_rendering")
+        {
+            <BackendToolRenderingScenario />
+        }
+        else if (ScenarioId == "human_in_the_loop")
+        {
+            <HumanInTheLoopScenario />
+        }
+        else if (ScenarioId == "tool_based_generative_ui")
+        {
+            <ToolBasedGenerativeUIScenario />
+        }
+        else if (ScenarioId == "agentic_generative_ui")
+        {
+            <AgenticGenerativeUIScenario />
+        }
+        else if (ScenarioId == "shared_state")
+        {
+            <SharedStateScenario />
+        }
+        else if (ScenarioId == "predictive_state_updates")
+        {
+            <PredictiveStateUpdatesScenario />
+        }
+        else
+        {
+            <div class="dojo-scenario-placeholder">
+                <h1>@_scenario.Title</h1>
+                <p>@_scenario.Description</p>
+                <p>This scenario is being ported to the Components.AI test app.</p>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string ScenarioId { get; set; } = "";
+
+    [Inject]
+    private ScenarioRegistry Registry { get; set; } = default!;
+
+    private ScenarioDescriptor? _scenario;
+    private bool _interactive;
+
+    protected override void OnParametersSet()
+    {
+        _scenario = Registry.Find(ScenarioId);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
+}

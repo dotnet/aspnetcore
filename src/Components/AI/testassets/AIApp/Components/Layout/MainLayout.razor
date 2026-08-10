@@ -1,0 +1,44 @@
+@inherits LayoutComponentBase
+@inject ScenarioRegistry Registry
+@inject NavigationManager Nav
+
+<div class="dojo-layout">
+    <nav class="dojo-sidebar">
+        <div class="dojo-sidebar__brand">
+            <span class="dojo-sidebar__title">Components.AI Interactive Dojo</span>
+        </div>
+
+        <div class="dojo-sidebar__section-label">DEMOS</div>
+        <ul class="dojo-sidebar__nav">
+            @foreach (var scenario in Registry.AllScenarios)
+            {
+                var href = $"/demo/{scenario.Id}";
+                var isActive = Nav.Uri.Contains($"/demo/{scenario.Id}");
+                <li class="dojo-sidebar__item @(isActive ? "dojo-sidebar__item--active" : "")">
+                    <a href="@href" class="dojo-sidebar__link">
+                        <div class="dojo-sidebar__link-content">
+                            <span class="dojo-sidebar__label">@scenario.Title</span>
+                            <span class="dojo-sidebar__desc">@scenario.Description</span>
+                        </div>
+                        <div class="dojo-sidebar__tags">
+                            @foreach (var tag in scenario.Tags)
+                            {
+                                <span class="dojo-sidebar__tag">@tag</span>
+                            }
+                        </div>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+    <main class="dojo-main">
+        @Body
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

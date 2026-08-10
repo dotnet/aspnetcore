@@ -1,0 +1,71 @@
+.confirm-changes {
+    border-radius: 12px;
+    border: 1px solid var(--sc-ai-color-border);
+    overflow: hidden;
+    max-width: 360px;
+    margin: 8px 0;
+}
+
+.confirm-changes--responded {
+    padding: 12px 16px;
+    background: var(--sc-ai-color-surface-subtle);
+}
+
+.confirm-changes__header {
+    padding: 12px 16px;
+    background: var(--sc-ai-color-surface-subtle);
+    border-bottom: 1px solid var(--sc-ai-color-border);
+}
+
+.confirm-changes__header h3 {
+    margin: 0;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.confirm-changes__message {
+    padding: 12px 16px;
+    font-size: 0.9em;
+    color: var(--sc-ai-color-text-secondary);
+    margin: 0;
+}
+
+.confirm-changes__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--sc-ai-color-border);
+}
+
+.confirm-changes__btn {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.confirm-changes__btn--reject {
+    background: var(--sc-ai-color-surface-subtle);
+    color: var(--sc-ai-color-text-primary);
+}
+
+.confirm-changes__btn--accept {
+    background: #171717;
+    color: white;
+}
+
+.confirm-changes__status {
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.confirm-changes__status--accepted {
+    color: #22c55e;
+}
+
+.confirm-changes__status--rejected {
+    color: #ef4444;
+}

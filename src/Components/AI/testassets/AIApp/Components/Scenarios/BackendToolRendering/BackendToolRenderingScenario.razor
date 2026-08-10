@@ -1,0 +1,59 @@
+@inject IChatClient ChatClient
+@implements IDisposable
+
+<div class="dojo-scenario backend-tool-rendering" data-dojo-scenario="backend-tool-rendering">
+    <AgentBoundary Agent="_agent">
+        <div class="sc-ai-root dojo-chat-panel">
+            <MessageList>
+                <DojoWelcome />
+                <ComponentBlockRenderer TBlock="FunctionInvocationContentBlock"
+                                        TRenderer="WeatherCard"
+                                        When="@(b => b.ToolName == "get_weather")" />
+            </MessageList>
+            <SuggestionList Suggestions="_suggestions" />
+            <MessageInput Placeholder="Type a message..." />
+        </div>
+    </AgentBoundary>
+</div>
+
+@code {
+    private UIAgent _agent = default!;
+
+    private static readonly Suggestion[] _suggestions =
+    [
+        new() { Label = "Weather in San Francisco", Prompt = "What is the weather in San Francisco?" },
+        new() { Label = "Weather in New York", Prompt = "What is the weather in New York?" },
+        new() { Label = "Weather in Tokyo", Prompt = "What is the weather in Tokyo?" },
+    ];
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent(
+            ChatClient,
+            new ChatOptions
+            {
+                Tools =
+                [
+                    AIFunctionFactory.Create(
+                        GetWeather,
+                        name: "get_weather",
+                        description: "Get the weather for a given location.")
+                ],
+            });
+    }
+
+    private static WeatherInfo GetWeather(string location)
+        => new()
+        {
+            Temperature = 20,
+            Conditions = "sunny",
+            Humidity = 50,
+            WindSpeed = 10,
+            FeelsLike = 25,
+        };
+
+    public void Dispose()
+    {
+        _agent.Dispose();
+    }
+}

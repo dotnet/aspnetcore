@@ -1,0 +1,24 @@
+@implements IDisposable
+@inject ReplayCheckpointState ReplayCheckpoint
+
+@if (ReplayCheckpoint.CurrentCheckpoint is { } checkpoint)
+{
+    <output class="replay-checkpoint-status" data-replay-checkpoint="@checkpoint">Waiting at @checkpoint</output>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        ReplayCheckpoint.Changed += OnCheckpointChanged;
+    }
+
+    private void OnCheckpointChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ReplayCheckpoint.Changed -= OnCheckpointChanged;
+    }
+}

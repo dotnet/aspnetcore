@@ -1,0 +1,195 @@
+{
+  "calls": [
+    {
+      "request": {
+        "lastUserMessage": "Please build a plan to go to mars in 5 steps.",
+        "messageCount": 1,
+        "toolNames": [
+          "create_plan",
+          "update_plan_step"
+        ]
+      },
+      "frames": [
+        {
+          "name": "plan-created",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                "status": "pending"
+              },
+              {
+                "description": "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                "status": "pending"
+              },
+              {
+                "description": "Select and train astronaut crew for the mission.",
+                "status": "pending"
+              },
+              {
+                "description": "Establish communication systems and infrastructure for Mars exploration.",
+                "status": "pending"
+              },
+              {
+                "description": "Launch the spacecraft and execute the mission to Mars.",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "step-1-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                "status": "completed"
+              },
+              {
+                "description": "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                "status": "pending"
+              },
+              {
+                "description": "Select and train astronaut crew for the mission.",
+                "status": "pending"
+              },
+              {
+                "description": "Establish communication systems and infrastructure for Mars exploration.",
+                "status": "pending"
+              },
+              {
+                "description": "Launch the spacecraft and execute the mission to Mars.",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "step-2-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                "status": "completed"
+              },
+              {
+                "description": "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                "status": "completed"
+              },
+              {
+                "description": "Select and train astronaut crew for the mission.",
+                "status": "pending"
+              },
+              {
+                "description": "Establish communication systems and infrastructure for Mars exploration.",
+                "status": "pending"
+              },
+              {
+                "description": "Launch the spacecraft and execute the mission to Mars.",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "step-3-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                "status": "completed"
+              },
+              {
+                "description": "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                "status": "completed"
+              },
+              {
+                "description": "Select and train astronaut crew for the mission.",
+                "status": "completed"
+              },
+              {
+                "description": "Establish communication systems and infrastructure for Mars exploration.",
+                "status": "pending"
+              },
+              {
+                "description": "Launch the spacecraft and execute the mission to Mars.",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "step-4-complete",
+          "updates": [],
+          "state": {
+            "steps": [
+              {
+                "description": "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                "status": "completed"
+              },
+              {
+                "description": "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                "status": "completed"
+              },
+              {
+                "description": "Select and train astronaut crew for the mission.",
+                "status": "completed"
+              },
+              {
+                "description": "Establish communication systems and infrastructure for Mars exploration.",
+                "status": "completed"
+              },
+              {
+                "description": "Launch the spacecraft and execute the mission to Mars.",
+                "status": "pending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "plan-complete",
+          "updates": [
+            {
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "All five steps in the Mars mission plan are complete."
+                }
+              ],
+              "finishReason": "stop"
+            }
+          ],
+          "state": {
+            "steps": [
+              {
+                "description": "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                "status": "completed"
+              },
+              {
+                "description": "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                "status": "completed"
+              },
+              {
+                "description": "Select and train astronaut crew for the mission.",
+                "status": "completed"
+              },
+              {
+                "description": "Establish communication systems and infrastructure for Mars exploration.",
+                "status": "completed"
+              },
+              {
+                "description": "Launch the spacecraft and execute the mission to Mars.",
+                "status": "completed"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
