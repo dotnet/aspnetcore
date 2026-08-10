@@ -35,6 +35,9 @@ internal class BlockMappingPipeline
                 new UIActionHandler(options.UIActions)));
         }
 
+        _handlers.Add(new HandlerEntry<FunctionInvocationContentBlock>(
+            new FunctionInvocationHandler()));
+
         // Structured snapshots take precedence over the plain-text fallback.
         _handlers.Add(new HandlerEntry<RichContentBlock>(new RichTextContentHandler()));
 

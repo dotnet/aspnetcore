@@ -117,6 +117,15 @@ Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.FootnoteReferenceNode() -> void
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.get -> string!
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Call.set -> void
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.FunctionInvocationContentBlock() -> void
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.HasResult.get -> bool
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Result.set -> void
+Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.ToolName.get -> string?
 Microsoft.AspNetCore.Components.AI.HeadingNode
 Microsoft.AspNetCore.Components.AI.HeadingNode.HeadingNode() -> void
 Microsoft.AspNetCore.Components.AI.HeadingNode.HeadingNode(int level) -> void
