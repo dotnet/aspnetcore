@@ -515,7 +515,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
     if (ke.key === 'End') {
-      scrollActivity.clear();
+      scrollActivity.source = ScrollSource.UserScroll;
+      reobserveSpacers();
       pendingJumpToEnd = true;
       pendingJumpToStart = false;
       if (!anchorModeIs.end) {
@@ -526,7 +527,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         startConvergenceObserving('bottom');
       }
     } else if (ke.key === 'Home') {
-      scrollActivity.clear();
+      scrollActivity.source = ScrollSource.UserScroll;
+      reobserveSpacers();
       pendingJumpToStart = true;
       pendingJumpToEnd = false;
       clearBottomFollow();
