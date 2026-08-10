@@ -37,6 +37,9 @@ builder.Services.AddKeyedScoped<IChatClient>(
 builder.Services.AddKeyedScoped<IChatClient>(
     DojoScenarios.AgenticGenerativeUIEndpoint,
     (sp, _) => CreateChatClient(sp, DojoScenarios.AgenticGenerativeUIEndpoint));
+builder.Services.AddKeyedScoped<IChatClient>(
+    DojoScenarios.SharedStateEndpoint,
+    (sp, _) => CreateChatClient(sp, DojoScenarios.SharedStateEndpoint));
 
 var app = builder.Build();
 

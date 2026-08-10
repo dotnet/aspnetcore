@@ -1,0 +1,230 @@
+@implements IDisposable
+
+<div class="recipe-editor">
+    <div class="@GetSectionClass("title")"
+         data-section="title"
+         data-agent-changed="@IsChanged("title").ToString().ToLowerInvariant()">
+        <label>Title</label>
+        <input type="text"
+               aria-label="Recipe title"
+               value="@Recipe.Title"
+               @oninput="UpdateTitleAsync" />
+    </div>
+
+    <div class="@GetSectionClass("details")"
+         data-section="details"
+         data-agent-changed="@IsChanged("details").ToString().ToLowerInvariant()">
+        <div class="recipe-editor__row">
+            <div class="recipe-editor__field">
+                <label>Skill Level</label>
+                <select aria-label="Skill level"
+                        value="@Recipe.SkillLevel"
+                        @onchange="UpdateSkillLevelAsync">
+                    <option>Beginner</option>
+                    <option>Intermediate</option>
+                    <option>Advanced</option>
+                </select>
+            </div>
+            <div class="recipe-editor__field">
+                <label>Cooking Time</label>
+                <select aria-label="Cooking time"
+                        value="@Recipe.CookingTime"
+                        @onchange="UpdateCookingTimeAsync">
+                    <option>15 min</option>
+                    <option>30 min</option>
+                    <option>45 min</option>
+                    <option>1 hr</option>
+                    <option>1.5 hr</option>
+                    <option>2 hr</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="@GetSectionClass("preferences")"
+         data-section="preferences"
+         data-agent-changed="@IsChanged("preferences").ToString().ToLowerInvariant()">
+        <label>Dietary Preferences</label>
+        <div class="recipe-editor__checkboxes">
+            @foreach (var preference in _allPreferences)
+            {
+                <label class="recipe-editor__checkbox">
+                    <input type="checkbox"
+                           checked="@Recipe.SpecialPreferences.Contains(preference)"
+                           @onchange="() => TogglePreferenceAsync(preference)" />
+                    @preference
+                </label>
+            }
+        </div>
+    </div>
+
+    <div class="@GetSectionClass("ingredients")"
+         data-section="ingredients"
+         data-agent-changed="@IsChanged("ingredients").ToString().ToLowerInvariant()">
+        <label>Ingredients</label>
+        @for (var index = 0; index < Recipe.Ingredients.Count; index++)
+        {
+            var capturedIndex = index;
+            <IngredientRow Ingredient="Recipe.Ingredients[capturedIndex]"
+                           OnRemove="() => RemoveIngredientAsync(capturedIndex)"
+                           IngredientChanged="ingredient => UpdateIngredientAsync(capturedIndex, ingredient)" />
+        }
+        <button class="recipe-editor__add-btn" @onclick="AddIngredientAsync">
+            + Add Ingredient
+        </button>
+    </div>
+
+    <div class="@GetSectionClass("instructions")"
+         data-section="instructions"
+         data-agent-changed="@IsChanged("instructions").ToString().ToLowerInvariant()">
+        <label>Instructions</label>
+        @for (var index = 0; index < Recipe.Instructions.Count; index++)
+        {
+            var capturedIndex = index;
+            <div class="recipe-editor__instruction">
+                <span class="recipe-editor__step-num">@(capturedIndex + 1).</span>
+                <input type="text"
+                       aria-label="@($"Instruction {capturedIndex + 1}")"
+                       value="@Recipe.Instructions[capturedIndex]"
+                       @oninput="args => UpdateInstructionAsync(capturedIndex, args)" />
+                <button class="recipe-editor__remove-btn"
+                        aria-label="Remove instruction"
+                        @onclick="() => RemoveInstructionAsync(capturedIndex)">&times;</button>
+            </div>
+        }
+        <button class="recipe-editor__add-btn" @onclick="AddInstructionAsync">
+            + Add Step
+        </button>
+    </div>
+
+    <button class="recipe-editor__improve-btn"
+            disabled="@IsRunning"
+            @onclick="ImproveAsync">
+        @(IsRunning ? "Please Wait..." : "Improve with AI")
+    </button>
+</div>
+
+@code {
+    private static readonly string[] _allPreferences =
+    [
+        "Vegetarian",
+        "Vegan",
+        "Gluten-Free",
+        "High Protein",
+        "Low Carb",
+        "Spicy",
+    ];
+
+    private AgentContext? _registeredContext;
+    private IDisposable? _statusChangedRegistration;
+
+    [CascadingParameter]
+    public AgentContext AgentContext { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Recipe Recipe { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public EventCallback<Recipe> RecipeChanged { get; set; }
+
+    [Parameter]
+    public IReadOnlySet<string> ChangedSections { get; set; } = new HashSet<string>();
+
+    private bool IsRunning
+        => AgentContext.Status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(_registeredContext, AgentContext))
+        {
+            _statusChangedRegistration?.Dispose();
+            _registeredContext = AgentContext;
+            _statusChangedRegistration = AgentContext.RegisterOnStatusChanged(OnStatusChanged);
+        }
+    }
+
+    private void OnStatusChanged(ConversationStatus status)
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private Task UpdateTitleAsync(ChangeEventArgs args)
+        => RecipeChanged.InvokeAsync(Recipe with { Title = GetValue(args) });
+
+    private Task UpdateSkillLevelAsync(ChangeEventArgs args)
+        => RecipeChanged.InvokeAsync(Recipe with { SkillLevel = GetValue(args) });
+
+    private Task UpdateCookingTimeAsync(ChangeEventArgs args)
+        => RecipeChanged.InvokeAsync(Recipe with { CookingTime = GetValue(args) });
+
+    private Task TogglePreferenceAsync(string preference)
+    {
+        var preferences = Recipe.SpecialPreferences.Contains(preference, StringComparer.Ordinal)
+            ? Recipe.SpecialPreferences.Where(value => value != preference).ToList()
+            : [.. Recipe.SpecialPreferences, preference];
+
+        return RecipeChanged.InvokeAsync(Recipe with { SpecialPreferences = preferences });
+    }
+
+    private Task AddIngredientAsync()
+        => RecipeChanged.InvokeAsync(Recipe with
+        {
+            Ingredients =
+            [
+                .. Recipe.Ingredients,
+                new Ingredient { Icon = "\U0001F37D\uFE0F" },
+            ],
+        });
+
+    private Task UpdateIngredientAsync(int index, Ingredient ingredient)
+    {
+        var ingredients = Recipe.Ingredients.ToList();
+        ingredients[index] = ingredient;
+
+        return RecipeChanged.InvokeAsync(Recipe with { Ingredients = ingredients });
+    }
+
+    private Task RemoveIngredientAsync(int index)
+    {
+        var ingredients = Recipe.Ingredients.ToList();
+        ingredients.RemoveAt(index);
+
+        return RecipeChanged.InvokeAsync(Recipe with { Ingredients = ingredients });
+    }
+
+    private Task AddInstructionAsync()
+        => RecipeChanged.InvokeAsync(Recipe with
+        {
+            Instructions = [.. Recipe.Instructions, ""],
+        });
+
+    private Task UpdateInstructionAsync(int index, ChangeEventArgs args)
+    {
+        var instructions = Recipe.Instructions.ToList();
+        instructions[index] = GetValue(args);
+
+        return RecipeChanged.InvokeAsync(Recipe with { Instructions = instructions });
+    }
+
+    private Task RemoveInstructionAsync(int index)
+    {
+        var instructions = Recipe.Instructions.ToList();
+        instructions.RemoveAt(index);
+
+        return RecipeChanged.InvokeAsync(Recipe with { Instructions = instructions });
+    }
+
+    private Task ImproveAsync() => AgentContext.SendMessageAsync("Improve the recipe");
+
+    private bool IsChanged(string section)
+        => IsRunning && ChangedSections.Contains(section);
+
+    private string GetSectionClass(string section)
+        => IsChanged(section)
+            ? "recipe-editor__section recipe-editor__section--changed"
+            : "recipe-editor__section";
+
+    private static string GetValue(ChangeEventArgs args) => args.Value?.ToString() ?? "";
+
+    public void Dispose() => _statusChangedRegistration?.Dispose();
+}
