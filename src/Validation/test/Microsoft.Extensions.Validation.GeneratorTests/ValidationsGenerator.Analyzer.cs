@@ -89,7 +89,7 @@ class Program
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source, filePath: "Components/Pages/MyComponent.razor.g.cs");
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0036", diagnostic.Id);
+        Assert.Equal("ASP0037", diagnostic.Id);
     }
 
     [Fact]
@@ -360,7 +360,7 @@ public sealed class PublicModel
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0035", diagnostic.Id);
+        Assert.Equal("ASP0036", diagnostic.Id);
         Assert.Contains("Child", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
@@ -511,7 +511,7 @@ public class Model
 """;
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal("ASP0037", diagnostic.Id);
+        Assert.Equal("ASP0038", diagnostic.Id);
     }
 
     [Fact]

@@ -55,24 +55,36 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         description: null,
         helpLinkUri: GetHelpLinkUri("ASP0035"));
 
+    internal static readonly DiagnosticDescriptor ValidatablePropertyIsNotAccessibleCompilationEnd = new(
+        "ASP0036",
+        "Validatable property or its type is not accessible",
+        "The property '{0}' on type '{1}' declares validation but is not public or its type isn't accessible in generated code, so it is silently skipped by the validation source generator",
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: null,
+        helpLinkUri: GetHelpLinkUri("ASP0036"),
+        WellKnownDiagnosticTags.CompilationEnd);
+
     internal static readonly DiagnosticDescriptor ValidatableTypeIsUsedWithoutAddValidation = new(
-        "ASP0037",
+        "ASP0038",
         "[ValidatableType] should not be used without a call to 'AddValidation'",
         "'[ValidatableType]' has no effect if there is no 'AddValidation' call in your application entry-point",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: null,
-        helpLinkUri: GetHelpLinkUri("ASP0037"),
+        helpLinkUri: GetHelpLinkUri("ASP0038"),
         WellKnownDiagnosticTags.CompilationEnd);
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
-        [
-            ValidatableTypeIsNotAccessible,
-            EndpointParameterTypeIsNotAccessible,
-            ValidatablePropertyIsNotAccessible,
-            ValidatableTypeIsUsedWithoutAddValidation,
-        ];
+    [
+        ValidatableTypeIsNotAccessible,
+        EndpointParameterTypeIsNotAccessible,
+        ValidatablePropertyIsNotAccessible,
+        ValidatablePropertyIsNotAccessibleCompilationEnd,
+        ValidatableTypeIsUsedWithoutAddValidation,
+    ];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -95,7 +107,8 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol jsonIgnoreAttributeSymbol,
         ITypeSymbol currentType,
         ConcurrentDictionary<ITypeSymbol, byte> allValidatableTypes,
-        WellKnownTypes wellKnownTypes)
+        WellKnownTypes wellKnownTypes,
+        bool isCalledFromCompilationEnd)
     {
         if (currentType.SpecialType != SpecialType.None || currentType.IsExemptType(wellKnownTypes))
         {
@@ -119,7 +132,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                 TypeHasValidation(property.Type, wellKnownTypes)))
             {
                 reportDiagnostic(Diagnostic.Create(
-                    ValidatablePropertyIsNotAccessible,
+                    isCalledFromCompilationEnd ? ValidatablePropertyIsNotAccessibleCompilationEnd : ValidatablePropertyIsNotAccessible,
                     property.Locations.FirstOrDefault(),
                     property.Name,
                     currentType.ToDisplayString()));
@@ -188,7 +201,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         return;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, jsonIgnoreAttributeSymbol, attributedType, topLevelValidatableTypes, wellKnownTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, jsonIgnoreAttributeSymbol, attributedType, topLevelValidatableTypes, wellKnownTypes, isCalledFromCompilationEnd: false);
                 }
             }, OperationKind.Attribute);
         }
@@ -256,7 +269,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, jsonIgnoreAttributeSymbol, type, topLevelValidatableTypes, wellKnownTypes);
+                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, jsonIgnoreAttributeSymbol, type, topLevelValidatableTypes, wellKnownTypes, isCalledFromCompilationEnd: true);
                 }
             }
         });

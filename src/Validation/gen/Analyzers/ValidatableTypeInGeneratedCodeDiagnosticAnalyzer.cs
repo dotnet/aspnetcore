@@ -15,14 +15,14 @@ internal sealed class ValidatableTypeInGeneratedCodeDiagnosticAnalyzer : Diagnos
     private const string Usage = "Usage";
 
     internal static readonly DiagnosticDescriptor ValidatableTypeCantBeUsedInGeneratedCode = new(
-        "ASP0036",
+        "ASP0037",
         "[ValidatableType] cannot be used in generated code",
         "'[ValidatableType]' on type '{0}' has no effect because the type is declared in generated code (for example, in a .razor file). Source generators cannot inspect each other's output. Declare the type in a regular .cs file instead.",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: null,
-        helpLinkUri: "https://learn.microsoft.com/aspnet/core/diagnostics/asp0036");
+        helpLinkUri: "https://learn.microsoft.com/aspnet/core/diagnostics/asp0037");
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
         [
