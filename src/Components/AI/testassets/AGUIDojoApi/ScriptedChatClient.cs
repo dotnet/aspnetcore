@@ -27,6 +27,24 @@ internal sealed class ScriptedChatClient : IChatClient
             var functionResult = messageList[^1].Contents
                 .OfType<FunctionResultContent>()
                 .SingleOrDefault();
+            if (functionResult is { CallId: "agentic-plan-create-1" })
+            {
+                yield return CreatePlanStepUpdate(messageId: Guid.NewGuid().ToString("N"), stepIndex: 0);
+                yield break;
+            }
+
+            if (functionResult?.CallId.StartsWith(
+                "agentic-plan-step-",
+                StringComparison.Ordinal) == true &&
+                int.TryParse(functionResult.CallId["agentic-plan-step-".Length..], out var stepNumber) &&
+                stepNumber is >= 1 and < 5)
+            {
+                yield return CreatePlanStepUpdate(
+                    messageId: Guid.NewGuid().ToString("N"),
+                    stepIndex: stepNumber);
+                yield break;
+            }
+
             var response = functionResult switch
             {
                 { CallId: "backend-tool-weather-1" } =>
@@ -35,6 +53,8 @@ internal sealed class ScriptedChatClient : IChatClient
                     CreateTaskStepsSummary(result.Result),
                 { CallId: "tool-generative-ui-haiku-1" } =>
                     "Your nature haiku is ready\u2014a quiet pond awakened by a frog.",
+                { CallId: "agentic-plan-step-5" } =>
+                    "All five steps in the Mars mission plan are complete.",
                 _ => "Background changed to a sunset gradient.",
             };
             yield return new ChatResponseUpdate
@@ -57,6 +77,36 @@ internal sealed class ScriptedChatClient : IChatClient
         }
 
         var messageId = Guid.NewGuid().ToString("N");
+        if (prompt.Contains("plan", StringComparison.OrdinalIgnoreCase) &&
+            options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "create_plan") == true)
+        {
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        "agentic-plan-create-1",
+                        "create_plan",
+                        new Dictionary<string, object?>
+                        {
+                            ["steps"] = new[]
+                            {
+                                "Develop a comprehensive mission plan, detailing objectives, budget, and timeline.",
+                                "Design and test a spacecraft capable of transporting humans and cargo to Mars.",
+                                "Select and train astronaut crew for the mission.",
+                                "Establish communication systems and infrastructure for Mars exploration.",
+                                "Launch the spacecraft and execute the mission to Mars.",
+                            },
+                        })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
+        }
+
         if (prompt.Contains("weather", StringComparison.OrdinalIgnoreCase) &&
             options?.Tools?.OfType<AIFunctionDeclaration>()
                 .Any(tool => tool.Name == "get_weather") == true)
@@ -194,6 +244,27 @@ internal sealed class ScriptedChatClient : IChatClient
 
     public void Dispose()
     {
+    }
+
+    private static ChatResponseUpdate CreatePlanStepUpdate(string messageId, int stepIndex)
+    {
+        return new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = messageId,
+            Contents =
+            [
+                new FunctionCallContent(
+                    $"agentic-plan-step-{stepIndex + 1}",
+                    "update_plan_step",
+                    new Dictionary<string, object?>
+                    {
+                        ["index"] = stepIndex,
+                        ["status"] = "completed",
+                    })
+            ],
+            FinishReason = ChatFinishReason.ToolCalls,
+        };
     }
 
     private static string CreateTaskStepsSummary(object? result)
