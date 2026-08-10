@@ -141,7 +141,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
 
             if (IsPropertyIgnoredDueToAccessibility(property) &&
                 (ValidationsGenerator.HasValidationAttributes(property, wellKnownTypes) ||
-                TypeHasValidation(property.Type, wellKnownTypes)))
+                TypeHasValidation(property.Type.UnwrapType(), wellKnownTypes)))
             {
                 reportDiagnostic(Diagnostic.Create(
                     isCalledFromCompilationEnd ? ValidatablePropertyIsNotAccessibleCompilationEnd : ValidatablePropertyIsNotAccessible,
