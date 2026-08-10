@@ -31,6 +31,9 @@ internal class DojoModelOverrides
     public static void HumanInTheLoop(IServiceCollection services)
         => AddRecordedModel(services, "HumanInTheLoop.recording.json");
 
+    public static void ToolBasedGenerativeUI(IServiceCollection services)
+        => AddRecordedModel(services, "ToolBasedGenerativeUI.recording.json");
+
     private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
     {
         services.AddSingleton(_ => RecordedScript.Load(recordingFileName));
