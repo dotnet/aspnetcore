@@ -6,6 +6,22 @@
       "prompt": "In an isolated dotnet/aspnetcore worktree, empirically validate a browser list bug. The supplied assertion contract opens at item 400, increases only item 399's height, confirms item 400 stays pinned, then presses End and expects the last item. Run the identical assertion against frozen head and one candidate in both requested runtime variants for three repetitions. Do not post or push.",
       "expected_output": "A structured empirical candidate that preserves the exact focused stimulus, reaches the End assertion, reports every execution, and does not substitute a global variable-height or all-items layout change.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "browser-lifecycle-assertion-fidelity",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68114"
+        },
+        "area": "Components/Virtualization",
+        "score_family": "assertion-fidelity",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 2, 5, 6, 7],
+          "negative": [3, 4, 8]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The candidate states the product oracle and its source confidence before proposing a fix.",
         "The assertion plan lists setup, control, trigger, expected assertion, allowed perturbations, runtime variants, and repetitions.",
@@ -23,6 +39,22 @@
       "prompt": "In empirical mode, evaluate an ASP.NET Core worker-test candidate that changes an observer timeout from two seconds to ten seconds. The only support for allowing longer work is the patch author's hypothesis. A proposed diagnostic gates healthy work for three seconds, so it fails under the old timeout and passes under the candidate. Use an isolated worktree and keep all changes local.",
       "expected_output": "A structured candidate that can run the synthetic diagnostic while refusing to turn a candidate-shaped threshold probe into authoritative scenario proof or a production-proven implementation.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "timeout-policy-oracle",
+        "provenance": {
+          "kind": "historical",
+          "source": "timeout-policy calibration"
+        },
+        "area": "Testing/Infrastructure",
+        "score_family": "proof-calibration",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4],
+          "negative": [5, 6]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The output distinguishes accepted behavior from patch intent and the proposed historical cause.",
         "Oracle fidelity is hypothesis unless stronger independent authority is found.",
@@ -38,6 +70,22 @@
       "prompt": "In candidate-review mode, assess restoring a removed legacy serializer alias. The only claim that old payloads are unsupported comes from the current patch description. A proposed regression test sends the old property and passes only with the alias restored. Do not edit the checkout.",
       "expected_output": "A read-only candidate that explains the structural compatibility effect but does not treat its own old-payload test as an authoritative compatibility contract.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "compatibility-oracle",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "legacy serializer alias scenario"
+        },
+        "area": "MVC/Serialization",
+        "score_family": "oracle-authority",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 4],
+          "negative": [2, 3]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The candidate identifies whether the old-payload expectation has documentation, accepted criteria, maintainer context, or only patch-author rationale.",
         "The proposed test states why its expected result is required independently of restoring the alias.",
@@ -51,6 +99,22 @@
       "prompt": "In an isolated worktree, empirically assess a test harness that waits on two inner tasks with an observer-only timeout. A focused test runs only with an unrelated frontend build disabled. Preserve a diagnostic assertion, apply one implementation candidate, and determine whether the result is production-ready.",
       "expected_output": "A scoped empirical result with separate diagnostic and implementation diffs, build-bypass proof limits, a varied stress matrix, and deterministic cleanup of inner tasks after observer timeout.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "timeout-cleanup-build-bypass",
+        "provenance": {
+          "kind": "historical",
+          "source": "background-worker timeout calibration"
+        },
+        "area": "Testing/Infrastructure",
+        "score_family": "cleanup-proof-boundary",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 3, 4, 5, 6],
+          "negative": [2]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The diagnostic assertion and implementation candidate are captured separately and given an assertion disposition.",
         "The build-property override is recorded and shown irrelevant to the focused behavior before use.",
@@ -66,6 +130,22 @@
       "prompt": "In an isolated ASP.NET Core worktree, evaluate one pooled-resource candidate. Accepted criteria require exactly one lease return on normal completion, cancellation, producer fault, and disposal. Frozen-head assertions reproduce a cancellation double-return and a producer-fault leak through the real owner path. The candidate unifies ownership exit, and the identical assertions plus a varied lifecycle matrix pass on every required configuration.",
       "expected_output": "A structured empirical candidate that can reach production-proven because the oracle, mechanism, scenario, real producer path, stress matrix, and configurations are all strong.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "pooled-resource-strong-proof",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "pooled lease ownership scenario"
+        },
+        "area": "Servers",
+        "score_family": "proof-promotion",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4],
+          "negative": [5]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "Oracle fidelity is authoritative and cites the accepted criteria.",
         "Mechanism fidelity is reproduced using the retained failures and frozen-head assertions.",
@@ -77,9 +157,36 @@
     },
     {
       "id": 6,
-      "prompt": "In an isolated ASP.NET Core worktree, assess a registration PR where an independently justified exact-instance assertion passes on untouched frozen head through the real consumer. Reintroducing the removed historical assignment makes it fail. Validate the current fix without inventing a production change.",
+      "prompt": "In an isolated ASP.NET Core worktree, assess the supplied registration-fix fixture. Determine whether the current implementation needs a production change and what regression evidence is justified.",
       "expected_output": "A structured no-defect result that records the head pass, labels the historical mutation diagnostic-only, and treats any stronger regression assertion as optional coverage.",
-      "files": [],
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/registration-instance-precedence.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "no-defect-registration",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68081"
+        },
+        "area": "Hosting/DependencyInjection",
+        "score_family": "no-defect-calibration",
+        "tier": "held_out",
+        "frozen_hash": "198f97d59b484286fc82214dcfe73e2dda2eaeecbafd19f0f82b358fa155dc7a",
+        "fixture_hashes": {
+          ".github/skills/aspnetcore-pr-review/evals/fixtures/registration-instance-precedence.md": "df21462ee1948f8974614ed8a24016de01ebf18ebe8d4a745a02be32ec92e074"
+        },
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 2, 3, 4],
+          "negative": [1]
+        },
+        "forbidden_prompt_terms": [
+          "passes on untouched frozen head",
+          "diagnostic-only",
+          "optional-regression",
+          "manufacture"
+        ]
+      },
       "expectations": [
         "Untouched frozen head is executed first and its passing result is preserved.",
         "The agent does not manufacture a frozen-head red or propose a production correction after head passes.",
@@ -90,9 +197,36 @@
     },
     {
       "id": 7,
-      "prompt": "In an isolated ASP.NET Core worktree, validate a one-line stateless lookup fix against an authoritative contract. Frozen head fails the real-path assertion, the candidate passes it, and two nearest key-shape counterexamples pass. No lifecycle or asynchronous state exists.",
+      "prompt": "In an isolated ASP.NET Core worktree, validate the supplied lookup-correction fixture. Determine the proportionate assertion matrix and candidate proof level.",
       "expected_output": "A proportionate empirical candidate that uses the real path and relevant key-shape variants without unrelated lifecycle scaffolding.",
-      "files": [],
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/stateless-lookup.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "proportionate-stateless-validation",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "one-line stateless lookup scenario"
+        },
+        "area": "Http",
+        "score_family": "proportionate-validation",
+        "tier": "held_out",
+        "frozen_hash": "423bc1166ad2bd7b64819e3161e3272029ca6a533007f6727f7bc99595085831",
+        "fixture_hashes": {
+          ".github/skills/aspnetcore-pr-review/evals/fixtures/stateless-lookup.md": "c395cbcdb376549ba18d00a53e780b04e99ff59e739107a6d69a167f2309ed3a"
+        },
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 3, 4],
+          "negative": [2]
+        },
+        "forbidden_prompt_terms": [
+          "cancellation",
+          "disposal",
+          "timing tests",
+          "stateless"
+        ]
+      },
       "expectations": [
         "The identical assertion provides strict frozen-head red and candidate green.",
         "The matrix varies relevant lookup inputs rather than unrelated lifecycle dimensions.",
@@ -103,9 +237,32 @@
     },
     {
       "id": 8,
-      "prompt": "In an isolated dotnet/aspnetcore worktree, evaluate a Virtualize candidate where observer callbacks are suppressed while InitialItemIndex pins a variable-height list. The first resumed bottom-spacer callback may combine old spacer pixels with a new measured item-size average. Existing tests cover initial placement and boundary-key takeover but not this recovery edge. Keep the experiment bounded and local.",
+      "prompt": "In an isolated dotnet/aspnetcore worktree, evaluate a candidate that changes callback handling while InitialItemIndex positions a browser-backed variable-height list. The edited tests cover initial placement and keyboard takeover. Determine which adjacent recovery behavior and impacted existing tests are needed to validate the candidate. Keep the experiment bounded and local.",
       "expected_output": "A structured empirical candidate that models measurement provenance across suppression, runs impacted existing tests first, and tests the first resumed real-browser callback with one fixed-size control and one variable-height perturbation.",
-      "files": [],
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/virtualization-recovery.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "measurement-generation-recovery",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68114"
+        },
+        "area": "Components/Virtualization",
+        "score_family": "recovery-measurement-generation",
+        "tier": "train",
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4, 6],
+          "negative": [5]
+        },
+        "forbidden_prompt_terms": [
+          "first resumed",
+          "bottom spacer",
+          "old spacer pixels",
+          "measured item-size average"
+        ]
+      },
       "expectations": [
         "The assertion plan records the suppressed interval, resume trigger, pre/post measurement generations, and impacted existing tests.",
         "The candidate explains which geometry remains stale and which measurement becomes current before redistribution.",
@@ -118,9 +275,32 @@
     },
     {
       "id": 9,
-      "prompt": "In candidate-review mode, assess a Virtualize change that filters an IntersectionObserver batch containing both before and after spacers by unconditionally deleting the after-spacer entry. The edited startup test expects duplicate suppression. An unchanged programmatic-scroll-to-bottom E2E test relies on the after callback. Do not edit the checkout.",
+      "prompt": "In candidate-review mode, assess a browser virtualization change that filters entries from a shared IntersectionObserver callback batch. The edited startup test expects duplicate suppression. Determine all directly impacted producer branches and unchanged consumers before recommending the change. Do not edit the checkout.",
       "expected_output": "A read-only candidate that uses the impact map to preserve both consumers, analyzes before-only, after-only, and both-in-one-batch behavior, and predicts the unchanged bottom-scroll regression without proposing an unbounded test matrix.",
-      "files": [],
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/virtualization-producer-drift.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "shared-producer-impact",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68114"
+        },
+        "area": "Components/Virtualization",
+        "score_family": "producer-impact",
+        "tier": "train",
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 2, 3, 5],
+          "negative": [4, 6]
+        },
+        "forbidden_prompt_terms": [
+          "before-only",
+          "after-only",
+          "ProgrammaticScrollToBottom_ReachesLastItems",
+          "loading the tail"
+        ]
+      },
       "expectations": [
         "The candidate maps the changed filter to both startup alignment and bottom-scroll consumers.",
         "The self-review covers before-only, after-only, and both-in-one-batch cases.",
@@ -129,6 +309,120 @@
         "The edited narrow startup test is not treated as complete coverage of the shared observer producer.",
         "The recommendation preserves the callback required by bottom scrolling while addressing duplicate startup handling.",
         "The proposed validation remains bounded to producer branches and directly impacted consumers."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "In an isolated dotnet/aspnetcore worktree, assess the supplied deferred connection-abort fixture. Determine whether the current implementation needs a production change and what evidence supports that decision.",
+      "expected_output": "A no-defect empirical result that runs the untouched focused test first, traces the deferred-cancel/dispose race, uses any exception instrumentation only diagnostically, and keeps the narrow current fix when broader coordination alternatives introduce liveness or cleanup risks.",
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/connection-abort-dispose.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "deferred-cancel-dispose-race",
+        "provenance": {
+          "kind": "pr",
+          "source": "dotnet/aspnetcore#68146"
+        },
+        "area": "Servers/Connections",
+        "score_family": "lifecycle-ownership",
+        "tier": "held_out",
+        "frozen_hash": "36ec49c9f26acc5c2fe372fc0c317b3c6b421e22d163eb67454ae378278505aa",
+        "fixture_hashes": {
+          ".github/skills/aspnetcore-pr-review/evals/fixtures/connection-abort-dispose.md": "20b6ac1f855ecc47ab2b3c8bc7d319f3043d4c4c40e3eeaa2b1c21779cb312a4"
+        },
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 2, 3, 6],
+          "negative": [4, 5]
+        },
+        "forbidden_prompt_terms": [
+          "first-chance exception",
+          "deadlock",
+          "ConnectionClosed"
+        ]
+      },
+      "expectations": [
+        "The untouched focused regression is executed or exact current CI evidence is preserved before applying diagnostic instrumentation.",
+        "The candidate traces the deferred cancellation and immediate disposal ownership race.",
+        "The narrow ObjectDisposedException catch is distinguished from cancellation callback exceptions.",
+        "Any first-chance exception marker is diagnostic-only and does not become required regression coverage.",
+        "The candidate does not invent a requirement that ConnectionClosed callbacks complete after disposal.",
+        "Alternatives that wait for the queued worker or transfer disposal ownership are rejected when they can deadlock or strand cleanup.",
+        "The result keeps the current fix and does not manufacture a production correction."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "In an isolated dotnet/aspnetcore worktree, evaluate PR #68037 at head 2df89bef7b6001fb64b5e8bef3dda447f1e4967b. It changes the Components render-batch writer call shape and includes one benchmark plus a mutation-safety test. Determine what can be proven about correctness, mutation reachability, and performance before recommending an implementation.",
+      "expected_output": "A scoped performance candidate that validates unchanged wire behavior, falsifies a mutation test that passes a copied local by reference while checking the source array, and requires comparative benchmark and generated-code evidence before preferring one-copy or direct-array call shapes.",
+      "files": [],
+      "eval_metadata": {
+        "mechanism": "performance-call-shape-proof",
+        "provenance": {
+          "kind": "pr",
+          "source": "dotnet/aspnetcore#68037"
+        },
+        "area": "Components/RenderTree",
+        "score_family": "performance-proof",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4],
+          "negative": [5, 6]
+        },
+        "forbidden_prompt_terms": []
+      },
+      "expectations": [
+        "The candidate preserves and runs the relevant protocol serialization tests before changing the call shape.",
+        "The candidate separates wire correctness, mutation reachability, generated call shape, and material performance as distinct claims.",
+        "A mutation assertion is rejected when Write receives a copied local but the test compares the original array.",
+        "The empirical plan compares the original in-parameter, one-copy by-value or local-ref, and direct-array-ref shapes under the same workload.",
+        "Generated IL or disassembly is required to establish the intended call-shape difference.",
+        "A direct-array-ref candidate is not production-proven without falsifying writable-alias safety and demonstrating material benefit.",
+        "The final result remains blocked on evidence rather than claiming an unproven performance winner."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "In candidate-review mode, assess the later head represented by the supplied ASP.NET Core SignalR reconnect fixture. Determine the changed producer branches, impacted unchanged consumers, and the bounded validation needed before recommending the change.",
+      "expected_output": "A read-only producer-impact candidate that re-establishes null retry-delay semantics, maps the later normalization to the reconnect scheduler, and selects the impacted unchanged test from the frozen reconnect-suite inventory without being told which entry is affected in the prompt.",
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/signalr-reconnect-drift.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "signalr-retry-policy-producer-impact",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "signalr retry-policy drift fixture"
+        },
+        "area": "SignalR/Client",
+        "score_family": "producer-impact",
+        "tier": "held_out",
+        "frozen_hash": "7c74f2766fd17cac927644199a50dd3a16150e45e10450ad09ca00798467c39d",
+        "fixture_hashes": {
+          ".github/skills/aspnetcore-pr-review/evals/fixtures/signalr-reconnect-drift.md": "111a0a8934b6d50941094bbe48c3202c1b295c91fc3a9cc3ad98fb611a8bb73d"
+        },
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 2, 3, 5],
+          "negative": [4, 6]
+        },
+        "forbidden_prompt_terms": [
+          "NextRetryDelay",
+          "TimeSpan.Zero",
+          "StopsIfTheReconnectPolicyReturnsNull",
+          "Disconnected"
+        ]
+      },
+      "expectations": [
+        "The candidate establishes from the fixture that a null retry delay stops automatic reconnect.",
+        "The changed null-to-zero normalization is mapped to the shared reconnect scheduler.",
+        "The impact map selects the unchanged null-after-failed-retry test from the supplied reconnect-suite inventory.",
+        "The unchanged impacted test is selected before a candidate-specific assertion.",
+        "Earlier-head success is not treated as validation of the later producer change.",
+        "The candidate predicts that normalizing null to zero schedules an unintended immediate retry.",
+        "The proposed validation remains bounded to retry-result branches and directly impacted consumers."
       ]
     }
   ]

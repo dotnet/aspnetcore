@@ -6,6 +6,22 @@
       "prompt": "In a dotnet/aspnetcore checkout, run the ASP.NET Core multi-model adversarial review against issue #66479 and the current local ToggleEventArgs implementation. Do not modify the parent checkout or post anything. An isolated disposable child worktree may be used for empirical validation. Determine whether the current fix and strict red/green E2E test are complete and whether any independent alternative is better.",
       "expected_output": "Four independent model candidates, an adversarial cross-examination, isolated empirical adjudication of the strongest surviving behavioral finding, and a final keep/revise/replace recommendation grounded in strict red/green evidence or explicitly downgraded when execution is blocked.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "multi-model-empirical-adjudication",
+        "provenance": {
+          "kind": "pr",
+          "source": "dotnet/aspnetcore#66479"
+        },
+        "area": "Components",
+        "score_family": "orchestration-artifact-integrity",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 3, 8, 11, 12, 13, 16, 20],
+          "negative": [1, 7, 14, 15, 17, 21, 22]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The review verifies that the checkout is dotnet/aspnetcore before proceeding.",
         "The review records a GPT-family orchestrator model and does not run orchestration or final synthesis under an Anthropic model.",
@@ -38,6 +54,22 @@
       "prompt": "In a dotnet/aspnetcore checkout, review a local patch for a stateful browser component that opens a long list at an initial anchor. The implementation appears to finish the initial state after pixel alignment, but an authoritative maintainer note says the anchor must remain pinned through unrelated content growth and transfer control only after explicit user navigation. Do not post or push. Prove or reject a separate report that boundary keys cannot take over while the initial anchor is active.",
       "expected_output": "A lifecycle-aware review that treats the maintainer clarification as the product oracle, rejects alignment completion as inferred intent, and proves the separate boundary-key defect with a focused real-browser red/green assertion while preserving retention through one adjacent content change.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "lifecycle-product-oracle",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68114"
+        },
+        "area": "Components/Virtualization",
+        "score_family": "lifecycle-ownership",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 3, 4, 7],
+          "negative": [2, 5, 9, 15]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The review records a product oracle that distinguishes authoritative maintainer context from behavior inferred from implementation or tests.",
         "The lifecycle analysis states which events retain the initial anchor and which explicit events transfer control.",
@@ -62,6 +94,22 @@
       "prompt": "Review a dotnet/aspnetcore pull request with a well-supported browser defect and produce the local-only final review. The internal evidence uses lifecycle and producer-classification terminology, but the target maintainer asked for plain language. While validation is running, the pull request receives a new commit that changes a relevant test.",
       "expected_output": "The review checks whether the new head invalidates or supersedes the frozen evidence, refreshes affected proof when needed, and drafts a concise maintainer-facing comment that explains the concrete action, visible failure, causal path, and requested change without unexplained internal jargon.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "relevant-head-drift",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68114"
+        },
+        "area": "Components",
+        "score_family": "head-drift-impact",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4],
+          "negative": [6]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The review records the frozen head and checks the live pull request head again before final synthesis.",
         "Relevant head drift causes the affected evidence to be rerun or explicitly narrowed rather than presented as current-head proof.",
@@ -77,6 +125,22 @@
       "prompt": "The current session is running Claude Sonnet. Use aspnetcore-pr-review to review an open dotnet/aspnetcore pull request.",
       "expected_output": "The skill stops before evidence collection and clearly requests that the review be restarted in a GPT-family orchestrator session while preserving the configured diverse candidate panel.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "orchestrator-model-guardrail",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "orchestrator model mismatch"
+        },
+        "area": "Cross-cutting",
+        "score_family": "orchestration-artifact-integrity",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 2],
+          "negative": [1, 3, 4]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The response identifies that the current orchestrator is not a GPT-family model.",
         "The review does not begin Phase 1 or launch candidate agents.",
@@ -90,6 +154,22 @@
       "prompt": "Review a one-file dotnet/aspnetcore test-only PR for an asynchronous cache refresh. The issue records an OperationCanceledException after the test's two-second cancellation token fires, but the original CI logs are unavailable. The PR author says healthy work can remain queued longer than two seconds and replaces the token with an external two-second WaitAsync. All four candidates receive evidence containing an existing repository helper with a fifteen-second Release timeout and recommend it. A new test gates the worker for three seconds, fails at the PR head, and passes with the helper. Keep the review local.",
       "expected_output": "A calibrated review that recognizes the strict red/green timeout-policy result without treating the synthetic candidate-shaped probe as exact proof of the historical CI mechanism or an independently established correctness blocker.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "timeout-policy-proof-boundary",
+        "provenance": {
+          "kind": "historical",
+          "source": "timeout-policy calibration"
+        },
+        "area": "Testing/Infrastructure",
+        "score_family": "proof-calibration",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 2, 3],
+          "negative": [4, 5, 6, 7]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The product oracle separates the observed cancellation symptom, the patch author's objective, accepted behavior, and the proposed historical cause.",
         "The PR-author scheduling explanation is classified as a hypothesis unless corroborated by stronger authority.",
@@ -106,6 +186,22 @@
       "prompt": "Review a dotnet/aspnetcore serializer PR that removes a legacy payload alias. The PR author says no supported clients send the old property, but there is no compatibility document, accepted issue criterion, telemetry, or maintainer clarification. Four candidates are shown the same alias helper and propose restoring it. A new old-payload test fails without the alias and passes when it is restored. Do not modify GitHub.",
       "expected_output": "A review that does not let a clean candidate-shaped red/green test establish an unsupported compatibility contract, preserves the structural evidence, and asks for authoritative product context before declaring a blocker.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "compatibility-oracle",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "legacy serializer alias scenario"
+        },
+        "area": "MVC/Serialization",
+        "score_family": "oracle-authority",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 4, 5],
+          "negative": [1, 2, 3]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The review distinguishes structural support for accepting the old payload from authority that the old payload remains supported.",
         "The PR author's compatibility claim is not promoted into accepted product intent.",
@@ -120,6 +216,22 @@
       "prompt": "Complete an ASP.NET Core multi-model review whose narrative looks finished, but the artifact root lacks product-oracle.md, head-drift.md, claim-matrix.md, stress-matrix.md, and repository-oracle.md. The final report also omits the orchestrator and suggested review comment, while claiming production-proven and high confidence. Do not recreate evidence from memory.",
       "expected_output": "The reviewer runs the artifact validator, rejects incomplete synthesis, creates explicit not-applicable artifacts only when justified, and refuses impossible proof labels until the missing evidence is repaired.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "artifact-validator-integrity",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "incomplete artifact bundle"
+        },
+        "area": "Cross-cutting",
+        "score_family": "orchestration-artifact-integrity",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1],
+          "negative": [2, 3, 4]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The deterministic artifact validator is run before final synthesis.",
         "Missing required files are reported rather than assumed to exist because equivalent prose appears elsewhere.",
@@ -133,6 +245,22 @@
       "prompt": "Empirically review an ASP.NET Core background-worker test change that replaces cooperative cancellation with an observer-only timeout. The focused C# test can run only after disabling an unrelated web-asset build target in the fresh worktree. The candidate turns the focused assertion green, and the same deterministic assertion passes twenty times. Determine the proof level and any remaining lifecycle validation.",
       "expected_output": "A scoped result that records the build bypass, avoids cross-platform production claims, distinguishes repetition from a stress matrix, and verifies what happens to inner worker tasks after the observer times out.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "observer-timeout-cleanup",
+        "provenance": {
+          "kind": "historical",
+          "source": "background-worker timeout calibration"
+        },
+        "area": "Testing/Infrastructure",
+        "score_family": "cleanup-proof-boundary",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 2, 3],
+          "negative": [1, 4, 5]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The unrelated build failure and property override are recorded separately from behavioral red evidence.",
         "The candidate is capped at targeted-proven until the standard build or exact CI path validates it.",
@@ -147,6 +275,22 @@
       "prompt": "Review an ASP.NET Core pooled-resource fix. Accepted issue criteria and a maintainer clarification require every lease to be returned exactly once on normal completion, cancellation, and producer fault. Retained traces show a double return on cancellation. The current PR fixes cancellation but still leaks the lease on producer fault. A separate candidate not present in the PR centralizes release in one ownership exit. The identical real-path assertions fail at the frozen PR head for cancellation and fault, pass with the candidate, and a varied normal/cancel/fault/dispose matrix plus neighboring tests pass on the exact CI configurations. Keep the review local.",
       "expected_output": "A high-confidence review that blocks the still-incomplete PR implementation while allowing the separate candidate to become production-proven because authoritative intent, reproduced mechanism, exact scenarios, real producer paths, varied stress, and exact CI configurations all align.",
       "files": [],
+      "eval_metadata": {
+        "mechanism": "pooled-resource-ownership",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "pooled lease ownership scenario"
+        },
+        "area": "Servers",
+        "score_family": "lifecycle-ownership",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4],
+          "negative": [5]
+        },
+        "forbidden_prompt_terms": []
+      },
       "expectations": [
         "The accepted criteria and maintainer clarification produce authoritative oracle fidelity.",
         "Retained traces and exact frozen-head failures produce reproduced mechanism fidelity.",
@@ -158,9 +302,36 @@
     },
     {
       "id": 10,
-      "prompt": "Review a small ASP.NET Core registration fix. A documented contract says a preconfigured compatible handler instance takes precedence over type fallback. The PR removes the line that discarded that instance and already includes a weaker regression test. A stronger unique-result assertion passes on untouched frozen head through Options, dependency injection, and the real consumer, but no concrete false-pass exists for the checked-in test. Reintroducing the removed line makes the stronger assertion fail. A narrow fallback matrix passes, but the local test needed an unrelated frontend-build bypass. Keep the review local.",
+      "prompt": "Review the supplied ASP.NET Core registration-fix fixture. Determine whether the current implementation has a merge-blocking defect, what the retained evidence proves, and how much additional validation is proportionate. Keep the review local.",
       "expected_output": "A no-blocker review that keeps the current fix, distinguishes frozen-head success from a diagnostic historical mutation, treats stronger test coverage as optional, and caps candidate proof at targeted-proven.",
-      "files": [],
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/registration-instance-precedence.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "no-defect-registration",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68081"
+        },
+        "area": "Hosting/DependencyInjection",
+        "score_family": "no-defect-calibration",
+        "tier": "held_out",
+        "frozen_hash": "51d98d5357f75180018320f7c4699584cb6a02af4094006f1aa10a2820d01e88",
+        "fixture_hashes": {
+          ".github/skills/aspnetcore-pr-review/evals/fixtures/registration-instance-precedence.md": "df21462ee1948f8974614ed8a24016de01ebf18ebe8d4a745a02be32ec92e074"
+        },
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 2, 3, 4, 5],
+          "negative": [1]
+        },
+        "forbidden_prompt_terms": [
+          "passes on untouched frozen head",
+          "diagnostic-only",
+          "optional-regression",
+          "frontend-build bypass"
+        ]
+      },
       "expectations": [
         "The untouched frozen-head result is recorded before any mutation or candidate.",
         "Frozen-head success rejects an implementation blocker even though a historical mutation can produce red.",
@@ -172,9 +343,36 @@
     },
     {
       "id": 11,
-      "prompt": "Review a one-line stateless ASP.NET Core lookup correction with an authoritative contract. The exact real path fails on frozen head and passes after the correction, and the two nearest key-shape counterexamples pass. No ownership, cancellation, concurrency, interop, or background work is involved. Decide how much falsification is required and classify the candidate.",
+      "prompt": "Review the supplied ASP.NET Core lookup-correction fixture. Determine the required falsification scope and candidate classification without importing unrelated review machinery.",
       "expected_output": "A proportionate review that accepts a bounded real-path and nearest-counterexample matrix without inventing lifecycle scaffolding, while preserving explicit configuration limits.",
-      "files": [],
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/stateless-lookup.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "proportionate-stateless-validation",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "one-line stateless lookup scenario"
+        },
+        "area": "Http",
+        "score_family": "proportionate-validation",
+        "tier": "held_out",
+        "frozen_hash": "15fd59f94b4174779ba309965a78eb82ec300faca1e0a764ace0a3130ae3eb82",
+        "fixture_hashes": {
+          ".github/skills/aspnetcore-pr-review/evals/fixtures/stateless-lookup.md": "c395cbcdb376549ba18d00a53e780b04e99ff59e739107a6d69a167f2309ed3a"
+        },
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 3, 4],
+          "negative": [2]
+        },
+        "forbidden_prompt_terms": [
+          "cancellation",
+          "disposal",
+          "observer-timeout",
+          "stateless"
+        ]
+      },
       "expectations": [
         "The review requires strict frozen-head red and candidate green for the claimed defect.",
         "The falsification matrix is limited to dimensions that can affect the stateless lookup mechanism.",
@@ -185,9 +383,32 @@
     },
     {
       "id": 12,
-      "prompt": "Review a dotnet/aspnetcore Virtualize pull request that opens a variable-height list at InitialItemIndex 500. The implementation suppresses observer callbacks while pinning the initial target. Existing tests cover initial placement and Home/End ownership transfer but do not scroll far enough to expose the opposite spacer after recovery. Maintainer-confirmed behavior requires the target to remain stable through unrelated layout activity and ordinary scrolling must not jump the visible range backward. Keep the review local and bounded.",
+      "prompt": "Review a dotnet/aspnetcore pull request that changes how a browser-backed variable-height list handles InitialItemIndex. The patch changes when IntersectionObserver callbacks are ignored during initial positioning. The edited tests cover initial placement and keyboard ownership transfer. Maintainer-confirmed behavior requires the target to remain stable through unrelated layout activity, and ordinary scrolling must preserve a monotonic visible range. Inspect adjacent states and impacted existing behavior; keep the review local and bounded.",
       "expected_output": "A lifecycle-aware review that looks beyond the edited tests, models the suppressed interval and first resumed observer callback, identifies mixed measurement generations as a concrete risk, and selects a bounded real-browser scenario with a fixed-size control and variable-height perturbation.",
-      "files": [],
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/virtualization-recovery.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "observer-recovery-measurement-generation",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68114"
+        },
+        "area": "Components/Virtualization",
+        "score_family": "recovery-measurement-generation",
+        "tier": "train",
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4, 6],
+          "negative": [5, 7]
+        },
+        "forbidden_prompt_terms": [
+          "first resumed",
+          "opposite spacer",
+          "mixed measurement generations",
+          "item 500"
+        ]
+      },
       "expectations": [
         "The transition analysis records what measurements stop updating while callbacks are suppressed.",
         "The review analyzes the first observer callback after suppression rather than stopping at callback re-enablement.",
@@ -201,9 +422,32 @@
     },
     {
       "id": 13,
-      "prompt": "A dotnet/aspnetcore Virtualize review completed at frozen head A. A later pull request commit changes the shared IntersectionObserver producer so that when before and after spacers appear in one batch it always drops the after-spacer entry. The tests edited by the new commit pass, but an unchanged ProgrammaticScrollToBottom_ReachesLastItems E2E test depends on the after-spacer callback to fetch the tail. Reassess the live head locally without posting.",
+      "prompt": "An earlier local review of a dotnet/aspnetcore browser virtualization pull request completed at frozen head A. A later commit modifies filtering in the shared IntersectionObserver callback producer, and the edited tests pass. Reassess the live head locally, including unchanged behavior that shares the producer, without posting.",
       "expected_output": "A head-drift reassessment that regenerates a changed-producer impact map, discovers and runs the unchanged bottom-scroll test, and scopes the newly observed regression to the later commit instead of attributing it to the earlier frozen review.",
-      "files": [],
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/virtualization-producer-drift.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "producer-impact-head-drift",
+        "provenance": {
+          "kind": "historical",
+          "source": "dotnet/aspnetcore#68114"
+        },
+        "area": "Components/Virtualization",
+        "score_family": "head-drift-impact",
+        "tier": "train",
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [1, 2, 3, 4, 5, 6],
+          "negative": [0, 7]
+        },
+        "forbidden_prompt_terms": [
+          "ProgrammaticScrollToBottom_ReachesLastItems",
+          "drops the after-spacer",
+          "both spacers",
+          "tail distribution"
+        ]
+      },
       "expectations": [
         "The review states that evidence from frozen head A cannot predict or validate a later producer change.",
         "Relevant head drift causes the evidence bundle and impact map to be regenerated.",
@@ -213,6 +457,121 @@
         "The causal explanation states that dropping the after-spacer entry prevents the tail distribution or fetch required by programmatic bottom scrolling.",
         "A prior-head pass and current-head behavioral failure are preserved separately from infrastructure or aggregate CI status.",
         "The final report attributes the regression to the post-review commit and does not misrepresent earlier reviewed-head evidence as current."
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Review the supplied ASP.NET Core deferred connection-abort fixture. Determine whether the current fix requires changes and what evidence is necessary for the verdict. Keep all work local.",
+      "expected_output": "A calibrated no-blocker review that traces the abort/dispose ownership race, validates the untouched focused test before any diagnostic mutation, distinguishes the disposed-source exception from cancellation callback failures, and rejects broader coordination requirements that lack contract authority.",
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/connection-abort-dispose.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "deferred-cancel-dispose-race",
+        "provenance": {
+          "kind": "pr",
+          "source": "dotnet/aspnetcore#68146"
+        },
+        "area": "Servers/Connections",
+        "score_family": "lifecycle-ownership",
+        "tier": "held_out",
+        "frozen_hash": "5ad5ef70c86f5a04dc36fd2fb452ea6b42ee6d4b43a13c6e5f77e859cad589da",
+        "fixture_hashes": {
+          ".github/skills/aspnetcore-pr-review/evals/fixtures/connection-abort-dispose.md": "20b6ac1f855ecc47ab2b3c8bc7d319f3043d4c4c40e3eeaa2b1c21779cb312a4"
+        },
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4, 7],
+          "negative": [5, 6]
+        },
+        "forbidden_prompt_terms": [
+          "first-chance exception",
+          "deadlock",
+          "KestrelConnection"
+        ]
+      },
+      "expectations": [
+        "The product oracle uses the accepted issue discussion to establish that queued work must tolerate state changes between scheduling and execution.",
+        "The review traces ownership from deferred cancellation through immediate disposal and identifies the narrow disposed-source race.",
+        "The untouched isolated-process regression is run or exact current CI evidence is preserved before any diagnostic mutation.",
+        "The review distinguishes CancellationTokenSource disposal from exceptions thrown by cancellation callbacks.",
+        "Any first-chance exception marker is classified as diagnostic-only rather than required regression coverage.",
+        "The review does not require ConnectionClosed cancellation after disposal without an authoritative contract.",
+        "Wait-for-worker or deferred-disposal alternatives are rejected when they can deadlock the exact worker-starvation ordering or strand cleanup.",
+        "The final verdict keeps the current fix and reports no implementation blocker."
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Review dotnet/aspnetcore PR #68037 at head 2df89bef7b6001fb64b5e8bef3dda447f1e4967b. The pull request changes how Components render-batch frames are passed to a writer, adds a benchmark, and adds a mutation-safety test. Inspect the exact diff, linked issue, review discussion, benchmark shape, generated call shape, tests, and current status. Determine whether the implementation and performance claim are ready. Keep all work local.",
+      "expected_output": "A performance-evidence review that separates correct wire behavior from an unproven optimization claim, detects when the mutation test observes the source array rather than the actual by-reference argument, and requests comparative benchmark and generated-code evidence without claiming a production correctness defect that was not shown.",
+      "files": [],
+      "eval_metadata": {
+        "mechanism": "performance-call-shape-proof",
+        "provenance": {
+          "kind": "pr",
+          "source": "dotnet/aspnetcore#68037"
+        },
+        "area": "Components/RenderTree",
+        "score_family": "performance-proof",
+        "tier": "train",
+        "discovery_mode": "verification",
+        "controls": {
+          "positive": [0, 1, 2, 3, 4, 6],
+          "negative": [5]
+        },
+        "forbidden_prompt_terms": []
+      },
+      "expectations": [
+        "The review freezes and records the exact reviewed head before evaluating generated code or benchmarks.",
+        "The review distinguishes protocol correctness from evidence that the new call shape materially improves performance.",
+        "A benchmark with no same-run comparator or generated-code evidence is insufficient to establish the optimization claim.",
+        "The mutation-safety test is rejected if the writer receives a copied local while the assertion inspects the original array.",
+        "A direct array-by-reference alternative may prove mutation reachability structurally but is not preferred without safety and performance evidence.",
+        "The final verdict is revise or blocked on evidence rather than blocked on a demonstrated wire-correctness defect.",
+        "The requested follow-up compares the original, one-copy, and direct-array call shapes using identical workload and generated-code evidence."
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Reassess the later head represented by the supplied ASP.NET Core SignalR reconnect fixture. Determine whether the changed shared producer affects unchanged consumers and whether earlier-head evidence remains current. Keep the review local.",
+      "expected_output": "A head-drift review that re-establishes the nullable retry-policy contract, maps the changed result normalization to unchanged stop-reconnecting behavior, runs or selects the unchanged impacted test, and scopes any regression to the later head.",
+      "files": [
+        ".github/skills/aspnetcore-pr-review/evals/fixtures/signalr-reconnect-drift.md"
+      ],
+      "eval_metadata": {
+        "mechanism": "signalr-retry-policy-head-drift",
+        "provenance": {
+          "kind": "synthetic",
+          "source": "signalr retry-policy drift fixture"
+        },
+        "area": "SignalR/Client",
+        "score_family": "head-drift-impact",
+        "tier": "held_out",
+        "frozen_hash": "04431ffc03bd56b468b684e4be823f2f11f67fbe03783932ef851cb9e7a10674",
+        "fixture_hashes": {
+          ".github/skills/aspnetcore-pr-review/evals/fixtures/signalr-reconnect-drift.md": "111a0a8934b6d50941094bbe48c3202c1b295c91fc3a9cc3ad98fb611a8bb73d"
+        },
+        "discovery_mode": "discovery",
+        "controls": {
+          "positive": [0, 1, 2, 3, 5],
+          "negative": [4, 6]
+        },
+        "forbidden_prompt_terms": [
+          "NextRetryDelay",
+          "TimeSpan.Zero",
+          "StopsIfTheReconnectPolicyReturnsNull",
+          "Disconnected"
+        ]
+      },
+      "expectations": [
+        "The review re-establishes from the fixture that a null retry delay stops automatic reconnect.",
+        "The changed null-to-zero normalization is mapped to the shared reconnect scheduler.",
+        "The impact analysis selects the unchanged null-after-failed-retry test from the supplied reconnect-suite inventory.",
+        "The unchanged impacted test is selected before inventing a candidate-specific assertion.",
+        "Earlier-head success is not presented as proof for the later shared-producer change.",
+        "The final report attributes any immediate-retry regression to the later head.",
+        "The review does not generalize the result beyond retry policies returning null."
       ]
     }
   ]
