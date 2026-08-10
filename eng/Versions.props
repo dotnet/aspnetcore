@@ -218,6 +218,9 @@
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
     <MicrosoftOpenApiVersion>[3.9.0,4.0.0)</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiYamlReaderVersion>[3.9.0,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
+    <!-- Components.AI dependencies (Microsoft.Extensions.AI) -->
+    <MicrosoftExtensionsAIVersion>10.6.0</MicrosoftExtensionsAIVersion>
+    <MicrosoftExtensionsAIAbstractionsVersion>$(MicrosoftExtensionsAIVersion)</MicrosoftExtensionsAIAbstractionsVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
     <DotnetServeVersion>1.10.93</DotnetServeVersion>
