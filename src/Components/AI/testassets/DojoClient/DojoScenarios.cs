@@ -13,4 +13,6 @@ internal static class DojoScenarios
     internal const string BackendToolRenderingEndpoint = "/backend_tool_rendering";
 
     internal const string HumanInTheLoopEndpoint = "/human_in_the_loop";
+
+    internal const string ToolBasedGenerativeUIEndpoint = "/tool_based_generative_ui";
 }
