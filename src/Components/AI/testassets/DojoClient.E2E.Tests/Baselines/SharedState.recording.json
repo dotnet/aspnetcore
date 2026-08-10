@@ -1,0 +1,292 @@
+{
+  "calls": [
+    {
+      "prompt": "Create a delicious Italian pasta recipe.",
+      "messageCount": 2,
+      "toolNames": [
+        "generate_recipe"
+      ],
+      "state": {
+        "recipe": {
+          "title": "Sunday Garden Pasta",
+          "skill_level": "Beginner",
+          "cooking_time": "45 min",
+          "special_preferences": [
+            "High Protein"
+          ],
+          "ingredients": [
+            {
+              "icon": "\ud83e\udd55",
+              "name": "Zucchini",
+              "amount": "2, sliced"
+            },
+            {
+              "icon": "\ud83c\udf3e",
+              "name": "All-Purpose Flour",
+              "amount": "2 cups"
+            }
+          ],
+          "instructions": [
+            "Preheat oven to 350\u00b0F (175\u00b0C)"
+          ]
+        }
+      },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "before-italian-recipe"
+        },
+        {
+          "name": "italian-recipe",
+          "functionCall": {
+            "callId": "shared-state-recipe-1",
+            "name": "generate_recipe",
+            "arguments": {
+              "recipe": {
+                "title": "Italian Garden Pasta",
+                "skill_level": "Beginner",
+                "cooking_time": "30 min",
+                "special_preferences": [
+                  "High Protein"
+                ],
+                "ingredients": [
+                  {
+                    "icon": "\ud83c\udf5d",
+                    "name": "Pasta",
+                    "amount": "12 oz"
+                  },
+                  {
+                    "icon": "\ud83e\udd52",
+                    "name": "Zucchini",
+                    "amount": "2, sliced"
+                  },
+                  {
+                    "icon": "\ud83c\udf3e",
+                    "name": "All-Purpose Flour",
+                    "amount": "2 cups"
+                  },
+                  {
+                    "icon": "\ud83c\udf45",
+                    "name": "Cherry Tomatoes",
+                    "amount": "2 cups"
+                  }
+                ],
+                "instructions": [
+                  "Boil the pasta until al dente.",
+                  "Saute the zucchini and tomatoes.",
+                  "Toss everything together and serve."
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Create a delicious Italian pasta recipe.",
+      "messageCount": 4,
+      "toolNames": [
+        "generate_recipe"
+      ],
+      "toolResultCallIds": [
+        "shared-state-recipe-1"
+      ],
+      "state": {
+        "recipe": {
+          "title": "Sunday Garden Pasta",
+          "skill_level": "Beginner",
+          "cooking_time": "45 min",
+          "special_preferences": [
+            "High Protein"
+          ],
+          "ingredients": [
+            {
+              "icon": "\ud83e\udd55",
+              "name": "Zucchini",
+              "amount": "2, sliced"
+            },
+            {
+              "icon": "\ud83c\udf3e",
+              "name": "All-Purpose Flour",
+              "amount": "2 cups"
+            }
+          ],
+          "instructions": [
+            "Preheat oven to 350\u00b0F (175\u00b0C)"
+          ]
+        }
+      },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "before-italian-summary"
+        },
+        {
+          "name": "italian-summary",
+          "chunks": [
+            "I created an Italian garden pasta and kept your zucchini."
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "Improve the recipe with fresh herbs.",
+      "messageCount": 6,
+      "toolNames": [
+        "generate_recipe"
+      ],
+      "state": {
+        "recipe": {
+          "title": "Italian Garden Pasta",
+          "skill_level": "Beginner",
+          "cooking_time": "30 min",
+          "special_preferences": [
+            "High Protein"
+          ],
+          "ingredients": [
+            {
+              "icon": "\ud83c\udf5d",
+              "name": "Pasta",
+              "amount": "12 oz"
+            },
+            {
+              "icon": "\ud83e\udd52",
+              "name": "Zucchini",
+              "amount": "3, sliced"
+            },
+            {
+              "icon": "\ud83c\udf3e",
+              "name": "All-Purpose Flour",
+              "amount": "2 cups"
+            },
+            {
+              "icon": "\ud83c\udf45",
+              "name": "Cherry Tomatoes",
+              "amount": "2 cups"
+            }
+          ],
+          "instructions": [
+            "Boil the pasta until al dente.",
+            "Saute the zucchini and tomatoes.",
+            "Toss everything together and serve."
+          ]
+        }
+      },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "before-herbed-recipe"
+        },
+        {
+          "name": "herbed-recipe",
+          "functionCall": {
+            "callId": "shared-state-recipe-2",
+            "name": "generate_recipe",
+            "arguments": {
+              "recipe": {
+                "title": "Herbed Italian Garden Pasta",
+                "skill_level": "Beginner",
+                "cooking_time": "30 min",
+                "special_preferences": [
+                  "High Protein"
+                ],
+                "ingredients": [
+                  {
+                    "icon": "\ud83c\udf5d",
+                    "name": "Pasta",
+                    "amount": "12 oz"
+                  },
+                  {
+                    "icon": "\ud83e\udd52",
+                    "name": "Zucchini",
+                    "amount": "3, sliced"
+                  },
+                  {
+                    "icon": "\ud83c\udf3e",
+                    "name": "All-Purpose Flour",
+                    "amount": "2 cups"
+                  },
+                  {
+                    "icon": "\ud83c\udf45",
+                    "name": "Cherry Tomatoes",
+                    "amount": "2 cups"
+                  },
+                  {
+                    "icon": "\ud83c\udf3f",
+                    "name": "Fresh Basil",
+                    "amount": "1 handful"
+                  }
+                ],
+                "instructions": [
+                  "Boil the pasta until al dente.",
+                  "Saute the zucchini and tomatoes.",
+                  "Toss with fresh basil and serve."
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "Improve the recipe with fresh herbs.",
+      "messageCount": 8,
+      "toolNames": [
+        "generate_recipe"
+      ],
+      "toolResultCallIds": [
+        "shared-state-recipe-1",
+        "shared-state-recipe-2"
+      ],
+      "state": {
+        "recipe": {
+          "title": "Italian Garden Pasta",
+          "skill_level": "Beginner",
+          "cooking_time": "30 min",
+          "special_preferences": [
+            "High Protein"
+          ],
+          "ingredients": [
+            {
+              "icon": "\ud83c\udf5d",
+              "name": "Pasta",
+              "amount": "12 oz"
+            },
+            {
+              "icon": "\ud83e\udd52",
+              "name": "Zucchini",
+              "amount": "3, sliced"
+            },
+            {
+              "icon": "\ud83c\udf3e",
+              "name": "All-Purpose Flour",
+              "amount": "2 cups"
+            },
+            {
+              "icon": "\ud83c\udf45",
+              "name": "Cherry Tomatoes",
+              "amount": "2 cups"
+            }
+          ],
+          "instructions": [
+            "Boil the pasta until al dente.",
+            "Saute the zucchini and tomatoes.",
+            "Toss everything together and serve."
+          ]
+        }
+      },
+      "requireStableThread": true,
+      "frames": [
+        {
+          "name": "before-herbed-summary"
+        },
+        {
+          "name": "herbed-summary",
+          "chunks": [
+            "I added fresh basil while preserving your latest recipe edits."
+          ]
+        }
+      ]
+    }
+  ]
+}
