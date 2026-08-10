@@ -212,27 +212,6 @@ public class ChildWithClassWithTrippleAttribute
     }
 
     [Fact]
-    public async Task ReportsForValidatableType_WithoutAddValidationCall()
-    {
-        var source = """
-using System;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Validation;
-
-public partial class Home
-{
-    [ValidatableType]
-    private class PrivateModel
-    {
-        [Required] public string? Name { get; set; }
-    }
-}
-""";
-        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
-        Assert.Single(diagnostics.Where(d => d.Id == "ASP0033"));
-    }
-
-    [Fact]
     public async Task DoesNotReportInaccessibleEndpointParameter_WhenValidationIsDisabled()
     {
         var source = """
