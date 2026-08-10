@@ -10,6 +10,7 @@ REQUIRED_NONEMPTY = (
     "evidence/manifest.md",
     "evidence/product-oracle.md",
     "evidence/head-drift.md",
+    "evidence/impact-map.md",
     "candidates/candidate-a.md",
     "candidates/candidate-b.md",
     "candidates/candidate-c.md",

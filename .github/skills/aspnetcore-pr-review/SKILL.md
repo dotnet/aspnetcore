@@ -79,6 +79,7 @@ Save the bundle outside the repository using these names:
   evidence/manifest.md
   evidence/product-oracle.md
   evidence/head-drift.md
+  evidence/impact-map.md
   evidence/tracked.diff
   evidence/files/
   candidates/candidate-a.md
@@ -115,10 +116,20 @@ The manifest must record:
 7. Exact validation commands and complete logs when available.
 8. Known environment failures, explicitly separated from product failures.
 9. Which changed paths are in scope and why unrelated dirty paths were excluded.
+10. An impact map from every changed producer, dispatcher, callback filter, or
+    state transition to the consumers and unchanged tests that exercise each
+    affected branch. Record the exact command selected for each test, or a
+    source-backed reason why no existing test is impacted.
 
 Give every model the same manifest, tracked diff, and captured files. Permit a
 narrow source lookup outside the bundle only when the candidate records the
 path and the claim it is verifying.
+
+Changed paths are not a sufficient impact analysis. A narrow producer edit can
+break an unchanged consumer test in another directory. Build
+`evidence/impact-map.md` from symbols, callbacks, event branches, and callers
+before selecting new assertions. Prefer running directly impacted existing
+tests over inventing candidate-specific tests.
 
 Do not include the parent's conclusion that the fix is correct. The goal is to
 avoid anchoring.
@@ -153,6 +164,11 @@ These invocations are read-only, so run them in parallel. Each prompt must:
   require a transition table containing: state/invariant, entry path, ordinary
   successful exit, cancellation/interruption exit, owner, and the observable
   consequence if the state is stranded or consumed twice.
+- When callbacks, observers, measurements, or notifications are suppressed,
+  disabled, discarded, or deferred, extend the table with: what stops
+  updating, the first event after recovery, any ownership transfer, the
+  generation/provenance of every value consumed after recovery, stale values
+  that survive, and the opposite edge or boundary.
 - Require an approach materially different from the current fix when viable.
 - Allow `NO VIABLE ALTERNATIVE` only after the candidate names and rejects at
   least one mechanism-level alternative.
@@ -165,6 +181,8 @@ These invocations are read-only, so run them in parallel. Each prompt must:
   but cannot silently replace it with implementation-derived intent.
 - Require every proposed discriminating assertion to state why the expected
   result is required independently of that candidate.
+- Pass `evidence/impact-map.md` explicitly and require the candidate to assess
+  its mapped unchanged tests and uncovered producer branches.
 - Label unverifiable claims `UNSUPPORTED`; unsupported claims cannot become
   required follow-ups or consensus findings.
 - Prohibit edits, commits, pushes, comments, and external posting.
@@ -206,6 +224,10 @@ Each model must:
 7. Rank surviving behavioral claims by falsifiability: concrete trigger,
    observable failure, and faithful test boundary. Prefer a bounded claim over a
    broad concern that cannot be distinguished.
+8. Challenge whether the current tests cover the first event after a suppressed
+   interval, every changed producer branch, and the opposite boundary. Propose
+   one bounded state-derived adjacent scenario when they do not; do not expand
+   into an unrelated Cartesian test matrix.
 
 One cross-examination round is sufficient for this minimal reviewer. If two or
 more models produce the same new idea, the orchestrator must verify it against
@@ -228,14 +250,17 @@ merge-readiness verdict.
      information producer relevant to the claim. Do not choose an easier
      consumer-only unit test when the finding depends on browser, transport,
      process, or scheduler behavior.
+     - is informed by the impact map and by directly impacted unchanged tests,
+       not only the tests added or edited by the pull request.
 2. Create an isolated child session or disposable detached worktree at the
    frozen PR head. Never edit the parent review worktree. Record its exact path,
    SHA, and clean status in `empirical/manifest.md`.
 3. Invoke `aspnetcore-try-fix` in `empirical` mode sequentially, using the
    strongest consensus hypothesis, the exact claim to prove or reject, the
    relevant product-oracle entries, the already-approved candidate-independent
-   assertion contract, its allowed perturbations, and the smallest targeted
-   validation command. The empirical agent may edit only its isolated worktree.
+   assertion contract, its allowed perturbations, `evidence/impact-map.md`, and
+   the smallest targeted validation command. The empirical agent may edit only
+   its isolated worktree.
 4. Build a proof ladder in `empirical/claim-matrix.md` and record the highest
    completed rung for each blocker-caliber claim:
    - source invariant or contradictory contract;
@@ -246,7 +271,12 @@ merge-readiness verdict.
    A lower rung does not prove a higher-rung scenario. For example, directly
    invoking a callback does not prove which callback a browser interaction
    produces.
-5. Run the approved assertion against untouched frozen head first and save the
+5. Run directly impacted existing tests from `evidence/impact-map.md` against
+   untouched frozen head before adding a new assertion. Preserve their commands
+   and complete output. If an unchanged test already distinguishes the defect,
+   use it as the primary assertion rather than replacing it with a narrower
+   candidate-specific test.
+6. Run the approved assertion against untouched frozen head first and save the
    complete result in `empirical/head.log`:
    - add or tighten one assertion that distinguishes the predicted defect;
    - if head fails behaviorally, copy that result to `empirical/red.log`, apply
@@ -261,20 +291,20 @@ merge-readiness verdict.
    - classify the regression assertion as required, optional, or rejected, and
      any mutation separately as diagnostic-only, rejected, or not applicable.
      Required means accepted criteria or a proven defect needs exact coverage.
-6. A valid red must fail at the predicted behavioral assertion. A stale browser
+7. A valid red must fail at the predicted behavioral assertion. A stale browser
    element, harness timeout before the trigger, build failure, missing asset,
    infrastructure error, unrelated assertion, or different assertion is not
    behavioral red evidence. Fix the harness or classify the run as `Blocked`.
-7. A pre-existing failing test is acceptable only when the same assertion
+8. A pre-existing failing test is acceptable only when the same assertion
    passes after the candidate correction. A build-only failure, unrelated test
    failure, different assertion, or source-only prediction is not green
    evidence.
-8. Treat the first green as causal evidence for the finding, not proof that the
+9. Treat the first green as causal evidence for the finding, not proof that the
    candidate is production-ready. Preserve these as separate conclusions:
    - **Finding proof:** does frozen head exhibit the predicted defect?
    - **Scenario proof:** did the real producer/runtime path exhibit it?
    - **Candidate proof:** did the proposed fix survive relevant counterexamples?
-9. Run at most three iterations for the same hypothesis. If the environment,
+10. Run at most three iterations for the same hypothesis. If the environment,
    browser harness, or target test cannot run, preserve the failure and classify
    adjudication as `Blocked`; do not substitute aggregate CI or model agreement.
    If a generated asset or unrelated build target blocks the focused command,
@@ -282,16 +312,16 @@ merge-readiness verdict.
    Verify the bypassed target cannot affect the exercised behavior and cap the
    candidate at `targeted-proven` unless the standard build or exact CI path
    later validates it.
-10. For every other blocker-caliber behavioral claim, execute a narrow
+11. For every other blocker-caliber behavioral claim, execute a narrow
     differentiating test when practical. If frozen head passes, explicitly
     discard or narrow the claim. If frozen head fails at the predicted
     assertion, promote it to a required follow-up using the highest proof rung
     reached. If it is not run, downgrade it rather than carrying it as an
     implementation blocker.
-11. Do not require empirical validation for a claim fully established without
+12. Do not require empirical validation for a claim fully established without
    runtime execution, such as a compiler error or a directly contradictory API
    contract. Record why execution adds no information.
-12. Preserve all empirical artifacts before removing a disposable worktree. If
+13. Preserve all empirical artifacts before removing a disposable worktree. If
    safe cleanup is unavailable, leave the isolated worktree in place and report
    it rather than using destructive cleanup.
 
@@ -310,6 +340,14 @@ in the same isolated worktree and save a lifecycle-derived matrix in
 - Scale the matrix to claim severity and statefulness. Do not add lifecycle
   scaffolding solely to earn `production-proven`; a lower proof cap is valid.
 - Exercise the real producer/runtime boundary and the narrow neighboring suite.
+- For a suppressed callback, observer, or measurement interval, exercise the
+  first resumed event and the opposite edge or boundary. When geometry or
+  measurement provenance is on the changed path, include one fixed-size control
+  and one realistic variable-size or layout perturbation. Expand further only
+  after a behavioral divergence or when the claim is platform-specific.
+- For asymmetric before/after handling or batch filtering, cover before-only,
+  after-only, and both-in-one-batch cases so suppressing a duplicate does not
+  discard the callback required by another consumer.
 - When recommending an observer-only timeout, inspect the inner task states
   after timeout, release or cancel them deterministically, observe exceptions,
   and verify cleanup cannot leak into later tests.
@@ -336,8 +374,9 @@ compare it with the frozen evidence SHA. Save the comparison in
 - If the head is unchanged, proceed.
 - If only unrelated paths changed, record why the evidence remains applicable.
 - If a relevant source, test, contract, or instruction changed, refresh the
-  evidence bundle and rerun the affected proof before presenting the finding
-  as current.
+  evidence bundle, regenerate `evidence/impact-map.md`, and rerun both the
+  affected proof and mapped unchanged tests before presenting the finding as
+  current.
 - Never silently describe frozen-head evidence as current-head validation.
 
 The orchestrator, not any candidate model, synthesizes the result.

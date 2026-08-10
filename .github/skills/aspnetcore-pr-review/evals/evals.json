@@ -182,6 +182,38 @@
         "The candidate proof label preserves any untested configuration or platform limits.",
         "The assertion is required-regression because it proves the authoritative defect and correction."
       ]
+    },
+    {
+      "id": 12,
+      "prompt": "Review a dotnet/aspnetcore Virtualize pull request that opens a variable-height list at InitialItemIndex 500. The implementation suppresses observer callbacks while pinning the initial target. Existing tests cover initial placement and Home/End ownership transfer but do not scroll far enough to expose the opposite spacer after recovery. Maintainer-confirmed behavior requires the target to remain stable through unrelated layout activity and ordinary scrolling must not jump the visible range backward. Keep the review local and bounded.",
+      "expected_output": "A lifecycle-aware review that looks beyond the edited tests, models the suppressed interval and first resumed observer callback, identifies mixed measurement generations as a concrete risk, and selects a bounded real-browser scenario with a fixed-size control and variable-height perturbation.",
+      "files": [],
+      "expectations": [
+        "The transition analysis records what measurements stop updating while callbacks are suppressed.",
+        "The review analyzes the first observer callback after suppression rather than stopping at callback re-enablement.",
+        "The review tracks the generation or provenance of spacer pixels, rendered-row separation, item count, and the item-size divisor consumed by redistribution.",
+        "The review identifies that combining stale spacer geometry with a newly measured variable-row average can move the logical window backward.",
+        "The bounded adjacent scenario opens near item 500, verifies initial placement, scrolls ordinarily until the opposite or bottom spacer is exposed, and asserts that the visible range does not jump backward.",
+        "The empirical plan uses one fixed-size control and one realistic variable-height perturbation instead of an unrelated global stress matrix.",
+        "The scenario exercises the real browser observer and DOM measurement producer rather than injecting only a downstream C# callback.",
+        "The existing Home/End ownership assertion remains a separate oracle and is not rewritten to stand in for stale-measurement recovery."
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "A dotnet/aspnetcore Virtualize review completed at frozen head A. A later pull request commit changes the shared IntersectionObserver producer so that when before and after spacers appear in one batch it always drops the after-spacer entry. The tests edited by the new commit pass, but an unchanged ProgrammaticScrollToBottom_ReachesLastItems E2E test depends on the after-spacer callback to fetch the tail. Reassess the live head locally without posting.",
+      "expected_output": "A head-drift reassessment that regenerates a changed-producer impact map, discovers and runs the unchanged bottom-scroll test, and scopes the newly observed regression to the later commit instead of attributing it to the earlier frozen review.",
+      "files": [],
+      "expectations": [
+        "The review states that evidence from frozen head A cannot predict or validate a later producer change.",
+        "Relevant head drift causes the evidence bundle and impact map to be regenerated.",
+        "The impact map connects the changed both-spacers filter to before-only, after-only, and both-in-one-batch consumers.",
+        "The review discovers ProgrammaticScrollToBottom_ReachesLastItems even though the test file was unchanged.",
+        "The unchanged impacted E2E test is run before inventing a candidate-specific assertion.",
+        "The causal explanation states that dropping the after-spacer entry prevents the tail distribution or fetch required by programmatic bottom scrolling.",
+        "A prior-head pass and current-head behavioral failure are preserved separately from infrastructure or aggregate CI status.",
+        "The final report attributes the regression to the post-review commit and does not misrepresent earlier reviewed-head evidence as current."
+      ]
     }
   ]
 }

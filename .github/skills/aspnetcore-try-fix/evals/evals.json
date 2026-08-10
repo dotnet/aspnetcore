@@ -100,6 +100,36 @@
         "The assertion disposition is required-regression.",
         "Candidate fidelity remains limited by the configurations and platforms actually executed."
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "In an isolated dotnet/aspnetcore worktree, evaluate a Virtualize candidate where observer callbacks are suppressed while InitialItemIndex pins a variable-height list. The first resumed bottom-spacer callback may combine old spacer pixels with a new measured item-size average. Existing tests cover initial placement and boundary-key takeover but not this recovery edge. Keep the experiment bounded and local.",
+      "expected_output": "A structured empirical candidate that models measurement provenance across suppression, runs impacted existing tests first, and tests the first resumed real-browser callback with one fixed-size control and one variable-height perturbation.",
+      "files": [],
+      "expectations": [
+        "The assertion plan records the suppressed interval, resume trigger, pre/post measurement generations, and impacted existing tests.",
+        "The candidate explains which geometry remains stale and which measurement becomes current before redistribution.",
+        "The real observer and DOM measurement producer are exercised rather than only directly invoking a C# consumer callback.",
+        "The bounded matrix contains a fixed-size control and one realistic variable-height perturbation.",
+        "The trigger scrolls to expose the opposite or bottom spacer after initial positioning and asserts no backward visible-range jump.",
+        "Existing initial-placement and boundary-key tests are run but are not treated as substitutes for the recovery scenario.",
+        "The candidate cannot become production-proven until mapped unchanged tests and the recovery matrix pass."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "In candidate-review mode, assess a Virtualize change that filters an IntersectionObserver batch containing both before and after spacers by unconditionally deleting the after-spacer entry. The edited startup test expects duplicate suppression. An unchanged programmatic-scroll-to-bottom E2E test relies on the after callback. Do not edit the checkout.",
+      "expected_output": "A read-only candidate that uses the impact map to preserve both consumers, analyzes before-only, after-only, and both-in-one-batch behavior, and predicts the unchanged bottom-scroll regression without proposing an unbounded test matrix.",
+      "files": [],
+      "expectations": [
+        "The candidate maps the changed filter to both startup alignment and bottom-scroll consumers.",
+        "The self-review covers before-only, after-only, and both-in-one-batch cases.",
+        "The candidate identifies that unconditional after-entry removal can prevent loading the tail.",
+        "ProgrammaticScrollToBottom_ReachesLastItems is selected as an impacted unchanged test.",
+        "The edited narrow startup test is not treated as complete coverage of the shared observer producer.",
+        "The recommendation preserves the callback required by bottom scrolling while addressing duplicate startup handling.",
+        "The proposed validation remains bounded to producer branches and directly impacted consumers."
+      ]
     }
   ]
 }

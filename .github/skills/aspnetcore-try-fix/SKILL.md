@@ -86,6 +86,7 @@ mechanism is available, return `Blocked` instead of modifying it.
 | `allowed_perturbations` | `empirical` | What the empirical test may vary without changing the scenario |
 | `mode` | Yes | `candidate-review` or `empirical` |
 | `evidence_manifest` | Yes | Frozen evidence bundle from the orchestrator |
+| `impact_map` | Yes | Changed producers/branches, consumers, and directly impacted unchanged tests |
 | `artifact_path` | Yes | Exact path for the raw candidate response |
 | `prior_attempts` | No | Approaches already tried and why they failed |
 | `hints` | No | Advisory review findings or constraints |
@@ -136,6 +137,14 @@ State:
 - For stateful behavior, a transition table with the state/invariant, entry,
   ordinary successful exit, interruption exit, owner, and stranded-state
   consequence.
+- For callbacks, observers, measurements, or notifications that are suppressed,
+  disabled, discarded, or deferred: what data stops updating, the first event
+  after recovery, any ownership transfer, the generation/provenance of values
+  consumed after recovery, stale values that survive, and the opposite edge or
+  boundary.
+- The unchanged tests in the impact map that exercise each changed producer
+  branch. Changed-file tests alone are not sufficient when another consumer
+  shares the producer.
 
 Implementation and tests show current behavior, but do not establish product
 intent by themselves. If the expected behavior is only inferred, label it
@@ -169,6 +178,11 @@ Trigger:
 Expected assertion:
 Independent authority for the expected result:
 Allowed perturbations:
+Impacted existing tests:
+Suppressed interval:
+Resume trigger:
+Pre/post measurement generation:
+Control/perturbation:
 Runtime variants:
 Repetitions:
 Regression assertion disposition: required-regression / optional-regression / rejected
@@ -207,6 +221,14 @@ Before declaring the candidate viable, attack it:
 - Is the assertion independently justified, or shaped to favor this candidate?
 - What happens for null/default values, repeated events, and opposite state
   transitions?
+- Which callbacks or events are ignored, what data stops refreshing, what stale
+  state survives, and can the first resumed event combine old state or geometry
+  with new measurements?
+- Which render, commit, observer, or measurement generation owns each input to
+  the first post-recovery calculation?
+- Does every changed producer/filter branch have an unchanged impacted test?
+  If before/after events are filtered asymmetrically, what happens for
+  before-only, after-only, and both in one batch?
 - For timing-sensitive state, what happens with equal/changed inputs,
   delayed/out-of-order delivery, no-op operations, rapid generations,
   cancellation, disposal, and partial observer/event batches?
@@ -220,11 +242,13 @@ Record only concrete concerns with a failing scenario.
 In `candidate-review`, evaluate whether the supplied validation is sufficient
 and predict the differentiating result. Do not claim `Pass`.
 
-In `empirical`, run the predicted behavioral assertion on untouched frozen head
-first. Infrastructure, build, stale-element, setup, or unrelated assertion
-failures are `Blocked`, not behavioral red. If head passes, report no defect and
-do not create a mutation merely to obtain red. If head fails, run the supplied
-command with the candidate and classify:
+In `empirical`, run the directly impacted unchanged tests from the impact map,
+then the predicted behavioral assertion, on untouched frozen head first.
+Prefer an unchanged test that already distinguishes the defect over a
+candidate-specific assertion. Infrastructure, build, stale-element, setup, or
+unrelated assertion failures are `Blocked`, not behavioral red. If head passes,
+report no defect and do not create a mutation merely to obtain red. If head
+fails, run the supplied command with the candidate and classify:
 
 | Evidence | Result |
 |---|---|
@@ -250,6 +274,14 @@ Repeating one deterministic case establishes repeatability, not a complete
 stress matrix. Vary only dimensions that could falsify the claimed mechanism,
 proportional to severity and statefulness. Do not add scaffolding solely to
 upgrade the proof label; preserve configuration, platform, and bypass limits.
+For suppressed callbacks or measurements, include the first resumed event and
+the opposite boundary. When geometry is involved, use one fixed-size control
+and one bounded realistic variable-size perturbation. For asymmetric event
+filtering, cover before-only, after-only, and both-in-one-batch behavior.
+
+Do not classify a candidate as `production-proven` until every directly
+impacted unchanged test in the supplied impact map passes, or the caller records
+a source-backed reason that a mapped test is not applicable.
 
 If repeated timing-sensitive runs disagree, return `Fail` until the divergence
 is explained and corrected. Never select only the passing run.
@@ -282,6 +314,12 @@ Use this exact shape:
 
 ### Execution matrix
 <one row per requested runtime variant and repetition>
+
+### Impacted existing tests
+<mapped unchanged tests run, results, and any justified exclusions>
+
+### Recovery and provenance
+<suppressed interval, first resumed event, state/measurement generations, stale values, and opposite boundary, or "Not applicable">
 
 ### Proof status
 - Finding: empirical / structural / missing

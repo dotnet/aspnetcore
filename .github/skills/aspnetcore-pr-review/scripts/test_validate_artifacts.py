@@ -84,6 +84,17 @@ class ValidateArtifactsTests(unittest.TestCase):
             errors,
         )
 
+    def test_missing_impact_map_fails(self):
+        root = self.create_root()
+        (root / "evidence/impact-map.md").unlink()
+
+        errors = validate(root)
+
+        self.assertIn(
+            "missing required artifact: evidence/impact-map.md",
+            errors,
+        )
+
     def test_missing_final_recommendation_field_fails(self):
         root = self.create_root()
         review_path = root / "final/review.md"
