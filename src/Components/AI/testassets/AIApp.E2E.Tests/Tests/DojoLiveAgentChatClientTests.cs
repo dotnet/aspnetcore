@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using AIApp.Components.Scenarios.AgenticGenerativeUI;
 using AIApp.Components.Scenarios.PredictiveStateUpdates;
@@ -411,6 +413,100 @@ public class DojoLiveAgentChatClientTests
         Assert.AreEqual("Garden Pasta", state.Recipe.Title);
         Assert.HasCount(2, resultUpdates);
         Assert.AreEqual("Updated the recipe.", resultUpdates[^1].Text);
+    }
+
+    [TestMethod]
+    public async Task SharedStateNormalizesEscapedUnicodeIngredientIcons()
+    {
+        var target = new Recipe
+        {
+            Title = "Unicode Pasta",
+            SkillLevel = "Intermediate",
+            CookingTime = "30 min",
+            Ingredients =
+            [
+                new() { Icon = @"\x1f955", Name = "Carrots", Amount = "3" },
+                new() { Icon = @"\uD83C\uDF3E", Name = "Flour", Amount = "2 cups" },
+                new() { Icon = "U+1FAD2", Name = "Olive Oil", Amount = "2 tbsp" },
+                new() { Icon = "🍅", Name = "Tomatoes", Amount = "4" },
+                new() { Icon = "↔️", Name = "Variation", Amount = "1" },
+            ],
+            Instructions = ["Cook and serve."],
+        };
+        var model = new RecordingModelClient((_, options, _) =>
+            options?.Tools?.Count > 0
+                ?
+                [
+                    CreateFunctionCallUpdate(
+                        "recipe",
+                        "generate_recipe",
+                        ("recipe", target)),
+                ]
+                : [new ChatResponseUpdate(ChatRole.Assistant, "Updated the recipe.")]);
+        using var client = new DojoLiveAgentChatClient(model, new ImmediateDelay());
+        var options = CreateOptions(CreateInitialRecipe(), "generate_recipe");
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.User, "Create a recipe."),
+        };
+        var callUpdates = await CollectAsync(client, messages, options);
+        var call = GetSingleCall(callUpdates);
+        messages.Add(new ChatMessage(ChatRole.Assistant, [call]));
+        messages.Add(new ChatMessage(
+            ChatRole.Tool,
+            [new FunctionResultContent(call.CallId, "created")]));
+
+        var resultUpdates = await CollectAsync(client, messages, options);
+
+        var stateEvent = Assert.IsInstanceOfType<DojoStateSnapshotEvent>(
+            resultUpdates[0].RawRepresentation);
+        var state = stateEvent.Snapshot.Deserialize<RecipeState>(AIJsonUtilities.DefaultOptions)!;
+        CollectionAssert.AreEqual(
+            new[] { "🥕", "🌾", "🫒", "🍅", "↔️" },
+            state.Recipe.Ingredients.Select(ingredient => ingredient.Icon).ToArray());
+        foreach (var ingredient in state.Recipe.Ingredients)
+        {
+            AssertSingleUnicodeGrapheme(ingredient.Icon);
+        }
+    }
+
+    [TestMethod]
+    public async Task SharedStateRejectsInvalidIngredientIconBeforePublishingState()
+    {
+        foreach (var invalidIcon in new[] { @"\xD83E", "🍅🍅" })
+        {
+            var invalidRecipe = CreateInitialRecipe().Recipe with
+            {
+                Ingredients = [new() { Icon = invalidIcon, Name = "Carrots", Amount = "3" }],
+            };
+            var model = new RecordingModelClient((_, _, _) =>
+                [new ChatResponseUpdate(ChatRole.Assistant, "Updated the recipe.")]);
+            using var client = new DojoLiveAgentChatClient(model, new ImmediateDelay());
+            var call = new FunctionCallContent(
+                "recipe",
+                "generate_recipe",
+                new Dictionary<string, object?> { ["recipe"] = invalidRecipe });
+            var messages = new ChatMessage[]
+            {
+                new(ChatRole.User, "Create a recipe."),
+                new(ChatRole.Assistant, [call]),
+                new(ChatRole.Tool, [new FunctionResultContent(call.CallId, "created")]),
+            };
+            var publishedUpdates = new List<ChatResponseUpdate>();
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await foreach (var update in client.GetStreamingResponseAsync(
+                    messages,
+                    CreateOptions(CreateInitialRecipe(), "generate_recipe")))
+                {
+                    publishedUpdates.Add(update);
+                }
+            });
+
+            StringAssert.Contains(exception.Message, "one actual Unicode grapheme");
+            Assert.IsEmpty(publishedUpdates);
+        }
     }
 
     [TestMethod]
@@ -831,6 +927,14 @@ public class DojoLiveAgentChatClientTests
                 Instructions = ["Preheat the oven."],
             },
         };
+
+    private static void AssertSingleUnicodeGrapheme(string value)
+    {
+        Assert.IsFalse(value.EnumerateRunes().Any(rune => rune == Rune.ReplacementChar));
+        var elements = StringInfo.GetTextElementEnumerator(value);
+        Assert.IsTrue(elements.MoveNext());
+        Assert.IsFalse(elements.MoveNext());
+    }
 
     private static async Task<List<ChatResponseUpdate>> CollectAsync(
         IChatClient client,

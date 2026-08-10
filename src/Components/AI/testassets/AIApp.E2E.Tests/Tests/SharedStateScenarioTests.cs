@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+using System.Text;
 using AIApp.Components;
 using AIApp.E2E.Tests.Fixtures;
 using AIApp.E2E.Tests.ServiceOverrides;
@@ -366,7 +368,9 @@ public partial class SharedStateScenarioTests : BrowserTest
         for (var index = 0; index < ingredients.Length; index++)
         {
             var row = ingredientRows.Nth(index);
-            await Expect(row.Locator(".ingredient-row__icon")).ToHaveValueAsync(ingredients[index].Icon);
+            var icon = row.Locator(".ingredient-row__icon");
+            await Expect(icon).ToHaveValueAsync(ingredients[index].Icon);
+            AssertSingleUnicodeGrapheme(await icon.InputValueAsync());
             await Expect(row.Locator(".ingredient-row__name")).ToHaveValueAsync(ingredients[index].Name);
             await Expect(row.Locator(".ingredient-row__amount")).ToHaveValueAsync(ingredients[index].Amount);
         }
@@ -377,6 +381,14 @@ public partial class SharedStateScenarioTests : BrowserTest
         {
             await Expect(instructionInputs.Nth(index)).ToHaveValueAsync(instructions[index]);
         }
+    }
+
+    private static void AssertSingleUnicodeGrapheme(string value)
+    {
+        Assert.IsFalse(value.EnumerateRunes().Any(rune => rune == Rune.ReplacementChar));
+        var elements = StringInfo.GetTextElementEnumerator(value);
+        Assert.IsTrue(elements.MoveNext());
+        Assert.IsFalse(elements.MoveNext());
     }
 
     private static async Task AssertCheckpointAsync(ILocator checkpoint, string name)

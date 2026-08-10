@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using AIApp.Components.Scenarios.AgenticGenerativeUI;
 using AIApp.Components.Scenarios.PredictiveStateUpdates;
@@ -620,6 +622,7 @@ internal sealed class SharedStateLiveScenarioHandler(IChatClient modelClient)
         if (exchange is not null)
         {
             var recipe = GetRequiredArgument<Recipe>(exchange.Call, "recipe");
+            NormalizeIngredientIcons(recipe);
             var summaryOptions = PrepareModelOptions(options);
             if (summaryOptions is not null)
             {
@@ -669,6 +672,81 @@ internal sealed class SharedStateLiveScenarioHandler(IChatClient modelClient)
             cancellationToken.ThrowIfCancellationRequested();
             yield return update;
         }
+    }
+
+    private static void NormalizeIngredientIcons(Recipe recipe)
+    {
+        for (var index = 0; index < recipe.Ingredients.Count; index++)
+        {
+            var ingredient = recipe.Ingredients[index];
+            var icon = NormalizeEscapedIcon(ingredient.Icon);
+            if (!IsSingleUnicodeGrapheme(icon))
+            {
+                throw new InvalidOperationException(
+                    $"The generate_recipe tool returned an invalid icon for ingredient {index + 1}. " +
+                    "Icons must contain one actual Unicode grapheme.");
+            }
+
+            ingredient.Icon = icon;
+        }
+    }
+
+    private static string NormalizeEscapedIcon(string icon)
+    {
+        if (TryParseScalarEscape(icon, @"\x", out var scalar) ||
+            TryParseScalarEscape(icon, "U+", out scalar))
+        {
+            return scalar.ToString();
+        }
+
+        if (icon.Length >= 6 && icon.Length % 6 == 0)
+        {
+            var builder = new StringBuilder(icon.Length / 6);
+            for (var offset = 0; offset < icon.Length; offset += 6)
+            {
+                if (!icon.AsSpan(offset, 2).SequenceEqual(@"\u") ||
+                    !ushort.TryParse(
+                        icon.AsSpan(offset + 2, 4),
+                        NumberStyles.AllowHexSpecifier,
+                        CultureInfo.InvariantCulture,
+                        out var codeUnit))
+                {
+                    return icon;
+                }
+
+                builder.Append((char)codeUnit);
+            }
+
+            return builder.ToString();
+        }
+
+        return icon;
+    }
+
+    private static bool TryParseScalarEscape(string value, string prefix, out Rune scalar)
+    {
+        scalar = default;
+        return value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+            value.Length is >= 4 and <= 8 &&
+            int.TryParse(
+                value.AsSpan(prefix.Length),
+                NumberStyles.AllowHexSpecifier,
+                CultureInfo.InvariantCulture,
+                out var scalarValue) &&
+            Rune.TryCreate(scalarValue, out scalar);
+    }
+
+    private static bool IsSingleUnicodeGrapheme(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) ||
+            value.EnumerateRunes().Any(rune => rune == Rune.ReplacementChar) ||
+            value.EnumerateRunes().All(rune => rune.IsAscii))
+        {
+            return false;
+        }
+
+        var elements = StringInfo.GetTextElementEnumerator(value);
+        return elements.MoveNext() && !elements.MoveNext();
     }
 }
 
@@ -924,6 +1002,8 @@ internal static class DojoLivePrompts
           `generate_recipe` tool with a COMPLETE recipe: a title, skill_level, cooking_time,
           special_preferences, the full list of ingredients (each with an icon, name and
           amount) and the step-by-step instructions.
+        - Each ingredient icon must be one actual Unicode emoji grapheme. Never return an
+          escaped code point string such as \x1f345, \uD83C\uDF45, or U+1F345.
         - Always include every ingredient the recipe needs, keeping any the user already added.
         - When the user only asks a question about the recipe, answer in plain text and do
           NOT call the tool.
