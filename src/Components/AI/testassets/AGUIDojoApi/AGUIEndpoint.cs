@@ -25,7 +25,8 @@ internal static class AGUIEndpoint
         IList<AITool>? serverTools = null,
         string? systemPrompt = null,
         Func<JsonSerializerOptions, AGUIStreamOptions>? configureStreamOptions = null,
-        object? chatClientKey = null)
+        object? chatClientKey = null,
+        bool treatClientToolsAsDeclarations = false)
     {
         return endpoints.MapPost(pattern, (
             [FromBody] RunAgentInput input,
@@ -38,10 +39,33 @@ internal static class AGUIEndpoint
                 ? httpContext.RequestServices.GetRequiredService<IChatClient>()
                 : httpContext.RequestServices.GetRequiredKeyedService<IChatClient>(chatClientKey);
 
-            var streamOptions = configureStreamOptions?.Invoke(jsonSerializerOptions)
-                ?? new AGUIStreamOptions();
+            var streamOptions = configureStreamOptions?.Invoke(jsonSerializerOptions) ??
+                new AGUIStreamOptions();
+            var clientTools = input.Tools;
+            if (treatClientToolsAsDeclarations)
+            {
+                input.Tools = null;
+            }
 
             var ctx = input.ToChatRequestContext(jsonSerializerOptions, streamOptions);
+            input.Tools = clientTools;
+
+            // A raw model returns these calls to the browser instead of executing them in the
+            // mixed-invocation pipeline. Server-owned tools supersede duplicate declarations.
+            if (treatClientToolsAsDeclarations && clientTools is { Count: > 0 })
+            {
+                var serverToolNames = serverTools?
+                    .Select(tool => tool.Name)
+                    .ToHashSet(StringComparer.Ordinal) ?? [];
+                ctx.ChatOptions.Tools ??= [];
+                foreach (var tool in clientTools.AsAITools())
+                {
+                    if (!serverToolNames.Contains(tool.Name))
+                    {
+                        ctx.ChatOptions.Tools.Add(tool);
+                    }
+                }
+            }
 
             // Inject system prompt if provided
             if (systemPrompt is not null)
