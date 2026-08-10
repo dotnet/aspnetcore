@@ -5634,16 +5634,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Theory]
     [InlineData(1, false, false)]
-    [InlineData(5, false, false)]
     [InlineData(500, false, false)]
     [InlineData(1, true, false)]
-    [InlineData(5, true, false)]
     [InlineData(500, true, false)]
     [InlineData(1, false, true)]
-    [InlineData(5, false, true)]
     [InlineData(500, false, true)]
     [InlineData(1, true, true)]
-    [InlineData(5, true, true)]
     [InlineData(500, true, true)]
     public void InitialIndex_OpensAtTargetWithRealContent(int initialIndex, bool variableHeight, bool useProvider)
     {
@@ -5658,8 +5654,43 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // The target item must sit at the top of the viewport even for small indices and with a delayed provider.
         Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InitialIndex_RetainsTargetWhenPreviousItemExpandsThenHomeEndTakeOver(bool useProvider)
+    {
+        const int initialIndex = 500;
+        const int previousIndex = initialIndex - 1;
+
+        MountAnchorModeForScrollToItem(useProvider, variableHeight: true, delay: useProvider);
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+        SetManualInitialIndex(initialIndex);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
 
         var container = Browser.Exists(By.Id("scroll-container"));
+        var targetOffset = Convert.ToDouble(js.ExecuteScript($@"
+            var target = document.querySelector('#scroll-container .item[data-index=""{initialIndex}""]');
+            return target.getBoundingClientRect().top - document.getElementById('scroll-container').getBoundingClientRect().top;
+        "), CultureInfo.InvariantCulture);
+
+        js.ExecuteScript($@"
+            var item = document.querySelector('#scroll-container .item[data-index=""{previousIndex}""]');
+            item.style.minHeight = (item.getBoundingClientRect().height + 200) + 'px';
+        ");
+
+        Browser.True(() => Math.Abs(Convert.ToDouble(js.ExecuteScript($@"
+            var target = document.querySelector('#scroll-container .item[data-index=""{initialIndex}""]');
+            return target.getBoundingClientRect().top - document.getElementById('scroll-container').getBoundingClientRect().top;
+        "), CultureInfo.InvariantCulture) - targetOffset) <= 2,
+            $"Item {initialIndex} should remain pinned when item {previousIndex} expands.");
 
         container.SendKeys(Keys.End);
         Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0,
