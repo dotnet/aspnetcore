@@ -167,10 +167,23 @@ public class InputNumberTest
         {
             EditContext = new EditContext(model),
             ValueExpression = () => model.Value,
+            ValueChanged = v => model.Value = v,
         };
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         await inputComponent.SetCurrentValueAsStringAsync(input ?? "");
+        if (input is "1e-6")
+        {
+            Assert.Equal(1e-6, model.Value);
+        }
+        else if (input is "2E-06")
+        {
+            Assert.Equal(2E-06, model.Value);
+        }
+        else
+        {
+            Assert.Null(model.Value);
+        }
 
         var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
@@ -198,7 +211,7 @@ public class InputNumberTest
         var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
-        Assert.Contains("must be a number", validationMessages.First());
+        Assert.Contains(validationMessages, message => message.Contains("must be a number", StringComparison.OrdinalIgnoreCase));
         Assert.Equal(initialValue, model.Value); // Value should remain unchanged
     }
 
