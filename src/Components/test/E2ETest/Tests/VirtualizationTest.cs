@@ -5514,7 +5514,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         const int targetIndex = 200;
 
-        MountAnchorModeForScrollToItem(useProvider: false);
+        MountAnchorModeForScrollToItem(useProvider: true, delay: true);
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
