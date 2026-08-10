@@ -64,6 +64,27 @@ file class FileLocalModel
     }
 
     [Fact]
+    public async Task ReportsInaccessibleValidatableType_ForPublicTypeNestedInFileLocalType()
+    {
+        var source = AnalyzerPreamble + """
+#nullable enable
+
+file class Outer
+{
+    [ValidatableType]
+    public class Inner
+    {
+        [Required] public string? Name { get; set; }
+    }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0033", diagnostic.Id);
+        Assert.Contains("Inner", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
     public async Task ReportsForUseInGeneratedCode()
     {
         var source = """
@@ -491,6 +512,32 @@ public class Model
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal("ASP0038", diagnostic.Id);
+    }
+
+    [Fact]
+    public async Task DoesNotReportValidatableTypeUsedWithoutAddValidation_WhenAddValidationRegisteredInHelperMethod()
+    {
+        var source = """
+using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+return;
+
+public static class Registration
+{
+    public static IServiceCollection AddMyLibrary(this IServiceCollection services)
+        => services.AddValidation();
+}
+
+[ValidatableType]
+public class LibraryModel
+{
+    [Required] public string Name { get; set; } = "";
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        Assert.Empty(diagnostics);
     }
 
     [Fact]
