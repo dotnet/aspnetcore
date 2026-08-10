@@ -46,10 +46,21 @@ public static partial class PasskeyEndpointsEndpointRouteBuilderExtensions
     /// without a user session and the specification does not allow a redirect to be returned.
     /// </para>
     /// <para>
-    /// The specification requires the document to be served from the root of the origin, so the
-    /// endpoint cannot be added to a route group with a prefix. Doing so throws an
-    /// <see cref="InvalidOperationException"/> when the application's endpoints are built, which is
-    /// at startup for a typical application.
+    /// Relative values are resolved against the scheme, host and path base of the incoming request.
+    /// An application behind a reverse proxy should therefore call <c>UseForwardedHeaders()</c>
+    /// early in the pipeline, and should restrict the hosts it accepts, so that the advertised
+    /// locations observe the real scheme and host rather than the internal ones.
+    /// </para>
+    /// <para>
+    /// The specification requires the document to be served from the root of the origin, so adding
+    /// the endpoint to a route group with a prefix logs an error when the application's endpoints
+    /// are built. The document is still served from wherever it was mapped, where no credential
+    /// manager will find it.
+    /// </para>
+    /// <para>
+    /// The response is marked <c>Cache-Control: no-store</c>, because its body is built from the
+    /// scheme, host and path base of the request and so must not be reused across origins by a
+    /// shared cache.
     /// </para>
     /// <para>
     /// See <see href="https://w3c.github.io/webappsec-passkey-endpoints/"/>.
@@ -92,8 +103,11 @@ public static partial class PasskeyEndpointsEndpointRouteBuilderExtensions
 
         var serverDomain = services.GetRequiredService<IOptions<IdentityPasskeyOptions>>().Value.ServerDomain;
 
-        // Credential managers poll this document, so the diagnostic is written at most once.
+        // Credential managers poll this document, so the host diagnostic is written at most once per
+        // application rather than once per request. The mapping diagnostic is guarded for the same
+        // reason, because endpoints are built more than once in a typical application.
         var serverDomainLogged = 0;
+        var wellKnownPathLogged = 0;
 
         var routeBuilder = endpoints
             .MapMethods(WellKnownPath, [HttpMethods.Get, HttpMethods.Head], (HttpContext context) =>
@@ -114,25 +128,33 @@ public static partial class PasskeyEndpointsEndpointRouteBuilderExtensions
                     PrfUsageDetails = ResolveUrl(prfUsageDetails, request),
                 };
 
+                // The body is built from the scheme, host and path base of the request, which a
+                // shared cache does not necessarily key on once a reverse proxy has forwarded them,
+                // so it must not be reused for another origin.
+                context.Response.Headers.CacheControl = "no-store";
+
+                // The specification calls for application/json, and the charset parameter that
+                // TypedResults.Json appends by default is not part of it.
                 return TypedResults.Json(
                     response,
-                    IdentityEndpointsJsonSerializerContext.Default.PasskeyEndpointsResponse);
+                    IdentityEndpointsJsonSerializerContext.Default.PasskeyEndpointsResponse,
+                    contentType: "application/json");
             })
             .AllowAnonymous();
 
-        // A route group prefix would move the document off the root of the origin, where no
-        // credential manager will look for it. Failing at startup is better than serving a document
-        // that is never found.
-        routeBuilder.Add(endpointBuilder =>
+        // A route group prefix moves the document off the root of the origin, where no credential
+        // manager will look for it. This cannot throw: conventions run while the endpoint data
+        // source is enumerated, and an exception there fails the enumeration for every endpoint in
+        // the application, so a request to any unrelated endpoint would fail too. Finally runs after
+        // the ordinary conventions, so it observes the pattern they leave behind.
+        routeBuilder.Finally(endpointBuilder =>
         {
             var pattern = ((RouteEndpointBuilder)endpointBuilder).RoutePattern.RawText;
 
-            if (!string.Equals(pattern, WellKnownPath, StringComparison.Ordinal))
+            if (!string.Equals(pattern, WellKnownPath, StringComparison.Ordinal)
+                && Interlocked.Exchange(ref wellKnownPathLogged, 1) == 0)
             {
-                throw new InvalidOperationException(
-                    $"The well-known passkey endpoints document must be served from '{WellKnownPath}', but it was " +
-                    $"mapped to '{pattern}'. Call {nameof(MapWellKnownPasskeyEndpoints)} directly on the application " +
-                    "rather than on a route group with a prefix.");
+                Log.PasskeyEndpointsMappedOffTheWellKnownPath(logger, pattern, WellKnownPath);
             }
         });
 
@@ -236,5 +258,13 @@ public static partial class PasskeyEndpointsEndpointRouteBuilderExtensions
             "the document at the relying party's origin, so it will not be found unless it is also served there.",
             EventName = "PasskeyEndpointsServerDomainMismatch")]
         public static partial void PasskeyEndpointsServerDomainMismatch(ILogger logger, string serverDomain, string host);
+
+        [LoggerMessage(2, LogLevel.Error,
+            "The well-known passkey endpoints document is mapped to '{Pattern}' rather than '{WellKnownPath}'. " +
+            "Credential managers only request the document at the root of the origin, so it will not be found. " +
+            "Call " + nameof(MapWellKnownPasskeyEndpoints) + " on the application rather than on a route group " +
+            "with a prefix.",
+            EventName = "PasskeyEndpointsMappedOffTheWellKnownPath")]
+        public static partial void PasskeyEndpointsMappedOffTheWellKnownPath(ILogger logger, string? pattern, string wellKnownPath);
     }
 }

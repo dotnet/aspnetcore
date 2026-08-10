@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -377,25 +378,141 @@ public class AddPasskeyEndpointsTests : LoggedTest
     }
 
     [Fact]
-    public async Task ThrowsWhenMappedIntoARouteGroupWithAPrefix()
+    public async Task ServesAnEmptyDocumentWhenAddPasskeyEndpointsIsNeverCalled()
     {
-        // A prefix would move the document off the root of the origin, which is the only place a
-        // credential manager looks for it. Authorization resolves the endpoint data source while the
-        // pipeline is built, so an application that uses it, as every Identity application does,
-        // fails at startup rather than on the first request.
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CreateAppAsync(
-                options => options.Enroll = "/Account/Manage/Passkeys",
-                map: false,
-                configureApp: app => app.MapGroup("/api").MapWellKnownPasskeyEndpoints()));
+        // Configuring the advertised locations is optional, so mapping the endpoint on its own has
+        // to work rather than fail on a missing options registration.
+        await using var app = await CreateAppAsync(configure: null);
+        using var client = app.GetTestClient();
 
-        Assert.Contains("/api/.well-known/passkey-endpoints", exception.Message, StringComparison.Ordinal);
+        var response = await client.GetAsync(PasskeyEndpointsPath);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("{}", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task ServesTheDocumentAsUnparameterizedJsonThatIsNotStored()
+    {
+        // The specification asks for application/json, and the body is built from the scheme and
+        // host of the request, so a shared cache must not reuse it for another origin.
+        await using var app = await CreateAppAsync(options => options.Enroll = "/Account/Manage/Passkeys");
+        using var client = app.GetTestClient();
+
+        var response = await client.GetAsync(PasskeyEndpointsPath);
+
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.ToString());
+        Assert.Equal("no-store", response.Headers.CacheControl?.ToString());
+    }
+
+    [Theory]
+    [InlineData("/.WELL-KNOWN/PASSKEY-ENDPOINTS")]
+    [InlineData("/.well-known/passkey-endpoints/")]
+    public async Task ServesTheDocumentForPathsRoutingTreatsAsEquivalent(string path)
+    {
+        // Routing matches paths case-insensitively and ignores a trailing slash, so the document is
+        // reachable at more paths than the specification names. Credential managers only request the
+        // exact path, so this is pinned rather than corrected.
+        await using var app = await CreateAppAsync(options => options.Enroll = "/Account/Manage/Passkeys");
+        using var client = app.GetTestClient();
+
+        var response = await client.GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MappingTheEndpointTwiceMakesTheRequestAmbiguous()
+    {
+        // Mapping the same route twice is ambiguous wherever it happens in routing, and the error
+        // names the duplicated route, so no bespoke guard is added here. AmbiguousMatchException is
+        // internal to routing, hence the assertion on the name.
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            configureApp: app => app.MapWellKnownPasskeyEndpoints());
+        using var client = app.GetTestClient();
+
+        var exception = await Record.ExceptionAsync(() => client.GetAsync(PasskeyEndpointsPath));
+
+        Assert.NotNull(exception);
+        Assert.Equal("AmbiguousMatchException", exception.GetType().Name);
+        Assert.Contains(PasskeyEndpointsPath, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task LogsErrorWhenMappedIntoARouteGroupWithAPrefix()
+    {
+        // A prefix moves the document off the root of the origin, which is the only place a
+        // credential manager looks for it. The diagnostic cannot be an exception: conventions run
+        // while the endpoint data source is enumerated, so throwing there would take down every
+        // endpoint in the application rather than just this one.
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            map: false,
+            configureApp: app =>
+            {
+                app.MapGet("/unrelated", () => "unrelated");
+                app.MapGroup("/api").MapWellKnownPasskeyEndpoints();
+            });
+        using var client = app.GetTestClient();
+
+        Assert.Equal("unrelated", await client.GetStringAsync("/unrelated"));
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(PasskeyEndpointsPath)).StatusCode);
+
+        var log = Assert.Single(PasskeyEndpointsLogs);
+
+        Assert.Equal(LogLevel.Error, log.LogLevel);
+        Assert.Contains("/api/.well-known/passkey-endpoints", log.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task LogsErrorWhenMappedIntoARouteGroupWithoutAuthorizationServices()
+    {
+        // Authorization is what resolves the endpoint data source while the pipeline is built, so
+        // an application without it only builds endpoints once the first request arrives. That is
+        // the case where a throwing convention would turn a misplaced document into an application
+        // that answers every request with a 500.
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            map: false,
+            addAuthorizationServices: false,
+            configureApp: app =>
+            {
+                app.MapGet("/unrelated", () => "unrelated");
+                app.MapGroup("/api").MapWellKnownPasskeyEndpoints();
+            });
+        using var client = app.GetTestClient();
+
+        Assert.Equal("unrelated", await client.GetStringAsync("/unrelated"));
+
+        var log = Assert.Single(PasskeyEndpointsLogs);
+
+        Assert.Equal(LogLevel.Error, log.LogLevel);
+        Assert.Contains("/api/.well-known/passkey-endpoints", log.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task LogsErrorWhenMappedIntoNestedRouteGroups()
+    {
+        await using var app = await CreateAppAsync(
+            options => options.Enroll = "/Account/Manage/Passkeys",
+            map: false,
+            configureApp: app => app.MapGroup("/a").MapGroup("/b").MapWellKnownPasskeyEndpoints());
+        using var client = app.GetTestClient();
+
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(PasskeyEndpointsPath)).StatusCode);
+
+        var log = Assert.Single(PasskeyEndpointsLogs);
+
+        Assert.Equal(LogLevel.Error, log.LogLevel);
+        Assert.Contains("/a/b/.well-known/passkey-endpoints", log.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task IsServedWhenMappedIntoARouteGroupWithoutAPrefix()
     {
-        // MapIdentityApi groups its endpoints this way, so an empty prefix has to stay allowed.
+        // MapIdentityApi groups its endpoints this way, so an empty prefix has to stay allowed. The
+        // guard only logs now, so the absence of a diagnostic is what proves the prefix collapsed.
         await using var app = await CreateAppAsync(
             options => options.Enroll = "/Account/Manage/Passkeys",
             map: false,
@@ -406,6 +523,7 @@ public class AddPasskeyEndpointsTests : LoggedTest
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("""{"enroll":"http://example.com/Account/Manage/Passkeys"}""", await response.Content.ReadAsStringAsync());
+        Assert.Empty(PasskeyEndpointsLogs);
     }
 
     [Fact]
@@ -590,16 +708,28 @@ public class AddPasskeyEndpointsTests : LoggedTest
         string? usePathBase = null,
         string? serverPathBase = null,
         bool useExplicitRouting = true,
+        bool addAuthorizationServices = true,
         bool map = true)
     {
-        var builder = WebApplication.CreateSlimBuilder();
+        // The environment is pinned so that the ambient ASPNETCORE_ENVIRONMENT of the machine
+        // running the tests cannot change the pipeline. In Development, WebApplication inserts the
+        // developer exception page, which turns an exception that a test expects to observe into a
+        // 500 response.
+        var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Production,
+        });
         builder.WebHost.UseTestServer(options =>
         {
             options.BaseAddress = BaseAddress;
         });
         builder.Services.AddSingleton(LoggerFactory);
-        builder.Services.AddAuthentication();
-        builder.Services.AddAuthorization();
+
+        if (addAuthorizationServices)
+        {
+            builder.Services.AddAuthentication();
+            builder.Services.AddAuthorization();
+        }
 
         if (serverPathBase is not null)
         {
