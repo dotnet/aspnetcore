@@ -2,11 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!--
-      Components.AI ships independently from the shared framework. Keep producing dated 0.1.x preview packages from
-      daily builds, including when the repository moves to RC or RTM versions. Remove these overrides when the package
-      is ready to ship a stable 1.0 version.
-    -->
     <VersionPrefix>0.1.0</VersionPrefix>
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
@@ -15,7 +10,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Description>Blazor component library for building AI conversational UIs on top of Microsoft.Extensions.AI.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
     <!-- TODO: Generate PublicAPI.txt files for public API tracking -->
@@ -25,10 +19,6 @@
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <ItemGroup>
