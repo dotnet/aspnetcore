@@ -193,8 +193,9 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         var topLevelValidatableTypes = new ConcurrentDictionary<ITypeSymbol, byte>(SymbolEqualityComparer.Default);
         var endpointParameters = new ConcurrentDictionary<IParameterSymbol, byte>(SymbolEqualityComparer.Default);
 
+        var validatableTypeAttributeLocations = new ConcurrentDictionary<Location?, byte>();
+
         var addValidationFound = false;
-        var validatableTypeAttributeFound = false;
 
         if (validatableTypeAttribute is not null)
         {
@@ -206,7 +207,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                     attributeOperation.Operation is IObjectCreationOperation attributeObjectCreationOperation &&
                     validatableTypeAttribute.Equals(attributeObjectCreationOperation.Constructor?.ContainingType, SymbolEqualityComparer.Default))
                 {
-                    validatableTypeAttributeFound = true;
+                    validatableTypeAttributeLocations.TryAdd(attributedType.Locations.FirstOrDefault(), 0);
 
                     if (IsInaccessibleFromGeneratedCode(attributedType))
                     {
@@ -265,25 +266,28 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationEndAction(context =>
         {
-            if (!addValidationFound && validatableTypeAttributeFound)
+            if (!addValidationFound)
             {
-                context.ReportDiagnostic(Diagnostic.Create(ValidatableTypeIsUsedWithoutAddValidation, Location.None));
+                foreach (var pair in validatableTypeAttributeLocations)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        ValidatableTypeIsUsedWithoutAddValidation,
+                        pair.Key));
+                }
+
                 return;
             }
 
-            if (addValidationFound)
+            foreach (var parameter in endpointParameters.Keys)
             {
-                foreach (var parameter in endpointParameters.Keys)
+                var type = parameter.Type.UnwrapType();
+                if (IsInaccessibleFromGeneratedCode(type))
                 {
-                    var type = parameter.Type.UnwrapType();
-                    if (IsInaccessibleFromGeneratedCode(type))
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(EndpointParameterTypeIsNotAccessible, parameter.Locations.FirstOrDefault(), parameter.Name, type.Name));
-                        continue;
-                    }
-
-                    AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, jsonIgnoreAttributeSymbol, type, topLevelValidatableTypes, wellKnownTypes, isCalledFromCompilationEnd: true);
+                    context.ReportDiagnostic(Diagnostic.Create(EndpointParameterTypeIsNotAccessible, parameter.Locations.FirstOrDefault(), parameter.Name, type.Name));
+                    continue;
                 }
+
+                AnalyzeType(context.ReportDiagnostic, skipValidationAttribute, jsonIgnoreAttributeSymbol, type, topLevelValidatableTypes, wellKnownTypes, isCalledFromCompilationEnd: true);
             }
         });
     }
