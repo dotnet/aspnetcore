@@ -215,14 +215,15 @@ E2E tests are located in `src/Components/test/E2ETest`.
 The E2E tests use Selenium. To build and run tests:
 
 ```bash
-# Build the E2E test project (this includes all test assets as dependencies)
+# Build the E2E test project and its dependencies
 dotnet build src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-restore -v:q
 
-# Run a specific test
+# After the build succeeds, run a specific test
 dotnet test src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj --no-build --filter "FullyQualifiedName~TestName"
 ```
+
+For the first E2E run in a fresh worktree, or after relevant build, configuration, or output changes, run the dependency-aware build above. Do not use `--no-dependencies` to prepare E2E tests when referenced test-app outputs may be stale or missing. It may copy existing dependency outputs, but it does not rebuild referenced projects or apps. After the build succeeds, `--no-build` is the supported fast loop for repeated targeted tests while those inputs remain unchanged.
 
 **Important**: Never run all E2E tests locally as that is extremely costly. Full test runs should only happen on CI machines.
 
 If a test is failing, it's best to run the server manually and navigate to the test to investigate. The test output won't be very useful for debugging.
-

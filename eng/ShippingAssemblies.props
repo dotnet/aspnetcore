@@ -122,6 +122,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Identity.UI" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Certificate" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.DeviceBoundSessions" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Google" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
@@ -130,7 +131,6 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.WsFederation" />
-    <AspNetCoreShippingAssembly Include="Microsoft.Extensions.ApiDescription.Client" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.ApiDescription.Server" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Logging.AzureAppServices" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
