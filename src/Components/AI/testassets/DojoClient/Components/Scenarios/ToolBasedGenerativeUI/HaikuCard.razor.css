@@ -1,0 +1,45 @@
+.haiku-card {
+    align-items: center;
+    border-radius: 1rem;
+    color: white;
+    display: flex;
+    justify-content: center;
+    min-height: 26rem;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.haiku-card__overlay {
+    padding: 2.5rem;
+    position: relative;
+    text-align: center;
+    text-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+    z-index: 1;
+}
+
+.haiku-card__japanese {
+    font-family: "Noto Serif JP", serif;
+    font-size: 1.6rem;
+    line-height: 2;
+    margin-bottom: 1.2rem;
+}
+
+.haiku-card__japanese p,
+.haiku-card__english p {
+    margin: 0;
+}
+
+.haiku-card__divider {
+    background: rgb(255 255 255 / 50%);
+    height: 2px;
+    margin: 0.8rem auto;
+    width: 3.75rem;
+}
+
+.haiku-card__english {
+    font-size: 1rem;
+    font-style: italic;
+    line-height: 1.8;
+    opacity: 0.9;
+}
