@@ -26,11 +26,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
     public override async Task InitializeAsync()
     {
-        // Use a browser configured with PageLoadStrategy.None. Some of these tests redirect to an
-        // external site, and under the default "normal" strategy the WebDriver command would block
-        // until that external page fully loads, which can exceed the 60s command timeout on CI and
-        // cause flaky failures. With "none" the command returns immediately and the URL assertions
-        // poll for the navigation to commit.
         await base.InitializeAsync(BrowserFixture.RedirectionContext);
         Navigate($"{ServerPathBase}/redirect");
 
