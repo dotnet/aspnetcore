@@ -61,8 +61,12 @@
       <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>AspNetCorePackageVersion</_Parameter1>
-      <_Parameter2>$(PackageVersion)</_Parameter2>
+      <_Parameter1>ArtifactsBinDir</_Parameter1>
+      <_Parameter2>$(ArtifactsBinDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Configuration</_Parameter1>
+      <_Parameter2>$(Configuration)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 

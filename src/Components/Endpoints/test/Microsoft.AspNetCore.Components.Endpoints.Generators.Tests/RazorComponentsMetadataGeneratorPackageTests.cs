@@ -46,6 +46,7 @@ public sealed class RazorComponentsMetadataGeneratorPackageTests
         var nuspec = package.ReadNuspec();
         var ns = nuspec.Root!.Name.Namespace;
         var version = nuspec.Root.Element(ns + "metadata")!.Element(ns + "version")!.Value;
+        var targetFramework = GetMetadata("DefaultNetCoreTargetFramework");
         var testDirectory = Path.Combine(
             Path.GetTempPath(),
             $"{nameof(RazorComponentsMetadataGeneratorPackageTests)}-{Guid.NewGuid():N}");
@@ -64,11 +65,12 @@ public sealed class RazorComponentsMetadataGeneratorPackageTests
                     <NoWarn>ASPNETCORE9004</NoWarn>
                   </PropertyGroup>
                   <ItemGroup>
-                    <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
-                                             DefaultRuntimeFrameworkVersion="{{GetMetadata("AspNetCorePackageVersion")}}"
-                                             LatestRuntimeFrameworkVersion="{{GetMetadata("AspNetCorePackageVersion")}}"
-                                             TargetingPackVersion="{{GetMetadata("AspNetCorePackageVersion")}}" />
-                    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+                    <Reference Include="Microsoft.AspNetCore.Components"
+                               HintPath="{{GetProductAssemblyPath("Microsoft.AspNetCore.Components", targetFramework)}}" />
+                    <Reference Include="Microsoft.AspNetCore.Components.Web"
+                               HintPath="{{GetProductAssemblyPath("Microsoft.AspNetCore.Components.Web", targetFramework)}}" />
+                    <Reference Include="Microsoft.JSInterop"
+                               HintPath="{{GetProductAssemblyPath("Microsoft.JSInterop", targetFramework)}}" />
                     <PackageReference Include="{{PackageId}}" Version="{{version}}" PrivateAssets="all" />
                   </ItemGroup>
                 </Project>
@@ -172,6 +174,14 @@ public sealed class RazorComponentsMetadataGeneratorPackageTests
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(attribute => string.Equals(attribute.Key, key, StringComparison.Ordinal))
             .Value!;
+
+    private static string GetProductAssemblyPath(string assemblyName, string targetFramework)
+        => Path.Combine(
+            GetMetadata("ArtifactsBinDir"),
+            assemblyName,
+            GetMetadata("Configuration"),
+            targetFramework,
+            $"{assemblyName}.dll");
 
     private sealed class GeneratorPackage : IDisposable
     {
