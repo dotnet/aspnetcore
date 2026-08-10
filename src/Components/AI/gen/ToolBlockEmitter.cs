@@ -325,6 +325,7 @@ internal static class ToolBlockEmitter
                 break;
             case ParameterTypeKind.Complex:
                 sb.AppendLine($"                        global::System.Text.Json.JsonElement __je => global::System.Text.Json.JsonSerializer.Deserialize<{prop.TypeName}>(__je)!,");
+                sb.AppendLine($"                        string __json => global::System.Text.Json.JsonSerializer.Deserialize<{prop.TypeName}>(__json)!,");
                 sb.AppendLine($"                        _ => ({prop.TypeName}){varName}!");
                 break;
         }
