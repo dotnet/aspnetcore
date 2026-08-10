@@ -52,6 +52,7 @@
 
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
+        myJsRootComponentInitializers.captureRendererInterop(Blazor);
         Blazor.start({
             reconnectionOptions: {
                 // It's easier to test the reconnection logic if we wait a bit
