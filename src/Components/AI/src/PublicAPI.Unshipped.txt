@@ -252,6 +252,17 @@ Microsoft.AspNetCore.Components.AI.TextNode.TextNode() -> void
 Microsoft.AspNetCore.Components.AI.TextNode.TextNode(string! text) -> void
 Microsoft.AspNetCore.Components.AI.ThematicBreakNode
 Microsoft.AspNetCore.Components.AI.ThematicBreakNode.ThematicBreakNode() -> void
+Microsoft.AspNetCore.Components.AI.ToolBlockAttribute
+Microsoft.AspNetCore.Components.AI.ToolBlockAttribute.ToolBlockAttribute(string! toolName) -> void
+Microsoft.AspNetCore.Components.AI.ToolBlockAttribute.ToolName.get -> string!
+Microsoft.AspNetCore.Components.AI.ToolParameterAttribute
+Microsoft.AspNetCore.Components.AI.ToolParameterAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.AI.ToolParameterAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.AI.ToolParameterAttribute.ToolParameterAttribute() -> void
+Microsoft.AspNetCore.Components.AI.ToolResultAttribute
+Microsoft.AspNetCore.Components.AI.ToolResultAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.AI.ToolResultAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.AI.ToolResultAttribute.ToolResultAttribute() -> void
 Microsoft.AspNetCore.Components.AI.UIAgent
 Microsoft.AspNetCore.Components.AI.UIAgent.Dispose() -> void
 Microsoft.AspNetCore.Components.AI.UIAgent.SendMessageAsync(Microsoft.Extensions.AI.ChatMessage! message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.AspNetCore.Components.AI.ContentBlock!>!
