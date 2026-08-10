@@ -140,6 +140,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
             }
 
             if (IsPropertyIgnoredDueToAccessibility(property) &&
+                !property.DeclaringSyntaxReferences.IsEmpty &&
                 (ValidationsGenerator.HasValidationAttributes(property, wellKnownTypes) ||
                 TypeHasValidation(property.Type.UnwrapType(), wellKnownTypes)))
             {

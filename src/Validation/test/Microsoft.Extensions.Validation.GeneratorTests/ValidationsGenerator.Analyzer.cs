@@ -518,4 +518,48 @@ public class ModelWithExternalProperty
         var diagnostics = await GetAnalyzerDiagnosticsAsync(source, additionalReferences: [externalReference]);
         Assert.Empty(diagnostics);
     }
+
+    [Fact]
+    public async Task DoesNotReportInaccessibleProperty_ForExplicitInterfaceImplementationFromReferencedAssembly()
+    {
+        var externalReference = CompileToMetadataReference("""
+using System.ComponentModel.DataAnnotations;
+
+namespace External;
+
+public interface IHasEmail { string Email { get; set; } }
+
+public class ExternalModel : IHasEmail
+{
+    [Required]
+    string IHasEmail.Email { get; set; }
+}
+""", "ExternalValidationAssembly");
+
+        var source = """
+#nullable enable
+
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/api", (External.ExternalModel model) => Results.Ok());
+
+app.Run();
+""";
+
+        // This might be debatable whether it should or shouldn't produce a diagnostic.
+        // 1. It depends on how the IDE experience looks like when a diagnostic location is MetadataLocation.
+        // 2. It could also be considered that the closest in-source location is reported instead, given a good error message is provided.
+        // We are not reporting for now.
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source, additionalReferences: [externalReference]);
+        Assert.Empty(diagnostics);
+    }
 }
