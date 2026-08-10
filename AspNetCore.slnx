@@ -48,6 +48,7 @@
   </Folder>
   <Folder Name="/src/Components/AI/">
     <Project Path="src/Components/AI/gen/Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj" />
+    <Project Path="src/Components/AI/gen/test/Microsoft.AspNetCore.Components.AI.SourceGenerators.Tests.csproj" />
     <Project Path="src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj" />
     <Project Path="src/Components/AI/test/Microsoft.AspNetCore.Components.AI.Tests.csproj" />
     <Project Path="src/Components/AI/testassets/AGUIDojoApi/AGUIDojoApi.csproj" />
