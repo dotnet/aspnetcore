@@ -35,6 +35,9 @@ app.MapDojoEndpoint(
     "/backend_tool_rendering",
     serverTools: ChatClientAgentFactory.CreateBackendToolRenderingTools(
         jsonOptions.Value.SerializerOptions));
+app.MapDojoEndpoint(
+    "/human_in_the_loop",
+    systemPrompt: ChatClientAgentFactory.HumanInTheLoopSystemPrompt);
 
 await app.RunAsync();
 
