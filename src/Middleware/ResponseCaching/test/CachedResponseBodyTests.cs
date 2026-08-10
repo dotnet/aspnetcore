@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.InternalTesting;
 
@@ -10,9 +9,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests;
 
 public class CachedResponseBodyTests
 {
-    private static readonly TimeSpan HangGuardTimeout =
-        Debugger.IsAttached ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(5);
-
     [Fact]
     public void GetSegments()
     {
@@ -43,7 +39,7 @@ public class CachedResponseBodyTests
         var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
         var copyTask = CopyDataAsync(body, pipe.Writer);
 
-        await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
+        await Task.WhenAll(receiverTask, copyTask).DefaultTimeout();
 
         Assert.Empty(receivedSegments);
     }
@@ -63,7 +59,7 @@ public class CachedResponseBodyTests
         var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
         var copyTask = CopyDataAsync(body, pipe.Writer);
 
-        await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
+        await Task.WhenAll(receiverTask, copyTask).DefaultTimeout();
 
         Assert.Equal(segments, receivedSegments);
     }
@@ -84,7 +80,7 @@ public class CachedResponseBodyTests
         var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments);
         var copyTask = CopyDataAsync(body, pipe.Writer);
 
-        await Task.WhenAll(receiverTask, copyTask).WaitAsync(HangGuardTimeout);
+        await Task.WhenAll(receiverTask, copyTask).DefaultTimeout();
 
         Assert.Equal(new byte[] { 1, 2, 3 }, receivedSegments.SelectMany(x => x).ToArray());
     }
