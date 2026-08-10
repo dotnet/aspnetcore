@@ -69,7 +69,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
     internal static readonly DiagnosticDescriptor ValidatableTypeIsUsedWithoutAddValidation = new(
         "ASP0038",
         "[ValidatableType] should not be used without a call to 'AddValidation'",
-        "'[ValidatableType]' has no effect if there is no 'AddValidation' call in your application entry-point",
+        "'[ValidatableType]' has no effect if there is no 'AddValidation' call in the current project",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
