@@ -1,6 +1,4 @@
 variables:
-  - group: Publish-Build-Assets
-
   # Whether the build is internal or not
   - name: IsInternalBuild
     value: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
