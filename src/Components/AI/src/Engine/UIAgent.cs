@@ -106,6 +106,8 @@ public class UIAgent : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         _history.Add(message);
+        var thread = _options.Thread;
+        thread?.AppendUserMessage(message);
 
         var pipeline = new BlockMappingPipeline(_options, _logger);
 
@@ -129,6 +131,11 @@ public class UIAgent : IDisposable
         var assistantUpdates = new List<ChatResponseUpdate>();
         var updateIndex = 0;
         var chatOptions = BuildChatOptions();
+        if (thread is { IsStateful: true, ConversationId: not null })
+        {
+            chatOptions = chatOptions?.Clone() ?? new ChatOptions();
+            chatOptions.ConversationId = thread.ConversationId;
+        }
 
         await foreach (var update in _chatClient.GetStreamingResponseAsync(
             _history, chatOptions, cancellationToken).ConfigureAwait(false))
@@ -137,6 +144,7 @@ public class UIAgent : IDisposable
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
 
             assistantUpdates.Add(update);
+            thread?.AppendUpdate(update);
 
             var processUpdate = ApplyStateMapper(update);
             if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
@@ -164,7 +172,81 @@ public class UIAgent : IDisposable
             _history.Add(msg);
         }
 
+        thread?.CompleteTurn();
         UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
+    }
+
+    /// <summary>
+    /// Restores the committed conversation and typed state from the configured thread.
+    /// </summary>
+    /// <param name="cancellationToken">A token that cancels restoration.</param>
+    /// <returns>The restored content blocks in chronological order.</returns>
+    public async Task<IReadOnlyList<ContentBlock>> RestoreAsync(
+        CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        var updates = _options.Thread?.GetUpdates();
+        if (updates is not { Count: > 0 })
+        {
+            return [];
+        }
+
+        _history.Clear();
+
+        var blocks = new List<ContentBlock>();
+        var pipeline = new BlockMappingPipeline(_options, _logger);
+        var assistantUpdates = new List<ChatResponseUpdate>();
+
+        foreach (var update in updates)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (update.Role == ChatRole.User)
+            {
+                if (assistantUpdates.Count > 0)
+                {
+                    AddResponseToHistory(assistantUpdates);
+                    assistantUpdates.Clear();
+
+                    blocks.AddRange(pipeline.Finalize());
+                    pipeline = new BlockMappingPipeline(_options, _logger);
+                }
+
+                _history.Add(new ChatMessage(update.Role.Value, [.. update.Contents]));
+                await foreach (var block in pipeline.Process(update, cancellationToken).ConfigureAwait(false))
+                {
+                    blocks.Add(block);
+                }
+
+                blocks.AddRange(pipeline.Finalize());
+                pipeline = new BlockMappingPipeline(_options, _logger);
+            }
+            else
+            {
+                assistantUpdates.Add(update);
+
+                var processUpdate = ApplyStateMapper(update);
+                if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
+                {
+                    continue;
+                }
+
+                await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
+                {
+                    blocks.Add(block);
+                }
+            }
+        }
+
+        if (assistantUpdates.Count > 0)
+        {
+            AddResponseToHistory(assistantUpdates);
+        }
+
+        blocks.AddRange(pipeline.Finalize());
+
+        return blocks;
     }
 
     internal virtual ChatResponseUpdate ApplyStateMapper(ChatResponseUpdate update)
@@ -178,6 +260,15 @@ public class UIAgent : IDisposable
         _options.StateMapper(context);
 
         return context.HasHandledContent ? context.GetFilteredUpdate() : update;
+    }
+
+    private void AddResponseToHistory(List<ChatResponseUpdate> updates)
+    {
+        var response = updates.ToChatResponse();
+        foreach (var message in response.Messages)
+        {
+            _history.Add(message);
+        }
     }
 
     private ChatOptions? BuildChatOptions()
