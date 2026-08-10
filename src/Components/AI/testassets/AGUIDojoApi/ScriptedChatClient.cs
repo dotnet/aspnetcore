@@ -30,7 +30,14 @@ internal sealed class ScriptedChatClient : IChatClient
         }
 
         var messageId = Guid.NewGuid().ToString("N");
-        var answer = $"You said: {prompt}. This is the scripted dojo agent answering without a live model.";
+        var answer = $"""
+            ## Agentic response
+
+            You said: **{prompt}**.
+
+            - Streams over AG-UI SSE
+            - Renders `structured` assistant content
+            """;
 
         foreach (var token in answer.Split(' '))
         {
