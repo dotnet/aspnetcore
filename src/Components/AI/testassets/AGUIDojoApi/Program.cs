@@ -64,7 +64,8 @@ app.MapDojoEndpoint(
         jsonOptions.Value.SerializerOptions),
     systemPrompt: ChatClientAgentFactory.PredictiveStateUpdatesSystemPrompt,
     configureStreamOptions: ChatClientAgentFactory.CreatePredictiveStateUpdatesStreamOptions,
-    chatClientKey: ChatClientAgentFactory.PredictiveStateUpdatesServiceKey);
+    chatClientKey: ChatClientAgentFactory.PredictiveStateUpdatesServiceKey,
+    treatClientToolsAsDeclarations: true);
 
 await app.RunAsync();
 

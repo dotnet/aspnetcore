@@ -23,6 +23,8 @@ namespace AGUIDojoApi;
 // recorded client through a service override.
 internal static class ChatClientAgentFactory
 {
+    private const string PredictiveStateMediaType =
+        "application/vnd.aspnetcore.ai.predictive-state+json";
     internal const string PredictiveStateUpdatesServiceKey = "predictive-state-updates-model";
 
     internal const string HumanInTheLoopSystemPrompt = """
@@ -212,6 +214,13 @@ internal static class ChatClientAgentFactory
 
         string? lastEmittedDocument = null;
         var streamOptions = new AGUIStreamOptions();
+        streamOptions.MapContent(content => content is DataContent data &&
+            data.MediaType == PredictiveStateMediaType
+            ? [new StateSnapshotEvent
+            {
+                Snapshot = JsonSerializer.Deserialize<JsonElement>(data.Data.Span),
+            }]
+            : null);
         streamOptions.MapCall("write_document_local", call =>
         {
             var document = call.Arguments?.TryGetValue("document", out var value) == true
