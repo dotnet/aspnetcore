@@ -23,4 +23,10 @@ internal enum SpacerVisibilityReason
     /// window should grow toward the spacer to fill it.
     /// </summary>
     ViewportFill = 2,
+
+    /// <summary>
+    /// Not a real spacer-visibility event. Refines the item-size estimate from the already-rendered
+    /// window without triggering window redistribution.
+    /// </summary>
+    RenderedContentMeasurement = 3,
 }

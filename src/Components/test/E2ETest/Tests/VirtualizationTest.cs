@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Support.UI;
 using Xunit.Abstractions;
@@ -5701,6 +5702,79 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='0']")).Count > 0,
             TimeSpan.FromSeconds(10),
             $"After Home from InitialItemIndex={initialIndex} (useProvider={useProvider}), item 0 should be rendered.");
+    }
+
+    [Fact]
+    public void InitialIndex_FirstDownwardRedistributionDoesNotMoveBackward()
+    {
+        const int initialIndex = 500;
+        const int lastIndexBeforeRedistribution = 514;
+        const int wheelTick = 50;
+
+        MountAnchorModeForScrollToItem(useProvider: false);
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+        SetManualInitialIndex(initialIndex);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var scrollOrigin = new WheelInputDevice.ScrollOrigin { Element = container };
+
+        bool IsVisible(int index) => (bool)js.ExecuteScript(@"
+            const container = arguments[0];
+            const item = container.querySelector(`.item[data-index=""${arguments[1]}""]`);
+            if (!item) {
+                return false;
+            }
+            const containerRect = container.getBoundingClientRect();
+            const itemRect = item.getBoundingClientRect();
+            return itemRect.bottom > containerRect.top && itemRect.top < containerRect.bottom;
+        ", container, index);
+
+        int GetTopVisibleIndex() => Convert.ToInt32(js.ExecuteScript(@"
+            const container = arguments[0];
+            const containerRect = container.getBoundingClientRect();
+            const item = Array.from(container.querySelectorAll('.item[data-index]'))
+                .find(element => {
+                    const rect = element.getBoundingClientRect();
+                    return rect.bottom > containerRect.top && rect.top < containerRect.bottom;
+                });
+            return item ? Number(item.getAttribute('data-index')) : -1;
+        ", container), CultureInfo.InvariantCulture);
+
+        int GetFirstRenderedIndex() => Convert.ToInt32(js.ExecuteScript(@"
+            return Number(arguments[0].querySelector('.item[data-index]').getAttribute('data-index'));
+        ", container), CultureInfo.InvariantCulture);
+
+        for (var tick = 0; tick < 20 && !IsVisible(lastIndexBeforeRedistribution); tick++)
+        {
+            var previousScrollTop = GetScrollTop(js, container);
+            new Actions(Browser).ScrollFromOrigin(scrollOrigin, 0, wheelTick).Perform();
+            Browser.True(() => GetScrollTop(js, container) > previousScrollTop);
+        }
+
+        Assert.True(IsVisible(lastIndexBeforeRedistribution),
+            $"Item {lastIndexBeforeRedistribution} should be visible before triggering the first downward redistribution.");
+
+        var topVisibleBeforeRedistribution = GetTopVisibleIndex();
+        var firstRenderedBeforeRedistribution = GetFirstRenderedIndex();
+
+        new Actions(Browser).ScrollFromOrigin(scrollOrigin, 0, wheelTick).Perform();
+
+        Browser.True(() =>
+            GetFirstRenderedIndex() != firstRenderedBeforeRedistribution
+            && GetTopVisibleIndex() >= 0,
+            TimeSpan.FromSeconds(10),
+            "The first downward spacer callback should finish redistributing the rendered window.");
+
+        var topVisibleAfterRedistribution = GetTopVisibleIndex();
+        Assert.True(topVisibleAfterRedistribution >= topVisibleBeforeRedistribution,
+            $"The first downward redistribution moved backward from item {topVisibleBeforeRedistribution} to item {topVisibleAfterRedistribution}.");
     }
 
     [Theory]

@@ -613,26 +613,24 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
-    private bool ProcessMeasurements(float spacerSeparation)
+    private void UpdateItemSizeFromRenderedContent(float spacerSize, float spacerSeparation, float containerSize)
     {
-        // Accumulate item height measurements only when no placeholders are rendered,
-        // so spacerSeparation directly represents real item heights. This avoids a
-        // feedback loop: subtracting (placeholderCount * _itemSize) makes the accumulated
-        // measurements depend on _itemSize, which itself depends on those measurements.
-        // Under CSS zoom, rounding errors in that loop compound and diverge from reality.
-        if (_lastRenderedItemCount <= 0 || _lastRenderedPlaceholderCount > 0)
+        if (_initialIndex.Phase != InitialIndexPhase.Pending)
         {
-            return false;
+            return;
         }
 
-        if (spacerSeparation > 0)
-        {
-            _totalMeasuredHeight += spacerSeparation;
-            _measuredItemCount += _lastRenderedItemCount;
-            return true;
-        }
+        var previousItemSize = _itemSize;
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out _, out _, out _);
+        RerenderSpacersIfItemSizeChanged(previousItemSize);
+    }
 
-        return false;
+    private void RerenderSpacersIfItemSizeChanged(float previousItemSize)
+    {
+        if (_itemSize != previousItemSize)
+        {
+            StateHasChanged();
+        }
     }
 
     private void CancelInFlightScrollForUserInteraction()
@@ -648,6 +646,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason)
     {
+        if (reason == SpacerVisibilityReason.RenderedContentMeasurement)
+        {
+            UpdateItemSizeFromRenderedContent(spacerSize, spacerSeparation, containerSize);
+            return;
+        }
         if (_pendingAnchorRestore)
         {
             return;
@@ -673,8 +676,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 break;
         }
 
-        ProcessMeasurements(spacerSeparation);
-
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
         // Slide window up by at least one if spacer is visible but position unchanged.
@@ -688,6 +689,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason)
     {
+        if (reason == SpacerVisibilityReason.RenderedContentMeasurement)
+        {
+            UpdateItemSizeFromRenderedContent(spacerSize, spacerSeparation, containerSize);
+            return;
+        }
         if (_pendingAnchorRestore || reason == SpacerVisibilityReason.ProgrammaticScroll)
         {
             return;
@@ -703,9 +709,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return;
         }
 
-        var hadNewMeasurements = ProcessMeasurements(spacerSeparation);
-
-        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
+        var hadNewMeasurements = CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
         if (_initialIndex.Phase == InitialIndexPhase.Pending)
         {
@@ -734,13 +738,34 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    private void CalculateItemDistribution(
-        float spacerSize,
-        float spacerSeparation,
-        float containerSize,
-        out int itemsInSpacer,
-        out int visibleItemCapacity,
-        out int unusedItemCapacity)
+    private float GetEffectiveItemSizeForStaleSpacer()
+    {
+        var effectiveItemSize = GetItemHeight();
+        if (effectiveItemSize <= 0 || float.IsNaN(effectiveItemSize) || float.IsInfinity(effectiveItemSize))
+        {
+            effectiveItemSize = _itemSize > 0 ? _itemSize : ItemSize;
+        }
+        return effectiveItemSize;
+    }
+
+    private bool AccumulateMeasurement(float spacerSeparation)
+    {
+        // Accumulate item height measurements only when no placeholders are rendered,
+        // so spacerSeparation directly represents real item heights. This avoids a
+        // feedback loop: subtracting (placeholderCount * _itemSize) makes the accumulated
+        // measurements depend on _itemSize, which itself depends on those measurements.
+        // Under CSS zoom, rounding errors in that loop compound and diverge from reality.
+        if (_lastRenderedItemCount <= 0 || _lastRenderedPlaceholderCount > 0 || spacerSeparation <= 0)
+        {
+            return false;
+        }
+
+        _totalMeasuredHeight += spacerSeparation;
+        _measuredItemCount += _lastRenderedItemCount;
+        return true;
+    }
+
+    private void RecalibrateItemSize(float spacerSeparation)
     {
         if (_lastRenderedItemCount > 0)
         {
@@ -753,6 +778,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // Reset the calculated item size to the user-provided item size.
             _itemSize = ItemSize;
         }
+    }
+
+    private bool CalculateItemDistribution(
+        float spacerSize,
+        float spacerSeparation,
+        float containerSize,
+        out int itemsInSpacer,
+        out int visibleItemCapacity,
+        out int unusedItemCapacity)
+    {
+        var hadNewMeasurements = AccumulateMeasurement(spacerSeparation);
+        RecalibrateItemSize(spacerSeparation);
+        var effectiveItemSize = GetEffectiveItemSizeForStaleSpacer();
 
         // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch
         // where we couldn't add new public API. For backcompat we still support the AppContext setting, but
@@ -767,17 +805,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
         maxItemCount += OverscanCount * 2;
 
-        // Use average measured height for calculations, falling back to _itemSize to avoid division by zero
-        var effectiveItemSize = GetItemHeight();
-        if (effectiveItemSize <= 0 || float.IsNaN(effectiveItemSize) || float.IsInfinity(effectiveItemSize))
-        {
-            effectiveItemSize = _itemSize;
-        }
-
         itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
         unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
         visibleItemCapacity -= unusedItemCapacity;
+
+        return hadNewMeasurements;
     }
 
     private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)

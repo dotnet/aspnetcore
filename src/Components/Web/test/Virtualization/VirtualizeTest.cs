@@ -126,7 +126,7 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 80f, 500f, SpacerVisibilityReason.ViewportFill));
 
-        // Second callback — with items now rendered, ProcessMeasurements derives
+        // Second callback — with items now rendered, CalculateItemDistribution derives
         // item heights from spacerSeparation and _lastRenderedItemCount
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 80f, 500f, SpacerVisibilityReason.ViewportFill));
@@ -139,7 +139,7 @@ public class VirtualizeTest
     public async Task Virtualize_ZeroSpacerSeparationDoesNotCorruptAverage()
     {
         // BuildVirtualizeWithContent provides Items + ChildContent so the test renderer
-        // actually renders items, incrementing _lastRenderedItemCount (needed for ProcessMeasurements).
+        // actually renders items, incrementing _lastRenderedItemCount (needed for measurement accumulation).
         Virtualize<int> virtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
@@ -177,7 +177,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task Virtualize_OnBeforeSpacerVisible_ProcessesMeasurementsBeforeCalculation()
+    public async Task Virtualize_OnBeforeSpacerVisible_MeasuredSpacerTriggersProviderFetch()
     {
         var requests = new List<ItemsProviderRequest>();
 
@@ -526,7 +526,7 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 0f, 500f, SpacerVisibilityReason.ViewportFill));
 
         Assert.False(renderedVirtualize._pendingScrollToBottom,
-            "scrollToBottom should not be set when ProcessMeasurements did not apply new measurements");
+            "scrollToBottom should not be set when no new measurements were applied");
     }
 
     [Fact]

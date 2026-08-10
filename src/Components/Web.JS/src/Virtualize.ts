@@ -21,6 +21,7 @@ const SpacerVisibilityReason = {
   UserScroll: 0,
   ProgrammaticScroll: 1,
   ViewportFill: 2,
+  RenderedContentMeasurement: 3,
 } as const;
 
 const ScrollSource = {
@@ -588,6 +589,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return el.getBoundingClientRect().top - containerTop;
   }
 
+  function reportRenderedContentMeasurement(): void {
+    const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
+    rangeBetweenSpacers.setStartAfter(spacerBefore);
+    rangeBetweenSpacers.setEndBefore(spacerAfter);
+    const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
+    const containerSize = scrollElement.getBoundingClientRect().height / scaleFactor;
+    dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', 0, spacerSeparation, containerSize, SpacerVisibilityReason.RenderedContentMeasurement);
+  }
+
   // Measures the target's viewport-relative top and aligns it to containerTop.
   function alignToItemAt(localIndex: number): void {
     function beginAlign(): void {
@@ -607,6 +617,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
     pendingAlignLocalIndex = null;
+
+    reportRenderedContentMeasurement();
+
     if (Math.abs(delta) > 0.5) {
       beginAlign();
       pendingJumpToStart = false;
