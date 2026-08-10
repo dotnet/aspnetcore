@@ -3,6 +3,8 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using AGUI.Server;
+using AGUIDojoApi.SharedState;
 using Microsoft.Extensions.AI;
 
 namespace AGUIDojoApi;
@@ -87,6 +89,8 @@ internal sealed class ScriptedChatClient : IChatClient
                     when callId == $"agentic-plan-step-{planSteps.Length}" =>
                     $"All {planSteps.Length} steps in the " +
                     $"{(planSteps.Length == PizzaPlanSteps.Length ? "pizza" : "Mars mission")} plan are complete.",
+                { CallId: "shared-state-recipe-1" } =>
+                    "I updated the shared recipe while preserving your existing ingredients.",
                 _ => "Background changed to a sunset gradient.",
             };
             yield return new ChatResponseUpdate
@@ -100,6 +104,55 @@ internal sealed class ScriptedChatClient : IChatClient
         }
 
         var messageId = Guid.NewGuid().ToString("N");
+        if (options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "generate_recipe") == true)
+        {
+            options.TryGetRunAgentInput(out var input);
+            var current = input?.State?.Deserialize<RecipeResponse>(
+                AIJsonUtilities.DefaultOptions)?.Recipe ?? new Recipe();
+            var ingredients = current.Ingredients.ToList();
+            if (!ingredients.Any(ingredient =>
+                ingredient.Name.Equals("Fresh Basil", StringComparison.OrdinalIgnoreCase)))
+            {
+                ingredients.Add(new Ingredient
+                {
+                    Icon = "\U0001F33F",
+                    Name = "Fresh Basil",
+                    Amount = "1 handful",
+                });
+            }
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        "shared-state-recipe-1",
+                        "generate_recipe",
+                        new Dictionary<string, object?>
+                        {
+                            ["recipe"] = new Recipe
+                            {
+                                Title = $"Italian {current.Title}",
+                                SkillLevel = current.SkillLevel,
+                                CookingTime = current.CookingTime,
+                                SpecialPreferences = current.SpecialPreferences,
+                                Ingredients = ingredients,
+                                Instructions =
+                                [
+                                    .. current.Instructions,
+                                    "Finish with fresh basil",
+                                ],
+                            },
+                        })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
+        }
+
         if (prompt.Contains("plan", StringComparison.OrdinalIgnoreCase) &&
             options?.Tools?.OfType<AIFunctionDeclaration>()
                 .Any(tool => tool.Name == "create_plan") == true)

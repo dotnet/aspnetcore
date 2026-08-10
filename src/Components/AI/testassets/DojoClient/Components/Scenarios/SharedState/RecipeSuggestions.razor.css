@@ -1,0 +1,20 @@
+.recipe-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px 12px;
+}
+
+.recipe-suggestions button {
+    background: #fff;
+    border: 1px solid #e8795a;
+    border-radius: 999px;
+    color: #b84f35;
+    cursor: pointer;
+    padding: 6px 10px;
+}
+
+.recipe-suggestions button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
