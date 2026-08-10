@@ -20,7 +20,11 @@ Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerFactory<TTestAssemb
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerFactory<TTestAssembly>.ProxyUrl.get -> string!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerFactory<TTestAssembly>.ServerFactory() -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance
+Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.AppName.get -> string!
+Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.AppUrl.get -> string!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.Id.get -> string!
+Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.PublicUrl.get -> string?
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerInstance.TestUrl.get -> string!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ConfigureServices(System.Type! type, string! methodName) -> void

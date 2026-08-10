@@ -31,7 +31,31 @@ class E2EManifest
         }
 
         var json = File.ReadAllText(manifestPath);
-        return JsonSerializer.Deserialize(json, E2EManifestJsonContext.Default.E2EManifest)
+        var manifest = JsonSerializer.Deserialize(json, E2EManifestJsonContext.Default.E2EManifest)
             ?? throw new InvalidOperationException($"Failed to deserialize E2E manifest: {manifestPath}");
+
+        manifest.Validate();
+        return manifest;
+    }
+
+    internal void Validate()
+    {
+        foreach (var (appName, entry) in Apps)
+        {
+            if (entry.HarnessMode != E2EAppEntry.StartupHookHarnessMode &&
+                entry.HarnessMode != E2EAppEntry.CompiledHarnessMode)
+            {
+                throw new InvalidOperationException(
+                    $"E2E manifest entry '{appName}' has unsupported harnessMode '{entry.HarnessMode}'. " +
+                    $"Expected '{E2EAppEntry.StartupHookHarnessMode}' or '{E2EAppEntry.CompiledHarnessMode}'.");
+            }
+
+            if (entry.HarnessMode == E2EAppEntry.CompiledHarnessMode &&
+                string.Equals(entry.Executable, "dotnet", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"E2E manifest entry '{appName}' uses the compiled harness but does not point to a native executable.");
+            }
+        }
     }
 }
