@@ -28,6 +28,11 @@ public class UIAgentOptions
     /// </summary>
     public Action<StateMapperContext>? StateMapper { get; set; }
 
+    /// <summary>
+    /// Gets or sets the persistent conversation thread that receives completed turns.
+    /// </summary>
+    public IConversationThread? Thread { get; set; }
+
     internal List<IHandlerRegistration> HandlerRegistrations { get; } = new();
 
     internal Dictionary<string, AIFunction> UIActions { get; } =
