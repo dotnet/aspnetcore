@@ -199,7 +199,7 @@ public class AgentContext : IDisposable
             ChatMessage? currentMessage = message;
             while (currentMessage is not null)
             {
-                var actions = new List<UIActionBlock>();
+                var interactiveBlocks = new List<IInteractiveBlock>();
 
                 await foreach (var block in _agent.SendMessageAsync(currentMessage, cancellationToken)
                     .WithCancellation(cancellationToken))
@@ -213,15 +213,15 @@ public class AgentContext : IDisposable
                         turn.AddResponseBlock(block);
                     }
 
-                    if (block is UIActionBlock action)
+                    if (block is IInteractiveBlock interactiveBlock)
                     {
-                        actions.Add(action);
+                        interactiveBlocks.Add(interactiveBlock);
                     }
 
                     NotifyBlockAdded(turn, block);
                 }
 
-                if (actions.Count == 0)
+                if (interactiveBlocks.Count == 0)
                 {
                     currentMessage = null;
                     continue;
@@ -231,9 +231,12 @@ public class AgentContext : IDisposable
                 NotifyStatusChanged();
 
                 var results = await Task.WhenAll(
-                    actions.Select(action => action.GetResultAsync(cancellationToken)));
+                    interactiveBlocks.Select(block => block.GetResultAsync(cancellationToken)));
 
-                currentMessage = new ChatMessage(ChatRole.Tool, [.. results]);
+                var role = results.Any(result => result is not FunctionResultContent)
+                    ? ChatRole.User
+                    : ChatRole.Tool;
+                currentMessage = new ChatMessage(role, [.. results]);
                 Status = ConversationStatus.Streaming;
                 NotifyStatusChanged();
             }
