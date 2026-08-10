@@ -766,7 +766,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       updateAnchorSnapshot();
     }
 
+    const bothSpacersIntersect = entries.some(entry => entry.target === spacerBefore && entry.isIntersecting)
+      && entries.some(entry => entry.target === spacerAfter && entry.isIntersecting);
+
     const intersectingEntries = entries.filter(entry => {
+      if (bothSpacersIntersect && entry.target === spacerAfter) {
+        // When both spacers are visible, report only the before spacer to avoid conflicting callbacks.
+        return false;
+      }
+
       if (entry.isIntersecting) {
         if (!isSelfScroll) {
           // Convergence to the top/bottom edge should not fight with self scroll.
@@ -807,7 +815,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const isBefore = entry.target === spacerBefore;
       const spacer = isBefore ? spacerBefore : spacerAfter;
 
-      // At startup both spacers are visible, but we choose only one to report events to avoid duplicated callbacks.
+      // Skip an empty after spacer because it provides no useful measurement.
       if (!isBefore && spacer.offsetHeight === 0) {
         return;
       }
