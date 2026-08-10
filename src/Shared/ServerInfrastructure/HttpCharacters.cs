@@ -38,6 +38,11 @@ internal static class HttpCharacters
         "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u000A\u000B\u000C\u000D\u000E\u000F\u0010" +
         "\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F\u007F");
 
+    // Values are [0x00, 0x20] and 0x7F (https://www.rfc-editor.org/info/rfc9112/#section-3)
+    private static readonly SearchValues<char> _invalidQueryChars = SearchValues.Create(
+        "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000A\u000B\u000C\u000D\u000E\u000F\u0010" +
+        "\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F\u0020\u007F");
+
     public static bool ContainsInvalidAuthorityChar(ReadOnlySpan<byte> span) => span.ContainsAnyExcept(_allowedAuthorityBytes);
 
     public static int IndexOfInvalidHostChar(ReadOnlySpan<char> span) => span.IndexOfAnyExcept(_allowedHostChars);
@@ -52,4 +57,7 @@ internal static class HttpCharacters
 
     // Follows field-value rules for chars <= 0x7F. Allows extended characters > 0x7F.
     public static int IndexOfInvalidFieldValueCharExtended(ReadOnlySpan<char> span) => span.IndexOfAny(_invalidFieldChars);
+
+    // Disallows CTL characters, SP and DEL in the query component of a request target.
+    public static int IndexOfInvalidQueryChar(ReadOnlySpan<char> span) => span.IndexOfAny(_invalidQueryChars);
 }

@@ -391,6 +391,68 @@ public class Http2StreamTests : Http2TestBase
     }
 
     [Theory]
+    [InlineData("/a/path?q=a b")]
+    [InlineData("/a/path?q=a\tb")]
+    [InlineData("/a/path?q=a\u0001b")]
+    [InlineData("/a/path?q=a\u007Fb")]
+    [InlineData("/a/path? ")]
+    public async Task HEADERS_Received_QueryWithInvalidCharacter_Reset(string path)
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
+        };
+        
+        await StartStreamAsync(1, headers, endStream: true);
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.FormatHttp2StreamErrorPathInvalid(path));
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Theory]
+    [InlineData("/a/path?")]
+    [InlineData("/a/path?a=b&c=d")]
+    [InlineData("/a/path?q=a%20b+c/d?e")]
+    [InlineData("/a/path?q=~!$'()*,;:@[]")]
+    public async Task HEADERS_Received_QueryWithValidCharacters_Accepted(string path)
+    {
+        var expectedQuery = path[path.IndexOf('?')..];
+
+        await InitializeConnectionAsync(context =>
+        {
+            Assert.Equal("/a/path", context.Request.Path.Value);
+            Assert.Equal(expectedQuery, context.Request.QueryString.Value);
+            Assert.Equal(path, context.Features.Get<IHttpRequestFeature>().RawTarget);
+            return Task.CompletedTask;
+        });
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
+        };
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(3, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders["content-length"]);
+    }
+
+    [Theory]
     [InlineData("/", "/")]
     [InlineData("/a%5E", "/a^")]
     [InlineData("/a%E2%82%AC", "/a€")]
