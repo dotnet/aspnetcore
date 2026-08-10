@@ -215,6 +215,7 @@ public class AgentContext : IDisposable
         _disposed = true;
         _streamingCts?.Cancel();
         _streamingCts?.Dispose();
+        _agent.RejectPendingPredictiveState();
         _turnAddedCallbacks.Clear();
         _statusChangedCallbacks.Clear();
         _blockAddedCallbacks.Clear();
@@ -278,6 +279,7 @@ public class AgentContext : IDisposable
                 NotifyStatusChanged();
             }
 
+            _agent.RejectPendingPredictiveState();
             Status = ConversationStatus.Idle;
             if (cancellationToken.IsCancellationRequested)
             {
@@ -288,6 +290,7 @@ public class AgentContext : IDisposable
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             turn.ClearResponseBlocks();
+            _agent.RejectPendingPredictiveState();
             Status = ConversationStatus.Idle;
             NotifyStatusChanged();
         }
@@ -296,6 +299,7 @@ public class AgentContext : IDisposable
             // A failing turn is surfaced as conversation state (Status/Error) rather than a
             // faulted Task: the UI renders the error and RetryAsync replays the last message.
             // This is the engine's error contract, not a swallowed exception.
+            _agent.RejectPendingPredictiveState();
             Error = ex;
             Status = ConversationStatus.Error;
             NotifyStatusChanged();

@@ -84,9 +84,21 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
 
         if (context.StateValue is TState typedState)
         {
-            State.Value = typedState;
+            if (context.IsPredictiveState)
+            {
+                State.SetPredictiveValue(typedState);
+            }
+            else
+            {
+                State.Value = typedState;
+            }
         }
 
         return context.HasHandledContent ? context.GetFilteredUpdate() : update;
+    }
+
+    internal override void RejectPendingPredictiveState()
+    {
+        State.RejectPredictiveState();
     }
 }

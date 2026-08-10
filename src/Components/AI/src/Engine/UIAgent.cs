@@ -36,6 +36,10 @@ public class UIAgent : IDisposable
 
     internal UIAgentOptions Options => _options;
 
+    internal virtual void RejectPendingPredictiveState()
+    {
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="UIAgent"/> class.
     /// </summary>
