@@ -98,8 +98,20 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
             IsInaccessibleFromGeneratedCode(property.Type.UnwrapType());
 
     private static bool IsInaccessibleFromGeneratedCode(ITypeSymbol type)
-        => type is INamedTypeSymbol { IsFileLocal: true } ||
-            type.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal);
+    {
+        while (type is not null)
+        {
+            if (type is INamedTypeSymbol { IsFileLocal: true } ||
+                type.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
+            {
+                return true;
+            }
+
+            type = type.ContainingType;
+        }
+
+        return false;
+    }
 
     private static void AnalyzeType(
         Action<Diagnostic> reportDiagnostic,
