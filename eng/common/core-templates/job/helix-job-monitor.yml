@@ -65,6 +65,12 @@ parameters:
   type: boolean
   default: true
 
+# When true, allow the monitor to succeed when this stage produces no Helix jobs in any attempt.
+# Forwarded as --allow-no-helix-jobs.
+- name: allowNoHelixJobs
+  type: boolean
+  default: false
+
 # When true, test results are reported to Azure DevOps using the fully qualified test name
 # (Namespace.Type.Method) as the stable automatedTestName and the visible title is qualified as
 # well (--use-fully-qualified-test-name). Opt-in because it changes AzDO test identity and display;
@@ -104,9 +110,11 @@ jobs:
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       name: $(DncEngPublicBuildPool)
+      os: linux
       demands: ImageOverride -equals build.azurelinux.3.amd64.open
     ${{ else }}:
       name: $(DncEngInternalBuildPool)
+      os: linux
       demands: ImageOverride -equals build.azurelinux.3.amd64
   steps:
   - checkout: self
@@ -187,6 +195,7 @@ jobs:
         --helix-base-uri              '${{ parameters.helixBaseUri }}'
         --polling-interval-seconds    '${{ parameters.pollingIntervalSeconds }}'
         --fail-on-failed-tests        '${{ parameters.failWorkItemsWithFailedTests }}'
+        --allow-no-helix-jobs         '${{ parameters.allowNoHelixJobs }}'
         --use-fully-qualified-test-name '${{ parameters.useFullyQualifiedTestName }}'
         --max-wait-minutes            "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
         --stage-name                  '$(System.StageName)'
@@ -198,12 +207,18 @@ jobs:
 
       # Fall back to Azure DevOps-provided environment variables when the caller did not
       # supply organization / repository explicitly. BUILD_REPOSITORY_NAME is typically
-      # 'owner/repo' for GitHub-backed builds.
+      # 'owner/repo' for GitHub-backed builds and 'owner-repo' for internal builds.
       if [ -z "$organization" ] || [ -z "$repository" ]; then
         buildRepoName="${BUILD_REPOSITORY_NAME:-}"
         if [ -n "$buildRepoName" ] && [[ "$buildRepoName" == */* ]]; then
           repoOwner="${buildRepoName%%/*}"
           repoName="${buildRepoName#*/}"
+        elif [ -n "$buildRepoName" ] && [[ "$buildRepoName" == *-* ]]; then
+          repoOwner="${buildRepoName%%-*}"
+          repoName="${buildRepoName#*-}"
+        fi
+
+        if [ -n "${repoOwner:-}" ] && [ -n "${repoName:-}" ]; then
           if [ -z "$organization" ]; then organization="$repoOwner"; fi
           if [ -z "$repository" ];   then repository="$repoName";   fi
         fi

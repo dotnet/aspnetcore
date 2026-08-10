@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(PackageConsumerTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Testing"
+                      Version="$(PackageConsumerVersion)" />
+    <PackageReference Include="MSTest.TestFramework"
+                      Version="$(PackageConsumerMSTestVersion)" />
+    <PackageReference Include="MSTest.TestAdapter"
+                      Version="$(PackageConsumerMSTestVersion)" />
+    <ProjectReference Include="..\App\PackageConsumer.App.csproj">
+      <E2EApp>true</E2EApp>
+      <E2EPublicUrl>https://package-consumer.invalid</E2EPublicUrl>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>
