@@ -19,12 +19,17 @@ Microsoft.AspNetCore.Components.AI.AgentContext.SendMessageAsync(Microsoft.Exten
 Microsoft.AspNetCore.Components.AI.AgentContext.SendMessageAsync(string! text, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.AI.AgentContext.Status.get -> Microsoft.AspNetCore.Components.AI.ConversationStatus
 Microsoft.AspNetCore.Components.AI.AgentContext.Turns.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.ConversationTurn!>!
+Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.ApprovalStatus.Approved = 1 -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.ApprovalStatus.Pending = 0 -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
+Microsoft.AspNetCore.Components.AI.ApprovalStatus.Rejected = 2 -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
 Microsoft.AspNetCore.Components.AI.BlockLifecycleState
 Microsoft.AspNetCore.Components.AI.BlockLifecycleState.Active = 1 -> Microsoft.AspNetCore.Components.AI.BlockLifecycleState
 Microsoft.AspNetCore.Components.AI.BlockLifecycleState.Inactive = 2 -> Microsoft.AspNetCore.Components.AI.BlockLifecycleState
 Microsoft.AspNetCore.Components.AI.BlockLifecycleState.Pending = 0 -> Microsoft.AspNetCore.Components.AI.BlockLifecycleState
 Microsoft.AspNetCore.Components.AI.BlockMappingContext
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.AllHandled.get -> bool
+Microsoft.AspNetCore.Components.AI.BlockMappingContext.CreateInnerBlock(Microsoft.Extensions.AI.AIContent! content) -> Microsoft.AspNetCore.Components.AI.ContentBlock?
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.MarkHandled(Microsoft.Extensions.AI.AIContent! content) -> void
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.MarkUpdateHandled() -> void
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.UnhandledContents.get -> Microsoft.AspNetCore.Components.AI.BlockMappingContext.UnhandledContentsEnumerable
@@ -117,6 +122,12 @@ Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.FootnoteReferenceNode() -> void
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.get -> string!
 Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.ApprovalRequest.get -> Microsoft.Extensions.AI.ToolApprovalRequestContent!
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Approve() -> void
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.GetResultAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.AIContent!>!
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Reject(string? reason = null) -> void
+Microsoft.AspNetCore.Components.AI.FunctionApprovalBlock.Status.get -> Microsoft.AspNetCore.Components.AI.ApprovalStatus
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
 Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
@@ -136,6 +147,8 @@ Microsoft.AspNetCore.Components.AI.HtmlNode.HtmlNode() -> void
 Microsoft.AspNetCore.Components.AI.HtmlNode.HtmlNode(string! value) -> void
 Microsoft.AspNetCore.Components.AI.HtmlNode.Value.get -> string!
 Microsoft.AspNetCore.Components.AI.HtmlNode.Value.set -> void
+Microsoft.AspNetCore.Components.AI.IInteractiveBlock
+Microsoft.AspNetCore.Components.AI.IInteractiveBlock.GetResultAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.AIContent!>!
 Microsoft.AspNetCore.Components.AI.ImageNode
 Microsoft.AspNetCore.Components.AI.ImageNode.Alt.get -> string?
 Microsoft.AspNetCore.Components.AI.ImageNode.Alt.set -> void
@@ -158,6 +171,14 @@ Microsoft.AspNetCore.Components.AI.InlineCodeNode.Code.get -> string!
 Microsoft.AspNetCore.Components.AI.InlineCodeNode.Code.set -> void
 Microsoft.AspNetCore.Components.AI.InlineCodeNode.InlineCodeNode() -> void
 Microsoft.AspNetCore.Components.AI.InlineCodeNode.InlineCodeNode(string! code) -> void
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.HasResult.get -> bool
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InnerBlock.get -> Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock!
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InteractiveFunctionBlock(Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock! innerBlock) -> void
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.ToolName.get -> string?
 Microsoft.AspNetCore.Components.AI.LineBreakNode
 Microsoft.AspNetCore.Components.AI.LineBreakNode.LineBreakNode() -> void
 Microsoft.AspNetCore.Components.AI.LinkNode
@@ -279,6 +300,7 @@ Microsoft.AspNetCore.Components.AI.UIAgentOptions.RegisterUIAction(Microsoft.Ext
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.UIAgentOptions() -> void
 Microsoft.AspNetCore.Components.AI.UIActionBlock
 Microsoft.AspNetCore.Components.AI.UIActionBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent!
+Microsoft.AspNetCore.Components.AI.UIActionBlock.GetResultAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.AIContent!>!
 Microsoft.AspNetCore.Components.AI.UIActionBlock.InvokeAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.AI.UIActionBlock.IsComplete.get -> bool
 Microsoft.AspNetCore.Components.AI.UIActionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
