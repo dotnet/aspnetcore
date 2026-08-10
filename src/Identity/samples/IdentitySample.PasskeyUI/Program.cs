@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0033 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 using IdentitySample.PasskeyUI;
 using IdentitySample.PasskeyUI.Components;
 using Microsoft.AspNetCore.Identity;

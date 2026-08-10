@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for configuring the well-known passkey endpoints document.
 /// </summary>
+[Experimental("ASP0033", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public static class PasskeyEndpointsServiceCollectionExtensions
 {
     /// <summary>
@@ -52,6 +54,7 @@ public static class PasskeyEndpointsServiceCollectionExtensions
     /// }
     /// </code>
     /// </example>
+    [Experimental("ASP0033", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public static IServiceCollection AddPasskeyEndpoints(this IServiceCollection services, Action<PasskeyEndpointsOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);

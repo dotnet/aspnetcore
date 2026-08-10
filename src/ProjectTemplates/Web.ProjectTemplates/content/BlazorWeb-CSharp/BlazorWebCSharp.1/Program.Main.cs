@@ -81,16 +81,6 @@ public class Program
 
         builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
-        // Advertises where passkeys can be created and managed at /.well-known/passkey-endpoints so
-        // that credential managers can offer to upgrade a saved password to a passkey without the
-        // user having to find the page themselves.
-        // See https://w3c.github.io/webappsec-passkey-endpoints/.
-        builder.Services.AddPasskeyEndpoints(options =>
-        {
-            options.Enroll = "/Account/Manage/Passkeys";
-            options.Manage = "/Account/Manage/Passkeys";
-        });
-
         #endif
         var app = builder.Build();
 
@@ -138,9 +128,6 @@ public class Program
         #if (IndividualLocalAuth)
         // Add additional endpoints required by the Identity /Account Razor components.
         app.MapAdditionalIdentityEndpoints();
-
-        // Serves the well-known passkey endpoints document configured above.
-        app.MapWellKnownPasskeyEndpoints();
 
         #endif
         app.Run();
