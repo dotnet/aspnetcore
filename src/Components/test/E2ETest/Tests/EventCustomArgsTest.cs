@@ -170,6 +170,17 @@ public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixtu
             line => Assert.Equal("Event with IJSObjectReference received: Hello!", line));
     }
 
+    [Fact]
+    public void ThrowsErrorWhenEventNameMatchesBrowserEventName()
+    {
+        // Attempt to register a custom event with the same name as the browser event
+        Browser.Exists(By.Id("register-invalid-same-name-event")).Click();
+        
+        // Verify that an error is thrown
+        var errorMessage = Browser.Exists(By.Id("same-name-event-error")).Text;
+        Assert.Contains("cannot have the same name as its browserEventName", errorMessage);
+    }
+
     void SendKeysSequentially(IWebElement target, string text)
     {
         foreach (var c in text)

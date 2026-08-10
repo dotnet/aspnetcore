@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.Versioning;
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 
 /// <summary>
@@ -16,25 +14,21 @@ public sealed class QuicTransportOptions
     /// <summary>
     /// The maximum number of concurrent bi-directional streams per connection.
     /// </summary>
-    [RequiresPreviewFeatures]
     public int MaxBidirectionalStreamCount { get; set; } = 100;
 
     /// <summary>
     /// The maximum number of concurrent inbound uni-directional streams per connection.
     /// </summary>
-    [RequiresPreviewFeatures]
     public int MaxUnidirectionalStreamCount { get; set; } = 10;
 
     /// <summary>
     /// The maximum read size.
     /// </summary>
-    [RequiresPreviewFeatures]
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
     /// <summary>
     /// The maximum write size.
     /// </summary>
-    [RequiresPreviewFeatures]
     public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
     /// <summary>

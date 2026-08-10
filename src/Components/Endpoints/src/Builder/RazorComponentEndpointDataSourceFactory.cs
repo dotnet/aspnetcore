@@ -17,9 +17,14 @@ internal class RazorComponentEndpointDataSourceFactory(
 {
     public RazorComponentEndpointDataSource<TRootComponent> CreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(IEndpointRouteBuilder endpoints)
     {
-        var builder = ComponentApplicationBuilder.GetBuilder<TRootComponent>() ??
-            DefaultRazorComponentApplication<TRootComponent>.Instance.GetBuilder();
+        var dataSource = new RazorComponentEndpointDataSource<TRootComponent>(providers, endpoints, factory, hotReloadService);
 
-        return new RazorComponentEndpointDataSource<TRootComponent>(builder, providers, endpoints, factory, hotReloadService);
+        dataSource.ComponentApplicationBuilderActions.Add(builder =>
+        {
+            var assembly = typeof(TRootComponent).Assembly;
+            IRazorComponentApplication.GetBuilderForAssembly(builder, assembly);
+        });
+
+        return dataSource;
     }
 }

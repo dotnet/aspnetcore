@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -53,7 +54,7 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="host"></param>
     /// <returns></returns>
-    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
+    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     public static TestServer GetTestServer(this IWebHost host)
     {
         return (TestServer)host.Services.GetRequiredService<IServer>();
@@ -64,7 +65,7 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="host"></param>
     /// <returns></returns>
-    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
+    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     public static HttpClient GetTestClient(this IWebHost host)
     {
         return host.GetTestServer().CreateClient();

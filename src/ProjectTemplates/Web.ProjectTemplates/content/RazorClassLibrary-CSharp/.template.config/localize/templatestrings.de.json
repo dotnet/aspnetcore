@@ -3,11 +3,11 @@
   "name": "Razor Klassenbibliothek",
   "description": "Ein Projekt zum Erstellen einer Razor-Klassenbibliothek für .NET",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net10.0/description": "Ziel.-NET10.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/SupportPagesAndViews/displayName": "Seiten und Ansichten unterstützen",
   "symbols/SupportPagesAndViews/description": "Gibt an, ob das Hinzufügen herkömmlicher Razor Pages und Ansichten zu dieser Bibliothek unterstützt werden soll.",
   "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
   "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen",
-  "postActions/openInEditor/description": "Öffnet Areas/MyFeature/Pages/Page1.cshtml im Editor"
+  "postActions/openPageInEditor/description": "Öffnet Areas/MyFeature/Pages/Page1.cshtml im Editor",
+  "postActions/openComponentInEditor/description": "Öffnet Component1.razor im Editor"
 }

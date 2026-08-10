@@ -16,9 +16,7 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Metadata" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Diagnostics" />
-    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,4 +34,8 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Authorization.Test" />
   </ItemGroup>
 
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
 </Project>

@@ -942,6 +942,30 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         Assert.Equal([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3], transformerOrder);
     }
 
+    [Fact]
+    public async Task SchemaTransformer_WithSortedDictionaryProperties_DoesNotThrow()
+    {
+        // Verifies that ResolveReferenceForSchema does not throw InvalidOperationException
+        // when schema.Properties is backed by a SortedDictionary (or any IDictionary
+        // that detects modification during enumeration).
+        var builder = CreateBuilder();
+
+        builder.MapPost("/todo", (Todo todo) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (schema.Properties is { Count: > 0 })
+            {
+                schema.Properties = new SortedDictionary<string, IOpenApiSchema>(schema.Properties);
+            }
+            return Task.CompletedTask;
+        });
+
+        // Should not throw InvalidOperationException: Collection was modified; enumeration operation may not execute.
+        await VerifyOpenApiDocument(builder, options, document => { });
+    }
+
     private class PolymorphicContainer
     {
         public string Name { get; }

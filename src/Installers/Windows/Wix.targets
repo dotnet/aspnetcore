@@ -1,7 +1,7 @@
 <Project>
   <!-- Set versioning properties after Arcade SDK targets have been imported. -->
   <PropertyGroup>
-    <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
+    <!-- Actual upgrade code used in bundles to ensure upgrades within a version band, e.g. 3.0.0.xxx -->
     <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
     <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
     <BundleVersion Condition="'$(BundleVersion)' != ''" >$(BundleVersion).$(_FileRevisionVersion)</BundleVersion>
@@ -37,13 +37,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersVersion)\tools\net\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersVersion)\tools\netframework\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
-  </PropertyGroup>
-
-  <UsingTask TaskName="CreateLightCommandPackageDrop" AssemblyFile="$(MicrosoftDotNetBuildTasksInstallersTaskAssembly)" />
 
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
@@ -86,16 +79,6 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_GenerateANCMGuids" Condition="'$(ANCMDepProviderKey)' != ''" BeforeTargets="CoreCompile">
-    <GenerateGuid NamespaceGuid="$(ANCMNamespaceGuid)" Values="$(ANCMDepProviderKey)">
-      <Output TaskParameter="Guid" PropertyName="DepProviderGuid" />
-    </GenerateGuid>
-
-    <PropertyGroup>
-      <DefineConstants>$(DefineConstants);DepProviderGuid=$(DepProviderGuid)</DefineConstants>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="_CheckPackageFileNameIsSet" BeforeTargets="PrepareForBuild">
     <Error Text="Missing required property: PackageFileName" Condition="'$(PackageFileName)' == ''" />
   </Target>
@@ -110,6 +93,14 @@
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
+  <!-- This target can be used to set additional Wix options. -->
+  <Target Name="SetAdditionalWixOptions" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <!-- Use backwards compatible GUID generation. -->
+      <CompilerAdditionalOptions>$(CompilerAdditionalOptions) -bcgg</CompilerAdditionalOptions>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile">
     <PropertyGroup>
       <WixpackWorkingDir>$(IntermediateOutputPath)wixpack</WixpackWorkingDir>
@@ -117,6 +108,7 @@
     </PropertyGroup>
 
     <CreateWixBuildWixpack
+      AdditionalOptions="$(CompilerAdditionalOptions) $(LinkerAdditionalOptions)"
       BindTrackingFile="$(IntermediateOutputPath)$(BindTrackingFilePrefix)%(CultureGroup.OutputSuffix)$(BindTrackingFileExtension)"
       Cultures="%(CultureGroup.Identity)"
       DefineConstants="$(DefineConstants);$(SolutionDefineConstants);$(ProjectDefineConstants);$(ProjectReferenceDefineConstants)"
@@ -129,6 +121,7 @@
       PdbFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetPdbFileName)"
       PdbType="$(DebugType)"
       SourceFiles="@(Compile)"
+      SuppressSpecificWarnings="$(SuppressSpecificWarnings)"
       LocalizationFiles="@(_WixLocalizationFile)"
       BindPaths="@(BindPath)"
       WixpackWorkingDir="$(WixpackWorkingDir)">

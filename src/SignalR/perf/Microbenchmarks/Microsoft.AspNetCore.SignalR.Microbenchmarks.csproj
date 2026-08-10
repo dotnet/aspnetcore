@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />

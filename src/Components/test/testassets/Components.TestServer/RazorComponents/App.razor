@@ -3,6 +3,11 @@
 @using Components.WasmMinimal.Pages.NotFound
 @using TestContentPackage.NotFound
 @using Components.TestServer.RazorComponents
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Endpoints
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using System.Threading.Tasks
 
 @code {
     [Parameter]
@@ -16,6 +21,10 @@
     [Parameter]
     [SupplyParameterFromQuery(Name = "appSetsEventArgsPath")]
     public bool AppSetsEventArgsPath { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useOnNavigateAsync")]
+    public bool ShouldDelayOnNavigateAsync { get; set; }
 
     private Type? NotFoundPageType { get; set; }
     private NavigationManager _navigationManager = default!;
@@ -70,13 +79,28 @@
             _navigationManager.OnNotFound -= OnNotFoundEvent;
         }
     }
+
+    private Task HandleOnNavigateAsync(NavigationContext args)
+    {
+        if (!ShouldDelayOnNavigateAsync)
+        {
+            return Task.CompletedTask;
+        }
+
+        return PerformOnNavigateAsyncWork();
+    }
+
+    private async Task PerformOnNavigateAsyncWork()
+    {
+        await Task.Yield();
+    }
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <base href="/subdir/" />
+    <BasePath />
     <HeadOutlet />
 </head>
 <body>
@@ -93,7 +117,7 @@
     {
         @if (NotFoundPageType is not null)
         {
-            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType" OnNavigateAsync="HandleOnNavigateAsync">
                 <Found Context="routeData">
                     <RouteView RouteData="@routeData" />
                     <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
@@ -102,7 +126,7 @@
         }
         else
         {
-            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }">
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" OnNavigateAsync="HandleOnNavigateAsync">
                 <Found Context="routeData">
                     <RouteView RouteData="@routeData" />
                     <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />

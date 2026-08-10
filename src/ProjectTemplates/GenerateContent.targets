@@ -43,6 +43,7 @@
     <GenerateFileFromTemplate
       TemplateFile="%(GeneratedContent.Identity)"
       Properties="$(GeneratedContentProperties);%(GeneratedContent.AdditionalProperties)"
+      SkipUnchanged="true"
       OutputPath="%(GeneratedContent.OutputPath)">
 
       <Output TaskParameter="ResolvedOutputPath" ItemName="FileWrites" />

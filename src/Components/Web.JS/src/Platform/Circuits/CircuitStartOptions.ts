@@ -42,6 +42,7 @@ export interface ReconnectionOptions {
 export interface CircuitHandler {
   onCircuitOpened?: () => void;
   onCircuitClosed?: () => void;
+  onCircuitPausing?: (signal: AbortSignal) => void | Promise<void>;
 }
 
 export interface ReconnectionHandler {

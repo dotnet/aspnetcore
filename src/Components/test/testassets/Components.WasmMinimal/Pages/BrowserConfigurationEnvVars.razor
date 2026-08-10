@@ -1,0 +1,37 @@
+﻿@page "/browser-configuration-env-vars"
+@using Microsoft.AspNetCore.Components.Web
+@rendermode RenderMode.InteractiveWebAssembly
+
+<h1>Browser Configuration Environment Variables</h1>
+
+<p>
+    Execution mode:
+    <strong id="execution-mode">@executionMode</strong>
+</p>
+
+<p>
+    MY_TEST_VAR:
+    <strong id="my-test-var">@myTestVar</strong>
+</p>
+
+<p>
+    ANOTHER_TEST_VAR:
+    <strong id="another-test-var">@anotherTestVar</strong>
+</p>
+
+@code {
+    string executionMode = "static";
+    string myTestVar = "";
+    string anotherTestVar = "";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            executionMode = OperatingSystem.IsBrowser() ? "webassembly" : "server";
+            myTestVar = Environment.GetEnvironmentVariable("MY_TEST_VAR") ?? "(not set)";
+            anotherTestVar = Environment.GetEnvironmentVariable("ANOTHER_TEST_VAR") ?? "(not set)";
+            StateHasChanged();
+        }
+    }
+}

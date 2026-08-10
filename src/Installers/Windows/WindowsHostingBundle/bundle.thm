@@ -35,9 +35,9 @@
             <Label Name="LicenseTermsAndPolicies" X="148" Y="288" Width="-12" Height="32" FontId="DefaultFont" HexStyle="000000">#(loc.LicenseAssent)</Label>
 
             <!-- These controls have larger vertical spacing to improve readability (20 instead of 16). -->
-            <Hypertext Name="PrivacyStatementLink" X="172" Y="320" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Privacy Statement&lt;/A&gt;</Hypertext>
-            <Hypertext Name="DotNetCLITelemetryLink" X="172" Y="340" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Licensing Information for .NET&lt;/A&gt;</Hypertext>
-            <Hypertext Name="DotNetEulaLink" X="172" Y="360" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</Hypertext>
+            <Hypertext Name="PrivacyStatementLink" X="172" Y="320" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">#(loc.PrivacyStatementLink)</Hypertext>
+            <Hypertext Name="DotNetCLITelemetryLink" X="172" Y="340" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">#(loc.DotNetCLITelemetryLink)</Hypertext>
+            <Hypertext Name="DotNetEulaLink" X="172" Y="360" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">#(loc.DotNetEulaLink)</Hypertext>
             <Button Name="InstallButton" X="-124" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.InstallInstallButton)</Button>
             <Button Name="InstallCancelButton" X="-12" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">
                 <Text>#(loc.InstallCloseButton)</Text>

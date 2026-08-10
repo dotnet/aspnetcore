@@ -300,12 +300,26 @@ internal class Http3InMemory
 
         public bool OnInboundDecoderStream(Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
         {
-            return _inner.OnInboundDecoderStream(stream);
+            var res = _inner.OnInboundDecoderStream(stream);
+
+            if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
+            {
+                testStream.OnDecoderStreamCreatedTcs.TrySetResult();
+            }
+
+            return res;
         }
 
         public bool OnInboundEncoderStream(Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
         {
-            return _inner.OnInboundEncoderStream(stream);
+            var res = _inner.OnInboundEncoderStream(stream);
+
+            if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
+            {
+                testStream.OnEncoderStreamCreatedTcs.TrySetResult();
+            }
+
+            return res;
         }
 
         public void OnStreamCompleted(IHttp3Stream stream)
@@ -479,6 +493,8 @@ internal class Http3StreamBase
     internal TaskCompletionSource OnStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     internal TaskCompletionSource OnStreamCompletedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     internal TaskCompletionSource OnHeaderReceivedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal TaskCompletionSource OnDecoderStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal TaskCompletionSource OnEncoderStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
     internal TestStreamContext StreamContext { get; }
     internal DuplexPipe.DuplexPipePair Pair { get; }
@@ -495,6 +511,8 @@ internal class Http3StreamBase
     public Task OnStreamCreatedTask => OnStreamCreatedTcs.Task;
     public Task OnStreamCompletedTask => OnStreamCompletedTcs.Task;
     public Task OnHeaderReceivedTask => OnHeaderReceivedTcs.Task;
+    public Task OnDecoderStreamCreatedTask => OnDecoderStreamCreatedTcs.Task;
+    public Task OnEncoderStreamCreatedTask => OnEncoderStreamCreatedTcs.Task;
 
     public ConnectionAbortedException AbortReadException => StreamContext.AbortReadException;
     public ConnectionAbortedException AbortWriteException => StreamContext.AbortWriteException;
@@ -726,6 +744,19 @@ internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
         var outputWriter = Pair.Application.Output;
         Http3FrameWriter.WriteHeader(Http3FrameType.Data, frameLength: 10, outputWriter);
         await SendAsync(Span<byte>.Empty);
+    }
+
+    /// <summary>
+    /// Sends a trailer HEADERS frame whose declared payload length is larger than the bytes
+    /// actually written, simulating a fragmented trailer HEADERS frame that spans multiple reads.
+    /// The frame header declares <paramref name="declaredLength"/> bytes, but only one byte is sent.
+    /// </summary>
+    internal async Task SendTrailerHeadersPartialAsync(int declaredLength = 100)
+    {
+        var outputWriter = Pair.Application.Output;
+        Http3FrameWriter.WriteHeader(Http3FrameType.Headers, frameLength: declaredLength, outputWriter);
+        // Send a single byte so the frame reader parses the header and enters isContinuedFrame mode.
+        await SendAsync([ 0x00 ]);
     }
 
     internal async Task SendDataAsync(Memory<byte> data, bool endStream = false)

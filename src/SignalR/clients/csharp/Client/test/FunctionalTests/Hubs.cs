@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Channels;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -150,11 +151,13 @@ public class DynamicTestHub : DynamicHub
 
     public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
 
+    [RuntimeAsyncMethodGeneration(false)]
     public async Task CallEcho(string message)
     {
         await Clients.Client(Context.ConnectionId).Echo(message);
     }
 
+    [RuntimeAsyncMethodGeneration(false)]
     public async Task CallHandlerThatDoesntExist()
     {
         await Clients.Client(Context.ConnectionId).NoClientHandler();
@@ -323,4 +326,16 @@ public class HubWithAuthorization : Hub
 public class HubWithAuthorization2 : Hub
 {
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+}
+
+// Connection-level authorization (JwtBearer) is applied via endpoint routing in Startup;
+// the EnableAuthenticationRefresh connection option is set there as well.
+public class AuthenticationRefreshHub : Hub
+{
+    public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    [Authorize("AuthenticationRefreshScope")]
+    public string ScopeProtected() => "ok";
+
+    public Task SendToUser(string userId, string message) => Clients.User(userId).SendAsync("Receive", message);
 }

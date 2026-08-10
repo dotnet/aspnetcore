@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Security.Claims;
-using System.Security.Principal;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
@@ -24,6 +23,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionItemsFeature,
                                      IConnectionTransportFeature,
                                      IConnectionUserFeature,
+                                     IConnectionUserRefreshFeature,
                                      IConnectionHeartbeatFeature,
                                      ITransferFormatFeature,
                                      IHttpContextFeature,
@@ -52,6 +52,13 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private bool _activeSend;
     private TimeSpan _startedSendTime;
     private bool _useStatefulReconnect;
+    // Guards User swaps in UpdateUser so concurrent /refresh requests (or long-polling polls racing
+    // explicit /refresh requests) can't roll the connection back to an older identity.
+    private readonly object _userLock = new object();
+    // True only for the WindowsIdentity user clone created by the first long-polling request.
+    private bool _ownsUserIdentities;
+    private readonly object _userRefreshCallbackLock = new object();
+    private List<UserRefreshedCallbackRegistration>? _userRefreshedCallbacks;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -87,6 +94,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
         Features.Set<IConnectionUserFeature>(this);
+        Features.Set<IConnectionUserRefreshFeature>(this);
         Features.Set<IConnectionItemsFeature>(this);
         Features.Set<IConnectionIdFeature>(this);
         Features.Set<IConnectionTransportFeature>(this);
@@ -245,6 +253,111 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
+    public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var registration = new UserRefreshedCallbackRegistration(this, callback, state);
+        lock (_userRefreshCallbackLock)
+        {
+            _userRefreshedCallbacks ??= new List<UserRefreshedCallbackRegistration>();
+            _userRefreshedCallbacks.Add(registration);
+        }
+
+        return registration;
+    }
+
+    private void RemoveUserRefreshedCallback(UserRefreshedCallbackRegistration registration)
+    {
+        lock (_userRefreshCallbackLock)
+        {
+            _userRefreshedCallbacks?.Remove(registration);
+        }
+    }
+
+    /// <summary>
+    /// Updates the User/ClaimsPrincipal on this connection and refreshes the authentication expiration.
+    /// </summary>
+    /// <param name="user">The refreshed principal to apply to the connection.</param>
+    /// <param name="authenticationExpiration">The expiration of the refreshed authentication.</param>
+    /// <remarks>
+    /// The update is skipped if <paramref name="authenticationExpiration"/> is older than the currently
+    /// applied <see cref="AuthenticationExpiration"/>. This makes the staleness check and the swap atomic
+    /// so a caller racing a concurrent refresh that already applied a newer token can't roll the connection
+    /// back to an older identity.
+    /// </remarks>
+    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+    {
+        ClaimsPrincipal? previouslyOwnedUser = null;
+
+        lock (_userLock)
+        {
+            // A concurrent refresh (for example the /refresh endpoint racing a long-polling poll) may have
+            // already applied a newer token. Don't roll the connection back to an older one. Checking this
+            // under _userLock makes the decision atomic with the swap below.
+            if (authenticationExpiration != DateTimeOffset.MaxValue
+                && AuthenticationExpiration != DateTimeOffset.MaxValue
+                && authenticationExpiration < AuthenticationExpiration)
+            {
+                return;
+            }
+
+            if (_ownsUserIdentities && !ReferenceEquals(User, user))
+            {
+                previouslyOwnedUser = User;
+                _ownsUserIdentities = false;
+            }
+
+            User = user;
+            AuthenticationExpiration = authenticationExpiration;
+
+            // Also update the HttpContext's user if available
+            if (HttpContext is { } httpContext)
+            {
+                httpContext.User = user;
+            }
+        }
+
+        // Notify callbacks (e.g., the SignalR Hub layer) that the user has been updated. Invoke
+        // outside _userLock to avoid reentrancy/deadlock if a callback aborts/disposes the connection.
+        UserRefreshedCallbackRegistration[]? callbacks = null;
+        lock (_userRefreshCallbackLock)
+        {
+            if (_userRefreshedCallbacks is { Count: > 0 })
+            {
+                callbacks = _userRefreshedCallbacks.ToArray();
+            }
+        }
+
+        if (callbacks is not null)
+        {
+            foreach (var callback in callbacks)
+            {
+                try
+                {
+                    callback.Invoke(user);
+                }
+                catch (Exception ex)
+                {
+                    Log.UserRefreshedCallbackFailed(_logger, ex);
+                }
+            }
+        }
+
+        if (previouslyOwnedUser is not null)
+        {
+            DisposeOwnedIdentities(previouslyOwnedUser);
+        }
+    }
+
+    internal void MarkUserOwned()
+    {
+        lock (_userLock)
+        {
+            _ownsUserIdentities = true;
+        }
+    }
+
     public async Task DisposeAsync(bool closeGracefully = false)
     {
         Task disposeTask;
@@ -272,23 +385,37 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
         finally
         {
+            ClaimsPrincipal? ownedUser = null;
+            lock (_userLock)
+            {
+                if (_ownsUserIdentities)
+                {
+                    ownedUser = User;
+                    _ownsUserIdentities = false;
+                }
+            }
+
+            if (ownedUser is not null)
+            {
+                DisposeOwnedIdentities(ownedUser);
+            }
+
             Cancellation?.Dispose();
 
             Cancellation = null;
-
-            // Long Polling clones the windows identity if set
-            if (TransportType == HttpTransportType.LongPolling && User?.Identity is WindowsIdentity)
-            {
-                foreach (var identity in User.Identities)
-                {
-                    (identity as IDisposable)?.Dispose();
-                }
-            }
 
             ServiceScope?.Dispose();
         }
 
         await disposeTask;
+    }
+
+    private static void DisposeOwnedIdentities(ClaimsPrincipal user)
+    {
+        foreach (var identity in user.Identities)
+        {
+            (identity as IDisposable)?.Dispose();
+        }
     }
 
     private async Task WaitOnTasks(Task applicationTask, Task transportTask, bool closeGracefully)
@@ -754,6 +881,28 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         return UseStatefulReconnect == true || TransportType == HttpTransportType.LongPolling;
     }
 
+    private sealed class UserRefreshedCallbackRegistration(
+        HttpConnectionContext connection,
+        Action<ClaimsPrincipal, object?> callback,
+        object? state) : IDisposable
+    {
+        private HttpConnectionContext? _connection = connection;
+
+        public void Invoke(ClaimsPrincipal user)
+        {
+            if (_connection is not null)
+            {
+                callback(user, state);
+            }
+        }
+
+        public void Dispose()
+        {
+            var connection = Interlocked.Exchange(ref _connection, null);
+            connection?.RemoveUserRefreshedCallback(this);
+        }
+    }
+
     internal enum SetTransportState
     {
         Success,
@@ -789,5 +938,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         [LoggerMessage(9, LogLevel.Trace, "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.", EventName = "TransportSendTimeout")]
         public static partial void TransportSendTimeout(ILogger logger, TimeSpan timeout, string transportConnectionId);
+
+        [LoggerMessage(10, LogLevel.Error, "An IConnectionUserRefreshFeature.OnUserRefreshed callback threw an exception.", EventName = "UserRefreshedCallbackFailed")]
+        public static partial void UserRefreshedCallbackFailed(ILogger logger, Exception exception);
     }
 }

@@ -8,8 +8,8 @@
     }
   },
   "profiles": {
-    "web": {
-      "commandName": "web",
+    "IdentitySample.DefaultUI": {
+      "commandName": "Project",
       "environmentVariables": {
         "ASPNET_ENVIRONMENT": "Development"
       }

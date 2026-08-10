@@ -11,7 +11,7 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version" />
   <String Id="HelpHeader" Value="Setup Help" />
   <!--_locComment_text="'directory' is to be translated in both places"-->
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default. /passive | /quiet - displays minimal UI with no prompts or displays no UI and no prompts. By default UI and all prompts are displayed. /norestart - suppress any attempts to restart. By default UI will prompt before restart. /log log.txt - logs to a specific file. By default a log file is created in %TEMP%." />
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default.&#xA;&#xA;/passive | /quiet - displays minimal UI with no prompts or displays no UI and no prompts. By default UI and all prompts are displayed.&#xA;&#xA;/norestart - suppress any attempts to restart. By default UI will prompt before restart.&#xA;&#xA;/log &lt;LOG_FILE&gt; - logs to a specific file. By default a log file is created in %TEMP%." />
   <String Id="HelpCloseButton" Value="&amp;Close" />
   <String Id="InstallAcceptCheckbox" Value="I &amp;agree to the license terms and conditions" />
   <String Id="InstallInstallButton" Value="&amp;Install" />
@@ -61,6 +61,9 @@
   <String Id="FilesInUseExitButton" Value="E&amp;xit" />
   <String Id="FilesInUseTitle" Value="Files In Use" />
   <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:" />
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Privacy Statement&lt;/A&gt;" />
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Licensing Information for .NET&lt;/A&gt;" />
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;" />
 
   <!-- Custom UI strings -->
   <!--_locComment_text="{Locked='[WixBundleName]'}"-->
