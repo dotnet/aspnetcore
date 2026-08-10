@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Microsoft.Extensions.AI;
 
 namespace AGUIDojoApi;
@@ -23,19 +24,22 @@ internal sealed class ScriptedChatClient : IChatClient
         var messageList = messages.ToList();
         if (messageList.LastOrDefault()?.Role == ChatRole.Tool)
         {
-            var isWeatherResult = messageList[^1].Contents
+            var functionResult = messageList[^1].Contents
                 .OfType<FunctionResultContent>()
-                .Any(result => result.CallId == "backend-tool-weather-1");
+                .SingleOrDefault();
+            var response = functionResult switch
+            {
+                { CallId: "backend-tool-weather-1" } =>
+                    "The weather in San Francisco is sunny with a temperature of 20\u00b0C.",
+                { CallId: "human-in-the-loop-steps-1" } result =>
+                    CreateTaskStepsSummary(result.Result),
+                _ => "Background changed to a sunset gradient.",
+            };
             yield return new ChatResponseUpdate
             {
                 Role = ChatRole.Assistant,
                 MessageId = Guid.NewGuid().ToString("N"),
-                Contents =
-                [
-                    new TextContent(isWeatherResult
-                        ? "The weather in San Francisco is sunny with a temperature of 20\u00b0C."
-                        : "Background changed to a sunset gradient.")
-                ],
+                Contents = [new TextContent(response)],
                 FinishReason = ChatFinishReason.Stop,
             };
             yield break;
@@ -97,6 +101,36 @@ internal sealed class ScriptedChatClient : IChatClient
             yield break;
         }
 
+        if (prompt.Contains("plan", StringComparison.OrdinalIgnoreCase) &&
+            options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "generate_task_steps") == true)
+        {
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        "human-in-the-loop-steps-1",
+                        "generate_task_steps",
+                        new Dictionary<string, object?>
+                        {
+                            ["steps"] = new[]
+                            {
+                                new { description = "Define mission goals and timeline", status = "enabled" },
+                                new { description = "Design and test the spacecraft", status = "enabled" },
+                                new { description = "Select and train the astronaut crew", status = "enabled" },
+                                new { description = "Plan launch and Mars surface operations", status = "enabled" },
+                                new { description = "Prepare communications and contingency plans", status = "enabled" },
+                            },
+                        })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
+        }
+
         var answer = $"""
             ## Agentic response
 
@@ -132,5 +166,30 @@ internal sealed class ScriptedChatClient : IChatClient
 
     public void Dispose()
     {
+    }
+
+    private static string CreateTaskStepsSummary(object? result)
+    {
+        var resultText = result switch
+        {
+            JsonElement { ValueKind: JsonValueKind.String } element => element.GetString(),
+            JsonElement element => element.ToString(),
+            string text when text.StartsWith('"') =>
+                JsonSerializer.Deserialize<string>(text),
+            _ => result?.ToString(),
+        };
+        const string selectedPrefix = "The user selected the following steps:";
+        if (resultText?.StartsWith(selectedPrefix, StringComparison.Ordinal) == true)
+        {
+            return $"I'll move forward with the selected tasks: {resultText[selectedPrefix.Length..].Trim()}.";
+        }
+
+        if (resultText?.Contains("rejected all proposed steps", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return "No tasks were selected, so I won't move forward with any proposed steps.";
+        }
+
+        throw new InvalidOperationException(
+            $"The generate_task_steps tool returned an unsupported result: '{resultText}'.");
     }
 }
