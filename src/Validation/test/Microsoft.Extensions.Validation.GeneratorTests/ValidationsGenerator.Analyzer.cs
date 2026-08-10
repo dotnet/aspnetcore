@@ -413,6 +413,40 @@ file class FileModel
     }
 
     [Fact]
+    public async Task ReportsSingleDiagnostic_WhenTypeReachedByValidatableTypeAndEndpointParameter()
+    {
+        var source = """
+#nullable enable
+
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/api", (SharedModel model) => Results.Ok());
+
+app.Run();
+
+[ValidatableType]
+public sealed class SharedModel
+{
+    internal TheChild Child { get; } = new();
+    public class TheChild { [Required] public string? Name { get; set; } }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0035", diagnostic.Id);
+        Assert.Contains("Child", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
     public async Task DoesNotReportInaccessibleEndpointParameter_WhenValidationIsDisabledOnGroup()
     {
         var source = """
