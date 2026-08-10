@@ -156,8 +156,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             || property.IsIndexer
             || property.IsStatic
             || property.IsWriteOnly
-            || property.GetMethod is null
-            || property.GetMethod.DeclaredAccessibility is not Accessibility.Public
             || property.IsEqualityContract(wellKnownTypes))
         {
             return true;
@@ -281,6 +279,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
             if (ShouldSkipProperty(member, wellKnownTypes, skipValidationAttributeSymbol, jsonIgnoreAttributeSymbol))
+            {
+                continue;
+            }
+
+            if (member.GetMethod is null || member.GetMethod.DeclaredAccessibility is not Accessibility.Public)
             {
                 continue;
             }
