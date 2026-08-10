@@ -26,6 +26,7 @@ internal sealed class NegotiateState : INegotiateState
         }
         catch
         {
+            // NegotiateAuthentication construction can fail after the binding has been allocated.
             _channelBinding?.Dispose();
             throw;
         }

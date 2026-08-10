@@ -10,6 +10,8 @@ internal sealed class NegotiateChannelBinding : ChannelBinding
 {
     public NegotiateChannelBinding(ReadOnlyMemory<byte> channelBindingToken)
     {
+        // ITlsConnectionFeature exposes managed bytes, but NegotiateAuthentication requires
+        // a ChannelBinding handle that remains valid throughout the authentication exchange.
         var bytes = channelBindingToken.ToArray();
         Size = bytes.Length;
         SetHandle(Marshal.AllocHGlobal(Size));
