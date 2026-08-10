@@ -86,7 +86,7 @@ public sealed class RazorComponentsMetadataGeneratorPackageTests
 
             RunDotNet(
                 testDirectory,
-                $"build ExternalConsumer.csproj --nologo -v:minimal -p:RestoreSources=\"{package.Directory}\"");
+                $"build ExternalConsumer.csproj --nologo -v:minimal -p:RestoreAdditionalProjectSources=\"{package.Directory}\"");
 
             var generatedFiles = Directory.GetFiles(
                 Path.Combine(testDirectory, "obj", "generated"),
