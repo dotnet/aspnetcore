@@ -23,6 +23,11 @@ public class UIAgentOptions
     /// </summary>
     public ChatOptions? ChatOptions { get; set; }
 
+    /// <summary>
+    /// Gets or sets a callback that maps model updates into typed agent state.
+    /// </summary>
+    public Func<StateMapperContext, bool>? StateMapper { get; set; }
+
     internal List<IHandlerRegistration> HandlerRegistrations { get; } = new();
 
     internal Dictionary<string, AIFunction> UIActions { get; } =
