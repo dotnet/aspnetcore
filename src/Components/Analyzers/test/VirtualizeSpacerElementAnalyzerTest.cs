@@ -311,4 +311,35 @@ public class VirtualizeSpacerElementAnalyzerTest : DiagnosticVerifier
 
         VerifyCSharpDiagnostic(test);
     }
+
+    [Fact]
+    public void UserAuthoredHelperUnderRestrictedParent_NoDiagnostic()
+    {
+        var test = @"
+    namespace TestApp
+    {
+        using Microsoft.AspNetCore.Components.Rendering;
+        using Microsoft.AspNetCore.Components.Web.Virtualization;
+
+        class TestComponent
+        {
+            void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""tbody"");
+                CreateVirtualize(builder);
+                builder.CloseElement();
+            }
+
+            static void CreateVirtualize(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, ""div"");
+                builder.OpenComponent<Virtualize<string>>(1);
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
 }

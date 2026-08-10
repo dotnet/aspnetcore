@@ -200,7 +200,9 @@ public sealed class VirtualizeSpacerElementAnalyzer : DiagnosticAnalyzer
     {
         helperInfo = default;
 
-        if (method.DeclaringSyntaxReferences.Length != 1 ||
+        if (!string.Equals(method.ContainingType.Name, "TypeInference", StringComparison.Ordinal) ||
+            !method.Name.StartsWith("CreateVirtualize_", StringComparison.Ordinal) ||
+            method.DeclaringSyntaxReferences.Length != 1 ||
             method.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) is not MethodDeclarationSyntax methodDeclaration ||
             methodDeclaration.Body is null)
         {
