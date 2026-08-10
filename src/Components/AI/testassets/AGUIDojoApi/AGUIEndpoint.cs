@@ -24,18 +24,19 @@ internal static class AGUIEndpoint
         string pattern,
         IList<AITool>? serverTools = null,
         string? systemPrompt = null,
-        Func<JsonSerializerOptions, AGUIStreamOptions>? configureStreamOptions = null)
+        Func<JsonSerializerOptions, AGUIStreamOptions>? configureStreamOptions = null,
+        object? chatClientKey = null)
     {
         return endpoints.MapPost(pattern, (
             [FromBody] RunAgentInput input,
-            // The model client is resolved from DI rather than captured at map time so that the
-            // E2E tests can replace it with a recorded one through a service override.
-            [FromServices] IChatClient chatClient,
             [FromServices] IOptions<JsonOptions> jsonOptions,
             HttpContext httpContext,
             CancellationToken cancellationToken) =>
         {
             var jsonSerializerOptions = jsonOptions.Value.SerializerOptions;
+            var chatClient = chatClientKey is null
+                ? httpContext.RequestServices.GetRequiredService<IChatClient>()
+                : httpContext.RequestServices.GetRequiredKeyedService<IChatClient>(chatClientKey);
 
             var streamOptions = configureStreamOptions?.Invoke(jsonSerializerOptions)
                 ?? new AGUIStreamOptions();
