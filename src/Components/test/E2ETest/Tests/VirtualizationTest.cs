@@ -5509,6 +5509,25 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
     }
 
+    [Fact]
+    public void ScrollToItem_AfterEndJump_LandsAtTarget()
+    {
+        const int targetIndex = 200;
+
+        MountAnchorModeForScrollToItem(useProvider: false);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        container.SendKeys(Keys.End);
+        Browser.True(() => container.FindElements(By.CssSelector(".item[data-index='999']")).Count > 0);
+
+        SetScrollTargetIndex(targetIndex);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus($"Completed: {targetIndex}");
+
+        Browser.True(() => GetTopRenderedIndex(js) == targetIndex);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

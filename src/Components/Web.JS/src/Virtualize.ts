@@ -247,6 +247,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Called by C# at the start of a programmatic ScrollToItem, before the align scroll itself.
   function beginProgrammaticScroll(): void {
+    stopConvergenceObserving();
+    clearBottomFollow();
     scrollActivity.source = ScrollSource.AlignToItem;
     pendingCallbacks.delete(spacerBefore);
     pendingCallbacks.delete(spacerAfter);
@@ -675,7 +677,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  function updateBottomConvergence(): void {
+  function updateBottomConvergence(userScrolled: boolean): void {
     if (spacerAfter.offsetHeight === 0) {
       if (convergence.bottom) {
         stopConvergenceObserving();
@@ -693,7 +695,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    if (!anchorModeIs.end) return;
+    if (!anchorModeIs.end && !userScrolled) return;
 
     const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
     if (!atBottom) return;
@@ -794,7 +796,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         if (!isSelfScroll) {
           // Convergence to the top/bottom edge should not fight with self scroll.
           if (entry.target === spacerAfter) {
-            updateBottomConvergence();
+            updateBottomConvergence(source === ScrollSource.UserScroll);
           } else if (entry.target === spacerBefore) {
             updateTopConvergence();
           }
