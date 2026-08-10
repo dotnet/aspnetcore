@@ -1,0 +1,36 @@
+.tool-generative-ui {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem);
+    min-height: 100vh;
+    min-width: 0;
+}
+
+.tool-generative-ui__display {
+    align-items: center;
+    background: #f5f5f7;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+    padding: 2rem;
+}
+
+::deep .tool-generative-ui__chat {
+    border-left: 1px solid #e5e7eb;
+    min-width: 0;
+}
+
+@media (max-width: 48rem) {
+    .tool-generative-ui {
+        grid-template-columns: 1fr;
+    }
+
+    .tool-generative-ui__display {
+        padding: 1rem;
+    }
+
+    ::deep .tool-generative-ui__chat {
+        border-left: 0;
+        border-top: 1px solid #e5e7eb;
+        min-height: 36rem;
+    }
+}

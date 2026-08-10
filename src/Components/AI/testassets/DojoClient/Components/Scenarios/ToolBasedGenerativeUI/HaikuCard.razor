@@ -1,0 +1,22 @@
+<article class="haiku-card" style="background: @Haiku.Gradient;">
+    <div class="haiku-card__overlay">
+        <div class="haiku-card__japanese" lang="ja">
+            @foreach (var line in Haiku.Japanese)
+            {
+                <p>@line</p>
+            }
+        </div>
+        <div class="haiku-card__divider"></div>
+        <div class="haiku-card__english">
+            @foreach (var line in Haiku.English)
+            {
+                <p>@line</p>
+            }
+        </div>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public HaikuData Haiku { get; set; } = default!;
+}
