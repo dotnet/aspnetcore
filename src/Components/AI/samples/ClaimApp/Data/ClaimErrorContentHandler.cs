@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Components.AI;
 using Microsoft.Extensions.AI;
 
-namespace BlazorWebAppPerPage.Data;
+namespace ComponentsAIClaimApp.Data;
 
 internal sealed class ClaimErrorContentHandler(ILogger logger)
     : ContentBlockHandler<ClaimErrorContentHandler.HandlerState>

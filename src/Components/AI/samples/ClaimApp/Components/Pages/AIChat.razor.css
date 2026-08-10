@@ -1,7 +1,7 @@
 .claim-app {
     box-sizing: border-box;
-    min-height: calc(100dvh - 3.5rem);
-    margin: -1.1rem -1.5rem 0 -2rem;
+    min-height: 100dvh;
+    margin: 0;
     padding: clamp(1.25rem, 2.5vw, 2rem);
     overflow-x: clip;
     color: #17233b;
@@ -73,7 +73,7 @@
     grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
     gap: 1.5rem;
     max-width: 92rem;
-    height: clamp(35rem, calc(100dvh - 13rem), 48rem);
+    height: clamp(35rem, calc(100dvh - 11.5rem), 48rem);
     margin: 0 auto;
 }
 
@@ -441,7 +441,7 @@
 
 @media (max-width: 640.98px) {
     .claim-app {
-        margin: -1.1rem -1.5rem 0;
+        margin: 0;
         padding: 1rem;
     }
 

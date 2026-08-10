@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
 
-namespace BlazorWebAppPerPage.Data;
+namespace ComponentsAIClaimApp.Data;
 
 internal sealed class ConfigurableChatClient : IChatClient
 {

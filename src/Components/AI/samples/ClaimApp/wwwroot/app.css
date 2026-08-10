@@ -1,0 +1,21 @@
+html,
+body {
+    min-height: 100%;
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #f4f7fb;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+a {
+    color: #1767d1;
+}
+
+h1:focus {
+    outline: none;
+}

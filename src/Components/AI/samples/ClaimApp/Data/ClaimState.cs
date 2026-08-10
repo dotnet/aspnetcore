@@ -4,7 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace BlazorWebAppPerPage.Data;
+namespace ComponentsAIClaimApp.Data;
 
 /// <summary>
 /// Contains the claim state synchronized between the AG-UI agent and the sample UI.
