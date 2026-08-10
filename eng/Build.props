@@ -33,7 +33,6 @@
                "
       Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
                $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
-               $(RepoRoot)src\Components\test\testassets\AIApp\*.*proj;
                $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
                $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Client\*.*proj;
                $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Server\*.*proj;

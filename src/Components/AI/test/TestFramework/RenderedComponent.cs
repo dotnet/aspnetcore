@@ -53,4 +53,22 @@ internal sealed class RenderedComponent<T> where T : IComponent
 
     public Task InvokeAsync(Action callback)
         => _renderer.Dispatcher.InvokeAsync(callback);
+
+    public Task DispatchEventAsync(string attributeName, EventArgs args)
+    {
+        var frames = _renderer.GetCurrentRenderTreeFrames(ComponentId);
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var frame = ref frames.Array[i];
+            if (frame.FrameType == Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Attribute
+                && string.Equals(frame.AttributeName, attributeName, StringComparison.Ordinal)
+                && frame.AttributeEventHandlerId != 0)
+            {
+                return _renderer.DispatchEventAsync(frame.AttributeEventHandlerId, args);
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"No event handler named '{attributeName}' was found on {typeof(T).Name}.");
+    }
 }

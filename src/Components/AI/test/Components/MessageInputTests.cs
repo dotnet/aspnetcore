@@ -4,6 +4,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
 using Microsoft.Extensions.AI;
@@ -35,6 +36,7 @@ public class MessageInputTests
         var html = cut.GetHtml();
         Assert.Contains("<textarea", html);
         Assert.Contains("placeholder=\"Ask me anything...\"", html);
+        Assert.Contains("aria-label=\"Ask me anything...\"", html);
     }
 
     [Fact]
@@ -82,6 +84,7 @@ public class MessageInputTests
         var html = cut.GetHtml();
         Assert.Contains("<button", html);
         Assert.Contains("sc-ai-input__send", html);
+        Assert.Contains("aria-label=\"Send message\"", html);
     }
 
     [Fact]
@@ -124,6 +127,100 @@ public class MessageInputTests
         html = cut.GetHtml();
         // After streaming completes, should no longer be disabled
         // (disabled="false" or no disabled attribute for non-boolean rendering)
+    }
+
+    [Fact]
+    public async Task SendButton_SendsMessageAndClearsInput()
+    {
+        var messagesReceived = new List<string>();
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((msgs, opts, ct) =>
+        {
+            messagesReceived.Add(msgs.Last().Text!);
+            return ResponseEmitters.EmitTextResponse("OK", ct);
+        });
+        var agent = new UIAgent(client);
+
+        var renderer = new TestRenderer();
+        var cut = renderer.RenderComponent<AgentBoundary>(p =>
+        {
+            p["Agent"] = agent;
+            p["ChildContent"] = (RenderFragment)(b =>
+            {
+                b.OpenComponent<MessageInput>(0);
+                b.CloseComponent();
+            });
+        });
+        var input = cut.FindComponent<MessageInput>();
+
+        await input.DispatchEventAsync("oninput", new ChangeEventArgs { Value = "Test message" });
+        await input.DispatchEventAsync("onclick", EventArgs.Empty);
+
+        Assert.Equal(["Test message"], messagesReceived);
+        Assert.Contains("value=\"\"", input.GetHtml());
+    }
+
+    [Fact]
+    public async Task Enter_SendsMessage()
+    {
+        var messagesReceived = new List<string>();
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((msgs, opts, ct) =>
+        {
+            messagesReceived.Add(msgs.Last().Text!);
+            return ResponseEmitters.EmitTextResponse("OK", ct);
+        });
+        var agent = new UIAgent(client);
+
+        var renderer = new TestRenderer();
+        var cut = renderer.RenderComponent<AgentBoundary>(p =>
+        {
+            p["Agent"] = agent;
+            p["ChildContent"] = (RenderFragment)(b =>
+            {
+                b.OpenComponent<MessageInput>(0);
+                b.CloseComponent();
+            });
+        });
+        var input = cut.FindComponent<MessageInput>();
+
+        await input.DispatchEventAsync("oninput", new ChangeEventArgs { Value = "Test message" });
+        await input.DispatchEventAsync("onkeydown", new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.Equal(["Test message"], messagesReceived);
+    }
+
+    [Fact]
+    public async Task ShiftEnter_DoesNotSendMessage()
+    {
+        var messagesReceived = new List<string>();
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((msgs, opts, ct) =>
+        {
+            messagesReceived.Add(msgs.Last().Text!);
+            return ResponseEmitters.EmitTextResponse("OK", ct);
+        });
+        var agent = new UIAgent(client);
+
+        var renderer = new TestRenderer();
+        var cut = renderer.RenderComponent<AgentBoundary>(p =>
+        {
+            p["Agent"] = agent;
+            p["ChildContent"] = (RenderFragment)(b =>
+            {
+                b.OpenComponent<MessageInput>(0);
+                b.CloseComponent();
+            });
+        });
+        var input = cut.FindComponent<MessageInput>();
+
+        await input.DispatchEventAsync("oninput", new ChangeEventArgs { Value = "Test message" });
+        await input.DispatchEventAsync(
+            "onkeydown",
+            new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
+
+        Assert.Empty(messagesReceived);
+        Assert.Contains("value=\"Test message\"", input.GetHtml());
     }
 
     [Fact]

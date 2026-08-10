@@ -97,27 +97,6 @@ internal static class ResponseEmitters
         await Task.CompletedTask;
     }
 
-    internal static async IAsyncEnumerable<ChatResponseUpdate> EmitReasoningThenTextResponse(
-        string reasoning,
-        string text,
-        [EnumeratorCancellation] CancellationToken ct = default)
-    {
-        var messageId = Guid.NewGuid().ToString("N");
-        yield return new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = messageId,
-            Contents = [new TextReasoningContent(reasoning)]
-        };
-        yield return new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = messageId,
-            Contents = [new TextContent(text)]
-        };
-        await Task.CompletedTask;
-    }
-
     internal static async IAsyncEnumerable<ChatResponseUpdate> EmitErrorAfterTokens(
         string[] tokens,
         Exception error,

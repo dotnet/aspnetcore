@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
 using Microsoft.Extensions.AI;
@@ -72,6 +73,46 @@ public class SuggestionListTests
     }
 
     [Fact]
+    public async Task DisabledDuringStreaming()
+    {
+        var streamingStarted = new TaskCompletionSource();
+        var streamGate = new TaskCompletionSource();
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((msgs, opts, ct) =>
+            SlowStream(streamingStarted, streamGate, ct));
+        var agent = new UIAgent(client);
+        var suggestions = new List<Suggestion>
+        {
+            new() { Label = "Help", Prompt = "Help me" },
+        };
+
+        var renderer = new TestRenderer();
+        var cut = renderer.RenderComponent<AgentBoundary>(p =>
+        {
+            p["Agent"] = agent;
+            p["ChildContent"] = (RenderFragment)(b =>
+            {
+                b.OpenComponent<SuggestionList>(0);
+                b.AddComponentParameter(1, "Suggestions", (IReadOnlyList<Suggestion>)suggestions);
+                b.CloseComponent();
+            });
+        });
+
+        var context = GetAgentContext(cut);
+        Task sendTask = null!;
+        await cut.InvokeAsync(() =>
+        {
+            sendTask = context.SendMessageAsync("Hello");
+        });
+        await streamingStarted.Task;
+
+        Assert.Contains("disabled", cut.GetHtml());
+
+        streamGate.TrySetResult();
+        await sendTask;
+    }
+
+    [Fact]
     public void SuggestionList_OutsideAgentBoundary_Throws()
     {
         var renderer = new TestRenderer();
@@ -86,5 +127,36 @@ public class SuggestionListTests
                 p["Suggestions"] = (IReadOnlyList<Suggestion>)suggestions;
             });
         });
+    }
+
+    private static AgentContext GetAgentContext(RenderedComponent<AgentBoundary> cut)
+    {
+        return (AgentContext)typeof(AgentBoundary)
+            .GetField(
+                "_context",
+                System.Reflection.BindingFlags.NonPublic
+                | System.Reflection.BindingFlags.Instance)!
+            .GetValue(cut.Instance)!;
+    }
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> SlowStream(
+        TaskCompletionSource started,
+        TaskCompletionSource gate,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        yield return new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            Contents = [new TextContent("tok")]
+        };
+        started.TrySetResult();
+        try
+        {
+            await gate.Task.WaitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            yield break;
+        }
     }
 }
