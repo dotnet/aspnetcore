@@ -49,6 +49,57 @@ public class BlockMappingPipelineTests
     }
 
     [Fact]
+    public async Task Process_RichTextSnapshots_ReplaceTreeOnSameBlock()
+    {
+        var pipeline = CreatePipeline();
+        var firstNodes = new RichTextNode[]
+        {
+            CreateNode<HeadingNode>(new TextNode("Partial")),
+        };
+        var finalNodes = new RichTextNode[]
+        {
+            CreateNode<HeadingNode>(new TextNode("Complete")),
+            CreateNode<ParagraphNode>(new TextNode("Formatted response")),
+        };
+
+        var blocks = await ProcessAsync(
+            pipeline,
+            CreateRichTextUpdate("msg-1", "Partial", firstNodes));
+        var moreBlocks = await ProcessAsync(
+            pipeline,
+            CreateRichTextUpdate("msg-1", "Complete\n\nFormatted response", finalNodes));
+
+        Assert.Empty(moreBlocks);
+        var block = Assert.IsType<RichContentBlock>(Assert.Single(blocks));
+        Assert.Equal("Complete\n\nFormatted response", block.RawText);
+        Assert.Equal(finalNodes, block.Content);
+        Assert.Equal("Partial", Assert.IsType<TextNode>(Assert.Single(firstNodes[0].Children)).Text);
+    }
+
+    [Fact]
+    public async Task Process_RichTextSnapshot_NotifiesSubscribers()
+    {
+        var pipeline = CreatePipeline();
+        var blocks = await ProcessAsync(
+            pipeline,
+            CreateRichTextUpdate(
+                "msg-1",
+                "Partial",
+                [CreateNode<ParagraphNode>(new TextNode("Partial"))]));
+        var changeCount = 0;
+        using var subscription = blocks[0].OnChanged(() => changeCount++);
+
+        await ProcessAsync(
+            pipeline,
+            CreateRichTextUpdate(
+                "msg-1",
+                "Complete",
+                [CreateNode<ParagraphNode>(new TextNode("Complete"))]));
+
+        Assert.Equal(1, changeCount);
+    }
+
+    [Fact]
     public async Task Process_UpdateWithoutText_CompletesActiveBlock()
     {
         var pipeline = CreatePipeline();
@@ -107,6 +158,28 @@ public class BlockMappingPipelineTests
         MessageId = messageId,
         Contents = [new TextContent(text)],
     };
+
+    private static ChatResponseUpdate CreateRichTextUpdate(
+        string messageId,
+        string text,
+        IReadOnlyList<RichTextNode> nodes) => new()
+        {
+            Role = ChatRole.Assistant,
+            MessageId = messageId,
+            Contents = [new RichTextContent(text, nodes)],
+        };
+
+    private static TNode CreateNode<TNode>(params RichTextNode[] children)
+        where TNode : RichTextNode, new()
+    {
+        var node = new TNode();
+        foreach (var child in children)
+        {
+            node.AddChild(child);
+        }
+
+        return node;
+    }
 
     private static async Task<List<ContentBlock>> ProcessAsync(
         BlockMappingPipeline pipeline, ChatResponseUpdate update)

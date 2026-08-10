@@ -70,6 +70,32 @@ public class MessageListTests
     }
 
     [Fact]
+    public async Task RichTextContent_RendersStructuredNodesAndEncodesUnsafeContent()
+    {
+        var cut = RenderMessageList(_ => EmitRichTextResponse());
+        var context = GetAgentContext(cut);
+
+        await cut.InvokeAsync(() => context.SendMessageAsync("Format this"));
+
+        var html = cut.GetHtml();
+        Assert.Contains("<h2", html);
+        Assert.Contains("<strong>structured</strong>", html);
+        Assert.Contains("<em>rich text</em>", html);
+        Assert.Contains("<s>obsolete</s>", html);
+        Assert.Contains("class=\"sc-ai-rich-text__inline-code\"", html);
+        Assert.Contains("<blockquote", html);
+        Assert.Contains("<ul", html);
+        Assert.Contains("type=\"checkbox\"", html);
+        Assert.Contains("<pre", html);
+        Assert.Contains("<table", html);
+        Assert.Contains("href=\"https://example.com/docs\"", html);
+        Assert.DoesNotContain("href=\"javascript:", html);
+        Assert.Contains("&lt;script&gt;alert(", html);
+        Assert.Contains("&lt;/script&gt;", html);
+        Assert.DoesNotContain("<script>", html);
+    }
+
+    [Fact]
     public void EmptyConversation_RendersEmptyContent()
     {
         var cut = RenderMessageList(
@@ -160,6 +186,75 @@ public class MessageListTests
                 builder.CloseComponent();
             });
         });
+    }
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> EmitRichTextResponse()
+    {
+        var heading = Node<HeadingNode>(new TextNode("Components.AI"));
+        heading.Level = 2;
+        var paragraph = Node<ParagraphNode>(
+            new TextNode("Render "),
+            Node<StrongNode>(new TextNode("structured")),
+            new TextNode(" "),
+            Node<EmphasisNode>(new TextNode("rich text")),
+            new TextNode(" and "),
+            Node<StrikethroughNode>(new TextNode("obsolete")),
+            new TextNode(" markup with "),
+            new InlineCodeNode("C#"),
+            new TextNode("."));
+        var safeLink = new LinkNode("https://example.com/docs");
+        safeLink.AddChild(new TextNode("Documentation"));
+        var unsafeLink = new LinkNode("javascript:alert('unsafe')");
+        unsafeLink.AddChild(new TextNode("Unsafe"));
+        var list = new ListNode();
+        list.AddChild(Node<ListItemNode>(Node<ParagraphNode>(new TextNode("First item"))));
+        var checkedItem = Node<ListItemNode>(Node<ParagraphNode>(new TextNode("Completed item")));
+        checkedItem.Checked = true;
+        list.AddChild(checkedItem);
+        var table = new TableNode
+        {
+            Alignment = [TableColumnAlignment.Left, TableColumnAlignment.Right],
+        };
+        table.AddChild(Node<TableRowNode>(
+            Node<TableCellNode>(new TextNode("Feature")),
+            Node<TableCellNode>(new TextNode("Status"))));
+
+        yield return new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = "rich-text",
+            Contents =
+            [
+                new RichTextContent(
+                    "Components.AI structured rich text",
+                    [
+                        heading,
+                        paragraph,
+                        Node<BlockQuoteNode>(
+                            Node<ParagraphNode>(new TextNode("Streaming snapshot"))),
+                        list,
+                        new CodeBlockNode("Console.WriteLine(\"Hello\");", "csharp"),
+                        safeLink,
+                        unsafeLink,
+                        table,
+                        new HtmlNode("<script>alert('unsafe')</script>"),
+                    ]),
+            ],
+        };
+
+        await Task.CompletedTask;
+    }
+
+    private static TNode Node<TNode>(params RichTextNode[] children)
+        where TNode : RichTextNode, new()
+    {
+        var node = new TNode();
+        foreach (var child in children)
+        {
+            node.AddChild(child);
+        }
+
+        return node;
     }
 
     private static async Task WaitForHtmlAsync(
