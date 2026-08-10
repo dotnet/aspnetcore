@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using BasicTestApp;
@@ -119,6 +120,113 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         int GetItemCount() => Browser.FindElements(By.Id("async-item")).Count;
         int GetPlaceholderCount() => Browser.FindElements(By.Id("async-placeholder")).Count;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InitialRender_DispatchesSingleSpacerCallback(bool useItemsProvider)
+    {
+        const int viewportFillReason = 2;
+        var js = (IJavaScriptExecutor)Browser;
+        InstallSpacerCallbackRecorder();
+
+        try
+        {
+            Browser.MountTestComponent<VirtualizationAnchorMode>();
+
+            if (useItemsProvider)
+            {
+                Browser.Exists(By.Id("unload-list")).Click();
+                Browser.Exists(By.Id("list-not-loaded"));
+                Browser.Exists(By.Id("toggle-provider")).Click();
+                ClearRecordedSpacerCallbacks();
+                Browser.Exists(By.Id("reload-with-initial-index")).Click();
+            }
+
+            Browser.Exists(By.CssSelector("#scroll-container .item"));
+            Browser.True(() => GetRecordedSpacerCallbackCount() > 0);
+
+            var firstBatchCallCount = GetFirstBatchSpacerCallbackCount();
+            var firstBatchCall = GetFirstBatchSpacerCallback();
+            var args = (ReadOnlyCollection<object>)firstBatchCall["args"];
+
+            Assert.Equal(1, firstBatchCallCount);
+            Assert.Equal("OnSpacerBeforeVisible", firstBatchCall["methodName"]);
+            Assert.Equal(0, Convert.ToDouble(args[0], CultureInfo.InvariantCulture));
+            Assert.Equal(400, Convert.ToDouble(args[2], CultureInfo.InvariantCulture));
+            Assert.Equal(viewportFillReason, Convert.ToInt32(args[3], CultureInfo.InvariantCulture));
+        }
+        finally
+        {
+            RestoreSpacerCallbackRecorder();
+        }
+
+        void InstallSpacerCallbackRecorder()
+            => js.ExecuteScript(
+                """
+                (() => {
+                    const nativeIntersectionObserver = window.IntersectionObserver;
+                    const originalInvokeMethodAsync = DotNet.DotNetObject.prototype.invokeMethodAsync;
+                    let currentBatch = 0;
+                    let nextBatch = 0;
+                    window.__virtualizeSpacerCalls = [];
+
+                    window.IntersectionObserver = class extends nativeIntersectionObserver {
+                        constructor(callback, options) {
+                            super((entries, observer) => {
+                                currentBatch = ++nextBatch;
+                                try {
+                                    callback(entries, observer);
+                                } finally {
+                                    currentBatch = 0;
+                                }
+                            }, options);
+                        }
+                    };
+
+                    DotNet.DotNetObject.prototype.invokeMethodAsync = function(methodName, ...args) {
+                        if (methodName === 'OnSpacerBeforeVisible' || methodName === 'OnSpacerAfterVisible') {
+                            window.__virtualizeSpacerCalls.push({ batch: currentBatch, methodName, args });
+                        }
+
+                        return originalInvokeMethodAsync.apply(this, [methodName, ...args]);
+                    };
+
+                    window.__restoreVirtualizeSpacerRecorder = () => {
+                        window.IntersectionObserver = nativeIntersectionObserver;
+                        DotNet.DotNetObject.prototype.invokeMethodAsync = originalInvokeMethodAsync;
+                        delete window.__restoreVirtualizeSpacerRecorder;
+                        delete window.__virtualizeSpacerCalls;
+                    };
+                })();
+                """);
+
+        void ClearRecordedSpacerCallbacks()
+            => js.ExecuteScript("window.__virtualizeSpacerCalls = [];");
+
+        long GetRecordedSpacerCallbackCount()
+            => Convert.ToInt64(js.ExecuteScript(
+                "return window.__virtualizeSpacerCalls.length;"), CultureInfo.InvariantCulture);
+
+        int GetFirstBatchSpacerCallbackCount()
+            => Convert.ToInt32(js.ExecuteScript(
+                """
+                const calls = window.__virtualizeSpacerCalls;
+                const firstBatch = Math.min(...calls.map(call => call.batch));
+                return calls.filter(call => call.batch === firstBatch).length;
+                """), CultureInfo.InvariantCulture);
+
+        Dictionary<string, object> GetFirstBatchSpacerCallback()
+            => (Dictionary<string, object>)js.ExecuteScript(
+                """
+                const calls = window.__virtualizeSpacerCalls;
+                const firstBatch = Math.min(...calls.map(call => call.batch));
+                return calls.find(call => call.batch === firstBatch);
+                """);
+
+        void RestoreSpacerCallbackRecorder()
+            => js.ExecuteScript("window.__restoreVirtualizeSpacerRecorder?.()");
     }
 
     [Fact]
