@@ -143,9 +143,8 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
             // To keep the behavior of AuthFilter identical to pre-endpoint routing, we will gather auth data from endpoint metadata
             // and produce a policy using this. This would mean we would have effectively run some auth twice, but it maintains compat.
             var policyProvider = PolicyProvider ?? context.HttpContext.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>();
-            var endpointAuthorizeData = endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
 
-            var endpointPolicy = await AuthorizationPolicy.CombineAsync(policyProvider, endpointAuthorizeData);
+            var endpointPolicy = await AuthorizationPolicy.CombineAsync(policyProvider, endpoint.Metadata);
             if (endpointPolicy != null)
             {
                 builder.Combine(endpointPolicy);

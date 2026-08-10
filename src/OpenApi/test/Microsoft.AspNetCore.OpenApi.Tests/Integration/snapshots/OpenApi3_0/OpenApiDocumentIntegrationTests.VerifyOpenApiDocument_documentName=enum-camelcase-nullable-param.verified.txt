@@ -29,7 +29,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CamelCaseStatus"
+                  "oneOf": [
+                    {
+                      "enum": [
+                        null
+                      ]
+                    },
+                    {
+                      "$ref": "#/components/schemas/CamelCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -44,8 +53,7 @@
         "enum": [
           "active",
           "inactive",
-          "pending",
-          null
+          "pending"
         ]
       }
     }

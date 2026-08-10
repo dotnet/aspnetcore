@@ -1,5 +1,3 @@
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -67,6 +65,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
                     MetadataReference.CreateFromFile(typeof(IValidatableInfoResolver).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(EndpointFilterFactoryContext).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(ValidationServiceCollectionExtensions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.Localization.IStringLocalizerFactory).Assembly.Location),
                 ]);
         var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],

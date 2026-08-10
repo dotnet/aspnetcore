@@ -20,7 +20,6 @@
 <div class="row">
     <div class="col-xl-6">
         <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
-            <AntiforgeryToken />
         </form>
         <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />

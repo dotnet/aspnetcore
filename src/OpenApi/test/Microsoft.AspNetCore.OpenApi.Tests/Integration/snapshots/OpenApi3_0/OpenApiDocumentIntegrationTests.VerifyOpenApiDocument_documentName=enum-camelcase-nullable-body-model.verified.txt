@@ -41,13 +41,16 @@
         "type": "object",
         "properties": {
           "status": {
-            "type": "string",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
               {
                 "$ref": "#/components/schemas/CamelCaseStatus"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
