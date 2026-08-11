@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 internal static class ExpressionMemberAccessor
 {
     private static readonly ConcurrentDictionary<Expression, MemberInfo> _memberInfoCache = new();
-    private static readonly ConcurrentDictionary<(MemberInfo Member, CultureInfo Culture), string> _displayNameCache = new();
+    private static readonly ConcurrentDictionary<(MemberInfo Member, string CultureName), string> _displayNameCache = new();
 
     static ExpressionMemberAccessor()
     {
@@ -55,11 +55,12 @@ internal static class ExpressionMemberAccessor
     {
         ArgumentNullException.ThrowIfNull(member);
 
-        // The cache key includes the current UI culture because DisplayAttribute.GetName()
+        // The cache key includes the current UI culture name because DisplayAttribute.GetName()
         // resolves resource based names against it. Keying on the member alone would freeze
         // the first resolved culture for the lifetime of the process, which is shared by every
-        // user when components render on the server.
-        return _displayNameCache.GetOrAdd((member, CultureInfo.CurrentUICulture), static key =>
+        // user when components render on the server. The name is used rather than the CultureInfo
+        // so that the cache does not retain culture objects.
+        return _displayNameCache.GetOrAdd((member, CultureInfo.CurrentUICulture.Name), static key =>
         {
             var displayAttribute = key.Member.GetCustomAttribute<DisplayAttribute>();
             if (displayAttribute is not null)
