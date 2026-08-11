@@ -32,22 +32,22 @@ public class ServerInstance : IAsyncDisposable
     /// <summary>
     /// Unique identifier for this server instance (used for <c>X-Test-Backend</c> header).
     /// </summary>
-    internal string Id { get; } = Guid.NewGuid().ToString("N")[..8];
+    public string Id { get; } = Guid.NewGuid().ToString("N")[..8];
 
     /// <summary>
     /// The app name (matches the key in the E2E manifest).
     /// </summary>
-    internal string AppName { get; }
+    public string AppName { get; }
 
     /// <summary>
     /// Direct URL of the app process (random port, localhost).
     /// </summary>
-    internal string AppUrl { get; private set; } = "";
+    public string AppUrl { get; private set; } = "";
 
     /// <summary>
     /// Public-facing URL from the manifest (for OAuth redirect URIs, etc.).
     /// </summary>
-    internal string? PublicUrl { get; private set; }
+    public string? PublicUrl { get; private set; }
 
     /// <summary>
     /// URL that tests should navigate to. Always routes through the proxy.
@@ -79,52 +79,18 @@ public class ServerInstance : IAsyncDisposable
 
         var startInfo = BuildProcessStartInfo(appEntry);
 
-        // Build unified environment: infrastructure, then manifest, then options.
-        // Each layer can override the previous one. Environment variables already
-        // set in the current process (e.g., CI variables) take precedence over
-        // defaults but can themselves be overridden by explicit option values.
-        var environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var environment = BuildProcessEnvironment(
+            appEntry,
+            options,
+            AppUrl,
+            testAssemblyLocation,
+            testAssemblyName,
+            readyUrl);
 
-        // Infrastructure variables (always set)
-        environment["ASPNETCORE_URLS"] = AppUrl;
-        environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = testAssemblyName;
-        environment["DOTNET_STARTUP_HOOKS"] = testAssemblyLocation;
-        environment["TEST_PARENT_PID"] = Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
-        environment["ASPNETCORE_ENVIRONMENT"] = "Development";
-        environment["E2E_READY_URL"] = readyUrl;
-
-        // Propagate DOTNET_ROOT so published app hosts can find the correct runtime
-        // (e.g. when building against a preview SDK that isn't globally installed).
-        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        if (!string.IsNullOrEmpty(dotnetRoot))
-        {
-            environment["DOTNET_ROOT"] = dotnetRoot;
-        }
-
-        // Service override: static method pattern (WAF-like)
-        if (options.ServiceOverrideTypeName is not null)
-        {
-            environment["E2E_TEST_SERVICES_TYPE"] = options.ServiceOverrideTypeName;
-            environment["E2E_TEST_SERVICES_METHOD"] = options.ServiceOverrideMethodName!;
-        }
-
-        // Manifest-defined environment variables
-        foreach (var (key, value) in appEntry.EnvironmentVariables)
-        {
-            environment[key] = value;
-        }
-
-        // User-specified environment variables override all previous values
-        foreach (var (key, value) in options.EnvironmentVariables)
-        {
-            environment[key] = value;
-        }
-
-        // Apply collected environment to the process
-        foreach (var (key, value) in environment)
-        {
-            startInfo.Environment[key] = value;
-        }
+        ApplyProcessEnvironment(
+            startInfo,
+            environment,
+            appEntry.HarnessMode == E2EAppEntry.CompiledHarnessMode);
 
         _process = Process.Start(startInfo)
             ?? throw new InvalidOperationException($"Failed to start process for '{AppName}'.");
@@ -224,7 +190,82 @@ public class ServerInstance : IAsyncDisposable
         return sb.ToString();
     }
 
-    static ProcessStartInfo BuildProcessStartInfo(E2EAppEntry appEntry)
+    internal static IReadOnlyDictionary<string, string> BuildProcessEnvironment(
+        E2EAppEntry appEntry,
+        ServerStartOptions options,
+        string appUrl,
+        string testAssemblyLocation,
+        string testAssemblyName,
+        string readyUrl)
+    {
+        var isCompiledHarness = appEntry.HarnessMode == E2EAppEntry.CompiledHarnessMode;
+        if (!isCompiledHarness && appEntry.HarnessMode != E2EAppEntry.StartupHookHarnessMode)
+        {
+            throw new InvalidOperationException(
+                $"Unsupported E2E harness mode '{appEntry.HarnessMode}'.");
+        }
+
+        if (isCompiledHarness && options.ServiceOverrideTypeName is not null)
+        {
+            throw new InvalidOperationException(
+                "ServerStartOptions.ConfigureServices cannot be used with a compiled E2E harness. " +
+                "The override method lives in the managed test assembly and cannot be loaded by a Native AOT app.");
+        }
+
+        // Build unified environment: infrastructure, then manifest, then options.
+        // Each layer can override the previous one.
+        var environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ASPNETCORE_URLS"] = appUrl,
+            ["TEST_PARENT_PID"] = Environment.ProcessId.ToString(CultureInfo.InvariantCulture),
+            ["ASPNETCORE_ENVIRONMENT"] = "Development",
+            ["E2E_READY_URL"] = readyUrl,
+        };
+
+        if (!isCompiledHarness)
+        {
+            environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = testAssemblyName;
+            environment["DOTNET_STARTUP_HOOKS"] = testAssemblyLocation;
+        }
+
+        // Propagate DOTNET_ROOT so published app hosts can find the correct runtime
+        // (e.g. when building against a preview SDK that isn't globally installed).
+        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+        if (!string.IsNullOrEmpty(dotnetRoot))
+        {
+            environment["DOTNET_ROOT"] = dotnetRoot;
+        }
+
+        // Service override: static method pattern (WAF-like)
+        if (options.ServiceOverrideTypeName is not null)
+        {
+            environment["E2E_TEST_SERVICES_TYPE"] = options.ServiceOverrideTypeName;
+            environment["E2E_TEST_SERVICES_METHOD"] = options.ServiceOverrideMethodName!;
+        }
+
+        foreach (var (key, value) in appEntry.EnvironmentVariables)
+        {
+            environment[key] = value;
+        }
+
+        foreach (var (key, value) in options.EnvironmentVariables)
+        {
+            environment[key] = value;
+        }
+
+        if (isCompiledHarness)
+        {
+            // A compiled harness is already in the app. Never try to load the managed test assembly.
+            environment.Remove("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES");
+            environment.Remove("DOTNET_STARTUP_HOOKS");
+            environment.Remove("E2E_TEST_SERVICES_TYPE");
+            environment.Remove("E2E_TEST_SERVICES_METHOD");
+        }
+
+        return environment;
+    }
+
+    internal static ProcessStartInfo BuildProcessStartInfo(E2EAppEntry appEntry)
     {
         var executable = appEntry.Executable;
         var args = appEntry.Arguments;
@@ -255,6 +296,27 @@ public class ServerInstance : IAsyncDisposable
         }
 
         return startInfo;
+    }
+
+    internal static void ApplyProcessEnvironment(
+        ProcessStartInfo startInfo,
+        IReadOnlyDictionary<string, string> environment,
+        bool isCompiledHarness)
+    {
+        foreach (var (key, value) in environment)
+        {
+            startInfo.Environment[key] = value;
+        }
+
+        if (isCompiledHarness)
+        {
+            // ProcessStartInfo starts with a copy of the parent environment. Remove managed
+            // injection variables even when they were inherited rather than supplied by options.
+            startInfo.Environment.Remove("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES");
+            startInfo.Environment.Remove("DOTNET_STARTUP_HOOKS");
+            startInfo.Environment.Remove("E2E_TEST_SERVICES_TYPE");
+            startInfo.Environment.Remove("E2E_TEST_SERVICES_METHOD");
+        }
     }
 
     static int GetAvailablePort()
