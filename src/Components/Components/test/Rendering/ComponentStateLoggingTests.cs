@@ -138,7 +138,7 @@ public class ComponentStateLoggingTests
     }
 
     [Fact]
-    public async Task FullLifecycle_LogsAllFourStateTransitionsInSequence()
+    public async Task FullLifecycle_LogsAllFourStateTransitionsInOrder()
     {
         var mockLogger = new Mock<ILogger>();
         var mockRenderer = new MockRenderer(mockLogger.Object);
@@ -153,7 +153,6 @@ public class ComponentStateLoggingTests
         var parameterPhaseEventIds = new List<int>();
         var postDisposalEventIds = new List<int>();
 
-        mockLogger.Reset();
         mockLogger
             .Setup(l => l.IsEnabled(It.IsAny<LogLevel>()))
             .Returns(true);
@@ -171,6 +170,8 @@ public class ComponentStateLoggingTests
 
         consumerState.SetDirectParameters(ParameterView.Empty);
 
+        // Re-route the callback for the post-disposal phase so we can verify ordering
+        // independently across the two phases.
         mockLogger
             .Setup(l => l.Log(
                 It.IsAny<LogLevel>(),
@@ -187,19 +188,27 @@ public class ComponentStateLoggingTests
         consumerState.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
         consumerState.RenderIntoBatch(batchBuilder, builder => { }, out _);
 
-        var allEventIds = parameterPhaseEventIds.Concat(postDisposalEventIds).ToList();
-        Assert.Contains(7, allEventIds);
-        Assert.Contains(8, allEventIds);
-        Assert.Contains(9, allEventIds);
-        Assert.Contains(10, allEventIds);
-
+        // Phase 1 ordering: 8 (stopped single-delivery) before 10 (supplying).
         Assert.Contains(8, parameterPhaseEventIds);
         Assert.Contains(10, parameterPhaseEventIds);
+        Assert.True(
+            parameterPhaseEventIds.IndexOf(8) < parameterPhaseEventIds.IndexOf(10),
+            $"Expected EventId 8 (StoppedSingleDeliveryCascadingParameters) to be logged before EventId 10 (SupplyingCombinedParameters). Actual order: [{string.Join(", ", parameterPhaseEventIds)}]");
 
+        // Phase 2 ordering: 7 (skipping cascading update) before 9 (skipping render).
         Assert.Contains(7, postDisposalEventIds);
         Assert.Contains(9, postDisposalEventIds);
+        Assert.True(
+            postDisposalEventIds.IndexOf(7) < postDisposalEventIds.IndexOf(9),
+            $"Expected EventId 7 (SkippingCascadingUpdateOnDisposedComponent) to be logged before EventId 9 (SkippingRenderOnDisposedComponent). Actual order: [{string.Join(", ", postDisposalEventIds)}]");
+
+        // Disposal-only events must not appear during the parameter phase.
         Assert.DoesNotContain(7, parameterPhaseEventIds);
         Assert.DoesNotContain(9, parameterPhaseEventIds);
+
+        // All four event IDs must appear across the lifecycle.
+        var allEventIds = parameterPhaseEventIds.Concat(postDisposalEventIds).ToList();
+        Assert.Equal(new[] { 7, 8, 9, 10 }, allEventIds.Distinct().OrderBy(id => id).ToArray());
     }
 
     private class TestComponent : ComponentBase
@@ -212,16 +221,12 @@ public class ComponentStateLoggingTests
 
     private class MockRenderer : Renderer
     {
-        private readonly ILogger _logger;
-
         public MockRenderer(ILogger logger) : base(
             new ServiceCollection()
                 .AddSingleton(logger)
-                .AddLogging(b => b.AddProvider(new MockLoggerProvider(logger)))
                 .BuildServiceProvider(),
             new MockLoggerFactory(logger))
         {
-            _logger = logger;
         }
 
         public override Dispatcher Dispatcher => new TestDispatcher();
@@ -276,20 +281,6 @@ public class ComponentStateLoggingTests
         {
             return workItem();
         }
-    }
-
-    private class MockLoggerProvider : ILoggerProvider
-    {
-        private readonly ILogger _logger;
-
-        public MockLoggerProvider(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public ILogger CreateLogger(string categoryName) => _logger;
-
-        public void Dispose() { }
     }
 
     private sealed class TestSingleDeliveryAttribute : CascadingParameterAttributeBase
