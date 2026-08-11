@@ -10,6 +10,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -90,69 +92,39 @@ public sealed class ValidatorPathModel : AsyncRegistrationModelBase
 {
 }
 
-// Resolved by AsyncValidationResolver below, so EnableDataAnnotationsValidation uses the
+// Resolved by the validation source generator, so EnableDataAnnotationsValidation uses the
 // Microsoft.Extensions.Validation (MEV) path (IValidatableTypeInfo.ValidateAsync).
+[Microsoft.Extensions.Validation.ValidatableType]
 public sealed class MevPathModel : AsyncRegistrationModelBase
 {
 }
 
-// Custom resolver that provides IValidatableTypeInfo for MevPathModel only. Registered via
-// AddValidation in Program.cs. This routes MevPathModel through the MEV validation path without
-// depending on the validation source generator (which BasicTestApp does not reference), while
-// ValidatorPathModel remains unresolved and uses the static Validator path.
+// Bridges the source-generated resolver across assemblies. MevPathModel is annotated
+// [ValidatableType] in THIS assembly, so BasicTestApp's generated AddValidation interceptor emits a
+// resolver that knows MevPathModel (and its base). Components.TestServer cannot itself source-generate
+// a resolver for a type defined here, so it registers this adapter, which reuses the generated resolver.
 public sealed class AsyncValidationResolver : IValidatableInfoResolver
 {
-    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo validatableTypeInfo)
+    private readonly IValidatableInfoResolver _generatedResolver;
+
+    public AsyncValidationResolver()
     {
-        if (type == typeof(MevPathModel))
-        {
-            validatableTypeInfo = new ModelTypeInfo(typeof(MevPathModel), []);
-            return true;
-        }
+        var services = new ServiceCollection();
 
-        if (type == typeof(AsyncRegistrationModelBase))
-        {
-            validatableTypeInfo = new ModelTypeInfo(typeof(AsyncRegistrationModelBase),
-            [
-                new ModelPropertyInfo(
-                    typeof(AsyncRegistrationModelBase),
-                    typeof(string),
-                    nameof(AsyncRegistrationModelBase.Username),
-                    [new RequiredAttribute { ErrorMessage = "Username is required." }, new AsyncAvailabilityAttribute()]),
-            ]);
-            return true;
-        }
+        // Intercepted by BasicTestApp's generated AddValidation, which inserts the generated resolver
+        // at the front of Resolvers.
+        services.AddValidation();
 
-        validatableTypeInfo = null;
-        return false;
+        var options = services.BuildServiceProvider()
+            .GetRequiredService<IOptions<ValidationOptions>>().Value;
+
+        // The generated resolver is inserted at index 0 by the interceptor; grab it and delegate to it.
+        _generatedResolver = options.Resolvers[0];
     }
+
+    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo validatableTypeInfo)
+        => _generatedResolver.TryGetValidatableTypeInfo(type, out validatableTypeInfo);
 
     public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo validatableParameterInfo)
-    {
-        validatableParameterInfo = null;
-        return false;
-    }
-
-    private sealed class ModelTypeInfo : ValidatableTypeInfo
-    {
-        public ModelTypeInfo(Type type, IReadOnlyList<ValidatablePropertyInfo> members)
-            : base(type, members)
-        {
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => [];
-    }
-
-    private sealed class ModelPropertyInfo : ValidatablePropertyInfo
-    {
-        private readonly ValidationAttribute[] _attributes;
-
-        public ModelPropertyInfo(Type declaringType, Type propertyType, string name, ValidationAttribute[] attributes)
-            : base(declaringType, propertyType, name, displayNameInfo: null)
-        {
-            _attributes = attributes;
-        }
-
-        protected override ValidationAttribute[] GetValidationAttributes() => _attributes;
-    }
+        => _generatedResolver.TryGetValidatableParameterInfo(parameterInfo, out validatableParameterInfo);
 }

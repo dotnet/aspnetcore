@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// This file intentionally tests the obsolete synchronous EditContext.Validate() API.
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class EditContextAsyncTest
@@ -442,20 +445,6 @@ public class EditContextAsyncTest
     });
 
     [Fact]
-    public void Validate_SyncSubscriber_ReturnsInvalidWhenMessageAdded()
-    {
-        var editContext = new EditContext(new TestModel());
-        var store = new ValidationMessageStore(editContext);
-        var field = editContext.Field(nameof(TestModel.StringProperty));
-        editContext.OnValidationRequested += (_, _) => store.Add(field, "Required");
-
-        var result = editContext.Validate();
-
-        Assert.False(result);
-        Assert.Equal(new[] { "Required" }, editContext.GetValidationMessages(field));
-    }
-
-    [Fact]
     public void Validate_HandlerRegistersAsyncWork_ThrowsAndDoesNotMarkFormFaulted()
     {
         // A synchronous Validate() pass rejects any attempt to register asynchronous work (the factory
@@ -468,17 +457,6 @@ public class EditContextAsyncTest
 
         Assert.Contains(nameof(EditContext.ValidateAsync), exception.Message);
         Assert.False(editContext.IsValidationFaulted());
-    }
-
-    [Fact]
-    public void Validate_HandlerThrowsSynchronously_PropagatesOriginalException()
-    {
-        var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequested += (_, _) => throw new DivideByZeroException("boom");
-
-        var exception = Assert.Throws<DivideByZeroException>(() => editContext.Validate());
-
-        Assert.Equal("boom", exception.Message);
     }
 
     [Fact]

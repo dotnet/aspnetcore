@@ -1120,6 +1120,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     {
         return () => appElement.FindElements(By.CssSelector(messageSelector))
             .Select(x => x.Text)
+            .Where(text => !string.IsNullOrEmpty(text))
             .OrderBy(x => x)
             .ToArray();
     }

@@ -31,7 +31,6 @@
                             var credentialId = Base64Url.EncodeToString(passkey.CredentialId);
                         }
                         <form @formname="@($"update-passkey-{credentialId}")" @onsubmit="UpdatePasskey" method="post">
-                            <AntiforgeryToken />
                             <div>
                                 <input type="hidden" name="CredentialId" value="@credentialId" />
                                 <button type="submit" name="Action" value="rename" class="btn btn-primary" title="Rename this passkey">Rename</button>
@@ -50,7 +49,6 @@ else
 }
 
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
-    <AntiforgeryToken />
     @if (currentPasskeys is { Count: >= MaxPasskeyCount })
     {
         <p class="text-danger">You have reached the maximum number of allowed passkeys. Please delete one before adding a new one.</p>

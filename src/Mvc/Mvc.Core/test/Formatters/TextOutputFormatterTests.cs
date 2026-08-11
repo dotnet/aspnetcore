@@ -27,6 +27,31 @@ public class TextOutputFormatterTests
             yield return new object[] { "utf-8; q=0.0, utf-16; q=0.0", new string[] { "utf-8", "utf-16" }, "utf-8" };
 
             yield return new object[] { "*; q=0.0", new string[] { "utf-8", "utf-16" }, "utf-8" };
+
+            // Weighted values are considered in descending quality order.
+            yield return new object[] { "utf-8; q=0.5, utf-16; q=0.8", new string[] { "utf-8", "utf-16" }, "utf-16" };
+            yield return new object[] { "utf-16; q=0.8, utf-8; q=0.5", new string[] { "utf-8", "utf-16" }, "utf-16" };
+
+            // An entry with q=0 is excluded when sorting occurs.
+            yield return new object[] { "utf-8; q=0.0, utf-16; q=0.5", new string[] { "utf-8", "utf-16" }, "utf-16" };
+
+            // A concrete charset is preferred over a wildcard with the same quality.
+            yield return new object[] { "*; q=0.8, utf-16; q=0.8", new string[] { "utf-8", "utf-16" }, "utf-16" };
+
+            // Wildcards still match a supported encoding.
+            yield return new object[] { "*; q=0.5", new string[] { "utf-8", "utf-16" }, "utf-8" };
+            yield return new object[] { "utf-32; q=0.3, *; q=0.5", new string[] { "utf-8", "utf-16" }, "utf-8" };
+
+            // Equal-quality concrete charsets preserve the existing observable selection behavior.
+            yield return new object[] { "utf-8; q=0.5, utf-16; q=0.5", new string[] { "utf-8", "utf-16" }, "utf-16" };
+
+            // Large collections of weighted values produce the same selected encoding as before.
+            yield return new object[]
+            {
+                "utf-32; q=0.1, us-ascii; q=0.2, iso-8859-1; q=0.3, utf-16; q=0.4, utf-8; q=0.9",
+                new string[] { "utf-8", "utf-16" },
+                "utf-8"
+            };
         }
     }
 
