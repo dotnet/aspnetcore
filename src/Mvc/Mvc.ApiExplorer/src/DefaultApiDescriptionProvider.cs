@@ -635,7 +635,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
 
             // We don't want to append the **parameter** name when building a model name.
             var newContainerName = containerName;
-            if (modelMetadata.ContainerType != null)
+            if (modelMetadata.ContainerType != null || !string.IsNullOrEmpty(bindingContext.BinderModelName))
             {
                 newContainerName = GetName(containerName, bindingContext);
             }

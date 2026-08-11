@@ -1624,7 +1624,7 @@ public class DefaultApiDescriptionProviderTest
         var description = Assert.Single(descriptions);
         Assert.Single(description.ParameterDescriptions);
 
-        var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "Name");
+        var id = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee.Name");
         Assert.Same(BindingSource.Query, id.Source);
         Assert.Equal(typeof(string), id.Type);
     }
