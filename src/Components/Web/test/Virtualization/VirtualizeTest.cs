@@ -1378,9 +1378,9 @@ public class VirtualizeTest
 
     [Theory]
     [InlineData(VirtualizeAnchorMode.None)]
-    [InlineData(VirtualizeAnchorMode.Beginning)]
+    [InlineData(VirtualizeAnchorMode.Start)]
     [InlineData(VirtualizeAnchorMode.End)]
-    [InlineData(VirtualizeAnchorMode.Beginning | VirtualizeAnchorMode.End)]
+    [InlineData(VirtualizeAnchorMode.Start | VirtualizeAnchorMode.End)]
     public async Task Virtualize_ValidAnchorModes_Accepted(VirtualizeAnchorMode anchorMode)
     {
         Virtualize<int> renderedVirtualize = null;
@@ -1391,7 +1391,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", Enumerable.Range(1, 100).ToList() as ICollection<int>);
-                builder.AddComponentParameter(3, "AnchorMode", (int)anchorMode);
+                builder.AddComponentParameter(3, "AnchorMode", anchorMode);
                 builder.AddComponentParameter(4, "ChildContent", SimpleItemTemplate);
                 builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
@@ -1506,7 +1506,7 @@ public class VirtualizeTest
             // Expected - exception propagates correctly
         }
 
-        Assert.True(rendered || true); // Exception may propagate differently
+        Assert.True(rendered); // Exception may propagate differently
     }
 
     [Fact]
@@ -1597,7 +1597,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", Enumerable.Range(1, 100).ToList() as ICollection<int>);
-                builder.AddComponentParameter(3, "AnchorMode", (int)(VirtualizeAnchorMode.Beginning | VirtualizeAnchorMode.End));
+                builder.AddComponentParameter(3, "AnchorMode", VirtualizeAnchorMode.Start | VirtualizeAnchorMode.End);
                 builder.AddComponentParameter(4, "ChildContent", SimpleItemTemplate);
                 builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
@@ -1616,7 +1616,7 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
-        Assert.Equal(VirtualizeAnchorMode.Beginning | VirtualizeAnchorMode.End, renderedVirtualize.AnchorMode);
+        Assert.Equal(VirtualizeAnchorMode.Start | VirtualizeAnchorMode.End, renderedVirtualize.AnchorMode);
     }
 
     [Fact]
@@ -1630,7 +1630,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", Enumerable.Range(1, 100).ToList() as ICollection<int>);
-                builder.AddComponentParameter(3, "AnchorMode", (int)VirtualizeAnchorMode.Beginning);
+                builder.AddComponentParameter(3, "AnchorMode", VirtualizeAnchorMode.Start);
                 builder.AddComponentParameter(4, "ChildContent", SimpleItemTemplate);
                 builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
@@ -1659,9 +1659,9 @@ public class VirtualizeTest
 
     [Theory]
     [InlineData(VirtualizeAnchorMode.None)]
-    [InlineData(VirtualizeAnchorMode.Beginning)]
+    [InlineData(VirtualizeAnchorMode.Start)]
     [InlineData(VirtualizeAnchorMode.End)]
-    [InlineData(VirtualizeAnchorMode.Beginning | VirtualizeAnchorMode.End)]
+    [InlineData(VirtualizeAnchorMode.Start | VirtualizeAnchorMode.End)]
     public async Task AnchorMode_AllValues_RenderWithoutCrash(VirtualizeAnchorMode anchorMode)
     {
         Virtualize<int> renderedVirtualize = null;
@@ -1672,7 +1672,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", Enumerable.Range(1, 100).ToList() as ICollection<int>);
-                builder.AddComponentParameter(3, "AnchorMode", (int)anchorMode);
+                builder.AddComponentParameter(3, "AnchorMode", anchorMode);
                 builder.AddComponentParameter(4, "ChildContent", SimpleItemTemplate);
                 builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
@@ -1707,7 +1707,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", Enumerable.Range(1, 100).ToList() as ICollection<int>);
-                builder.AddComponentParameter(3, "AnchorMode", (int)VirtualizeAnchorMode.End);
+                builder.AddComponentParameter(3, "AnchorMode", VirtualizeAnchorMode.End);
                 builder.AddComponentParameter(4, "ChildContent", SimpleItemTemplate);
                 builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
@@ -1746,7 +1746,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", Enumerable.Range(1, 100).ToList() as ICollection<int>);
-                builder.AddComponentParameter(3, "AnchorMode", (int)VirtualizeAnchorMode.None);
+                builder.AddComponentParameter(3, "AnchorMode", VirtualizeAnchorMode.None);
                 builder.AddComponentParameter(4, "ChildContent", SimpleItemTemplate);
                 builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
@@ -1775,7 +1775,7 @@ public class VirtualizeTest
             itemSize: 50f, totalItems: 0);
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(0); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(0); });
 
         await task.WaitAsync(TimeSpan.FromSeconds(3));
         Assert.True(task.IsCompletedSuccessfully);
@@ -1792,7 +1792,7 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(0); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(0); });
 
         Assert.NotNull(task);
     }
@@ -1811,7 +1811,7 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(targetIndex); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(targetIndex); });
 
         Assert.NotNull(task);
     }
@@ -1840,7 +1840,7 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
         Task task = null;
-        await testRenderer.Dispatcher.InvokeAsync(() => { task = renderedVirtualize.ScrollToIndexAsync(50); });
+        await testRenderer.Dispatcher.InvokeAsync(() => { task = renderedVirtualize.ScrollToItemAsync(50); });
 
         await task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.True(task.IsCompletedSuccessfully);
@@ -1865,7 +1865,7 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(80); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(80); });
 
         Assert.NotNull(task);
     }
@@ -2397,17 +2397,23 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_ItemComparerExplicit_MarksExplicitlySet()
     {
-        var customComparer = EqualityComparer<int>.Default;
+        var customComparer = new CustomIntComparer();
         Virtualize<int> renderedVirtualize = null;
 
         var rootComponent = new VirtualizeTestHostcomponent
         {
-            InnerContent = BuildVirtualize(
-                itemSize: 50f,
-                itemsProvider: null,
-                items: new List<int> { 1, 2, 3, 4, 5 },
-                captureRenderedVirtualize: v => renderedVirtualize = v
-            )
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", new List<int> { 1, 2, 3, 4, 5 });
+                builder.AddComponentParameter(3, "ItemComparer", customComparer);
+                builder.AddComponentParameter(4, "ChildContent", SimpleItemTemplate);
+                builder.AddComponentReferenceCapture(
+                    5,
+                    c => renderedVirtualize = (Virtualize<int>)c);
+                builder.CloseComponent();
+            }
         };
 
         var testRenderer = new TestRenderer(new ServiceCollection()
@@ -2427,14 +2433,48 @@ public class VirtualizeTest
     {
         var items = new List<string> { "Alice", "Bob", "Charlie" };
         var customComparer = StringComparer.Ordinal;
+        Virtualize<string> renderedVirtualize = null;
 
-        var (virtualize, renderer) = await CreateRenderedVirtualize(
-            itemSize: 50f,
-            totalItems: items.Count
-        );
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<string>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", items);
+                builder.AddComponentParameter(3, "ItemComparer", customComparer);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<string>)(item => childBuilder =>
+                {
+                    childBuilder.AddContent(0, item);
+                }));
+                builder.AddComponentReferenceCapture(
+                    5,
+                    component => renderedVirtualize = (Virtualize<string>)component);
+                builder.CloseComponent();
+            }
+        };
 
-        Assert.NotNull(virtualize);
-        Assert.NotNull(virtualize.ItemComparer);
+        var serviceProvider = new ServiceCollection()
+            .AddTransient(sp => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+
+        var componentId = renderer.AssignRootComponentId(rootComponent);
+
+        await renderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+
+        // Verify the comparer passed through parameters
+        Assert.Same(customComparer, renderedVirtualize.ItemComparer);
+    }
+
+    private sealed class CustomIntComparer : IEqualityComparer<int>
+    {
+        public bool Equals(int x, int y) => x == y;
+
+        public int GetHashCode(int obj) => obj.GetHashCode();
     }
 
     [Fact]
@@ -2544,9 +2584,9 @@ public class VirtualizeTest
 
         await renderer.Dispatcher.InvokeAsync(() =>
         {
-            scrollTask1 = virtualize.ScrollToIndexAsync(100);
-            scrollTask2 = virtualize.ScrollToIndexAsync(200);
-            scrollTask3 = virtualize.ScrollToIndexAsync(300);
+            scrollTask1 = virtualize.ScrollToItemAsync(100);
+            scrollTask2 = virtualize.ScrollToItemAsync(200);
+            scrollTask3 = virtualize.ScrollToItemAsync(300);
         });
 
         Assert.NotNull(scrollTask1);
@@ -2779,8 +2819,8 @@ public class VirtualizeTest
         var initialCallCount = callCount;
 
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
-        callbacks.OnBeforeSpacerVisible(0f, 250f, 500f);
-        callbacks.OnAfterSpacerVisible(0f, 250f, 500f);
+        await renderer.Dispatcher.InvokeAsync(() => callbacks.OnBeforeSpacerVisible(0f, 250f, 500f));
+        await renderer.Dispatcher.InvokeAsync(() => callbacks.OnAfterSpacerVisible(0f, 250f, 500f));
 
         Assert.True(callCount - initialCallCount <= 3);
     }
