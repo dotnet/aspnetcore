@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -10,11 +11,18 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal sealed class ServerComponentSerializer
 {
     private readonly ITimeLimitedDataProtector _dataProtector;
+    private readonly JsonSerializerOptions _jsonOptions;
 
-    public ServerComponentSerializer(IDataProtectionProvider dataProtectionProvider) =>
+    public ServerComponentSerializer(
+        IDataProtectionProvider dataProtectionProvider,
+        IServiceProvider? services = null)
+    {
         _dataProtector = dataProtectionProvider
             .CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
+        _jsonOptions = ServerComponentSerializationSettings.CreateOptions(
+            ComponentJsonMetadata.GetApplicationResolver(services));
+    }
 
     public void SerializeInvocation(
         ref ComponentMarker marker,
@@ -48,7 +56,9 @@ internal sealed class ServerComponentSerializer
             values,
             invocationId.Value);
 
-        var serializedServerComponentBytes = JsonSerializer.SerializeToUtf8Bytes(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var serializedServerComponentBytes = JsonSerializer.SerializeToUtf8Bytes(
+            serverComponent,
+            (JsonTypeInfo<ServerComponent>)_jsonOptions.GetTypeInfo(typeof(ServerComponent)));
         var protectedBytes = _dataProtector.Protect(serializedServerComponentBytes, dataExpiration);
         return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
     }

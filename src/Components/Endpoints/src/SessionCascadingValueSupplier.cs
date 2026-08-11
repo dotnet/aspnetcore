@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,14 +17,22 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class SessionCascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly JsonSerializerOptions _jsonOptions;
     private HttpContext? _httpContext;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
 
     public SessionCascadingValueSupplier(ILogger<SessionCascadingValueSupplier> logger)
+        : this(logger, services: null)
+    {
+    }
+
+    public SessionCascadingValueSupplier(
+        ILogger<SessionCascadingValueSupplier> logger,
+        IServiceProvider? services)
     {
         _logger = logger;
+        _jsonOptions = CreateJsonOptions(ComponentJsonMetadata.GetApplicationResolver(services));
     }
 
     internal void SetRequestContext(HttpContext httpContext)
@@ -96,7 +106,7 @@ internal partial class SessionCascadingValueSupplier
                 var value = valueGetter();
                 if (value is not null)
                 {
-                    var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
+                    var json = JsonSerializer.Serialize(value, _jsonOptions.GetTypeInfo(value.GetType()));
                     session.SetString(sessionKey, json);
                 }
                 else
@@ -171,13 +181,14 @@ internal partial class SessionCascadingValueSupplier
                 {
                     return null;
                 }
-                return JsonSerializer.Deserialize(json, _propertyType, _jsonOptions);
+                return JsonSerializer.Deserialize(json, _owner._jsonOptions.GetTypeInfo(_propertyType));
             }
             catch (Exception ex)
             {
                 Log.SessionDeserializeFail(_owner._logger, ex);
                 return null;
             }
+
         }
 
         public override void Dispose()
@@ -185,4 +196,29 @@ internal partial class SessionCascadingValueSupplier
             _owner.DeleteValueCallback(_sessionKey);
         }
     }
+
+    private static JsonSerializerOptions CreateJsonOptions(IJsonTypeInfoResolver? resolver)
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.TypeInfoResolverChain.Clear();
+        if (resolver is not null)
+        {
+            options.TypeInfoResolverChain.Add(resolver);
+        }
+        if (JsonSerializer.IsReflectionEnabledByDefault)
+        {
+            options.TypeInfoResolverChain.Add(CreateReflectionResolver());
+        }
+        return options;
+    }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    [UnconditionalSuppressMessage(
+        "AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    private static DefaultJsonTypeInfoResolver CreateReflectionResolver() => new();
 }

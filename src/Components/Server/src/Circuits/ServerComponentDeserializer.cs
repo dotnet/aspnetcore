@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 
@@ -61,6 +62,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     private readonly ILogger<ServerComponentDeserializer> _logger;
     private readonly RootTypeCache _RootTypeCache;
     private readonly ComponentParameterDeserializer _parametersDeserializer;
+    private readonly JsonSerializerOptions _jsonOptions;
 
     // The following fields are only used in TryDeserializeSingleComponentDescriptor.
     // The TryDeserializeComponentDescriptorCollection method uses a stateless
@@ -73,7 +75,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerComponentDeserializer> logger,
         RootTypeCache RootTypeCache,
-        ComponentParameterDeserializer parametersDeserializer)
+        ComponentParameterDeserializer parametersDeserializer,
+        IServiceProvider? services = null)
     {
         // When we protect the data we use a time-limited data protector with the
         // limits established in 'ServerComponentSerializationSettings.DataExpiration'
@@ -89,11 +92,15 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         _logger = logger;
         _RootTypeCache = RootTypeCache;
         _parametersDeserializer = parametersDeserializer;
+        _jsonOptions = ServerComponentSerializationSettings.CreateOptions(
+            ComponentJsonMetadata.GetApplicationResolver(services));
     }
 
     public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
     {
-        var markers = JsonSerializer.Deserialize<IEnumerable<ComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var markers = JsonSerializer.Deserialize(
+            serializedComponentRecords,
+            (JsonTypeInfo<IEnumerable<ComponentMarker>>)_jsonOptions.GetTypeInfo(typeof(IEnumerable<ComponentMarker>)))!;
         descriptors = new List<ComponentDescriptor>();
         int lastSequence = -1;
 
@@ -256,9 +263,9 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
         try
         {
-            result = JsonSerializer.Deserialize<ServerComponent>(
+            result = JsonSerializer.Deserialize(
                 unprotected,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+                (JsonTypeInfo<ServerComponent>)_jsonOptions.GetTypeInfo(typeof(ServerComponent)))!;
             return true;
         }
         catch (Exception e)
@@ -299,9 +306,9 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         int[]? seenComponentIdsStorage = null;
         try
         {
-            result = JsonSerializer.Deserialize<RootComponentOperationBatch>(
+            result = JsonSerializer.Deserialize(
                 serializedComponentOperations,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
+                (JsonTypeInfo<RootComponentOperationBatch>)_jsonOptions.GetTypeInfo(typeof(RootComponentOperationBatch)))!;
             var operations = result.Operations;
 
             Span<int> seenSsrComponentIds = operations.Length <= 128

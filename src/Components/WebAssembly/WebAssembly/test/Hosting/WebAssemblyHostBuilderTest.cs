@@ -148,9 +148,84 @@ public class WebAssemblyHostBuilderTest
         Assert.Equal("https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool", navigationManager.Uri);
     }
 
+    [Fact]
+    public void Build_PlacesRegisteredRootComponentsBeforeManualMappings()
+    {
+        var assembly = typeof(RegisteredRootComponent).Assembly.GetName().Name!;
+        var jsMethods = new TestInternalJSImportMethods(registeredComponents:
+        [
+            new(assembly, typeof(RegisteredRootComponent).FullName!, "[]", "[]"),
+            new(assembly, typeof(SecondRegisteredRootComponent).FullName!, "[]", "[]"),
+        ]);
+        var builder = new WebAssemblyHostBuilder(jsMethods);
+        builder.RootComponents.Add<ManualRootComponent>("#manual-first");
+        builder.RootComponents.Add<SecondManualRootComponent>("#manual-second");
+
+        _ = builder.Build();
+
+        Assert.Collection(
+            builder.RootComponents,
+            mapping =>
+            {
+                Assert.Equal(typeof(RegisteredRootComponent), mapping.ComponentType);
+                Assert.Equal("0", mapping.Selector);
+            },
+            mapping =>
+            {
+                Assert.Equal(typeof(SecondRegisteredRootComponent), mapping.ComponentType);
+                Assert.Equal("1", mapping.Selector);
+            },
+            mapping =>
+            {
+                Assert.Equal(typeof(ManualRootComponent), mapping.ComponentType);
+                Assert.Equal("#manual-first", mapping.Selector);
+            },
+            mapping =>
+            {
+                Assert.Equal(typeof(SecondManualRootComponent), mapping.ComponentType);
+                Assert.Equal("#manual-second", mapping.Selector);
+            });
+    }
+
     private class TestServiceThatTakesStringBuilder
     {
         public TestServiceThatTakesStringBuilder(StringBuilder builder) { }
+    }
+
+    private sealed class RegisteredRootComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+    }
+
+    private sealed class SecondRegisteredRootComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+    }
+
+    private sealed class ManualRootComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+    }
+
+    private sealed class SecondManualRootComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
     }
 
     private class MyFakeDIBuilderThing

@@ -358,7 +358,9 @@ internal static partial class RenderFragmentSerializer
         {
             var serialized = attr.Value switch
             {
-                JsonElement je => JsonSerializer.Deserialize<SerializedRenderFragment>(je.GetRawText(), jsonOptions),
+                JsonElement je => JsonSerializer.Deserialize(
+                    je,
+                    jsonOptions!.GetTypeInfo(typeof(SerializedRenderFragment))) as SerializedRenderFragment,
                 SerializedRenderFragment sf => sf,
                 _ => throw new InvalidOperationException($"Unexpected value type '{attr.Value?.GetType()}' for serialized RenderFragment attribute '{attr.Name}'.")
             };
@@ -372,7 +374,7 @@ internal static partial class RenderFragmentSerializer
     private static object? ConvertTypedValue(JsonElement json, string assemblyName, string typeName, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
     {
         var type = typeCache.GetParameterType(assemblyName, typeName) ?? throw new InvalidOperationException($"Could not resolve serialized type '{typeName}' from assembly '{assemblyName}'.");
-        return json.Deserialize(type, jsonOptions);
+        return JsonSerializer.Deserialize(json, jsonOptions!.GetTypeInfo(type));
     }
 
     private static bool IsEventCallback(object? value)

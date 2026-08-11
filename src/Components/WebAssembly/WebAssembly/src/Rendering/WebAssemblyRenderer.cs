@@ -32,7 +32,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop, bool useOutOfProcessRendering = false)
-        : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
+        : base(
+            serviceProvider,
+            loggerFactory,
+            serviceProvider.GetRequiredService<WebAssemblyHostSerializationContext>().JSInteropOptions,
+            jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
         _jsMethods = serviceProvider.GetRequiredService<IInternalJSImportMethods>();

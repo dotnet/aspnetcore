@@ -3,9 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Web.Internal;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
@@ -21,6 +23,8 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     public static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
     private readonly RootTypeCache _rootComponentCache = new();
+    private readonly JsonSerializerOptions _baseJsonSerializerOptions;
+    private WebAssemblyHostSerializationContext? _hostSerializationContext;
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -36,9 +40,36 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
+        _baseJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerOptions);
     }
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
+
+    internal JsonSerializerOptions CreateHostJsonSerializerOptions(IJsonTypeInfoResolver? resolver)
+    {
+        var options = new JsonSerializerOptions(_baseJsonSerializerOptions);
+        options.TypeInfoResolverChain.Clear();
+        options.TypeInfoResolverChain.Add(WebJSInteropSerializerContext.Default);
+        options.TypeInfoResolverChain.Add(ConverterBackedTypeInfoResolver.Instance);
+        if (resolver is not null)
+        {
+            options.TypeInfoResolverChain.Add(resolver);
+        }
+        if (JsonSerializer.IsReflectionEnabledByDefault)
+        {
+            options.TypeInfoResolverChain.Add(CreateReflectionResolver());
+        }
+        return options;
+    }
+
+    internal void SetHostSerializationContext(WebAssemblyHostSerializationContext context)
+    {
+        _hostSerializationContext = context;
+        SetJsonSerializerOptions(this, context.JSInteropOptions);
+    }
+
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "SetJsonSerializerOptions")]
+    private static extern void SetJsonSerializerOptions(JSRuntime runtime, JsonSerializerOptions options);
 
     [JSExport]
     [SupportedOSPlatform("browser")]
@@ -99,7 +130,9 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         try
         {
-            var operations = DeserializeOperations(operationsJson);
+            var operations = Instance._hostSerializationContext is { } context
+                ? context.DeserializeOperations(operationsJson)
+                : DeserializeOperations(operationsJson);
             Instance.OnUpdateRootComponents?.Invoke(operations, appState);
         }
         catch (Exception ex)
@@ -149,6 +182,16 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
         return new(parameters, definitions, values.AsReadOnly());
     }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    [UnconditionalSuppressMessage(
+        "AOT",
+        "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.",
+        Justification = "Guarded by JsonSerializer.IsReflectionEnabledByDefault.")]
+    private static DefaultJsonTypeInfoResolver CreateReflectionResolver() => new();
 
     [JSExport]
     [SupportedOSPlatform("browser")]

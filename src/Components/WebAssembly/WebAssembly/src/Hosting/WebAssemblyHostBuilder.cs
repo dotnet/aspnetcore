@@ -29,6 +29,7 @@ public sealed class WebAssemblyHostBuilder
 {
     private readonly IInternalJSImportMethods _jsMethods;
     private Func<IServiceProvider> _createServiceProvider;
+    private ComponentMarker[]? _registeredComponents;
     private RootTypeCache? _rootComponentCache;
     private string? _persistedState;
     private ServiceProviderOptions? _serviceProviderOptions;
@@ -159,10 +160,23 @@ public sealed class WebAssemblyHostBuilder
         }
 
         _rootComponentCache = new RootTypeCache();
-        var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
-        foreach (var registeredComponent in registeredComponents)
+        _registeredComponents = registeredComponents;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
+    private void ConfigureRegisteredRootComponents(IServiceProvider services)
+    {
+        if (_registeredComponents is not { } registeredComponents)
         {
-            var componentType = _rootComponentCache.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
+            return;
+        }
+
+        var serializationContext = services.GetRequiredService<WebAssemblyHostSerializationContext>();
+        var registeredMappings = new RootComponentMapping[registeredComponents.Length];
+        for (var i = 0; i < registeredComponents.Length; i++)
+        {
+            var registeredComponent = registeredComponents[i];
+            var componentType = _rootComponentCache!.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
             if (componentType is null)
             {
                 throw new InvalidOperationException(
@@ -170,11 +184,16 @@ public sealed class WebAssemblyHostBuilder
                     $"This is likely a result of trimming (tree shaking).");
             }
 
-            var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions!);
-            var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(registeredComponent.ParameterValues!);
-            var parameters = componentDeserializer.DeserializeParameters(definitions, values);
+            var parameters = serializationContext.DeserializeComponentParameters(registeredComponent);
+            registeredMappings[i] = new RootComponentMapping(
+                componentType,
+                registeredComponent.PrerenderId!,
+                parameters.Parameters);
+        }
 
-            RootComponents.Add(componentType, registeredComponent.PrerenderId!, parameters);
+        for (var i = 0; i < registeredMappings.Length; i++)
+        {
+            RootComponents.Insert(i, registeredMappings[i]);
         }
     }
 
@@ -323,6 +342,9 @@ public sealed class WebAssemblyHostBuilder
         // to configure services inside *that scope* inside their startup code, we create *both* the
         // service provider and the scope here.
         var services = _createServiceProvider();
+        var serializationContext = services.GetRequiredService<WebAssemblyHostSerializationContext>();
+        DefaultWebAssemblyJSRuntime.Instance.SetHostSerializationContext(serializationContext);
+        ConfigureRegisteredRootComponents(services);
         var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
         return new WebAssemblyHost(this, services, scope, _persistedState);
@@ -339,6 +361,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton(_jsMethods);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
         Services.AddSingleton(_ => _rootComponentCache ?? new());
+        Services.AddSingleton<WebAssemblyHostSerializationContext>();
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSupplyValueFromPersistentComponentStateProvider();

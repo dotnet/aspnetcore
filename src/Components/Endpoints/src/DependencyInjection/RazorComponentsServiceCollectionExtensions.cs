@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -41,7 +40,6 @@ public static class RazorComponentsServiceCollectionExtensions
         // Dependencies
         services.AddLogging();
         services.AddAntiforgery();
-
         services.TryAddSingleton<RazorComponentsMarkerService>();
 
         // Endpoints
@@ -54,7 +52,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<IRazorComponentEndpointInvoker, RazorComponentEndpointInvoker>();
 
         // Common services required for components server side rendering
-        services.TryAddSingleton<ServerComponentSerializer>(services => new ServerComponentSerializer(services.GetRequiredService<IDataProtectionProvider>()));
+        services.TryAddSingleton<ServerComponentSerializer>();
         services.TryAddSingleton<WebAssemblyComponentSerializer>();
         services.TryAddScoped<EndpointHtmlRenderer>();
         services.TryAddScoped<IComponentPrerenderer>(services => services.GetRequiredService<EndpointHtmlRenderer>());

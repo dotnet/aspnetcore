@@ -8,10 +8,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
 {
     private readonly string _environment;
+    private readonly IReadOnlyList<TestRegisteredComponent> _registeredComponents;
 
-    public TestInternalJSImportMethods(string environment = "Production")
+    public TestInternalJSImportMethods(
+        string environment = "Production",
+        IReadOnlyList<TestRegisteredComponent> registeredComponents = null)
     {
         _environment = environment;
+        _registeredComponents = registeredComponents ?? [];
     }
 
     public string GetApplicationEnvironment()
@@ -40,17 +44,23 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public void NavigationManager_SetHasLocationChangingListeners(int rendererId, bool value) { }
 
     public string RegisteredComponents_GetAssembly(int index)
-        => string.Empty;
+        => _registeredComponents[index].Assembly;
 
     public string RegisteredComponents_GetParameterDefinitions(int index)
-        => string.Empty;
+        => _registeredComponents[index].ParameterDefinitions;
 
     public string RegisteredComponents_GetParameterValues(int index)
-        => string.Empty;
+        => _registeredComponents[index].ParameterValues;
 
     public int RegisteredComponents_GetRegisteredComponentsCount()
-        => 0;
+        => _registeredComponents.Count;
 
     public string RegisteredComponents_GetTypeName(int index)
-        => string.Empty;
+        => _registeredComponents[index].TypeName;
 }
+
+internal readonly record struct TestRegisteredComponent(
+    string Assembly,
+    string TypeName,
+    string ParameterDefinitions,
+    string ParameterValues);
