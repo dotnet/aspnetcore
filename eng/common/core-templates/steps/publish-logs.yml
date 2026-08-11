@@ -28,9 +28,7 @@ steps:
     arguments: -InputPath '$(System.DefaultWorkingDirectory)/PostBuildLogs' 
       -BinlogToolVersion ${{parameters.BinlogToolVersion}}
       -TokensFilePath '$(System.DefaultWorkingDirectory)/eng/BinlogSecretsRedactionFile.txt'
-      '$(publishing-dnceng-devdiv-code-r-build-re)'
       '$(MaestroAccessToken)'
-      '$(akams-client-id)'
       '$(microsoft-symbol-server-pat)'
       '$(symweb-symbol-server-pat)'
       '$(dn-bot-all-orgs-build-rw-code-rw)'
