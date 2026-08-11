@@ -2066,6 +2066,7 @@ public static class BindConverter
                     $"Apply '{typeof(TypeConverterAttribute).Name}' to the type to register a converter.");
             }
 
+            var canAcceptNull = default(T) is null;
             return ConvertWithTypeConverter;
 
             bool ConvertWithTypeConverter(object? obj, CultureInfo? culture, out T value)
@@ -2074,17 +2075,26 @@ public static class BindConverter
                 if (obj == null)
                 {
                     value = default!;
-                    return true;
-                }
-                var converted = typeConverter.ConvertFrom(context: null, culture ?? CultureInfo.CurrentCulture, obj);
-                if (converted == null)
-                {
-                    value = default!;
-                    return true;
+                    return canAcceptNull;
                 }
 
-                value = (T)converted;
-                return true;
+                try
+                {
+                    var converted = typeConverter.ConvertFrom(context: null, culture ?? CultureInfo.CurrentCulture, obj);
+                    if (converted == null)
+                    {
+                        value = default!;
+                        return true;
+                    }
+
+                    value = (T)converted;
+                    return true;
+                }
+                catch (Exception ex) when (ex is NotSupportedException || ex is FormatException || ex is OverflowException || ex is ArgumentException || ex is JsonException)
+                {
+                    value = default!;
+                    return false;
+                }
             }
         }
     }
