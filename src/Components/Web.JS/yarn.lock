@@ -4594,10 +4594,10 @@ write-file-atomic@^4.0.2:
     imurmurhash "^0.1.4"
     signal-exit "^3.0.7"
 
-ws@^7.5.10:
-  version "7.5.11"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/ws/-/ws-7.5.11.tgz#9460daf1812bb81a423c5b9eac746941a86310fa"
-  integrity sha1-lGDa8YEruBpCPFuerHRpQahjEPo=
+ws@^7.5.11:
+  version "7.5.13"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/ws/-/ws-7.5.13.tgz#12aa507eaca76c295c278b1aebf4698ab2c1845f"
+  integrity sha1-EqpQfqynbClcJ4sa6/RpirLBhF8=
 
 ws@^8.11.0:
   version "8.21.0"
