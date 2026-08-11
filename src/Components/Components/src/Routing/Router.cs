@@ -4,6 +4,7 @@
 #nullable disable warnings
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
@@ -120,7 +121,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// <inheritdoc />
     public async Task SetParametersAsync(ParameterView parameters)
     {
-        parameters.SetParameterProperties(this);
+        parameters.SetParameterProperties(this, _renderHandle);
 
         if (AppAssembly == null)
         {
@@ -149,14 +150,17 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                     $"does not implement {typeof(IComponent).FullName}.");
             }
 
-            var routeAttributes = NotFoundPage.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
-            if (routeAttributes.Length == 0)
+            var routeAttribute = RouteTableFactory.GetTypeInfoResolver(ServiceProvider)
+                .GetRequiredTypeInfo(NotFoundPage)
+                .Metadata
+                .OfType<RouteAttribute>()
+                .FirstOrDefault();
+            if (routeAttribute is null)
             {
                 throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
                     $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
             }
 
-            var routeAttribute = (RouteAttribute)routeAttributes[0];
             if (routeAttribute.Template != null)
             {
                 _notFoundPageRoute = routeAttribute.Template;
@@ -243,7 +247,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             // Post process the entry to add Blazor specific behaviors:
             // - Add 'null' for unused route parameters.
             // - Convert constrained parameters with (int, double, etc) to the target type.
-            endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
+            endpointRouteData = RouteTable.ProcessParameters(
+                endpointRouteData,
+                RouteTableFactory.GetTypeInfoResolver(ServiceProvider));
             _renderHandle.Render(Found(endpointRouteData));
 
             if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.SignalR;
@@ -10,6 +11,20 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class ComponentServiceCollectionExtensionsTest
 {
+    [Fact]
+    public void AddServerSideBlazor_RegistersSingletonComponentTypeInfoResolver()
+    {
+        var services = new ServiceCollection();
+        services.AddServerSideBlazor();
+        using var provider = services.BuildServiceProvider();
+
+        var first = provider.GetRequiredService<IComponentTypeInfoResolver>();
+        var second = provider.GetRequiredService<IComponentTypeInfoResolver>();
+
+        Assert.Same(first, second);
+        Assert.NotNull(first.GetTypeInfo(typeof(ResolverTestComponent)));
+    }
+
     [Fact]
     public void AddServerSideSignalR_RegistersBlazorPack()
     {
@@ -75,5 +90,14 @@ public class ComponentServiceCollectionExtensionsTest
 
         // Configuring Blazor options is kept separate from the global options.
         Assert.Equal(TimeSpan.FromMinutes(10), globalOptions.Value.HandshakeTimeout);
+    }
+
+    private sealed class ResolverTestComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
     }
 }

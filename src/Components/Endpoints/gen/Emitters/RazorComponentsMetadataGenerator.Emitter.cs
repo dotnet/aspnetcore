@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Components.Endpoints.Generators.Models;
 using Microsoft.CodeAnalysis;
@@ -14,12 +15,16 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Generators;
 public sealed partial class RazorComponentsMetadataGenerator
 {
     private const string GeneratorName = "Microsoft.AspNetCore.Components.Endpoints.Generators.RazorComponentsMetadataGenerator";
+    private const string ComponentDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor";
+    private const string ParameterDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor";
+    private const string InjectableDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor";
     private const string BindableTypeDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor";
     private const string BindableMemberDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor";
     private const string BindableIndexerDescriptorType = "global::Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor";
     private const string JSInvokableDescriptorType = "global::Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor";
     private const string ReadOnlyListType = "global::System.Collections.Generic.IReadOnlyList";
     private const string JsonResolverType = "global::System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver";
+    private const string StateSerializerType = "global::Microsoft.AspNetCore.Components.PersistentComponentStateSerializer";
     private const string BuiltInJSInvokableDescriptorProviderType =
         "Microsoft.JSInterop.Infrastructure.BuiltInJSInvokableMethodDescriptors";
 
@@ -94,41 +99,14 @@ public sealed partial class RazorComponentsMetadataGenerator
         writer.WriteLine($"partial {model.TypeKeyword} {model.TypeName}");
         writer.OpenBrace();
 
-        writer.WriteLine("/// <inheritdoc />");
-        writer.WriteLine($"public override {ReadOnlyListType}<{BindableTypeDescriptorType}> BindableTypes => __Descriptors.BindableTypes;");
+        EmitOverrides(writer, model);
         writer.WriteLine();
-        writer.WriteLine("/// <inheritdoc />");
-        writer.WriteLine($"public override {ReadOnlyListType}<{JSInvokableDescriptorType}> JSInvokableMethods => __Descriptors.JSInvokableMethods;");
-        if (!model.DeclaresJsonTypeInfoResolver)
+        EmitDescriptorStore(writer, model);
+
+        if (NeedsAccessors(model))
         {
             writer.WriteLine();
-            writer.WriteLine("/// <inheritdoc />");
-            writer.WriteLine($"public override {JsonResolverType}? JsonTypeInfoResolver => null;");
-        }
-
-        writer.WriteLine();
-        writer.WriteLine(
-            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
-            "\"Trimming\", \"IL2110\", Justification = " +
-            "\"Generated bindable descriptors intentionally store statically analyzable member access delegates.\")]");
-        writer.WriteLine(
-            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
-            "\"Trimming\", \"IL2111\", Justification = " +
-            "\"Generated bindable descriptors intentionally store statically analyzable member access delegates.\")]");
-        writer.WriteLine("private static class __Descriptors");
-        writer.OpenBrace();
-        EmitBindableTypes(writer, model.BindableTypes);
-        writer.WriteLine();
-        EmitJSInvokableMethods(
-            writer,
-            model.JSInvokableMethods,
-            model.BuiltInJSInvokableDescriptorAssemblies);
-        writer.CloseBrace();
-
-        if (NeedsBindableAccessors(model))
-        {
-            writer.WriteLine();
-            EmitBindableAccessors(writer, model);
+            EmitAccessors(writer, model);
         }
 
         if (!model.JSInvokableMethods.IsDefaultOrEmpty)
@@ -150,6 +128,171 @@ public sealed partial class RazorComponentsMetadataGenerator
         }
 
         return writer.ToString();
+    }
+
+    private static void EmitOverrides(CodeWriter writer, MetadataContextModel model)
+    {
+        writer.WriteLine($"/// <inheritdoc />");
+        writer.WriteLine($"public override {ReadOnlyListType}<{ComponentDescriptorType}> Components => __Descriptors.Components;");
+        writer.WriteLine();
+        writer.WriteLine($"/// <inheritdoc />");
+        writer.WriteLine($"public override {ReadOnlyListType}<{BindableTypeDescriptorType}> BindableTypes => __Descriptors.BindableTypes;");
+        writer.WriteLine();
+        writer.WriteLine($"/// <inheritdoc />");
+        writer.WriteLine($"public override {ReadOnlyListType}<{JSInvokableDescriptorType}> JSInvokableMethods => __Descriptors.JSInvokableMethods;");
+
+        if (!model.DeclaresJsonTypeInfoResolver)
+        {
+            writer.WriteLine();
+            writer.WriteLine($"/// <inheritdoc />");
+            writer.WriteLine($"public override {JsonResolverType}? JsonTypeInfoResolver => null;");
+        }
+    }
+
+    private static void EmitDescriptorStore(CodeWriter writer, MetadataContextModel model)
+    {
+        writer.WriteLine(
+            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
+            "\"Trimming\", \"IL2110\", Justification = " +
+            "\"Generated component descriptors intentionally store statically analyzable member access delegates.\")]");
+        writer.WriteLine(
+            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
+            "\"Trimming\", \"IL2111\", Justification = " +
+            "\"Generated component descriptors intentionally store statically analyzable member access delegates.\")]");
+        writer.WriteLine("private static class __Descriptors");
+        writer.OpenBrace();
+
+        EmitComponents(writer, model.Components);
+        writer.WriteLine();
+        EmitBindableTypes(writer, model.BindableTypes);
+        writer.WriteLine();
+        EmitJSInvokableMethods(
+            writer,
+            model.JSInvokableMethods,
+            model.BuiltInJSInvokableDescriptorAssemblies);
+
+        writer.CloseBrace();
+    }
+
+    private static void EmitComponents(
+        CodeWriter writer,
+        ImmutableArray<DescribedComponentModel> components)
+    {
+        writer.WriteLine($"internal static readonly {ComponentDescriptorType}[] Components =");
+        writer.OpenBracket();
+
+        for (var i = 0; i < components.Length; i++)
+        {
+            EmitComponent(writer, components[i], i);
+        }
+
+        writer.CloseBracketWithSemicolon();
+    }
+
+    private static void EmitComponent(CodeWriter writer, DescribedComponentModel component, int index)
+    {
+        var type = component.TypeFullyQualifiedName;
+
+        writer.WriteLine($"new {ComponentDescriptorType}");
+        writer.OpenBrace();
+        writer.WriteLine($"Type = typeof({type}),");
+
+        if (component.CanConstruct)
+        {
+            writer.WriteLine($"CreateInstance = static __services => new {type}(),");
+        }
+
+        if (!component.Parameters.IsDefaultOrEmpty)
+        {
+            writer.WriteLine($"Parameters = new {ParameterDescriptorType}[]");
+            writer.OpenBrace();
+            for (var i = 0; i < component.Parameters.Length; i++)
+            {
+                EmitParameter(writer, component.Parameters[i], type, index, i);
+            }
+
+            writer.CloseBraceWithComma();
+        }
+
+        if (!component.Injectables.IsDefaultOrEmpty)
+        {
+            writer.WriteLine($"Injectables = new {InjectableDescriptorType}[]");
+            writer.OpenBrace();
+            for (var i = 0; i < component.Injectables.Length; i++)
+            {
+                EmitInjectable(writer, component.Injectables[i], type, index, i);
+            }
+
+            writer.CloseBraceWithComma();
+        }
+
+        if (!component.MetadataExpressions.IsDefaultOrEmpty)
+        {
+            writer.WriteLine("Metadata = new object[]");
+            writer.OpenBrace();
+            foreach (var expression in component.MetadataExpressions)
+            {
+                writer.WriteLine($"{expression},");
+            }
+
+            writer.CloseBraceWithComma();
+        }
+
+        writer.CloseBraceWithComma();
+    }
+
+    private static void EmitParameter(
+        CodeWriter writer,
+        ComponentParameterModel parameter,
+        string componentType,
+        int componentIndex,
+        int index)
+    {
+        var read = parameter.RequiresGetAccessor
+            ? $"__Accessors.GetParameter_{componentIndex}_{index}(({componentType})__target)"
+            : $"(({componentType})__target).{parameter.Name}";
+        var write = parameter.RequiresDamSuppression
+            ? $"__Accessors.SetParameter_{componentIndex}_{index}(({componentType})__target, __value is null ? default! : ({parameter.PropertyTypeAnnotatedName})__value)"
+            : parameter.RequiresSetAccessor
+            ? $"__Accessors.SetParameter_{componentIndex}_{index}(({componentType})__target, __value is null ? default! : ({parameter.PropertyTypeAnnotatedName})__value)"
+            : $"(({componentType})__target).{parameter.Name} = __value is null ? default! : ({parameter.PropertyTypeAnnotatedName})__value";
+
+        writer.WriteLine($"new {ParameterDescriptorType}");
+        writer.OpenBrace();
+        writer.WriteLine($"Name = {SymbolHelpers.ToStringLiteral(parameter.Name)},");
+        writer.WriteLine($"ParameterType = typeof({parameter.PropertyTypeFullyQualifiedName}),");
+        writer.WriteLine($"Attribute = {parameter.AttributeExpression},");
+        writer.WriteLine($"SetValue = static (__target, __value) => {write},");
+        writer.WriteLine($"GetValue = static __target => {read},");
+
+        if (parameter.IsPersistentState)
+        {
+            writer.WriteLine(
+                $"GetStateSerializer = static __services => __services.GetService(" +
+                $"typeof({StateSerializerType}<{parameter.PropertyTypeFullyQualifiedName}>)),");
+        }
+
+        writer.CloseBraceWithComma();
+    }
+
+    private static void EmitInjectable(
+        CodeWriter writer,
+        ComponentInjectableModel injectable,
+        string componentType,
+        int componentIndex,
+        int index)
+    {
+        var write = injectable.RequiresSetAccessor
+            ? $"__Accessors.SetInjectable_{componentIndex}_{index}(({componentType})__target, ({injectable.ServiceTypeFullyQualifiedName})__value!)"
+            : $"(({componentType})__target).{injectable.Name} = ({injectable.ServiceTypeFullyQualifiedName})__value!";
+
+        writer.WriteLine($"new {InjectableDescriptorType}");
+        writer.OpenBrace();
+        writer.WriteLine($"Name = {SymbolHelpers.ToStringLiteral(injectable.Name)},");
+        writer.WriteLine($"ServiceType = typeof({injectable.ServiceTypeFullyQualifiedName}),");
+        writer.WriteLine($"Attribute = {injectable.AttributeExpression},");
+        writer.WriteLine($"SetValue = static (__target, __value) => {write},");
+        writer.CloseBraceWithComma();
     }
 
     private static void EmitBindableTypes(CodeWriter writer, ImmutableArray<BindableTypeModel> bindableTypes)
@@ -273,8 +416,27 @@ public sealed partial class RazorComponentsMetadataGenerator
         }
     }
 
-    private static bool NeedsBindableAccessors(MetadataContextModel model)
+    private static bool NeedsAccessors(MetadataContextModel model)
     {
+        foreach (var component in model.Components)
+        {
+            foreach (var parameter in component.Parameters)
+            {
+                if (parameter.RequiresGetAccessor || parameter.RequiresSetAccessor || parameter.RequiresDamSuppression)
+                {
+                    return true;
+                }
+            }
+
+            foreach (var injectable in component.Injectables)
+            {
+                if (injectable.RequiresSetAccessor)
+                {
+                    return true;
+                }
+            }
+        }
+
         foreach (var bindable in model.BindableTypes)
         {
             foreach (var member in bindable.Members)
@@ -289,10 +451,47 @@ public sealed partial class RazorComponentsMetadataGenerator
         return false;
     }
 
-    private static void EmitBindableAccessors(CodeWriter writer, MetadataContextModel model)
+    // Members the generated code cannot touch directly — a Razor `@inject`, which the compiler emits
+    // as a private property, being the common case — are reached through UnsafeAccessor. It resolves
+    // at JIT/AOT compile time to a direct call, so it neither reflects nor generates code at runtime.
+    private static void EmitAccessors(CodeWriter writer, MetadataContextModel model)
     {
         writer.WriteLine("private static class __Accessors");
         writer.OpenBrace();
+
+        for (var c = 0; c < model.Components.Length; c++)
+        {
+            var component = model.Components[c];
+            for (var i = 0; i < component.Parameters.Length; i++)
+            {
+                var parameter = component.Parameters[i];
+                if (parameter.RequiresGetAccessor)
+                {
+                    EmitAccessor(writer, $"get_{parameter.Name}", $"GetParameter_{c}_{i}", parameter.DeclaringTypeFullyQualifiedName,
+                        parameter.PropertyTypeAnnotatedName, isSetter: false);
+                }
+
+                if (parameter.RequiresDamSuppression)
+                {
+                    EmitDamSetter(writer, parameter, c, i);
+                }
+                else if (parameter.RequiresSetAccessor)
+                {
+                    EmitAccessor(writer, $"set_{parameter.Name}", $"SetParameter_{c}_{i}", parameter.DeclaringTypeFullyQualifiedName,
+                        parameter.PropertyTypeAnnotatedName, isSetter: true);
+                }
+            }
+
+            for (var i = 0; i < component.Injectables.Length; i++)
+            {
+                var injectable = component.Injectables[i];
+                if (injectable.RequiresSetAccessor)
+                {
+                    EmitAccessor(writer, $"set_{injectable.Name}", $"SetInjectable_{c}_{i}", injectable.DeclaringTypeFullyQualifiedName,
+                        injectable.ServiceTypeFullyQualifiedName, isSetter: true);
+                }
+            }
+        }
 
         for (var b = 0; b < model.BindableTypes.Length; b++)
         {
@@ -320,12 +519,8 @@ public sealed partial class RazorComponentsMetadataGenerator
                 }
                 else
                 {
-                    EmitAccessor(
-                        writer,
-                        $"get_{member.Name}",
-                        $"GetBindable_{b}_{i}",
-                        bindable.TypeFullyQualifiedName,
-                        member.MemberTypeFullyQualifiedName);
+                    EmitAccessor(writer, $"get_{member.Name}", $"GetBindable_{b}_{i}",
+                        bindable.TypeFullyQualifiedName, member.MemberTypeFullyQualifiedName, isSetter: false);
                 }
             }
         }
@@ -333,20 +528,43 @@ public sealed partial class RazorComponentsMetadataGenerator
         writer.CloseBrace();
     }
 
-    private static void EmitAccessor(
-        CodeWriter writer,
-        string memberName,
-        string accessorName,
-        string targetType,
-        string valueType)
+    private static void EmitAccessor(CodeWriter writer, string memberName, string accessorName, string targetType, string valueType, bool isSetter)
     {
         writer.WriteLine(
             "[global::System.Runtime.CompilerServices.UnsafeAccessor(" +
             "global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = " +
             $"{SymbolHelpers.ToStringLiteral(memberName)})]");
-        writer.WriteLine($"internal static extern {valueType} {accessorName}({targetType} target);");
+
+        writer.WriteLine(isSetter
+            ? $"internal static extern void {accessorName}({targetType} target, {valueType} value);"
+            : $"internal static extern {valueType} {accessorName}({targetType} target);");
     }
 
+    private static void EmitDamSetter(CodeWriter writer, ComponentParameterModel parameter, int componentIndex, int index)
+    {
+        const string justification =
+            "Generated component metadata resolves activation and parameter access without reflection.";
+
+        writer.WriteLine(
+            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
+            "\"Trimming\", \"IL2067\", Justification = " +
+            $"{SymbolHelpers.ToStringLiteral(justification)})]");
+        writer.WriteLine(
+            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
+            "\"Trimming\", \"IL2110\", Justification = " +
+            $"{SymbolHelpers.ToStringLiteral(justification)})]");
+        writer.WriteLine(
+            "[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(" +
+            "\"Trimming\", \"IL2111\", Justification = " +
+            $"{SymbolHelpers.ToStringLiteral(justification)})]");
+        writer.WriteLine(
+            $"internal static void SetParameter_{componentIndex}_{index}(" +
+            $"{parameter.DeclaringTypeFullyQualifiedName} target, {parameter.PropertyTypeAnnotatedName} value) => " +
+            $"target.{parameter.Name} = value;");
+    }
+
+    // One method per described [JSInvokable]. Deserialization and serialization happen on concrete type
+    // arguments here, which is what lets the whole call be statically analyzed.
     private static void EmitJSInvocations(CodeWriter writer, MetadataContextModel model)
     {
         writer.WriteLine("private static class __JSInvocations");
@@ -405,15 +623,18 @@ public sealed partial class RazorComponentsMetadataGenerator
                 writer.WriteLine($"{call};");
                 writer.WriteLine("return null;");
                 break;
+
             case JSInvokableReturnKind.Task:
             case JSInvokableReturnKind.ValueTask:
                 writer.WriteLine($"await {call}.ConfigureAwait(false);");
                 writer.WriteLine("return null;");
                 break;
+
             case JSInvokableReturnKind.Value:
                 writer.WriteLine($"var __result = {call};");
                 writer.WriteLine($"return Write<{method.ReturnTypeFullyQualifiedName}>(__result, __options);");
                 break;
+
             case JSInvokableReturnKind.TaskOfValue:
             case JSInvokableReturnKind.ValueTaskOfValue:
                 writer.WriteLine($"var __result = await {call}.ConfigureAwait(false);");

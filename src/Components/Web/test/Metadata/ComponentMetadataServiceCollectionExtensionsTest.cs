@@ -30,6 +30,12 @@ public class ComponentMetadataServiceCollectionExtensionsTest
         var bindableResolver = provider.GetRequiredService<IBindableTypeResolver>();
         Assert.True(bindableResolver.TryGetBindableTypeDescriptor(typeof(FirstPayload), out _));
         Assert.True(bindableResolver.TryGetBindableTypeDescriptor(typeof(SecondPayload), out _));
+        var componentResolver = provider.GetRequiredService<IComponentMetadataResolver>();
+        Assert.True(componentResolver.TryGetComponentDescriptor(typeof(FirstComponent), out _));
+        Assert.True(componentResolver.TryGetComponentDescriptor(typeof(SecondComponent), out _));
+        var typeInfoResolver = provider.GetRequiredService<IComponentTypeInfoResolver>();
+        Assert.Equal(typeof(FirstComponent), typeInfoResolver.GetRequiredTypeInfo(typeof(FirstComponent)).Type);
+        Assert.Equal(typeof(SecondComponent), typeInfoResolver.GetRequiredTypeInfo(typeof(SecondComponent)).Type);
         Assert.Collection(
             provider.GetServices<RazorComponentsMetadataContext>(),
             context => Assert.IsType<FirstContext>(context),
@@ -71,6 +77,11 @@ public class ComponentMetadataServiceCollectionExtensionsTest
 
     public sealed class FirstContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<ComponentDescriptor> Components =>
+        [
+            new() { Type = typeof(FirstComponent) },
+        ];
+
         public override IReadOnlyList<BindableTypeDescriptor> BindableTypes =>
         [
             new()
@@ -86,6 +97,11 @@ public class ComponentMetadataServiceCollectionExtensionsTest
 
     public sealed class SecondContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<ComponentDescriptor> Components =>
+        [
+            new() { Type = typeof(SecondComponent) },
+        ];
+
         public override IReadOnlyList<BindableTypeDescriptor> BindableTypes =>
         [
             new()
@@ -102,6 +118,10 @@ public class ComponentMetadataServiceCollectionExtensionsTest
     internal sealed class FirstPayload;
 
     internal sealed class SecondPayload;
+
+    internal sealed class FirstComponent : ComponentBase;
+
+    internal sealed class SecondComponent : ComponentBase;
 }
 
 [JsonSerializable(typeof(ComponentMetadataServiceCollectionExtensionsTest.FirstPayload))]

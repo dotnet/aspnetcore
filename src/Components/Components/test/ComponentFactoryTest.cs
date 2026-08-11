@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components;
@@ -157,6 +160,88 @@ public class ComponentFactoryTest
         Assert.Equal(1234, renderer.SuppliedParentComponentId);
         Assert.Same(componentActivator, renderer.SuppliedActivator);
         Assert.IsType<TestRenderMode>(renderer.SuppliedRenderMode);
+    }
+
+    [Fact]
+    public void InstantiateComponent_UsesGeneratedRenderModeMetadata()
+    {
+        var descriptor = new ComponentDescriptor
+        {
+            Type = typeof(ComponentWithNonInjectableProperties),
+            Metadata = [new GeneratedRenderModeAttribute()],
+        };
+        var services = new ServiceCollection();
+        services.AddSingleton<IComponentTypeInfoResolver>(
+            new SourceGeneratedComponentTypeInfoResolver(new StubMetadataResolver(descriptor)));
+        var serviceProvider = services.BuildServiceProvider();
+        var resolvedComponent = new ComponentWithInjectProperties();
+        var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent, serviceProvider);
+        var componentActivator = new DefaultComponentActivator(serviceProvider);
+        var factory = new ComponentFactory(
+            componentActivator,
+            new DefaultComponentPropertyActivator(),
+            renderer);
+
+        var instance = factory.InstantiateComponent(
+            GetServiceProvider(),
+            typeof(ComponentWithNonInjectableProperties),
+            callerSpecifiedRenderMode: null,
+            parentComponentId: 1234);
+
+        Assert.Same(resolvedComponent, instance);
+        Assert.IsType<TestRenderMode>(renderer.SuppliedRenderMode);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void InstantiateComponent_StrictModeUsesGeneratedInheritedRenderModeMetadata()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add(ComponentMetadataFeature.SwitchName, false.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            var descriptor = new ComponentDescriptor
+            {
+                Type = typeof(GeneratedDerivedComponentWithInheritedRenderMode),
+                CreateInstance = static _ => new GeneratedDerivedComponentWithInheritedRenderMode(),
+                Metadata = [new GeneratedRenderModeAttribute()],
+            };
+            var services = new ServiceCollection();
+            services.AddSingleton<IComponentMetadataResolver>(new StubMetadataResolver(descriptor));
+            var serviceProvider = services.BuildServiceProvider();
+            var resolvedComponent = new GeneratedDerivedComponentWithInheritedRenderMode();
+            var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent, serviceProvider);
+
+            var instance = renderer.InstantiateComponent<GeneratedDerivedComponentWithInheritedRenderMode>();
+
+            Assert.Same(resolvedComponent, instance);
+            Assert.IsType<TestRenderMode>(renderer.SuppliedRenderMode);
+        }, options);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void InstantiateComponent_StrictModeUsesGeneratedBaseAndDerivedRenderModesForAmbiguity()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add(ComponentMetadataFeature.SwitchName, false.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            var descriptor = new ComponentDescriptor
+            {
+                Type = typeof(GeneratedDerivedComponentWithAmbiguousRenderMode),
+                CreateInstance = static _ => new GeneratedDerivedComponentWithAmbiguousRenderMode(),
+                Metadata = [new GeneratedDerivedRenderModeAttribute(), new GeneratedRenderModeAttribute()],
+            };
+            var services = new ServiceCollection();
+            services.AddSingleton<IComponentMetadataResolver>(new StubMetadataResolver(descriptor));
+            using var renderer = new TestRenderer(services.BuildServiceProvider());
+
+            Assert.Throws<AmbiguousMatchException>(
+                () => renderer.InstantiateComponent<GeneratedDerivedComponentWithAmbiguousRenderMode>());
+        }, options);
     }
 
     [Fact]
@@ -350,6 +435,58 @@ public class ComponentFactoryTest
         
         // Derived type property without [Inject] should not be injected
         Assert.Null(component.Property4);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WhenActivatorSubstitutesType_DoesNotValidateUnusedInjectableSetter()
+    {
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(
+            new CustomComponentActivator<EmptyComponent>(),
+            new DefaultComponentPropertyActivator(),
+            new TestRenderer());
+
+        var instance = factory.InstantiateComponent(
+            serviceProvider,
+            typeof(ComponentWithGetOnlyInjectableProperty),
+            callerSpecifiedRenderMode: null,
+            parentComponentId: null);
+
+        Assert.IsType<EmptyComponent>(instance);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WhenActivatorSubstitutesType_DoesNotValidateUnusedParameterSetter()
+    {
+        var factory = new ComponentFactory(
+            new CustomComponentActivator<EmptyComponent>(),
+            new DefaultComponentPropertyActivator(),
+            new TestRenderer());
+
+        var instance = factory.InstantiateComponent(
+            GetServiceProvider(),
+            typeof(ComponentWithGetOnlyParameter),
+            callerSpecifiedRenderMode: null,
+            parentComponentId: null);
+
+        Assert.IsType<EmptyComponent>(instance);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WhenActivatorSubstitutesType_DoesNotValidateUnusedCascadingParameterSetter()
+    {
+        var factory = new ComponentFactory(
+            new CustomComponentActivator<EmptyComponent>(),
+            new DefaultComponentPropertyActivator(),
+            new TestRenderer());
+
+        var instance = factory.InstantiateComponent(
+            GetServiceProvider(),
+            typeof(ComponentWithGetOnlyCascadingParameter),
+            callerSpecifiedRenderMode: null,
+            parentComponentId: null);
+
+        Assert.IsType<EmptyComponent>(instance);
     }
 
     [Fact]
@@ -598,6 +735,24 @@ public class ComponentFactoryTest
         }
     }
 
+    private sealed class ComponentWithGetOnlyInjectableProperty : EmptyComponent
+    {
+        [Inject]
+        public TestService1 Service { get; }
+    }
+
+    private sealed class ComponentWithGetOnlyParameter : EmptyComponent
+    {
+        [Parameter]
+        public string Value { get; }
+    }
+
+    private sealed class ComponentWithGetOnlyCascadingParameter : EmptyComponent
+    {
+        [CascadingParameter]
+        public string Value { get; }
+    }
+
     private class CustomComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
     {
         public IComponent CreateInstance(Type componentType)
@@ -679,6 +834,13 @@ public class ComponentFactoryTest
             _componentToReturn = componentToReturn;
         }
 
+        public RendererWithResolveComponentForRenderMode(
+            IComponent componentToReturn,
+            IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+            _componentToReturn = componentToReturn;
+        }
+
         public bool ResolverWasCalled { get; private set; }
         public Type RequestedComponentType { get; private set; }
         public int? SuppliedParentComponentId { get; private set; }
@@ -705,6 +867,41 @@ public class ComponentFactoryTest
             SuppliedActivator = componentActivator;
             SuppliedRenderMode = renderMode;
             return _componentToReturn;
+        }
+    }
+
+    private sealed class GeneratedRenderModeAttribute : RenderModeAttribute
+    {
+        public override IComponentRenderMode Mode => new TestRenderMode();
+    }
+
+    private sealed class GeneratedDerivedRenderModeAttribute : RenderModeAttribute
+    {
+        public override IComponentRenderMode Mode => new DerivedComponentRenderMode();
+    }
+
+    [GeneratedRenderMode]
+    private class GeneratedBaseComponentWithRenderMode : EmptyComponent
+    {
+    }
+
+    private sealed class GeneratedDerivedComponentWithInheritedRenderMode : GeneratedBaseComponentWithRenderMode
+    {
+    }
+
+    [GeneratedDerivedRenderMode]
+    private sealed class GeneratedDerivedComponentWithAmbiguousRenderMode : GeneratedBaseComponentWithRenderMode
+    {
+    }
+
+    private sealed class StubMetadataResolver(ComponentDescriptor descriptor) : IComponentMetadataResolver
+    {
+        public IReadOnlyList<ComponentDescriptor> Components => [descriptor];
+
+        public bool TryGetComponentDescriptor(Type type, out ComponentDescriptor descriptorResult)
+        {
+            descriptorResult = descriptor;
+            return type == descriptor.Type;
         }
     }
 }

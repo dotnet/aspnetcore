@@ -264,6 +264,8 @@ public class RemoteJSRuntimeMetadataTest
 
     public abstract class TestContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor> Components => [];
+
         public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
 
         public override IJsonTypeInfoResolver? JsonTypeInfoResolver => null;

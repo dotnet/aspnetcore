@@ -79,7 +79,7 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddSingleton<CircuitMetrics>();
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
-        services.TryAddSingleton<RootTypeCache>();
+        services.TryAddSingleton<IComponentTypeInfoResolver>(ComponentTypeInfoResolverFactory.Create);
         services.TryAddSingleton<ComponentParameterDeserializer>();
         services.TryAddSingleton<ComponentParametersTypeCache>();
         services.TryAddSingleton<CircuitIdFactory>();

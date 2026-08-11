@@ -1,0 +1,13 @@
+@page "/generated-metadata"
+@attribute [InteractiveServer]
+
+<h1>Generated metadata</h1>
+
+<CascadingValue Value="@_cascadeValue" Name="aot-cascade">
+    <GeneratedMetadataChild BaseParameter="base-value" DerivedParameter="@_derivedParameter" />
+</CascadingValue>
+
+@code {
+    private readonly string _cascadeValue = "cascade-value";
+    private readonly int _derivedParameter = 42;
+}

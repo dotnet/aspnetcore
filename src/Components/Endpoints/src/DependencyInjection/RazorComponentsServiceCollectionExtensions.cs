@@ -41,6 +41,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.AddLogging();
         services.AddAntiforgery();
         services.TryAddSingleton<RazorComponentsMarkerService>();
+        services.TryAddSingleton<IComponentTypeInfoResolver>(ComponentTypeInfoResolverFactory.Create);
 
         // Endpoints
         services.TryAddSingleton<RazorComponentEndpointDataSourceFactory>();

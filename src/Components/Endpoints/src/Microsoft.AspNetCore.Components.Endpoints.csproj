@@ -6,7 +6,7 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <NoWarn>$(NoWarn);CS0436;ASPNETCORE9004</NoWarn>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>

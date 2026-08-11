@@ -109,6 +109,8 @@ public class ProtectedBrowserStorageSerializerOptionsTest
 
     private sealed class StubContext(IJsonTypeInfoResolver? resolver) : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor> Components => [];
+
         public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
 
         public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];

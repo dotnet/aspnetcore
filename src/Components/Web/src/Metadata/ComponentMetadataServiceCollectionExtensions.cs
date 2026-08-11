@@ -33,6 +33,13 @@ public static class ComponentMetadataServiceCollectionExtensions
 
         services.AddComponentJsonMetadata();
         var context = new TContext();
+        services.Configure<ComponentDescriptorOptions>(options =>
+        {
+            foreach (var component in context.Components)
+            {
+                options.Components.Add(component);
+            }
+        });
         if (context.JsonTypeInfoResolver is { } resolver)
         {
             services.Configure<ComponentJsonMetadataOptions>(options => options.Resolvers.Add(resolver));
@@ -41,6 +48,10 @@ public static class ComponentMetadataServiceCollectionExtensions
         services.TryAddSingleton<ComponentBindableTypeResolver>();
         services.TryAddSingleton<IBindableTypeResolver>(
             static services => services.GetRequiredService<ComponentBindableTypeResolver>());
+        services.TryAddSingleton<ComponentMetadataResolver>();
+        services.TryAddSingleton<IComponentMetadataResolver>(
+            static services => services.GetRequiredService<ComponentMetadataResolver>());
+        services.TryAddSingleton<IComponentTypeInfoResolver>(ComponentTypeInfoResolverFactory.Create);
 
         return services;
     }

@@ -25,18 +25,28 @@ public readonly struct ParameterView
     private readonly RenderTreeFrame[] _frames;
     private readonly int _ownerIndex;
     private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
+    private readonly IComponentTypeInfoResolver? _componentTypeInfoResolver;
+    private readonly ComponentTypeInfo? _componentTypeInfo;
 
     internal ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
         : this(lifetime, frames, ownerIndex, Array.Empty<CascadingParameterState>())
     {
     }
 
-    private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParameters)
+    private ParameterView(
+        in ParameterViewLifetime lifetime,
+        RenderTreeFrame[] frames,
+        int ownerIndex,
+        IReadOnlyList<CascadingParameterState> cascadingParameters,
+        IComponentTypeInfoResolver? componentTypeInfoResolver = null,
+        ComponentTypeInfo? componentTypeInfo = null)
     {
         _lifetime = lifetime;
         _frames = frames;
         _ownerIndex = ownerIndex;
         _cascadingParameters = cascadingParameters;
+        _componentTypeInfoResolver = componentTypeInfoResolver;
+        _componentTypeInfo = componentTypeInfo;
     }
 
     /// <summary>
@@ -125,11 +135,41 @@ public readonly struct ParameterView
         cloneBuffer[0] = RenderTreeFrame.PlaceholderChildComponentWithSubtreeLength(1 + numEntries);
         _frames.AsSpan(1, numEntries).CopyTo(cloneBuffer.AsSpan(1));
 
-        return new ParameterView(Lifetime, cloneBuffer, _ownerIndex);
+        return new ParameterView(
+            Lifetime,
+            cloneBuffer,
+            _ownerIndex,
+            Array.Empty<CascadingParameterState>(),
+            _componentTypeInfoResolver,
+            _componentTypeInfo);
     }
 
     internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
-        => new ParameterView(_lifetime, _frames, _ownerIndex, cascadingParameters);
+        => new ParameterView(
+            _lifetime,
+            _frames,
+            _ownerIndex,
+            cascadingParameters,
+            _componentTypeInfoResolver,
+            _componentTypeInfo);
+
+    internal ParameterView WithComponentTypeInfoResolver(IComponentTypeInfoResolver componentTypeInfoResolver)
+        => new ParameterView(
+            _lifetime,
+            _frames,
+            _ownerIndex,
+            _cascadingParameters,
+            componentTypeInfoResolver,
+            _componentTypeInfo);
+
+    internal ParameterView WithComponentTypeInfo(ComponentTypeInfo componentTypeInfo)
+        => new ParameterView(
+            _lifetime,
+            _frames,
+            _ownerIndex,
+            _cascadingParameters,
+            _componentTypeInfoResolver,
+            componentTypeInfo);
 
     internal bool HasDirectParameter(string parameterName)
     {
@@ -320,7 +360,43 @@ public readonly struct ParameterView
     {
         ArgumentNullException.ThrowIfNull(target);
 
-        ComponentProperties.SetProperties(this, target);
+        if (_componentTypeInfo is { } componentTypeInfo &&
+            target.GetType() == componentTypeInfo.Type)
+        {
+            ComponentProperties.SetProperties(this, target, componentTypeInfo);
+        }
+        else
+        {
+            ComponentProperties.SetProperties(
+                this,
+                target,
+                _componentTypeInfoResolver ?? ComponentTypeInfoResolverFactory.Default);
+        }
+    }
+
+    /// <summary>
+    /// For each parameter property on <paramref name="target"/>, updates its value to match the
+    /// corresponding entry in the <see cref="ParameterView"/>, preferring compile-time metadata over
+    /// reflection when the application has registered any.
+    /// </summary>
+    /// <param name="target">The component to bind.</param>
+    /// <param name="renderHandle">The target's render handle, which is how the metadata is reached.</param>
+    internal void SetParameterProperties(object target, RenderHandle renderHandle)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+
+        if (_componentTypeInfo is { } componentTypeInfo &&
+            target.GetType() == componentTypeInfo.Type)
+        {
+            ComponentProperties.SetProperties(this, target, componentTypeInfo);
+        }
+        else
+        {
+            ComponentProperties.SetProperties(
+                this,
+                target,
+                renderHandle.ComponentTypeInfoResolver ?? ComponentTypeInfoResolverFactory.Default);
+        }
     }
 
     /// <summary>

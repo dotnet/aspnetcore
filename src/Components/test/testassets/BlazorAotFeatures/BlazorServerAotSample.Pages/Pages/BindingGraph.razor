@@ -1,0 +1,23 @@
+@page "/binding-graph"
+@attribute [InteractiveServer]
+@attribute [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "All array types in this closed binding scenario are statically available to Native AOT.")]
+
+<h1>Binding graph</h1>
+
+<p><input id="bind-field" @bind="Model.PublicField" /> Field: <span id="bound-field">@Model.PublicField</span></p>
+<p><input id="bind-property" @bind="Model.PublicProperty" /> Property: <span id="bound-property">@Model.PublicProperty</span></p>
+<p><input id="bind-array-item" @bind="Model.Rows[1].Name" /> Array item: <span id="bound-array-item">@Model.Rows[1].Name</span></p>
+<p><input id="bind-custom-indexer" @bind="Model.Book[2].Name" /> Indexer: <span id="bound-custom-indexer">@Model.Book[2].Name</span></p>
+<p><input id="bind-string-array-item" @bind="Model.Tags[1]" /> Tag: <span id="bound-string-array-item">@Model.Tags[1]</span></p>
+
+<select multiple id="typed-array-select" @bind="Model.SelectedCodes">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+</select>
+<p>Typed array: <span id="bound-typed-array">@string.Join(",", Model.SelectedCodes)</span></p>
+
+@code {
+    public BindingRoot Model { get; } = new();
+}

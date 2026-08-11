@@ -82,6 +82,7 @@ Microsoft.AspNetCore.Components.Web.BindableModelAttribute.ModelType.get -> Syst
 Microsoft.AspNetCore.Components.Web.BindableModelAttribute.ModelType.init -> void
 Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext
 abstract Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext.BindableTypes.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor!>!
+abstract Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext.Components.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor!>!
 abstract Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext.JSInvokableMethods.get -> System.Collections.Generic.IReadOnlyList<Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor!>!
 abstract Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext.JsonTypeInfoResolver.get -> System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver?
 Microsoft.AspNetCore.Components.Web.RazorComponentsMetadataContext.RazorComponentsMetadataContext() -> void

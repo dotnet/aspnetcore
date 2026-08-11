@@ -60,7 +60,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 {
     private readonly IDataProtector _dataProtector;
     private readonly ILogger<ServerComponentDeserializer> _logger;
-    private readonly RootTypeCache _RootTypeCache;
+    private readonly IComponentTypeInfoResolver _componentTypeInfoResolver;
     private readonly ComponentParameterDeserializer _parametersDeserializer;
     private readonly JsonSerializerOptions _jsonOptions;
 
@@ -74,7 +74,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     public ServerComponentDeserializer(
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerComponentDeserializer> logger,
-        RootTypeCache RootTypeCache,
+        IComponentTypeInfoResolver componentTypeInfoResolver,
         ComponentParameterDeserializer parametersDeserializer,
         IServiceProvider? services = null)
     {
@@ -90,7 +90,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             .ToTimeLimitedDataProtector();
 
         _logger = logger;
-        _RootTypeCache = RootTypeCache;
+        _componentTypeInfoResolver = componentTypeInfoResolver;
         _parametersDeserializer = parametersDeserializer;
         _jsonOptions = ServerComponentSerializationSettings.CreateOptions(
             ComponentJsonMetadata.GetApplicationResolver(services));
@@ -194,7 +194,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             return false;
         }
 
-        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
+        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentTypeInfo, out var parameters))
         {
             return false;
         }
@@ -206,17 +206,21 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             serverComponent.ParameterDefinitions.AsReadOnly(),
             serverComponent.ParameterValues.AsReadOnly());
 
-        result = new(componentType, webRootComponentParameters);
+        result = new(componentTypeInfo, webRootComponentParameters);
         return true;
     }
 
-    private bool TryDeserializeComponentTypeAndParameters(ServerComponent serverComponent, [NotNullWhen(true)] out Type? componentType, out ParameterView parameters)
+    private bool TryDeserializeComponentTypeAndParameters(
+        ServerComponent serverComponent,
+        [NotNullWhen(true)] out ComponentTypeInfo? componentTypeInfo,
+        out ParameterView parameters)
     {
         parameters = default;
-        componentType = _RootTypeCache
-            .GetRootType(serverComponent.AssemblyName, serverComponent.TypeName);
+        componentTypeInfo = _componentTypeInfoResolver.GetTypeInfo(
+            serverComponent.AssemblyName,
+            serverComponent.TypeName);
 
-        if (componentType == null)
+        if (componentTypeInfo is null)
         {
             Log.FailedToFindComponent(_logger, serverComponent.TypeName, serverComponent.AssemblyName);
             return false;
@@ -283,14 +287,14 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             return default;
         }
 
-        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
+        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentTypeInfo, out var parameters))
         {
             return default;
         }
 
         var componentDescriptor = new ComponentDescriptor
         {
-            ComponentType = componentType,
+            ComponentTypeInfo = componentTypeInfo,
             Parameters = parameters,
             Sequence = serverComponent.Sequence,
         };

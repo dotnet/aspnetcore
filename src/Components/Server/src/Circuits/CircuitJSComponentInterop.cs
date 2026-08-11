@@ -16,7 +16,7 @@ internal sealed class CircuitJSComponentInterop : JSComponentInterop
         _circuitOptions = circuitOptions;
     }
 
-    protected override int AddRootComponent(string identifier, string domElementSelector)
+    protected internal override int AddRootComponent(string identifier, string domElementSelector)
     {
         if (_jsRootComponentCount >= _circuitOptions.RootComponents.MaxJSRootComponents)
         {
@@ -28,7 +28,7 @@ internal sealed class CircuitJSComponentInterop : JSComponentInterop
         return id;
     }
 
-    protected override void RemoveRootComponent(int componentId)
+    protected internal override void RemoveRootComponent(int componentId)
     {
         base.RemoveRootComponent(componentId);
 

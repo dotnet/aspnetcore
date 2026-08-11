@@ -1,26 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components;
 
-internal sealed class DefaultComponentActivator(IServiceProvider serviceProvider) : IComponentActivator
+internal sealed class DefaultComponentActivator : IComponentActivator
 {
-    private static readonly ConcurrentDictionary<Type, ObjectFactory> _cachedComponentTypeInfo = new();
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IComponentTypeInfoResolver _typeInfoResolver;
+    private ComponentTypeInfo? _componentTypeInfoForRenderMode;
 
-    static DefaultComponentActivator()
+    internal DefaultComponentActivator(IServiceProvider serviceProvider)
+        : this(
+            serviceProvider,
+            serviceProvider.GetService<IComponentTypeInfoResolver>() ?? ComponentTypeInfoResolverFactory.Create(serviceProvider))
     {
-        if (HotReloadManager.IsSupported)
-        {
-            HotReloadManager.Default.OnDeltaApplied += ClearCache;
-        }
     }
 
-    public static void ClearCache() => _cachedComponentTypeInfo.Clear();
+    internal DefaultComponentActivator(
+        IServiceProvider serviceProvider,
+        IComponentTypeInfoResolver typeInfoResolver)
+    {
+        _serviceProvider = serviceProvider;
+        _typeInfoResolver = typeInfoResolver;
+    }
 
     /// <inheritdoc />
     public IComponent CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type componentType)
@@ -30,22 +35,41 @@ internal sealed class DefaultComponentActivator(IServiceProvider serviceProvider
             throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
         }
 
-        var factory = GetObjectFactory(componentType);
+        var typeInfo = _componentTypeInfoForRenderMode is { } renderModeTypeInfo &&
+            renderModeTypeInfo.Type == componentType
+                ? renderModeTypeInfo
+                : _typeInfoResolver.GetRequiredTypeInfo(componentType);
 
-        return (IComponent)factory(serviceProvider, []);
+        return CreateInstance(typeInfo);
     }
 
-    private static ObjectFactory GetObjectFactory([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type componentType)
+    internal IComponent CreateInstance(ComponentTypeInfo typeInfo)
     {
-        // Unfortunately we can't use 'GetOrAdd' here because the DynamicallyAccessedMembers annotation doesn't flow through to the
-        // callback, so it becomes an IL2111 warning. The following is equivalent and thread-safe because it's a ConcurrentDictionary
-        // and it doesn't matter if we build a cache entry more than once.
-        if (!_cachedComponentTypeInfo.TryGetValue(componentType, out var factory))
+        var componentType = typeInfo.Type;
+        if (!typeof(IComponent).IsAssignableFrom(componentType))
         {
-            factory = ActivatorUtilities.CreateFactory(componentType, Type.EmptyTypes);
-            _cachedComponentTypeInfo.TryAdd(componentType, factory);
+            throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(typeInfo));
         }
 
-        return factory;
+        if (typeInfo.CreateInstance is { } createInstance)
+        {
+            return createInstance(_serviceProvider);
+        }
+
+        if (!ComponentMetadataFeature.IsReflectionEnabledByDefault)
+        {
+            throw new NotSupportedException(
+                $"Component metadata for type '{componentType.FullName}' does not provide an activation factory.");
+        }
+
+        var factory = ActivatorUtilities.CreateFactory(componentType, Type.EmptyTypes);
+        return (IComponent)factory(_serviceProvider, []);
+    }
+
+    internal ComponentTypeInfo? SetComponentTypeInfoForRenderMode(ComponentTypeInfo? typeInfo)
+    {
+        var previous = _componentTypeInfoForRenderMode;
+        _componentTypeInfoForRenderMode = typeInfo;
+        return previous;
     }
 }

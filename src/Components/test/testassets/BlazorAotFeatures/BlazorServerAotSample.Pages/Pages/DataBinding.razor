@@ -1,0 +1,25 @@
+@page "/databinding"
+@attribute [InteractiveServer]
+
+<h1>Data binding (@@bind + Input*)</h1>
+
+<p>Exercises <code>@@bind</code> / <code>InputText</code> with <code>ValueExpression</code> /
+<code>FieldIdentifier</code>. The binding expression is walked against the descriptors generated for
+<code>Person</code>, so no delegate is compiled.</p>
+
+<EditForm Model="Model">
+    <label>Name: <InputText id="name" @bind-Value="Model.Name" /></label>
+</EditForm>
+
+<p>Bound value: <span id="bound">@Model.Name</span></p>
+
+@code {
+    // Named by a [BindableModel] on the host's metadata context, so "() => Model.Name" resolves its
+    // FieldIdentifier by walking descriptors instead of compiling the expression.
+    public Person Model { get; } = new();
+
+    public sealed class Person
+    {
+        public string Name { get; set; } = "";
+    }
+}

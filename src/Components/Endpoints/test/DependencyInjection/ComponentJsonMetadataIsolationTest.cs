@@ -61,6 +61,8 @@ public class ComponentJsonMetadataIsolationTest
 
     public sealed class FirstContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<ComponentDescriptor> Components => [];
+
         public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
 
         public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];
@@ -70,6 +72,8 @@ public class ComponentJsonMetadataIsolationTest
 
     public sealed class SecondContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<ComponentDescriptor> Components => [];
+
         public override IReadOnlyList<BindableTypeDescriptor> BindableTypes => [];
 
         public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];

@@ -35,6 +35,11 @@ public abstract class RazorComponentsMetadataContext
     }
 
     /// <summary>
+    /// Gets the described components, which supply discovery, routing, activation and parameter binding.
+    /// </summary>
+    public abstract IReadOnlyList<ComponentDescriptor> Components { get; }
+
+    /// <summary>
     /// Gets the described form model types, which supply the accessors a binding expression walks.
     /// </summary>
     public abstract IReadOnlyList<BindableTypeDescriptor> BindableTypes { get; }

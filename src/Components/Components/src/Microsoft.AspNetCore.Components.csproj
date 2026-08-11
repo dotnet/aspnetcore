@@ -73,6 +73,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Build.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Authorization.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />

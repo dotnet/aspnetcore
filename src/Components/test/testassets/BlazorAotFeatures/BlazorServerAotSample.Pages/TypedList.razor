@@ -1,0 +1,25 @@
+@typeparam TItem
+
+@*
+    Generic component (@typeparam). Its parameters are closed over TItem, so the descriptor the
+    generator emits must carry an open generic definition and be instantiated per type argument.
+*@
+
+<ul id="@Id">
+    @foreach (var item in Items)
+    {
+        <li @key="item">@ItemTemplate(item)</li>
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TItem> Items { get; set; } = [];
+
+    /// <summary>Templated parameter: a RenderFragment the caller supplies per item.</summary>
+    [Parameter, EditorRequired]
+    public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
+}

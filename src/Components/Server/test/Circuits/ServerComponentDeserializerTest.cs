@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.DataProtection;
@@ -35,6 +36,61 @@ public partial class ServerComponentDeserializerTest
         var deserializedDescriptor = Assert.Single(descriptors);
         Assert.Equal(typeof(TestComponent).FullName, deserializedDescriptor.ComponentType.FullName);
         Assert.Equal(0, deserializedDescriptor.Sequence);
+    }
+
+    [Fact]
+    public void NameLookup_PrefersGeneratedComponentTypeInfo()
+    {
+        var generatedTypeInfo = CreateTypeInfo("generated");
+        var reflectedTypeInfo = CreateTypeInfo("reflection");
+        var resolver = new OrderedComponentTypeInfoResolver(
+        [
+            new TestComponentTypeInfoResolver(generatedTypeInfo),
+            new TestComponentTypeInfoResolver(reflectedTypeInfo),
+        ]);
+        var deserializer = CreateServerComponentDeserializer(resolver);
+
+        var result = deserializer.TryDeserializeComponentDescriptorCollection(
+            SerializeMarkers(CreateMarkers(typeof(TestComponent))),
+            out var descriptors);
+
+        Assert.True(result);
+        Assert.Same(generatedTypeInfo, Assert.Single(descriptors).ComponentTypeInfo);
+    }
+
+    [Fact]
+    public void NameLookup_FallsBackToReflection()
+    {
+        var resolver = new OrderedComponentTypeInfoResolver(
+        [
+            new TestComponentTypeInfoResolver(),
+            new ReflectionComponentTypeInfoResolver(),
+        ]);
+        var deserializer = CreateServerComponentDeserializer(resolver);
+
+        var result = deserializer.TryDeserializeComponentDescriptorCollection(
+            SerializeMarkers(CreateMarkers(typeof(TestComponent))),
+            out var descriptors);
+
+        Assert.True(result);
+        Assert.Equal(typeof(TestComponent), Assert.Single(descriptors).ComponentTypeInfo.Type);
+    }
+
+    [Fact]
+    public void NameLookup_ReturnsFalseWhenMetadataIsMissing()
+    {
+        var resolver = new TestComponentTypeInfoResolver();
+        var deserializer = CreateServerComponentDeserializer(resolver);
+
+        var result = deserializer.TryDeserializeComponentDescriptorCollection(
+            SerializeMarkers(CreateMarkers(typeof(TestComponent))),
+            out var descriptors);
+
+        Assert.False(result);
+        Assert.Empty(descriptors);
+        Assert.Equal(
+            (typeof(TestComponent).Assembly.GetName().Name, typeof(TestComponent).FullName),
+            resolver.LastNameLookup);
     }
 
     [Fact]
@@ -500,14 +556,24 @@ public partial class ServerComponentDeserializerTest
     private string SerializeRootComponentOperationBatch(RootComponentOperationBatch batch)
         => JsonSerializer.Serialize(batch, ServerComponentSerializationSettings.JsonSerializationOptions);
 
-    private ServerComponentDeserializer CreateServerComponentDeserializer()
+    private ServerComponentDeserializer CreateServerComponentDeserializer(
+        IComponentTypeInfoResolver componentTypeInfoResolver = null)
     {
         return new ServerComponentDeserializer(
             _ephemeralDataProtectionProvider,
             NullLogger<ServerComponentDeserializer>.Instance,
-            new RootTypeCache(),
+            componentTypeInfoResolver ?? ComponentTypeInfoResolverFactory.Default,
             new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
+
+    private static ComponentTypeInfo CreateTypeInfo(string metadata)
+        => new(
+            typeof(TestComponent),
+            static _ => new TestComponent(),
+            [],
+            [],
+            [metadata],
+            unmatchedPropertyNames: null);
 
     private string SerializeMarkers(ComponentMarker[] markers) =>
         JsonSerializer.Serialize(markers, ServerComponentSerializationSettings.JsonSerializationOptions);
@@ -593,5 +659,47 @@ public partial class ServerComponentDeserializerTest
 
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
         public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    private sealed class TestComponentTypeInfoResolver(ComponentTypeInfo componentTypeInfo = null)
+        : IComponentTypeInfoResolver
+    {
+        public (string AssemblyName, string TypeName)? LastNameLookup { get; private set; }
+
+        public ComponentTypeInfo GetTypeInfo(Type componentType)
+            => componentTypeInfo?.Type == componentType ? componentTypeInfo : null;
+
+        public ComponentTypeInfo GetTypeInfo(string assemblyName, string typeName)
+        {
+            LastNameLookup = (assemblyName, typeName);
+            return componentTypeInfo?.Type.Assembly.GetName().Name == assemblyName &&
+                componentTypeInfo.Type.FullName == typeName
+                    ? componentTypeInfo
+                    : null;
+        }
+
+        public IReadOnlyList<ComponentTypeInfo> GetTypeInfos(Assembly assembly)
+            => componentTypeInfo?.Type.Assembly == assembly ? [componentTypeInfo] : [];
+    }
+
+    private sealed class OrderedComponentTypeInfoResolver(params IComponentTypeInfoResolver[] resolvers)
+        : IComponentTypeInfoResolver, IDisposable
+    {
+        public ComponentTypeInfo GetTypeInfo(Type componentType)
+            => resolvers.Select(resolver => resolver.GetTypeInfo(componentType)).FirstOrDefault(typeInfo => typeInfo is not null);
+
+        public ComponentTypeInfo GetTypeInfo(string assemblyName, string typeName)
+            => resolvers.Select(resolver => resolver.GetTypeInfo(assemblyName, typeName)).FirstOrDefault(typeInfo => typeInfo is not null);
+
+        public IReadOnlyList<ComponentTypeInfo> GetTypeInfos(Assembly assembly)
+            => [.. resolvers.SelectMany(resolver => resolver.GetTypeInfos(assembly)).DistinctBy(typeInfo => typeInfo.Type)];
+
+        public void Dispose()
+        {
+            foreach (var disposable in resolvers.OfType<IDisposable>())
+            {
+                disposable.Dispose();
+            }
+        }
     }
 }

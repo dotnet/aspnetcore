@@ -1,0 +1,22 @@
+@page "/query"
+@attribute [InteractiveServer]
+
+<h1>Query parameters</h1>
+
+<p>Exercises <code>[SupplyParameterFromQuery]</code>, whose values are parsed and assigned through the
+generated parameter descriptors instead of the reflection-based query parameter cache.</p>
+
+<p>term: <span id="term">@Term</span></p>
+<p>page: <span id="page">@Page</span></p>
+<p>flags: <span id="flags">@(Flags is null ? "(none)" : string.Join(",", Flags))</span></p>
+
+@code {
+    [Parameter, SupplyParameterFromQuery]
+    public string? Term { get; set; }
+
+    [Parameter, SupplyParameterFromQuery]
+    public int Page { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "flag")]
+    public string[]? Flags { get; set; }
+}

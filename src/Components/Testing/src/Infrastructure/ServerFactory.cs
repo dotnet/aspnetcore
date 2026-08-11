@@ -103,6 +103,8 @@ public sealed class ServerFactory<TTestAssembly> : ServerFactory where TTestAsse
     /// </summary>
     public string ProxyUrl { get; private set; } = "";
 
+    private const string BackendCookieName = "test-backend";
+
     /// <inheritdoc/>
     public async ValueTask InitializeAsync()
     {
@@ -134,6 +136,24 @@ public sealed class ServerFactory<TTestAssembly> : ServerFactory where TTestAsse
                 return Results.Ok();
             }
             return Results.NotFound();
+        });
+
+        // Playwright does not attach ExtraHTTPHeaders to a WebSocket handshake, so the
+        // X-Test-Backend header that routes ordinary requests is absent when Blazor opens its
+        // circuit and the handshake 404s — leaving the page silently on the long-polling fallback.
+        // Cookies are sent on handshakes, so the header is mirrored into one on the way through and
+        // each instance also gets a route that matches it. The cookie is scoped exactly like the
+        // header it mirrors: routing is configured per browser context, and Playwright contexts have
+        // isolated cookie jars, so a context is pinned to a single instance either way.
+        _proxyApp.Use(async (context, next) =>
+        {
+            var backend = context.Request.Headers["X-Test-Backend"].ToString();
+            if (!string.IsNullOrEmpty(backend) && context.Request.Cookies[BackendCookieName] != backend)
+            {
+                context.Response.Cookies.Append(BackendCookieName, backend, new CookieOptions { Path = "/" });
+            }
+
+            await next(context).ConfigureAwait(false);
         });
 
         _proxyApp.MapReverseProxy();
@@ -279,22 +299,45 @@ public sealed class ServerFactory<TTestAssembly> : ServerFactory where TTestAsse
             return;
         }
 
-        var routes = _instances.Values.Select(i => new RouteConfig
+        var routes = _instances.Values.SelectMany(i => new[]
         {
-            RouteId = i.Id,
-            ClusterId = i.Id,
-            Match = new RouteMatch
+            new RouteConfig
             {
-                Path = "{**catch-all}",
-                Headers =
-                [
-                    new RouteHeader
-                    {
-                        Name = "X-Test-Backend",
-                        Values = [i.Id],
-                        Mode = HeaderMatchMode.ExactHeader,
-                    }
-                ]
+                RouteId = i.Id,
+                ClusterId = i.Id,
+                Match = new RouteMatch
+                {
+                    Path = "{**catch-all}",
+                    Headers =
+                    [
+                        new RouteHeader
+                        {
+                            Name = "X-Test-Backend",
+                            Values = [i.Id],
+                            Mode = HeaderMatchMode.ExactHeader,
+                        }
+                    ]
+                }
+            },
+            // Fallback for requests that cannot carry the header, notably WebSocket handshakes.
+            new RouteConfig
+            {
+                RouteId = $"{i.Id}-cookie",
+                ClusterId = i.Id,
+                Order = 1,
+                Match = new RouteMatch
+                {
+                    Path = "{**catch-all}",
+                    Headers =
+                    [
+                        new RouteHeader
+                        {
+                            Name = "Cookie",
+                            Values = [$"{BackendCookieName}={i.Id}"],
+                            Mode = HeaderMatchMode.Contains,
+                        }
+                    ]
+                }
             }
         }).ToArray();
 

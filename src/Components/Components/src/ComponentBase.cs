@@ -262,7 +262,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     /// </remarks>
     public virtual Task SetParametersAsync(ParameterView parameters)
     {
-        parameters.SetParameterProperties(this);
+        parameters.SetParameterProperties(this, _renderHandle);
         if (!_initialized)
         {
             _initialized = true;

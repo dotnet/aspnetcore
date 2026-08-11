@@ -5,12 +5,14 @@ namespace Microsoft.AspNetCore.Components.Server;
 
 internal sealed class ComponentDescriptor
 {
-    public Type ComponentType { get; set; }
+    public ComponentTypeInfo ComponentTypeInfo { get; set; }
+
+    public Type ComponentType => ComponentTypeInfo.Type;
 
     public ParameterView Parameters { get; set; }
 
     public int Sequence { get; set; }
 
-    public void Deconstruct(out Type componentType, out ParameterView parameters, out int sequence) =>
-        (componentType, sequence, parameters) = (ComponentType, Sequence, Parameters);
+    public void Deconstruct(out ComponentTypeInfo componentTypeInfo, out ParameterView parameters, out int sequence) =>
+        (componentTypeInfo, sequence, parameters) = (ComponentTypeInfo, Sequence, Parameters);
 }

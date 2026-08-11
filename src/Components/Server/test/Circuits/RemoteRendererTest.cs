@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -500,6 +501,67 @@ public class RemoteRendererTest
     }
 
     [Fact]
+    public async Task WebRootComponentManager_PreservesComponentTypeInfoForAddUpdateAndRemove()
+    {
+        using var reflectionResolver = new ReflectionComponentTypeInfoResolver();
+        var reflectedTypeInfo = reflectionResolver.GetRequiredTypeInfo(typeof(MetadataRootComponent));
+        var fallbackTypeInfo = reflectedTypeInfo.WithCreateInstance(
+            static _ => throw new InvalidOperationException("The renderer re-resolved the component type."));
+        var resolver = new StaticComponentTypeInfoResolver(fallbackTypeInfo);
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
+        serviceCollection.AddSingleton<IComponentTypeInfoResolver>(resolver);
+        var renderer = GetRemoteRenderer(serviceCollection.BuildServiceProvider());
+        var createdComponents = new List<MetadataRootComponent>();
+        var suppliedTypeInfo = reflectedTypeInfo.WithCreateInstance(
+            _ =>
+            {
+                var component = new MetadataRootComponent();
+                createdComponents.Add(component);
+                return component;
+            });
+        var key = new ComponentMarkerKey("location", null);
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var manager = renderer.GetOrCreateWebRootComponentManager();
+            await manager.AddRootComponentAsync(0, suppliedTypeInfo, key, WebRootComponentParameters.Empty);
+            await manager.UpdateRootComponentAsync(
+                0,
+                suppliedTypeInfo,
+                key,
+                CreateWebRootComponentParameters(new Dictionary<string, object>
+                {
+                    [nameof(MetadataRootComponent.Name)] = "updated",
+                }));
+            manager.RemoveRootComponent(0);
+        });
+
+        Assert.Equal(2, createdComponents.Count);
+        Assert.Equal("updated", createdComponents[1].Name);
+        Assert.Empty(renderer.GetOrCreateWebRootComponentManager().GetRootComponents());
+    }
+
+    [Fact]
+    public async Task WebRootComponentManager_TypeBoundaryFailsClearlyWhenMetadataIsMissing()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
+        serviceCollection.AddSingleton<IComponentTypeInfoResolver>(new StaticComponentTypeInfoResolver());
+        var renderer = GetRemoteRenderer(serviceCollection.BuildServiceProvider());
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
+            renderer.Dispatcher.InvokeAsync(() =>
+                renderer.GetOrCreateWebRootComponentManager().AddRootComponentAsync(
+                    0,
+                    typeof(MetadataRootComponent),
+                    new ComponentMarkerKey("location", null),
+                    WebRootComponentParameters.Empty)));
+
+        Assert.Contains(typeof(MetadataRootComponent).FullName, exception.Message);
+    }
+
+    [Fact]
     public async Task WebRootComponentManager_UpdateRootComponentAsync_Throws_IfSsrComponentIdIsInvalid()
     {
         // Arrange
@@ -645,7 +707,7 @@ public class RemoteRendererTest
         var serverComponentDeserializer = new ServerComponentDeserializer(
             _ephemeralDataProtectionProvider,
             NullLogger<ServerComponentDeserializer>.Instance,
-            new RootTypeCache(),
+            ComponentTypeInfoResolverFactory.Default,
             new ComponentParameterDeserializer(
                 NullLogger<ComponentParameterDeserializer>.Instance,
                 new ComponentParametersTypeCache()));
@@ -774,6 +836,28 @@ public class RemoteRendererTest
 
             Assert.True(task.IsCompletedSuccessfully, message);
         }
+    }
+
+    private sealed class MetadataRootComponent : ComponentBase
+    {
+        [Parameter]
+        public string Name { get; set; }
+    }
+
+    private sealed class StaticComponentTypeInfoResolver(ComponentTypeInfo typeInfo = null)
+        : IComponentTypeInfoResolver
+    {
+        public ComponentTypeInfo GetTypeInfo(Type componentType)
+            => typeInfo?.Type == componentType ? typeInfo : null;
+
+        public ComponentTypeInfo GetTypeInfo(string assemblyName, string typeName)
+            => typeInfo?.Type.Assembly.GetName().Name == assemblyName &&
+                typeInfo.Type.FullName == typeName
+                    ? typeInfo
+                    : null;
+
+        public IReadOnlyList<ComponentTypeInfo> GetTypeInfos(Assembly assembly)
+            => typeInfo?.Type.Assembly == assembly ? [typeInfo] : [];
     }
 
     private class AutoParameterTestComponent : IComponent

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
@@ -245,15 +246,13 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     private RazorComponentsEndpointConventionBuilder CreateRazorComponentsAppBuilder(IEndpointRouteBuilder endpointBuilder)
     {
         var builder = endpointBuilder.MapRazorComponents<App>();
-        builder.ComponentApplicationBuilderActions.Add(b => b.AddLibrary(new AssemblyComponentLibraryDescriptor(
+        builder.ComponentApplicationBuilderActions.Add(b => b.AddLibrary(
             "App",
-            [new PageComponentBuilder {
-                PageType = typeof(App),
-                RouteTemplates = ["/"],
-                AssemblyName = "App",
-            }],
-            []
-        )));
+            [new ComponentTypeInfo(new ComponentDescriptor
+            {
+                Type = typeof(App),
+                Metadata = [new RouteAttribute("/")],
+            })]));
         return builder;
     }
 

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Rendering;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -41,7 +41,7 @@ public class LayoutView : IComponent
     /// <inheritdoc />
     public Task SetParametersAsync(ParameterView parameters)
     {
-        parameters.SetParameterProperties(this);
+        parameters.SetParameterProperties(this, _renderHandle);
         Render();
         return Task.CompletedTask;
     }
@@ -76,6 +76,11 @@ public class LayoutView : IComponent
         return Render;
     }
 
-    private static Type? GetParentLayoutType(Type type)
-        => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType;
+    private Type? GetParentLayoutType(Type type)
+        => _renderHandle.ComponentTypeInfoResolver!
+            .GetRequiredTypeInfo(type)
+            .Metadata
+            .OfType<LayoutAttribute>()
+            .FirstOrDefault()
+            ?.LayoutType;
 }

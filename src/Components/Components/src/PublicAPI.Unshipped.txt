@@ -56,6 +56,42 @@ Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Members.ge
 Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Members.init -> void
 Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Type.get -> System.Type!
 Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Type.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.ComponentDescriptor() -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.CreateInstance.get -> System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>?
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.CreateInstance.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.Injectables.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor!>!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.Injectables.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.Metadata.get -> System.Collections.Generic.IReadOnlyList<object!>!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.Metadata.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.Parameters.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor!>!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.Parameters.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.Type.get -> System.Type!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentDescriptor.Type.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.Attribute.get -> Microsoft.AspNetCore.Components.InjectAttribute!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.Attribute.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.ComponentInjectableDescriptor() -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.Name.get -> string!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.Name.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.ServiceType.get -> System.Type!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.ServiceType.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.SetValue.get -> System.Action<object!, object?>!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentInjectableDescriptor.SetValue.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.Attribute.get -> System.Attribute!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.Attribute.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.ComponentParameterDescriptor() -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.GetStateSerializer.get -> System.Func<System.IServiceProvider!, object?>?
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.GetStateSerializer.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.GetValue.get -> System.Func<object!, object?>!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.GetValue.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.Name.get -> string!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.Name.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.ParameterType.get -> System.Type!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.ParameterType.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.SetValue.get -> System.Action<object!, object?>!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentParameterDescriptor.SetValue.init -> void
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

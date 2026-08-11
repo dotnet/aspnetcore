@@ -51,15 +51,13 @@ public class HotReloadServiceTests
 
         // Act - 2
         endpointDataSource.ComponentApplicationBuilderActions.Add(
-            b => b.Pages.AddFromLibraryInfo("TestAssembly2", new[]
-            {
-                new PageComponentBuilder
+            b => b.AddLibrary(
+                "TestAssembly2",
+                [new ComponentTypeInfo(new ComponentDescriptor
                 {
-                    AssemblyName = "TestAssembly2",
-                    PageType = typeof(StaticComponent),
-                    RouteTemplates = new List<string> { "/app/test" }
-                }
-            }));
+                    Type = typeof(StaticComponent),
+                    Metadata = [new RouteAttribute("/app/test")],
+                })]));
 
         HotReloadService.UpdateApplication(null);
 
@@ -134,7 +132,7 @@ public class HotReloadServiceTests
         Assert.Equal("/server", compositeEndpoint.RoutePattern.RawText);
 
         // Act - 2
-        endpointDataSource.ComponentApplicationBuilderActions.Add(b => b.Pages.RemoveFromAssembly("TestAssembly"));
+        endpointDataSource.ComponentApplicationBuilderActions.Add(b => b.RemoveLibrary("TestAssembly"));
         endpointDataSource.Options.ConfiguredRenderModes.Clear();
         HotReloadService.UpdateApplication(null);
 
@@ -176,15 +174,15 @@ public class HotReloadServiceTests
 
     private static void ConfigureBuilder(ComponentApplicationBuilder builder, params Type[] types)
     {
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
+        builder.AddLibrary(
             "TestAssembly",
-            Array.Empty<PageComponentBuilder>(),
-            types.Select(t => new ComponentBuilder
+            types.Select(type => new ComponentTypeInfo(new ComponentDescriptor
             {
-                AssemblyName = "TestAssembly",
-                ComponentType = t,
-                RenderMode = t.GetCustomAttribute<RenderModeAttribute>()
-            }).ToArray()));
+                Type = type,
+                Metadata = type.GetCustomAttribute<RenderModeAttribute>() is { } renderMode
+                    ? [renderMode]
+                    : [],
+            })).ToArray());
     }
 
     private static void ConfigureServerComponentBuilder(ComponentApplicationBuilder builder)
@@ -216,6 +214,7 @@ public class HotReloadServiceTests
             new[] { new MockEndpointProvider() },
             new TestEndpointRouteBuilder(services),
             new RazorComponentEndpointFactory(),
+            services.GetService<IComponentTypeInfoResolver>() ?? ComponentTypeInfoResolverFactory.Default,
             hotReloadService ?? new HotReloadService() { MetadataUpdateSupported = true });
 
         if (configureBuilder is not null)
