@@ -139,8 +139,9 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                     _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
                     _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
 
-                    // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                    EditContext.NotifyFieldChanged(FieldIdentifier);
+                    // The raw input changed, but the model value did not. Track the user interaction
+                    // without revalidating the unchanged model value.
+                    EditContext.MarkAsModified(FieldIdentifier);
                 }
             }
 

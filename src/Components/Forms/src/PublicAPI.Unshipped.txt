@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsModified(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
 Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.AddAsyncValidator(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task!>! validator) -> void
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> System.IDisposable!

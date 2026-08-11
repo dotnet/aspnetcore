@@ -90,9 +90,21 @@ public sealed class EditContext
     /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>
     public void NotifyFieldChanged(in FieldIdentifier fieldIdentifier)
     {
-        GetOrAddFieldState(fieldIdentifier).IsModified = true;
+        MarkAsModified(fieldIdentifier);
         OnFieldChanged?.Invoke(this, new FieldChangedEventArgs(fieldIdentifier));
     }
+
+    /// <summary>
+    /// Marks the specified field as modified without raising the <see cref="OnFieldChanged"/> event.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="NotifyFieldChanged(in FieldIdentifier)"/>, this method does not raise the
+    /// <see cref="OnFieldChanged"/> event. Use this when the user's input changed without changing
+    /// the underlying model value, such as when the input fails to parse.
+    /// </remarks>
+    /// <param name="fieldIdentifier">Identifies the field to mark as modified.</param>
+    public void MarkAsModified(in FieldIdentifier fieldIdentifier)
+        => GetOrAddFieldState(fieldIdentifier).IsModified = true;
 
     /// <summary>
     /// Signals that some aspect of validation state has changed.
