@@ -5677,6 +5677,32 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData(505)] // in DOM
+    [InlineData(700)] // not in DOM
+    public void ScrollToItem_AfterInitialIndex_LandsAtTarget(int target)
+    {
+        const int initialIndex = 500;
+
+        MountAnchorModeForScrollToItem(useProvider: true, variableHeight: true);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+        SetManualInitialIndex(initialIndex);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+        Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
+
+        SetScrollTargetIndex(target);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus($"Completed: {target}");
+        WaitForRenderToSettle(container, js);
+
+        Assert.Equal(target, GetTopRenderedIndex(js));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void InitialIndex_RetainsTargetWhenPreviousItemExpandsThenHomeEndTakeOver(bool useProvider)

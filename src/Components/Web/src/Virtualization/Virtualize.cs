@@ -247,6 +247,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 $"Use the {nameof(InitialItemIndex)} parameter to set the initial scroll position.");
         }
 
+        _initialIndex.Abort();
         return ScrollToItemAsyncCore(itemIndex, cancellationToken);
     }
 
@@ -502,7 +503,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             if (InitialItemIndex > 0)
             {
                 _initialIndex.BeginPending(_itemSize);
-                await ScrollToItemAsync(InitialItemIndex);
+                await ScrollToItemAsyncCore(InitialItemIndex, CancellationToken.None);
             }
             else if (_itemCount > 0)
             {
