@@ -2258,6 +2258,65 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task UnauthorizedConnectionCannotInvokeHubMethodWithRequirementDataAuthorization()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization();
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.RequirementDataAuthMethod)).DefaultTimeout();
+
+                Assert.NotNull(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task AuthorizedConnectionCanInvokeHubMethodWithRequirementDataAuthorization()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization();
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.RequirementDataAuthMethod)).DefaultTimeout();
+
+                Assert.Null(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
     private class TestConnectionLifetimeNotification : IConnectionLifetimeNotificationFeature
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();

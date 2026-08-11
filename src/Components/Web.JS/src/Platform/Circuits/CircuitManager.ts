@@ -10,6 +10,7 @@ import { RootComponentManager } from '../../Services/RootComponentManager';
 import { CircuitStartOptions } from './CircuitStartOptions';
 import { attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
 import { WebRendererId } from '../../Rendering/WebRendererId';
+import { JSEventRegistry } from '../../Services/JSEventRegistry';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { ConsoleLogger } from '../Logging/Loggers';
@@ -28,6 +29,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _options: CircuitStartOptions;
 
   private readonly _logger: ConsoleLogger;
+
+  private readonly _eventRegistry: JSEventRegistry;
 
   private _renderQueue: RenderQueue;
 
@@ -57,19 +60,25 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _isFirstRender = true;
 
-  private _pauseAbortController?: AbortController;
+  private _activeOperationCount = 0;
+
+  private _connectionUp = false;
+
+  private _activePauseDeferral?: AbortController;
 
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
     options: CircuitStartOptions,
     logger: ConsoleLogger,
+    eventRegistry: JSEventRegistry,
   ) {
     this._circuitId = undefined;
     this._applicationState = appState;
     this._componentManager = componentManager;
     this._options = options;
     this._logger = logger;
+    this._eventRegistry = eventRegistry;
     this._renderQueue = new RenderQueue(this._logger);
     this._dispatcher = DotNet.attachDispatcher(this);
   }
@@ -137,8 +146,19 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const connection = connectionBuilder.build();
 
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
-    connection.on('JS.BeginInvokeJS', this._dispatcher.beginInvokeJSFromDotNet.bind(this._dispatcher));
-    connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
+    connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
+      if (asyncHandle !== 0) {
+        this.changeActivity(1);
+      }
+      (this._dispatcher.beginInvokeJSFromDotNet as (...a: unknown[]) => unknown)
+        .call(this._dispatcher, asyncHandle, ...rest);
+    });
+    connection.on('JS.EndInvokeDotNet', (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string) => {
+      if (asyncCallId) {
+        this.changeActivity(-1);
+      }
+      this._dispatcher.endInvokeDotNetFromJS(asyncCallId, success, resultJsonOrExceptionMessage);
+    });
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
 
     connection.on('JS.SavePersistedState', (circuitId: string, components: string, applicationState: string) => {
@@ -155,10 +175,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
         start: (controller) => {
+          this.changeActivity(1);
           connection.stream('SendDotNetStreamToJS', streamId).subscribe({
             next: (chunk: Uint8Array) => controller.enqueue(chunk),
-            complete: () => controller.close(),
-            error: (err) => controller.error(err),
+            complete: () => { controller.close(); this.changeActivity(-1); },
+            error: (err) => { controller.error(err); this.changeActivity(-1); },
           });
         },
       });
@@ -178,12 +199,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     connection.on('JS.RequestPause', async () => {
       try {
-        if (this._options.onPauseRequested) {
-          this._pauseAbortController?.abort();
-          this._pauseAbortController = new AbortController();
-          await this._options.onPauseRequested(this._pauseAbortController.signal);
-        }
-        await this.pause(true);
+        await this.handleServerInitiatedPause();
       } catch (error) {
         this._logger.log(LogLevel.Error, `Failed to handle server-initiated pause: ${error}`);
       }
@@ -191,6 +207,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+
+      this.handleConnectionDown();
+      this.abortPauseDeferrals('connection closed');
 
       const pausingWasInProgress = this._pausingState.isInprogress();
       if (!pausingWasInProgress) {
@@ -210,6 +229,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     try {
       await connection.start();
+      this.handleConnectionUp();
     } catch (ex: any) {
       this.unhandledError(ex as Error);
 
@@ -295,6 +315,53 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
+  }
+
+  private abortPauseDeferrals(reason?: string): void {
+    this._activePauseDeferral?.abort(reason);
+    this._activePauseDeferral = undefined;
+  }
+
+  // Client-initiated pause: runs the registered pause deferrals, then pauses unless the wait was aborted.
+  public async pauseCircuit(externalSignal?: AbortSignal): Promise<boolean> {
+    await this.runPauseDeferrals(externalSignal);
+    if (externalSignal?.aborted) {
+      return false;
+    }
+    if (!(await this.pause())) {
+      this._logger.log(LogLevel.Information, 'Pause attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
+      return false;
+    }
+    return true;
+  }
+
+  private async runPauseDeferrals(externalSignal?: AbortSignal): Promise<void> {
+    const handlers = this._options.circuitHandlers.filter(h => h.onCircuitPausing);
+    if (handlers.length === 0) {
+      return;
+    }
+    let signal: AbortSignal;
+    if (externalSignal) {
+      signal = externalSignal;
+    } else {
+      this._activePauseDeferral?.abort('superseded by new pause request');
+      const controller = new AbortController();
+      this._activePauseDeferral = controller;
+      signal = controller.signal;
+    }
+    try {
+      await Promise.all(handlers.map(h => h.onCircuitPausing!(signal)));
+    } finally {
+      if (!externalSignal && this._activePauseDeferral?.signal === signal) {
+        this._activePauseDeferral = undefined;
+      }
+    }
+  }
+
+  private async handleServerInitiatedPause(): Promise<void> {
+    // Runs the registered pause deferrals, then pauses.
+    await this.runPauseDeferrals();
+    await this.pause(true);
   }
 
   public async pause(remote?: boolean): Promise<boolean> {
@@ -435,12 +502,18 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   // Implements DotNet.DotNetCallDispatcher
   public beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
     this.throwIfDispatchingWhenDisposed();
+    if (callId !== 0) {
+      this.changeActivity(1);
+    }
     this._connection!.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
   }
 
   // Implements DotNet.DotNetCallDispatcher
   public endInvokeJSFromDotNet(asyncHandle: number, succeeded: boolean, argsJson: any): void {
     this.throwIfDispatchingWhenDisposed();
+    if (asyncHandle !== 0) {
+      this.changeActivity(-1);
+    }
     this._connection!.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
   }
 
@@ -465,7 +538,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
-    return sendJSDataStream(this._connection!, data, streamId, chunkSize);
+    this.changeActivity(1);
+    return sendJSDataStream(this._connection!, data, streamId, chunkSize, () => this.changeActivity(-1));
   }
 
   public resolveElement(sequenceOrIdentifier: string): LogicalElement {
@@ -489,6 +563,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._componentManager;
   }
 
+  public getEventRegistry(): JSEventRegistry {
+    return this._eventRegistry;
+  }
+
   private unhandledError(err: Error): void {
     this._logger.log(LogLevel.Error, err);
 
@@ -506,6 +584,32 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   public didRenderingFail(): boolean {
     return this._renderingFailed;
+  }
+
+  private changeActivity(delta: number): void {
+    const wasActive = this._activeOperationCount > 0;
+    this._activeOperationCount += delta;
+    const isActive = this._activeOperationCount > 0;
+    if (this._connectionUp && wasActive !== isActive) {
+      this.dispatchActivity(isActive);
+    }
+  }
+
+  private handleConnectionUp(): void {
+    this._activeOperationCount = 0;
+    this._connectionUp = true;
+  }
+
+  private handleConnectionDown(): void {
+    const wasBusy = this._connectionUp && this._activeOperationCount > 0;
+    this._connectionUp = false;
+    if (wasBusy) {
+      this.dispatchActivity(false);
+    }
+  }
+
+  private dispatchActivity(busy: boolean): void {
+    this._eventRegistry.dispatchEvent('circuitactivitychanged', { busy });
   }
 
   public isDisposedOrDisposing(): boolean {
@@ -533,7 +637,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
-      this._pauseAbortController?.abort();
       return;
     }
 
@@ -542,7 +645,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
-    this._pauseAbortController?.abort();
     this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone

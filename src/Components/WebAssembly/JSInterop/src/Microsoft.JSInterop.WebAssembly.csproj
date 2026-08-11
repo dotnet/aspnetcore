@@ -11,6 +11,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+    <!-- Browser-only assembly: JSImport partials are [SupportedOSPlatform("browser")] (dotnet/runtime #131055). CA1416 is not meaningful here since all code runs on the Mono WebAssembly runtime. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

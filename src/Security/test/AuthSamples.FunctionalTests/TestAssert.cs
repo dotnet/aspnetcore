@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -11,9 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
-using AngleSharp.Network;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
+using AngleSharp.Io;
 using Xunit;
 
 namespace AuthSamples.FunctionalTests;
@@ -60,7 +60,7 @@ public class TestAssert
     internal static IHtmlHtmlElement IsHtmlFragment(string htmlMessage)
     {
         var synteticNode = $"<div>{htmlMessage}</div>";
-        var fragment = Assert.Single(new HtmlParser().ParseFragment(htmlMessage, context: null));
+        var fragment = Assert.Single(new HtmlParser().ParseFragment(htmlMessage, contextElement: null));
         return Assert.IsAssignableFrom<IHtmlHtmlElement>(fragment);
     }
 

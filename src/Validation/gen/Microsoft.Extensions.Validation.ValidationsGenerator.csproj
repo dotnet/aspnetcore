@@ -8,11 +8,20 @@
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <Nullable>enable</Nullable>
     <WarnOnNullable>true</WarnOnNullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Class bodies emitted verbatim as file classes into consumer code. They are not compiled
+         into the generator assembly, only embedded and read at generation time. -->
+    <Compile Remove="Templates\**\*.cs" />
+    <EmbeddedResource Include="Templates\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

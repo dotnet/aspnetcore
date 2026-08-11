@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Text.Json;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
@@ -56,7 +55,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66708")]
     public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"]);
@@ -111,4 +109,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
         await project.VerifyDnsCompliantHostname(expectedHostname);
     }
+
 }
+
