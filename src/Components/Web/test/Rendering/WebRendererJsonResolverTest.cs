@@ -26,11 +26,11 @@ public class WebRendererJsonResolverTest
         using var renderer = new TestWebRenderer(services, runtime.Options);
 
         Assert.Same(WebRendererSerializerContext.Default, runtime.Options.TypeInfoResolverChain[0]);
-        Assert.NotNull(WebRendererSerializerContext.Default.GetTypeInfo(typeof(NavigationOptions)));
-        Assert.NotNull(WebRendererSerializerContext.Default.GetTypeInfo(typeof(float)));
-        Assert.NotNull(WebRendererSerializerContext.Default.GetTypeInfo(typeof(long)));
-        Assert.NotNull(WebRendererSerializerContext.Default.GetTypeInfo(typeof(JsonElement)));
-        Assert.NotNull(WebRendererSerializerContext.Default.GetTypeInfo(typeof(ChangeEventArgs)));
+        Assert.NotNull(runtime.Options.GetTypeInfo(typeof(NavigationOptions)));
+        Assert.NotNull(runtime.Options.GetTypeInfo(typeof(float)));
+        Assert.NotNull(runtime.Options.GetTypeInfo(typeof(long)));
+        Assert.NotNull(runtime.Options.GetTypeInfo(typeof(JsonElement)));
+        Assert.NotNull(runtime.Options.GetTypeInfo(typeof(ChangeEventArgs)));
         Assert.Equal("Blazor._internal.attachWebRendererInterop", runtime.LastIdentifier);
     }
 

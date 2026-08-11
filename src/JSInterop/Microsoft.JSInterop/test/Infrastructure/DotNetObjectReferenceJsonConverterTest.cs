@@ -145,11 +145,8 @@ public class DotNetObjectReferenceJsonConverterTest
     [Fact]
     public void RuntimeProvidesConverterBackedTypeInfo()
     {
-        var typeInfo = JSInteropJsonTypeInfoResolver.Instance.GetTypeInfo(
-            typeof(DotNetObjectReference<TestModel>),
-            JsonSerializerOptions);
+        var typeInfo = JsonSerializerOptions.GetTypeInfo(typeof(DotNetObjectReference<TestModel>));
 
-        Assert.NotNull(typeInfo);
         Assert.Same(typeof(DotNetObjectReference<TestModel>), typeInfo.Type);
         Assert.IsType<DotNetObjectReferenceJsonConverter<TestModel>>(typeInfo.Converter);
     }
@@ -157,11 +154,8 @@ public class DotNetObjectReferenceJsonConverterTest
     [Fact]
     public void RuntimeProvidesVoidResultTypeInfo()
     {
-        var typeInfo = JSInteropJsonTypeInfoResolver.Instance.GetTypeInfo(
-            typeof(IJSVoidResult),
-            JsonSerializerOptions);
+        var typeInfo = JsonSerializerOptions.GetTypeInfo(typeof(IJSVoidResult));
 
-        Assert.NotNull(typeInfo);
         Assert.Null(JsonSerializer.Deserialize("null", typeInfo));
     }
 
