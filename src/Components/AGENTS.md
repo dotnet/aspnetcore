@@ -18,6 +18,19 @@ You MUST follow this workflow when implementing new features or fixing bugs in t
 - Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
   - Use `git checkout` and `git clean -fd` to remove the sample code.
 
+### Code clarity and durable knowledge
+
+- Before adding a comment, make local behavior discoverable through precise names,
+  named methods or variables, and smaller single-purpose responsibilities. A named
+  method can improve clarity even when it does not reduce duplication.
+- Add a concise implementation comment only when a durable nonlocal reason cannot
+  be expressed by structure alone, such as ordering across JavaScript and .NET
+  callbacks, lifecycle ownership transfer, compatibility constraints, or a
+  required negative guarantee. Do not narrate the call graph or restate the code.
+- Do not use public XML documentation to explain private implementation mechanics,
+  control flow, or lifecycle state. Limit it to consumer-observable behavior, and
+  encode executable invariants in focused tests.
+
 ### Overview
 
 The workflow for implementing new features in the Components area follows these steps:
