@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 
@@ -40,6 +41,7 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
         bool assertUpdatedCompilation = true,
         string? referencedAssemblyName = null,
         string? hostAssemblyName = null,
+        bool? razorComponentsReflectionEnabledByDefault = null,
         IReadOnlyCollection<string>? hostFrameworkAssemblyNames = null,
         params string[] expectedDiagnosticIds)
     {
@@ -66,7 +68,8 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators: [new RazorComponentsMetadataGenerator().AsSourceGenerator()],
-            parseOptions: ParseOptions);
+            parseOptions: ParseOptions,
+            optionsProvider: new TestAnalyzerConfigOptionsProvider(razorComponentsReflectionEnabledByDefault));
         driver = driver.RunGeneratorsAndUpdateCompilation(
             hostCompilation,
             out var updatedCompilation,
@@ -309,6 +312,46 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
         }
 
         protected override Assembly? Load(AssemblyName assemblyName) => null;
+    }
+
+    private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
+    {
+        private static readonly AnalyzerConfigOptions Empty = new TestAnalyzerConfigOptions(null);
+        private readonly AnalyzerConfigOptions _globalOptions;
+
+        public TestAnalyzerConfigOptionsProvider(bool? reflectionEnabledByDefault)
+        {
+            _globalOptions = new TestAnalyzerConfigOptions(reflectionEnabledByDefault);
+        }
+
+        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => Empty;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => Empty;
+    }
+
+    private sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
+    {
+        private readonly bool? _reflectionEnabledByDefault;
+
+        public TestAnalyzerConfigOptions(bool? reflectionEnabledByDefault)
+        {
+            _reflectionEnabledByDefault = reflectionEnabledByDefault;
+        }
+
+        public override bool TryGetValue(string key, out string value)
+        {
+            if (_reflectionEnabledByDefault.HasValue &&
+                key == "build_property.RazorComponentsReflectionEnabledByDefault")
+            {
+                value = _reflectionEnabledByDefault.Value.ToString();
+                return true;
+            }
+
+            value = null!;
+            return false;
+        }
     }
 
 }

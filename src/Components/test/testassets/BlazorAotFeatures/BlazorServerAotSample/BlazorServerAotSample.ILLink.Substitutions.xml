@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Components.Endpoints">
+    <type fullname="Microsoft.AspNetCore.Components.Endpoints.HttpContextFormValueMapper">
+      <method signature="System.Boolean CanMap(System.Type,System.String,System.String)" body="stub" value="false" />
+      <method signature="System.Void Map(Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext)" body="remove" />
+      <method signature="Microsoft.AspNetCore.Components.Endpoints.HttpContextFormValueMapper/FormValueSupplier CreateDeserializer(System.Type)" body="remove" />
+    </type>
+  </assembly>
+</linker>
