@@ -25,6 +25,8 @@ public sealed partial class RazorComponentsMetadataGenerator
     private const string ReadOnlyListType = "global::System.Collections.Generic.IReadOnlyList";
     private const string JsonResolverType = "global::System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver";
     private const string StateSerializerType = "global::Microsoft.AspNetCore.Components.PersistentComponentStateSerializer";
+    private const string BuiltInDescriptorProviderType =
+        "Microsoft.AspNetCore.Components.Infrastructure.BuiltInComponentDescriptors";
     private const string BuiltInJSInvokableDescriptorProviderType =
         "Microsoft.JSInterop.Infrastructure.BuiltInJSInvokableMethodDescriptors";
 
@@ -162,7 +164,11 @@ public sealed partial class RazorComponentsMetadataGenerator
         writer.WriteLine("private static class __Descriptors");
         writer.OpenBrace();
 
-        EmitComponents(writer, model.Components);
+        EmitComponents(
+            writer,
+            model.Components,
+            model.BuiltInDescriptorAssemblies,
+            model.BuiltInDescriptorFactories);
         writer.WriteLine();
         EmitBindableTypes(writer, model.BindableTypes);
         writer.WriteLine();
@@ -176,7 +182,9 @@ public sealed partial class RazorComponentsMetadataGenerator
 
     private static void EmitComponents(
         CodeWriter writer,
-        ImmutableArray<DescribedComponentModel> components)
+        ImmutableArray<DescribedComponentModel> components,
+        ImmutableArray<string> builtInDescriptorAssemblies,
+        ImmutableArray<BuiltInDescriptorFactoryModel> builtInDescriptorFactories)
     {
         writer.WriteLine($"internal static readonly {ComponentDescriptorType}[] Components =");
         writer.OpenBracket();
@@ -186,7 +194,53 @@ public sealed partial class RazorComponentsMetadataGenerator
             EmitComponent(writer, components[i], i);
         }
 
+        for (var i = 0; i < builtInDescriptorAssemblies.Length; i++)
+        {
+            writer.WriteLine($".. GetBuiltInComponentDescriptors_{i}(null),");
+        }
+
+        for (var i = 0; i < builtInDescriptorFactories.Length; i++)
+        {
+            var typeArguments = string.Join(", ", builtInDescriptorFactories[i].TypeArgumentFullyQualifiedNames);
+            writer.WriteLine($".. GetBuiltInComponentDescriptorFactory_{i}<{typeArguments}>(null),");
+        }
+
         writer.CloseBracketWithSemicolon();
+
+        for (var i = 0; i < builtInDescriptorAssemblies.Length; i++)
+        {
+            writer.WriteLine();
+            writer.WriteLine(
+                "[global::System.Runtime.CompilerServices.UnsafeAccessor(" +
+                "global::System.Runtime.CompilerServices.UnsafeAccessorKind.StaticMethod, Name = \"GetDescriptors\")]");
+            writer.WriteLine(
+                $"private static extern {ComponentDescriptorType}[] GetBuiltInComponentDescriptors_{i}(" +
+                "[global::System.Runtime.CompilerServices.UnsafeAccessorType(" +
+                $"{SymbolHelpers.ToStringLiteral($"{BuiltInDescriptorProviderType}, {builtInDescriptorAssemblies[i]}")})] object? target);");
+        }
+
+        for (var i = 0; i < builtInDescriptorFactories.Length; i++)
+        {
+            var factory = builtInDescriptorFactories[i];
+            var typeParameters = string.Join(", ", Enumerable.Range(0, factory.TypeArgumentFullyQualifiedNames.Length)
+                .Select(index => factory.TypeParameterDynamicallyAccessedMemberValues[index] == 0
+                    ? $"T{index}"
+                    : "[global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(" +
+                      "(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes)" +
+                      $"({factory.TypeParameterDynamicallyAccessedMemberValues[index]}))] " +
+                      $"T{index}"));
+            writer.WriteLine();
+            writer.WriteLine(
+                "[global::System.Runtime.CompilerServices.UnsafeAccessor(" +
+                $"global::System.Runtime.CompilerServices.UnsafeAccessorKind.StaticMethod, Name = {SymbolHelpers.ToStringLiteral(factory.MethodName)})]");
+            var constraints = factory.TypeParameterConstraintClauses.IsDefaultOrEmpty
+                ? string.Empty
+                : $" {string.Join(" ", factory.TypeParameterConstraintClauses)}";
+            writer.WriteLine(
+                $"private static extern {ComponentDescriptorType}[] GetBuiltInComponentDescriptorFactory_{i}<{typeParameters}>(" +
+                "[global::System.Runtime.CompilerServices.UnsafeAccessorType(" +
+                $"{SymbolHelpers.ToStringLiteral($"{BuiltInDescriptorProviderType}, {factory.AssemblyName}")})] object? target){constraints};");
+        }
     }
 
     private static void EmitComponent(CodeWriter writer, DescribedComponentModel component, int index)

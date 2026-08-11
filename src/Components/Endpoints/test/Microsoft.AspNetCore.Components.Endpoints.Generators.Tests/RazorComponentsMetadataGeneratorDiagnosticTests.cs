@@ -30,7 +30,7 @@ public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorCompo
         var context = LoadContext(result, out var loaded);
         using (loaded)
         {
-            Assert.IsEmpty(context.Components);
+            Assert.IsEmpty(GetReferencedComponents(context, result));
         }
     }
 
@@ -76,7 +76,7 @@ public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorCompo
         var diagnostic = AssertDiagnostic(result, "BLAZORAOT003", DiagnosticSeverity.Error);
         StringAssert.Contains(diagnostic.GetMessage(CultureInfo.InvariantCulture), "TestHost.InvalidMetadata");
         StringAssert.Contains(diagnostic.GetMessage(CultureInfo.InvariantCulture), "must be declared partial");
-        Assert.IsEmpty(result.GeneratedSources);
+        Assert.IsEmpty(result.MetadataGeneratedSources);
         Assert.DoesNotContain(item => item.Id == "CS0260", result.UpdatedCompilation.GetDiagnostics());
     }
 
@@ -100,7 +100,7 @@ public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorCompo
         var diagnostic = AssertDiagnostic(result, "BLAZORAOT003", DiagnosticSeverity.Error);
         StringAssert.Contains(diagnostic.GetMessage(CultureInfo.InvariantCulture), "TestHost.Container");
         StringAssert.Contains(diagnostic.GetMessage(CultureInfo.InvariantCulture), "must be declared partial");
-        Assert.IsEmpty(result.GeneratedSources);
+        Assert.IsEmpty(result.MetadataGeneratedSources);
         Assert.DoesNotContain(item => item.Id == "CS0260", result.UpdatedCompilation.GetDiagnostics());
     }
 
@@ -132,7 +132,7 @@ public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorCompo
         var context = LoadContext(result, out var loaded);
         using (loaded)
         {
-            Assert.IsEmpty(context.Components);
+            Assert.IsEmpty(GetReferencedComponents(context, result));
         }
     }
 
@@ -201,7 +201,9 @@ public sealed class RazorComponentsMetadataGeneratorDiagnosticTests : RazorCompo
         var context = LoadContext(result, out var loaded);
         using (loaded)
         {
-            Assert.AreEqual("TestComponents.FriendComponent", Assert.ContainsSingle(context.Components).Type.FullName);
+            Assert.AreEqual(
+                "TestComponents.FriendComponent",
+                Assert.ContainsSingle(GetReferencedComponents(context, result)).Type.FullName);
         }
     }
 

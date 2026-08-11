@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints.Generators;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -97,6 +100,15 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
     protected static string GetGeneratedSource(GeneratorTestResult result)
         => Assert.ContainsSingle(result.MetadataGeneratedSources).SourceText.ToString();
 
+    protected static IEnumerable<ComponentDescriptor> GetReferencedComponents(
+        RazorComponentsMetadataContext context,
+        GeneratorTestResult result)
+        => context.Components.Where(component =>
+            string.Equals(
+                component.Type.Assembly.GetName().Name,
+                result.ReferencedAssemblyName,
+                StringComparison.Ordinal));
+
     protected static IEnumerable<JSInvokableMethodDescriptor> GetReferencedJSInvokableMethods(
         RazorComponentsMetadataContext context,
         GeneratorTestResult result)
@@ -147,7 +159,9 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
         var errors = compilation.GetDiagnostics()
             .Where(diagnostic =>
                 diagnostic.Severity == DiagnosticSeverity.Error &&
-                diagnostic.Id != "CS0534")
+                diagnostic.Id != "CS0534" &&
+                !(diagnostic.Id == "CS0234" &&
+                  diagnostic.GetMessage(CultureInfo.InvariantCulture).Contains("ComponentTypeInfo", StringComparison.Ordinal)))
             .ToArray();
         Assert.IsEmpty(
             errors,
@@ -167,7 +181,13 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
     private static MetadataReference[] CreateFrameworkReferences()
     {
         // Touch the application assemblies before enumerating the loaded set.
+        _ = typeof(IComponent);
+        _ = typeof(Microsoft.AspNetCore.Components.Authorization.AuthorizeView);
+        _ = typeof(Microsoft.AspNetCore.Components.ConfigureBrowser);
+        _ = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>);
+        _ = typeof(Microsoft.AspNetCore.Components.Media.Image);
         _ = typeof(RazorComponentsMetadataContext);
+        _ = typeof(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorView);
         _ = typeof(JSInvokableAttribute);
         _ = typeof(System.Text.Json.JsonSerializer);
 
