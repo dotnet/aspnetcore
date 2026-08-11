@@ -197,9 +197,7 @@ public class ClientValidationProviderTests
             ["Custom Label"] = "Étiquette",
             ["LocalizedFieldModel_Field_RequiredAttribute_Error"] = "{0} est requis.",
         };
-#pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
         var options = new ValidationOptions();
-#pragma warning restore ASP0029
         var factory = new TestStringLocalizerFactory(translations);
 
         var rule = SingleRule(GetData<LocalizedFieldModel>(options, factory, nameof(LocalizedFieldModel.Field))!, nameof(LocalizedFieldModel.Field));
@@ -453,7 +451,6 @@ public class ClientValidationProviderTests
         [property: JsonPropertyName("message")] string Message,
         [property: JsonPropertyName("params")] Dictionary<string, string>? Params);
 
-#pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
     private static ValidationOptions CreateMevOptions(params Type[] validatableTypes)
     {
         var services = new ServiceCollection();
@@ -480,7 +477,6 @@ public class ClientValidationProviderTests
         typeInfo!.Validate(model, validateContext);
         return validateContext.ValidationErrors?.Keys.ToArray() ?? Array.Empty<string>();
     }
-#pragma warning restore ASP0029
 
     private sealed class TestStringLocalizerFactory(IDictionary<string, string> translations) : IStringLocalizerFactory
     {
