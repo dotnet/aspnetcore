@@ -20,6 +20,9 @@ internal static class TaskGenericsUtil
     public static void SetTaskCompletionSourceException(object taskCompletionSource, Exception exception)
         => CreateResultSetter(taskCompletionSource).SetException(taskCompletionSource, exception);
 
+    public static bool TrySetTaskCompletionSourceException(object taskCompletionSource, Exception exception)
+        => CreateResultSetter(taskCompletionSource).TrySetException(taskCompletionSource, exception);
+
     public static Type GetTaskCompletionSourceResultType(object taskCompletionSource)
         => CreateResultSetter(taskCompletionSource).ResultType;
 
@@ -57,6 +60,7 @@ internal static class TaskGenericsUtil
         Type ResultType { get; }
         void SetResult(object taskCompletionSource, object? result);
         void SetException(object taskCompletionSource, Exception exception);
+        bool TrySetException(object taskCompletionSource, Exception exception);
     }
 
     private interface ITaskResultGetter
@@ -100,6 +104,12 @@ internal static class TaskGenericsUtil
         {
             var typedTcs = (TaskCompletionSource<T>)tcs;
             typedTcs.SetException(exception);
+        }
+
+        public bool TrySetException(object tcs, Exception exception)
+        {
+            var typedTcs = (TaskCompletionSource<T>)tcs;
+            return typedTcs.TrySetException(exception);
         }
     }
 
