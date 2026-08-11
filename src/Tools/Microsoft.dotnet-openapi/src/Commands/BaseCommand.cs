@@ -236,9 +236,10 @@ internal abstract class BaseCommand : CommandLineApplication
             startInfo.Environment["DOTNET_ROOT"] = dotnetRoot;
         }
 
-        // Remove MSBuild environment variables inherited from the test runner that
-        // may have been constructed with missing path separators, causing the MSBuild
-        // SDK resolver to look in incorrect paths (e.g. "1.0.0Sdks" instead of "1.0.0/Sdks").
+        // Remove MSBuild environment variables that may have been set by the parent process
+        // (e.g. test runner) and that point to SDK-specific paths that may differ from
+        // what the child process should use. Removing these allows the SDK resolver to
+        // discover the correct SDK paths relative to DOTNET_ROOT.
         startInfo.Environment.Remove("MSBuildSDKsPath");
         startInfo.Environment.Remove("MSBUILD_EXE_PATH");
         startInfo.Environment.Remove("MSBuildExtensionsPath");
