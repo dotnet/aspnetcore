@@ -191,6 +191,10 @@ public abstract class WebRenderer : Renderer
 // 'Blazor._internal.attachWebRendererInterop'
 [JsonSerializable(typeof(object[]))]
 [JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(long))]
+[JsonSerializable(typeof(float))]
+[JsonSerializable(typeof(JsonElement))]
+[JsonSerializable(typeof(ChangeEventArgs))]
 [JsonSerializable(typeof(NavigationOptions))]
 [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
 [JsonSerializable(typeof(Dictionary<string, List<string>>))]

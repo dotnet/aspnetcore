@@ -45,6 +45,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                     new ByteArrayJsonConverter(this),
                 }
         };
+        JsonSerializerOptions.TypeInfoResolverChain.Add(JSInteropJsonTypeInfoResolver.Instance);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
