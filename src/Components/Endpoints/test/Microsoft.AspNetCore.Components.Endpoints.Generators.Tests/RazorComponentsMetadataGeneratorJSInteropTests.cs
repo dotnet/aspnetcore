@@ -6,9 +6,10 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Generators.Tests;
 
-public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMetadataGeneratorTestBase
+[TestClass]
+public sealed class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMetadataGeneratorTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task StaticInstanceCustomIdentifierAndTypedParameters_EmitWorkingDescriptors()
     {
         var result = RunGenerator("""
@@ -33,22 +34,22 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         using (loaded)
         {
             var methods = GetReferencedJSInvokableMethods(context, result).ToArray();
-            Assert.Equal(2, methods.Length);
+            Assert.HasCount(2, methods);
             var options = CreateJsonOptions();
-            var echo = Assert.Single(methods, method => method.Identifier == "Echo");
-            Assert.Equal(result.ReferencedAssemblyName, echo.AssemblyName);
-            Assert.Equal("TestComponents.InteropTarget", echo.TargetType.FullName);
-            Assert.True(echo.IsStatic);
-            Assert.Equal("\"Ada\"", await echo.Invoke(null, """[{"Name":"Ada"}]""", options));
+            var echo = Assert.ContainsSingle(method => method.Identifier == "Echo", methods);
+            Assert.AreEqual(result.ReferencedAssemblyName, echo.AssemblyName);
+            Assert.AreEqual("TestComponents.InteropTarget", echo.TargetType.FullName);
+            Assert.IsTrue(echo.IsStatic);
+            Assert.AreEqual("\"Ada\"", await echo.Invoke(null, """[{"Name":"Ada"}]""", options));
 
-            var add = Assert.Single(methods, method => method.Identifier == "custom-add");
-            Assert.False(add.IsStatic);
+            var add = Assert.ContainsSingle(method => method.Identifier == "custom-add", methods);
+            Assert.IsFalse(add.IsStatic);
             var target = Activator.CreateInstance(add.TargetType);
-            Assert.Equal("5", await add.Invoke(target, "[3]", options));
+            Assert.AreEqual("5", await add.Invoke(target, "[3]", options));
         }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Arguments_ValidateCountShapeAndObjectReferenceMisuse()
     {
         var result = RunGenerator("""
@@ -76,30 +77,30 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         using (loaded)
         {
             var options = CreateJsonOptions();
-            var echo = Assert.Single(context.JSInvokableMethods, method => method.Identifier == "Echo");
-            var missing = await Assert.ThrowsAsync<ArgumentException>(
+            var echo = Assert.ContainsSingle(method => method.Identifier == "Echo", context.JSInvokableMethods);
+            var missing = await Assert.ThrowsExactlyAsync<ArgumentException>(
                 async () => await echo.Invoke(null, "[]", options));
-            Assert.Equal("The call to 'Echo' expects '1' parameters, but received '0'.", missing.Message);
-            var extra = await Assert.ThrowsAsync<JsonException>(
+            Assert.AreEqual("The call to 'Echo' expects '1' parameters, but received '0'.", missing.Message);
+            var extra = await Assert.ThrowsExactlyAsync<JsonException>(
                 async () => await echo.Invoke(null, """["one","two"]""", options));
-            Assert.Equal(
+            Assert.AreEqual(
                 "Unexpected JSON token String. Ensure that the call to `Echo' is supplied with exactly '1' parameters.",
                 extra.Message);
 
-            var read = Assert.Single(context.JSInvokableMethods, method => method.Identifier == "Read");
-            var misuse = await Assert.ThrowsAsync<InvalidOperationException>(
+            var read = Assert.ContainsSingle(method => method.Identifier == "Read", context.JSInvokableMethods);
+            var misuse = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
                 async () => await read.Invoke(null, """[{"__dotNetObject":1}]""", options));
-            Assert.Equal(
+            Assert.AreEqual(
                 "In call to 'Read', parameter of type 'Payload' at index 1 must be declared as type 'DotNetObjectRef<Payload>' to receive the incoming value.",
                 misuse.Message);
 
-            var noArguments = Assert.Single(context.JSInvokableMethods, method => method.Identifier == "NoArguments");
-            await Assert.ThrowsAsync<JsonException>(
+            var noArguments = Assert.ContainsSingle(method => method.Identifier == "NoArguments", context.JSInvokableMethods);
+            await Assert.ThrowsExactlyAsync<JsonException>(
                 async () => await noArguments.Invoke(null, "[1]", options));
         }
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ReturnMatrix_SerializesValuesAndReturnsNullForNoValue()
     {
         var result = RunGenerator("""
@@ -120,19 +121,19 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         using (loaded)
         {
             var options = CreateJsonOptions();
-            Assert.Null(await Find("Void").Invoke(null, "[]", options));
-            Assert.Equal("1", await Find("Value").Invoke(null, "[]", options));
-            Assert.Null(await Find("Task").Invoke(null, "[]", options));
-            Assert.Equal("2", await Find("TaskValue").Invoke(null, "[]", options));
-            Assert.Null(await Find("ValueTask").Invoke(null, "[]", options));
-            Assert.Equal("3", await Find("ValueTaskValue").Invoke(null, "[]", options));
+            Assert.IsNull(await Find("Void").Invoke(null, "[]", options));
+            Assert.AreEqual("1", await Find("Value").Invoke(null, "[]", options));
+            Assert.IsNull(await Find("Task").Invoke(null, "[]", options));
+            Assert.AreEqual("2", await Find("TaskValue").Invoke(null, "[]", options));
+            Assert.IsNull(await Find("ValueTask").Invoke(null, "[]", options));
+            Assert.AreEqual("3", await Find("ValueTaskValue").Invoke(null, "[]", options));
 
             Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor Find(string identifier)
-                => Assert.Single(context.JSInvokableMethods, method => method.Identifier == identifier);
+                => Assert.ContainsSingle(method => method.Identifier == identifier, context.JSInvokableMethods);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void UnusableMethods_DoNotEmitDescriptors()
     {
         var result = RunGenerator("""
@@ -172,13 +173,13 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         var context = LoadContext(result, out var loaded);
         using (loaded)
         {
-            Assert.Equal(
+            Assert.AreEqual(
                 "Supported",
-                Assert.Single(GetReferencedJSInvokableMethods(context, result)).Identifier);
+                Assert.ContainsSingle(GetReferencedJSInvokableMethods(context, result)).Identifier);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Descriptors_AreStablyOrderedByTypeAndIdentifier()
     {
         var result = RunGenerator("""
@@ -199,14 +200,15 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         var context = LoadContext(result, out var loaded);
         using (loaded)
         {
-            Assert.Equal(
-                ["TestComponents.AType:zeta", "TestComponents.ZType:alpha", "TestComponents.ZType:beta"],
+            CollectionAssert.AreEqual(
+                new[] { "TestComponents.AType:zeta", "TestComponents.ZType:alpha", "TestComponents.ZType:beta" },
                 GetReferencedJSInvokableMethods(context, result)
-                    .Select(method => $"{method.TargetType.FullName}:{method.Identifier}"));
+                    .Select(method => $"{method.TargetType.FullName}:{method.Identifier}")
+                    .ToArray());
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void MultipleAttributes_EmitOneDescriptorPerAlias()
     {
         var result = RunGenerator("""
@@ -224,12 +226,12 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         using (loaded)
         {
             var methods = GetReferencedJSInvokableMethods(context, result);
-            Assert.Equal(["first", "second"], methods.Select(method => method.Identifier));
-            Assert.Equal(2, methods.Select(method => method.MethodKey).Distinct().Count());
+            CollectionAssert.AreEqual(new[] { "first", "second" }, methods.Select(method => method.Identifier).ToArray());
+            Assert.HasCount(2, methods.Select(method => method.MethodKey).Distinct());
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void DuplicateAliases_RemainDistinctContributions()
     {
         var result = RunGenerator("""
@@ -247,13 +249,16 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         using (loaded)
         {
             var descriptors = GetReferencedJSInvokableMethods(context, result).ToArray();
-            Assert.Equal(2, descriptors.Length);
-            Assert.All(descriptors, method => Assert.Equal("same", method.Identifier));
-            Assert.Equal(2, descriptors.Select(method => method.MethodKey).Distinct().Count());
+            Assert.HasCount(2, descriptors);
+            foreach (var method in descriptors)
+            {
+                Assert.AreEqual("same", method.Identifier);
+            }
+            Assert.HasCount(2, descriptors.Select(method => method.MethodKey).Distinct());
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Overrides_EmitApplicabilityMetadataAndBlockers()
     {
         var result = RunGenerator("""
@@ -291,52 +296,49 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         var context = LoadContext(result, out var loaded);
         using (loaded)
         {
-            Assert.Collection(
-                context.JSInvokableMethods
-                    .Where(method => method.TargetType.FullName == "TestComponents.UnannotatedOverride" &&
-                        method.Identifier.Length > 0)
-                    .OrderBy(method => method.Identifier),
-                descriptor =>
-                {
-                    Assert.Equal("base-alias", descriptor.Identifier);
-                    Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker, descriptor.Kind);
-                },
-                descriptor =>
-                {
-                    Assert.Equal("shared", descriptor.Identifier);
-                    Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker, descriptor.Kind);
-                });
+            var unannotatedOverrides = context.JSInvokableMethods
+                .Where(method => method.TargetType.FullName == "TestComponents.UnannotatedOverride" &&
+                    method.Identifier.Length > 0)
+                .OrderBy(method => method.Identifier)
+                .ToArray();
+            Assert.HasCount(2, unannotatedOverrides);
+            Assert.AreEqual("base-alias", unannotatedOverrides[0].Identifier);
+            Assert.AreEqual(
+                Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker,
+                unannotatedOverrides[0].Kind);
+            Assert.AreEqual("shared", unannotatedOverrides[1].Identifier);
+            Assert.AreEqual(
+                Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker,
+                unannotatedOverrides[1].Kind);
 
-            Assert.Collection(
-                context.JSInvokableMethods
-                    .Where(method => method.TargetType.FullName == "TestComponents.AnnotatedOverride" &&
-                        method.Identifier.Length > 0)
-                    .OrderBy(method => method.Identifier),
-                descriptor =>
-                {
-                    Assert.Equal("base-alias", descriptor.Identifier);
-                    Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker, descriptor.Kind);
-                },
-                descriptor =>
-                {
-                    Assert.Equal("derived-alias", descriptor.Identifier);
-                    Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Override, descriptor.Kind);
-                },
-                descriptor =>
-                {
-                    Assert.Equal("shared", descriptor.Identifier);
-                    Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Override, descriptor.Kind);
-                });
+            var annotatedOverrides = context.JSInvokableMethods
+                .Where(method => method.TargetType.FullName == "TestComponents.AnnotatedOverride" &&
+                    method.Identifier.Length > 0)
+                .OrderBy(method => method.Identifier)
+                .ToArray();
+            Assert.HasCount(3, annotatedOverrides);
+            Assert.AreEqual("base-alias", annotatedOverrides[0].Identifier);
+            Assert.AreEqual(
+                Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker,
+                annotatedOverrides[0].Kind);
+            Assert.AreEqual("derived-alias", annotatedOverrides[1].Identifier);
+            Assert.AreEqual(
+                Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Override,
+                annotatedOverrides[1].Kind);
+            Assert.AreEqual("shared", annotatedOverrides[2].Identifier);
+            Assert.AreEqual(
+                Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Override,
+                annotatedOverrides[2].Kind);
 
-            var newSlot = Assert.Single(
-                context.JSInvokableMethods,
+            var newSlot = Assert.ContainsSingle(
                 method => method.TargetType.FullName == "TestComponents.NewSlot" &&
-                    method.Identifier.Length > 0);
-            Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Method, newSlot.Kind);
+                    method.Identifier.Length > 0,
+                context.JSInvokableMethods);
+            Assert.AreEqual(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Method, newSlot.Kind);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void SkippedDerivedTypes_EmitCoverageWhenRepresentableAndFailClosedOtherwise()
     {
         var result = RunGenerator("""
@@ -395,66 +397,61 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
         var context = LoadContext(result, out var loaded);
         using (loaded)
         {
-            var baseDescriptor = Assert.Single(
-                context.JSInvokableMethods,
-                method => method.TargetType.FullName == "TestComponents.BaseTarget");
-            Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Override, baseDescriptor.Kind);
+            var baseDescriptor = Assert.ContainsSingle(
+                method => method.TargetType.FullName == "TestComponents.BaseTarget",
+                context.JSInvokableMethods);
+            Assert.AreEqual(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Override, baseDescriptor.Kind);
 
             var genericType = loaded.ReferencedAssembly.GetType("TestComponents.GenericDerived`1")!;
-            Assert.Collection(
-                context.JSInvokableMethods
-                    .Where(method => method.TargetType == genericType)
-                    .OrderBy(method => method.Identifier),
-                descriptor =>
-                {
-                    Assert.Empty(descriptor.Identifier);
-                    Assert.Equal(
-                        Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker,
-                        descriptor.Kind);
-                },
-                descriptor =>
-                {
-                    Assert.Equal("virtual", descriptor.Identifier);
-                    Assert.Equal(
-                        Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker,
-                        descriptor.Kind);
-                });
+            var genericDescriptors = context.JSInvokableMethods
+                .Where(method => method.TargetType == genericType)
+                .OrderBy(method => method.Identifier)
+                .ToArray();
+            Assert.HasCount(2, genericDescriptors);
+            Assert.IsEmpty(genericDescriptors[0].Identifier);
+            Assert.AreEqual(
+                Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker,
+                genericDescriptors[0].Kind);
+            Assert.AreEqual("virtual", genericDescriptors[1].Identifier);
+            Assert.AreEqual(
+                Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker,
+                genericDescriptors[1].Kind);
 
             var inheritedType = loaded.ReferencedAssembly.GetType("TestComponents.GenericInherited`1")!;
-            var coverage = Assert.Single(
-                context.JSInvokableMethods,
-                method => method.TargetType == inheritedType);
-            Assert.Empty(coverage.Identifier);
-            Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker, coverage.Kind);
+            var coverage = Assert.ContainsSingle(
+                method => method.TargetType == inheritedType,
+                context.JSInvokableMethods);
+            Assert.IsEmpty(coverage.Identifier);
+            Assert.AreEqual(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker, coverage.Kind);
 
             var normalDerived = loaded.ReferencedAssembly.GetType("TestComponents.NormalDerived")!;
-            var normalCoverage = Assert.Single(
-                context.JSInvokableMethods,
-                method => method.TargetType == normalDerived);
-            Assert.Empty(normalCoverage.Identifier);
-            Assert.Equal(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker, normalCoverage.Kind);
+            var normalCoverage = Assert.ContainsSingle(
+                method => method.TargetType == normalDerived,
+                context.JSInvokableMethods);
+            Assert.IsEmpty(normalCoverage.Identifier);
+            Assert.AreEqual(Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker, normalCoverage.Kind);
 
             var genericNormalType = loaded.ReferencedAssembly.GetType("TestComponents.GenericNormalInherited`1")!;
-            var genericNormalCoverage = Assert.Single(
-                context.JSInvokableMethods,
-                method => method.TargetType == genericNormalType);
-            Assert.Empty(genericNormalCoverage.Identifier);
-            Assert.Equal(
+            var genericNormalCoverage = Assert.ContainsSingle(
+                method => method.TargetType == genericNormalType,
+                context.JSInvokableMethods);
+            Assert.IsEmpty(genericNormalCoverage.Identifier);
+            Assert.AreEqual(
                 Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker,
                 genericNormalCoverage.Kind);
 
             Assert.DoesNotContain(
-                context.JSInvokableMethods,
-                method => method.TargetType.FullName == "TestComponents.GenericNewSlot`1");
+                method => method.TargetType.FullName == "TestComponents.GenericNewSlot`1",
+                context.JSInvokableMethods);
             Assert.DoesNotContain(
-                context.JSInvokableMethods,
-                method => method.TargetType.FullName?.Contains("Inaccessible", StringComparison.Ordinal) is true);
+                method => method.TargetType.FullName?.Contains("Inaccessible", StringComparison.Ordinal) is true,
+                context.JSInvokableMethods);
         }
     }
 
     #region Built-in descriptors
 
-    [Fact]
+    [TestMethod]
     public void FrameworkCallbackProvider_IsIncludedThroughGeneratedUnsafeAccessor()
     {
         var result = RunGenerator("""
@@ -479,9 +476,10 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
                 .Where(method => method.AssemblyName == "Microsoft.AspNetCore.Components.Web")
                 .ToArray();
 
-            Assert.Equal(7, descriptors.Length);
-            Assert.Equal(
-                [
+            Assert.HasCount(7, descriptors);
+            CollectionAssert.AreEqual(
+                new[]
+                {
                     "AddRootComponent",
                     "DispatchEventAsync",
                     "NotifyChange",
@@ -489,9 +487,12 @@ public class RazorComponentsMetadataGeneratorJSInteropTests : RazorComponentsMet
                     "OnSpacerBeforeVisible",
                     "RemoveRootComponent",
                     "SetRootComponentParameters",
-                ],
-                descriptors.Select(method => method.Identifier).Order());
-            Assert.All(descriptors, method => Assert.False(method.IsStatic));
+                },
+                descriptors.Select(method => method.Identifier).Order().ToArray());
+            foreach (var method in descriptors)
+            {
+                Assert.IsFalse(method.IsStatic);
+            }
         }
 
         var generatedSource = GetGeneratedSource(result);

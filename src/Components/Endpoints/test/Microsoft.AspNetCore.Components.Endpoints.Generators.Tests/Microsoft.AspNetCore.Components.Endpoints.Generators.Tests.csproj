@@ -3,13 +3,13 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <UsingToolXUnit>false</UsingToolXUnit>
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestRunnerName>Microsoft.Testing.Platform</TestRunnerName>
+    <TestRunnerAdditionalArguments>--filter "TestCategory!=Quarantined"</TestRunnerAdditionalArguments>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    <DOTNET_HOST_PATH Condition="'$(DOTNET_HOST_PATH)' == ''">$(RepoRoot).dotnet\dotnet.exe</DOTNET_HOST_PATH>
-    <NoWarn>$(NoWarn);NU1605;NU1903;CA1310;ASPNETCORE9004</NoWarn>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <NoWarn>$(NoWarn);CA1310;ASPNETCORE9004;NETSDK1023;MSTEST0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,18 +19,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="xunit.v3" />
+    <Reference Include="MSTest.TestFramework" />
+    <Reference Include="Microsoft.Testing.Extensions.TrxReport" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj" />
   </ItemGroup>
 
-  <Target Name="RunTests">
-    <Exec Command="dotnet exec &quot;$(TargetPath)&quot; $(TestRunnerAdditionalArguments)" />
-  </Target>
+  <ItemGroup>
+    <Using Remove="Xunit" />
+  </ItemGroup>
 
 </Project>

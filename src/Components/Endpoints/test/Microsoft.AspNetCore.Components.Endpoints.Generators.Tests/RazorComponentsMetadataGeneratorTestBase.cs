@@ -68,9 +68,9 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
             hostCompilation,
             out var updatedCompilation,
             out var generatorDiagnostics);
-        Assert.Equal(
-            expectedDiagnosticIds.Order(),
-            generatorDiagnostics.Select(diagnostic => diagnostic.Id).Order());
+        CollectionAssert.AreEqual(
+            expectedDiagnosticIds.Order().ToArray(),
+            generatorDiagnostics.Select(diagnostic => diagnostic.Id).Order().ToArray());
 
         var runResult = driver.GetRunResult();
         if (assertUpdatedCompilation)
@@ -95,7 +95,7 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
     }
 
     protected static string GetGeneratedSource(GeneratorTestResult result)
-        => Assert.Single(result.MetadataGeneratedSources).SourceText.ToString();
+        => Assert.ContainsSingle(result.MetadataGeneratedSources).SourceText.ToString();
 
     protected static IEnumerable<JSInvokableMethodDescriptor> GetReferencedJSInvokableMethods(
         RazorComponentsMetadataContext context,
@@ -108,8 +108,8 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
         string id,
         DiagnosticSeverity severity)
     {
-        var diagnostic = Assert.Single(result.Diagnostics, diagnostic => diagnostic.Id == id);
-        Assert.Equal(severity, diagnostic.Severity);
+        var diagnostic = Assert.ContainsSingle(diagnostic => diagnostic.Id == id, result.Diagnostics);
+        Assert.AreEqual(severity, diagnostic.Severity);
         return diagnostic;
     }
 
@@ -136,7 +136,7 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
     {
         using var stream = new MemoryStream();
         var emitResult = compilation.Emit(stream);
-        Assert.True(
+        Assert.IsTrue(
             emitResult.Success,
             $"{description} compilation failed:{Environment.NewLine}{string.Join(Environment.NewLine, emitResult.Diagnostics)}");
         return stream.ToArray();
@@ -149,8 +149,8 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
                 diagnostic.Severity == DiagnosticSeverity.Error &&
                 diagnostic.Id != "CS0534")
             .ToArray();
-        Assert.True(
-            errors.Length == 0,
+        Assert.IsEmpty(
+            errors,
             $"input host compilation failed:{Environment.NewLine}{string.Join(Environment.NewLine, errors)}");
     }
 
@@ -159,8 +159,8 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
         var errors = compilation.GetDiagnostics()
             .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
-        Assert.True(
-            errors.Length == 0,
+        Assert.IsEmpty(
+            errors,
             $"{description} compilation failed:{Environment.NewLine}{string.Join(Environment.NewLine, errors)}");
     }
 
@@ -240,7 +240,7 @@ public abstract class RazorComponentsMetadataGeneratorTestBase
         public GeneratorDriverRunResult RunResult { get; }
 
         public ImmutableArray<GeneratedSourceResult> GeneratedSources
-            => Assert.Single(RunResult.Results).GeneratedSources;
+            => Assert.ContainsSingle(RunResult.Results).GeneratedSources;
 
         public ImmutableArray<GeneratedSourceResult> MetadataGeneratedSources
             => [.. GeneratedSources.Where(static source => source.HintName.EndsWith(".Metadata.g.cs", StringComparison.Ordinal))];
