@@ -118,9 +118,10 @@ internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
 
     private static string GetStorageToken(Type type)
     {
-        if (type.IsEnum)
+        if (ContainsEnum(type))
         {
-            return "System.Int32";
+            return type.AssemblyQualifiedName
+                ?? throw new InvalidOperationException($"Cannot resolve the assembly-qualified name for type '{type}'.");
         }
 
         if (type.IsSZArray)
@@ -135,6 +136,23 @@ internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
         }
 
         return type.ToString();
+    }
+
+    private static bool ContainsEnum(Type type)
+    {
+        type = Nullable.GetUnderlyingType(type) ?? type;
+
+        if (type.IsEnum)
+        {
+            return true;
+        }
+
+        if (type.IsSZArray)
+        {
+            return ContainsEnum(type.GetElementType()!);
+        }
+
+        return type.IsGenericType && Array.Exists(type.GetGenericArguments(), ContainsEnum);
     }
 
     public byte[] SerializeData(IDictionary<string, object?> data)
@@ -210,7 +228,7 @@ internal sealed class JsonStoredDataSerializer : IStoredDataSerializer
             return null;
         }
 
-        if (targetType != typeof(object) && CanSerialize(targetType))
+        if (targetType != typeof(object) && targetType != ObjectArrayType && CanSerialize(targetType))
         {
             var valueElement = element.GetProperty("value");
             return JsonSerializer.Deserialize(valueElement, targetType, _options);

@@ -190,7 +190,7 @@ public class JsonStoredDataSerializerTest
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
         var result = serializer.DeserializeData(jsonDocument!);
 
-        Assert.Equal((int)TestEnum.Value2, result["key"]);
+        Assert.Equal(TestEnum.Value2, result["key"]);
     }
 
     [Fact]
@@ -205,9 +205,9 @@ public class JsonStoredDataSerializerTest
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
         var result = serializer.DeserializeData(jsonDocument!);
 
-        var array = Assert.IsType<int[]>(result["key"]);
-        Assert.Equal((int)TestEnum.Value1, array[0]);
-        Assert.Equal((int)TestEnum.Value2, array[1]);
+        var array = Assert.IsType<TestEnum[]>(result["key"]);
+        Assert.Equal(TestEnum.Value1, array[0]);
+        Assert.Equal(TestEnum.Value2, array[1]);
     }
 
     [Fact]
@@ -234,8 +234,8 @@ public class JsonStoredDataSerializerTest
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
         var result = serializer.DeserializeData(jsonDocument!);
 
-        var list = Assert.IsType<List<int>>(result["key"]);
-        Assert.Equal(new List<int> { (int)TestEnum.Value1, (int)TestEnum.Value2 }, list);
+        var list = Assert.IsType<List<TestEnum>>(result["key"]);
+        Assert.Equal(new List<TestEnum> { TestEnum.Value1, TestEnum.Value2 }, list);
     }
 
     [Fact]
@@ -250,8 +250,8 @@ public class JsonStoredDataSerializerTest
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
         var result = serializer.DeserializeData(jsonDocument!);
 
-        var set = Assert.IsType<HashSet<int>>(result["key"]);
-        Assert.Equal(new HashSet<int> { (int)TestEnum.Value1, (int)TestEnum.Value2 }, set);
+        var set = Assert.IsType<HashSet<TestEnum>>(result["key"]);
+        Assert.Equal(new HashSet<TestEnum> { TestEnum.Value1, TestEnum.Value2 }, set);
     }
 
     [Fact]
@@ -266,9 +266,9 @@ public class JsonStoredDataSerializerTest
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
         var result = serializer.DeserializeData(jsonDocument!);
 
-        var dictionary = Assert.IsType<Dictionary<string, int>>(result["key"]);
-        Assert.Equal((int)TestEnum.Value1, dictionary["a"]);
-        Assert.Equal((int)TestEnum.Value2, dictionary["b"]);
+        var dictionary = Assert.IsType<Dictionary<string, TestEnum>>(result["key"]);
+        Assert.Equal(TestEnum.Value1, dictionary["a"]);
+        Assert.Equal(TestEnum.Value2, dictionary["b"]);
     }
 
     [Fact]
@@ -368,6 +368,21 @@ public class JsonStoredDataSerializerTest
         Assert.Equal("System.Collections.Generic.Dictionary`2[System.String,System.Int32]", token);
         Assert.DoesNotContain("Version=", json);
         Assert.DoesNotContain("PublicKeyToken", json);
+    }
+
+    [Fact]
+    public void SerializeData_UsesAssemblyQualifiedTypeToken_ForEnum()
+    {
+        var serializer = CreateSerializer();
+        var serialized = serializer.SerializeData(new Dictionary<string, object>
+        {
+            { "key", TestEnum.Value1 }
+        });
+
+        using var document = JsonDocument.Parse(serialized);
+        var token = document.RootElement.GetProperty("key").GetProperty("type").GetString();
+
+        Assert.Equal(typeof(TestEnum).AssemblyQualifiedName, token);
     }
 
     [Fact]
@@ -485,6 +500,21 @@ public class JsonStoredDataSerializerTest
 
         var list = Assert.IsType<List<int>>(value);
         Assert.Equal(new List<int> { 1, 2, 3 }, list);
+    }
+
+    [Fact]
+    public void SerializeValue_RoundTripsObjectArrayRecursively()
+    {
+        var serializer = CreateSerializer();
+        var original = new object[] { new int[] { 1, 2 }, "text", TestEnum.Value2 };
+
+        var bytes = serializer.SerializeValue(original, typeof(object[]));
+        var value = serializer.DeserializeValue(bytes, typeof(object[]));
+
+        var array = Assert.IsType<object[]>(value);
+        Assert.Equal(new int[] { 1, 2 }, array[0]);
+        Assert.Equal("text", array[1]);
+        Assert.Equal(TestEnum.Value2, array[2]);
     }
 
     [Fact]
