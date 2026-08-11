@@ -503,6 +503,44 @@ public class JsonStoredDataSerializerTest
     }
 
     [Fact]
+    public void SerializeValue_RoundTripsEnumList_ToSourceType()
+    {
+        var serializer = CreateSerializer();
+
+        var bytes = serializer.SerializeValue(new List<TestEnum> { TestEnum.Value1, TestEnum.Value2 }, typeof(List<TestEnum>));
+        var value = serializer.DeserializeValue(bytes, typeof(List<TestEnum>));
+
+        var list = Assert.IsType<List<TestEnum>>(value);
+        Assert.Equal(new List<TestEnum> { TestEnum.Value1, TestEnum.Value2 }, list);
+    }
+
+    [Fact]
+    public void SerializeValue_RoundTripsEnumDictionary_ToSourceType()
+    {
+        var serializer = CreateSerializer();
+
+        var bytes = serializer.SerializeValue(new Dictionary<string, TestEnum> { ["a"] = TestEnum.Value1, ["b"] = TestEnum.Value2 }, typeof(Dictionary<string, TestEnum>));
+        var value = serializer.DeserializeValue(bytes, typeof(Dictionary<string, TestEnum>));
+
+        var dictionary = Assert.IsType<Dictionary<string, TestEnum>>(value);
+        Assert.Equal(TestEnum.Value1, dictionary["a"]);
+        Assert.Equal(TestEnum.Value2, dictionary["b"]);
+    }
+
+    [Fact]
+    public void SerializeValue_RoundTripsNullableEnumArray_ToSourceType()
+    {
+        var serializer = CreateSerializer();
+        var original = new TestEnum?[] { TestEnum.Value1, null, TestEnum.Value2 };
+
+        var bytes = serializer.SerializeValue(original, typeof(TestEnum?[]));
+        var value = serializer.DeserializeValue(bytes, typeof(TestEnum?[]));
+
+        var array = Assert.IsType<TestEnum?[]>(value);
+        Assert.Equal(original, array);
+    }
+
+    [Fact]
     public void SerializeValue_RoundTripsObjectArrayRecursively()
     {
         var serializer = CreateSerializer();
