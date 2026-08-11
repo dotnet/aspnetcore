@@ -41,14 +41,17 @@ public class BlazorServerTest
     {
         Project = await ProjectFactory.CreateProject(Output);
 
-        await Project.RunDotNetNewAsync("razorcomponent --name CodeBehindComponent --use-code-behind", isItemTemplate: true);
+        await Project.RunDotNetNewAsync(
+            "razorcomponent",
+            isItemTemplate: true,
+            args: ["--name", "CodeBehindComponent", "--use-code-behind"]);
 
         Project.AssertFileExists("CodeBehindComponent.razor", shouldExist: true);
         Project.AssertFileExists("CodeBehindComponent.razor.cs", shouldExist: true);
-        
+
         var razorContent = Project.ReadFile("CodeBehindComponent.razor");
         var codeContent = Project.ReadFile("CodeBehindComponent.razor.cs");
-        
+
         Assert.Contains("<h3>CodeBehindComponent</h3>", razorContent);
         Assert.Contains("public partial class CodeBehindComponent : ComponentBase", codeContent);
         Assert.Contains("using Microsoft.AspNetCore.Components;", codeContent);
