@@ -55,8 +55,9 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
                         if (item is IReturnOperation returnOperation &&
                             returnOperation.ReturnedValue is { } returnedValue)
                         {
-                            // Skip return operations that belong to nested anonymous functions
-                            if (IsReturnFromNestedAnonymousFunction(returnOperation, anonymousFunction))
+                            // Descendants() includes the bodies of nested lambdas and local functions.
+                            // Their returns belong to the nested function, not the RequestDelegate.
+                            if (IsReturnFromNestedFunction(returnOperation, anonymousFunction))
                             {
                                 continue;
                             }
@@ -87,30 +88,28 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
             ((INamedTypeSymbol)returnType).TypeArguments[0].ToString()));
     }
 
-    private static bool IsReturnFromNestedAnonymousFunction(IReturnOperation returnOperation, IAnonymousFunctionOperation targetAnonymousFunction)
+    private static bool IsReturnFromNestedFunction(IReturnOperation returnOperation, IAnonymousFunctionOperation targetAnonymousFunction)
     {
-        // Walk up the parent chain from the return operation to see if we encounter
-        // a nested anonymous function before reaching the target anonymous function
-        var current = returnOperation.Parent;
-        while (current != null)
+        // Walk up from the return operation. If we hit a nested function before reaching the
+        // RequestDelegate lambda, the return belongs to that nested function instead.
+        for (var current = returnOperation.Parent; current is not null; current = current.Parent)
         {
             if (ReferenceEquals(current, targetAnonymousFunction))
             {
-                // We reached the target anonymous function without finding a nested one
                 return false;
             }
 
-            if (current is IAnonymousFunctionOperation)
+            if (current is IAnonymousFunctionOperation or ILocalFunctionOperation)
             {
-                // We found a nested anonymous function before reaching the target
                 return true;
             }
-
-            current = current.Parent;
         }
 
-        // This shouldn't happen in valid code, but return true to be safe
-        return true;
+        // Unreachable: every operation from Body.Descendants() has the lambda as an ancestor,
+        // so the walk always terminates at the target or at a nested function. Fall back to the
+        // old behavior rather than silently suppressing, so a broken assumption surfaces as a
+        // reported false positive instead of a missing diagnostic.
+        return false;
     }
 
     private static IOperation WalkDownConversion(IOperation operation)
