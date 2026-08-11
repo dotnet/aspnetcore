@@ -34,8 +34,10 @@
     <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Remove="Xunit" />
-  </ItemGroup>
+  <Target Name="RemoveXunitGlobalUsing" BeforeTargets="GenerateGlobalUsings">
+    <ItemGroup>
+      <Using Remove="Xunit" />
+    </ItemGroup>
+  </Target>
 
 </Project>

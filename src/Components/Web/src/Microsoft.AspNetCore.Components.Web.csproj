@@ -10,6 +10,8 @@
     <IsTrimmable>true</IsTrimmable>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+    <!-- This assembly declares the experimental Blazor Native AOT metadata context and consumes it internally. -->
+    <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

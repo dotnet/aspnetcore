@@ -11,6 +11,8 @@
     <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+    <!-- This assembly declares the experimental Blazor Native AOT binding metadata model and consumes it internally. -->
+    <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

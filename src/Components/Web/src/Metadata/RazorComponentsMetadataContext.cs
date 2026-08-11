@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Web;
@@ -32,6 +33,11 @@ public abstract class RazorComponentsMetadataContext
     protected RazorComponentsMetadataContext()
     {
     }
+
+    /// <summary>
+    /// Gets the described form model types, which supply the accessors a binding expression walks.
+    /// </summary>
+    public abstract IReadOnlyList<BindableTypeDescriptor> BindableTypes { get; }
 
     /// <summary>
     /// Gets the described <see cref="Microsoft.JSInterop.JSInvokableAttribute"/> methods.

@@ -32,6 +32,30 @@ Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bo
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
 Microsoft.AspNetCore.Components.IComponentPropertyActivator
 Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.Type! componentType) -> System.Action<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>!
+Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor
+Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor.BindableIndexerDescriptor() -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor.GetValue.get -> System.Func<object!, object?, object?>!
+Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor.GetValue.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor.IndexType.get -> System.Type!
+Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor.IndexType.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor.ValueType.get -> System.Type!
+Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor.ValueType.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor
+Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor.BindableMemberDescriptor() -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor.GetValue.get -> System.Func<object!, object?>!
+Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor.GetValue.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor.MemberType.get -> System.Type!
+Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor.MemberType.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor.Name.get -> string!
+Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor.Name.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor
+Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.BindableTypeDescriptor() -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Indexers.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Infrastructure.BindableIndexerDescriptor!>!
+Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Indexers.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Members.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Infrastructure.BindableMemberDescriptor!>!
+Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Members.init -> void
+Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Type.get -> System.Type!
+Microsoft.AspNetCore.Components.Infrastructure.BindableTypeDescriptor.Type.init -> void
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

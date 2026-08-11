@@ -13,6 +13,7 @@ internal sealed record class MetadataContextModel(
     string TypeKeyword,
     bool DeclaresJsonTypeInfoResolver,
     ImmutableArray<string> BuiltInJSInvokableDescriptorAssemblies,
+    ImmutableArray<BindableTypeModel> BindableTypes,
     ImmutableArray<JSInvokableMethodModel> JSInvokableMethods)
 {
     public bool Equals(MetadataContextModel? other)
@@ -25,6 +26,7 @@ internal sealed record class MetadataContextModel(
                BuiltInJSInvokableDescriptorAssemblies,
                other.BuiltInJSInvokableDescriptorAssemblies) &&
            ModelComparer.SequenceEqual(ContainingTypes, other.ContainingTypes) &&
+           ModelComparer.SequenceEqual(BindableTypes, other.BindableTypes) &&
            ModelComparer.SequenceEqual(JSInvokableMethods, other.JSInvokableMethods);
 
     public override int GetHashCode()
@@ -34,6 +36,7 @@ internal sealed record class MetadataContextModel(
         hash = ModelComparer.Combine(hash, TypeName);
         hash = ModelComparer.Combine(hash, TypeKeyword);
         hash = ModelComparer.AddRange(hash, BuiltInJSInvokableDescriptorAssemblies);
+        hash = ModelComparer.AddRange(hash, BindableTypes);
         return ModelComparer.AddRange(hash, JSInvokableMethods);
     }
 }
@@ -59,6 +62,36 @@ internal sealed record class ContainingTypeModel(
         return ModelComparer.AddRange(hash, ConstraintClauses);
     }
 }
+
+internal sealed record class BindableTypeModel(
+    string TypeFullyQualifiedName,
+    ImmutableArray<BindableMemberModel> Members,
+    ImmutableArray<BindableIndexerModel> Indexers)
+{
+    public bool Equals(BindableTypeModel? other)
+        => other is not null &&
+           string.Equals(TypeFullyQualifiedName, other.TypeFullyQualifiedName, StringComparison.Ordinal) &&
+           ModelComparer.SequenceEqual(Members, other.Members) &&
+           ModelComparer.SequenceEqual(Indexers, other.Indexers);
+
+    public override int GetHashCode()
+    {
+        var hash = ModelComparer.Combine(0, TypeFullyQualifiedName);
+        hash = ModelComparer.AddRange(hash, Members);
+        hash = ModelComparer.AddRange(hash, Indexers);
+        return hash;
+    }
+}
+
+internal sealed record class BindableMemberModel(
+    string Name,
+    string MemberTypeFullyQualifiedName,
+    bool IsField,
+    bool RequiresGetAccessor);
+
+internal sealed record class BindableIndexerModel(
+    string IndexTypeFullyQualifiedName,
+    string ValueTypeFullyQualifiedName);
 
 internal sealed record class JSInvokableMethodModel(
     string AssemblyName,

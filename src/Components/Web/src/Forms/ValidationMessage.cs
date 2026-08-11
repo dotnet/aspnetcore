@@ -3,6 +3,7 @@
 
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -55,7 +56,10 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
         }
         else if (For != _previousFieldAccessor)
         {
-            _fieldIdentifier = FieldIdentifier.Create(For);
+            _fieldIdentifier = BindingExpressionEvaluator.CreateFieldIdentifier(
+                For,
+                CurrentEditContext.Model,
+                Handle.BindableTypeResolver);
             _previousFieldAccessor = For;
         }
 

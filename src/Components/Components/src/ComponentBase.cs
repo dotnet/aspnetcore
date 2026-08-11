@@ -29,6 +29,10 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     private bool _hasPendingQueuedRender;
     private bool _hasCalledOnAfterRender;
 
+    // Gives framework components in assemblies with InternalsVisibleTo access to renderer-scoped
+    // services carried by the handle without exposing the handle itself.
+    internal RenderHandle Handle => _renderHandle;
+
     /// <summary>
     /// Constructs an instance of <see cref="ComponentBase"/>.
     /// </summary>

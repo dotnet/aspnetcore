@@ -26,6 +26,8 @@ public readonly struct RenderHandle
     internal ComponentsActivitySource? ComponentActivitySource => _renderer?.ComponentActivitySource;
     internal SectionRegistry SectionRegistry => _renderer?.SectionRegistry ?? throw new InvalidOperationException("No renderer has been initialized.");
 
+    internal IBindableTypeResolver? BindableTypeResolver => _renderer?.BindableTypeResolver;
+
     /// <summary>
     /// Gets the <see cref="Components.Dispatcher" /> associated with the component.
     /// </summary>

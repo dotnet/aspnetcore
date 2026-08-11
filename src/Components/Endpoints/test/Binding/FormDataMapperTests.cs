@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using Microsoft.AspNetCore.Components.Forms;
@@ -18,6 +19,23 @@ namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 public class FormDataMapperTests
 {
+    [Fact]
+    public void Constructors_DoNotRequireDynamicCodeOrUnreferencedCode()
+    {
+        foreach (var constructor in typeof(FormDataMapperOptions).GetConstructors())
+        {
+            Assert.Null(constructor.GetCustomAttribute<RequiresDynamicCodeAttribute>());
+            Assert.Null(constructor.GetCustomAttribute<RequiresUnreferencedCodeAttribute>());
+        }
+
+        var resolveConverter = typeof(FormDataMapperOptions).GetMethod(
+            nameof(FormDataMapperOptions.ResolveConverter),
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            [typeof(Type)]);
+        Assert.NotNull(resolveConverter?.GetCustomAttribute<RequiresDynamicCodeAttribute>());
+        Assert.NotNull(resolveConverter?.GetCustomAttribute<RequiresUnreferencedCodeAttribute>());
+    }
+
     [Theory]
     [MemberData(nameof(PrimitiveTypesData))]
     public void CanDeserialize_PrimitiveTypes(string value, Type type, object expected)
