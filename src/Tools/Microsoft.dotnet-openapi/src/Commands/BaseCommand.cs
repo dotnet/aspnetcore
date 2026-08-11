@@ -227,23 +227,6 @@ internal abstract class BaseCommand : CommandLineApplication
             RedirectStandardOutput = true,
         };
 
-        // Ensure DOTNET_ROOT points to the same installation as the muxer so the
-        // child process can locate SDKs when the ambient DOTNET_ROOT differs (e.g.
-        // system dotnet vs. the repo-local .dotnet installation).
-        var dotnetRoot = Path.GetDirectoryName(muxer);
-        if (!string.IsNullOrEmpty(dotnetRoot))
-        {
-            startInfo.Environment["DOTNET_ROOT"] = dotnetRoot;
-        }
-
-        // Remove MSBuild environment variables that may have been set by the parent process
-        // (e.g. test runner) and that point to SDK-specific paths that may differ from
-        // what the child process should use. Removing these allows the SDK resolver to
-        // discover the correct SDK paths relative to DOTNET_ROOT.
-        startInfo.Environment.Remove("MSBuildSDKsPath");
-        startInfo.Environment.Remove("MSBUILD_EXE_PATH");
-        startInfo.Environment.Remove("MSBuildExtensionsPath");
-
         using var process = Process.Start(startInfo);
 
         var timeout = 20;
