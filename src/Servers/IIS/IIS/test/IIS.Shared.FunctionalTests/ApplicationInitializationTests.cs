@@ -94,12 +94,13 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
             var responseBodyTask = response.Content.ReadAsStringAsync();
 
             var stopwatch = Stopwatch.StartNew();
-            StopServer();
+            var appPoolStopTask = Task.Run(() => Helpers.StopAppPool(result.AppPoolName));
+            result.AssertWorkerProcessStop();
+            await appPoolStopTask;
             stopwatch.Stop();
 
             Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(30), $"Shutdown took {stopwatch.Elapsed}.");
             Assert.Equal("StartedCompleted", await responseBodyTask);
-            result.AssertWorkerProcessStop();
         }
     }
 
