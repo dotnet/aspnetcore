@@ -167,6 +167,7 @@ public class DataProtectionProviderTests
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66637")]
     [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
     public void System_UsesProvidedCertificateNotFromStore()
     {

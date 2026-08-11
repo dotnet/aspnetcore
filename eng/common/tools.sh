@@ -410,7 +410,7 @@ function InitializeToolset {
   fi
 
   echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > "$proj"
-  MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
+  MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file" /p:RestoreIgnoreFailedSources=true
 
   local toolset_build_proj=`cat "$toolset_location_file"`
 
