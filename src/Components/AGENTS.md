@@ -27,9 +27,8 @@ You MUST follow this workflow when implementing new features or fixing bugs in t
   be expressed by structure alone, such as ordering across JavaScript and .NET
   callbacks, lifecycle ownership transfer, compatibility constraints, or a
   required negative guarantee. Do not narrate the call graph or restate the code.
-- Do not use public XML documentation to explain private implementation mechanics,
-  control flow, or lifecycle state. Limit it to consumer-observable behavior, and
-  encode executable invariants in focused tests.
+- Do not use public XML documentation to explain internal implementation details,
+  including control flow or lifecycle state. Limit it to consumer-observable behavior.
 
 ### Overview
 
