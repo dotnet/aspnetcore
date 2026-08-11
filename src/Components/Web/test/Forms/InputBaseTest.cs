@@ -326,7 +326,12 @@ public class InputBaseTest
         Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
         Assert.Equal(1, numValidationStateChanges);
 
-        // Act/Assert 2: Transition to valid
+        await inputComponent.SetCurrentValueAsStringAsync("invalid");
+        Assert.Empty(valueChangedArgs);
+        Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
+        Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.Equal(2, numValidationStateChanges);
+
         await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
         var receivedParsedValue = valueChangedArgs.Single();
         Assert.Equal(1991, receivedParsedValue.Year);
@@ -334,7 +339,7 @@ public class InputBaseTest
         Assert.Equal(20, receivedParsedValue.Day);
         Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
         Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
-        Assert.Equal(2, numValidationStateChanges);
+        Assert.Equal(3, numValidationStateChanges);
     }
 
     [Fact]

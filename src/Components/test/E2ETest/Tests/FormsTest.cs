@@ -199,6 +199,28 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("modified invalid", () => input.GetDomAttribute("class"));
         Browser.Equal("", () => value.Text);
         Browser.Equal(new[] { "The RequiredNumber field must be a number." }, messagesAccessor);
+
+        input.Clear();
+        input.SendKeys("5\t");
+
+        Browser.Equal("modified valid", () => input.GetDomAttribute("class"));
+        Browser.Equal("5", () => value.Text);
+        Browser.Empty(messagesAccessor);
+
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Delete);
+        input.SendKeys("1e+10\t");
+
+        Browser.Equal("modified invalid", () => input.GetDomAttribute("class"));
+        Browser.Equal("5", () => value.Text);
+        Browser.Equal(new[] { "The RequiredNumber field must be a number." }, messagesAccessor);
+
+        input.Clear();
+        input.SendKeys("\t");
+
+        Browser.Equal("modified invalid", () => input.GetDomAttribute("class"));
+        Browser.Equal("", () => value.Text);
+        Browser.Equal(new[] { "Enter a required number" }, messagesAccessor);
     }
 
     [Fact]

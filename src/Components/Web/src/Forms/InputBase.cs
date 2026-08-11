@@ -141,7 +141,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
                     // The raw input changed, but the model value did not. Track the user interaction
                     // without revalidating the unchanged model value.
-                    EditContext.MarkAsModified(FieldIdentifier);
+                    EditContextAccessor.MarkAsModified(EditContext, FieldIdentifier);
                 }
             }
 
