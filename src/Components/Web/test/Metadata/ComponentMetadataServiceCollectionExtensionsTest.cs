@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -60,11 +61,15 @@ public class ComponentMetadataServiceCollectionExtensionsTest
 
     public sealed class FirstContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];
+
         public override IJsonTypeInfoResolver JsonTypeInfoResolver => FirstJsonContext.Default;
     }
 
     public sealed class SecondContext : RazorComponentsMetadataContext
     {
+        public override IReadOnlyList<JSInvokableMethodDescriptor> JSInvokableMethods => [];
+
         public override IJsonTypeInfoResolver JsonTypeInfoResolver => SecondJsonContext.Default;
     }
 

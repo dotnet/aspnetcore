@@ -3,6 +3,9 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+#if !COMPONENTS_WEBASSEMBLY
+using Microsoft.AspNetCore.Components.Forms;
+#endif
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Web.Internal;
@@ -32,4 +35,8 @@ namespace Microsoft.AspNetCore.Components.Web.Internal;
 [JsonSerializable(typeof(byte[]))]
 [JsonSerializable(typeof(JsonElement))]
 [JsonSerializable(typeof(NavigationOptions))]
+#if !COMPONENTS_WEBASSEMBLY
+[JsonSerializable(typeof(BrowserFile))]
+[JsonSerializable(typeof(BrowserFile[]))]
+#endif
 internal sealed partial class WebJSInteropSerializerContext : JsonSerializerContext;

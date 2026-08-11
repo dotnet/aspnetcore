@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestRunnerName>Microsoft.Testing.Platform</TestRunnerName>
+    <TestRunnerAdditionalArguments>--filter "TestCategory!=Quarantined"</TestRunnerAdditionalArguments>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <NoWarn>$(NoWarn);CA1310;ASPNETCORE9004;NETSDK1023;MSTEST0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Remove="Moq" />
+    <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MSTest.TestFramework" />
+    <Reference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+</Project>

@@ -443,6 +443,19 @@ public class DotNetDispatcherTest
 #pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
+    [Theory]
+    [InlineData("42", 42)]
+    [InlineData("null", null)]
+    public async Task EndInvokeJS_WithNullableValue(string valueJson, int? expected)
+    {
+        var jsRuntime = new TestJSRuntime();
+        var task = jsRuntime.InvokeAsync<int?>("somemethod");
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, {valueJson}]");
+
+        Assert.Equal(expected, await task);
+    }
+
     [Fact]
     public void CanInvokeInstanceMethodWithParams()
     {
@@ -792,7 +805,7 @@ public class DotNetDispatcherTest
     [InlineData("<xml>")]
     public void ParseArguments_ThrowsIfJsonIsInvalid(string arguments)
     {
-        Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseArguments(new TestJSRuntime(), "SomeMethod", arguments, new[] { typeof(string) }));
+        Assert.ThrowsAny<JsonException>(() => ReflectionJSInvokableMethodResolver.ParseArguments(new TestJSRuntime().JsonSerializerOptions, "SomeMethod", arguments, new[] { typeof(string) }));
     }
 
     [Theory]
@@ -801,7 +814,7 @@ public class DotNetDispatcherTest
     public void ParseArguments_ThrowsIfTheArgsJsonIsNotArray(string arguments)
     {
         // Act & Assert
-        Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseArguments(new TestJSRuntime(), "SomeMethod", arguments, new[] { typeof(string) }));
+        Assert.ThrowsAny<JsonException>(() => ReflectionJSInvokableMethodResolver.ParseArguments(new TestJSRuntime().JsonSerializerOptions, "SomeMethod", arguments, new[] { typeof(string) }));
     }
 
     [Theory]
@@ -810,7 +823,7 @@ public class DotNetDispatcherTest
     public void ParseArguments_ThrowsIfTheArgsJsonIsInvalidArray(string arguments)
     {
         // Act & Assert
-        Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseArguments(new TestJSRuntime(), "SomeMethod", arguments, new[] { typeof(string) }));
+        Assert.ThrowsAny<JsonException>(() => ReflectionJSInvokableMethodResolver.ParseArguments(new TestJSRuntime().JsonSerializerOptions, "SomeMethod", arguments, new[] { typeof(string) }));
     }
 
     [Fact]
@@ -820,7 +833,7 @@ public class DotNetDispatcherTest
         var arguments = "[\"Hello\", 2]";
 
         // Act
-        var result = DotNetDispatcher.ParseArguments(new TestJSRuntime(), "SomeMethod", arguments, new[] { typeof(string), typeof(int), });
+        var result = ReflectionJSInvokableMethodResolver.ParseArguments(new TestJSRuntime().JsonSerializerOptions, "SomeMethod", arguments, new[] { typeof(string), typeof(int), });
 
         // Assert
         Assert.Equal(new object[] { "Hello", 2 }, result);
@@ -833,7 +846,7 @@ public class DotNetDispatcherTest
         var arguments = "[{\"IntVal\": 7}]";
 
         // Act
-        var result = DotNetDispatcher.ParseArguments(new TestJSRuntime(), "SomeMethod", arguments, new[] { typeof(TestDTO), });
+        var result = ReflectionJSInvokableMethodResolver.ParseArguments(new TestJSRuntime().JsonSerializerOptions, "SomeMethod", arguments, new[] { typeof(TestDTO), });
 
         // Assert
         var value = Assert.IsType<TestDTO>(Assert.Single(result));
@@ -848,7 +861,7 @@ public class DotNetDispatcherTest
         var arguments = "[4, null]";
 
         // Act
-        var result = DotNetDispatcher.ParseArguments(new TestJSRuntime(), "SomeMethod", arguments, new[] { typeof(int), typeof(TestDTO), });
+        var result = ReflectionJSInvokableMethodResolver.ParseArguments(new TestJSRuntime().JsonSerializerOptions, "SomeMethod", arguments, new[] { typeof(int), typeof(TestDTO), });
 
         // Assert
         Assert.Collection(
@@ -865,7 +878,7 @@ public class DotNetDispatcherTest
         var arguments = "[4, {\"__dotNetObject\": 7}]";
 
         // Act
-        var ex = Assert.Throws<InvalidOperationException>(() => DotNetDispatcher.ParseArguments(new TestJSRuntime(), method, arguments, new[] { typeof(int), typeof(TestDTO), }));
+        var ex = Assert.Throws<InvalidOperationException>(() => ReflectionJSInvokableMethodResolver.ParseArguments(new TestJSRuntime().JsonSerializerOptions, method, arguments, new[] { typeof(int), typeof(TestDTO), }));
 
         // Assert
         Assert.Equal($"In call to '{method}', parameter of type '{nameof(TestDTO)}' at index 2 must be declared as type 'DotNetObjectRef<TestDTO>' to receive the incoming value.", ex.Message);

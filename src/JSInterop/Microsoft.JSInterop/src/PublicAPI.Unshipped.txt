@@ -1,1 +1,22 @@
 #nullable enable
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.AssemblyName.get -> string!
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.AssemblyName.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.Identifier.get -> string!
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.Identifier.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.IsStatic.get -> bool
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.IsStatic.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.Kind.get -> Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.Kind.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.MethodKey.get -> string?
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.MethodKey.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.Invoke.get -> System.Func<object?, string!, System.Text.Json.JsonSerializerOptions!, System.Threading.Tasks.ValueTask<string?>>!
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.Invoke.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.JSInvokableMethodDescriptor() -> void
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.TargetType.get -> System.Type!
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor.TargetType.init -> void
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Method = 0 -> Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.Override = 1 -> Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind
+Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind.OverrideBlocker = 2 -> Microsoft.JSInterop.Infrastructure.JSInvokableMethodKind
+virtual Microsoft.JSInterop.JSRuntime.InvokableMethods.get -> System.Collections.Generic.IReadOnlyList<Microsoft.JSInterop.Infrastructure.JSInvokableMethodDescriptor!>?

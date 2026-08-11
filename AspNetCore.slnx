@@ -76,7 +76,9 @@
     <Project Path="src/Components/Media/test/Microsoft.AspNetCore.Components.Media.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/Endpoints/">
+    <Project Path="src/Components/Endpoints/gen/Microsoft.AspNetCore.Components.Endpoints.Generators.csproj" />
     <Project Path="src/Components/Endpoints/src/Microsoft.AspNetCore.Components.Endpoints.csproj" />
+    <Project Path="src/Components/Endpoints/test/Microsoft.AspNetCore.Components.Endpoints.Generators.Tests/Microsoft.AspNetCore.Components.Endpoints.Generators.Tests.csproj" />
     <Project Path="src/Components/Endpoints/test/Microsoft.AspNetCore.Components.Endpoints.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/Forms/">

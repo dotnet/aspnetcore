@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RazorLangVersion>8.0</RazorLangVersion>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsNamespaces>
+    <NoWarn>$(NoWarn);ASPNETCORE9004</NoWarn>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Microsoft.AspNetCore.Components.Endpoints.Generators.Tests\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

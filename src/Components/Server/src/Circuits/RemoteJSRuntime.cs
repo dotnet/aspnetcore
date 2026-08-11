@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,6 +24,9 @@ internal partial class RemoteJSRuntime : JSRuntime
     private bool _permanentlyDisconnected;
     private readonly long _maximumIncomingBytes;
     private int _byteArraysToBeRevivedTotalBytes;
+#pragma warning disable ASPNETCORE9004
+    private readonly JSInvokableMethodDescriptor[] _invokableMethods;
+#pragma warning restore ASPNETCORE9004
 
     internal int RemoteJSDataStreamNextInstanceId;
     internal readonly Dictionary<long, RemoteJSDataStream> RemoteJSDataStreamInstances = new();
@@ -40,15 +45,28 @@ internal partial class RemoteJSRuntime : JSRuntime
     public RemoteJSRuntime(
         IOptions<CircuitOptions> circuitOptions,
         IOptions<HubOptions<ComponentHub>> componentHubOptions,
-        ILogger<RemoteJSRuntime> logger)
+        ILogger<RemoteJSRuntime> logger,
+#pragma warning disable ASPNETCORE9004
+        IEnumerable<RazorComponentsMetadataContext>? metadataContexts = null)
+#pragma warning restore ASPNETCORE9004
     {
         _options = circuitOptions.Value;
         _maximumIncomingBytes = componentHubOptions.Value.MaximumReceiveMessageSize ?? long.MaxValue;
         _logger = logger;
+#pragma warning disable ASPNETCORE9004
+        _invokableMethods = metadataContexts?
+            .SelectMany(static context => context.JSInvokableMethods)
+            .ToArray() ?? [];
+#pragma warning restore ASPNETCORE9004
         DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
     }
+
+#pragma warning disable ASPNETCORE9004
+    protected override IReadOnlyList<JSInvokableMethodDescriptor>? InvokableMethods
+        => _invokableMethods.Length == 0 ? null : _invokableMethods;
+#pragma warning restore ASPNETCORE9004
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
