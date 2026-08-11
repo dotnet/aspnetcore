@@ -4505,9 +4505,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     private void WindowScrollMidListAndWaitForRender(IJavaScriptExecutor js)
     {
-        js.ExecuteScript("window.scrollTo(0, 5000)");
         Browser.True(() =>
         {
+            js.ExecuteScript("window.scrollTo(0, 5000)");
+
             var scrollY = (long)js.ExecuteScript("return Math.round(window.scrollY)");
             return scrollY > 4000;
         }, TimeSpan.FromSeconds(5));
@@ -4793,7 +4794,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData("0")]
     [InlineData("1")]
     [InlineData("2")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68225")]
     public void AnchorMode_WindowScroll_HomeKeyJumpsToTop(string anchorMode)
     {
         MountWindowScrollAnchorModeComponent(anchorMode);
