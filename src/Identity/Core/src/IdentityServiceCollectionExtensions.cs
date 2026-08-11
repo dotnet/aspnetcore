@@ -82,6 +82,7 @@ public static class IdentityServiceCollectionExtensions
             o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
             o.Events = new CookieAuthenticationEvents
             {
+                OnValidatePrincipal = SecurityStampValidator.ValidateAsync<ITwoFactorSecurityStampValidator>,
                 OnRedirectToReturnUrl = _ => Task.CompletedTask
             };
             o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
