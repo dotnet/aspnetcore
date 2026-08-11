@@ -220,7 +220,7 @@
     <MicrosoftOpenApiYamlReaderVersion>[3.9.0,4.0.0)</MicrosoftOpenApiYamlReaderVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
-    <DotnetServeVersion>1.10.93</DotnetServeVersion>
+    <DotnetServeVersion>1.10.194</DotnetServeVersion>
     <MicrosoftPlaywrightCLIVersion>1.2.3</MicrosoftPlaywrightCLIVersion>
   </PropertyGroup>
 
