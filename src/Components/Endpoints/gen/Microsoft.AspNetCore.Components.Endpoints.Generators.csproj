@@ -1,9 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="PreReleaseVersionLabel;PreReleaseVersionIteration">
 
   <!--
-    Blazor Native AOT metadata source generator. Follows the conventions of the other in-repo
-    generators (src/Components/Testing/gen, src/Http/Http.Extensions/gen): a netstandard2.0 Roslyn
-    generator that is not packable on its own and is consumed as an analyzer asset.
+    Blazor Native AOT metadata source generator. This is an explicitly referenced, analyzer-only
+    preview package so applications can adopt it independently of Microsoft.AspNetCore.App.Ref.
   -->
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -12,8 +11,21 @@
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <Nullable>enable</Nullable>
     <WarnOnNullable>true</WarnOnNullable>
-    <IsPackable>false</IsPackable>
-    <!-- Analyzer release tracking is not needed: this ships with the framework, not standalone. -->
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <Description>Generates the metadata required to run Blazor applications with reflection disabled.</Description>
+    <PackageTags>aspnetcore;blazor;nativeaot;sourcegenerator</PackageTags>
+    <!--
+      This package is preview-only for .NET 11. Keep producing dated prerelease versions even when
+      the repo builds RC or RTM versions. TreatAsLocalProperty ensures these overrides win over
+      command-line version properties.
+    -->
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionLabel>$(PreviewOnlyPackagePreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>$(PreviewOnlyPackagePreReleaseVersionIteration)</PreReleaseVersionIteration>
+    <!-- Analyzer release tracking is not required for this source generator. -->
     <NoWarn>$(NoWarn);RS2008</NoWarn>
   </PropertyGroup>
 
@@ -23,6 +35,13 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(TargetPath)"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

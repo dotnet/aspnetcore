@@ -47,6 +47,36 @@
     <ProjectReference Include="..\..\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsShippingPackagesDir</_Parameter1>
+      <_Parameter2>$(ArtifactsShippingPackagesDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DotNetHostPath</_Parameter1>
+      <_Parameter2>$(DOTNET_HOST_PATH)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DefaultNetCoreTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsBinDir</_Parameter1>
+      <_Parameter2>$(ArtifactsBinDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Configuration</_Parameter1>
+      <_Parameter2>$(Configuration)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <Target Name="PackGeneratorForTests" BeforeTargets="RunTests">
+    <MSBuild Projects="..\..\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj"
+             Targets="Pack"
+             RemoveProperties="RuntimeIdentifier;SelfContained;PublishAot"
+             Properties="Configuration=$(Configuration)" />
+  </Target>
+
   <Target Name="RemoveXunitGlobalUsing" BeforeTargets="GenerateGlobalUsings">
     <ItemGroup>
       <Using Remove="Xunit" />

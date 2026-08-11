@@ -271,6 +271,30 @@ public sealed class RazorComponentsMetadataGeneratorComponentTests : RazorCompon
     }
 
     [TestMethod]
+    public void InheritedPrivateSetters_OnNullableGenericBaseType_CompileWithoutWarnings()
+    {
+        var result = RunGenerator("""
+            #nullable enable
+
+            namespace TestComponents;
+
+            public abstract class GenericBaseComponent<T> : Microsoft.AspNetCore.Components.ComponentBase
+            {
+                [Microsoft.AspNetCore.Components.Parameter]
+                public int InheritedParameter { get; private set; }
+            }
+
+            public sealed class DerivedComponent : GenericBaseComponent<string?>
+            {
+            }
+            """);
+
+        Assert.DoesNotContain(
+            diagnostic => diagnostic.Id == "CS8620",
+            result.UpdatedCompilation.GetDiagnostics());
+    }
+
+    [TestMethod]
     public void CascadingQueryAndPrivateParameters_RetainDerivedAttributesAndWorkingAccessors()
     {
         var result = RunGenerator("""

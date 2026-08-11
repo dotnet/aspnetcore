@@ -15,6 +15,10 @@
          dotnet build <this project> -p:UseIisNativeAssets=false -r win-x64
        then run the produced BlazorAotFeatures.E2E.Tests executable. -->
 
+  <PropertyGroup>
+    <_RazorComponentsMetadataGeneratorProject>$(RepoRoot)src\Components\Endpoints\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj</_RazorComponentsMetadataGeneratorProject>
+  </PropertyGroup>
+
   <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
 
   <PropertyGroup>
@@ -58,6 +62,31 @@
       <E2ERuntimeIdentifier>$(RuntimeIdentifier)</E2ERuntimeIdentifier>
     </ProjectReference>
   </ItemGroup>
+
+  <Target Name="PrepareRazorComponentsMetadataGeneratorPackage" BeforeTargets="PrepareE2EApps">
+    <MSBuild Projects="$(_RazorComponentsMetadataGeneratorProject)"
+             Targets="Pack"
+             RemoveProperties="RuntimeIdentifier;SelfContained;PublishAot"
+             Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(_RazorComponentsMetadataGeneratorProject)"
+             Targets="_GetPackageVersionInfo"
+             RemoveProperties="RuntimeIdentifier;SelfContained;PublishAot"
+             Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="_RazorComponentsMetadataGeneratorPackageInfo" />
+    </MSBuild>
+    <PropertyGroup>
+      <_RazorComponentsMetadataGeneratorPackageVersion>%(_RazorComponentsMetadataGeneratorPackageInfo.PackageVersion)</_RazorComponentsMetadataGeneratorPackageVersion>
+    </PropertyGroup>
+    <MSBuild Projects="../../../test/testassets/BlazorAotFeatures/BlazorServerAotSample/BlazorServerAotSample.csproj"
+             Targets="Restore"
+             BuildInParallel="false"
+             Properties="Configuration=$(Configuration);RuntimeIdentifier=$(RuntimeIdentifier);UseIisNativeAssets=false;BlazorAotStrictMode=$(BlazorAotStrictMode);MicrosoftAspNetCoreComponentsEndpointsGeneratorsVersion=$(_RazorComponentsMetadataGeneratorPackageVersion)" />
+    <ItemGroup>
+      <ProjectReference Update="../../../test/testassets/BlazorAotFeatures/BlazorServerAotSample/BlazorServerAotSample.csproj">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);MicrosoftAspNetCoreComponentsEndpointsGeneratorsVersion=$(_RazorComponentsMetadataGeneratorPackageVersion)</AdditionalProperties>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
 
   <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets"
           Condition="'$(_ImportComponentsTestingTargets)' == 'true'" />

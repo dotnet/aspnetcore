@@ -5,6 +5,10 @@
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <MicrosoftAspNetCoreComponentsEndpointsGeneratorsVersion
+        Condition="'$(MicrosoftAspNetCoreComponentsEndpointsGeneratorsVersion)' == ''">*-*</MicrosoftAspNetCoreComponentsEndpointsGeneratorsVersion>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir)</RestoreAdditionalProjectSources>
     <!-- Native AOT: enabled here (scoped to this app; referenced framework projects don't inherit
          it). Local `dotnet run` still JITs; `dotnet publish -r <rid>` produces the native app.
          Enables the AOT/trim analyzers during build so per-feature blockers surface. -->
@@ -51,10 +55,6 @@
     <CompilerVisibleProperty Include="E2ECompileTestHarness" />
     <!-- The host contains NO Blazor/.razor code; all components live in the Pages library. -->
     <ProjectReference Include="..\BlazorServerAotSample.Pages\BlazorServerAotSample.Pages.csproj" />
-    <!-- The metadata source generator runs here and walks the referenced Pages library, which is the
-         only place the Razor-compiled component types are visible from. -->
-    <ProjectReference Include="..\..\..\..\Endpoints\gen\Microsoft.AspNetCore.Components.Endpoints.Generators.csproj"
-                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <!-- Source-tree equivalent of the package's buildTransitive analyzer hook. -->
     <ProjectReference Include="..\..\..\..\Testing\nativeaot\Microsoft.AspNetCore.Components.Testing.NativeAot.csproj"
                       OutputItemType="Analyzer"
@@ -62,6 +62,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Endpoints.Generators"
+                      Version="$(MicrosoftAspNetCoreComponentsEndpointsGeneratorsVersion)"
+                      PrivateAssets="all" />
     <!-- Microsoft.AspNetCore (DefaultBuilder) provides WebApplication.CreateSlimBuilder. -->
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
