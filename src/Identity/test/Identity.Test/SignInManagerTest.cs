@@ -798,7 +798,7 @@ public class SignInManagerTest
         var result = await helper.TwoFactorAuthenticatorSignInAsync(code, isPersistent: false, rememberClient: false);
 
         // Assert
-        Assert.False(result.Succeeded);
+        Assert.Same(SignInResult.Failed, result);
         manager.Verify();
         auth.Verify();
     }
