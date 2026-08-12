@@ -1114,6 +1114,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             return false;
         }
 
+        // :path carries both the path and query components - https://www.rfc-editor.org/rfc/rfc9114#section-4.3.1
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 
