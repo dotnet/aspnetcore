@@ -235,7 +235,29 @@ internal sealed partial class DirectTlsConnection : TransportConnection
                 if (bytesRead > 0)
                 {
                     Application.Output.Advance(bytesRead);
-                    var flushResult = await Application.Output.FlushAsync();
+
+                    var flushTask = Application.Output.FlushAsync();
+                    FlushResult flushResult;
+                    if (flushTask.IsCompleted)
+                    {
+                        flushResult = await flushTask;
+                    }
+                    else
+                    {
+                        // Backpressure: the application isn't draining the input pipe, so no read is pending. Suspend
+                        // readable interest while we wait - otherwise still-buffered ciphertext keeps the level-triggered
+                        // pump returning EPOLLIN every loop and spins the worker. Re-arm once the flush unblocks.
+                        _connectionState.SuspendReadInterest();
+                        try
+                        {
+                            flushResult = await flushTask;
+                        }
+                        finally
+                        {
+                            _connectionState.ResumeReadInterest();
+                        }
+                    }
+
                     if (flushResult.IsCompleted || flushResult.IsCanceled)
                     {
                         break;

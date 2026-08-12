@@ -236,10 +236,17 @@ internal class TlsEventPump : IDisposable
     /// </summary>
     public void ModifyEvents(int fd, uint events)
     {
-        // Using level-triggered mode (no EPOLLET) for stability
+        // Level-triggered mode (no EPOLLET) for stability. EPOLLRDHUP (peer half-close) rides with read interest:
+        // arm it only when EPOLLIN is requested, so a connection whose read interest is suspended for backpressure
+        // isn't torn down by a lone EPOLLRDHUP while it still has buffered request data left to drain.
+        if ((events & NativeTls.EPOLLIN) != 0)
+        {
+            events |= NativeTls.EPOLLRDHUP;
+        }
+
         var ev = new EpollEvent
         {
-            Events = events | NativeTls.EPOLLRDHUP,
+            Events = events,
             Data = new EpollData { Fd = fd }
         };
 

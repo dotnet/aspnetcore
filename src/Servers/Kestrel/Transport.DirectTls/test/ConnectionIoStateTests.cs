@@ -138,16 +138,18 @@ public class ConnectionIoStateTests
     }
 
     [Fact]
-    public void Write_Renegotiation_WaitsForReadable_WithoutTouchingEpoll()
+    public void Write_Renegotiation_ReArmsReadableInterest()
     {
-        // Write needs to read peer ciphertext first; EPOLLIN is already registered, so no epoll_ctl.
+        // Write needs to read peer ciphertext first. EPOLLIN is no longer an unconditional baseline (the receive
+        // loop can suspend it for backpressure), so the write must re-arm read interest itself.
         var io = new ScriptedConnectionIoState();
         io.ScriptWrite(TlsOperationStatus.NeedMoreData);
 
         var write = io.WriteAsync(new byte[10]);
 
         Assert.False(write.IsCompleted);
-        Assert.Equal(0, io.ApplyEventsCallCount);
+        Assert.Equal(1, io.ApplyEventsCallCount);
+        Assert.Equal(In, io.LastEvents);
     }
 
     [Fact]
@@ -295,6 +297,46 @@ public class ConnectionIoStateTests
         Assert.True(write.IsCompleted);
         Assert.Equal(10, await write);
         Assert.False(read.IsCompleted);                    // read untouched this wake
+    }
+
+    // ── Read-interest suspend/resume (flush backpressure) ─────────────────────
+
+    [Fact]
+    public void SuspendReadInterest_DropsEpollIn_ResumeRestoresIt()
+    {
+        // While the receive loop is blocked on a backpressured flush, no read is pending, yet level-triggered
+        // EPOLLIN on still-buffered ciphertext would spin the pump. Suspending must drop EPOLLIN; resuming re-arms it.
+        var io = new ScriptedConnectionIoState();
+
+        io.SuspendReadInterest();
+        Assert.Equal(1, io.ApplyEventsCallCount);
+        Assert.Equal(0u, io.LastEvents); // EPOLLIN dropped, nothing else wanted.
+
+        io.SuspendReadInterest(); // idempotent - no second syscall
+        Assert.Equal(1, io.ApplyEventsCallCount);
+
+        io.ResumeReadInterest();
+        Assert.Equal(2, io.ApplyEventsCallCount);
+        Assert.Equal(In, io.LastEvents);
+
+        io.ResumeReadInterest(); // idempotent
+        Assert.Equal(2, io.ApplyEventsCallCount);
+    }
+
+    [Fact]
+    public void SuspendReadInterest_KeepsEpollIn_WhenWriteStillNeedsToRead()
+    {
+        // A write parked in renegotiation (_writeWantsRead) must keep EPOLLIN armed even while the receive loop
+        // suspends its own read interest, otherwise the renegotiating write is stranded with no wakeup.
+        var io = new ScriptedConnectionIoState();
+
+        io.ScriptWrite(TlsOperationStatus.NeedMoreData);
+        var write = io.WriteAsync(new byte[10]);
+        Assert.False(write.IsCompleted);
+        Assert.Equal(In, io.LastEvents);
+
+        io.SuspendReadInterest();
+        Assert.Equal(In, io.LastEvents); // still armed for the write's renegotiation read.
     }
 
     // ── Dispose ─────────────────────────────────────────────────────────────

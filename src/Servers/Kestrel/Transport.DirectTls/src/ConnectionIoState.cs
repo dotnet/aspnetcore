@@ -84,6 +84,7 @@ internal class ConnectionIoState : IDisposable
     private int _writeTotal;                     // Original request length to report on completion
     private bool _writeWantsRead;                // Write needs the socket to become readable (renegotiation)
     private bool _writeWantsWrite;               // Write hit WouldBlock and needs the socket to become writable
+    private bool _readInterestSuspended;         // Receive loop parked on backpressure; drop EPOLLIN to avoid a level-triggered spin
 
     public ConnectionIoState(int fd, TlsSocketSession session, ILogger logger)
     {
@@ -183,17 +184,22 @@ internal class ConnectionIoState : IDisposable
     // ═══════════════════════════════════════════════════════════════
 
     // Applies the epoll interest as the UNION of what the read and write sides currently need. EPOLLIN is
-    // always requested (the receive loop is the connection's steady-state reader, and the pump adds EPOLLRDHUP);
-    // EPOLLOUT is requested whenever either side is waiting for the socket to become writable - a write that hit
-    // WouldBlock (_writeWantsWrite) or a read flushing renegotiation output (_readWantsWrite). Because
-    // ModifyEvents sets the interest absolutely (EPOLL_CTL_MOD replaces, it does not OR), computing the combined
-    // mask in one place is what prevents one side's transition from silently dropping an EPOLLOUT the other side
-    // is still waiting on, which would otherwise wedge that operation until the connection dies. This is only
-    // ever called on EPOLLOUT-interest transitions (never on the steady-state WANT_READ path), so it adds no
-    // syscall to normal reads.
+    // requested whenever the receive loop is reading (the steady state) or a write is parked waiting to read peer
+    // ciphertext for renegotiation (_writeWantsRead); it is dropped only while the receive loop is blocked on
+    // backpressure (_readInterestSuspended), so still-buffered ciphertext can't make the level-triggered pump
+    // spin. EPOLLOUT is requested whenever either side waits for the socket to become writable - a write that hit
+    // WouldBlock (_writeWantsWrite) or a read flushing renegotiation output (_readWantsWrite). Because ModifyEvents
+    // sets the interest absolutely (EPOLL_CTL_MOD replaces, it does not OR), computing the combined mask in one
+    // place is what prevents one side's transition from silently dropping an interest the other side is still
+    // waiting on, which would otherwise wedge that operation until the connection dies.
     private void UpdateEvents()
     {
-        uint events = NativeTls.EPOLLIN;
+        uint events = 0;
+
+        if (!_readInterestSuspended || _writeWantsRead)
+        {
+            events |= NativeTls.EPOLLIN;
+        }
 
         if (_readWantsWrite || _writeWantsWrite)
         {
@@ -201,6 +207,37 @@ internal class ConnectionIoState : IDisposable
         }
 
         ApplyEvents(events);
+    }
+
+    // Called by the receive loop when a FlushAsync to the application blocks on backpressure. While suspended,
+    // UpdateEvents drops EPOLLIN so still-buffered ciphertext can't spin the level-triggered pump; a parked write
+    // that still needs to read (_writeWantsRead) keeps EPOLLIN armed. Re-armed by ResumeReadInterest.
+    internal void SuspendReadInterest()
+    {
+        lock (_sslLock)
+        {
+            if (_readInterestSuspended)
+            {
+                return;
+            }
+
+            _readInterestSuspended = true;
+            UpdateEvents();
+        }
+    }
+
+    internal void ResumeReadInterest()
+    {
+        lock (_sslLock)
+        {
+            if (!_readInterestSuspended)
+            {
+                return;
+            }
+
+            _readInterestSuspended = false;
+            UpdateEvents();
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -363,10 +400,11 @@ internal class ConnectionIoState : IDisposable
                     return pending;
 
                 case TlsOperationStatus.NeedMoreData:
-                    // Renegotiation: the write needs to read peer ciphertext first.
+                    // Renegotiation: the write needs to read peer ciphertext first. Re-arm interest so EPOLLIN is
+                    // present even if the receive loop has suspended it for backpressure.
                     _writeBuffer = _writeBuffer.Slice(written);
                     _writeWantsRead = true;
-                    // EPOLLIN is already registered (baseline).
+                    UpdateEvents();
                     return _writeAwaitable.Reset();
 
                 case TlsOperationStatus.Closed:
