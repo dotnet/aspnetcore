@@ -45,7 +45,7 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                var hasGetAuthStateCall = false;
+                Location? getAuthStateInvocationLocation = null;
                 var hasAuthStateChangedSubscription = false;
 
                 context.RegisterOperationAction(operationContext =>
@@ -55,7 +55,7 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
                         IsAuthenticationStateProviderType(invocation.Instance.Type, authStateProviderType) &&
                         invocation.TargetMethod.Name == ComponentsApi.AuthenticationStateProvider.GetAuthenticationStateAsync)
                     {
-                        hasGetAuthStateCall = true;
+                        getAuthStateInvocationLocation ??= invocation.Syntax.GetLocation();
                     }
                 }, OperationKind.Invocation);
 
@@ -73,11 +73,11 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
 
                 context.RegisterSymbolEndAction(endContext =>
                 {
-                    if (hasGetAuthStateCall && !hasAuthStateChangedSubscription)
+                    if (getAuthStateInvocationLocation is not null && !hasAuthStateChangedSubscription)
                     {
                         endContext.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.AuthenticationStateProviderCachedWithoutSubscription,
-                            namedType.Locations.FirstOrDefault(),
+                            getAuthStateInvocationLocation,
                             namedType.Name));
                     }
                 });
@@ -121,7 +121,7 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
                     return SymbolEqualityComparer.Default.Equals(currentType, type) || field.DeclaredAccessibility != Accessibility.Private;
                 }
             }
-        }    
+        }
 
         return false;
     }
