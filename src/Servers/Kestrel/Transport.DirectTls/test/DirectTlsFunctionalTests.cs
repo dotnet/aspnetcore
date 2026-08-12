@@ -159,7 +159,75 @@ public class DirectTlsFunctionalTests
         await host.StopAsync().WaitAsync(Timeout);
     }
 
-    // Read-side backpressure: when the application stops reading the request body, the transport's input pipe
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task ClientCertificateValidation_ThrowingCallback_DropsConnection_AndKeepsPumpHealthy()
+    {
+        // The endpoint's client-certificate validation callback runs on the pump thread right after the fd-path
+        // handshake reports Complete. If it throws, the transport must drop the connection - dispose the session
+        // and de-register the fd - rather than leaving the fd epoll-registered but in neither the handshaking nor
+        // the connection table, which would spin the pump on the level-triggered socket and hang the request. The
+        // first connection here trips the throwing callback; the second proves the pump survived and recovered.
+        var validationCalls = 0;
+        var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
+        endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+        endpoint.Options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+        endpoint.Options.ClientCertificateValidation = (certificate, chain, errors) =>
+        {
+            // Only the first validation throws; later connections validate normally.
+            if (Interlocked.Increment(ref validationCalls) == 1)
+            {
+                throw new InvalidOperationException("boom");
+            }
+
+            return true;
+        };
+
+        using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
+        var clientCertificate = TestResources.GetTestCertificate("eku.client.pfx");
+
+        // First connection: the throwing callback drops it. The client must observe the teardown promptly - a
+        // connection error or a truncated (never a 200) response - and NOT hang, which is what a stranded,
+        // spinning fd would cause. Bound the exchange well under the class Timeout so a hang fails fast.
+        var firstExchange = Task.Run(async () =>
+        {
+            using var sslStream = await ConnectAsync(
+                host.GetPort(),
+                "localhost",
+                applicationProtocols: [SslApplicationProtocol.Http11],
+                clientCertificate: clientCertificate);
+            return await SendRequestAsync(sslStream, "localhost");
+        });
+
+        Exception? failure = null;
+        string? firstResponse = null;
+        try
+        {
+            firstResponse = await firstExchange.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+
+        Assert.False(failure is TimeoutException, "Request hung: the dropped handshake stranded the fd instead of tearing it down.");
+        if (failure is null)
+        {
+            Assert.DoesNotContain("200", firstResponse!);
+        }
+
+        // Second connection: the pump must still be healthy and serve a well-formed mTLS request.
+        using var goodStream = await ConnectAsync(
+            host.GetPort(),
+            "localhost",
+            applicationProtocols: [SslApplicationProtocol.Http11],
+            clientCertificate: clientCertificate);
+        var goodResponse = await SendRequestAsync(goodStream, "localhost");
+
+        Assert.Contains("200 OK", goodResponse);
+
+        await host.StopAsync().WaitAsync(Timeout);
+    }
     // fills to MaxReadBufferSize and the receive loop stops draining the socket, so the client's upload stalls
     // mid-flight. Once the app drains the body the upload completes and every byte arrives intact.
     //

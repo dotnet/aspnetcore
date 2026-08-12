@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -32,6 +33,8 @@ internal class TlsEventPump : IDisposable
     private readonly long _handshakeTimeoutMs;
 
     private readonly int _epollFd;
+
+    private const uint DefaultEpollInterest = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP;
 
     // Established connections (handshake complete) - use fd as key
     private readonly ConcurrentDictionary<int, ConnectionIoState> _connections = new();
@@ -506,10 +509,9 @@ internal class TlsEventPump : IDisposable
         }
 
         // Register client socket with epoll for handshake events
-        const uint initialInterest = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP;
         var ev = new EpollEvent
         {
-            Events = initialInterest,
+            Events = DefaultEpollInterest,
             Data = new EpollData { Fd = clientFd }
         };
 
@@ -530,7 +532,7 @@ internal class TlsEventPump : IDisposable
             Session = session,
             RemoteEndPoint = remoteEndPoint,
             HandshakeDeadlineTimestamp = ComputeHandshakeDeadline(Environment.TickCount64),
-            CurrentEpollInterest = initialInterest,
+            CurrentEpollInterest = DefaultEpollInterest,
         };
 
         // Try handshake immediately (might complete for resumed sessions)
@@ -582,86 +584,84 @@ internal class TlsEventPump : IDisposable
 
         if (status == TlsOperationStatus.Complete)
         {
-            // Handshake complete! Create connection and enqueue to Kestrel
-            _handshaking.Remove(fd);
-
-            // Mutual TLS (client certificate) handling. The endpoint opts in via
-            // HttpsConnectionAdapterOptions.ClientCertificateMode (Allow/Require), which makes
-            // CreateStreamTransportOptions set ClientCertificateRequired and install a
-            // RemoteCertificateValidationCallback; conn.ClientCertificateValidation carries that callback
-            // (null for server-auth-only endpoints, which skip this block entirely). The Linux fd fast
-            // handshake path reports Complete directly - it does not surface NeedsCertificateValidation like
-            // the buffered PALs do, OpenSSL only enforces SSL_VERIFY_PEER (not FAIL_IF_NO_PEER_CERT), and the
-            // fd read/write fast paths bypass the runtime's pending-validation fault. So the runtime cannot
-            // enforce the accept/reject decision on this path. The transport runs the endpoint's validation
-            // callback here, records the verdict on the session, and tears down rejected connections before
-            // they are ever surfaced to Kestrel.
+            // Handshake complete: validate any client certificate, build the connection, and promote the fd from handshaking to established.
             X509Certificate2? clientCertificate = null;
-            if (conn.ClientCertificateValidation is { } validateClientCertificate)
+            var earlyConnection = conn.Connection;
+            ConnectionIoState connectionState;
+            DirectTlsConnection directConnection;
+
+            try
             {
-                // The peer's leaf certificate, or null when the client presented none. On the fd fast path
-                // this is the runtime's pending external-validation certificate. Intermediates are only
-                // fetched when a leaf is present (they feed the chain's ExtraStore). The chain build,
-                // policy, and callback invocation live in ClientCertificateValidator so they can be unit
-                // tested without epoll or a live session - see its remarks for why AIA downloads are
-                // disabled on this pump thread.
-                var presentedCertificate = conn.Session.GetRemoteCertificate();
-                var intermediates = presentedCertificate is null ? null : conn.Session.GetRemoteCertificates();
-
-                var accepted = ClientCertificateValidator.Validate(conn.Session, presentedCertificate, intermediates, validateClientCertificate);
-
-                if (!accepted)
+                // Mutual TLS (client certificate) handling. The endpoint opts in via
+                // HttpsConnectionAdapterOptions.ClientCertificateMode (Allow/Require), which makes
+                // CreateStreamTransportOptions set ClientCertificateRequired and install a
+                // RemoteCertificateValidationCallback; conn.ClientCertificateValidation carries that callback
+                // (null for server-auth-only endpoints, which skip this block entirely). The Linux fd fast
+                // handshake path reports Complete directly - it does not surface NeedsCertificateValidation like
+                // the buffered PALs do, OpenSSL only enforces SSL_VERIFY_PEER (not FAIL_IF_NO_PEER_CERT), and the
+                // fd read/write fast paths bypass the runtime's pending-validation fault. So the runtime cannot
+                // enforce the accept/reject decision on this path. The transport runs the endpoint's validation
+                // callback here, records the verdict on the session, and tears down rejected connections before
+                // they are ever surfaced to Kestrel.
+                if (conn.ClientCertificateValidation is { } validateClientCertificate)
                 {
-                    _logger.LogDebug("Client certificate rejected for fd={Fd} (presented={Presented}).", fd, presentedCertificate is not null);
+                    // The peer's leaf certificate, or null when the client presented none. On the fd fast path
+                    // this is the runtime's pending external-validation certificate. Intermediates are only
+                    // fetched when a leaf is present (they feed the chain's ExtraStore). The chain build,
+                    // policy, and callback invocation live in ClientCertificateValidator so they can be unit
+                    // tested without epoll or a live session - see its remarks for why AIA downloads are
+                    // disabled on this pump thread.
+                    var presentedCertificate = conn.Session.GetRemoteCertificate();
+                    var intermediates = presentedCertificate is null ? null : conn.Session.GetRemoteCertificates();
+
+                    var accepted = ClientCertificateValidator.Validate(conn.Session, presentedCertificate, intermediates, validateClientCertificate);
+
+                    if (!accepted)
+                    {
+                        _logger.LogDebug("Client certificate rejected for fd={Fd} (presented={Presented}).", fd, presentedCertificate is not null);
+                        DropHandshake(fd, conn);
+                        return;
+                    }
+
+                    // Record the accepted result so the runtime promotes the leaf into its canonical remote-cert
+                    // slot and clears its pending-validation state.
+                    try
+                    {
+                        conn.Session.SetRemoteCertificateValidationResult(SslPolicyErrors.None);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Validation was already resolved (e.g. a buffered PAL that surfaced
+                        // NeedsCertificateValidation before reaching Complete).
+                    }
+
+                    // Surface the accepted certificate to Kestrel via ITlsConnectionFeature. This is the same
+                    // instance the runtime just promoted into its canonical remote-cert slot (on the accept path
+                    // SetRemoteCertificateValidationResult moves _externalPendingCert into _remoteCertificate
+                    // without reallocating), and null when the client presented none on an AllowCertificate
+                    // endpoint - so we reuse presentedCertificate instead of re-reading it from the session.
+                    clientCertificate = presentedCertificate;
+                }
+
+                // Both are set before the pump thread starts and never cleared, so this is unreachable;
+                if (_readyConnections is null || _memoryPool is null)
+                {
+                    Debug.Assert(false, "Handshake completed before the pump was initialized.");
+                    _logger.LogWarning("fd={Fd}: handshake completed before the pump was initialized; dropping.", fd);
                     DropHandshake(fd, conn);
                     return;
                 }
 
-                // Record the accepted result so the runtime promotes the leaf into its canonical remote-cert
-                // slot and clears its pending-validation state.
-                try
-                {
-                    conn.Session.SetRemoteCertificateValidationResult(SslPolicyErrors.None);
-                }
-                catch (InvalidOperationException)
-                {
-                    // Validation was already resolved (e.g. a buffered PAL that surfaced
-                    // NeedsCertificateValidation before reaching Complete).
-                }
+                // Reuse the DirectTlsConnection allocated early for the ClientHello listener (at
+                // NeedsTlsContext), if any, so the connection surfaced to Kestrel keeps the same
+                // ConnectionId the listener already observed. Otherwise create both now. Its ConnectionIoState
+                // has Pump already set (early path) or set here (default path).
+                connectionState = earlyConnection?.ConnectionState
+                    ?? new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger) { Pump = this };
+                connectionState.SetHandshakeComplete();
 
-                // Surface the accepted certificate to Kestrel via ITlsConnectionFeature. This is the same
-                // instance the runtime just promoted into its canonical remote-cert slot (on the accept path
-                // SetRemoteCertificateValidationResult moves _externalPendingCert into _remoteCertificate
-                // without reallocating), and null when the client presented none on an AllowCertificate
-                // endpoint - so we reuse presentedCertificate instead of re-reading it from the session.
-                clientCertificate = presentedCertificate;
-            }
-
-            // Reuse the DirectTlsConnection allocated early for the ClientHello listener (at
-            // NeedsTlsContext), if any, so the connection surfaced to Kestrel keeps the same
-            // ConnectionId the listener already observed. Otherwise create both now. Its ConnectionIoState
-            // has Pump already set (early path) or set here (default path).
-            var earlyConnection = conn.Connection;
-            var connectionState = earlyConnection?.ConnectionState
-                ?? new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger) { Pump = this };
-            connectionState.SetHandshakeComplete();
-
-            // Register with our connections dictionary and epoll
-            _connections[fd] = connectionState;
-
-            // Update epoll to use standard connection events (already registered, just confirm)
-            var ev = new EpollEvent
-            {
-                Events = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP,
-                Data = new EpollData { Fd = fd }
-            };
-            NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev);
-
-            // Create DirectTlsConnection using fd directly (no Socket wrapper)
-            // This avoids ~5+ syscalls per connection (fstat, getsockopt, fcntl, etc.)
-            if (_readyConnections != null && _memoryPool != null)
-            {
-                DirectTlsConnection directConnection;
+                // Create DirectTlsConnection using fd directly (no Socket wrapper).
+                // This avoids ~5+ syscalls per connection (fstat, getsockopt, fcntl, etc.)
                 if (earlyConnection is not null)
                 {
                     // Promote the early connection: publish the ALPN protocol and validated client cert
@@ -683,20 +683,25 @@ internal class TlsEventPump : IDisposable
                         negotiatedApplicationProtocol: conn.Session.NegotiatedApplicationProtocol,
                         clientCertificate: clientCertificate);  // Non-null only when the peer presented a client cert (mTLS)
                 }
-
-                directConnection.Start();
-
-                if (!_readyConnections.TryWrite(directConnection))
-                {
-                    // Channel closed (shutting down) - dispose connection
-                    directConnection.DisposeAsync().AsTask().GetAwaiter().GetResult();
-                }
             }
-            else
+            catch (Exception ex)
             {
-                // Shutting down before we could surface the connection - release the early one if present.
-                earlyConnection?.AbortBeforeStart();
+                // Post-handshake activities failed (like cert validation). De-register fd here
+                _logger.LogDebug(ex, "Completing handshake threw for fd={Fd}", fd);
+                DropHandshake(fd, conn);
+                return;
             }
+
+            PromoteHandshakeToConnection(fd, connectionState);
+
+            directConnection.Start();
+
+            if (!_readyConnections.TryWrite(directConnection))
+            {
+                // Channel closed (shutting down) - dispose connection
+                directConnection.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            }
+
             return;
         }
 
@@ -828,8 +833,8 @@ internal class TlsEventPump : IDisposable
     {
         uint desiredInterest = status switch
         {
-            TlsOperationStatus.DestinationTooSmall => NativeTls.EPOLLIN | NativeTls.EPOLLOUT | NativeTls.EPOLLRDHUP,
-            TlsOperationStatus.NeedMoreData => NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP,
+            TlsOperationStatus.DestinationTooSmall => DefaultEpollInterest | NativeTls.EPOLLOUT,
+            TlsOperationStatus.NeedMoreData => DefaultEpollInterest,
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unexpected in-progress handshake status")
         };
 
@@ -839,11 +844,28 @@ internal class TlsEventPump : IDisposable
         }
     }
 
-    // Tears down a handshake that will not complete. Removes the fd from epoll and releases the
-    // session. If the ClientHello listener already caused an early DirectTlsConnection to be allocated
-    // (at NeedsTlsContext), it is released without the graceful TLS close_notify - a half-open session
-    // cannot shut down cleanly, so AbortBeforeStart just completes the (never-started) pipes and closes
-    // the socket fd. Otherwise the session is disposed directly, which closes the fd.
+    // Counterpart to DropHandshake: resets the fd to DefaultEpollInterest (dropping any handshake EPOLLOUT)
+    // and moves it from _handshaking to _connections. Non-throwing, so the caller's start/enqueue tail is safe.
+    private void PromoteHandshakeToConnection(int fd, ConnectionIoState connectionState)
+    {
+        var ev = new EpollEvent
+        {
+            Events = DefaultEpollInterest,
+            Data = new EpollData { Fd = fd }
+        };
+        NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev);
+
+        _connections[fd] = connectionState;
+        _handshaking.Remove(fd);
+    }
+
+    // Tears down a handshake we will not surface to Kestrel - whether it failed (the handshake or the
+    // completion path threw, or a client certificate was rejected) or completed after the transport had
+    // already begun shutting down. Removes the fd from epoll and releases the session. If the ClientHello
+    // listener already caused an early DirectTlsConnection to be allocated (at NeedsTlsContext), it is
+    // released without the graceful TLS close_notify - a half-open session cannot shut down cleanly, so
+    // AbortBeforeStart just completes the (never-started) pipes and closes the socket fd. Otherwise the
+    // session is disposed directly, which closes the fd.
     private void DropHandshake(int fd, in HandshakingConnection conn)
     {
         _handshaking.Remove(fd);
