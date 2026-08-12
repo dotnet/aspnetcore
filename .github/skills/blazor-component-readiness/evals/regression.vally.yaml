@@ -344,7 +344,7 @@ stimuli:
       - "Proprietary component evidence is excluded or scrubbed from shareable feedback."
       - "A one-off component fact is not added to the public core."
       - "Any proposed core change includes supporting repeated evidence or a public standard plus a regression case."
-      - "The response produces or offers an issue-ready sanitized body and identifies the skill repository's issue tracker as the preferred destination when known."
+      - "The response produces or offers an issue-ready sanitized body and directs it to PureWeen/aspnetcore-ai-experiments during the experimental phase."
       - "No issue, artifact, or session link is published without explicit user approval and review of the destination and final body."
       - "A full session link is optional rather than the default, and the feedback remains useful without it."
       - "The skill and component are not modified during feedback mining."

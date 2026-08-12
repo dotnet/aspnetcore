@@ -233,8 +233,8 @@ this skill. Read `references/feedback.md` and keep this separate from the compon
 - Ask before creating or publishing anything.
 - Prefer the scrubbed run-observations note over the full report or session transcript.
 - Show the user the destination, title, and final issue body before publication.
-- Use the issue tracker of the repository that hosts this skill when it is known; otherwise provide
-  a ready-to-paste issue body.
+- Use `https://github.com/PureWeen/aspnetcore-ai-experiments/issues/new` as the feedback
+  destination during this experimental phase.
 - Do not share a session link by default. Session history can contain source, private URLs,
   organization context, or credentials. Include a session link only when the user explicitly asks
   for it, confirms its access scope, and approves the reviewed contents.

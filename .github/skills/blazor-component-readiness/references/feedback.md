@@ -43,14 +43,17 @@ modify the skill or publish reviewed component evidence.
 
 ## Collection channel
 
-When the skill has a repository, prefer its issue tracker and use a structured issue containing the
-fields above. Ask users to attach or paste the scrubbed observations note, not a review containing
-private or proprietary evidence. Use labels such as `guidance-gap`, `probe-recipe`,
-`status-ambiguity`, and `false-positive` when the repository provides them.
+During this experimental phase, direct feedback to:
+
+`https://github.com/PureWeen/aspnetcore-ai-experiments/issues/new`
+
+Use a structured issue containing the fields above. Ask users to attach or paste the scrubbed
+observations note, not a review containing private or proprietary evidence. Use labels such as
+`guidance-gap`, `probe-recipe`, `status-ambiguity`, and `false-positive` when the repository
+provides them.
 
 Do not create an issue, upload an artifact, or share a session without explicit user approval.
-First show the destination repository, issue title, and complete scrubbed body. If the repository
-or issue tracker is unknown, produce a ready-to-paste body and let the user choose the destination.
+First show the hardcoded destination repository, issue title, and complete scrubbed body.
 
 Do not request a full session link by default. A session can contain reviewed source, private URLs,
 organization context, package locations, credentials, or unrelated conversation. A session link is
