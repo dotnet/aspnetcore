@@ -301,7 +301,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         // Wait for the counter element to appear and stabilize.
         // The circular redirect flow performs 3 retry attempts with multiple render cycles,
         // so we need to wait for the page to fully settle before asserting.
-        Browser.Exists(By.Id("unobserved-exceptions-count"), WaitAssert.DefaultTimeout);
+        Browser.Exists(By.Id("unobserved-exceptions-count"));
 
         // The component will stop redirecting after 3 attempts and render the exception count.
         Browser.Equal("0", () => Browser.FindElement(By.Id("unobserved-exceptions-count")).Text);
