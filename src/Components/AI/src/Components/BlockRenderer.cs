@@ -56,6 +56,11 @@ public class BlockRenderer<TBlock> : IComponent, IDisposable where TBlock : Cont
                 "BlockRenderer must be placed inside a MessageList.");
         }
 
+        if (ChildContent is null)
+        {
+            throw new InvalidOperationException("BlockRenderer requires child content.");
+        }
+
         if (!_initialized)
         {
             _initialized = true;
@@ -65,7 +70,7 @@ public class BlockRenderer<TBlock> : IComponent, IDisposable where TBlock : Cont
                 BlockType = typeof(TBlock),
                 // Capture 'this' so the lambda reads the latest When/ChildContent at invocation time
                 When = block => block is TBlock typed && (When is null || When(typed)),
-                Render = block => ChildContent!((TBlock)block)
+                Render = block => ChildContent((TBlock)block)
             };
 
             ListContext.AddRegistration(_registration);

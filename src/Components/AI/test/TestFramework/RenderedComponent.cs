@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.RenderTree;
+
 namespace Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 
 internal sealed class RenderedComponent<T> where T : IComponent
@@ -21,6 +23,9 @@ internal sealed class RenderedComponent<T> where T : IComponent
     public string GetHtml() => _renderer.GetHtml(ComponentId);
 
     public ComponentNode GetNode() => _renderer.Tree.GetNode(ComponentId);
+
+    public ArrayRange<RenderTreeFrame> GetFrames()
+        => _renderer.GetCurrentRenderTreeFrames(ComponentId);
 
     public RenderedComponent<TChild> FindComponent<TChild>() where TChild : IComponent
     {

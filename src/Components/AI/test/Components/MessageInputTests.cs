@@ -4,6 +4,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI.Tests.Components;
@@ -36,6 +37,21 @@ public class MessageInputTests
         var html = cut.GetHtml();
         Assert.Contains("<button", html);
         Assert.Contains("sc-ai-input__send", html);
+    }
+
+    [Fact]
+    public void Textarea_InputEventUpdatesValueAttribute()
+    {
+        var cut = RenderMessageInput(_ => ResponseEmitters.EmitTextResponse("Hi"));
+        var input = cut.FindComponent<MessageInput>();
+        var frames = input.GetFrames();
+        var inputHandler = frames.Array
+            .Take(frames.Count)
+            .Single(frame =>
+                frame.FrameType == RenderTreeFrameType.Attribute &&
+                frame.AttributeName == "oninput");
+
+        Assert.Equal("value", inputHandler.AttributeEventUpdatesAttributeName);
     }
 
     [Fact]

@@ -90,12 +90,53 @@ public class MessageListTests
 
         var html = cut.GetHtml();
         Assert.Contains("sc-ai-error", html);
+        Assert.Contains("type=\"button\"", html);
         Assert.Contains("Retry", html);
+    }
+
+    [Fact]
+    public void MostRecentlyRegisteredBlockRenderer_Wins()
+    {
+        var context = new MessageListContext();
+        RenderFragment first = _ => { };
+        RenderFragment second = _ => { };
+        context.AddRegistration(new BlockRendererRegistration
+        {
+            BlockType = typeof(RichContentBlock),
+            When = null,
+            Render = _ => first,
+        });
+        context.AddRegistration(new BlockRendererRegistration
+        {
+            BlockType = typeof(RichContentBlock),
+            When = null,
+            Render = _ => second,
+        });
+
+        var result = context.RenderBlock(new RichContentBlock());
+
+        Assert.Same(second, result);
+    }
+
+    [Fact]
+    public void BlockRenderer_WithoutChildContent_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            RenderMessageList(
+                _ => ResponseEmitters.EmitTextResponse("unused"),
+                childContent: builder =>
+                {
+                    builder.OpenComponent<BlockRenderer<RichContentBlock>>(0);
+                    builder.CloseComponent();
+                }));
+
+        Assert.Equal("BlockRenderer requires child content.", exception.Message);
     }
 
     private static RenderedComponent<AgentBoundary> RenderMessageList(
         Func<CancellationToken, IAsyncEnumerable<ChatResponseUpdate>> respond,
-        RenderFragment? emptyContent = null)
+        RenderFragment? emptyContent = null,
+        RenderFragment? childContent = null)
     {
         var client = new DelegatingStreamingChatClient();
         client.SetHandler((msgs, opts, ct) => respond(ct));
@@ -111,6 +152,10 @@ public class MessageListTests
                 if (emptyContent is not null)
                 {
                     builder.AddComponentParameter(1, "EmptyContent", emptyContent);
+                }
+                if (childContent is not null)
+                {
+                    builder.AddComponentParameter(2, "ChildContent", childContent);
                 }
                 builder.CloseComponent();
             });

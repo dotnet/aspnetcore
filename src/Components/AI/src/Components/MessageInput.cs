@@ -104,6 +104,7 @@ public class MessageInput : IComponent, IDisposable
                         // rendered value was already empty) and the textarea is never cleared.
                         Render();
                     }));
+            builder.SetUpdatesAttributeName("value");
             builder.AddAttribute(17, "onkeydown",
                 EventCallback.Factory.Create<KeyboardEventArgs>(this, OnKeyDown));
             builder.CloseElement(); // textarea

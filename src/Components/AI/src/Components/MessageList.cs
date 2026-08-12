@@ -165,11 +165,12 @@ public class MessageList : IComponent, IDisposable
                 builder.AddContent(seq + 5, "Something went wrong. Please try again.");
                 builder.CloseElement(); // span
                 builder.OpenElement(seq + 6, "button");
-                builder.AddAttribute(seq + 7, "class", "sc-ai-btn sc-ai-btn--secondary");
-                builder.AddAttribute(seq + 8, "onclick",
+                builder.AddAttribute(seq + 7, "type", "button");
+                builder.AddAttribute(seq + 8, "class", "sc-ai-btn sc-ai-btn--secondary");
+                builder.AddAttribute(seq + 9, "onclick",
                     EventCallback.Factory.Create(this,
                         () => _agentContext.RetryAsync()));
-                builder.AddContent(seq + 9, "Retry");
+                builder.AddContent(seq + 10, "Retry");
                 builder.CloseElement(); // button
                 builder.CloseElement(); // div
                 break;

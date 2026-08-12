@@ -23,8 +23,9 @@ public class MessageListContext
     {
         ArgumentNullException.ThrowIfNull(block);
 
-        foreach (var reg in _registrations)
+        for (var i = _registrations.Count - 1; i >= 0; i--)
         {
+            var reg = _registrations[i];
             if (reg.BlockType.IsAssignableFrom(block.GetType())
                 && (reg.When is null || reg.When(block)))
             {
