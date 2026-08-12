@@ -297,6 +297,33 @@ public class ConnectionIoStateTests
         Assert.False(read.IsCompleted);                    // read untouched this wake
     }
 
+    // ── Dispose ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void Dispose_DisposesSession_AfterGracefulShutdown()
+    {
+        var io = new ScriptedConnectionIoState();
+
+        io.Dispose();
+
+        Assert.Equal(1, io.ShutdownCallCount);
+        Assert.Equal(1, io.DisposeCallCount);
+    }
+
+    [Fact]
+    public void Dispose_WhenShutdownThrows_StillDisposesSession()
+    {
+        // Shutdown (close_notify) can throw on an abrupt peer close. The session must still be disposed so the
+        // SSL handle / socket fd are not leaked to finalization; the exception propagates to the caller to log.
+        var io = new ScriptedConnectionIoState();
+        io.ScriptShutdownThrows();
+
+        Assert.Throws<AuthenticationException>(io.Dispose);
+
+        Assert.Equal(1, io.ShutdownCallCount);
+        Assert.Equal(1, io.DisposeCallCount);
+    }
+
     /// <summary>
     /// A <see cref="ConnectionIoState"/> with no real socket or pump: <see cref="TlsRead"/>/<see cref="TlsWrite"/>
     /// return scripted statuses and <see cref="ApplyEvents"/> records the computed epoll interest.
@@ -378,5 +405,28 @@ public class ConnectionIoStateTests
                 _epollOutApplied.Set();
             }
         }
+
+        // ── Dispose seam hooks: script a throwing Shutdown and observe that Dispose still runs ──
+        private bool _shutdownThrows;
+
+        /// <summary>Number of times the session shutdown (close_notify) seam ran.</summary>
+        public int ShutdownCallCount { get; private set; }
+
+        /// <summary>Number of times the session dispose seam ran (must stay 1 even if Shutdown throws).</summary>
+        public int DisposeCallCount { get; private set; }
+
+        /// <summary>Make the next session shutdown throw, simulating an abrupt peer close.</summary>
+        public void ScriptShutdownThrows() => _shutdownThrows = true;
+
+        internal override void ShutdownSession()
+        {
+            ShutdownCallCount++;
+            if (_shutdownThrows)
+            {
+                throw new AuthenticationException("scripted abrupt close");
+            }
+        }
+
+        internal override void DisposeSession() => DisposeCallCount++;
     }
 }

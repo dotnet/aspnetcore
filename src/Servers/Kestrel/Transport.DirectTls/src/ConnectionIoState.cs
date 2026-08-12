@@ -129,6 +129,10 @@ internal class ConnectionIoState : IDisposable
         Pump?.ModifyEvents(Fd, events);
     }
 
+    internal virtual void ShutdownSession() => _session.Shutdown();
+
+    internal virtual void DisposeSession() => _session.Dispose();
+
     // Reads decrypted application bytes into buffer. NeedMoreData -> need more ciphertext (wait readable);
     // DestinationTooSmall -> renegotiation must flush handshake output (wait writable).
     private TlsOperationStatus TlsRead(Span<byte> buffer, out int bytesRead)
@@ -522,8 +526,14 @@ internal class ConnectionIoState : IDisposable
         // which would otherwise corrupt the record stream (the "application data after close notify" alert).
         lock (_sslLock)
         {
-            _session.Shutdown();
-            _session.Dispose();
+            try
+            {
+                ShutdownSession();
+            }
+            finally
+            {
+                DisposeSession();
+            }
         }
     }
 }
