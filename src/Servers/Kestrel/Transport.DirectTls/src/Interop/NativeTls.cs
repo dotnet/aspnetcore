@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Interop;
 
 internal static partial class NativeTls
 {
-    private const string LIBC = "libc.so.6";
+    private const string LIBC = "libc";
 
     // The native epoll_event layout differs by architecture: x86_64/i386 pack the struct (12 bytes, data at
     // offset 4) while every other architecture aligns it naturally (16 bytes, data at offset 8). A single

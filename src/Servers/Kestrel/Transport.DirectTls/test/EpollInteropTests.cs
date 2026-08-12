@@ -75,7 +75,7 @@ public class EpollInteropTests
 
 internal static partial class EventFdNative
 {
-    private const string LIBC = "libc.so.6";
+    private const string LIBC = "libc";
 
     [LibraryImport(LIBC, SetLastError = true)]
     internal static partial int eventfd(uint initval, int flags);
