@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -334,11 +335,44 @@ public class ComponentHubTest
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
     }
 
+    [Fact]
+    public async Task OnAuthenticationRefreshedAsyncUpdatesCircuitUser()
+    {
+        var authenticationStateProvider = new ServerAuthenticationStateProvider();
+        var services = new ServiceCollection()
+            .AddSingleton<AuthenticationStateProvider>(authenticationStateProvider)
+            .BuildServiceProvider();
+        var circuitHost = TestCircuitHost.Create(serviceScope: services.CreateAsyncScope());
+
+        var handleRegistryMock = new Mock<ICircuitHandleRegistry>();
+        handleRegistryMock.Setup(m => m.GetCircuit(It.IsAny<IDictionary<object, object>>(), It.IsAny<object>()))
+            .Returns(circuitHost);
+
+        var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim(ClaimTypes.Name, "refreshed-user")],
+            "TestAuthType"));
+        var (_, hub) = InitializeComponentHub(handleRegistry: handleRegistryMock.Object, user: refreshedUser);
+
+        await hub.OnAuthenticationRefreshedAsync();
+
+        var authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        Assert.Same(refreshedUser, authenticationState.User);
+    }
+
+    [Fact]
+    public async Task OnAuthenticationRefreshedAsyncWithoutCircuitDoesNotThrow()
+    {
+        var (_, hub) = InitializeComponentHub();
+
+        await hub.OnAuthenticationRefreshedAsync();
+    }
+
     private static (Mock<ISingleClientProxy>, ComponentHub) InitializeComponentHub(
         TestServerComponentDeserializer deserializer = null,
         ICircuitHandleRegistry handleRegistry = null,
         ICircuitPersistenceProvider provider = null,
-        ICircuitFactory circuitFactory = null)
+        ICircuitFactory circuitFactory = null,
+        ClaimsPrincipal user = null)
     {
         deserializer ??= new TestServerComponentDeserializer();
         var ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -384,6 +418,7 @@ public class ComponentHubTest
         feature.Set(httpContextFeature.Object);
         mockContext.Setup(x => x.Features).Returns(feature);
         mockContext.Setup(x => x.ConnectionId).Returns("123");
+        mockContext.Setup(x => x.User).Returns(user ?? new ClaimsPrincipal());
         hub.Context = mockContext.Object;
 
         return (mockClientProxy, hub);

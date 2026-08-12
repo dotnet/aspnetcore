@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "dotnet-dump": {
-      "version": "6.0.322601",
+      "version": "6.0.408101",
       "commands": [
         "dotnet-dump"
       ]
