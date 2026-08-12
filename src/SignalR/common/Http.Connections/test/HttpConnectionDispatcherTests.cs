@@ -2606,7 +2606,7 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task SendWithDifferentUserNameRejectsRequestAndKeepsConnection()
+    public async Task SendWithDifferentUserNameRejectsRequestDespitePermissiveUserRefreshPolicy()
     {
         using (StartVerifiableLog())
         {
@@ -2614,6 +2614,9 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
             connection.User = MakeUser("user1");
+            var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            Assert.NotNull(userRefreshFeature);
+            userRefreshFeature.OnUserRefreshing = static _ => true;
 
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
@@ -2641,7 +2644,7 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task DeleteWithDifferentUserNameRejectsRequestAndKeepsConnection()
+    public async Task DeleteWithDifferentUserNameRejectsRequestDespitePermissiveUserRefreshPolicy()
     {
         using (StartVerifiableLog())
         {
@@ -2649,6 +2652,9 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
             connection.User = MakeUser("user1");
+            var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            Assert.NotNull(userRefreshFeature);
+            userRefreshFeature.OnUserRefreshing = static _ => true;
 
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 

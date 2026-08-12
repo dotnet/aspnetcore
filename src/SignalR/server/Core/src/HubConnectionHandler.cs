@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.SignalR;
 /// </summary>
 public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : ConnectionHandler where THub : Hub
 {
+    private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
+
     private readonly HubLifetimeManager<THub> _lifetimeManager;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<HubConnectionHandler<THub>> _logger;
@@ -147,19 +149,25 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         // -- the connectionContext has been set up --
 
         var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
+        Func<ClaimsPrincipal, bool>? userRefreshingCallback = null;
         IDisposable? userRefreshedRegistration = null;
         if (userRefreshFeature is not null)
         {
-            // Serializes authentication-refresh handling for this connection so concurrent refreshes don't race the re-key.
+            // Serializes authentication-refresh handling so concurrent refreshes publish hub user state in order.
             var authenticationRefreshLock = new SemaphoreSlim(1, 1);
-            userRefreshedRegistration = userRefreshFeature.OnUserRefreshed(static (user, state) =>
+            var userRefreshState = new UserRefreshState(this, connectionContext, authenticationRefreshLock);
+            userRefreshingCallback = user =>
+                userRefreshState.Handler.OnUserRefreshing(userRefreshState.Connection, user);
+            userRefreshFeature.OnUserRefreshing = userRefreshingCallback;
+            userRefreshedRegistration = userRefreshFeature.OnUserRefreshed(static (user, authenticationExpiration, state) =>
             {
-                var userRefreshedState = (UserRefreshedState)state!;
-                userRefreshedState.Handler.OnUserRefreshed(
-                    userRefreshedState.Connection,
+                var userRefreshState = (UserRefreshState)state!;
+                userRefreshState.Handler.OnUserRefreshed(
+                    userRefreshState.Connection,
                     user,
-                    userRefreshedState.AuthenticationRefreshLock);
-            }, new UserRefreshedState(this, connectionContext, authenticationRefreshLock));
+                    authenticationExpiration,
+                    userRefreshState.AuthenticationRefreshLock);
+            }, userRefreshState);
         }
 
         try
@@ -169,6 +177,12 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
         finally
         {
+            if (userRefreshFeature is not null
+                && ReferenceEquals(userRefreshFeature.OnUserRefreshing, userRefreshingCallback))
+            {
+                userRefreshFeature.OnUserRefreshing = null;
+            }
+
             userRefreshedRegistration?.Dispose();
 
             connectionContext.Cleanup();
@@ -178,28 +192,71 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
     }
 
-    private void OnUserRefreshed(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
+    private bool OnUserRefreshing(HubConnectionContext connection, ClaimsPrincipal user)
     {
-        // Fire and forget; HandleUserRefreshedAsync serializes work per connection through authenticationRefreshLock.
-        _ = HandleUserRefreshedAsync(connection, user, authenticationRefreshLock);
+        try
+        {
+            var newUserId = connection.GetUserIdentifier(user, _userIdProvider);
+            if (string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
+            {
+                // A non-empty IUserIdProvider result is the application's authoritative identity mapping.
+                // If neither principal maps to a SignalR user, retain the transport's secure standard-claim
+                // fallback instead of treating all unmapped authenticated users as the same user.
+                if (!string.IsNullOrEmpty(newUserId)
+                    || GetUserIdentityKey(connection.User) == GetUserIdentityKey(user))
+                {
+                    return true;
+                }
+            }
+
+            Log.UserIdentifierChangeRejected(_logger, connection.UserIdentifier, newUserId);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Log.ErrorValidatingAuthenticationRefresh(_logger, ex);
+            return false;
+        }
     }
 
-    private async Task HandleUserRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
+    private static (string Type, string Value, string Issuer)? GetUserIdentityKey(ClaimsPrincipal user)
+    {
+        foreach (var claimType in _userIdentityClaimTypes)
+        {
+            var claim = user.FindFirst(claimType);
+            if (claim is not null && !string.IsNullOrEmpty(claim.Value))
+            {
+                return (claim.Type, claim.Value, claim.Issuer);
+            }
+        }
+
+        return null;
+    }
+
+    private void OnUserRefreshed(HubConnectionContext connection, ClaimsPrincipal user, DateTimeOffset authenticationExpiration, SemaphoreSlim authenticationRefreshLock)
+    {
+        // Fire and forget; HandleUserRefreshedAsync serializes work per connection through authenticationRefreshLock.
+        _ = HandleUserRefreshedAsync(connection, user, authenticationExpiration, authenticationRefreshLock);
+    }
+
+    private async Task HandleUserRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal user, DateTimeOffset authenticationExpiration, SemaphoreSlim authenticationRefreshLock)
     {
         await authenticationRefreshLock.WaitAsync();
         try
         {
+            if (connection.IsAuthenticationRefreshStale(authenticationExpiration))
+            {
+                return;
+            }
+
             // Recompute inside the lock so a concurrent refresh observes the latest principal and identifier.
             var newUserId = connection.GetUserIdentifier(user, _userIdProvider);
             if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
             {
-                var previousUserId = connection.UserIdentifier;
-                Log.UserIdentifierChangedOnRefresh(_logger, previousUserId, newUserId);
-                connection.Abort();
-                return;
+                Log.UserIdentifierChangedOnRefresh(_logger, connection.UserIdentifier, newUserId);
             }
 
-            connection.ApplyUserState(user, newUserId);
+            connection.ApplyUserState(user, newUserId, authenticationExpiration);
         }
         catch (Exception ex)
         {
@@ -217,7 +274,7 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         _ = _dispatcher.OnAuthenticationRefreshedAsync(connection);
     }
 
-    private sealed class UserRefreshedState(
+    private sealed class UserRefreshState(
         HubConnectionHandler<THub> handler,
         HubConnectionContext connection,
         SemaphoreSlim authenticationRefreshLock)

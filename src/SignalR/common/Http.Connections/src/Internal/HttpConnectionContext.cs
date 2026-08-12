@@ -35,6 +35,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IStatefulReconnectFeature
 #pragma warning restore CA2252 // This API requires opting into preview features
 {
+    // Match the standard identity-claim precedence used by DefaultClaimUidExtractor when no
+    // application-specific validator is registered.
+    private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
+
     private readonly HttpConnectionDispatcherOptions _options;
 
     private readonly object _stateLock = new object();
@@ -90,6 +94,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         _logger = logger ?? NullLogger.Instance;
         MetricsContext = metricsContext;
+        OnUserRefreshing = IsUserRefreshAcceptedByDefault;
 
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
@@ -253,7 +258,25 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
-    public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
+    public Func<ClaimsPrincipal, bool>? OnUserRefreshing
+    {
+        get
+        {
+            lock (_userLock)
+            {
+                return field;
+            }
+        }
+        set
+        {
+            lock (_userLock)
+            {
+                field = value ?? IsUserRefreshAcceptedByDefault;
+            }
+        }
+    }
+
+    public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, DateTimeOffset, object?> callback, object? state)
     {
         ArgumentNullException.ThrowIfNull(callback);
 
@@ -286,7 +309,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// so a caller racing a concurrent refresh that already applied a newer token can't roll the connection
     /// back to an older identity.
     /// </remarks>
-    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+    internal UserUpdateResult UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
     {
         ClaimsPrincipal? previouslyOwnedUser = null;
 
@@ -299,7 +322,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                 && AuthenticationExpiration != DateTimeOffset.MaxValue
                 && authenticationExpiration < AuthenticationExpiration)
             {
-                return;
+                return UserUpdateResult.Stale;
+            }
+
+            if (!IsUserRefreshAccepted(user))
+            {
+                return UserUpdateResult.Rejected;
             }
 
             if (_ownsUserIdentities && !ReferenceEquals(User, user))
@@ -335,7 +363,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             {
                 try
                 {
-                    callback.Invoke(user);
+                    callback.Invoke(user, authenticationExpiration);
                 }
                 catch (Exception ex)
                 {
@@ -348,6 +376,49 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         {
             DisposeOwnedIdentities(previouslyOwnedUser);
         }
+
+        return UserUpdateResult.Updated;
+    }
+
+    internal bool IsUserRefreshAccepted(ClaimsPrincipal user)
+    {
+        lock (_userLock)
+        {
+            try
+            {
+                return OnUserRefreshing!(user);
+            }
+            catch (Exception ex)
+            {
+                Log.UserRefreshingCallbackFailed(_logger, ex);
+                return false;
+            }
+        }
+    }
+
+    internal bool IsUserAssociatedWithConnection(ClaimsPrincipal user)
+    {
+        lock (_userLock)
+        {
+            return IsUserRefreshAcceptedByDefault(user);
+        }
+    }
+
+    private bool IsUserRefreshAcceptedByDefault(ClaimsPrincipal user)
+        => User is null || GetUserIdentityKey(User) == GetUserIdentityKey(user);
+
+    internal static (string Type, string Value, string Issuer)? GetUserIdentityKey(ClaimsPrincipal user)
+    {
+        foreach (var claimType in _userIdentityClaimTypes)
+        {
+            var claim = user.FindFirst(claimType);
+            if (claim is not null && !string.IsNullOrEmpty(claim.Value))
+            {
+                return (claim.Type, claim.Value, claim.Issuer);
+            }
+        }
+
+        return null;
     }
 
     internal void MarkUserOwned()
@@ -883,16 +954,16 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     private sealed class UserRefreshedCallbackRegistration(
         HttpConnectionContext connection,
-        Action<ClaimsPrincipal, object?> callback,
+        Action<ClaimsPrincipal, DateTimeOffset, object?> callback,
         object? state) : IDisposable
     {
         private HttpConnectionContext? _connection = connection;
 
-        public void Invoke(ClaimsPrincipal user)
+        public void Invoke(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
         {
             if (_connection is not null)
             {
-                callback(user, state);
+                callback(user, authenticationExpiration, state);
             }
         }
 
@@ -908,6 +979,13 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Success,
         AlreadyActive,
         CannotChange,
+    }
+
+    internal enum UserUpdateResult
+    {
+        Updated,
+        Stale,
+        Rejected,
     }
 
     private static partial class Log
@@ -941,5 +1019,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         [LoggerMessage(10, LogLevel.Error, "An IConnectionUserRefreshFeature.OnUserRefreshed callback threw an exception.", EventName = "UserRefreshedCallbackFailed")]
         public static partial void UserRefreshedCallbackFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(11, LogLevel.Error, "The IConnectionUserRefreshFeature.OnUserRefreshing callback threw an exception. The user update was rejected.", EventName = "UserRefreshingCallbackFailed")]
+        public static partial void UserRefreshingCallbackFailed(ILogger logger, Exception exception);
     }
 }

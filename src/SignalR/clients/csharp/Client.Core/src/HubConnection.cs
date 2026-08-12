@@ -90,7 +90,10 @@ public partial class HubConnection : IAsyncDisposable
     private bool _disposed;
 
     // Authentication refresh fields
+    private readonly object _authRefreshTimerLock = new object();
     private Timer? _authRefreshTimer;
+    private AuthenticationRefreshTimerState? _authRefreshTimerState;
+    private ConnectionState? _authRefreshConnectionState;
     // The delay the authentication-refresh timer was last armed with. Exposed for tests to assert scheduling.
     private TimeSpan _lastAuthenticationRefreshDelay;
     private readonly AuthenticationRefreshOptions _authenticationRefreshOptions;
@@ -553,6 +556,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             await SendHubMessage(startingConnectionState, PingMessage.Instance, cancellationToken).ConfigureAwait(false);
         }
+        EnableAuthenticationRefreshTimer(startingConnectionState);
         startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
         // Schedule automatic authentication refresh if enabled and the server reported a token lifetime.
@@ -561,7 +565,7 @@ public partial class HubConnection : IAsyncDisposable
             var authenticationRefreshFeature = connection.Features.Get<IAuthenticationRefreshFeature>();
             if (authenticationRefreshFeature?.InitialTokenLifetime is { } initialTokenLifetime && initialTokenLifetime > TimeSpan.Zero)
             {
-                ScheduleAuthenticationRefresh(initialTokenLifetime);
+                ScheduleAuthenticationRefresh(initialTokenLifetime, startingConnectionState);
             }
         }
 
@@ -577,12 +581,19 @@ public partial class HubConnection : IAsyncDisposable
     /// <returns>The new token lifetime from the server, or null.</returns>
     public async Task<TimeSpan?> RefreshAuthenticationAsync(CancellationToken cancellationToken = default)
     {
+        CheckDisposed();
+
         var connectionState = _state.CurrentConnectionStateUnsynchronized;
         if (connectionState == null)
         {
             throw new InvalidOperationException("Cannot refresh authentication when the connection is not active.");
         }
 
+        return await RefreshAuthenticationAsyncCore(connectionState, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<TimeSpan?> RefreshAuthenticationAsyncCore(ConnectionState connectionState, CancellationToken cancellationToken)
+    {
         var connection = connectionState.Connection;
         var authenticationRefreshFeature = connection.Features.Get<IAuthenticationRefreshFeature>();
         if (authenticationRefreshFeature is null)
@@ -617,7 +628,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             if (newTtl is { } tokenLifetime && tokenLifetime > TimeSpan.Zero)
             {
-                ScheduleAuthenticationRefresh(tokenLifetime);
+                ScheduleAuthenticationRefresh(tokenLifetime, connectionState);
             }
         }
 
@@ -644,10 +655,19 @@ public partial class HubConnection : IAsyncDisposable
     /// </summary>
     internal void ScheduleAuthenticationRefresh(TimeSpan tokenLifetime)
     {
+        if (_state.CurrentConnectionStateUnsynchronized is { } connectionState)
+        {
+            ScheduleAuthenticationRefresh(tokenLifetime, connectionState);
+        }
+    }
+
+    private void ScheduleAuthenticationRefresh(TimeSpan tokenLifetime, ConnectionState connectionState)
+    {
         var refreshBefore = _authenticationRefreshOptions.RefreshBeforeExpiration;
         TimeSpan refreshIn;
 
-        if (tokenLifetime <= new TimeSpan(refreshBefore.Ticks * 2))
+        var timeUntilRefreshWindow = tokenLifetime - refreshBefore;
+        if (timeUntilRefreshWindow <= refreshBefore)
         {
             // Short-lived token: refresh at half the TTL to avoid spamming
             refreshIn = new TimeSpan(tokenLifetime.Ticks / 2);
@@ -657,45 +677,123 @@ public partial class HubConnection : IAsyncDisposable
             refreshIn = tokenLifetime - refreshBefore;
         }
 
-        ScheduleAuthenticationRefreshAt(refreshIn);
+        ScheduleAuthenticationRefreshAt(refreshIn, connectionState);
     }
 
     /// <summary>
     /// Arms the one-shot authentication-refresh timer to fire after <paramref name="refreshIn"/>, replacing any
-    /// existing timer. A minimum interval is enforced to avoid spamming the server.
+    /// existing timer.
     /// </summary>
     internal void ScheduleAuthenticationRefreshAt(TimeSpan refreshIn)
     {
-        // Cancel any existing timer
-        _authRefreshTimer?.Dispose();
-
-        // Enforce a minimum interval to prevent spamming the server
-        var minimumRefreshInterval = TimeSpan.FromSeconds(30);
-        if (refreshIn < minimumRefreshInterval)
+        if (_state.CurrentConnectionStateUnsynchronized is { } connectionState)
         {
-            refreshIn = minimumRefreshInterval;
+            ScheduleAuthenticationRefreshAt(refreshIn, connectionState);
         }
-
-        _authRefreshTimer = new Timer(
-            static state => _ = ((HubConnection)state!).OnAuthenticationRefreshTimerFired(),
-            this,
-            refreshIn,
-            Timeout.InfiniteTimeSpan); // One-shot timer
-        _lastAuthenticationRefreshDelay = refreshIn;
     }
 
-    private async Task OnAuthenticationRefreshTimerFired()
+    private void ScheduleAuthenticationRefreshAt(TimeSpan refreshIn, ConnectionState connectionState)
     {
+        Timer? previousTimer;
+        lock (_authRefreshTimerLock)
+        {
+            if (!ReferenceEquals(_authRefreshConnectionState, connectionState))
+            {
+                return;
+            }
+
+            var timerState = new AuthenticationRefreshTimerState(this, connectionState);
+            var timer = new Timer(
+                static state =>
+                {
+                    var timerState = (AuthenticationRefreshTimerState)state!;
+                    _ = timerState.HubConnection.OnAuthenticationRefreshTimerFired(timerState);
+                },
+                timerState,
+                refreshIn,
+                Timeout.InfiniteTimeSpan); // One-shot timer
+
+            previousTimer = _authRefreshTimer;
+            _authRefreshTimer = timer;
+            _authRefreshTimerState = timerState;
+            _lastAuthenticationRefreshDelay = refreshIn;
+        }
+
+        previousTimer?.Dispose();
+    }
+
+    private async Task OnAuthenticationRefreshTimerFired(AuthenticationRefreshTimerState timerState)
+    {
+        if (!TryClaimAuthenticationRefreshTimer(timerState, out var timer))
+        {
+            return;
+        }
+
+        timer.Dispose();
+
         try
         {
             Log.AuthenticationRefreshStarting(_logger);
-            var newTtl = await RefreshAuthenticationAsync().ConfigureAwait(false);
+            var newTtl = await RefreshAuthenticationAsyncCore(timerState.ConnectionState, cancellationToken: default).ConfigureAwait(false);
             Log.AuthenticationRefreshCompleted(_logger, newTtl);
         }
         catch (Exception ex)
         {
             Log.AuthenticationRefreshFailed(_logger, ex);
         }
+    }
+
+    private bool TryClaimAuthenticationRefreshTimer(AuthenticationRefreshTimerState timerState, [NotNullWhen(true)] out Timer? timer)
+    {
+        lock (_authRefreshTimerLock)
+        {
+            if (!ReferenceEquals(_authRefreshConnectionState, timerState.ConnectionState)
+                || !ReferenceEquals(_authRefreshTimerState, timerState))
+            {
+                timer = null;
+                return false;
+            }
+
+            timer = _authRefreshTimer;
+            _authRefreshTimer = null;
+            _authRefreshTimerState = null;
+            return timer is not null;
+        }
+    }
+
+    private void EnableAuthenticationRefreshTimer(ConnectionState connectionState)
+    {
+        Timer? timer;
+        lock (_authRefreshTimerLock)
+        {
+            timer = _authRefreshTimer;
+            _authRefreshTimer = null;
+            _authRefreshTimerState = null;
+            _authRefreshConnectionState = connectionState;
+        }
+
+        timer?.Dispose();
+    }
+
+    private void DisableAuthenticationRefreshTimer()
+    {
+        Timer? timer;
+        lock (_authRefreshTimerLock)
+        {
+            _authRefreshConnectionState = null;
+            _authRefreshTimerState = null;
+            timer = _authRefreshTimer;
+            _authRefreshTimer = null;
+        }
+
+        timer?.Dispose();
+    }
+
+    private sealed class AuthenticationRefreshTimerState(HubConnection hubConnection, ConnectionState connectionState)
+    {
+        public HubConnection HubConnection { get; } = hubConnection;
+
+        public ConnectionState ConnectionState { get; } = connectionState;
     }
 
     private static ValueTask CloseAsync(ConnectionContext connection)
@@ -708,9 +806,7 @@ public partial class HubConnection : IAsyncDisposable
     // if we're disposing.
     private async Task StopAsyncCore(bool disposing)
     {
-        // Dispose the authentication refresh timer
-        _authRefreshTimer?.Dispose();
-        _authRefreshTimer = null;
+        DisableAuthenticationRefreshTimer();
 
         // StartAsync acquires the connection lock for the duration of the handshake.
         // ReconnectAsync also acquires the connection lock for reconnect attempts and handshakes.
@@ -748,6 +844,7 @@ public partial class HubConnection : IAsyncDisposable
             }
 
             CheckDisposed();
+            DisableAuthenticationRefreshTimer();
             connectionState = _state.CurrentConnectionStateUnsynchronized;
 
             // Set the stopping flag so that any invocations after this get a useful error message instead of
@@ -1906,6 +2003,8 @@ public partial class HubConnection : IAsyncDisposable
 
     private async Task HandleConnectionClose(ConnectionState connectionState)
     {
+        DisableAuthenticationRefreshTimer();
+
         // Clear the connectionState field
         await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
         try

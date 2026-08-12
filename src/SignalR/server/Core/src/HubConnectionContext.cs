@@ -53,6 +53,7 @@ public partial class HubConnectionContext
     private bool _useStatefulReconnect;
     private DefaultHubCallerContext? _hubCallerContext;
     private string? _userIdentifier;
+    private DateTimeOffset _userAuthenticationExpiration = DateTimeOffset.MinValue;
 
     // IUserIdProvider.GetUserId receives the connection, not the candidate principal. During refresh this
     // lets that synchronous call see the pending principal before publishing the refreshed hub state, so we
@@ -219,7 +220,23 @@ public partial class HubConnectionContext
 
     internal void ApplyUserState(ClaimsPrincipal user, string? userIdentifier)
     {
+        ApplyUserState(user, userIdentifier, DateTimeOffset.MinValue);
+    }
+
+    internal bool IsAuthenticationRefreshStale(DateTimeOffset authenticationExpiration)
+    {
+        // HttpConnectionContext.UpdateUser rejects older expirations before notifying the hub. Mirror
+        // that check at this asynchronous boundary so an older queued notification cannot overwrite
+        // the hub user after the connection layer has already accepted a newer refresh.
+        return authenticationExpiration != DateTimeOffset.MaxValue
+            && _userAuthenticationExpiration != DateTimeOffset.MaxValue
+            && authenticationExpiration < _userAuthenticationExpiration;
+    }
+
+    internal void ApplyUserState(ClaimsPrincipal user, string? userIdentifier, DateTimeOffset authenticationExpiration)
+    {
         Volatile.Write(ref _userIdentifier, userIdentifier);
+        _userAuthenticationExpiration = authenticationExpiration;
         PublishHubCallerContext(new DefaultHubCallerContext(this, user));
     }
 
