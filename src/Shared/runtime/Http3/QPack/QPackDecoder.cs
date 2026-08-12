@@ -763,7 +763,7 @@ namespace System.Net.Http.QPack
         {
             if (index >= H3StaticTable.Count)
             {
-                throw new QPackDecodingException(SR.Format(SR.net_http_hpack_invalid_index, index));
+                throw new QPackDecodingException(SR.Format(SR.net_http_qpack_invalid_index, index));
             }
         }
 

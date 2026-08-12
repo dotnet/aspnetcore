@@ -350,7 +350,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             _decoder.Decode([0x00, 0x00], endHeaders: false, handler: _handler);
 
             var exception = Assert.Throws<QPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
-            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, index), exception.Message);
+            Assert.Equal(SR.Format(SR.net_http_qpack_invalid_index, index), exception.Message);
             Assert.Empty(_handler.DecodedHeaders);
         }
 
