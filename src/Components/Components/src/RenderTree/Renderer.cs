@@ -607,6 +607,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
     /// <returns>The parameter type expected by the event handler. Normally this is a subclass of <see cref="EventArgs"/>.</returns>
+    [return: DynamicallyAccessedMembers(JsonSerialized)]
     public Type GetEventArgsType(ulong eventHandlerId)
     {
         var methodInfo = GetRequiredEventBindingEntry(eventHandlerId).Callback.Delegate?.Method;
