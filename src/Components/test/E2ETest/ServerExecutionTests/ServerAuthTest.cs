@@ -49,6 +49,34 @@ public class ServerAuthTest : AuthTest
         }
     }
 
+    [Fact]
+    public void UpdatesAuthenticationStateWhenAuthenticationRefreshed()
+    {
+        SignInAs("Someone", "IrrelevantRole");
+        var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases, "?captureAuthenticationRefresh");
+        Browser.Equal("You're not authorized, Someone", () =>
+            appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        var connectionId = Assert.IsType<string>(
+            javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;"));
+
+        SignInAs("Someone", "TestRole", useSeparateTab: true);
+        var refreshError = javascript.ExecuteAsyncScript("""
+            const callback = arguments[arguments.length - 1];
+            authenticationRefreshConnection.refreshAuthentication().then(
+                () => callback(),
+                error => callback(String(error)));
+            """);
+
+        Assert.Null(refreshError);
+        Browser.Equal("Welcome, Someone!", () =>
+            appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
+        Assert.Equal(
+            connectionId,
+            Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
+    }
+
     private void SignInAs(string usernName, string roles, bool useSeparateTab = false) =>
         Browser.SignInAs(new Uri(_serverFixture.RootUri, "/subdir"), usernName, roles, useSeparateTab);
 
