@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
 internal sealed class NegotiateState : INegotiateState
 {
+    private static readonly NegotiateAuthenticationServerOptions _serverOptions = new();
     private readonly ChannelBinding? _channelBinding;
     private readonly NegotiateAuthentication _instance;
 
@@ -19,10 +20,10 @@ internal sealed class NegotiateState : INegotiateState
 
         try
         {
-            _instance = new NegotiateAuthentication(new NegotiateAuthenticationServerOptions
-            {
-                Binding = _channelBinding,
-            });
+            var serverOptions = _channelBinding is null
+                ? _serverOptions
+                : new NegotiateAuthenticationServerOptions { Binding = _channelBinding };
+            _instance = new NegotiateAuthentication(serverOptions);
         }
         catch
         {

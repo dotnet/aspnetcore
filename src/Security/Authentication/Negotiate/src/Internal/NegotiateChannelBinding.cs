@@ -8,14 +8,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
 internal sealed class NegotiateChannelBinding : ChannelBinding
 {
-    public NegotiateChannelBinding(ReadOnlyMemory<byte> channelBindingToken)
+    public unsafe NegotiateChannelBinding(ReadOnlyMemory<byte> channelBindingToken)
     {
         // ITlsConnectionFeature exposes managed bytes, but NegotiateAuthentication requires
         // a ChannelBinding handle that remains valid throughout the authentication exchange.
-        var bytes = channelBindingToken.ToArray();
-        Size = bytes.Length;
+        Size = channelBindingToken.Length;
         SetHandle(Marshal.AllocHGlobal(Size));
-        Marshal.Copy(bytes, 0, handle, Size);
+        using var pinnedToken = channelBindingToken.Pin();
+        Buffer.MemoryCopy(pinnedToken.Pointer, (void*)handle, Size, Size);
     }
 
     public override int Size { get; }

@@ -131,10 +131,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
                 persistence?.State = null;
             }
 
-            if (_negotiateState is null)
-            {
-                _negotiateState = Options.StateFactory.CreateInstance(GetChannelBindingToken());
-            }
+            _negotiateState ??= Options.StateFactory.CreateInstance(GetChannelBindingToken());
 
             var outgoing = _negotiateState.GetOutgoingBlob(token, out var errorType, out var exception);
             if (errorType != BlobErrorType.None)
