@@ -82,14 +82,28 @@ internal class TlsEventPump : IDisposable
     {
         public int Fd;
         public TlsSocketSession Session;
-        public IPEndPoint? RemoteEndPoint;  // Captured from Socket.RemoteEndPoint at accept time
-        public RemoteCertificateValidationCallback? ClientCertificateValidation;  // Endpoint's client-cert validation callback (null when no client cert requested); runs at Complete for mTLS enforcement
-        // DirectTlsConnection allocated early (at NeedsTlsContext) so the ClientHello listener has a stable
-        // ConnectionContext. Null until the listener fires; reused when the handshake reaches Complete.
+        /// <summary>
+        /// Captured from Socket.RemoteEndPoint at accept time
+        /// </summary>
+        public IPEndPoint? RemoteEndPoint;
+        /// <summary>
+        /// Endpoint's client-cert validation callback (null when no client cert requested); runs at Complete for mTLS enforcement
+        /// </summary>
+        public RemoteCertificateValidationCallback? ClientCertificateValidation;
+        /// <summary>
+        /// DirectTlsConnection allocated early (at NeedsTlsContext) so the ClientHello listener has a stable
+        /// ConnectionContext. Null until the listener fires; reused when the handshake reaches Complete.
+        /// </summary>
         public DirectTlsConnection? Connection;
-        // Environment.TickCount64 value at/after which this handshake is considered timed out and dropped.
-        // long.MaxValue means the handshake never times out (timeouts disabled for this pump).
+        /// <summary>
+        /// Environment.TickCount64 value at/after which this handshake is considered timed out and dropped.
+        /// long.MaxValue means the handshake never times out (timeouts disabled for this pump).
+        /// </summary>
         public long HandshakeDeadlineTimestamp;
+        /// <summary>
+        /// The fd's current epoll interest set, mirrored from the last epoll_ctl issued for this handshaking socket.
+        /// </summary>
+        public uint CurrentEpollInterest;
     }
 
     public TlsEventPump(ILogger tlsPumpLogger, int id, TimeSpan handshakeTimeout)
@@ -189,6 +203,29 @@ internal class TlsEventPump : IDisposable
     // tests can observe which fds the pump removes from its interest set without a live epoll instance.
     internal virtual void DeregisterFromEpoll(int fd)
         => NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
+
+    // Issues the EPOLL_CTL_MOD syscall for a handshaking fd. Callers should go through SetHandshakeInterest so
+    // the cached CurrentEpollInterest stays in sync. internal and virtual for testing.
+    internal virtual void UpdateHandshakeInterest(int fd, uint events)
+    {
+        var ev = new EpollEvent
+        {
+            Events = events,
+            Data = new EpollData { Fd = fd }
+        };
+        NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev);
+    }
+
+    // The single choke point for changing a handshaking fd's epoll interest set: rewrites the kernel interest
+    // (via the UpdateHandshakeInterest seam) AND records the new mask on the handshaking entry so
+    // CurrentEpollInterest always mirrors what the kernel is subscribed to. Every mid-handshake interest
+    // change must go through here so the cached mask cannot drift.
+    private void SetHandshakeInterest(int fd, ref HandshakingConnection conn, uint events)
+    {
+        UpdateHandshakeInterest(fd, events);
+        conn.CurrentEpollInterest = events;
+        _handshaking[fd] = conn;
+    }
 
     /// <summary>
     /// Modify the epoll events for a file descriptor.
@@ -469,9 +506,10 @@ internal class TlsEventPump : IDisposable
         }
 
         // Register client socket with epoll for handshake events
+        const uint initialInterest = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP;
         var ev = new EpollEvent
         {
-            Events = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP,
+            Events = initialInterest,
             Data = new EpollData { Fd = clientFd }
         };
 
@@ -484,13 +522,15 @@ internal class TlsEventPump : IDisposable
             return;
         }
 
-        // Track handshaking connection with captured remote endpoint
+        // Track handshaking connection with captured remote endpoint. CurrentEpollInterest mirrors the ADD
+        // above so later steps can reconcile the interest set (arm/clear EPOLLOUT) without a redundant syscall.
         _handshaking[clientFd] = new HandshakingConnection
         {
             Fd = clientFd,
             Session = session,
             RemoteEndPoint = remoteEndPoint,
             HandshakeDeadlineTimestamp = ComputeHandshakeDeadline(Environment.TickCount64),
+            CurrentEpollInterest = initialInterest,
         };
 
         // Try handshake immediately (might complete for resumed sessions)
@@ -660,21 +700,9 @@ internal class TlsEventPump : IDisposable
             return;
         }
 
-        if (status == TlsOperationStatus.NeedMoreData)
+        if (status is TlsOperationStatus.NeedMoreData or TlsOperationStatus.DestinationTooSmall)
         {
-            // Waiting for more ciphertext from the peer - already registered for EPOLLIN.
-            return;
-        }
-
-        if (status == TlsOperationStatus.DestinationTooSmall)
-        {
-            // Need to flush handshake output - add EPOLLOUT.
-            var ev = new EpollEvent
-            {
-                Events = NativeTls.EPOLLIN | NativeTls.EPOLLOUT | NativeTls.EPOLLRDHUP,
-                Data = new EpollData { Fd = fd }
-            };
-            NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev);
+            ApplyInProgressHandshakeInterest(fd, ref conn, status);
             return;
         }
 
@@ -783,6 +811,32 @@ internal class TlsEventPump : IDisposable
         // Handshake failed or connection closed - cleanup.
         _logger.LogDebug("Handshake failed for fd={Fd}: status={Status}", fd, status);
         DropHandshake(fd, conn);
+    }
+
+    // Adjusts an in-progress handshake's epoll interest set for a NeedMoreData / DestinationTooSmall step.
+    // Established sockets are level-triggered, so EPOLLOUT must be armed only while there is pending handshake
+    // output the socket send buffer could not accept (DestinationTooSmall), and cleared the moment the
+    // handshake goes back to waiting on the peer (NeedMoreData). Leaving EPOLLOUT set while the send buffer
+    // has room makes epoll_wait fire continuously and spins the pump at 100% CPU for the rest of the
+    // handshake. Computes the desired mask from the status and reconciles against the cached
+    // CurrentEpollInterest, so it only issues an epoll_ctl when the interest actually changes: a freshly
+    // registered handshake is EPOLLIN-only, so a plain NeedMoreData (the common case) is a no-op here, and
+    // repeated DestinationTooSmall steps re-use the already-armed interest. The caller only invokes this for
+    // NeedMoreData / DestinationTooSmall, so any non-DestinationTooSmall status here means "back to EPOLLIN".
+    // internal for testing.
+    internal void ApplyInProgressHandshakeInterest(int fd, ref HandshakingConnection conn, TlsOperationStatus status)
+    {
+        uint desiredInterest = status switch
+        {
+            TlsOperationStatus.DestinationTooSmall => NativeTls.EPOLLIN | NativeTls.EPOLLOUT | NativeTls.EPOLLRDHUP,
+            TlsOperationStatus.NeedMoreData => NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP,
+            _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unexpected in-progress handshake status")
+        };
+
+        if (desiredInterest != conn.CurrentEpollInterest)
+        {
+            SetHandshakeInterest(fd, ref conn, desiredInterest);
+        }
     }
 
     // Tears down a handshake that will not complete. Removes the fd from epoll and releases the
