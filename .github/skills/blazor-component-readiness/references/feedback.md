@@ -43,7 +43,59 @@ modify the skill or publish reviewed component evidence.
 
 ## Collection channel
 
-When the skill has a public repository, use a structured GitHub issue form containing the fields
-above. Ask users to attach or paste the scrubbed observations note, not a review containing private
-or proprietary evidence.
-Use labels for `guidance-gap`, `probe-recipe`, `status-ambiguity`, and `false-positive`.
+When the skill has a repository, prefer its issue tracker and use a structured issue containing the
+fields above. Ask users to attach or paste the scrubbed observations note, not a review containing
+private or proprietary evidence. Use labels such as `guidance-gap`, `probe-recipe`,
+`status-ambiguity`, and `false-positive` when the repository provides them.
+
+Do not create an issue, upload an artifact, or share a session without explicit user approval.
+First show the destination repository, issue title, and complete scrubbed body. If the repository
+or issue tracker is unknown, produce a ready-to-paste body and let the user choose the destination.
+
+Do not request a full session link by default. A session can contain reviewed source, private URLs,
+organization context, package locations, credentials, or unrelated conversation. A session link is
+optional supplementary context only when the user explicitly requests it, confirms who can access
+it, reviews what it contains, and approves including it. The issue must remain useful without the
+session link.
+
+## Issue-ready feedback
+
+Suggested title:
+
+```text
+[Blazor component readiness] Feedback from a [complete/targeted] review
+```
+
+Suggested body:
+
+```markdown
+## Run context
+
+- **Skill/rubric version:**
+- **Review mode:**
+- **Component type:** [generic description; omit confidential names]
+- **Approximate elapsed time or timebox:**
+
+## What helped
+
+[Guidance that prevented an error or improved the decision.]
+
+## Friction or ambiguity
+
+[The highest-cost step, unclear guidance, status boundary, false positive, or false negative.]
+
+## Reusable improvement
+
+[A generalized probe recipe or smallest proposed skill change.]
+
+## Supporting workflow evidence
+
+[Scrubbed evidence showing why this generalizes. Do not include proprietary component evidence.]
+
+## Regression idea
+
+[A prompt and expected behavior that would catch the problem in the future.]
+```
+
+End a pilot review with one concise invitation to prepare this issue. Publication remains a
+separate, user-approved action.

@@ -321,7 +321,7 @@ stimuli:
       - One specific child failed in a proprietary source file; that component fact must not enter the public skill.
       - The scorecard annex materially qualified, but did not reverse, the decision.
 
-      Mine the experience so the public skill can improve. Produce a shareable workflow retrospective with evidence-backed proposed changes and regression cases. Do not rerun the component review, expose proprietary evidence, or modify the skill.
+      Mine the experience so the public skill can improve. Produce a shareable, issue-ready workflow retrospective with evidence-backed proposed changes and regression cases, then explain the consent-safe sharing step. Do not rerun the component review, expose proprietary evidence, modify the skill, publish an issue, or share the full session.
     tags:
       eval_id: "12"
       area: "feedback-loop"
@@ -344,6 +344,9 @@ stimuli:
       - "Proprietary component evidence is excluded or scrubbed from shareable feedback."
       - "A one-off component fact is not added to the public core."
       - "Any proposed core change includes supporting repeated evidence or a public standard plus a regression case."
+      - "The response produces or offers an issue-ready sanitized body and identifies the skill repository's issue tracker as the preferred destination when known."
+      - "No issue, artifact, or session link is published without explicit user approval and review of the destination and final body."
+      - "A full session link is optional rather than the default, and the feedback remains useful without it."
       - "The skill and component are not modified during feedback mining."
   - name: "eval-13-dynamic-registration"
     prompt: |-

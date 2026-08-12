@@ -225,7 +225,28 @@ resolution within the selected core, overlays, or targeted IDs. Targeted validat
 complete readiness. `scripts/validate_skill.py` is contributor infrastructure, not part of normal
 component reviews.
 
-### 10. Decide whether to expand
+### 10. Invite privacy-safe feedback
+
+After delivering the report, offer to prepare a sanitized feedback issue for the maintainers of
+this skill. Read `references/feedback.md` and keep this separate from the component verdict.
+
+- Ask before creating or publishing anything.
+- Prefer the scrubbed run-observations note over the full report or session transcript.
+- Show the user the destination, title, and final issue body before publication.
+- Use the issue tracker of the repository that hosts this skill when it is known; otherwise provide
+  a ready-to-paste issue body.
+- Do not share a session link by default. Session history can contain source, private URLs,
+  organization context, or credentials. Include a session link only when the user explicitly asks
+  for it, confirms its access scope, and approves the reviewed contents.
+- If the user declines, do not repeat the request.
+
+Use a short invitation such as:
+
+> Would you like me to prepare a sanitized feedback issue for the maintainers of this skill? It
+> will describe what helped and where the workflow was unclear without including reviewed code or
+> private evidence. I will show you the issue before publishing it.
+
+### 11. Decide whether to expand
 
 Recommend another control only after judging whether this review was useful. Choose a materially
 different risk profile, and never imply one component proves catalog-wide readiness.
