@@ -47,8 +47,8 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
 
     internal static readonly DiagnosticDescriptor ValidatablePropertyIsNotAccessible = new(
         "ASP0035",
-        "Validatable property or its type is not accessible",
-        "The property '{0}' on type '{1}' declares validation but is not public or its type isn't accessible in generated code, so it is silently skipped by the validation source generator",
+        "Validatable property or its type on a [ValidatableType] is not accessible",
+        "The property '{0}' on the [ValidatableType] '{1}' declares validation but is not public or its type isn't accessible in generated code, so it is silently skipped by the validation source generator",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
@@ -57,8 +57,8 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
 
     internal static readonly DiagnosticDescriptor ValidatablePropertyIsNotAccessibleCompilationEnd = new(
         "ASP0036",
-        "Validatable property or its type is not accessible",
-        "The property '{0}' on type '{1}' declares validation but is not public or its type isn't accessible in generated code, so it is silently skipped by the validation source generator",
+        "Validatable property or its type on an endpoint parameter type is not accessible",
+        "The property '{0}' on the endpoint parameter type '{1}' declares validation but is not public or its type isn't accessible in generated code, so it is silently skipped by the validation source generator",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
@@ -95,23 +95,8 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
 
     private static bool IsPropertyIgnoredDueToAccessibility(IPropertySymbol property)
         => property.DeclaredAccessibility != Accessibility.Public ||
-            IsInaccessibleFromGeneratedCode(property.Type.UnwrapType());
-
-    private static bool IsInaccessibleFromGeneratedCode(ITypeSymbol type)
-    {
-        while (type is not null)
-        {
-            if (type is INamedTypeSymbol { IsFileLocal: true } ||
-                type.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
-            {
-                return true;
-            }
-
-            type = type.ContainingType;
-        }
-
-        return false;
-    }
+            property.GetMethod is not { DeclaredAccessibility: Accessibility.Public } ||
+            property.Type.UnwrapType().IsInaccessibleFromGeneratedCode();
 
     private static void AnalyzeType(
         Action<Diagnostic> reportDiagnostic,
@@ -193,7 +178,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         var topLevelValidatableTypes = new ConcurrentDictionary<ITypeSymbol, byte>(SymbolEqualityComparer.Default);
         var endpointParameters = new ConcurrentDictionary<IParameterSymbol, byte>(SymbolEqualityComparer.Default);
 
-        var validatableTypeAttributeLocations = new ConcurrentDictionary<Location?, byte>();
+        var validatableTypeAttributeLocations = new ConcurrentDictionary<Location, byte>();
 
         var addValidationFound = false;
 
@@ -207,9 +192,9 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                     attributeOperation.Operation is IObjectCreationOperation attributeObjectCreationOperation &&
                     validatableTypeAttribute.Equals(attributeObjectCreationOperation.Constructor?.ContainingType, SymbolEqualityComparer.Default))
                 {
-                    validatableTypeAttributeLocations.TryAdd(attributedType.Locations.FirstOrDefault(), 0);
+                    validatableTypeAttributeLocations.TryAdd(attributeOperation.Syntax.GetLocation(), 0);
 
-                    if (IsInaccessibleFromGeneratedCode(attributedType))
+                    if (attributedType.IsInaccessibleFromGeneratedCode())
                     {
                         context.ReportDiagnostic(Diagnostic.Create(ValidatableTypeIsNotAccessible, attributedType.Locations.FirstOrDefault(), attributedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
                         return;
@@ -268,11 +253,11 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         {
             if (!addValidationFound)
             {
-                foreach (var pair in validatableTypeAttributeLocations)
+                foreach (var validatableTypeAttributeLocation in validatableTypeAttributeLocations.Keys)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         ValidatableTypeIsUsedWithoutAddValidation,
-                        pair.Key));
+                        validatableTypeAttributeLocation));
                 }
 
                 return;
@@ -281,7 +266,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
             foreach (var parameter in endpointParameters.Keys)
             {
                 var type = parameter.Type.UnwrapType();
-                if (IsInaccessibleFromGeneratedCode(type))
+                if (type.IsInaccessibleFromGeneratedCode())
                 {
                     context.ReportDiagnostic(Diagnostic.Create(EndpointParameterTypeIsNotAccessible, parameter.Locations.FirstOrDefault(), parameter.Name, type.Name));
                     continue;

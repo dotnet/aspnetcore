@@ -40,8 +40,8 @@
 |  __`ASP0032`__ | Experimental warning for RenderFragment serialization APIs |
 |  __`ASP0033`__ | \[ValidatableType\] is applied to an inaccessible type |
 |  __`ASP0034`__ | Endpoint parameter type is inaccessible from generated code |
-|  __`ASP0035`__ | Validatable property or its type is not accessible |
-|  __`ASP0036`__ | Validatable property or its type is not accessible |
+|  __`ASP0035`__ | Validatable property or its type on a \[ValidatableType\] is not accessible |
+|  __`ASP0036`__ | Validatable property or its type on an endpoint parameter type is not accessible |
 |  __`ASP0037`__ | \[ValidatableType] cannot be used in generated code |
 |  __`ASP0038`__ | \[ValidatableType] should not be used without a call to 'AddValidation' |
 

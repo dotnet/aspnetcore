@@ -495,6 +495,43 @@ public record RecordModel
     }
 
     [Fact]
+    public async Task ReportsInaccessibleProperty_OnRecordWithPrimaryConstructorParameters()
+    {
+        var source = AnalyzerPreamble + """
+#nullable enable
+
+[ValidatableType]
+public record RecordModel(string Id)
+{
+    internal TheChild Child { get; init; } = new();
+    public record TheChild { [Required] public string? Name { get; init; } }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0035", diagnostic.Id);
+        Assert.Contains("Child", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task ReportsValidatableProperty_WithNonPublicGetter()
+    {
+        var source = AnalyzerPreamble + """
+#nullable enable
+
+[ValidatableType]
+public class ModelWithPrivateGetter
+{
+    [Required] public string? Name { private get; set; }
+}
+""";
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("ASP0035", diagnostic.Id);
+        Assert.Contains("Name", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
     public async Task ReportsValidatableTypeUsedWithoutAddValidation()
     {
         var source = """

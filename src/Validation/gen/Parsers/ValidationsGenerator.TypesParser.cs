@@ -82,13 +82,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Skip file-local types, which are only accessible within their declaring file
         // and cannot be referenced from generated code in a different file
-        if (typeSymbol is INamedTypeSymbol { IsFileLocal: true })
-        {
-            return false;
-        }
-
         // Skip types that are not accessible from generated code
-        if (typeSymbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
+        if (typeSymbol.IsInaccessibleFromGeneratedCode())
         {
             return false;
         }
@@ -150,8 +145,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         INamedTypeSymbol skipValidationAttributeSymbol,
         INamedTypeSymbol jsonIgnoreAttributeSymbol)
     {
-        // Skip compiler generated properties, indexers, static properties, properties without
-        // a public getter, and .
+        // Skip compiler generated properties, indexers, static properties, write-only
+        // properties (those without a getter), and the synthesized record EqualityContract property.
         if (property.IsImplicitlyDeclared
             || property.IsIndexer
             || property.IsStatic
@@ -162,9 +157,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // Skip property if it or its type are annotated with SkipValidationAttribute
-        // TODO: This logic sounds wrong.
-        // If a property has some validation attributes and its type has SkipValidationAttribute, we
-        // should only skip the "type validation" part of the property, but still validate the property itself.
         if (property.IsSkippedValidationProperty(skipValidationAttributeSymbol))
         {
             return true;

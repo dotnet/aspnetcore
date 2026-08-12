@@ -244,4 +244,18 @@ internal static class ITypeSymbolExtensions
     {
         return parameter.HasAttribute(skipValidationAttributeSymbol) || parameter.Type.HasAttribute(skipValidationAttributeSymbol);
     }
+
+    internal static bool IsInaccessibleFromGeneratedCode(this ITypeSymbol type)
+    {
+        for (ITypeSymbol? current = type; current is not null; current = current.ContainingType)
+        {
+            if (current is INamedTypeSymbol { IsFileLocal: true } ||
+                current.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
