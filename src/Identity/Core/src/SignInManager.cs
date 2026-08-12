@@ -1190,7 +1190,7 @@ public class SignInManager<TUser> where TUser : class
     /// Creates a claims principal for the specified 2fa information.
     /// </summary>
     /// <param name="user">The user who is logging in via 2fa.</param>
-    /// <param name="loginProvider">The 2fa provider.</param>
+    /// <param name="loginProvider">The external login provider used to complete sign-in after 2FA (if applicable).</param>
     /// <returns>A <see cref="ClaimsPrincipal"/> containing the user 2fa information.</returns>
     internal async Task<ClaimsPrincipal> StoreTwoFactorInfo(TUser user, string? loginProvider)
     {
