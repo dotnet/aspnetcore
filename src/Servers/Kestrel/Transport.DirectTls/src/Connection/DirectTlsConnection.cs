@@ -356,16 +356,6 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         }
         _aborted = true;
 
-        // CTS may already be disposed if DisposeAsync completed first
-        try
-        {
-            _connectionClosedTokenSource.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-            // Already disposed, ignore
-        }
-
         // Unblock BOTH loops so the connection tears down immediately instead of leaving the socket
         // half-open until the peer times out. SocketConnection.Abort closes the socket synchronously
         // (RST/FIN); DirectTls instead closes it later in DisposeAsync, so Abort must make Kestrel
