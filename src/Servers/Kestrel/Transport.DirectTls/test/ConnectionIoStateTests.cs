@@ -250,6 +250,42 @@ public class ConnectionIoStateTests
     }
 
     [Fact]
+    public async Task Cancel_WaitsOutInFlightNativeRead_BeforeCompletingAwaitable()
+    {
+        // Cancel() completes the read awaitable so the receive loop unblocks and returns _readBuffer to the
+        // pool. If it did so while the pump is inside SSL_read still writing into that buffer, the loop would
+        // recycle a block under an in-flight native write (the mirror race recycles the output block under
+        // SSL_write). Cancel() must take _sslLock and wait out any in-flight native call first.
+        var io = new ScriptedConnectionIoState();
+
+        io.ScriptRead(TlsOperationStatus.NeedMoreData);     // park a read waiting for more ciphertext
+        var read = io.ReadAsync(new byte[16]);
+        Assert.False(read.IsCompleted);
+
+        io.ScriptRead(TlsOperationStatus.Complete, bytesRead: 5);   // the completion the pump will process
+        io.ArmRawReadGate();
+
+        // Pump parks inside RawRead - i.e. mid SSL_read - while holding _sslLock via OnReadable.
+        var pump = new Thread(() => io.OnReadable()) { IsBackground = true };
+        pump.Start();
+        Assert.True(io.RawReadGateReached.Wait(TimeSpan.FromSeconds(10)), "pump never reached the in-flight read");
+
+        var cancel = new Thread(() => io.Cancel()) { IsBackground = true };
+        cancel.Start();
+
+        // Fixed: Cancel blocks on _sslLock the parked pump holds, so it cannot complete while a native read is
+        // in flight. Pre-fix it took no lock and would join here immediately, completing the awaitable early.
+        Assert.False(cancel.Join(TimeSpan.FromMilliseconds(500)), "Cancel completed while a native read was in flight");
+
+        io.ReleaseRawReadGate();
+
+        Assert.True(cancel.Join(TimeSpan.FromSeconds(10)));
+        Assert.True(pump.Join(TimeSpan.FromSeconds(10)));
+        Assert.True(read.IsCompleted);
+        Assert.Equal(5, await read);   // the read finished writing its 5 bytes before the buffer could be recycled
+    }
+
+    [Fact]
     public async Task WriteRenegotiation_DropsEpollOut_ThenCompletesOnReadable()
     {
         // A parked write that flips into renegotiation (NeedMoreData) must drop its EPOLLOUT and wait for
@@ -394,6 +430,13 @@ public class ConnectionIoStateTests
 
         internal override TlsOperationStatus RawRead(Span<byte> buffer, out int bytesRead)
         {
+            // Optionally park mid-read (still inside OnReadable's _sslLock) to model an in-flight SSL_read.
+            if (Interlocked.CompareExchange(ref _rawReadGateArmed, 0, 1) == 1)
+            {
+                _rawReadGateReached.Set();
+                _rawReadGateRelease.Wait();
+            }
+
             Assert.True(_reads.Count > 0, "Unexpected RawRead: no status scripted");
             var (status, count) = _reads.Dequeue();
             bytesRead = count;
@@ -413,6 +456,19 @@ public class ConnectionIoStateTests
         private readonly ManualResetEventSlim _gateReached = new();
         private readonly ManualResetEventSlim _gateRelease = new();
         private readonly ManualResetEventSlim _epollOutApplied = new();
+
+        // ── Gate hook for the Cancel-vs-in-flight-native-read race test (opt-in; unarmed otherwise) ──
+        private int _rawReadGateArmed;
+        private readonly ManualResetEventSlim _rawReadGateReached = new();
+        private readonly ManualResetEventSlim _rawReadGateRelease = new();
+
+        /// <summary>Signalled once a gated <see cref="RawRead"/> has parked mid-read inside OnReadable's lock.</summary>
+        public ManualResetEventSlim RawReadGateReached => _rawReadGateReached;
+
+        /// <summary>Arm the gate so the NEXT <see cref="RawRead"/> parks (holding _sslLock) until <see cref="ReleaseRawReadGate"/>.</summary>
+        public void ArmRawReadGate() => Volatile.Write(ref _rawReadGateArmed, 1);
+
+        public void ReleaseRawReadGate() => _rawReadGateRelease.Set();
 
         /// <summary>Signalled once a gated <see cref="ApplyEvents"/> call has parked mid-update inside the gate.</summary>
         public ManualResetEventSlim GateReached => _gateReached;

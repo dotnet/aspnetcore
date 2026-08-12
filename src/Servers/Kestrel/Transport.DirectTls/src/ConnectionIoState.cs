@@ -516,12 +516,19 @@ internal class ConnectionIoState : IDisposable
     /// </summary>
     internal void Cancel()
     {
-        // Delegate to each awaitable's sticky cancellation. Whether a loop is currently parked on its
-        // awaitable or momentarily between operations (idle), Cancel() completes it now and makes every
-        // future Reset() return an already-cancelled result - so a loop that re-arms concurrently with
-        // disposal cannot park forever on an fd DisposeAsync is about to unregister from epoll.
-        _readAwaitable.Cancel();
-        _writeAwaitable.Cancel();
+        // Hold _sslLock so cancellation waits out any in-flight SSL_read/SSL_write (both run under it):
+        // completing the awaitable while the pump is mid SSL_read would let the receive loop complete the pipe
+        // and recycle _readBuffer while the native write is still filling it (mirror race: SSL_write reading a
+        // recycled output block). Once we hold the lock no native call is in flight, and the sticky Canceled
+        // state set below stops the pump from starting a new one against the now-recycled buffer.
+        lock (_sslLock)
+        {
+            // Sticky cancellation: completes any parked wait now and makes every future Reset() return an
+            // already-cancelled result, so a loop that re-arms concurrently with disposal cannot park forever
+            // on an fd DisposeAsync is about to unregister from epoll.
+            _readAwaitable.Cancel();
+            _writeAwaitable.Cancel();
+        }
     }
 
     public void Dispose()
