@@ -770,7 +770,8 @@ public class Http3RequestTests : LoggedTest
             return Task.CompletedTask;
         });
 
-        // Disable the response-rate watchdog. This test validates connection multiplexing, not data-rate enforcement.
+        // Slow response draining can abort the entire HTTP/3 connection and fail unrelated concurrent requests.
+        // This test validates connection multiplexing; response data-rate timeouts are covered separately.
         builder.ConfigureServices(services => services.Configure<KestrelServerOptions>(options => options.Limits.MinResponseDataRate = null));
 
         using (var host = builder.Build())
