@@ -293,7 +293,7 @@ internal class TlsEventPump : IDisposable
     private void PumpLoop()
     {
         const int MaxEvents = 256;
-        var events = new EpollEvent[MaxEvents];
+        var events = new NativeTls.EpollEventBuffer(MaxEvents);
 
         while (_running)
         {
@@ -301,7 +301,7 @@ internal class TlsEventPump : IDisposable
             {
                 // Use shorter timeout when there are handshaking connections
                 int timeout = _handshaking.Count > 0 ? 10 : 1000;
-                int numEvents = NativeTls.epoll_wait(_epollFd, events, MaxEvents, timeout);
+                int numEvents = events.Wait(_epollFd, timeout);
 
                 if (numEvents < 0)
                 {
@@ -316,8 +316,9 @@ internal class TlsEventPump : IDisposable
 
                 for (int i = 0; i < numEvents; i++)
                 {
-                    int fd = events[i].Data.Fd;
-                    uint mask = events[i].Events;
+                    var epollEvent = events[i];
+                    int fd = epollEvent.Data.Fd;
+                    uint mask = epollEvent.Events;
 
                     if (fd == 0 && mask == 0)
                     {
