@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
+// Renders one conversation turn: its request blocks followed by its response blocks.
 internal class ConversationTurnRenderer : IDisposable
 {
     private readonly ConversationTurn _turn;

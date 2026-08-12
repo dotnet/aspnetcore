@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.AI;
 
+// Renders a single block and re-renders the message list when the block changes.
 internal class BlockContainer : IDisposable
 {
     private readonly ContentBlock _block;

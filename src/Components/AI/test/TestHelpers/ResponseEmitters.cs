@@ -46,57 +46,6 @@ internal static class ResponseEmitters
         yield break;
     }
 
-    internal static async IAsyncEnumerable<ChatResponseUpdate> EmitToolCallResponse(
-        string callId,
-        string name,
-        IDictionary<string, object?>? arguments = null,
-        [EnumeratorCancellation] CancellationToken ct = default)
-    {
-        yield return new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = Guid.NewGuid().ToString("N"),
-            Contents = [new FunctionCallContent(callId, name, arguments)],
-            FinishReason = ChatFinishReason.ToolCalls
-        };
-        await Task.CompletedTask;
-    }
-
-    internal static async IAsyncEnumerable<ChatResponseUpdate> EmitMultipleToolCallResponse(
-        [EnumeratorCancellation] CancellationToken ct = default,
-        params FunctionCallContent[] calls)
-    {
-        yield return new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = Guid.NewGuid().ToString("N"),
-            Contents = [.. calls],
-            FinishReason = ChatFinishReason.ToolCalls
-        };
-        await Task.CompletedTask;
-    }
-
-    internal static async IAsyncEnumerable<ChatResponseUpdate> EmitToolCallWithResultResponse(
-        string callId,
-        string name,
-        IDictionary<string, object?>? arguments,
-        object? result,
-        [EnumeratorCancellation] CancellationToken ct = default)
-    {
-        yield return new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = Guid.NewGuid().ToString("N"),
-            Contents = [new FunctionCallContent(callId, name, arguments)],
-            FinishReason = ChatFinishReason.ToolCalls
-        };
-        yield return new ChatResponseUpdate
-        {
-            Contents = [new FunctionResultContent(callId, result)]
-        };
-        await Task.CompletedTask;
-    }
-
     internal static async IAsyncEnumerable<ChatResponseUpdate> EmitErrorAfterTokens(
         string[] tokens,
         Exception error,
@@ -118,19 +67,22 @@ internal static class ResponseEmitters
         throw error;
     }
 
-    internal static async IAsyncEnumerable<ChatResponseUpdate> EmitApprovalRequest(
-        string callId,
-        string name,
-        IDictionary<string, object?>? arguments = null,
+    internal static async IAsyncEnumerable<ChatResponseUpdate> EmitTokensWithGate(
+        string[] tokens,
+        Func<int, Task> gate,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var toolCall = new FunctionCallContent(callId, name, arguments);
-        yield return new ChatResponseUpdate
+        var messageId = Guid.NewGuid().ToString("N");
+        for (var i = 0; i < tokens.Length; i++)
         {
-            Role = ChatRole.Assistant,
-            MessageId = Guid.NewGuid().ToString("N"),
-            Contents = [new ToolApprovalRequestContent(Guid.NewGuid().ToString("N"), toolCall)]
-        };
-        await Task.CompletedTask;
+            ct.ThrowIfCancellationRequested();
+            await gate(i);
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents = [new TextContent(tokens[i])]
+            };
+        }
     }
 }

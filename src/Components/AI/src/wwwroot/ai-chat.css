@@ -26,7 +26,6 @@
     --sc-ai-color-border: #dee2e6;
     --sc-ai-color-error: #dc3545;
     --sc-ai-color-error-bg: #f8d7da;
-    --sc-ai-color-success: #198754;
 
     /* ---- Colors — Message Bubbles ---- */
     --sc-ai-color-bubble-user: #e9ecef;
@@ -39,17 +38,13 @@
     --sc-ai-spacing-sm: 0.5rem;
     --sc-ai-spacing-md: 1rem;
     --sc-ai-spacing-lg: 1.5rem;
-    --sc-ai-spacing-xl: 2rem;
     --sc-ai-max-width: 48rem;
-    --sc-ai-border-radius: 0.75rem;
     --sc-ai-border-radius-sm: 0.375rem;
     --sc-ai-border-radius-lg: 1.5rem;
     --sc-ai-input-height: 3rem;
 
     /* ---- Transitions ---- */
     --sc-ai-transition-fast: 120ms ease;
-    --sc-ai-transition-normal: 200ms ease;
-    --sc-ai-transition-slow: 300ms ease-in-out;
 
     /* ---- Focus & States ---- */
     --sc-ai-focus-ring: 0 0 0 2px var(--sc-ai-color-accent);
@@ -97,15 +92,6 @@
 .sc-ai-btn:disabled {
     opacity: var(--sc-ai-disabled-opacity);
     cursor: not-allowed;
-}
-
-.sc-ai-btn--primary {
-    background: var(--sc-ai-color-accent);
-    color: var(--sc-ai-color-text-on-accent);
-}
-
-.sc-ai-btn--primary:hover:not(:disabled) {
-    background: var(--sc-ai-color-accent-hover);
 }
 
 .sc-ai-btn--secondary {
@@ -193,108 +179,6 @@
     50% { opacity: 0; }
 }
 
-/* ---------- Tool Call ---------- */
-
-/* ---------- Tool Call ---------- */
-.sc-ai-tool-call {
-    padding: var(--sc-ai-spacing-sm) var(--sc-ai-spacing-md);
-    border: 1px solid var(--sc-ai-color-border);
-    border-radius: var(--sc-ai-border-radius-sm);
-    font-size: var(--sc-ai-font-size-sm);
-    color: var(--sc-ai-color-text-secondary);
-}
-
-.sc-ai-tool-call__header {
-    display: flex;
-    align-items: center;
-    gap: var(--sc-ai-spacing-sm);
-}
-
-.sc-ai-tool-call__name {
-    font-weight: var(--sc-ai-font-weight-medium);
-    color: var(--sc-ai-color-text);
-}
-
-.sc-ai-tool-call__status--running {
-    display: inline-block;
-    width: 0.75em;
-    height: 0.75em;
-    border: 2px solid var(--sc-ai-color-text-secondary);
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: sc-ai-spin 0.8s linear infinite;
-}
-
-.sc-ai-tool-call__status--complete {
-    color: var(--sc-ai-color-success);
-}
-
-.sc-ai-tool-call__details {
-    margin-top: var(--sc-ai-spacing-xs);
-}
-
-.sc-ai-tool-call__details summary {
-    cursor: pointer;
-    font-size: var(--sc-ai-font-size-sm);
-    color: var(--sc-ai-color-text-secondary);
-    user-select: none;
-}
-
-.sc-ai-tool-call__pre {
-    margin: var(--sc-ai-spacing-xs) 0 0;
-    padding: var(--sc-ai-spacing-sm);
-    background: var(--sc-ai-color-surface-hover);
-    border-radius: var(--sc-ai-border-radius-sm);
-    font-size: 0.8125rem;
-    line-height: 1.4;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-@keyframes sc-ai-spin {
-    to { transform: rotate(360deg); }
-}
-
-/* ---------- Approval ---------- */
-.sc-ai-approval {
-    border: 1px solid var(--sc-ai-color-border);
-    border-radius: var(--sc-ai-border-radius-sm);
-    padding: var(--sc-ai-spacing-md);
-}
-
-.sc-ai-approval__header {
-    display: flex;
-    align-items: center;
-    gap: var(--sc-ai-spacing-sm);
-    margin-bottom: var(--sc-ai-spacing-sm);
-    font-weight: var(--sc-ai-font-weight-medium);
-}
-
-.sc-ai-approval__tool-name {
-    font-size: var(--sc-ai-font-size-sm);
-    color: var(--sc-ai-color-text-secondary);
-    margin-bottom: var(--sc-ai-spacing-md);
-}
-
-.sc-ai-approval__actions {
-    display: flex;
-    gap: var(--sc-ai-spacing-sm);
-}
-
-.sc-ai-approval__status {
-    font-size: var(--sc-ai-font-size-sm);
-    font-weight: var(--sc-ai-font-weight-medium);
-}
-
-.sc-ai-approval__status--approved {
-    color: var(--sc-ai-color-success);
-}
-
-.sc-ai-approval__status--rejected {
-    color: var(--sc-ai-color-error);
-}
-
 /* ---------- Typing Indicator ---------- */
 .sc-ai-typing {
     display: inline-flex;
@@ -340,43 +224,7 @@
     flex: 1;
 }
 
-/* ---------- Suggestions ---------- */
-.sc-ai-suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--sc-ai-spacing-sm);
-    padding: var(--sc-ai-spacing-sm) 0;
-}
-
-.sc-ai-suggestions__chip {
-    padding: var(--sc-ai-spacing-sm) var(--sc-ai-spacing-md);
-    border: 1px solid var(--sc-ai-color-border);
-    border-radius: var(--sc-ai-border-radius-lg);
-    background: var(--sc-ai-color-surface);
-    color: var(--sc-ai-color-text);
-    font-family: inherit;
-    font-size: var(--sc-ai-font-size-sm);
-    cursor: pointer;
-    transition: background var(--sc-ai-transition-fast),
-                border-color var(--sc-ai-transition-fast);
-}
-
-.sc-ai-suggestions__chip:hover:not(:disabled) {
-    background: var(--sc-ai-color-surface-hover);
-    border-color: var(--sc-ai-color-accent);
-}
-
-.sc-ai-suggestions__chip:focus-visible {
-    outline: none;
-    box-shadow: var(--sc-ai-focus-ring);
-}
-
-.sc-ai-suggestions__chip:disabled {
-    opacity: var(--sc-ai-disabled-opacity);
-    cursor: not-allowed;
-}
-
-/* ---------- Input ---------- */
+/* ---------- Message Input ---------- */
 .sc-ai-input {
     display: flex;
     align-items: flex-end;
@@ -390,6 +238,12 @@
 
 .sc-ai-input:focus-within {
     border-color: var(--sc-ai-color-accent);
+}
+
+.sc-ai-input__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .sc-ai-input__textarea {
@@ -451,15 +305,7 @@
     height: 1.125rem;
 }
 
-/* ---------- Input Body ---------- */
-.sc-ai-input__body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-/* ---------- Chat Page ---------- */
+/* ---------- Chat Page Shell ---------- */
 .sc-ai-chat-page {
     display: flex;
     flex-direction: column;
@@ -488,30 +334,4 @@
 .sc-ai-chat-page__input-container {
     max-width: var(--sc-ai-max-width);
     margin: 0 auto;
-}
-
-/* ---------- Scroll to Bottom ---------- */
-.sc-ai-scroll-bottom {
-    position: sticky;
-    bottom: var(--sc-ai-spacing-sm);
-    align-self: center;
-    padding: var(--sc-ai-spacing-xs) var(--sc-ai-spacing-md);
-    border: 1px solid var(--sc-ai-color-border);
-    border-radius: var(--sc-ai-border-radius-lg);
-    background: var(--sc-ai-color-surface);
-    color: var(--sc-ai-color-text-secondary);
-    font-family: inherit;
-    font-size: var(--sc-ai-font-size-sm);
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: background var(--sc-ai-transition-fast);
-}
-
-.sc-ai-scroll-bottom:hover {
-    background: var(--sc-ai-color-surface-hover);
-}
-
-.sc-ai-scroll-bottom:focus-visible {
-    outline: none;
-    box-shadow: var(--sc-ai-focus-ring);
 }

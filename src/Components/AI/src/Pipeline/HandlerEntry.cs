@@ -20,6 +20,7 @@ internal sealed class HandlerEntry<TState> : IHandlerEntry where TState : new()
         {
             return new ActiveEntry(_handler, result.State!, result.Block!);
         }
+
         return null;
     }
 

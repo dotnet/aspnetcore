@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Web;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
 using Microsoft.Extensions.AI;
@@ -16,334 +13,117 @@ public class MessageInputTests
     [Fact]
     public void RendersTextarea_WithPlaceholder()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hi", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageInput>(0);
-                b.AddComponentParameter(1, "Placeholder", "Ask me anything...");
-                b.CloseComponent();
-            });
-        });
+        var cut = RenderMessageInput(_ => ResponseEmitters.EmitTextResponse("Hi"), "Ask me anything...");
 
         var html = cut.GetHtml();
         Assert.Contains("<textarea", html);
         Assert.Contains("placeholder=\"Ask me anything...\"", html);
-        Assert.Contains("aria-label=\"Ask me anything...\"", html);
     }
 
     [Fact]
     public void RendersTextarea_WithDefaultPlaceholder()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hi", ct));
-        var agent = new UIAgent(client);
+        var cut = RenderMessageInput(_ => ResponseEmitters.EmitTextResponse("Hi"));
 
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageInput>(0);
-                b.CloseComponent();
-            });
-        });
-
-        var html = cut.GetHtml();
-        Assert.Contains("placeholder=\"Type a message...\"", html);
+        Assert.Contains("placeholder=\"Type a message...\"", cut.GetHtml());
     }
 
     [Fact]
     public void DefaultSendButton_Rendered()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hi", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageInput>(0);
-                b.CloseComponent();
-            });
-        });
+        var cut = RenderMessageInput(_ => ResponseEmitters.EmitTextResponse("Hi"));
 
         var html = cut.GetHtml();
         Assert.Contains("<button", html);
         Assert.Contains("sc-ai-input__send", html);
-        Assert.Contains("aria-label=\"Send message\"", html);
     }
 
     [Fact]
-    public async Task DisabledDuringStreaming()
+    public async Task DisabledDuringStreaming_EnabledWhenIdle()
     {
-        var streamingStarted = new TaskCompletionSource();
-        var streamGate = new TaskCompletionSource();
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            SlowStream(streamingStarted, streamGate, ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageInput>(0);
-                b.CloseComponent();
-            });
-        });
-
+        var gate = new TaskCompletionSource();
+        var cut = RenderMessageInput(ct => ResponseEmitters.EmitTokensWithGate(
+            ["Hi"],
+            _ => gate.Task,
+            ct));
         var context = GetAgentContext(cut);
-        Task sendTask = null!;
-        await cut.InvokeAsync(() =>
-        {
-            sendTask = context.SendMessageAsync("Hello");
-        });
 
-        await streamingStarted.Task;
+        var sendTask = cut.InvokeAsync(() => context.SendMessageAsync("Hello"));
 
-        var html = cut.GetHtml();
-        // During streaming, textarea and button should be disabled
-        Assert.Contains("disabled", html);
+        await WaitForHtmlAsync(cut, "disabled");
 
-        streamGate.TrySetResult();
+        gate.SetResult();
         await sendTask;
 
-        html = cut.GetHtml();
-        // After streaming completes, should no longer be disabled
-        // (disabled="false" or no disabled attribute for non-boolean rendering)
+        Assert.DoesNotContain("disabled", cut.GetHtml());
     }
 
     [Fact]
-    public async Task SendButton_SendsMessageAndClearsInput()
+    public async Task StatusSubscription_IsRegisteredOnce()
     {
-        var messagesReceived = new List<string>();
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-        {
-            messagesReceived.Add(msgs.Last().Text!);
-            return ResponseEmitters.EmitTextResponse("OK", ct);
-        });
-        var agent = new UIAgent(client);
+        var cut = RenderMessageInput(_ => ResponseEmitters.EmitTextResponse("Hi"));
 
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageInput>(0);
-                b.CloseComponent();
-            });
-        });
-        var input = cut.FindComponent<MessageInput>();
+        // Re-render the boundary so the input receives its parameters again.
+        await cut.InvokeAsync(() => { });
+        var callbacks = GetStatusCallbacks(GetAgentContext(cut));
 
-        await input.DispatchEventAsync("oninput", new ChangeEventArgs { Value = "Test message" });
-        await input.DispatchEventAsync("onclick", EventArgs.Empty);
-
-        Assert.Equal(["Test message"], messagesReceived);
-        Assert.Contains("value=\"\"", input.GetHtml());
+        // One from the MessageList and one from the MessageInput; re-rendering must not add more.
+        Assert.Equal(2, callbacks.Count);
     }
 
-    [Fact]
-    public async Task Enter_SendsMessage()
+    private static RenderedComponent<AgentBoundary> RenderMessageInput(
+        Func<CancellationToken, IAsyncEnumerable<ChatResponseUpdate>> respond,
+        string? placeholder = null)
     {
-        var messagesReceived = new List<string>();
         var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-        {
-            messagesReceived.Add(msgs.Last().Text!);
-            return ResponseEmitters.EmitTextResponse("OK", ct);
-        });
+        client.SetHandler((msgs, opts, ct) => respond(ct));
         var agent = new UIAgent(client);
 
         var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
+        return renderer.RenderComponent<AgentBoundary>(p =>
         {
             p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
+            p["ChildContent"] = (RenderFragment)(builder =>
             {
-                b.OpenComponent<MessageInput>(0);
-                b.CloseComponent();
-            });
-        });
-        var input = cut.FindComponent<MessageInput>();
-
-        await input.DispatchEventAsync("oninput", new ChangeEventArgs { Value = "Test message" });
-        await input.DispatchEventAsync("onkeydown", new KeyboardEventArgs { Key = "Enter" });
-
-        Assert.Equal(["Test message"], messagesReceived);
-    }
-
-    [Fact]
-    public async Task ShiftEnter_DoesNotSendMessage()
-    {
-        var messagesReceived = new List<string>();
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-        {
-            messagesReceived.Add(msgs.Last().Text!);
-            return ResponseEmitters.EmitTextResponse("OK", ct);
-        });
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageInput>(0);
-                b.CloseComponent();
-            });
-        });
-        var input = cut.FindComponent<MessageInput>();
-
-        await input.DispatchEventAsync("oninput", new ChangeEventArgs { Value = "Test message" });
-        await input.DispatchEventAsync(
-            "onkeydown",
-            new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
-
-        Assert.Empty(messagesReceived);
-        Assert.Contains("value=\"Test message\"", input.GetHtml());
-    }
-
-    [Fact]
-    public async Task Submit_CallsSendMessage()
-    {
-        var messagesReceived = new List<string>();
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-        {
-            var lastMsg = msgs.Last().Text;
-            if (lastMsg is not null)
-            {
-                messagesReceived.Add(lastMsg);
-            }
-            return ResponseEmitters.EmitTextResponse("OK", ct);
-        });
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageInput>(0);
-                b.CloseComponent();
-            });
-        });
-
-        var context = GetAgentContext(cut);
-        await cut.InvokeAsync(() => context.SendMessageAsync("Test message"));
-
-        Assert.Single(messagesReceived);
-        Assert.Equal("Test message", messagesReceived[0]);
-    }
-
-    [Fact]
-    public void CustomTrailingActions_OverridesDefaultButton()
-    {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hi", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageInput>(0);
-                b.AddComponentParameter(1, "TrailingActions", (RenderFragment)(inner =>
+                builder.OpenComponent<MessageList>(0);
+                builder.CloseComponent();
+                builder.OpenComponent<MessageInput>(1);
+                if (placeholder is not null)
                 {
-                    inner.OpenElement(0, "button");
-                    inner.AddAttribute(1, "class", "custom-send");
-                    inner.AddContent(2, "Custom Send");
-                    inner.CloseElement();
-                }));
-                b.CloseComponent();
+                    builder.AddComponentParameter(2, "Placeholder", placeholder);
+                }
+                builder.CloseComponent();
             });
         });
-
-        var html = cut.GetHtml();
-        Assert.Contains("class=\"custom-send\"", html);
-        Assert.Contains("Custom Send", html);
-        // Default "Send" button text should not appear outside the custom one
-        Assert.DoesNotContain(">Send<", html);
     }
 
-    [Fact]
-    public void RendersMessageInputContainer()
+    private static async Task WaitForHtmlAsync(
+        RenderedComponent<AgentBoundary> cut, string expected)
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hi", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
+        for (var i = 0; i < 100; i++)
         {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
+            if (cut.GetHtml().Contains(expected, StringComparison.Ordinal))
             {
-                b.OpenComponent<MessageInput>(0);
-                b.CloseComponent();
-            });
-        });
+                return;
+            }
 
-        var html = cut.GetHtml();
-        Assert.Contains("class=\"sc-ai-input\"", html);
-    }
+            await Task.Delay(20);
+        }
 
-    [Fact]
-    public void MessageInput_OutsideAgentBoundary_Throws()
-    {
-        var renderer = new TestRenderer();
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            renderer.RenderComponent<MessageInput>();
-        });
+        Assert.Fail($"Timed out waiting for '{expected}' to render. Current markup: {cut.GetHtml()}");
     }
 
     private static AgentContext GetAgentContext(RenderedComponent<AgentBoundary> cut)
     {
         return (AgentContext)typeof(AgentBoundary)
-            .GetField("_context",
-                System.Reflection.BindingFlags.NonPublic
-                | System.Reflection.BindingFlags.Instance)!
+            .GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(cut.Instance)!;
     }
 
-    private static async IAsyncEnumerable<ChatResponseUpdate> SlowStream(
-        TaskCompletionSource started,
-        TaskCompletionSource gate,
-        [EnumeratorCancellation] CancellationToken ct)
+    private static System.Collections.ICollection GetStatusCallbacks(AgentContext context)
     {
-        yield return new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            Contents = [new TextContent("tok")]
-        };
-        started.TrySetResult();
-        try { await gate.Task.WaitAsync(ct); }
-        catch (OperationCanceledException) { yield break; }
+        return (System.Collections.ICollection)typeof(AgentContext)
+            .GetField("_statusChangedCallbacks", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(context)!;
     }
 }

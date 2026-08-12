@@ -9,6 +9,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
+// Routes model updates to handlers in two phases:
+//   1. Blocks that are still active get first refusal on the update, most recent first.
+//      This keeps a streaming block accumulating instead of emitting a new block per token.
+//   2. Whatever is left is offered to inactive handlers, which may emit new blocks.
 internal class BlockMappingPipeline
 {
     private readonly List<IHandlerEntry> _handlers = new();
@@ -18,24 +22,12 @@ internal class BlockMappingPipeline
     internal BlockMappingPipeline(UIAgentOptions options, ILogger? logger = null)
     {
         _logger = logger ?? NullLogger.Instance;
+
         // User-registered handlers go first so they can customize behavior
         foreach (var registration in options.HandlerRegistrations)
         {
             _handlers.Add(registration.CreateEntry());
         }
-
-        // Built-in UI action handler (claims FunctionCallContent for registered UI actions)
-        if (options.UIActions.Count > 0)
-        {
-            _handlers.Add(new HandlerEntry<UIActionHandler.UIActionHandlerState>(
-                new UIActionHandler(options.UIActions)));
-        }
-
-        // Built-in approval handler (before function invocation so it claims ToolApprovalRequestContent first)
-        _handlers.Add(new HandlerEntry<FunctionApprovalHandler.ApprovalHandlerState>(new FunctionApprovalHandler()));
-
-        // Built-in function invocation handler
-        _handlers.Add(new HandlerEntry<FunctionInvocationContentBlock>(new FunctionInvocationHandler()));
 
         // Built-in text handler is always last (fallback)
         _handlers.Add(new HandlerEntry<RichContentBlock>(new TextBlockHandler()));
@@ -50,7 +42,7 @@ internal class BlockMappingPipeline
         var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
         BlockMappingPipelineLog.ProcessingUpdate(_logger, update.Role?.Value, update.Contents.Count, contentTypes);
 
-        var context = new BlockMappingContext(update, _handlers);
+        var context = new BlockMappingContext(update);
 
         // Phase 1: Active entries get priority (most recent first)
         for (var i = _activeStack.Count - 1; i >= 0; i--)
@@ -99,27 +91,25 @@ internal class BlockMappingPipeline
                 {
                     var progressBefore = context.HandledProgress;
                     var activeEntry = handler.TryHandle(context);
-                    if (activeEntry is not null)
+                    if (activeEntry is null)
                     {
-                        var emitBlock = activeEntry.Block;
-                        emitBlock.Role = update.Role;
-                        emitBlock.AuthorName = update.AuthorName;
-                        emitBlock.LifecycleState = BlockLifecycleState.Active;
-                        ThrowIfIdMissing(emitBlock);
-                        _activeStack.Add(activeEntry);
-
-                        BlockMappingPipelineLog.EmittingBlock(_logger, emitBlock.GetType().Name, emitBlock.Id, emitBlock.Role?.Value);
-
-                        yield return emitBlock;
-
-                        // If the handler emitted without consuming any content, stop
-                        // re-invoking it to prevent infinite loops.
-                        if (context.HandledProgress == progressBefore)
-                        {
-                            break;
-                        }
+                        break;
                     }
-                    else
+
+                    var emitBlock = activeEntry.Block;
+                    emitBlock.Role = update.Role;
+                    emitBlock.AuthorName = update.AuthorName;
+                    emitBlock.LifecycleState = BlockLifecycleState.Active;
+                    ThrowIfIdMissing(emitBlock);
+                    _activeStack.Add(activeEntry);
+
+                    BlockMappingPipelineLog.EmittingBlock(_logger, emitBlock.GetType().Name, emitBlock.Id, emitBlock.Role?.Value);
+
+                    yield return emitBlock;
+
+                    // If the handler emitted without consuming any content, stop
+                    // re-invoking it to prevent infinite loops.
+                    if (context.HandledProgress == progressBefore)
                     {
                         break;
                     }
@@ -141,6 +131,7 @@ internal class BlockMappingPipeline
         foreach (var active in _activeStack)
         {
             active.Block.LifecycleState = BlockLifecycleState.Inactive;
+            active.Block.InvokeNotifyChanged();
         }
         _activeStack.Clear();
 

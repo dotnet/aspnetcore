@@ -15,6 +15,8 @@ internal readonly struct HandleResult
     }
 
     internal static HandleResult Pass() => new(ResultKind.Pass);
+
     internal static HandleResult Update() => new(ResultKind.Update);
+
     internal static HandleResult Complete() => new(ResultKind.Complete);
 }

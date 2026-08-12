@@ -5,54 +5,49 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
+/// <summary>
+/// Creates the <see cref="AgentContext"/> for a <see cref="UIAgent"/> and cascades it to the
+/// chat components underneath it.
+/// </summary>
 public class AgentBoundary : ComponentBase, IDisposable
 {
     private AgentContext _context = default!;
     private UIAgent _currentAgent = default!;
-    private object? _agentState;
-    private Type? _cascadingValueType;
 
+    /// <summary>
+    /// Gets or sets the agent that drives the conversation.
+    /// </summary>
     [Parameter, EditorRequired]
     public UIAgent Agent { get; set; } = default!;
 
+    /// <summary>
+    /// Gets or sets the content rendered inside the boundary.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _currentAgent = Agent;
         _context = new AgentContext(Agent);
-        _agentState = Agent.AgentStateObject;
-
-        if (_agentState is not null)
-        {
-            _cascadingValueType = typeof(CascadingValue<>).MakeGenericType(_agentState.GetType());
-        }
     }
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         if (!ReferenceEquals(Agent, _currentAgent))
         {
             // Agent changed — tear down the old context and create a new one.
-            // BuildRenderTree uses OpenRegion keyed on the agent, so Blazor will
+            // BuildRenderTree uses OpenRegion keyed on the context, so Blazor will
             // also tear down and recreate all descendant components.
             _context?.Dispose();
             _currentAgent = Agent;
             _context = new AgentContext(Agent);
-            _agentState = Agent.AgentStateObject;
-
-            if (_agentState is not null)
-            {
-                _cascadingValueType = typeof(CascadingValue<>).MakeGenericType(_agentState.GetType());
-            }
-            else
-            {
-                _cascadingValueType = null;
-            }
         }
     }
 
+    /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         // If Agent changes, the region key changes, causing Blazor to tear down
@@ -60,36 +55,24 @@ public class AgentBoundary : ComponentBase, IDisposable
         // EditContext. It lets us safely use IsFixed=true on the CascadingValue.
         builder.OpenRegion(_context.GetHashCode());
 
-        // Outer: cascade AgentContext
         builder.OpenComponent<CascadingValue<AgentContext>>(0);
         builder.AddComponentParameter(1, "Value", _context);
         builder.AddComponentParameter(2, "IsFixed", true);
         builder.AddComponentParameter(3, "ChildContent", (RenderFragment)(inner =>
         {
-            if (_agentState is not null)
-            {
-                // Inner: cascade AgentState<TState> with the correct generic type
-                inner.OpenComponent(10, _cascadingValueType!);
-                inner.AddComponentParameter(11, "Value", _agentState);
-                inner.AddComponentParameter(12, "IsFixed", true);
-                inner.AddComponentParameter(13, "ChildContent", (RenderFragment)(stateInner =>
-                {
-                    stateInner.AddContent(20, ChildContent);
-                }));
-                inner.CloseComponent();
-            }
-            else
-            {
-                inner.AddContent(10, ChildContent);
-            }
+            inner.AddContent(10, ChildContent);
         }));
         builder.CloseComponent();
 
         builder.CloseRegion();
     }
 
+    /// <summary>
+    /// Disposes the <see cref="AgentContext"/> owned by this boundary.
+    /// </summary>
     public void Dispose()
     {
         _context?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

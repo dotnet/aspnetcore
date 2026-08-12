@@ -18,10 +18,4 @@ internal static partial class UIAgentLog
 
     [LoggerMessage(103, LogLevel.Debug, "SendMessageAsync: Added {MessageCount} messages to history")]
     internal static partial void AddedToHistory(ILogger logger, int messageCount);
-
-    [LoggerMessage(104, LogLevel.Warning, "InvokeToolAsync: Backend function '{FunctionName}' not found in ChatOptions.Tools")]
-    internal static partial void BackendFunctionNotFound(ILogger logger, string functionName);
-
-    [LoggerMessage(105, LogLevel.Debug, "InvokeToolAsync: Invoking backend function '{FunctionName}' (CallId={CallId})")]
-    internal static partial void InvokingBackendFunction(ILogger logger, string functionName, string callId);
 }

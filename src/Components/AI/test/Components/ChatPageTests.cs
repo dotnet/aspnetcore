@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
-using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI.Tests.Components;
 
@@ -12,16 +11,7 @@ public class ChatPageTests
     [Fact]
     public void RendersPageStructure()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("OK", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<ChatPage>(p =>
-        {
-            p["Agent"] = agent;
-        });
+        var cut = RenderChatPage(p => p["Agent"] = CreateAgent());
 
         var html = cut.GetHtml();
         Assert.Contains("sc-ai-root", html);
@@ -29,117 +19,60 @@ public class ChatPageTests
         Assert.Contains("sc-ai-chat-page__body", html);
         Assert.Contains("sc-ai-chat-page__footer", html);
         Assert.Contains("sc-ai-input", html);
+        Assert.Contains("sc-ai-message-list", html);
     }
 
     [Fact]
-    public void RendersHeader()
+    public void RendersHeaderAndWelcomeContent()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("OK", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<ChatPage>(p =>
+        var cut = RenderChatPage(p =>
         {
-            p["Agent"] = agent;
-            p["Header"] = (RenderFragment)(b =>
-            {
-                b.OpenElement(0, "h1");
-                b.AddContent(1, "My Chat");
-                b.CloseElement();
-            });
+            p["Agent"] = CreateAgent();
+            p["Header"] = (RenderFragment)(b => b.AddMarkupContent(0, "<h1>Agentic Chat</h1>"));
+            p["WelcomeContent"] = (RenderFragment)(b => b.AddMarkupContent(0, "<p>Say hello</p>"));
         });
 
         var html = cut.GetHtml();
         Assert.Contains("sc-ai-chat-page__header", html);
-        Assert.Contains("My Chat", html);
+        Assert.Contains("Agentic Chat", html);
+        Assert.Contains("Say hello", html);
     }
 
     [Fact]
-    public void RendersWelcomeContent()
+    public void PlaceholderFlowsToMessageInput()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("OK", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<ChatPage>(p =>
+        var cut = RenderChatPage(p =>
         {
-            p["Agent"] = agent;
-            p["WelcomeContent"] = (RenderFragment)(b =>
-            {
-                b.OpenElement(0, "p");
-                b.AddContent(1, "Welcome to the chat!");
-                b.CloseElement();
-            });
+            p["Agent"] = CreateAgent();
+            p["Placeholder"] = "Ask me anything";
         });
 
-        var html = cut.GetHtml();
-        Assert.Contains("Welcome to the chat!", html);
+        Assert.Contains("Ask me anything", cut.GetHtml());
     }
 
     [Fact]
-    public void RendersCustomPlaceholder()
+    public void AdditionalAttributesAreAppliedToRootElement()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("OK", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<ChatPage>(p =>
+        var cut = RenderChatPage(p =>
         {
-            p["Agent"] = agent;
-            p["Placeholder"] = "Ask anything...";
+            p["Agent"] = CreateAgent();
+            p["data-scenario"] = "agentic_chat";
         });
 
-        var html = cut.GetHtml();
-        Assert.Contains("Ask anything...", html);
+        Assert.Contains("data-scenario=\"agentic_chat\"", cut.GetHtml());
     }
 
-    [Fact]
-    public void RendersSuggestions_WhenNoTurns()
+    private static UIAgent CreateAgent()
     {
         var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("OK", ct));
-        var agent = new UIAgent(client);
-
-        var suggestions = new List<Suggestion>
-        {
-            new() { Label = "Hello", Prompt = "Hello" },
-        };
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<ChatPage>(p =>
-        {
-            p["Agent"] = agent;
-            p["Suggestions"] = (IReadOnlyList<Suggestion>)suggestions;
-        });
-
-        var html = cut.GetHtml();
-        Assert.Contains("sc-ai-suggestions", html);
-        Assert.Contains("Hello", html);
+        client.SetHandler((msgs, opts, ct) => ResponseEmitters.EmitTextResponse("OK", ct));
+        return new UIAgent(client);
     }
 
-    [Fact]
-    public void AcceptsAdditionalAttributes()
+    private static RenderedComponent<ChatPage> RenderChatPage(
+        Action<Dictionary<string, object?>> configure)
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("OK", ct));
-        var agent = new UIAgent(client);
-
         var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<ChatPage>(p =>
-        {
-            p["Agent"] = agent;
-            p["id"] = "my-chat";
-        });
-
-        var html = cut.GetHtml();
-        Assert.Contains("id=\"my-chat\"", html);
+        return renderer.RenderComponent<ChatPage>(configure);
     }
 }

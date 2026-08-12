@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Azure.Identity" />
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
     <Reference Include="Microsoft.AspNetCore.Authentication" />
@@ -22,7 +21,6 @@
     <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Components.AI" />
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
@@ -84,7 +82,6 @@
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.AI" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>

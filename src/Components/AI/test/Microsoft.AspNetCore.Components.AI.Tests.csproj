@@ -9,10 +9,13 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.AI" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.Extensions.AI" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.AI" />
+    <None Include="Baselines\**\*.recording.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

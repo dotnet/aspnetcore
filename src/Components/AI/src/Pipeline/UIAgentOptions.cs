@@ -5,26 +5,38 @@ using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
+/// <summary>
+/// Configures a <see cref="UIAgent"/>.
+/// </summary>
+/// <example>
+/// <code>
+/// var agent = new UIAgent(chatClient, options =>
+/// {
+///     options.ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." };
+/// });
+/// </code>
+/// </example>
 public class UIAgentOptions
 {
+    /// <summary>
+    /// Gets or sets the options passed to the underlying <see cref="IChatClient"/>.
+    /// </summary>
     public ChatOptions? ChatOptions { get; set; }
-
-    public Func<StateMapperContext, bool>? StateMapper { get; set; }
 
     internal List<IHandlerRegistration> HandlerRegistrations { get; } = new();
 
-    internal Dictionary<string, AIFunction> UIActions { get; } = new();
-
+    /// <summary>
+    /// Registers a handler that maps model updates into content blocks. Registered handlers
+    /// run before the built-in ones, so they can claim content the built-in handlers would
+    /// otherwise map.
+    /// </summary>
+    /// <typeparam name="TState">The state the handler keeps across updates.</typeparam>
+    /// <param name="handler">The handler to register.</param>
     public void AddBlockHandler<TState>(ContentBlockHandler<TState> handler)
         where TState : new()
     {
         ArgumentNullException.ThrowIfNull(handler);
         HandlerRegistrations.Add(new HandlerRegistration<TState>(handler));
-    }
-
-    public void RegisterUIAction(AIFunction function)
-    {
-        UIActions.Add(function.Name, function);
     }
 
     internal interface IHandlerRegistration

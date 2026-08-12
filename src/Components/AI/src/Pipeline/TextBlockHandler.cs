@@ -5,6 +5,8 @@ using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
+// Fallback handler: claims TextContent and accumulates it into a single block for the
+// duration of a model message. It runs last so more specific handlers get first refusal.
 internal sealed class TextBlockHandler : ContentBlockHandler<RichContentBlock>
 {
     public override BlockMappingResult<RichContentBlock> Handle(
@@ -39,10 +41,8 @@ internal sealed class TextBlockHandler : ContentBlockHandler<RichContentBlock>
             state.Id = context.Update.MessageId ?? Guid.NewGuid().ToString("N");
             return BlockMappingResult<RichContentBlock>.Emit(state, state);
         }
-        else
-        {
-            return BlockMappingResult<RichContentBlock>.Update(state);
-        }
+
+        return BlockMappingResult<RichContentBlock>.Update(state);
     }
 
     internal static void RebuildParagraphs(RichContentBlock state)
@@ -50,11 +50,11 @@ internal sealed class TextBlockHandler : ContentBlockHandler<RichContentBlock>
         var rawText = state.RawText;
         if (rawText.Length == 0)
         {
-            state.Content = Array.Empty<RichTextNode>();
+            state.Paragraphs = Array.Empty<string>();
             return;
         }
 
-        var paragraphs = new List<RichTextNode>();
+        var paragraphs = new List<string>();
         var start = 0;
         while (start < rawText.Length)
         {
@@ -73,10 +73,10 @@ internal sealed class TextBlockHandler : ContentBlockHandler<RichContentBlock>
             start = breakIndex + 2;
         }
 
-        state.Content = paragraphs;
+        state.Paragraphs = paragraphs;
     }
 
-    private static void AddParagraph(List<RichTextNode> paragraphs, ReadOnlySpan<char> text)
+    private static void AddParagraph(List<string> paragraphs, ReadOnlySpan<char> text)
     {
         var trimmed = text.TrimEnd("\r\n".AsSpan());
         if (trimmed.Length == 0)
@@ -84,8 +84,6 @@ internal sealed class TextBlockHandler : ContentBlockHandler<RichContentBlock>
             return;
         }
 
-        var paragraph = new ParagraphNode();
-        paragraph.AddChild(new TextNode(trimmed.ToString()));
-        paragraphs.Add(paragraph);
+        paragraphs.Add(trimmed.ToString());
     }
 }

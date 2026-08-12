@@ -12,27 +12,17 @@ public class UIAgentTests
     public async Task SendMessageAsync_TextResponse_YieldsUserThenAssistantBlocks()
     {
         var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hi there!"));
+        client.SetHandler((msgs, opts, ct) => ResponseEmitters.EmitTextResponse("Hi there!"));
         var agent = new UIAgent(client);
 
-        var blocks = new List<ContentBlock>();
-        await foreach (var block in agent.SendMessageAsync(
-            new ChatMessage(ChatRole.User, "Hello")))
-        {
-            blocks.Add(block);
-        }
+        var blocks = await CollectAsync(agent, "Hello");
 
-        Assert.True(blocks.Count >= 2);
-
-        var userBlocks = blocks.Where(b => b.Role == ChatRole.User).ToList();
-        Assert.NotEmpty(userBlocks);
-        var userBlock = Assert.IsType<RichContentBlock>(userBlocks[0]);
+        var userBlock = Assert.IsType<RichContentBlock>(
+            Assert.Single(blocks.Where(b => b.Role == ChatRole.User)));
         Assert.Equal("Hello", userBlock.RawText);
 
-        var assistantBlocks = blocks.Where(b => b.Role == ChatRole.Assistant).ToList();
-        Assert.NotEmpty(assistantBlocks);
-        var assistantBlock = Assert.IsType<RichContentBlock>(assistantBlocks[0]);
+        var assistantBlock = Assert.IsType<RichContentBlock>(
+            Assert.Single(blocks.Where(b => b.Role == ChatRole.Assistant)));
         Assert.Equal("Hi there!", assistantBlock.RawText);
     }
 
@@ -44,17 +34,12 @@ public class UIAgentTests
             ResponseEmitters.EmitMultiTokenTextResponse(ct, "Hello", " ", "world", "!"));
         var agent = new UIAgent(client);
 
-        var blocks = new List<ContentBlock>();
-        await foreach (var block in agent.SendMessageAsync(
-            new ChatMessage(ChatRole.User, "Hi")))
-        {
-            blocks.Add(block);
-        }
+        var blocks = await CollectAsync(agent, "Hi");
 
-        var assistantBlocks = blocks.Where(b => b.Role == ChatRole.Assistant).ToList();
-        Assert.Single(assistantBlocks);
-        var rich = Assert.IsType<RichContentBlock>(assistantBlocks[0]);
+        var rich = Assert.IsType<RichContentBlock>(
+            Assert.Single(blocks.Where(b => b.Role == ChatRole.Assistant)));
         Assert.Equal("Hello world!", rich.RawText);
+        Assert.Equal(["Hello world!"], rich.Paragraphs);
     }
 
     [Fact]
@@ -68,8 +53,7 @@ public class UIAgentTests
         var changeCount = 0;
         ContentBlock? firstBlock = null;
 
-        await foreach (var block in agent.SendMessageAsync(
-            new ChatMessage(ChatRole.User, "Hi")))
+        await foreach (var block in agent.SendMessageAsync(new ChatMessage(ChatRole.User, "Hi")))
         {
             if (block.Role == ChatRole.Assistant && firstBlock is null)
             {
@@ -78,60 +62,109 @@ public class UIAgentTests
             }
         }
 
-        Assert.Equal(2, changeCount);
+        // Two updates after the block was emitted, plus the notification from finalizing it.
+        Assert.Equal(3, changeCount);
     }
 
     [Fact]
     public async Task SendMessageAsync_AllBlocksInactiveAfterIteration()
     {
         var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Done"));
+        client.SetHandler((msgs, opts, ct) => ResponseEmitters.EmitTextResponse("Done"));
         var agent = new UIAgent(client);
 
-        var blocks = new List<ContentBlock>();
-        await foreach (var block in agent.SendMessageAsync(
-            new ChatMessage(ChatRole.User, "Go")))
-        {
-            blocks.Add(block);
-        }
+        var blocks = await CollectAsync(agent, "Hi");
 
-        Assert.All(blocks, b => Assert.Equal(BlockLifecycleState.Inactive, b.LifecycleState));
+        Assert.All(blocks, block => Assert.Equal(BlockLifecycleState.Inactive, block.LifecycleState));
     }
 
     [Fact]
-    public async Task SendMessageAsync_EmptyResponse_YieldsUserBlockOnly()
+    public async Task SendMessageAsync_SecondTurn_SendsPreviousMessagesAsHistory()
     {
         var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) => ResponseEmitters.EmitEmptyResponse());
+        List<ChatMessage>? secondRequest = null;
+        var callCount = 0;
+        client.SetHandler((msgs, opts, ct) =>
+        {
+            callCount++;
+            if (callCount == 2)
+            {
+                secondRequest = msgs.ToList();
+            }
+
+            return ResponseEmitters.EmitTextResponse($"Answer {callCount}");
+        });
         var agent = new UIAgent(client);
 
-        var blocks = new List<ContentBlock>();
-        await foreach (var block in agent.SendMessageAsync(
-            new ChatMessage(ChatRole.User, "Hello")))
-        {
-            blocks.Add(block);
-        }
+        await CollectAsync(agent, "First question");
+        var secondTurn = await CollectAsync(agent, "Second question");
 
-        Assert.All(blocks, b => Assert.Equal(ChatRole.User, b.Role));
+        Assert.NotNull(secondRequest);
+        Assert.Equal(3, secondRequest!.Count);
+        Assert.Equal("First question", secondRequest[0].Text);
+        Assert.Equal("Answer 1", secondRequest[1].Text);
+        Assert.Equal("Second question", secondRequest[2].Text);
+
+        var assistantBlock = Assert.IsType<RichContentBlock>(
+            Assert.Single(secondTurn.Where(b => b.Role == ChatRole.Assistant)));
+        Assert.Equal("Answer 2", assistantBlock.RawText);
     }
 
     [Fact]
-    public async Task SendMessageAsync_PassesChatOptions_ToIChatClient()
+    public async Task SendMessageAsync_EmptyResponse_YieldsOnlyUserBlock()
     {
-        ChatOptions? capturedOptions = null;
         var client = new DelegatingStreamingChatClient();
+        client.SetHandler((msgs, opts, ct) => ResponseEmitters.EmitEmptyResponse(ct));
+        var agent = new UIAgent(client);
+
+        var blocks = await CollectAsync(agent, "Hi");
+
+        Assert.Equal(ChatRole.User, Assert.Single(blocks).Role);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_UsesConfiguredChatOptions()
+    {
+        var client = new DelegatingStreamingChatClient();
+        ChatOptions? observed = null;
         client.SetHandler((msgs, opts, ct) =>
         {
-            capturedOptions = opts;
+            observed = opts;
             return ResponseEmitters.EmitTextResponse("ok");
         });
-        var expectedOptions = new ChatOptions { Temperature = 0.5f };
-        var agent = new UIAgent(client, expectedOptions);
+        var chatOptions = new ChatOptions { ModelId = "test-model" };
+        var agent = new UIAgent(client, chatOptions);
 
-        await foreach (var _ in agent.SendMessageAsync(
-            new ChatMessage(ChatRole.User, "test"))) { }
+        await CollectAsync(agent, "Hi");
 
-        Assert.Same(expectedOptions, capturedOptions);
+        Assert.Same(chatOptions, observed);
+    }
+
+    [Fact]
+    public void Constructor_NullChatClientThrows()
+    {
+        Assert.Throws<ArgumentNullException>(() => new UIAgent(null!));
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_AfterDispose_Throws()
+    {
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((msgs, opts, ct) => ResponseEmitters.EmitTextResponse("ok"));
+        var agent = new UIAgent(client);
+        agent.Dispose();
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => CollectAsync(agent, "Hi"));
+    }
+
+    private static async Task<List<ContentBlock>> CollectAsync(UIAgent agent, string text)
+    {
+        var blocks = new List<ContentBlock>();
+        await foreach (var block in agent.SendMessageAsync(new ChatMessage(ChatRole.User, text)))
+        {
+            blocks.Add(block);
+        }
+
+        return blocks;
     }
 }

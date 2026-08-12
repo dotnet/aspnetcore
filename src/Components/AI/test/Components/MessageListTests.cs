@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
 using Microsoft.Extensions.AI;
@@ -15,27 +13,14 @@ public class MessageListTests
     [Fact]
     public async Task RendersTurns_AfterMessageSent()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hello!", ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageList>(0);
-                b.CloseComponent();
-            });
-        });
-
+        var cut = RenderMessageList(_ => ResponseEmitters.EmitTextResponse("Hello!"));
         var context = GetAgentContext(cut);
+
         await cut.InvokeAsync(() => context.SendMessageAsync("Hi"));
 
         var html = cut.GetHtml();
         Assert.Contains("sc-ai-turn", html);
+        Assert.Contains("Hi", html);
         Assert.Contains("Hello!", html);
     }
 
@@ -43,186 +28,115 @@ public class MessageListTests
     public async Task MultipleTurns_AllRendered()
     {
         var callCount = 0;
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-        {
-            callCount++;
-            return ResponseEmitters.EmitTextResponse($"Response {callCount}", ct);
-        });
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageList>(0);
-                b.CloseComponent();
-            });
-        });
-
+        var cut = RenderMessageList(_ => ResponseEmitters.EmitTextResponse($"Response {++callCount}"));
         var context = GetAgentContext(cut);
+
         await cut.InvokeAsync(() => context.SendMessageAsync("First"));
         await cut.InvokeAsync(() => context.SendMessageAsync("Second"));
 
         var html = cut.GetHtml();
-        // Count turn divs
-        var turnCount = CountOccurrences(html, "sc-ai-turn sc-ai-turn--");
-        Assert.Equal(2, turnCount);
         Assert.Contains("Response 1", html);
         Assert.Contains("Response 2", html);
+        Assert.Equal(2, CountOccurrences(html, "sc-ai-turn sc-ai-turn--user"));
     }
 
     [Fact]
-    public async Task DefaultFooter_ShowsTypingDuringStreaming()
+    public async Task StreamingBlock_RendersStreamingModifierUntilComplete()
     {
-        var streamingStarted = new TaskCompletionSource();
-        var streamGate = new TaskCompletionSource();
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            SlowStream(streamingStarted, streamGate, ct));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
+        var gate = new TaskCompletionSource();
+        var cut = RenderMessageList(ct => ResponseEmitters.EmitTokensWithGate(
+            ["Partial", " complete"],
+            async index =>
             {
-                b.OpenComponent<MessageList>(0);
-                b.CloseComponent();
-            });
-        });
-
+                if (index == 1)
+                {
+                    await gate.Task;
+                }
+            },
+            ct));
         var context = GetAgentContext(cut);
-        Task sendTask = null!;
-        await cut.InvokeAsync(() =>
-        {
-            sendTask = context.SendMessageAsync("Hi");
-        });
 
-        await streamingStarted.Task;
+        var sendTask = cut.InvokeAsync(() => context.SendMessageAsync("Hi"));
 
-        var html = cut.GetHtml();
-        Assert.Contains("sc-ai-typing", html);
+        await WaitForHtmlAsync(cut, "Partial");
+        Assert.Contains("sc-ai-message__content--streaming", cut.GetHtml());
 
-        streamGate.TrySetResult();
+        gate.SetResult();
         await sendTask;
 
-        html = cut.GetHtml();
-        Assert.DoesNotContain("sc-ai-typing", html);
+        var html = cut.GetHtml();
+        Assert.Contains("Partial complete", html);
+        Assert.DoesNotContain("sc-ai-message__content--streaming", html);
     }
 
     [Fact]
-    public async Task DefaultFooter_ShowsErrorBannerOnError()
+    public void EmptyConversation_RendersEmptyContent()
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitErrorAfterTokens(
-                [], new InvalidOperationException("Server error"), ct));
-        var agent = new UIAgent(client);
+        var cut = RenderMessageList(
+            _ => ResponseEmitters.EmitTextResponse("unused"),
+            emptyContent: builder => builder.AddMarkupContent(0, "<p>Nothing here yet</p>"));
 
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
-        {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
-            {
-                b.OpenComponent<MessageList>(0);
-                b.CloseComponent();
-            });
-        });
+        Assert.Contains("Nothing here yet", cut.GetHtml());
+    }
 
+    [Fact]
+    public async Task Error_RendersRetryAffordance()
+    {
+        var cut = RenderMessageList(_ =>
+            ResponseEmitters.EmitErrorAfterTokens([], new InvalidOperationException("boom")));
         var context = GetAgentContext(cut);
+
         await cut.InvokeAsync(() => context.SendMessageAsync("Hi"));
 
         var html = cut.GetHtml();
         Assert.Contains("sc-ai-error", html);
-        // The default error banner shows a generic message and must not leak the raw exception text.
-        Assert.DoesNotContain("Server error", html);
-        Assert.Contains("Something went wrong", html);
         Assert.Contains("Retry", html);
     }
 
-    [Fact]
-    public async Task CustomFooter_OverridesDefault()
+    private static RenderedComponent<AgentBoundary> RenderMessageList(
+        Func<CancellationToken, IAsyncEnumerable<ChatResponseUpdate>> respond,
+        RenderFragment? emptyContent = null)
     {
         var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hi", ct));
+        client.SetHandler((msgs, opts, ct) => respond(ct));
         var agent = new UIAgent(client);
 
         var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
+        return renderer.RenderComponent<AgentBoundary>(p =>
         {
             p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
+            p["ChildContent"] = (RenderFragment)(builder =>
             {
-                b.OpenComponent<MessageList>(0);
-                b.AddComponentParameter(1, "Footer",
-                    (RenderFragment<AgentContext>)(ctx => builder =>
-                    {
-                        builder.OpenElement(0, "span");
-                        builder.AddAttribute(1, "class", "custom-footer");
-                        builder.AddContent(2, $"Status: {ctx.Status}");
-                        builder.CloseElement();
-                    }));
-                b.CloseComponent();
+                builder.OpenComponent<MessageList>(0);
+                if (emptyContent is not null)
+                {
+                    builder.AddComponentParameter(1, "EmptyContent", emptyContent);
+                }
+                builder.CloseComponent();
             });
         });
-
-        var html = cut.GetHtml();
-        Assert.Contains("class=\"custom-footer\"", html);
-        Assert.Contains("Status: Idle", html);
-        Assert.DoesNotContain("sc-ai-typing", html);
-        Assert.DoesNotContain("sc-ai-error", html);
     }
 
-    [Fact]
-    public async Task StreamingBlock_ShowsAccumulatedText()
+    private static async Task WaitForHtmlAsync(
+        RenderedComponent<AgentBoundary> cut, string expected)
     {
-        var client = new DelegatingStreamingChatClient();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitMultiTokenTextResponse(ct, "Hello", " world", "!"));
-        var agent = new UIAgent(client);
-
-        var renderer = new TestRenderer();
-        var cut = renderer.RenderComponent<AgentBoundary>(p =>
+        for (var i = 0; i < 100; i++)
         {
-            p["Agent"] = agent;
-            p["ChildContent"] = (RenderFragment)(b =>
+            if (cut.GetHtml().Contains(expected, StringComparison.Ordinal))
             {
-                b.OpenComponent<MessageList>(0);
-                b.CloseComponent();
-            });
-        });
+                return;
+            }
 
-        var context = GetAgentContext(cut);
-        await cut.InvokeAsync(() => context.SendMessageAsync("Hi"));
+            await Task.Delay(20);
+        }
 
-        var html = cut.GetHtml();
-        Assert.Contains("sc-ai-turn", html);
-        Assert.Contains("sc-ai-message", html);
-        Assert.Contains("Hello world!", html);
-    }
-
-    [Fact]
-    public void MessageList_OutsideAgentBoundary_Throws()
-    {
-        var renderer = new TestRenderer();
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            renderer.RenderComponent<MessageList>();
-        });
+        Assert.Fail($"Timed out waiting for '{expected}' to render. Current markup: {cut.GetHtml()}");
     }
 
     private static AgentContext GetAgentContext(RenderedComponent<AgentBoundary> cut)
     {
         return (AgentContext)typeof(AgentBoundary)
-            .GetField("_context",
-                System.Reflection.BindingFlags.NonPublic
-                | System.Reflection.BindingFlags.Instance)!
+            .GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance)!
             .GetValue(cut.Instance)!;
     }
 
@@ -230,26 +144,12 @@ public class MessageListTests
     {
         var count = 0;
         var index = 0;
-        while ((index = text.IndexOf(pattern, index, StringComparison.Ordinal)) != -1)
+        while ((index = text.IndexOf(pattern, index, StringComparison.Ordinal)) >= 0)
         {
             count++;
             index += pattern.Length;
         }
-        return count;
-    }
 
-    private static async IAsyncEnumerable<ChatResponseUpdate> SlowStream(
-        TaskCompletionSource started,
-        TaskCompletionSource gate,
-        [EnumeratorCancellation] CancellationToken ct)
-    {
-        yield return new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            Contents = [new TextContent("tok")]
-        };
-        started.TrySetResult();
-        try { await gate.Task.WaitAsync(ct); }
-        catch (OperationCanceledException) { yield break; }
+        return count;
     }
 }

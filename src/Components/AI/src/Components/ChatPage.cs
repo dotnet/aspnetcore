@@ -5,42 +5,73 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
-public sealed class ChatPage : ComponentBase, IDisposable
+/// <summary>
+/// Full page chat shell: an <see cref="AgentBoundary"/> around a scrollable
+/// <see cref="MessageList"/> and a <see cref="MessageInput"/>.
+/// </summary>
+/// <example>
+/// <code>
+/// &lt;ChatPage Agent="agent" Placeholder="Ask me anything" /&gt;
+/// </code>
+/// </example>
+public sealed class ChatPage : ComponentBase
 {
+    /// <summary>
+    /// Gets or sets the agent that drives the conversation.
+    /// </summary>
     [Parameter, EditorRequired]
     public UIAgent Agent { get; set; } = default!;
 
+    /// <summary>
+    /// Gets or sets the content rendered above the conversation.
+    /// </summary>
     [Parameter]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// Gets or sets the content rendered when the conversation is empty.
+    /// </summary>
     [Parameter]
     public RenderFragment? WelcomeContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets the content rendered inside the message list, typically
+    /// <see cref="BlockRenderer{TBlock}"/> registrations.
+    /// </summary>
     [Parameter]
     public RenderFragment? MessageListContent { get; set; }
 
-    [Parameter]
-    public IReadOnlyList<Suggestion>? Suggestions { get; set; }
-
+    /// <summary>
+    /// Gets or sets the placeholder text of the message input.
+    /// </summary>
     [Parameter]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// Gets or sets the content rendered before the message input text area.
+    /// </summary>
     [Parameter]
     public RenderFragment? InputLeadingActions { get; set; }
 
+    /// <summary>
+    /// Gets or sets the content rendered after the message input text area.
+    /// </summary>
     [Parameter]
     public RenderFragment? InputTrailingActions { get; set; }
 
+    /// <summary>
+    /// Gets or sets additional attributes applied to the root element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "div");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "class", CssClass());
 
-        // Header
         if (Header is not null)
         {
             builder.OpenElement(10, "div");
@@ -49,7 +80,6 @@ public sealed class ChatPage : ComponentBase, IDisposable
             builder.CloseElement();
         }
 
-        // AgentBoundary
         builder.OpenComponent<AgentBoundary>(20);
         builder.AddComponentParameter(21, "Agent", Agent);
         builder.AddComponentParameter(22, "ChildContent", (RenderFragment)(inner =>
@@ -61,11 +91,6 @@ public sealed class ChatPage : ComponentBase, IDisposable
             inner.OpenComponent<MessageList>(32);
             inner.AddComponentParameter(33, "ChildContent", MessageListContent);
             inner.AddComponentParameter(34, "EmptyContent", WelcomeContent);
-            inner.AddComponentParameter(35, "Footer", (RenderFragment<AgentContext>)(ctx =>
-                (RenderFragment)(footerBuilder =>
-            {
-                RenderDefaultFooter(footerBuilder, ctx, 0);
-            })));
             inner.CloseComponent(); // MessageList
 
             inner.CloseElement(); // body
@@ -90,55 +115,6 @@ public sealed class ChatPage : ComponentBase, IDisposable
         builder.CloseElement(); // root div
     }
 
-    private void RenderDefaultFooter(RenderTreeBuilder builder, AgentContext ctx, int seq)
-    {
-        builder.OpenElement(seq, "div");
-        builder.AddAttribute(seq + 1, "class", "sc-ai-message-list__footer");
-
-        switch (ctx.Status)
-        {
-            case ConversationStatus.Streaming:
-                builder.OpenElement(seq + 2, "div");
-                builder.AddAttribute(seq + 3, "class", "sc-ai-typing");
-                builder.AddAttribute(seq + 4, "role", "status");
-                builder.AddAttribute(seq + 5, "aria-label", "Agent is typing");
-                for (var i = 0; i < 3; i++)
-                {
-                    builder.OpenElement(seq + 6 + i, "span");
-                    builder.AddAttribute(seq + 9 + i, "class", "sc-ai-typing__dot");
-                    builder.CloseElement();
-                }
-                builder.CloseElement();
-                break;
-
-            case ConversationStatus.Error:
-                builder.OpenElement(seq + 2, "div");
-                builder.AddAttribute(seq + 3, "class", "sc-ai-error");
-                builder.AddAttribute(seq + 4, "role", "alert");
-                builder.OpenElement(seq + 5, "span");
-                builder.AddAttribute(seq + 6, "class", "sc-ai-error__message");
-                builder.AddContent(seq + 7, "Something went wrong. Please try again.");
-                builder.CloseElement();
-                builder.OpenElement(seq + 8, "button");
-                builder.AddAttribute(seq + 9, "class", "sc-ai-btn sc-ai-btn--secondary");
-                builder.AddAttribute(seq + 10, "onclick",
-                    EventCallback.Factory.Create(this, () => ctx.RetryAsync()));
-                builder.AddContent(seq + 11, "Retry");
-                builder.CloseElement();
-                builder.CloseElement();
-                break;
-        }
-
-        if (Suggestions is { Count: > 0 } && ctx.Turns.Count == 0)
-        {
-            builder.OpenComponent<SuggestionList>(seq + 20);
-            builder.AddComponentParameter(seq + 21, "Suggestions", Suggestions);
-            builder.CloseComponent();
-        }
-
-        builder.CloseElement(); // footer div
-    }
-
     private string CssClass()
     {
         var css = "sc-ai-root sc-ai-chat-page";
@@ -146,11 +122,7 @@ public sealed class ChatPage : ComponentBase, IDisposable
         {
             css = $"{css} {s}";
         }
-        return css;
-    }
 
-    public void Dispose()
-    {
-        // Layout shell does not own the Agent — caller does.
+        return css;
     }
 }

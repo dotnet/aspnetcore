@@ -71,12 +71,21 @@ public class ContentBlockTests
     }
 
     [Fact]
-    public void OnChanged_ReturnsConcreteStructType()
+    public void OnChanged_NullCallbackThrows()
     {
         var block = new TestBlock();
-        ContentBlockChangedSubscription reg = block.OnChanged(() => { });
 
-        Assert.IsType<ContentBlockChangedSubscription>(reg);
-        reg.Dispose();
+        Assert.Throws<ArgumentNullException>(() => block.OnChanged(null!));
+    }
+
+    [Fact]
+    public void AppendText_AccumulatesRawText()
+    {
+        var block = new RichContentBlock();
+
+        block.AppendText("Hello");
+        block.AppendText(" world");
+
+        Assert.Equal("Hello world", block.RawText);
     }
 }

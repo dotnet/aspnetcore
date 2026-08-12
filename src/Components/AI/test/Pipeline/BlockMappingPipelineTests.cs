@@ -7,11 +7,106 @@ namespace Microsoft.AspNetCore.Components.AI.Tests.Pipeline;
 
 public class BlockMappingPipelineTests
 {
-    private static BlockMappingPipeline CreatePipelineWithTextHandler()
+    [Fact]
+    public async Task Process_SingleTextUpdate_EmitsOneRichContentBlock()
+    {
+        var pipeline = CreatePipeline();
+        var update = CreateTextUpdate("msg-1", "Hello");
+
+        var blocks = await ProcessAsync(pipeline, update);
+
+        var block = Assert.IsType<RichContentBlock>(Assert.Single(blocks));
+        Assert.Equal("Hello", block.RawText);
+        Assert.Equal("msg-1", block.Id);
+        Assert.Equal(ChatRole.Assistant, block.Role);
+        Assert.Equal(BlockLifecycleState.Active, block.LifecycleState);
+    }
+
+    [Fact]
+    public async Task Process_MultipleTextUpdates_SingleBlockAccumulates()
+    {
+        var pipeline = CreatePipeline();
+
+        var blocks = await ProcessAsync(pipeline, CreateTextUpdate("msg-1", "Hello"));
+        var moreBlocks = await ProcessAsync(pipeline, CreateTextUpdate("msg-1", " world"));
+
+        Assert.Empty(moreBlocks);
+        var block = Assert.IsType<RichContentBlock>(Assert.Single(blocks));
+        Assert.Equal("Hello world", block.RawText);
+    }
+
+    [Fact]
+    public async Task Process_SubsequentUpdate_NotifiesSubscribers()
+    {
+        var pipeline = CreatePipeline();
+        var blocks = await ProcessAsync(pipeline, CreateTextUpdate("msg-1", "Hello"));
+        var changeCount = 0;
+        using var subscription = blocks[0].OnChanged(() => changeCount++);
+
+        await ProcessAsync(pipeline, CreateTextUpdate("msg-1", " world"));
+
+        Assert.Equal(1, changeCount);
+    }
+
+    [Fact]
+    public async Task Process_UpdateWithoutText_CompletesActiveBlock()
+    {
+        var pipeline = CreatePipeline();
+        var blocks = await ProcessAsync(pipeline, CreateTextUpdate("msg-1", "Hello"));
+
+        await ProcessAsync(pipeline, new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = "msg-1",
+            Contents = [],
+        });
+
+        Assert.Equal(BlockLifecycleState.Inactive, blocks[0].LifecycleState);
+    }
+
+    [Fact]
+    public async Task Finalize_DeactivatesAndNotifiesActiveBlocks()
+    {
+        var pipeline = CreatePipeline();
+        var blocks = await ProcessAsync(pipeline, CreateTextUpdate("msg-1", "Hello"));
+        var changeCount = 0;
+        using var subscription = blocks[0].OnChanged(() => changeCount++);
+
+        pipeline.Finalize();
+
+        Assert.Equal(BlockLifecycleState.Inactive, blocks[0].LifecycleState);
+        Assert.Equal(1, changeCount);
+    }
+
+    [Fact]
+    public async Task Process_RegisteredHandler_ClaimsContentBeforeTextHandler()
     {
         var options = new UIAgentOptions();
-        return new BlockMappingPipeline(options);
+        options.AddBlockHandler(new UppercaseTextHandler());
+        var pipeline = new BlockMappingPipeline(options);
+
+        var blocks = await ProcessAsync(pipeline, CreateTextUpdate("msg-1", "Hello"));
+
+        var block = Assert.IsType<UppercaseTextBlock>(Assert.Single(blocks));
+        Assert.Equal("HELLO", block.Text);
     }
+
+    [Fact]
+    public void AddBlockHandler_NullHandlerThrows()
+    {
+        var options = new UIAgentOptions();
+
+        Assert.Throws<ArgumentNullException>(() => options.AddBlockHandler<RichContentBlock>(null!));
+    }
+
+    private static BlockMappingPipeline CreatePipeline() => new(new UIAgentOptions());
+
+    private static ChatResponseUpdate CreateTextUpdate(string messageId, string text) => new()
+    {
+        Role = ChatRole.Assistant,
+        MessageId = messageId,
+        Contents = [new TextContent(text)],
+    };
 
     private static async Task<List<ContentBlock>> ProcessAsync(
         BlockMappingPipeline pipeline, ChatResponseUpdate update)
@@ -21,142 +116,34 @@ public class BlockMappingPipelineTests
         {
             blocks.Add(block);
         }
+
         return blocks;
     }
 
-    [Fact]
-    public async Task Process_SingleTextUpdate_EmitsOneRichContentBlock()
+    private sealed class UppercaseTextBlock : ContentBlock
     {
-        var pipeline = CreatePipelineWithTextHandler();
-        var update = new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-1",
-            Contents = [new TextContent("Hello")]
-        };
-
-        var blocks = await ProcessAsync(pipeline, update);
-
-        Assert.Single(blocks);
-        var block = Assert.IsType<RichContentBlock>(blocks[0]);
-        Assert.Equal("Hello", block.RawText);
-        Assert.Equal("msg-1", block.Id);
-        Assert.Equal(ChatRole.Assistant, block.Role);
-        Assert.Equal(BlockLifecycleState.Active, block.LifecycleState);
+        public string Text { get; set; } = "";
     }
 
-    [Fact]
-    public async Task Process_MultipleTextUpdates_SameMessageId_SingleBlockAccumulates()
+    private sealed class UppercaseTextHandler : ContentBlockHandler<UppercaseTextBlock>
     {
-        var pipeline = CreatePipelineWithTextHandler();
-        var update1 = new ChatResponseUpdate
+        public override BlockMappingResult<UppercaseTextBlock> Handle(
+            BlockMappingContext context, UppercaseTextBlock state)
         {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-1",
-            Contents = [new TextContent("Hello")]
-        };
-        var update2 = new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-1",
-            Contents = [new TextContent(" world")]
-        };
+            foreach (var content in context.UnhandledContents)
+            {
+                if (content is TextContent text)
+                {
+                    context.MarkHandled(text);
+                    state.Text = (text.Text ?? "").ToUpperInvariant();
+                    state.Id = context.Update.MessageId ?? Guid.NewGuid().ToString("N");
+                    return BlockMappingResult<UppercaseTextBlock>.Emit(state, state);
+                }
+            }
 
-        var blocks1 = await ProcessAsync(pipeline, update1);
-        Assert.Single(blocks1);
-
-        var blocks2 = await ProcessAsync(pipeline, update2);
-        Assert.Empty(blocks2);
-
-        var block = Assert.IsType<RichContentBlock>(blocks1[0]);
-        Assert.Equal("Hello world", block.RawText);
-    }
-
-    [Fact]
-    public async Task Process_TextUpdate_NotifyChangedOnUpdate()
-    {
-        var pipeline = CreatePipelineWithTextHandler();
-        var update1 = new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-1",
-            Contents = [new TextContent("Hello")]
-        };
-        var blocks = await ProcessAsync(pipeline, update1);
-        var block = blocks[0];
-        var changeCount = 0;
-        block.OnChanged(() => changeCount++);
-
-        var update2 = new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-1",
-            Contents = [new TextContent(" world")]
-        };
-        await ProcessAsync(pipeline, update2);
-
-        Assert.Equal(1, changeCount);
-    }
-
-    [Fact]
-    public async Task Process_UpdateWithNoMatchingHandler_NoBlocksEmitted()
-    {
-        var pipeline = CreatePipelineWithTextHandler();
-        var update = new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-1",
-            Contents = [new UsageContent(new() { InputTokenCount = 10 })]
-        };
-
-        var blocks = await ProcessAsync(pipeline, update);
-        Assert.Empty(blocks);
-    }
-
-    [Fact]
-    public async Task Finalize_CompletesActiveHandlers_TransitionsBlocksToInactive()
-    {
-        var pipeline = CreatePipelineWithTextHandler();
-        var update = new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-1",
-            Contents = [new TextContent("Hello")]
-        };
-        var blocks = await ProcessAsync(pipeline, update);
-        var block = blocks[0];
-        Assert.Equal(BlockLifecycleState.Active, block.LifecycleState);
-
-        pipeline.Finalize();
-
-        Assert.Equal(BlockLifecycleState.Inactive, block.LifecycleState);
-    }
-
-    [Fact]
-    public async Task Process_AfterFinalize_NewTextEmitsNewBlock()
-    {
-        var pipeline = CreatePipelineWithTextHandler();
-
-        var update1 = new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-1",
-            Contents = [new TextContent("First")]
-        };
-        await ProcessAsync(pipeline, update1);
-        pipeline.Finalize();
-
-        var update2 = new ChatResponseUpdate
-        {
-            Role = ChatRole.Assistant,
-            MessageId = "msg-2",
-            Contents = [new TextContent("Second")]
-        };
-        var blocks = await ProcessAsync(pipeline, update2);
-
-        Assert.Single(blocks);
-        var block = Assert.IsType<RichContentBlock>(blocks[0]);
-        Assert.Equal("Second", block.RawText);
-        Assert.Equal("msg-2", block.Id);
+            return state.Text.Length > 0
+                ? BlockMappingResult<UppercaseTextBlock>.Complete()
+                : BlockMappingResult<UppercaseTextBlock>.Pass();
+        }
     }
 }

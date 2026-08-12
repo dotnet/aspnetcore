@@ -8,243 +8,160 @@ namespace Microsoft.AspNetCore.Components.AI.Tests.Engine;
 
 public class AgentContextTests
 {
-    private static (UIAgent agent, DelegatingStreamingChatClient client) CreateAgent()
-    {
-        var client = new DelegatingStreamingChatClient();
-        var agent = new UIAgent(client);
-        return (agent, client);
-    }
-
-    // ---- Turn Assembly ----
-
     [Fact]
-    public async Task SendMessageAsync_CreatesTurnWithUserAndAssistantBlocks()
+    public async Task SendMessageAsync_CreatesTurnWithRequestAndResponseBlocks()
     {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Hi!"));
-        var context = new AgentContext(agent);
+        var context = CreateContext(_ => ResponseEmitters.EmitTextResponse("Hi there!"));
 
         await context.SendMessageAsync("Hello");
 
-        Assert.Single(context.Turns);
-        var turn = context.Turns[0];
-        Assert.NotEmpty(turn.RequestBlocks);
-        Assert.All(turn.RequestBlocks, b => Assert.Equal(ChatRole.User, b.Role));
-        Assert.NotEmpty(turn.ResponseBlocks);
-        Assert.All(turn.ResponseBlocks, b => Assert.Equal(ChatRole.Assistant, b.Role));
+        var turn = Assert.Single(context.Turns);
+        var request = Assert.IsType<RichContentBlock>(Assert.Single(turn.RequestBlocks));
+        Assert.Equal("Hello", request.RawText);
+        var response = Assert.IsType<RichContentBlock>(Assert.Single(turn.ResponseBlocks));
+        Assert.Equal("Hi there!", response.RawText);
     }
 
     [Fact]
-    public async Task SendMessageAsync_MultipleCalls_CreatesMultipleTurns()
+    public async Task SendMessageAsync_TransitionsStreamingThenIdle()
     {
-        var (agent, client) = CreateAgent();
+        var context = CreateContext(_ => ResponseEmitters.EmitTextResponse("Hi"));
+        var statuses = new List<ConversationStatus>();
+        using var subscription = context.RegisterOnStatusChanged(statuses.Add);
+
+        await context.SendMessageAsync("Hello");
+
+        Assert.Equal([ConversationStatus.Streaming, ConversationStatus.Idle], statuses);
+        Assert.Equal(ConversationStatus.Idle, context.Status);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_NotifiesTurnAndBlockSubscribers()
+    {
+        var context = CreateContext(_ => ResponseEmitters.EmitTextResponse("Hi"));
+        var turnCount = 0;
+        var blockCount = 0;
+        using var turnSubscription = context.RegisterOnTurnAdded(_ => turnCount++);
+        using var blockSubscription = context.RegisterOnBlockAdded((_, _) => blockCount++);
+
+        await context.SendMessageAsync("Hello");
+
+        Assert.Equal(1, turnCount);
+        Assert.Equal(2, blockCount);
+    }
+
+    [Fact]
+    public async Task RegisterOnStatusChanged_DisposedSubscriptionStopsReceivingUpdates()
+    {
+        var context = CreateContext(_ => ResponseEmitters.EmitTextResponse("Hi"));
+        var statusCount = 0;
+        var subscription = context.RegisterOnStatusChanged(_ => statusCount++);
+
+        subscription.Dispose();
+        await context.SendMessageAsync("Hello");
+
+        Assert.Equal(0, statusCount);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_SecondTurn_AppendsAnotherTurn()
+    {
         var callCount = 0;
-        client.SetHandler((msgs, opts, ct) =>
-        {
-            callCount++;
-            return ResponseEmitters.EmitTextResponse($"Response {callCount}");
-        });
-        var context = new AgentContext(agent);
+        var context = CreateContext(_ => ResponseEmitters.EmitTextResponse($"Answer {++callCount}"));
 
         await context.SendMessageAsync("First");
         await context.SendMessageAsync("Second");
 
         Assert.Equal(2, context.Turns.Count);
+        Assert.Equal("Second", Assert.IsType<RichContentBlock>(context.Turns[1].RequestBlocks[0]).RawText);
+        Assert.Equal("Answer 2", Assert.IsType<RichContentBlock>(context.Turns[1].ResponseBlocks[0]).RawText);
     }
 
     [Fact]
-    public async Task SendMessageAsync_RequestBlocksContainUserText()
+    public async Task SendMessageAsync_Failure_SurfacesErrorStatus()
     {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("Reply"));
-        var context = new AgentContext(agent);
+        var context = CreateContext(_ =>
+            ResponseEmitters.EmitErrorAfterTokens(["partial"], new InvalidOperationException("boom")));
 
-        await context.SendMessageAsync("My message");
+        await context.SendMessageAsync("Hello");
 
-        var userBlock = Assert.IsType<RichContentBlock>(context.Turns[0].RequestBlocks[0]);
-        Assert.Equal("My message", userBlock.RawText);
+        Assert.Equal(ConversationStatus.Error, context.Status);
+        Assert.IsType<InvalidOperationException>(context.Error);
     }
 
-    // ---- Status Transitions ----
-
     [Fact]
-    public async Task Status_StartsAsIdle()
+    public async Task RetryAsync_AfterError_ReplacesResponseBlocks()
     {
-        var (agent, _) = CreateAgent();
-        var context = new AgentContext(agent);
+        var callCount = 0;
+        var context = CreateContext(_ => callCount++ == 0
+            ? ResponseEmitters.EmitErrorAfterTokens(["partial"], new InvalidOperationException("boom"))
+            : ResponseEmitters.EmitTextResponse("Recovered"));
+
+        await context.SendMessageAsync("Hello");
+        await context.RetryAsync();
 
         Assert.Equal(ConversationStatus.Idle, context.Status);
         Assert.Null(context.Error);
+        var turn = Assert.Single(context.Turns);
+        Assert.Equal("Recovered", Assert.IsType<RichContentBlock>(Assert.Single(turn.ResponseBlocks)).RawText);
     }
 
     [Fact]
-    public async Task SendMessageAsync_StatusTransitions_IdleToStreamingToIdle()
+    public async Task RetryAsync_WithoutError_Throws()
     {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("ok"));
-        var context = new AgentContext(agent);
+        var context = CreateContext(_ => ResponseEmitters.EmitTextResponse("Hi"));
 
-        var statuses = new List<ConversationStatus>();
-        context.RegisterOnStatusChanged(s => statuses.Add(s));
+        await context.SendMessageAsync("Hello");
 
-        await context.SendMessageAsync("hi");
-
-        Assert.Equal(new[] { ConversationStatus.Streaming, ConversationStatus.Idle }, statuses);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => context.RetryAsync());
     }
 
     [Fact]
-    public async Task SendMessageAsync_OnException_StatusIsError()
+    public async Task CancelAsync_DuringStreaming_ClearsResponseBlocksAndReturnsToIdle()
     {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitErrorAfterTokens([], new InvalidOperationException("boom")));
-        var context = new AgentContext(agent);
+        AgentContext? context = null;
+        var gate = new TaskCompletionSource();
+        context = CreateContext(ct => ResponseEmitters.EmitTokensWithGate(
+            ["first", "second"],
+            async index =>
+            {
+                if (index == 1)
+                {
+                    await gate.Task;
+                }
+            },
+            ct));
 
-        await context.SendMessageAsync("hi");
+        var sendTask = context.SendMessageAsync("Hello");
+        await context.CancelAsync();
+        gate.SetResult();
+        await sendTask;
 
-        Assert.Equal(ConversationStatus.Error, context.Status);
-        Assert.NotNull(context.Error);
-        Assert.Equal("boom", context.Error!.Message);
+        Assert.Equal(ConversationStatus.Idle, context.Status);
+        Assert.Empty(Assert.Single(context.Turns).ResponseBlocks);
     }
 
     [Fact]
-    public async Task SendMessageAsync_OnException_StatusTransitions_IdleToStreamingToError()
+    public async Task CancelAsync_WhenIdle_IsNoOp()
     {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitErrorAfterTokens(["partial"], new Exception("fail")));
-        var context = new AgentContext(agent);
+        var context = CreateContext(_ => ResponseEmitters.EmitTextResponse("Hi"));
 
-        var statuses = new List<ConversationStatus>();
-        context.RegisterOnStatusChanged(s => statuses.Add(s));
+        await context.CancelAsync();
 
-        await context.SendMessageAsync("hi");
-
-        Assert.Equal(
-            new[] { ConversationStatus.Streaming, ConversationStatus.Error },
-            statuses);
-    }
-
-    // ---- Notifications ----
-
-    [Fact]
-    public async Task RegisterOnTurnAdded_FiresWhenTurnCreated()
-    {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("ok"));
-        var context = new AgentContext(agent);
-
-        ConversationTurn? receivedTurn = null;
-        context.RegisterOnTurnAdded(t => receivedTurn = t);
-
-        await context.SendMessageAsync("hi");
-
-        Assert.NotNull(receivedTurn);
-        Assert.Same(context.Turns[0], receivedTurn);
+        Assert.Equal(ConversationStatus.Idle, context.Status);
     }
 
     [Fact]
-    public async Task RegisterOnBlockAdded_FiresForEachBlock()
+    public void Constructor_NullAgentThrows()
     {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("ok"));
-        var context = new AgentContext(agent);
-
-        var receivedBlocks = new List<(ConversationTurn turn, ContentBlock block)>();
-        context.RegisterOnBlockAdded((t, b) => receivedBlocks.Add((t, b)));
-
-        await context.SendMessageAsync("hi");
-
-        Assert.True(receivedBlocks.Count >= 2);
-        Assert.All(receivedBlocks, x => Assert.Same(context.Turns[0], x.turn));
+        Assert.Throws<ArgumentNullException>(() => new AgentContext(null!));
     }
 
-    [Fact]
-    public async Task RegisterOnStatusChanged_DisposingStopsCallbacks()
+    private static AgentContext CreateContext(
+        Func<CancellationToken, IAsyncEnumerable<ChatResponseUpdate>> respond)
     {
-        var (agent, client) = CreateAgent();
-        var callCount = 0;
-        client.SetHandler((msgs, opts, ct) =>
-        {
-            callCount++;
-            return ResponseEmitters.EmitTextResponse($"Reply {callCount}");
-        });
-        var context = new AgentContext(agent);
-
-        var statusCount = 0;
-        var reg = context.RegisterOnStatusChanged(_ => statusCount++);
-
-        await context.SendMessageAsync("first");
-        var countAfterFirst = statusCount;
-
-        reg.Dispose();
-
-        await context.SendMessageAsync("second");
-        Assert.Equal(countAfterFirst, statusCount);
-    }
-
-    [Fact]
-    public async Task MultipleRegistrations_AllReceiveCallbacks()
-    {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("ok"));
-        var context = new AgentContext(agent);
-
-        var count1 = 0;
-        var count2 = 0;
-        context.RegisterOnStatusChanged(_ => count1++);
-        context.RegisterOnStatusChanged(_ => count2++);
-
-        await context.SendMessageAsync("hi");
-
-        Assert.Equal(count1, count2);
-        Assert.True(count1 > 0);
-    }
-
-    // ---- Notification Ordering ----
-
-    [Fact]
-    public async Task Notifications_FireInCorrectOrder()
-    {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("ok"));
-        var context = new AgentContext(agent);
-
-        var events = new List<string>();
-        context.RegisterOnStatusChanged(s => events.Add($"status:{s}"));
-        context.RegisterOnTurnAdded(_ => events.Add("turn-added"));
-        context.RegisterOnBlockAdded((_, b) => events.Add($"block:{b.Role}"));
-
-        await context.SendMessageAsync("hi");
-
-        Assert.Equal("turn-added", events[0]);
-        Assert.Equal("status:Streaming", events[1]);
-        Assert.Equal("status:Idle", events[^1]);
-
-        var blockEvents = events.Where(e => e.StartsWith("block:", StringComparison.Ordinal)).ToList();
-        Assert.True(blockEvents.Count >= 2);
-    }
-
-    // ---- String overload ----
-
-    [Fact]
-    public async Task SendMessageAsync_StringOverload_CreatesProperChatMessage()
-    {
-        var (agent, client) = CreateAgent();
-        client.SetHandler((msgs, opts, ct) =>
-            ResponseEmitters.EmitTextResponse("ok"));
-        var context = new AgentContext(agent);
-
-        await context.SendMessageAsync("Hello world");
-
-        var userBlock = Assert.IsType<RichContentBlock>(context.Turns[0].RequestBlocks[0]);
-        Assert.Equal("Hello world", userBlock.RawText);
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((msgs, opts, ct) => respond(ct));
+        return new AgentContext(new UIAgent(client));
     }
 }

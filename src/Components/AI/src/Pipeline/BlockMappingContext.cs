@@ -5,31 +5,36 @@ using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
+/// <summary>
+/// Carries a single model update through the block mapping pipeline and tracks which
+/// parts of the update handlers have already claimed.
+/// </summary>
 public class BlockMappingContext
 {
     private readonly bool[] _handled;
     private int _handledCount;
     private bool _updateHandled;
-    private readonly IReadOnlyList<IHandlerEntry>? _inactiveHandlers;
 
     internal BlockMappingContext(ChatResponseUpdate update)
-        : this(update, inactiveHandlers: null)
-    {
-    }
-
-    internal BlockMappingContext(
-        ChatResponseUpdate update,
-        IReadOnlyList<IHandlerEntry>? inactiveHandlers)
     {
         Update = update;
         _handled = new bool[update.Contents.Count];
-        _inactiveHandlers = inactiveHandlers;
     }
 
+    /// <summary>
+    /// Gets the update being mapped.
+    /// </summary>
     public ChatResponseUpdate Update { get; }
 
+    /// <summary>
+    /// Gets the contents of <see cref="Update"/> that no handler has claimed yet.
+    /// </summary>
     public UnhandledContentsEnumerable UnhandledContents => new(Update.Contents, _handled);
 
+    /// <summary>
+    /// Marks a content item as claimed so that later handlers do not see it.
+    /// </summary>
+    /// <param name="content">The content item that was handled.</param>
     public void MarkHandled(AIContent content)
     {
         var contents = Update.Contents;
@@ -47,38 +52,25 @@ public class BlockMappingContext
         }
     }
 
+    /// <summary>
+    /// Marks the update itself as handled. Use this for updates that carry no content items.
+    /// </summary>
     public void MarkUpdateHandled()
     {
         _updateHandled = true;
     }
 
+    /// <summary>
+    /// Gets a value indicating whether every part of the update has been claimed.
+    /// </summary>
     public bool AllHandled =>
         _handledCount >= Update.Contents.Count && (Update.Contents.Count > 0 || _updateHandled);
 
     internal int HandledProgress => _handledCount + (_updateHandled ? 1 : 0);
 
-    public ContentBlock? CreateInnerBlock(AIContent content)
-    {
-        if (_inactiveHandlers is null)
-        {
-            return null;
-        }
-
-        var tempUpdate = new ChatResponseUpdate { Contents = [content] };
-        var tempContext = new BlockMappingContext(tempUpdate);
-
-        for (var i = 0; i < _inactiveHandlers.Count; i++)
-        {
-            var activeEntry = _inactiveHandlers[i].TryHandle(tempContext);
-            if (activeEntry is not null)
-            {
-                return activeEntry.Block;
-            }
-        }
-
-        return null;
-    }
-
+    /// <summary>
+    /// Enumerates the content items of an update that have not been claimed by a handler.
+    /// </summary>
     public readonly struct UnhandledContentsEnumerable
     {
         private readonly IList<AIContent> _contents;
@@ -90,9 +82,16 @@ public class BlockMappingContext
             _handled = handled;
         }
 
+        /// <summary>
+        /// Returns an enumerator over the unclaimed content items.
+        /// </summary>
+        /// <returns>An enumerator over the unclaimed content items.</returns>
         public UnhandledContentsEnumerator GetEnumerator() => new(_contents, _handled);
     }
 
+    /// <summary>
+    /// Enumerator over the content items of an update that have not been claimed by a handler.
+    /// </summary>
     public struct UnhandledContentsEnumerator
     {
         private readonly IList<AIContent> _contents;
@@ -106,8 +105,15 @@ public class BlockMappingContext
             _index = -1;
         }
 
+        /// <summary>
+        /// Gets the content item at the current position.
+        /// </summary>
         public AIContent Current => _contents[_index];
 
+        /// <summary>
+        /// Advances to the next unclaimed content item.
+        /// </summary>
+        /// <returns><see langword="true"/> if another unclaimed item exists; otherwise <see langword="false"/>.</returns>
         public bool MoveNext()
         {
             while (++_index < _contents.Count)

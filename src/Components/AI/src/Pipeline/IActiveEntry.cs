@@ -6,5 +6,6 @@ namespace Microsoft.AspNetCore.Components.AI;
 internal interface IActiveEntry
 {
     ContentBlock Block { get; }
+
     HandleResult Invoke(BlockMappingContext context);
 }

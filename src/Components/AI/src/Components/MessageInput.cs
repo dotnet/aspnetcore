@@ -2,9 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.AspNetCore.Components.AI;
 
+/// <summary>
+/// Text input that sends messages to the cascaded <see cref="AgentContext"/> and disables
+/// itself while a response streams.
+/// </summary>
 public class MessageInput : IComponent, IDisposable
 {
     private RenderHandle _renderHandle;
@@ -16,15 +21,27 @@ public class MessageInput : IComponent, IDisposable
     private bool _isDisabled;
     private IDisposable? _statusSub;
 
+    /// <summary>
+    /// Gets or sets the conversation this input sends messages to.
+    /// </summary>
     [CascadingParameter]
     public AgentContext AgentContext { get; set; } = default!;
 
+    /// <summary>
+    /// Gets or sets the placeholder text of the input.
+    /// </summary>
     [Parameter]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// Gets or sets the content rendered before the text area.
+    /// </summary>
     [Parameter]
     public RenderFragment? LeadingActions { get; set; }
 
+    /// <summary>
+    /// Gets or sets the content rendered after the text area. Replaces the default send button.
+    /// </summary>
     [Parameter]
     public RenderFragment? TrailingActions { get; set; }
 
@@ -43,6 +60,9 @@ public class MessageInput : IComponent, IDisposable
         _leadingActions = LeadingActions;
         _trailingActions = TrailingActions;
 
+        // Register once. The AgentContext cascade is fixed for the lifetime of the component,
+        // so re-registering on every parameter set would accumulate handlers and retain the
+        // component on each parent re-render.
         _statusSub ??= _agentContext.RegisterOnStatusChanged(status =>
         {
             _isDisabled = status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput;
@@ -70,8 +90,7 @@ public class MessageInput : IComponent, IDisposable
 
             builder.OpenElement(10, "textarea");
             builder.AddAttribute(11, "class", "sc-ai-input__textarea");
-            builder.AddAttribute(12, "placeholder",
-                _placeholder ?? "Type a message...");
+            builder.AddAttribute(12, "placeholder", _placeholder ?? "Type a message...");
             builder.AddAttribute(13, "disabled", _isDisabled);
             builder.AddAttribute(14, "value", _text);
             builder.AddAttribute(15, "aria-label", _placeholder ?? "Type a message...");
@@ -86,8 +105,7 @@ public class MessageInput : IComponent, IDisposable
                         Render();
                     }));
             builder.AddAttribute(17, "onkeydown",
-                EventCallback.Factory.Create<KeyboardEventArgs>(
-                    this, OnKeyDown));
+                EventCallback.Factory.Create<KeyboardEventArgs>(this, OnKeyDown));
             builder.CloseElement(); // textarea
 
             builder.CloseElement(); // input body
@@ -127,12 +145,7 @@ public class MessageInput : IComponent, IDisposable
 
     private async Task SubmitAsync()
     {
-        if (_isDisabled)
-        {
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(_text))
+        if (_isDisabled || string.IsNullOrWhiteSpace(_text))
         {
             return;
         }
@@ -141,12 +154,15 @@ public class MessageInput : IComponent, IDisposable
         _text = "";
         Render();
 
-        await _agentContext.SendMessageAsync(text);
+        await _agentContext.SendMessageAsync(new ChatMessage(ChatRole.User, text));
     }
 
+    /// <summary>
+    /// Removes the status subscription this input registered on the conversation.
+    /// </summary>
     public void Dispose()
     {
         _statusSub?.Dispose();
+        GC.SuppressFinalize(this);
     }
-
 }
