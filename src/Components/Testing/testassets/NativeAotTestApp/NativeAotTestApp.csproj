@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifiers>$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
+    <!-- This reflection-enabled test roots its complete application assembly. The framework entry
+         points and dynamic component setters remain annotated for applications that do not. -->
+    <NoWarn>$(NoWarn);ASPNETCORE9004;IL2026;IL2111;NU1511</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Native AOT must compile against the runtime pack produced by this repository, not the
+         baseline pack bundled with the bootstrapping SDK. -->
+    <FrameworkReference Update="Microsoft.AspNetCore.App"
+                        RuntimeFrameworkVersion="$(PackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Antiforgery" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
+    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\nativeaot\Microsoft.AspNetCore.Components.Testing.NativeAot.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="E2ECompileTestHarness" />
+    <TrimmerRootAssembly Include="$(AssemblyName)" />
+  </ItemGroup>
+
+</Project>

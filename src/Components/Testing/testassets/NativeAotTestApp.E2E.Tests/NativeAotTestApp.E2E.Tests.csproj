@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestRunnerName>Microsoft.Testing.Platform</TestRunnerName>
+    <TestCaptureOutput>false</TestCaptureOutput>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
+    <TestRunnerAdditionalArguments>--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1</TestRunnerAdditionalArguments>
+    <IsPackable>false</IsPackable>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001;NU1511</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="MSTest.TestFramework" />
+    <Reference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <Reference Include="Microsoft.Playwright" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <ProjectReference Include="../NativeAotTestApp/NativeAotTestApp.csproj">
+      <E2EApp>true</E2EApp>
+      <E2EAppMode>publish</E2EAppMode>
+      <E2ENativeAot>true</E2ENativeAot>
+      <E2ERuntimeIdentifier>$(TargetRuntimeIdentifier)</E2ERuntimeIdentifier>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'" />
+
+  <Target Name="_PreparePublishedE2EApps"
+          AfterTargets="Publish"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PrepareE2EApps"
+             Properties="_E2EIsPublishing=true;E2EAppMode=publish;PublishDir=$(PublishDir)"
+             RemoveProperties="NoBuild" />
+  </Target>
+
+</Project>
