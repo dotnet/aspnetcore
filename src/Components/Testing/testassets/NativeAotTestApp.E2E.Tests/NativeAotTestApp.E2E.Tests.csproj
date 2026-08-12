@@ -6,8 +6,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
-    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
-    <SelfContained>true</SelfContained>
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <TestRunnerName>Microsoft.Testing.Platform</TestRunnerName>
     <TestCaptureOutput>false</TestCaptureOutput>
@@ -46,6 +44,15 @@
 
   <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets"
           Condition="'$(_ImportComponentsTestingTargets)' == 'true'" />
+
+  <Target Name="_RestoreNativeAotTestApp"
+          BeforeTargets="PrepareE2EApps"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'">
+    <MSBuild Projects="../NativeAotTestApp/NativeAotTestApp.csproj"
+             Targets="Restore"
+             Properties="Configuration=$(Configuration);E2ECompileTestHarness=true;RuntimeIdentifier=$(TargetRuntimeIdentifier);RestoreForce=true"
+             RemoveProperties="BuildProjectReferences;NoBuild" />
+  </Target>
 
   <Target Name="_PreparePublishedE2EApps"
           AfterTargets="Publish"

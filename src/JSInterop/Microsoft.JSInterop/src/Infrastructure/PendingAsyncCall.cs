@@ -21,10 +21,10 @@ internal sealed class PendingAsyncCall<[DynamicallyAccessedMembers(JsonSerialize
 
         runtime.ByteArraysToBeRevived.Clear();
 
-        _completion.SetResult(value!);
+        _completion.TrySetResult(value!);
     }
 
-    public void Fail(Exception exception) => _completion.SetException(exception);
+    public void Fail(Exception exception) => _completion.TrySetException(exception);
 
     public void Cancel(CancellationToken cancellationToken) => _completion.TrySetCanceled(cancellationToken);
 }

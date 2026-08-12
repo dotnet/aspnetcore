@@ -4,8 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <PublishAot>true</PublishAot>
-    <SelfContained>true</SelfContained>
+    <UseAspNetCoreSharedRuntime>false</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>false</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
     <RuntimeIdentifiers>$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
@@ -14,28 +14,73 @@
     <NoWarn>$(NoWarn);ASPNETCORE9004;IL2026;IL2111;NU1511</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
   <ItemGroup>
-    <!-- Native AOT must compile against the runtime pack produced by this repository, not the
-         baseline pack bundled with the bootstrapping SDK. -->
-    <FrameworkReference Update="Microsoft.AspNetCore.App"
-                        RuntimeFrameworkVersion="$(PackageVersion)" />
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <Reference Include="Microsoft.AspNetCore.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.HostFiltering" />
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections.Common" />
+    <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
+    <Reference Include="Microsoft.AspNetCore.Localization" />
+    <Reference Include="Microsoft.AspNetCore.Metadata" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.AspNetCore.StaticAssets" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.AspNetCore.WebSockets" />
+    <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
+    <Reference Include="Microsoft.Extensions.ObjectPool" />
+    <Reference Include="Microsoft.Extensions.Validation" />
     <Reference Include="Microsoft.JSInterop" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,5 +93,16 @@
     <CompilerVisibleProperty Include="E2ECompileTestHarness" />
     <TrimmerRootAssembly Include="$(AssemblyName)" />
   </ItemGroup>
+
+  <Target Name="_RootNativeAotInTreeReferences"
+          BeforeTargets="_PrepareTrimConfiguration"
+          DependsOnTargets="ResolveReferences"
+          Condition="'$(E2ECompileTestHarness)' == 'true'">
+    <ItemGroup>
+      <_NativeAotInTreeReference Include="@(ReferencePath)"
+                                 Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference'" />
+      <TrimmerRootAssembly Include="@(_NativeAotInTreeReference->'%(Filename)')" />
+    </ItemGroup>
+  </Target>
 
 </Project>
