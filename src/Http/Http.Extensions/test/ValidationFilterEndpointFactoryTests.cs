@@ -326,6 +326,63 @@ public class ValidationEndpointFilterFactoryTests : LoggedTest
         await AssertSingleValidationErrorAsync(body, "value");
     }
 
+    [Theory]
+    [InlineData(null, StatusCodes.Status400BadRequest, false)]
+    [InlineData("?id=0", StatusCodes.Status200OK, true)]
+    public async Task ValidatesRequiredNullableQueryParameter(string queryString, int expectedStatusCode, bool expectedHandlerExecuted)
+    {
+        var handlerExecuted = false;
+        var (endpoint, services) = BuildValidationEndpoint(([FromQuery][Required] int? id) =>
+        {
+            handlerExecuted = true;
+            return "Validation enabled here.";
+        });
+
+        var (statusCode, _) = await InvokeAsync(endpoint, services, context =>
+        {
+            if (queryString is not null)
+            {
+                context.Request.QueryString = new QueryString(queryString);
+            }
+        });
+
+        Assert.Equal(expectedStatusCode, statusCode);
+        Assert.Equal(expectedHandlerExecuted, handlerExecuted);
+    }
+
+    [Theory]
+    [InlineData(null, StatusCodes.Status400BadRequest, false, "Value must equal 1, but was null.")]
+    [InlineData("?id=1", StatusCodes.Status200OK, true, null)]
+    [InlineData("?id=2", StatusCodes.Status400BadRequest, false, "Value must equal 1, but was 2.")]
+    public async Task ValidatesCustomAttributeOnNullableQueryParameter(
+        string queryString,
+        int expectedStatusCode,
+        bool expectedHandlerExecuted,
+        string expectedError)
+    {
+        var handlerExecuted = false;
+        var (endpoint, services) = BuildValidationEndpoint(([FromQuery][MustEqualOne] int? id) =>
+        {
+            handlerExecuted = true;
+            return "Validation enabled here.";
+        });
+
+        var (statusCode, body) = await InvokeAsync(endpoint, services, context =>
+        {
+            if (queryString is not null)
+            {
+                context.Request.QueryString = new QueryString(queryString);
+            }
+        });
+
+        Assert.Equal(expectedStatusCode, statusCode);
+        Assert.Equal(expectedHandlerExecuted, handlerExecuted);
+        if (expectedError is not null)
+        {
+            await AssertSingleValidationErrorAsync(body, "id", expectedError);
+        }
+    }
+
     [Fact]
     public async Task ValidatesFromHeaderParameter()
     {
@@ -461,7 +518,7 @@ public class ValidationEndpointFilterFactoryTests : LoggedTest
         return (context.Response.StatusCode, body);
     }
 
-    private static async Task AssertSingleValidationErrorAsync(MemoryStream body, string expectedKey)
+    private static async Task AssertSingleValidationErrorAsync(MemoryStream body, string expectedKey, string expectedMessage = null)
     {
         body.Seek(0, SeekOrigin.Begin);
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(body, JsonSerializerOptions.Web);
@@ -470,6 +527,10 @@ public class ValidationEndpointFilterFactoryTests : LoggedTest
         var errors = Assert.IsType<JsonElement>(errorsObj);
         var error = Assert.Single(errors.EnumerateObject());
         Assert.Equal(expectedKey, error.Name);
+        if (expectedMessage is not null)
+        {
+            Assert.Equal(expectedMessage, Assert.Single(error.Value.EnumerateArray()).GetString());
+        }
     }
 
     private interface IInjectedService;
@@ -487,6 +548,15 @@ public class ValidationEndpointFilterFactoryTests : LoggedTest
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
             => new ValidationResult("Always invalid.", [validationContext.DisplayName]);
+    }
+
+    [AttributeUsage(AttributeTargets.Parameter)]
+    private sealed class MustEqualOneAttribute : ValidationAttribute
+    {
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            => value is 1
+                ? ValidationResult.Success
+                : new ValidationResult($"Value must equal 1, but was {value?.ToString() ?? "null"}.");
     }
 
     private sealed class RequestBodyDetectionFeature(bool canHaveBody) : IHttpRequestBodyDetectionFeature

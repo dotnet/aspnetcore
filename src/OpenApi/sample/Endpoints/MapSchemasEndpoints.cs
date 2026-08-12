@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
@@ -66,12 +67,30 @@ public static class SchemasEndpointsExtensions
 
         // Additional edge cases for nullable testing
         schemas.MapPost("/nullable-array-elements", (NullableArrayModel model) => Results.Ok(model));
+
+        // Ensures that applying nullability to the elements of one array parameter does not
+        // affect the shared componentized schema referenced by the other array parameter.
+        schemas.MapGet("/nullable-and-non-nullable-array-elements", (TestEnum?[] nullableValues, TestEnum[] values) => { });
+        // Ensures the same componentized element type is reported correctly in a response.
+        schemas.MapGet("/complex-nullable-hierarchy", () => TypedResults.Ok(new ComplexHierarchyModel
+        {
+            Id = "id",
+            RequiredNested = new NestedModel { Name = "nested" }
+        }));
+        // Mirrors the array-of-nullable-elements parameter scenario above, but as a response body.
+        schemas.MapGet("/response-array-with-nullable-element", () => TypedResults.Ok(new TestEnum?[] { TestEnum.Value1, null }));
+
         schemas.MapGet("/optional-with-default", () => TypedResults.Ok(new ModelWithDefaults()));
         schemas.MapGet("/nullable-enum-response", () => TypedResults.Ok(new EnumNullableModel
         {
             RequiredEnum = TestEnum.Value1,
             NullableEnum = null
         }));
+
+        // Additional verification for handling multiple results where some implement IEndpointMetadataProvider
+        schemas.MapGet("/favorite-shape", Results<Ok<Shape>, UnauthorizedHttpResult, ProblemHttpResult> (ClaimsPrincipal user) => user.Identity?.IsAuthenticated is true
+            ? TypedResults.Ok<Shape>(new Triangle { Color = "blue", Sides = 3, Hypotenuse = 42.0 })
+            : TypedResults.Unauthorized());
 
         return endpointRouteBuilder;
     }

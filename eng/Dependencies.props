@@ -64,6 +64,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
     <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <LatestPackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <LatestPackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
@@ -157,6 +158,8 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.9.0.x86" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x64" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.10.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
@@ -225,6 +228,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="NuGet.Versioning" />
     <LatestPackageReference Include="Photino.NET" />
     <LatestPackageReference Include="Microsoft.Playwright" />
+    <LatestPackageReference Include="Microsoft.Playwright.TestAdapter" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="SharpFuzz" />
@@ -243,10 +247,11 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="xunit.assert" />
     <LatestPackageReference Include="xunit.extensibility.core" />
     <LatestPackageReference Include="xunit.extensibility.execution" />
-    <!-- Components.Testing (xUnit V3 + Playwright + YARP) -->
     <LatestPackageReference Include="xunit.v3" Version="$(XunitV3Version)" />
     <LatestPackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
-    <LatestPackageReference Include="Microsoft.Playwright.Xunit.v3" Version="$(MicrosoftPlaywrightXunitV3Version)" />
+    <!-- Components.Testing (MSTest on MTP + Playwright + YARP) -->
+    <LatestPackageReference Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
+    <LatestPackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingExtensionsTrxReportVersion)" />
     <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
