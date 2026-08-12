@@ -81,17 +81,14 @@ public class ConnectionIoStateTests
     }
 
     [Fact]
-    public async Task Read_AbruptClose_MapsAuthenticationExceptionToEof()
+    public void Read_TlsFailure_PropagatesAuthenticationException()
     {
-        // The runtime surfaces an abrupt peer close (ECONNRESET / no close_notify) as
-        // AuthenticationException; TlsRead must translate it to a clean EOF.
+        // The runtime maps both an abrupt close and a genuine TLS failure to the same AuthenticationException,
+        // so TlsRead no longer swallows it as EOF - it must propagate so the connection faults.
         var io = new ScriptedConnectionIoState();
-        io.ScriptReadAbruptClose();
+        io.ScriptReadFailure();
 
-        var read = io.ReadAsync(new byte[16]);
-
-        Assert.True(read.IsCompleted);
-        Assert.Equal(0, await read);
+        Assert.Throws<AuthenticationException>(() => io.ReadAsync(new byte[16]));
     }
 
     [Fact]
@@ -153,15 +150,12 @@ public class ConnectionIoStateTests
     }
 
     [Fact]
-    public async Task Write_AbruptClose_MapsAuthenticationExceptionToEof()
+    public void Write_TlsFailure_PropagatesAuthenticationException()
     {
         var io = new ScriptedConnectionIoState();
-        io.ScriptWriteAbruptClose();
+        io.ScriptWriteFailure();
 
-        var write = io.WriteAsync(new byte[10]);
-
-        Assert.True(write.IsCompleted);
-        Assert.Equal(0, await write);
+        Assert.Throws<AuthenticationException>(() => io.WriteAsync(new byte[10]));
     }
 
     [Fact]
@@ -372,7 +366,7 @@ public class ConnectionIoStateTests
     /// </summary>
     private sealed class ScriptedConnectionIoState : ConnectionIoState
     {
-        // A null status simulates an abrupt peer close (the runtime throws AuthenticationException).
+        // A null status simulates a failed native SSL op (the runtime throws AuthenticationException).
         private readonly Queue<(TlsOperationStatus? Status, int Count)> _reads = new();
         private readonly Queue<(TlsOperationStatus? Status, int Count)> _writes = new();
 
@@ -392,11 +386,11 @@ public class ConnectionIoStateTests
 
         public void ScriptWrite(TlsOperationStatus status, int bytesWritten = 0) => _writes.Enqueue((status, bytesWritten));
 
-        /// <summary>Script the next read to surface an abrupt peer close (AuthenticationException).</summary>
-        public void ScriptReadAbruptClose() => _reads.Enqueue((null, 0));
+        /// <summary>Script the next read to surface a failed native SSL op (AuthenticationException).</summary>
+        public void ScriptReadFailure() => _reads.Enqueue((null, 0));
 
-        /// <summary>Script the next write to surface an abrupt peer close (AuthenticationException).</summary>
-        public void ScriptWriteAbruptClose() => _writes.Enqueue((null, 0));
+        /// <summary>Script the next write to surface a failed native SSL op (AuthenticationException).</summary>
+        public void ScriptWriteFailure() => _writes.Enqueue((null, 0));
 
         internal override TlsOperationStatus RawRead(Span<byte> buffer, out int bytesRead)
         {

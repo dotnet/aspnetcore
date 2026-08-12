@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Security;
-using System.Security.Authentication;
 using Microsoft.Extensions.Logging;
 
 #pragma warning disable SYSLIB5007 // TlsSocketSession/TlsOperationStatus are experimental.
@@ -138,45 +137,22 @@ internal class ConnectionIoState : IDisposable
     // DestinationTooSmall -> renegotiation must flush handshake output (wait writable).
     private TlsOperationStatus TlsRead(Span<byte> buffer, out int bytesRead)
     {
-        try
-        {
-            var status = RawRead(buffer, out bytesRead);
-            return status is TlsOperationStatus.Complete or TlsOperationStatus.NeedMoreData
-                or TlsOperationStatus.DestinationTooSmall or TlsOperationStatus.Closed
-                ? status
-                : throw new TlsException($"TLS read failed: {status}");
-        }
-        catch (AuthenticationException ex)
-        {
-            // Abrupt peer close (SSL_ERROR_SYSCALL: ECONNRESET / no close_notify) surfaces as
-            // AuthenticationException from the runtime. Treat as EOF, but log it: this swallow point
-            // masks any genuine TLS read failure behind a clean end-of-stream.
-            bytesRead = 0;
-            _logger.LogDebug(ex, "TLS read surfaced an AuthenticationException for fd={Fd}; treating as EOF.", Fd);
-            return TlsOperationStatus.Closed;
-        }
+        var status = RawRead(buffer, out bytesRead);
+        return status is TlsOperationStatus.Complete or TlsOperationStatus.NeedMoreData
+            or TlsOperationStatus.DestinationTooSmall or TlsOperationStatus.Closed
+            ? status
+            : throw new TlsException($"TLS read failed: {status}");
     }
 
     // Writes application bytes from buffer. DestinationTooSmall -> socket WouldBlock (wait writable);
     // NeedMoreData -> renegotiation must read peer ciphertext first (wait readable).
     private TlsOperationStatus TlsWrite(ReadOnlySpan<byte> buffer, out int bytesWritten)
     {
-        try
-        {
-            var status = RawWrite(buffer, out bytesWritten);
-            return status is TlsOperationStatus.Complete or TlsOperationStatus.NeedMoreData
-                or TlsOperationStatus.DestinationTooSmall or TlsOperationStatus.Closed
-                ? status
-                : throw new TlsException($"TLS write failed: {status}");
-        }
-        catch (AuthenticationException ex)
-        {
-            // Treat as EOF, but log it: reporting a clean close here makes SendLoop abandon the rest of an
-            // in-flight response, so a genuine SSL_write failure must not disappear silently.
-            bytesWritten = 0;
-            _logger.LogDebug(ex, "TLS write surfaced an AuthenticationException for fd={Fd}; treating as EOF.", Fd);
-            return TlsOperationStatus.Closed;
-        }
+        var status = RawWrite(buffer, out bytesWritten);
+        return status is TlsOperationStatus.Complete or TlsOperationStatus.NeedMoreData
+            or TlsOperationStatus.DestinationTooSmall or TlsOperationStatus.Closed
+            ? status
+            : throw new TlsException($"TLS write failed: {status}");
     }
 
     // ═══════════════════════════════════════════════════════════════
