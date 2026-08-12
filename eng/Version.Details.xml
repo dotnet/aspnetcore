@@ -362,9 +362,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6c7fa710f4337334575f0c30f1691edc244518d1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26406.108">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>6c7fa710f4337334575f0c30f1691edc244518d1</Sha>
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26412.5">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>4e948e7c5bbfab4e87a02fc9b27bfaa068d0d4b3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Archives" Version="11.0.0-beta.26406.108">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -382,9 +382,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6c7fa710f4337334575f0c30f1691edc244518d1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26406.108">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>6c7fa710f4337334575f0c30f1691edc244518d1</Sha>
+    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26412.2">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>2a4b873dc15423d356c0509a7ac9663276f39664</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="11.0.0-beta.26406.108">
       <Uri>https://github.com/dotnet/dotnet</Uri>
