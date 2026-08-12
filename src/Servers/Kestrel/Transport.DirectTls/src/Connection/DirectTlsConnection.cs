@@ -192,14 +192,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
             _logger.LogDebug(ex, "Failed to dispose half-open connection backend for fd={Fd}", _connectionState.Fd);
         }
 
-        try
-        {
-            _connectionClosedTokenSource.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-            // Already disposed, ignore
-        }
+        _connectionClosedTokenSource.Cancel();
 
         // A half-open handshake never reached mTLS validation, so _ownedClientCertificate is normally null
         // here; dispose defensively (no-op when null) to keep both teardown paths symmetric.
