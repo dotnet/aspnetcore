@@ -34,6 +34,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _onConnectionUpFired;
     private bool _onConnectionDownFired;
     private bool _disposed;
+    private int _updateRootComponentsGeneration;
     private long _startTime;
     private ResumedPersistedCircuitState _persistedCircuitState;
 
@@ -771,6 +772,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
+            var generation = ++_updateRootComponentsGeneration;
             var shouldClearStore = false;
             var shouldWaitForQuiescence = false;
             var operations = operationBatch.Operations;
@@ -828,6 +830,15 @@ internal partial class CircuitHost : IAsyncDisposable
                     await OnCircuitOpenedAsync(cancellation);
                     await OnConnectionUpAsync(cancellation);
 
+                    if (generation != _updateRootComponentsGeneration)
+                    {
+                        if (!cancellation.IsCancellationRequested)
+                        {
+                            await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
+                        }
+                        return;
+                    }
+
                     for (var i = 0; i < operations.Length; i++)
                     {
                         var operation = operations[i];
@@ -843,7 +854,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 await operationsTask;
 
-                await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
+                // Connection was aborted while handlers/rendering were in-flight; skip the send so
+                // the circuit survives and the client can reconnect.
+                if (!cancellation.IsCancellationRequested)
+                {
+                    await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
+                }
 
                 Log.UpdateRootComponentsSucceeded(_logger);
             }
@@ -851,8 +867,12 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 // Report errors asynchronously. UpdateRootComponents is designed not to throw.
                 Log.UpdateRootComponentsFailed(_logger, ex);
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+                // Do not tear down the circuit for connection-abort errors; the client can reconnect.
+                if (!cancellation.IsCancellationRequested)
+                {
+                    UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                    await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+                }
             }
             finally
             {
@@ -909,14 +929,14 @@ internal partial class CircuitHost : IAsyncDisposable
                         break;
                     case RootComponentOperationType.Update:
                         // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                        _ = webRootComponentManager.UpdateRootComponentAsync(
+                        _ = webRootComponentManager.TryUpdateOrAddRootComponentAsync(
                             operation.SsrComponentId,
                             operation.Descriptor.ComponentType,
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
                         break;
                     case RootComponentOperationType.Remove:
-                        webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                        webRootComponentManager.TryRemoveRootComponent(operation.SsrComponentId);
                         break;
                 }
             }

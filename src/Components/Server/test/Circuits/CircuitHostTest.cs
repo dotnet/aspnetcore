@@ -1239,6 +1239,40 @@ public class CircuitHostTest
     }
 
     [Fact]
+    public async Task UpdateRootComponents_RemoveUnregisteredSsrComponent_DoesNotThrow()
+    {
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+
+        var unhandledExceptionFired = false;
+        circuitHost.UnhandledException += (_, _) => unhandledExceptionFired = true;
+
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1);
+
+        await RemoveComponentAsync(circuitHost, 99);
+
+        Assert.False(unhandledExceptionFired);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_UpdateUnregisteredSsrComponent_AddsItWithoutThrowing()
+    {
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+
+        var unhandledExceptionFired = false;
+        circuitHost.UnhandledException += (_, _) => unhandledExceptionFired = true;
+
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1);
+
+        await UpdateComponentAsync<DynamicallyAddedComponent>(circuitHost, 99, componentKey: "key");
+
+        Assert.False(unhandledExceptionFired);
+    }
+
+    [Fact]
     public async Task UpdateRootComponents_ValidatesOperationSequencingDuringValueUpdateRestore()
     {
         // Arrange
