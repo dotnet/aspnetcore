@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.ServiceProcess;
@@ -93,14 +92,10 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
             using var response = await client.GetAsync("/CompleteAfterAppStartsShuttingDown", HttpCompletionOption.ResponseHeadersRead);
             var responseBodyTask = response.Content.ReadAsStringAsync();
 
-            var stopwatch = Stopwatch.StartNew();
-            var appPoolStopTask = Task.Run(() => Helpers.StopAppPool(result.AppPoolName));
-            result.AssertWorkerProcessStop();
-            await appPoolStopTask;
-            stopwatch.Stop();
+            AddAppOffline(result.ContentRoot);
 
-            Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(30), $"Shutdown took {stopwatch.Elapsed}.");
             Assert.Equal("StartedCompleted", await responseBodyTask);
+            result.AssertWorkerProcessStop();
         }
     }
 

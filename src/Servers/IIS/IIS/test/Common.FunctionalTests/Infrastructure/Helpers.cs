@@ -189,15 +189,6 @@ public static class Helpers
         appPool.Recycle();
     }
 
-    // Don't use with IISExpress, stopping an app pool isn't a valid operation
-    public static void StopAppPool(string appPoolName)
-    {
-        using var serverManager = new ServerManager();
-        var appPool = serverManager.ApplicationPools.FirstOrDefault(ap => ap.Name == appPoolName);
-        Assert.NotNull(appPool);
-        appPool.Stop();
-    }
-
     public static IEnumerable<object[]> ToTheoryData<T>(this Dictionary<string, T> dictionary)
     {
         return dictionary.Keys.Select(k => new[] { k });
