@@ -55,11 +55,6 @@ internal static class ExpressionMemberAccessor
     {
         ArgumentNullException.ThrowIfNull(member);
 
-        // The cache key includes the current UI culture name because DisplayAttribute.GetName()
-        // resolves resource based names against it. Keying on the member alone would freeze
-        // the first resolved culture for the lifetime of the process, which is shared by every
-        // user when components render on the server. The name is used rather than the CultureInfo
-        // so that the cache does not retain culture objects.
         return _displayNameCache.GetOrAdd((member, CultureInfo.CurrentUICulture.Name), static key =>
         {
             var displayAttribute = key.Member.GetCustomAttribute<DisplayAttribute>();
