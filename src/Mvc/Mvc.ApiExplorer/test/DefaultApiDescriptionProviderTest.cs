@@ -1630,6 +1630,28 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_ParameterDescription_FromQueryEmployee_WithCustomPropertyBindingNames()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsEmployeeWithCustomPropertyNames));
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Equal(2, description.ParameterDescriptions.Count);
+
+        var header = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee.X-MyCustomHeader");
+        Assert.Same(BindingSource.Header, header.Source);
+        Assert.Equal(typeof(string), header.Type);
+
+        var route = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee.employeeid");
+        Assert.Same(BindingSource.Path, route.Source);
+        Assert.Equal(typeof(string), route.Type);
+    }
+
+    [Fact]
     public void GetApiDescription_ParameterDescription_ParsablePrimitiveType()
     {
         // Arrange
@@ -2542,6 +2564,10 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
+    private void AcceptsEmployeeWithCustomPropertyNames([FromQuery(Name = "employee")] EmployeeWithCustomPropertyNames dto)
+    {
+    }
+
     private void AcceptsTryParsablePrimitiveType([FromQuery] Guid id)
     {
     }
@@ -2693,6 +2719,15 @@ public class DefaultApiDescriptionProviderTest
     private class Employee
     {
         public string Name { get; set; }
+    }
+
+    private class EmployeeWithCustomPropertyNames
+    {
+        [FromHeader(Name = "X-MyCustomHeader")]
+        public string HeaderName { get; set; }
+
+        [FromRoute(Name = "employeeid")]
+        public string EmployeeId { get; set; }
     }
 
     [TypeConverter(typeof(EmployeeConverter))]
