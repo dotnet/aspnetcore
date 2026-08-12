@@ -50,7 +50,7 @@
           Condition="'$(_ImportComponentsTestingTargets)' == 'true'">
     <MSBuild Projects="../NativeAotTestApp/NativeAotTestApp.csproj"
              Targets="Restore"
-             Properties="Configuration=$(Configuration);E2ECompileTestHarness=true;RuntimeIdentifier=$(TargetRuntimeIdentifier);RestoreForce=true"
+             Properties="Configuration=$(Configuration);E2ECompileTestHarness=true;RestoreForce=true;AdditionalWarningsNotAsErrors=NU1510"
              RemoveProperties="BuildProjectReferences;NoBuild" />
   </Target>
 
