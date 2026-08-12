@@ -2,13 +2,41 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <!-- Point to the locally-built Gateway DLL -->
     <_BlazorGatewayDll>$(RepoRoot)artifacts\bin\Microsoft.AspNetCore.Components.Gateway\$(Configuration)\$(DefaultNetCoreTargetFramework)\blazor-gateway.dll</_BlazorGatewayDll>
     <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
+    <!-- Required for OTel in WASM: prevent linker from stripping diagnostics infrastructure -->
+    <MetricsSupport>true</MetricsSupport>
+    <EventSourceSupport>true</EventSourceSupport>
+    <HttpActivityPropagationSupport>true</HttpActivityPropagationSupport>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
+    <Reference Include="Microsoft.Extensions.Http.Resilience" />
+  </ItemGroup>
+
+  <!-- Copy the JS initializer from the service defaults template at build time (keeps it in sync).
+       The file must be named {AssemblyName}.lib.module.js in wwwroot for the static web assets SDK. -->
+  <Target Name="_CopyServiceDefaultsJsInitializer" BeforeTargets="StaticWebAssetsPrepareForRun;Build">
+    <Copy SourceFiles="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\BlazorWasmServiceDefaults-CSharp\wwwroot\BlazorWasm.ServiceDefaults1.lib.module.js"
+          DestinationFiles="wwwroot\StandaloneApp.lib.module.js"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Link the service defaults CS files from the template (keeps test in sync with template) -->
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\BlazorWasmServiceDefaults-CSharp\Extensions.cs"
+             Link="ServiceDefaults\Extensions.cs" />
+    <Compile Include="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\BlazorWasmServiceDefaults-CSharp\BackgroundExportHandler.cs"
+             Link="ServiceDefaults\BackgroundExportHandler.cs" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)src\Components\Gateway\src\build\Microsoft.AspNetCore.Components.Gateway.targets" />

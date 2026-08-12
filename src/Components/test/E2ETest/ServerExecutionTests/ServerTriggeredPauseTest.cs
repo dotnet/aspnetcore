@@ -167,6 +167,30 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 
+    [Fact]
+    public void MultiplePauseRequests_CircuitPausesAndResumesCleanly()
+    {
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        var circuitId = GetCircuitId();
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript($@"
+            DotNet.invokeMethodAsync('Components.TestServer', 'TriggerServerPause', '{circuitId}');
+            DotNet.invokeMethodAsync('Components.TestServer', 'TriggerServerPause', '{circuitId}');
+        ");
+
+        WaitForPausedUI();
+        ClickResumeButton();
+        WaitForResumedUI();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        // Verify the circuit is fully functional after the double-pause.
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
+
     // resumeCircuit() sets _resumingState synchronously. pauseCircuit() checks it next.
     // JS single-threading guarantees the order.
     [Fact]

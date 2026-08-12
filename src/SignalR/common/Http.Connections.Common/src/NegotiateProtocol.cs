@@ -36,6 +36,8 @@ public static class NegotiateProtocol
     private static readonly JsonEncodedText NegotiateVersionPropertyNameBytes = JsonEncodedText.Encode(NegotiateVersionPropertyName);
     private const string StatefulReconnectPropertyName = "useStatefulReconnect";
     private static readonly JsonEncodedText StatefulReconnectPropertyNameBytes = JsonEncodedText.Encode(StatefulReconnectPropertyName);
+    private const string TokenLifetimePropertyName = "tokenLifetimeSeconds";
+    private static readonly JsonEncodedText TokenLifetimePropertyNameBytes = JsonEncodedText.Encode(TokenLifetimePropertyName);
 
     // Used to detect ASP.NET SignalR Server connection attempt
     private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => "ProtocolVersion"u8;
@@ -90,6 +92,11 @@ public static class NegotiateProtocol
             if (response.Version > 0 && !string.IsNullOrEmpty(response.ConnectionToken))
             {
                 writer.WriteString(ConnectionTokenPropertyNameBytes, response.ConnectionToken);
+            }
+
+            if (response.TokenLifetime is { } tokenLifetime && tokenLifetime > TimeSpan.Zero)
+            {
+                writer.WriteNumber(TokenLifetimePropertyNameBytes, (int)Math.Min(tokenLifetime.TotalSeconds, int.MaxValue));
             }
 
             writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
@@ -160,6 +167,7 @@ public static class NegotiateProtocol
             string? error = null;
             int version = 0;
             bool useStatefulReconnect = false;
+            TimeSpan? tokenLifetime = null;
 
             var completed = false;
             while (!completed && reader.CheckRead())
@@ -217,6 +225,10 @@ public static class NegotiateProtocol
                         {
                             useStatefulReconnect = reader.ReadAsBoolean(StatefulReconnectPropertyName);
                         }
+                        else if (reader.ValueTextEquals(TokenLifetimePropertyNameBytes.EncodedUtf8Bytes))
+                        {
+                            tokenLifetime = TimeSpan.FromSeconds(reader.ReadAsInt32(TokenLifetimePropertyName).GetValueOrDefault());
+                        }
                         else
                         {
                             reader.Skip();
@@ -262,6 +274,7 @@ public static class NegotiateProtocol
                 Error = error,
                 Version = version,
                 UseStatefulReconnect = useStatefulReconnect,
+                TokenLifetime = tokenLifetime,
             };
         }
         catch (Exception ex)

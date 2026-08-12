@@ -40,6 +40,11 @@ while [[ -h "$source" ]]; do
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
+# This script only consumes helper functions from tools.sh to configure NuGet feeds.
+# Skip importing configure-toolset.sh so that repo-specific toolset setup (e.g. acquiring
+# a bootstrap SDK) is not triggered as a side effect of feed configuration.
+disable_configure_toolset_import=1
+
 . "$scriptroot/tools.sh"
 
 if [ ! -f "$ConfigFile" ]; then

@@ -40,8 +40,11 @@ internal static class TypeExtensions
 
     public static bool ShouldApplyNullableResponseSchema(this ApiResponseType apiResponseType, ApiDescription apiDescription)
     {
-        // Get the MethodInfo from the ActionDescriptor
-        var responseType = apiResponseType.Type;
+        if (apiResponseType.ModelMetadata?.IsNullableValueType == true)
+        {
+            return true;
+        }
+
         var methodInfo = apiDescription.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor
             ? controllerActionDescriptor.MethodInfo
             : apiDescription.ActionDescriptor.EndpointMetadata.OfType<MethodInfo>().SingleOrDefault();
@@ -51,24 +54,16 @@ internal static class TypeExtensions
             return false;
         }
 
+        var nullabilityInfoContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityInfoContext.Create(methodInfo.ReturnParameter);
+
         var returnType = methodInfo.ReturnType;
         if (returnType.IsGenericType &&
             (returnType.GetGenericTypeDefinition() == typeof(Task<>) || returnType.GetGenericTypeDefinition() == typeof(ValueTask<>)))
         {
-            returnType = returnType.GetGenericArguments()[0];
-        }
-        if (returnType != responseType)
-        {
-            return false;
+            nullabilityInfo = nullabilityInfo.GenericTypeArguments[0];
         }
 
-        if (returnType.IsValueType)
-        {
-            return apiResponseType.ModelMetadata?.IsNullableValueType ?? false;
-        }
-
-        var nullabilityInfoContext = new NullabilityInfoContext();
-        var nullabilityInfo = nullabilityInfoContext.Create(methodInfo.ReturnParameter);
         return nullabilityInfo.WriteState == NullabilityState.Nullable;
     }
 
@@ -95,6 +90,19 @@ internal static class TypeExtensions
         return nullabilityInfo.WriteState == NullabilityState.Nullable;
     }
 
+    public static bool ShouldApplyNullableArrayElementSchema(this ApiParameterDescription apiParameterDescription)
+    {
+        if (apiParameterDescription.Type is not { IsArray: true } ||
+            apiParameterDescription.ParameterDescriptor is not IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo })
+        {
+            return false;
+        }
+
+        var nullabilityInfoContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
+        return nullabilityInfo.ElementType?.WriteState == NullabilityState.Nullable;
+    }
+
     public static bool ShouldApplyNullablePropertySchema(this JsonPropertyInfo jsonPropertyInfo)
     {
         if (jsonPropertyInfo.AttributeProvider is not PropertyInfo propertyInfo)
@@ -104,6 +112,6 @@ internal static class TypeExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(propertyInfo);
-        return nullabilityInfo.WriteState == NullabilityState.Nullable;
+        return nullabilityInfo.WriteState == NullabilityState.Nullable || nullabilityInfo.ReadState == NullabilityState.Nullable;
     }
 }

@@ -95,6 +95,7 @@
     <ProjectReference Include="$(RepoRoot)src\Http\Http.Results\src\Microsoft.AspNetCore.Http.Results.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />

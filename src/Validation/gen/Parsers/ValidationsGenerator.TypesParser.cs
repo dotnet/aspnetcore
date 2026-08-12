@@ -17,7 +17,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal static ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
-        var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
+
+        // Validations generator doesn't need an accurate signature.
+        // We don't care about parameter names of the delegate, we don't care about parameter attributes, and we don't care
+        // about the exact delegate type. All we care about is the types of the parameters.
+        // The type of the parameters will always be correct.
+        var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, needsAccurateSignature: false, out var method)
             ? method.Parameters
             : [];
 
@@ -75,8 +80,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
+        // Skip file-local types, which are only accessible within their declaring file
+        // and cannot be referenced from generated code in a different file
+        if (typeSymbol is INamedTypeSymbol { IsFileLocal: true })
+        {
+            return false;
+        }
+
         // Skip types that are not accessible from generated code
-        if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
+        if (typeSymbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
         {
             return false;
         }
@@ -189,7 +201,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
-                        // Skip properties that are not accessible from generated code
+                        // We only validate public properties for now.
+                        // We could consider in the future if we want to support internal properties.
                         if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
                         {
                             continue;
@@ -250,7 +263,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            // Skip properties that are not accessible from generated code
+            // We only validate public properties for now.
+            // We could consider in the future if we want to support internal properties.
             if (member.DeclaredAccessibility is not Accessibility.Public)
             {
                 continue;

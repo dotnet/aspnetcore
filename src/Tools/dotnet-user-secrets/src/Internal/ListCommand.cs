@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Text.Json;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
@@ -60,7 +59,7 @@ internal sealed class ListCommand : ICommand
         }
 
         context.Reporter.Output("//BEGIN");
-        context.Reporter.Output(JsonSerializer.Serialize(secrets, SecretsStore.SerializerOptions));
+        context.Reporter.Output(SecretsStore.Serialize(secrets));
         context.Reporter.Output("//END");
     }
 }
