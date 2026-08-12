@@ -12,7 +12,7 @@
     <!-- This reflection-enabled test roots its complete application assembly. The framework entry
          points and dynamic component setters remain annotated for applications that do not. -->
     <NoWarn>$(NoWarn);ASPNETCORE9004;IL2026;IL2111;NU1511</NoWarn>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);IL2057;IL2062;IL2065;IL2067;IL2072;IL2080;IL2101;IL2110;IL3050</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);IL2057;IL2062;IL2065;IL2067;IL2072;IL2080;IL2101;IL2110;IL3050;NU1510</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(E2ECompileTestHarness)' == 'true'">
