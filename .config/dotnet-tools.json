@@ -15,7 +15,7 @@
       ]
     },
     "dotnet-serve": {
-      "version": "1.10.93",
+      "version": "1.10.194",
       "commands": [
         "dotnet-serve"
       ]
