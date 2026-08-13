@@ -8,8 +8,7 @@
     <!--
       Components.AI builds out of band and is not part of the .NET platform release. IsShippingPackage=false keeps
       the package out of the shipping asset set that the release publishes to nuget.org, while the official build
-      still packs, signs, and publishes it to the transport feed. IsShipping is deliberately left unset so the
-      assembly itself is still treated as shipping.
+      still packs, signs, and publishes it to the transport feed.
     -->
     <IsShippingPackage>false</IsShippingPackage>
     <IsPackable>true</IsPackable>
