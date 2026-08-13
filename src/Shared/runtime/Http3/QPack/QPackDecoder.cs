@@ -712,8 +712,6 @@ namespace System.Net.Http.QPack
 
         private void OnIndexedHeaderName(int index)
         {
-            ThrowIfInvalidStaticIndex(index);
-
             _headerStaticIndex = index;
             _state = State.HeaderValueLength;
         }
@@ -753,18 +751,8 @@ namespace System.Net.Http.QPack
 
         private void OnIndexedHeaderField(int index, IHttpStreamHeadersHandler handler)
         {
-            ThrowIfInvalidStaticIndex(index);
-
             handler.OnStaticIndexedHeader(index);
             _state = State.CompressedHeaders;
-        }
-
-        private static void ThrowIfInvalidStaticIndex(int index)
-        {
-            if (index >= H3StaticTable.Count)
-            {
-                throw new QPackDecodingException(SR.Format(SR.net_http_qpack_invalid_index, index));
-            }
         }
 
         private static void ThrowDynamicTableNotSupported()
