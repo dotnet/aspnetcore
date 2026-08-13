@@ -3,19 +3,19 @@
   "isRoot": true,
   "tools": {
     "dotnet-dump": {
-      "version": "6.0.408101",
+      "version": "6.0.322601",
       "commands": [
         "dotnet-dump"
       ]
     },
     "dotnet-ef": {
-      "version": "11.0.0-rc.1.26410.101",
+      "version": "11.0.0-rc.1.26411.119",
       "commands": [
         "dotnet-ef"
       ]
     },
     "dotnet-serve": {
-      "version": "1.10.194",
+      "version": "1.10.93",
       "commands": [
         "dotnet-serve"
       ]
@@ -27,7 +27,7 @@
       ]
     },
     "microsoft.dotnet.helix.jobmonitor": {
-      "version": "11.0.0-beta.26412.2",
+      "version": "11.0.0-beta.26411.119",
       "commands": [
         "dotnet-helix-job-monitor"
       ]
