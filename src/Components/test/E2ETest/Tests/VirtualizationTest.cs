@@ -1249,7 +1249,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => container.FindElements(By.CssSelector(".item")).Count > 0);
 
         // Verify prepended items are reachable at the top.
-        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, -5000),
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, 0),
             st => st == 0, "scrollTop == 0 after wheel scroll");
         AssertScrollTop(js, container, st => st == 0, "scrollTop == 0");
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
@@ -2298,7 +2298,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             driftTolerance: 2);
 
         // Scroll up and verify prepended items are actually reachable.
-        ScrollContainer(js, container, 0);
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, 0),
+            st => st == 0, "scrollTop == 0 after wheel scroll");
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0,
             TimeSpan.FromSeconds(5), "QuickGrid None mode: prepended items should be reachable after scrolling up");
     }
@@ -2402,7 +2403,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
         WaitForRenderToSettle(container, js);
 
-        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, 500),
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, 500),
             st => st > 200, "scrollTop > 200 after wheel scroll");
         WaitForRenderToSettle(container, js);
 
@@ -2441,7 +2442,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }, "QuickGrid End mode: first append should follow to bottom");
 
         var currentScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, -500),
+        var targetScrollTop = (int)(currentScrollTop - 500);
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, targetScrollTop),
             st => st < currentScrollTop - 100,
             $"scrollTop < {currentScrollTop - 100} after scrolling away from bottom");
         WaitForRenderToSettle(container, js);
@@ -3107,8 +3109,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ", container, scrollTop);
     }
 
-    private void ScrollContainerWithWheel(IWebElement container, int deltaY)
+    private void ScrollContainerWithWheelTo(IJavaScriptExecutor js, IWebElement container, int scrollTop)
     {
+        var deltaY = scrollTop - (int)GetScrollTop(js, container);
         var scrollOrigin = new WheelInputDevice.ScrollOrigin { Element = container };
         new Actions(Browser).ScrollFromOrigin(scrollOrigin, 0, deltaY).Perform();
     }
@@ -3252,7 +3255,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             driftTolerance: 2);
 
         // Scroll up and verify prepended items are actually reachable.
-        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, -1000),
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, 0),
             st => st == 0, "scrollTop == 0 after wheel scroll");
         Browser.True(() =>
         {
@@ -4323,7 +4326,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             driftTolerance: variableHeight ? 5 : 2);
 
         // Scroll up and verify the prepended items are actually reachable.
-        ScrollContainer(js, container, 0);
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, 0),
+            st => st == 0, "scrollTop == 0 after wheel scroll");
         Browser.True(() =>
         {
             return container.FindElements(By.CssSelector("[data-index='-100']")).Count > 0;
@@ -4387,7 +4391,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }, "End mode: first append should follow to bottom");
 
         var currentScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, -500),
+        var targetScrollTop = (int)(currentScrollTop - 500);
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, targetScrollTop),
             st => st < currentScrollTop - 100,
             $"scrollTop < {currentScrollTop - 100} after scrolling away from bottom");
         WaitForRenderToSettle(container, js);
@@ -4429,9 +4434,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Start pinned at the bottom (End mode), then scroll UP just a few rows (~3 * 50px).
         ScrollToBottomAndWait(container, js);
         var bottomScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-        var scrollAmount = -150;
-        var targetScrollTop = (int)(bottomScrollTop + scrollAmount);
-        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, scrollAmount),
+        var targetScrollTop = (int)(bottomScrollTop - 150);
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, targetScrollTop),
             st => st <= bottomScrollTop - 100,
             $"scrolled up a few rows from the bottom (target {targetScrollTop})");
         WaitForRenderToSettle(container, js);
@@ -4474,7 +4478,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
         WaitForRenderToSettle(container, js);
 
-        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, 500),
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, 500),
             st => st > 200, "scrollTop > 200 after wheel scroll");
         WaitForRenderToSettle(container, js);
 
@@ -4509,7 +4513,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Start pinned at the top (Start mode), then scroll DOWN just a few rows (~3 * 50px).
         Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
-        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, 150),
+        ScrollUntil(js, container, () => ScrollContainerWithWheelTo(js, container, 150),
             st => st >= 100,
             "scrolled down a few rows from the top (target 150)");
         WaitForRenderToSettle(container, js);
@@ -5973,8 +5977,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // The scroll event triggers spacer IO -> the fix cancels _currentScrollCts ->
         // call #1's WaitAsync(ct) throws OCE -> RefreshDataCoreAsync starts call #2 for
         // the user's window. The caller observes OperationCanceledException.
-        var scrollOrigin = new WheelInputDevice.ScrollOrigin { Element = container };
-        new Actions(Browser).ScrollFromOrigin(scrollOrigin, 0, 5000).Perform();
+        ScrollContainerWithWheelTo(js, container, 5000);
 
         Browser.True(() => GetProviderEvents(js).Contains("p1-cancel"));
         Browser.True(() => GetProviderCallIndex(js) >= 2);
