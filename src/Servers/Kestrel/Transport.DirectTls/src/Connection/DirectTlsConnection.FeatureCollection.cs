@@ -95,5 +95,26 @@ internal sealed partial class DirectTlsConnection : ITlsConnectionFeature, ITlsH
     /// for feature parity with the standard sockets transport, which surfaces the real accepted socket here.
     /// </summary>
     public Socket Socket
-        => _socket ??= new Socket(new SafeSocketHandle((IntPtr)_connectionState.Fd, ownsHandle: false));
+    {
+        get
+        {
+            if (_socket is { } existing)
+            {
+                return existing;
+            }
+
+            ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
+            var created = new Socket(new SafeSocketHandle((IntPtr)_connectionState.Fd, ownsHandle: false));
+            if (Interlocked.CompareExchange(ref _socket, created, null) is { } winner)
+            {
+                // Another accessor cached its wrapper first; discard ours (non-owning, so this never touches the
+                // fd) and return the shared instance so callers always see the same Socket.
+                created.Dispose();
+                return winner;
+            }
+
+            return created;
+        }
+    }
 }

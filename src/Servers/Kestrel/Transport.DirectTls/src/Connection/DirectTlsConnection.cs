@@ -197,6 +197,10 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         // A half-open handshake never reached mTLS validation, so _ownedClientCertificate is normally null
         // here; dispose defensively (no-op when null) to keep both teardown paths symmetric.
         _ownedClientCertificate?.Dispose();
+
+        // Dispose the cached IConnectionSocketFeature wrapper if one was materialized (non-owning, so this
+        // never closes the fd) to keep both teardown paths symmetric.
+        _socket?.Dispose();
     }
 
     /// <summary>
@@ -453,5 +457,10 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         //    transport must, or the native key handle leaks once per accepted mTLS connection. Kestrel is done
         //    with the connection by now, mirroring how SslStream disposes RemoteCertificate with the stream.
         _ownedClientCertificate?.Dispose();
+
+        // 9. Dispose the cached IConnectionSocketFeature wrapper, if one was ever materialized. It is non-owning
+        //    so this never closes the fd (the session already did, above), but it marks the wrapper disposed so
+        //    any late metadata read fails loudly instead of operating on a descriptor the OS may have recycled.
+        _socket?.Dispose();
     }
 }

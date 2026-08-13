@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
@@ -95,6 +96,52 @@ public class DirectTlsFunctionalTests
         Assert.Equal(SslApplicationProtocol.Http2, sslStream.NegotiatedApplicationProtocol);
 
         await host.StopAsync().WaitAsync(Timeout);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task ConnectionSocketFeature_CachesOneWrapper_AndDisposesItOnTeardown()
+    {
+        // The IConnectionSocketFeature.Socket wrapper is materialized lazily over the connection's raw fd. It
+        // must be created once (repeated reads see the same instance) and disposed during connection teardown,
+        // so a late read fails loudly instead of operating on a descriptor the session already closed and the
+        // OS may have recycled - matching the sockets transport, which surfaces a disposed socket here.
+        Socket? firstRead = null;
+        Socket? secondRead = null;
+        EndPoint? remoteWhileLive = null;
+
+        var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
+        endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+
+        using var host = await StartHostAsync(endpoint, context =>
+        {
+            var feature = context.Features.Get<IConnectionSocketFeature>();
+            Assert.NotNull(feature);
+
+            // Two reads must return the identical wrapper (the compare-exchange caches exactly one).
+            firstRead = feature.Socket;
+            secondRead = feature.Socket;
+
+            // Metadata is usable while the connection is live.
+            remoteWhileLive = firstRead.RemoteEndPoint;
+
+            return context.Response.WriteAsync("ok");
+        });
+
+        using (var sslStream = await ConnectAsync(host.GetPort(), "localhost", applicationProtocols: [SslApplicationProtocol.Http11]))
+        {
+            var response = await SendRequestAsync(sslStream, "localhost");
+            Assert.Contains("200 OK", response);
+        }
+
+        Assert.NotNull(firstRead);
+        Assert.Same(firstRead, secondRead);
+        Assert.NotNull(remoteWhileLive);
+
+        // Stopping the host tears the connection down, which disposes the cached wrapper.
+        await host.StopAsync().WaitAsync(Timeout);
+
+        Assert.Throws<ObjectDisposedException>(() => firstRead!.RemoteEndPoint);
     }
 
     [ConditionalFact]
