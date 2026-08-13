@@ -1249,7 +1249,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => container.FindElements(By.CssSelector(".item")).Count > 0);
 
         // Verify prepended items are reachable at the top.
-        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, -5000),
+            st => st == 0, "scrollTop == 0 after wheel scroll");
         AssertScrollTop(js, container, st => st == 0, "scrollTop == 0");
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
         var topItems = container.FindElements(By.CssSelector(".item"));
@@ -3251,7 +3252,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             driftTolerance: 2);
 
         // Scroll up and verify prepended items are actually reachable.
-        ScrollContainer(js, container, 0);
+        ScrollUntil(js, container, () => ScrollContainerWithWheel(container, -1000),
+            st => st == 0, "scrollTop == 0 after wheel scroll");
         Browser.True(() =>
         {
             return container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0;
