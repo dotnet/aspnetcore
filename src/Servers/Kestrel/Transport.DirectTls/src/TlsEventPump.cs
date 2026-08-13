@@ -882,10 +882,13 @@ internal class TlsEventPump : IDisposable
                 // Fire the optional ClientHello listener as early as possible - the session has parsed the
                 // ClientHello (which is what produced this NeedsTlsContext suspension), but the real context
                 // has not been installed yet and OpenSSL has not run the expensive key exchange / certificate
-                // signing. The listener is observable-only today; it does not decide whether the handshake proceeds.
-                if (_clientHelloCallback is not null)
+                // signing. The listener is observable-only today; it does not decide whether the handshake
+                // proceeds - but a throwing callback fails the connection (matching the socket-transport
+                // TlsListener) rather than being swallowed.
+                if (_clientHelloCallback is not null && !InvokeClientHelloListener(earlyConnection, conn.Session))
                 {
-                    InvokeClientHelloListener(earlyConnection, conn.Session);
+                    DropHandshake(fd, conn);
+                    return;
                 }
             }
 
@@ -1057,47 +1060,50 @@ internal class TlsEventPump : IDisposable
 
     // Copies the raw parsed ClientHello record from the session and hands it to the
     // UseTlsClientHelloListener callback. Runs synchronously on the pump (epoll) thread at
-    // NeedsTlsContext (before the handshake's key exchange), so the callback must not block. Any
-    // failure to capture or a throwing callback is swallowed (logged at debug) - it must never break a
-    // connection whose handshake is still in progress.
-    private void InvokeClientHelloListener(DirectTlsConnection connection, TlsSocketSession session)
+    // NeedsTlsContext (before the handshake's key exchange), so the callback must not block.
+    //
+    // Returns true when the handshake should continue, false when the caller must drop the connection.
+    // Any failure - the session being unable to produce the ClientHello record, or the user callback throwing -
+    // fails the connection, matching the socket-transport TlsListener where the ClientHello callback is not
+    // guarded and an exception fails the connection rather than being swallowed. A session that simply has no
+    // ClientHello bytes to hand over (a non-exceptional empty result) is not a failure and continues.
+    private bool InvokeClientHelloListener(DirectTlsConnection connection, TlsSocketSession session)
     {
-        int length;
+        byte[]? buffer = null;
         try
         {
-            length = session.GetClientHelloLength();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Failed to read ClientHello length for fd={Fd}", connection.ConnectionState.Fd);
-            return;
-        }
+            var length = session.GetClientHelloLength();
+            if (length <= 0)
+            {
+                // Nothing was captured; the observe-only listener has nothing to hand over. Not a failure.
+                return true;
+            }
 
-        if (length <= 0)
-        {
-            return;
-        }
-
-        var buffer = ArrayPool<byte>.Shared.Rent(length);
-        try
-        {
+            buffer = ArrayPool<byte>.Shared.Rent(length);
             if (!session.TryGetClientHelloBytes(buffer.AsSpan(0, length), out var written) || written <= 0)
             {
-                return;
+                return true;
             }
 
             // The buffer is only valid for the duration of this synchronous call; it is returned to
             // the pool immediately afterwards. This matches the transient-buffer contract of the
             // socket-transport TlsListener middleware.
             _clientHelloCallback!(connection, new ReadOnlySequence<byte>(buffer, 0, written));
+            return true;
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "TLS ClientHello listener callback threw for fd={Fd}", connection.ConnectionState.Fd);
+            // Either the session invocation failed (unable to read the ClientHello) or the user callback threw.
+            // Both fail the connection, matching the socket-transport TlsListener.
+            _logger.LogDebug(ex, "TLS ClientHello listener failed for fd={Fd}; dropping connection.", connection.ConnectionState.Fd);
+            return false;
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(buffer);
+            if (buffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
     }
 

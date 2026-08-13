@@ -168,6 +168,64 @@ public class DirectTlsFunctionalTests
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task TlsClientHelloBytesCallback_ThrowingCallback_DropsConnection_AndKeepsPumpHealthy()
+    {
+        // The ClientHello listener runs on the pump thread at NeedsTlsContext. Matching the socket-transport
+        // TlsListener - which does not guard the user callback, so a throw fails the connection - a throwing
+        // ClientHello callback must drop the handshake rather than be swallowed and continue. The first
+        // connection trips the throwing callback; the second proves the pump survived and recovered.
+        var callbackCalls = 0;
+        var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
+        endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+        endpoint.Options.TlsClientHelloBytesCallback = (connection, bytes) =>
+        {
+            // Only the first callback throws; later connections observe the ClientHello normally.
+            if (Interlocked.Increment(ref callbackCalls) == 1)
+            {
+                throw new InvalidOperationException("boom");
+            }
+        };
+
+        using var host = await StartHostAsync(endpoint, context => context.Response.WriteAsync("ok"));
+
+        // First connection: the throwing callback drops the handshake. The client must observe the teardown
+        // promptly - a connection/handshake error or a truncated (never a 200) response - and NOT hang, which is
+        // what a stranded, spinning fd would cause. Bound the exchange well under the class Timeout so a hang
+        // fails fast.
+        var firstExchange = Task.Run(async () =>
+        {
+            using var sslStream = await ConnectAsync(host.GetPort(), "localhost", applicationProtocols: [SslApplicationProtocol.Http11]);
+            return await SendRequestAsync(sslStream, "localhost");
+        });
+
+        Exception? failure = null;
+        string? firstResponse = null;
+        try
+        {
+            firstResponse = await firstExchange.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+
+        Assert.False(failure is TimeoutException, "Request hung: the dropped handshake stranded the fd instead of tearing it down.");
+        if (failure is null)
+        {
+            Assert.DoesNotContain("200", firstResponse!);
+        }
+
+        // Second connection: the pump must still be healthy and serve a well-formed request.
+        using var goodStream = await ConnectAsync(host.GetPort(), "localhost", applicationProtocols: [SslApplicationProtocol.Http11]);
+        var goodResponse = await SendRequestAsync(goodStream, "localhost");
+
+        Assert.Contains("200 OK", goodResponse);
+
+        await host.StopAsync().WaitAsync(Timeout);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task ClientCertificate_RequiredAndValidated_AllowsRequest()
     {
         var validationInvoked = false;
