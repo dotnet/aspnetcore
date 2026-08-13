@@ -34,8 +34,8 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperti
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.MaxAge.get -> System.TimeSpan?
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.MaxAge.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.OpenIdConnectChallengeProperties() -> void
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.OpenIdConnectChallengeProperties(System.Collections.Generic.IDictionary<string!, string?>! items) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.OpenIdConnectChallengeProperties(System.Collections.Generic.IDictionary<string!, string?>! items, System.Collections.Generic.IDictionary<string!, object?>! parameters) -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.OpenIdConnectChallengeProperties(System.Collections.Generic.IDictionary<string!, string?>! items) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.Prompt.get -> string?
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.Prompt.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults
@@ -68,8 +68,8 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.Backchann
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.Events.get -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.Events.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.HtmlEncoder.get -> System.Text.Encodings.Web.HtmlEncoder!
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.AdditionalAuthorizationParameters.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.AuthenticationMethod.get -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior
@@ -206,12 +206,12 @@ override Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.
 override Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.HandleRemoteAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult!>!
 override Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.HandleRequestAsync() -> System.Threading.Tasks.Task<bool>!
 override Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.Validate() -> void
-static Microsoft.AspNetCore.Authentication.ClaimActionCollectionUniqueExtensions.MapUniqueJsonKey(this Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection! collection, string! claimType, string! jsonKey) -> void
 static Microsoft.AspNetCore.Authentication.ClaimActionCollectionUniqueExtensions.MapUniqueJsonKey(this Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection! collection, string! claimType, string! jsonKey, string! valueType) -> void
-static Microsoft.Extensions.DependencyInjection.OpenIdConnectExtensions.AddOpenIdConnect(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.AspNetCore.Authentication.ClaimActionCollectionUniqueExtensions.MapUniqueJsonKey(this Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection! collection, string! claimType, string! jsonKey) -> void
 static Microsoft.Extensions.DependencyInjection.OpenIdConnectExtensions.AddOpenIdConnect(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string? displayName, System.Action<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.OpenIdConnectExtensions.AddOpenIdConnect(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.OpenIdConnectExtensions.AddOpenIdConnect(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.OpenIdConnectExtensions.AddOpenIdConnect(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static readonly Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.MaxAgeKey -> string!
 static readonly Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectChallengeProperties.PromptKey -> string!
 static readonly Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults.AuthenticationPropertiesKey -> string!

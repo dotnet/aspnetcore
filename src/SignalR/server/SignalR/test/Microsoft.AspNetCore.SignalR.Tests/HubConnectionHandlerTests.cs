@@ -2258,6 +2258,65 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task UnauthorizedConnectionCannotInvokeHubMethodWithRequirementDataAuthorization()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization();
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.RequirementDataAuthMethod)).DefaultTimeout();
+
+                Assert.NotNull(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task AuthorizedConnectionCanInvokeHubMethodWithRequirementDataAuthorization()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization();
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.RequirementDataAuthMethod)).DefaultTimeout();
+
+                Assert.Null(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
     private class TestConnectionLifetimeNotification : IConnectionLifetimeNotificationFeature
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -4376,22 +4435,35 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task InvokeHubMethodCannotAcceptCancellationTokenAsArgument()
+    public async Task InvokeHubMethodCanAcceptCancellationTokenAsArgument()
     {
         using (StartVerifiableLog())
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
 
             using (var client = new TestClient())
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var invocationId = await client.SendInvocationAsync(nameof(MethodHub.InvalidArgument)).DefaultTimeout();
+                var invocationId = await client.SendInvocationAsync(nameof(LongRunningHub.CancelableInvocation)).DefaultTimeout();
+                // Wait for the hub method to start
+                await tcsService.StartedMethod.Task.DefaultTimeout();
 
-                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                // Cancel the invocation which should trigger the CancellationToken in the hub method
+                await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).DefaultTimeout();
 
-                Assert.Equal("Failed to invoke 'InvalidArgument' due to an error on the server.", completion.Error);
+                var result = await client.ReadAsync().DefaultTimeout();
+
+                var completion = Assert.IsType<CompletionMessage>(result);
+                Assert.Null(completion.Error);
+
+                // CancellationToken passed to hub method will allow EndMethod to be triggered if it is canceled.
+                await tcsService.EndMethod.Task.DefaultTimeout();
 
                 client.Dispose();
 
@@ -5283,6 +5355,110 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             await connectionHandlerTask.DefaultTimeout();
 
             Assert.Null(state.DisconnectedException);
+        }
+    }
+
+    public enum CloseScenario
+    {
+        PingTimeout,
+        Abort,
+        BackpressureTimeout,
+    }
+
+    [Theory]
+    [InlineData(CloseScenario.PingTimeout)]
+    [InlineData(CloseScenario.Abort)]
+    [InlineData(CloseScenario.BackpressureTimeout)]
+    public async Task StatefulReconnectWithMessageBufferBackpressureIsCancelable(CloseScenario scenario)
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
+        {
+            var timeout = TimeSpan.FromMilliseconds(100);
+            var timeProvider = new FakeTimeProvider();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.Configure<HubOptions>(options =>
+                {
+                    options.ClientTimeoutInterval = timeout;
+                    options.StatefulReconnectBufferSize = 100;
+                }), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            connectionHandler.TimeProvider = timeProvider;
+
+            using var client1 = new TestClient();
+            using var client2 = new TestClient();
+            var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+            client1.Connection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            var connection1HandlerTask = await client1.ConnectAsync(connectionHandler);
+            var connection2HandlerTask = await client2.ConnectAsync(connectionHandler);
+
+            await client1.Connected.DefaultTimeout();
+            await client1.SendHubMessageAsync(PingMessage.Instance);
+
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
+
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            switch (scenario)
+            {
+                case CloseScenario.PingTimeout:
+                    {
+                        // We go over the 100 ms timeout interval multiple times
+                        for (var i = 0; i < 3; i++)
+                        {
+                            timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
+                            client1.TickHeartbeat();
+                        }
+                        break;
+                    }
+                case CloseScenario.Abort:
+                    {
+                        client1.Connection.Abort();
+                        break;
+                    }
+                case CloseScenario.BackpressureTimeout:
+                    {
+                        timeProvider.Advance(TimeSpan.FromSeconds(5) + TimeSpan.FromMilliseconds(1));
+                        break;
+                    }
+            }
+
+            // This one might not be blocked on client1 if the server sends to client2 first during Broadcast
+            Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
+
+            // Send 3rd message to ensure client2 would be blocked if client1 was still blocking the server
+            // Which it shouldn't be as it has timed out
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            // Don't await this task as it's possible the CloseMessage is blocking the client1's MessageBuffer.WriteAsync call on the 5 second token
+            // So we need to advance the TimeProvider to make sure the timeout occurs before making sure client2 got the final broadcast message
+            var readTask = client2.ReadAsync().DefaultTimeout();
+
+            var closeTask = connection1HandlerTask.DefaultTimeout(30_000);
+
+            // We don't know when the server will create the CTS to cancel the client trying to send the CloseMessage
+            // Let's do a small spin wait here to have a better chance of the CTS being created and us timing it out via TimeProvider
+            var maxWait = TimeSpan.FromSeconds(10);
+            for (var i = 0; i < 10; i++)
+            {
+                timeProvider.Advance(TimeSpan.FromSeconds(6));
+                if (closeTask.IsCompleted && readTask.IsCompleted)
+                {
+                    break;
+                }
+                await Task.Delay(maxWait / 10);
+            }
+
+            Assert.IsType<InvocationMessage>(await readTask);
+
+            await client2.DisposeAsync();
+
+            await closeTask;
+            await connection2HandlerTask.DefaultTimeout(30_000);
         }
     }
 

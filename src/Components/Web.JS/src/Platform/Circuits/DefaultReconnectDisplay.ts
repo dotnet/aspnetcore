@@ -96,6 +96,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     this.reconnect = options?.type === 'reconnect';
 
+    this.resumeButton.style.display = 'none';
     this.reloadButton.style.display = 'none';
     this.rejoiningAnimation.style.display = 'block';
     this.status.innerHTML = 'Rejoining the server...';
@@ -106,6 +107,8 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   update(options: ReconnectDisplayUpdateOptions): void {
     this.reconnect = options.type === 'reconnect';
     if (this.reconnect) {
+      this.reloadButton.style.display = 'none';
+      this.resumeButton.style.display = 'none';
       const { currentAttempt, secondsToNextAttempt } = options as ReconnectOptions;
       if (currentAttempt === 1 || secondsToNextAttempt === 0) {
         this.status.innerHTML = 'Rejoining the server...';
@@ -129,12 +132,13 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   failed(): void {
     this.rejoiningAnimation.style.display = 'none';
     if (this.reconnect) {
+      this.resumeButton.style.display = 'none';
       this.reloadButton.style.display = 'block';
       this.status.innerHTML = 'Failed to rejoin.<br />Please retry or reload the page.';
       this.document.addEventListener('visibilitychange', this.retryWhenDocumentBecomesVisible);
     } else {
-      this.status.innerHTML = 'Failed to resume the session.<br />Please reload the page.';
-      this.resumeButton.style.display = 'none';
+      this.status.innerHTML = 'Failed to resume the session.<br />Please retry or reload the page.';
+      this.resumeButton.style.display = 'block';
       this.reloadButton.style.display = 'none';
     }
   }
@@ -157,7 +161,6 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       const successful = await Blazor.reconnect!();
       if (!successful) {
         // Try to resume the circuit if the reconnect failed
-        this.update({ type: 'pause', remote: this.remote });
         const resumeSuccessful = await Blazor.resumeCircuit!();
         if (!resumeSuccessful) {
           this.rejected();
@@ -178,7 +181,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       // - exception to mean we didn't reach the server (this can be sync or async)
       const successful = await Blazor.resumeCircuit!();
       if (!successful) {
-        this.failed();
+        this.rejected();
       }
     } catch (err: unknown) {
       // We got an exception, server is currently unavailable

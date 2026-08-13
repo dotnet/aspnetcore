@@ -4,8 +4,8 @@
 # This script packages, installs and creates a template to help with rapid iteration in the templating area.
 [CmdletBinding(PositionalBinding = $false)]
 param(
-    [ValidateSet("net9.0", "net10.0")]
-    [string] $Framework = "net10.0",
+    [ValidateSet("net9.0", "net10.0", "net11.0")]
+    [string] $Framework = "net11.0",
     [Parameter(Mandatory = $false)]
     [switch] $NoRestore,
     [Parameter(Mandatory = $false)]

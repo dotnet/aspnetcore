@@ -10,21 +10,24 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 
+type BlazorServerStartOptions = Partial<CircuitStartOptions> & { circuit?: Partial<CircuitStartOptions> };
+
 let started = false;
 
-function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
+function boot(userOptions?: BlazorServerStartOptions): Promise<void> {
   if (started) {
     throw new Error('Blazor has already started.');
   }
   started = true;
 
-  const configuredOptions = resolveOptions(userOptions);
+  // Accept the `circuit` property from the blazor.web.js options format
+  const normalizedOptions = userOptions?.circuit ?? userOptions;
+  const configuredOptions = resolveOptions(normalizedOptions);
   setCircuitOptions(Promise.resolve(configuredOptions || {}));
 
-  JSEventRegistry.create(Blazor);
   const serverComponents = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const components = new InitialRootComponentsList(serverComponents);
-  return startServer(components);
+  return startServer(components, JSEventRegistry.create(Blazor));
 }
 
 Blazor.start = boot;

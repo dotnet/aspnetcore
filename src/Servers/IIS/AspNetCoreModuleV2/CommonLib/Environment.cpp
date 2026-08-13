@@ -231,24 +231,28 @@ bool Environment::CheckUpToDate(const std::wstring& source, const std::filesyste
             auto sourceFile = path.path().filename();
             auto destinationPath = (destination / sourceFile);
 
+            // Only compare timestamps if destination exists
             if (std::filesystem::directory_entry(destinationPath).exists())
             {
                 auto originalFileTime = std::filesystem::last_write_time(path);
                 auto destFileTime = std::filesystem::last_write_time(destinationPath);
-                if (originalFileTime > destFileTime) // file write time is the same
+                if (originalFileTime > destFileTime)
                 {
                     return false;
                 }
             }
-
-            CopyFile(path.path().wstring().c_str(), destinationPath.wstring().c_str(), FALSE);
         }
         else if (path.is_directory())
         {
-            auto sourceInnerDirectory = std::filesystem::directory_entry(path);
-            if (sourceInnerDirectory.path() != directoryToIgnore)
+            auto sourceInnerDirectory = path.path();
+            // Use prefix match to skip the shadow copy directory and its subdirectories
+            if (sourceInnerDirectory.wstring().rfind(directoryToIgnore, 0) != 0)
             {
-                CheckUpToDate(/* source */ path.path(), /* destination */ destination / path.path().filename(), extension, directoryToIgnore);
+                // Propagate result from subdirectories
+                if (!CheckUpToDate(/* source */ path.path(), /* destination */ destination / path.path().filename(), extension, directoryToIgnore))
+                {
+                    return false;
+                }
             }
         }
     }

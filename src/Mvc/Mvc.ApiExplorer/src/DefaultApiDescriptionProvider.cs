@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 
@@ -104,6 +105,9 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             GroupName = groupName,
             HttpMethod = httpMethod,
             RelativePath = GetRelativePath(parsedTemplate),
+            RoutePattern = action.AttributeRouteInfo?.Template is not null
+                ? RoutePatternFactory.Parse(action.AttributeRouteInfo.Template)
+                : null,
         };
 
         var templateParameters = parsedTemplate?.Parameters?.ToList() ?? new List<TemplatePart>();

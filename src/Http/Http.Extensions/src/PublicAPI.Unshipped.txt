@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.CookieRedirectEndpointConventionBuilderExtensions
-Microsoft.AspNetCore.Http.AllowCookieRedirectAttribute
-Microsoft.AspNetCore.Http.AllowCookieRedirectAttribute.AllowCookieRedirectAttribute() -> void
-static Microsoft.AspNetCore.Builder.CookieRedirectEndpointConventionBuilderExtensions.AllowCookieRedirect<TBuilder>(this TBuilder builder) -> TBuilder
-static Microsoft.AspNetCore.Builder.CookieRedirectEndpointConventionBuilderExtensions.DisableCookieRedirect<TBuilder>(this TBuilder builder) -> TBuilder

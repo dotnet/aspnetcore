@@ -14,6 +14,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Moq;
 
 namespace Microsoft.AspNetCore.Authorization.Test;
@@ -290,7 +292,7 @@ public class AuthorizationMiddlewareTests
         var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"), new ReqAttribute(req));
         var services = new ServiceCollection()
             .AddAuthorization()
-            .AddSingleton(policyProvider.Object)  
+            .AddSingleton(policyProvider.Object)
             .AddLogging()
             .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
 
@@ -671,31 +673,60 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(endpoint, resource.GetEndpoint());
     }
 
-    [Fact]
-    public async Task AuthZResourceShouldBeEndpointByDefaultWithCompatSwitch()
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void AuthZResourceShouldBeEndpointByDefaultWithCompatSwitch()
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource", isEnabled: true);
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource", "true");
 
-        // Arrange
-        object resource = null;
-        var policy = new AuthorizationPolicyBuilder().RequireAssertion(c =>
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
-            resource = c.Resource;
-            return true;
-        }).Build();
-        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
-        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
-        var next = new TestRequestDelegate();
+            object resource = null;
+            var policy = new AuthorizationPolicyBuilder().RequireAssertion(c =>
+            {
+                resource = c.Resource;
+                return true;
+            }).Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-        var endpoint = CreateEndpoint(new AuthorizeAttribute());
-        var context = GetHttpContext(endpoint: endpoint);
+            var services = new ServiceCollection().BuildServiceProvider();
+            var next = new RequestDelegate(context => Task.CompletedTask);
+            var middleware = new AuthorizationMiddleware(next, policyProvider.Object, services);
 
-        // Act
-        await middleware.Invoke(context);
+            var endpoint = new Endpoint(context => Task.CompletedTask, new EndpointMetadataCollection(new AuthorizeAttribute()), "Test endpoint");
 
-        // Assert
-        Assert.Equal(endpoint, resource);
+            var basicPrincipal = new ClaimsPrincipal(
+                new ClaimsIdentity(
+                    new Claim[]
+                    {
+                        new Claim("Permission", "CanViewPage"),
+                        new Claim(ClaimTypes.Role, "Administrator"),
+                        new Claim(ClaimTypes.Role, "User"),
+                        new Claim(ClaimTypes.NameIdentifier, "John")
+                    },
+                    "Basic"));
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(Mock.Of<IAuthenticationService>());
+            serviceCollection.AddTransient<IAuthorizationMiddlewareResultHandler, AuthorizationMiddlewareResultHandler>();
+            serviceCollection.AddOptions();
+            serviceCollection.AddLogging();
+            serviceCollection.AddAuthorization();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(endpoint);
+            httpContext.RequestServices = serviceProvider;
+            httpContext.User = basicPrincipal;
+
+            // Act
+            await middleware.Invoke(httpContext);
+
+            // Assert
+            Assert.Equal(endpoint, resource);
+        }, options);
     }
 
     [Fact]

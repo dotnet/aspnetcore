@@ -1122,6 +1122,38 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         });
     }
 
+    // Test for: https://github.com/dotnet/aspnetcore/issues/64048
+    public static object[][] CircularReferencesWithArraysHandlers =>
+    [
+        [(CircularReferenceWithArrayRootOrderArrayFirst dto) => { }],
+        [(CircularReferenceWithArrayRootOrderArrayLast dto) => { }],
+    ];
+
+    [Theory]
+    [MemberData(nameof(CircularReferencesWithArraysHandlers))]
+    public async Task HandlesCircularReferencesWithArraysRegardlessOfPropertyOrder(Delegate requestHandler)
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/", requestHandler);
+
+        await VerifyOpenApiDocument(builder, (OpenApiDocument document) =>
+        {
+            Assert.NotNull(document.Components?.Schemas);
+            var schema = document.Components.Schemas["CircularReferenceWithArrayModel"];
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
+            Assert.NotNull(schema.Properties);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("selfArray", property.Key);
+                    var arraySchema = Assert.IsType<OpenApiSchema>(property.Value);
+                    Assert.Equal(JsonSchemaType.Array, arraySchema.Type);
+                    var itemReference = Assert.IsType<OpenApiSchemaReference>(arraySchema.Items);
+                    Assert.Equal("#/components/schemas/CircularReferenceWithArrayModel", itemReference.Reference.ReferenceV3);
+                });
+        });
+    }
+
     // Test models for issue 61194
     private class Config
     {
@@ -1202,6 +1234,24 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
     private class ReferencedModel
     {
         public int Id { get; set; }
+    }
+
+    // Test models for issue 64048
+    public class CircularReferenceWithArrayRootOrderArrayLast
+    {
+        public CircularReferenceWithArrayModel Item { get; set; } = null!;
+        public ICollection<CircularReferenceWithArrayModel> ItemArray { get; set; } = [];
+    }
+
+    public class CircularReferenceWithArrayRootOrderArrayFirst
+    {
+        public ICollection<CircularReferenceWithArrayModel> ItemArray { get; set; } = [];
+        public CircularReferenceWithArrayModel Item { get; set; } = null!;
+    }
+
+    public class CircularReferenceWithArrayModel
+    {
+        public ICollection<CircularReferenceWithArrayModel> SelfArray { get; set; } = [];
     }
 }
 #nullable restore

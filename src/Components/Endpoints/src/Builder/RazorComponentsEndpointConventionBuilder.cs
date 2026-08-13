@@ -18,27 +18,25 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
     private readonly RazorComponentDataSourceOptions _options;
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
+    private readonly List<Action<ComponentApplicationBuilder>> _componentApplicationBuilderActions;
 
     internal RazorComponentsEndpointConventionBuilder(
         object @lock,
-        ComponentApplicationBuilder builder,
         IEndpointRouteBuilder endpointRouteBuilder,
         RazorComponentDataSourceOptions options,
         List<Action<EndpointBuilder>> conventions,
-        List<Action<EndpointBuilder>> finallyConventions)
+        List<Action<EndpointBuilder>> finallyConventions,
+        List<Action<ComponentApplicationBuilder>> componentApplicationBuilderActions)
     {
         _lock = @lock;
-        ApplicationBuilder = builder;
         EndpointRouteBuilder = endpointRouteBuilder;
         _options = options;
         _conventions = conventions;
         _finallyConventions = finallyConventions;
+        _componentApplicationBuilderActions = componentApplicationBuilderActions;
     }
 
-    /// <summary>
-    /// Gets the <see cref="ComponentApplicationBuilder"/> that is used to build the endpoints.
-    /// </summary>
-    internal ComponentApplicationBuilder ApplicationBuilder { get; }
+    internal List<Action<ComponentApplicationBuilder>> ComponentApplicationBuilderActions => _componentApplicationBuilderActions;
 
     internal string? ManifestPath { get => _options.ManifestPath; set => _options.ManifestPath = value; }
 

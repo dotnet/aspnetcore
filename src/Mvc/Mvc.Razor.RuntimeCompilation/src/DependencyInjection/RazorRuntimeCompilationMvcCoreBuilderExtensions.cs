@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -20,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Static class that adds razor runtime compilation extension methods.
 /// </summary>
-[Obsolete("Razor runtime compilation is obsolete and is not recommended for production scenarios. For production scenarios, use the default build time compilation. For development scenarios, use Hot Reload instead. For more information, visit https://aka.ms/aspnet/deprecate/003.", DiagnosticId = "ASPDEPR003")]
+[Obsolete("Razor runtime compilation is obsolete and is not recommended for production scenarios. For production scenarios, use the default build time compilation. For development scenarios, use Hot Reload instead. For more information, visit https://aka.ms/aspnet/deprecate/003.", DiagnosticId = "ASPDEPR003", UrlFormat = Obsoletions.AspNetCoreDeprecate003Url)]
 public static class RazorRuntimeCompilationMvcCoreBuilderExtensions
 {
     /// <summary>

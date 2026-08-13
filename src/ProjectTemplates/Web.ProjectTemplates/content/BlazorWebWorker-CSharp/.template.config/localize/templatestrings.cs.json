@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Webový pracovní proces Blazor",
+  "description": "Projekt pro vytvoření knihovny tříd, která spouští kód .NET ve webovém pracovním procesu z Blazor WebAssembly nebo webové aplikace Blazor.",
+  "symbols/Framework/description": "Cílová architektura pro projekt.",
+  "symbols/skipRestore/description": "Je-li zadáno, při vytvoření přeskočí automatické obnovení projektu.",
+  "postActions/restore/description": "Obnovte balíčky NuGet vyžadované tímto projektem.",
+  "postActions/restore/manualInstructions/default/text": "Spustit „dotnet restore“"
+}

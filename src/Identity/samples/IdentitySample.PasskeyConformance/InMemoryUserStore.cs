@@ -113,7 +113,11 @@ public sealed class InMemoryUserStore<TUser> :
             p.IsBackupEligible,
             p.IsBackedUp,
             p.AttestationObject,
-            p.ClientDataJson);
+            p.ClientDataJson)
+        {
+            Name = p.Name,
+            Aaguid = p.Aaguid,
+        };
 
     [return: NotNullIfNotNull(nameof(p))]
     private static PocoUserPasskey<string>? ToPocoUserPasskey(TUser user, UserPasskeyInfo? p)
@@ -131,6 +135,7 @@ public sealed class InMemoryUserStore<TUser> :
             IsBackedUp = p.IsBackedUp,
             AttestationObject = p.AttestationObject,
             ClientDataJson = p.ClientDataJson,
+            Aaguid = p.Aaguid,
         };
 
     public void Dispose()

@@ -160,8 +160,67 @@ public abstract class NavigationManager
     public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options)
     {
         AssertInitialized();
+
+        if (options.RelativeToCurrentUri)
+        {
+            uri = ResolveRelativeToCurrentPath(uri);
+        }
+
         NavigateToCore(uri, options);
     }
+
+    internal string ResolveRelativeToCurrentPath(string relativeUri)
+    {
+        if (IsAbsoluteUri(relativeUri))
+        {
+            throw new ArgumentException(
+                $"The URI '{relativeUri}' is not a relative URI. When RelativeToCurrentUri is true, the URI must be relative (e.g., 'page.html', 'folder/page', '../other').",
+                nameof(relativeUri));
+        }
+
+        var currentUri = _uri!.AsSpan();
+
+        // fragment-only and query-only references are special cases
+        // that resolve against the full current URI
+        if (relativeUri.StartsWith('#'))
+        {
+            var existingFragmentIndex = currentUri.IndexOf('#');
+            if (existingFragmentIndex >= 0)
+            {
+                return string.Concat(currentUri[..existingFragmentIndex], relativeUri.AsSpan());
+            }
+            return string.Concat(_uri, relativeUri);
+        }
+
+        if (relativeUri.StartsWith('?'))
+        {
+            var existingQueryOrFragmentIndex = currentUri.IndexOfAny('?', '#');
+            if (existingQueryOrFragmentIndex >= 0)
+            {
+                return string.Concat(currentUri[..existingQueryOrFragmentIndex], relativeUri.AsSpan());
+            }
+            return string.Concat(_uri, relativeUri);
+        }
+
+        // For path-based relative URIs, resolve against the directory (strip last segment)
+        var queryOrFragmentIndex = currentUri.IndexOfAny('?', '#');
+        var pathOnlyLength = queryOrFragmentIndex >= 0 ? queryOrFragmentIndex : currentUri.Length;
+        var lastSlashIndex = currentUri[..pathOnlyLength].LastIndexOf('/');
+        
+        if (lastSlashIndex < 0)
+        {
+            // No slash found - this shouldn't happen for valid absolute URIs
+            // In this edge case, just append to the current URI
+            return string.Concat(_uri, relativeUri);
+        }
+        
+        // Keep everything up to and including the last slash, then append the relative URI
+        var basePathLength = lastSlashIndex + 1;
+        return string.Concat(currentUri[..basePathLength], relativeUri.AsSpan());
+    }
+
+    private static bool IsAbsoluteUri(string uri)
+        => uri.StartsWith('/') || System.Uri.TryCreate(uri, UriKind.Absolute, out _);
 
     /// <summary>
     /// Navigates to the specified URI.
@@ -246,7 +305,7 @@ public abstract class NavigationManager
 
     /// <summary>
     /// Converts a relative URI into an absolute one (by resolving it
-    /// relative to the current absolute URI).
+    /// relative to the base URI).
     /// </summary>
     /// <param name="relativeUri">The relative URI.</param>
     /// <returns>The absolute URI.</returns>

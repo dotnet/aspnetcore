@@ -1,7 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.Connections.IMemoryPoolFactory<T>
-Microsoft.AspNetCore.Connections.IMemoryPoolFactory<T>.Create(Microsoft.AspNetCore.Connections.MemoryPoolOptions? options = null) -> System.Buffers.MemoryPool<T>!
-Microsoft.AspNetCore.Connections.MemoryPoolOptions
-Microsoft.AspNetCore.Connections.MemoryPoolOptions.MemoryPoolOptions() -> void
-Microsoft.AspNetCore.Connections.MemoryPoolOptions.Owner.get -> string?
-Microsoft.AspNetCore.Connections.MemoryPoolOptions.Owner.set -> void
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.InitialTokenLifetime.get -> System.TimeSpan?
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.RefreshAuthenticationAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.TimeSpan?>!
+Microsoft.AspNetCore.Connections.Features.IConnectionUserRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionUserRefreshFeature.OnUserRefreshed(System.Action<System.Security.Claims.ClaimsPrincipal!, object?>! callback, object? state) -> System.IDisposable!

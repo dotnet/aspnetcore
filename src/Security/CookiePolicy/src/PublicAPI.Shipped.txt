@@ -31,8 +31,8 @@ Microsoft.AspNetCore.CookiePolicy.AppendCookieContext.IsConsentNeeded.get -> boo
 Microsoft.AspNetCore.CookiePolicy.AppendCookieContext.IssueCookie.get -> bool
 Microsoft.AspNetCore.CookiePolicy.AppendCookieContext.IssueCookie.set -> void
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware
-Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options) -> void
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! factory) -> void
+Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options) -> void
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.Options.get -> Microsoft.AspNetCore.Builder.CookiePolicyOptions!
 Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.Options.set -> void
@@ -50,7 +50,7 @@ Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy
 Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always = 1 -> Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy
 Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.None = 0 -> Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy
 Microsoft.Extensions.DependencyInjection.CookiePolicyServiceCollectionExtensions
-static Microsoft.AspNetCore.Builder.CookiePolicyAppBuilderExtensions.UseCookiePolicy(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.CookiePolicyAppBuilderExtensions.UseCookiePolicy(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.CookiePolicyOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.CookiePolicyAppBuilderExtensions.UseCookiePolicy(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.Extensions.DependencyInjection.CookiePolicyServiceCollectionExtensions.AddCookiePolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CookiePolicyServiceCollectionExtensions.AddCookiePolicy<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Builder.CookiePolicyOptions!, TService!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -10,11 +10,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Testing;
 
@@ -247,8 +249,20 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
     }
 
+    private bool GetIsConfigureWebApplicationBuilderOverridden()
+    {
+        var method = this.GetType().GetMethod(nameof(ConfigureWebApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(IHostApplicationBuilder)]);
+        var declaringType = method!.DeclaringType;
+        if (declaringType!.IsGenericType)
+        {
+            declaringType = declaringType.GetGenericTypeDefinition();
+        }
+
+        return declaringType != typeof(WebApplicationFactory<>);
+    }
+
     /// <summary>
-    /// Initializes the instance by configurating the host builder.
+    /// Initializes the instance by configuring the host builder.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown if the provided <typeparamref name="TEntryPoint"/> type has no factory method.</exception>
     public void StartServer()
@@ -258,11 +272,19 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             return;
         }
 
+        var receivedBuilderConstructed = false;
+        var isOverridden = GetIsConfigureWebApplicationBuilderOverridden();
+
         EnsureDepsFile();
 
         var hostBuilder = CreateHostBuilder();
         if (hostBuilder is not null)
         {
+            if (isOverridden)
+            {
+                throw new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
+            }
+
             ConfigureHostBuilder(hostBuilder);
             return;
         }
@@ -283,11 +305,31 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 });
             });
             // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
+
+            var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
+            {
+                { "WebApplicationBuilderConstructed", hostApplicationBuilder =>
+                    {
+                        receivedBuilderConstructed = true;
+                        ConfigureWebApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!);
+                    }
+                }
+            };
+
             var factory = HostFactoryResolver.ResolveHostFactory(
                 typeof(TEntryPoint).Assembly,
                 stopApplication: false,
                 configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder,
-                entrypointCompleted: deferredHostBuilder.EntryPointCompleted);
+                entrypointCompleted: ex =>
+                    {
+                        if (isOverridden && !receivedBuilderConstructed)
+                        {
+                            ex = new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
+                        }
+
+                        deferredHostBuilder.EntryPointCompleted(ex);
+                    },
+                arbitraryActions: arbitraryActions);
 
             if (factory is not null)
             {
@@ -309,6 +351,11 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
         else
         {
+            if (isOverridden)
+            {
+                throw new InvalidOperationException(Resources.ConfigureWebApplicationBuilderNotSupported);
+            }
+
             SetContentRoot(builder);
             _configuration(builder);
             if (_useKestrel)
@@ -577,7 +624,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
     /// create the server.</param>
     /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the overloads that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the overloads that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
 
     /// <summary>
@@ -587,7 +634,16 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// </summary>
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> from the bootstrapped application.</param>
     /// <returns></returns>
-    protected virtual TestServer CreateServer(IServiceProvider serviceProvider) => new(serviceProvider);
+    protected virtual TestServer CreateServer(IServiceProvider serviceProvider)
+    {
+        var options = serviceProvider.GetService<IOptions<TestServerOptions>>();
+        if (options is not null)
+        {
+            return new(serviceProvider, options);
+        }
+
+        return new(serviceProvider);
+    }
 
     /// <summary>
     /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
@@ -615,6 +671,15 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// </summary>
     /// <param name="builder">The <see cref="IWebHostBuilder"/> for the application.</param>
     protected virtual void ConfigureWebHost(IWebHostBuilder builder)
+    {
+    }
+
+    /// <summary>
+    /// Gives a fixture an opportunity to configure the application builder.
+    /// This method will be called very early, during the entrypoint's call to WebApplication.CreateBuilder.
+    /// </summary>
+    /// <param name="hostApplicationBuilder">The host application builder to configure.</param>
+    protected virtual void ConfigureWebApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
     {
     }
 
@@ -856,7 +921,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             _configuration = configureWebHost;
         }
 
-        [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008")]
+        [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
         protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
 
         protected override TestServer CreateServer(IServiceProvider serviceProvider) => _createServerFromServiceProvider(serviceProvider);

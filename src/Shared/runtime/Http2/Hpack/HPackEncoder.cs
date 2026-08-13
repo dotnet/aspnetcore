@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
@@ -596,7 +596,7 @@ namespace System.Net.Http.HPack
         /// Encodes a "Literal Header Field without Indexing" to a new array, but only the index portion;
         /// a subsequent call to <c>EncodeStringLiteral</c> must be used to encode the associated value.
         /// </summary>
-        public static byte[] EncodeLiteralHeaderFieldWithoutIndexingToAllocatedArray(int index)
+        public static unsafe byte[] EncodeLiteralHeaderFieldWithoutIndexingToAllocatedArray(int index)
         {
             Span<byte> span = stackalloc byte[256];
             bool success = EncodeLiteralHeaderFieldWithoutIndexing(index, span, out int length);
@@ -608,7 +608,7 @@ namespace System.Net.Http.HPack
         /// Encodes a "Literal Header Field without Indexing - New Name" to a new array, but only the name portion;
         /// a subsequent call to <c>EncodeStringLiteral</c> must be used to encode the associated value.
         /// </summary>
-        public static byte[] EncodeLiteralHeaderFieldWithoutIndexingNewNameToAllocatedArray(string name)
+        public static unsafe byte[] EncodeLiteralHeaderFieldWithoutIndexingNewNameToAllocatedArray(string name)
         {
             Span<byte> span = stackalloc byte[256];
             bool success = EncodeLiteralHeaderFieldWithoutIndexingNewName(name, span, out int length);
@@ -617,7 +617,7 @@ namespace System.Net.Http.HPack
         }
 
         /// <summary>Encodes a "Literal Header Field without Indexing" to a new array.</summary>
-        public static byte[] EncodeLiteralHeaderFieldWithoutIndexingToAllocatedArray(int index, string value)
+        public static unsafe byte[] EncodeLiteralHeaderFieldWithoutIndexingToAllocatedArray(int index, string value)
         {
             Span<byte> span =
 #if DEBUG

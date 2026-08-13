@@ -1,78 +1,87 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   
-  <String Id="Caption" Value="[WixBundleName] Setup"/>
+  <String Id="Caption" Value="[WixBundleName] のセットアップ"/>
   
   <String Id="Title" Value="[BundleNameShort]"/>
   
   <String Id="SubTitle" Value="[BundleNameSub]"/>
   
-  <String Id="InstallVersion" Value="Version [WixBundleVersion]"/>
-  <String Id="ConfirmCancelMessage" Value="Are you sure you want to cancel?"/>
-  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version"/>
-  <String Id="HelpHeader" Value="Setup Help"/>
+  <String Id="InstallVersion" Value="バージョン [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="取り消しますか?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="以前のバージョン"/>
+  <String Id="HelpHeader" Value="セットアップのヘルプ"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default. /passive | /quiet - displays minimal UI with no prompts or displays no UI and no prompts. By default UI and all prompts are displayed. /norestart - suppress any attempts to restart. By default UI will prompt before restart. /log log.txt - logs to a specific file. By default a log file is created in %TEMP%."/>
-  <String Id="HelpCloseButton" Value="&amp;Close"/>
-  <String Id="InstallAcceptCheckbox" Value="I &amp;agree to the license terms and conditions"/>
-  <String Id="InstallInstallButton" Value="&amp;Install"/>
-  <String Id="InstallCloseButton" Value="&amp;Close"/>
-  <String Id="ProgressHeader" Value="Setup Progress"/>
-  <String Id="ProgressLabel" Value="Processing:"/>
-  <String Id="OverallProgressPackageText" Value="Initializing..."/>
-  <String Id="ProgressCancelButton" Value="&amp;Cancel"/>
-  <String Id="ModifyHeader" Value="Modify Setup"/>
-  <String Id="ModifyRepairButton" Value="&amp;Repair"/>
-  <String Id="ModifyUninstallButton" Value="&amp;Uninstall"/>
-  <String Id="ModifyCloseButton" Value="&amp;Close"/>
-  <String Id="SuccessCacheHeader" Value="Cache Successfully Completed"/>
-  <String Id="SuccessModifyHeader" Value="Modify Successfully Completed"/>
-  <String Id="SuccessRepairHeader" Value="Repair Successfully Completed"/>
-  <String Id="SuccessUninstallHeader" Value="Uninstall Successfully Completed"/>
-  <String Id="SuccessUnsafeUninstallHeader" Value="Uninstall Successfully Completed"/>
-  <String Id="SuccessInstallHeader" Value="Installation Successfully Completed"/>
-  <String Id="SuccessHeader" Value="Setup Successful"/>
-  <String Id="SuccessLaunchButton" Value="&amp;Launch"/>
-  <String Id="SuccessLayoutHeader" Value="Layout Successfully Completed"/>
-  <String Id="SuccessRestartText" Value="You must restart your computer before you can use the software."/>
-  <String Id="SuccessUninstallRestartText" Value="You must restart your computer to complete the removal of the software."/>
-  <String Id="SuccessRestartButton" Value="&amp;Restart"/>
-  <String Id="SuccessCloseButton" Value="&amp;Close"/>
-  <String Id="FailureHeader" Value="Setup Failed"/>
-  <String Id="FailureCacheHeader" Value="Cache Failed"/>
-  <String Id="FailureLayoutHeader" Value="Layout Failed"/>
-  <String Id="FailureModifyHeader" Value="Modify Failed"/>
-  <String Id="FailureInstallHeader" Value="Setup Failed"/>
-  <String Id="FailureUnsafeUninstallHeader" Value="Uninstall Failed"/>
-  <String Id="FailureUninstallHeader" Value="Uninstall Failed"/>
-  <String Id="FailureRepairHeader" Value="Repair Failed"/>
-  <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;."/>
-  <String Id="FailureRestartText" Value="You must restart your computer to complete the rollback of the software."/>
-  <String Id="FailureRestartButton" Value="&amp;Restart"/>
-  <String Id="FailureCloseButton" Value="&amp;Close"/>
-  <String Id="FilesInUseHeader" Value="Files In Use"/>
-  <String Id="FilesInUseLabel" Value="The following applications are using files that need to be updated:"/>
-  <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them."/>
-  <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications."/>
-  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required."/>
-  <String Id="FilesInUseOkButton" Value="&amp;OK"/>
-  <String Id="FilesInUseCancelButton" Value="&amp;Cancel"/>
-  <String Id="FilesInUseRetryButton" Value="&amp;Retry"/>
-  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignore"/>
-  <String Id="FilesInUseExitButton" Value="E&amp;xit"/>
-  <String Id="FilesInUseTitle" Value="Files In Use"/>
-  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:"/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - ディレクトリ内のバンドルの完全なローカル コピーをインストール、修復、アンインストール、または作成します。install が既定値です。
+
+/passive | /quiet - プロンプトなしで最小限の UI を表示するか、UI もプロンプトも表示しません。既定では、UI とすべてのプロンプトが表示されます。
+
+/norestart - 再起動の試行をすべて抑止します。既定では、再起動の前に UI が表示されます。
+
+/log &lt;LOG_FILE&gt; - 特定のファイルにログを記録します。既定では、ログ ファイルは %TEMP% に作成されます。"/>
+  <String Id="HelpCloseButton" Value="閉じる(&amp;C)"/>
+  <String Id="InstallAcceptCheckbox" Value="ライセンス条項および条件に同意します(&amp;A)"/>
+  <String Id="InstallInstallButton" Value="インストール(&amp;I)"/>
+  <String Id="InstallCloseButton" Value="閉じる(&amp;C)"/>
+  <String Id="ProgressHeader" Value="セットアップの進行状況"/>
+  <String Id="ProgressLabel" Value="処理中:"/>
+  <String Id="OverallProgressPackageText" Value="初期化しています..."/>
+  <String Id="ProgressCancelButton" Value="キャンセル(&amp;C)"/>
+  <String Id="ModifyHeader" Value="セットアップの変更"/>
+  <String Id="ModifyRepairButton" Value="修復(&amp;R)"/>
+  <String Id="ModifyUninstallButton" Value="アンインストール(&amp;U)"/>
+  <String Id="ModifyCloseButton" Value="閉じる(&amp;C)"/>
+  <String Id="SuccessCacheHeader" Value="キャッシュが正常に完了しました"/>
+  <String Id="SuccessModifyHeader" Value="変更が正常に完了しました"/>
+  <String Id="SuccessRepairHeader" Value="修復が正常に完了しました"/>
+  <String Id="SuccessUninstallHeader" Value="アンインストールが正常に完了しました"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="アンインストールが正常に完了しました"/>
+  <String Id="SuccessInstallHeader" Value="インストールが正常に完了しました"/>
+  <String Id="SuccessHeader" Value="セットアップに成功しました"/>
+  <String Id="SuccessLaunchButton" Value="起動(&amp;L)"/>
+  <String Id="SuccessLayoutHeader" Value="レイアウトが正常に完了しました"/>
+  <String Id="SuccessRestartText" Value="ソフトウェアを使用する前にコンピューターを再起動する必要があります。"/>
+  <String Id="SuccessUninstallRestartText" Value="ソフトウェアの削除を完了するには、コンピューターを再起動する必要があります。"/>
+  <String Id="SuccessRestartButton" Value="再起動(&amp;R)"/>
+  <String Id="SuccessCloseButton" Value="閉じる(&amp;C)"/>
+  <String Id="FailureHeader" Value="セットアップに失敗しました"/>
+  <String Id="FailureCacheHeader" Value="キャッシュに失敗しました"/>
+  <String Id="FailureLayoutHeader" Value="レイアウトに失敗しました"/>
+  <String Id="FailureModifyHeader" Value="変更に失敗しました"/>
+  <String Id="FailureInstallHeader" Value="セットアップに失敗しました"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="アンインストールに失敗しました"/>
+  <String Id="FailureUninstallHeader" Value="アンインストールに失敗しました"/>
+  <String Id="FailureRepairHeader" Value="修復に失敗しました"/>
+  <String Id="FailureHyperlinkLogText" Value="1 つ以上の問題が原因でセットアップが失敗しました。問題を修正してから、セットアップを再試行してください。詳細については、&lt;a href=&quot;#&quot;&gt;ログ ファイル&lt;/a&gt;を参照してください。"/>
+  <String Id="FailureRestartText" Value="ソフトウェアのロールバックを完了するには、コンピューターを再起動する必要があります。"/>
+  <String Id="FailureRestartButton" Value="再起動(&amp;R)"/>
+  <String Id="FailureCloseButton" Value="閉じる(&amp;C)"/>
+  <String Id="FilesInUseHeader" Value="ファイルは使用中です"/>
+  <String Id="FilesInUseLabel" Value="次のアプリケーションは、更新の必要があるファイルを使用しています:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="アプリケーションを終了してから再起動します(&amp;A)。"/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="アプリケーションを閉じます(&amp;A)。"/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="アプリケーションを閉じません(&amp;D)。再起動が必要です。"/>
+  <String Id="FilesInUseOkButton" Value="OK(&amp;O)"/>
+  <String Id="FilesInUseCancelButton" Value="キャンセル(&amp;C)"/>
+  <String Id="FilesInUseRetryButton" Value="再試行(&amp;R)"/>
+  <String Id="FilesInUseIgnoreButton" Value="無視(&amp;I)"/>
+  <String Id="FilesInUseExitButton" Value="終了(&amp;X)"/>
+  <String Id="FilesInUseTitle" Value="ファイルが使用中"/>
+  <String Id="LicenseAssent" Value="インストール をクリックすると、次の条項に同意したものと見なされます:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;プライバシーに関する声明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET のライセンス情報&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;テレメトリの収集とオプトアウト&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   
-  <String Id="Welcome" Value="Welcome to the [WixBundleName] Setup."/>
+  <String Id="Welcome" Value="[WixBundleName] のセットアップへようこそ。"/>
   
-  <String Id="InstallResetIIS" Value="Please restart IIS after the installation completes. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="InstallResetIIS" Value="インストールが完了したら、IIS を再起動してください。その他の情報については、&lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;こちら&lt;/a&gt;でご確認ください。"/>
   
-  <String Id="InstallNoIIS" Value="IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="InstallNoIIS" Value="このコンピューターでは IIS が有効になっていません。IIS を使用して ASP.NET Core アプリケーションを実行する場合は、このインストーラーを実行する前に、IIS をインストールする必要があります。その他の情報については、&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;こちら&lt;/a&gt;でご確認ください。"/>
   
-  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;license terms&lt;/a&gt; and &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;privacy statement&lt;/a&gt;."/>
+  <String Id="EulaPrivacy" Value="[WixBundleName] の &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;ライセンス条項&lt;/a&gt; および &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;プライバシーに関する声明&lt;/a&gt;。"/>
   
-  <String Id="ModifyResetIIS" Value="Please restart IIS after the installation completes. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="ModifyResetIIS" Value="インストールが完了したら、IIS を再起動してください。その他の情報については、&lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;こちら&lt;/a&gt;でご確認ください。"/>
   
-  <String Id="ModifyNoIIS" Value="IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="ModifyNoIIS" Value="このコンピューターでは IIS が有効になっていません。IIS を使用して ASP.NET Core アプリケーションを実行する場合は、このインストーラーを実行する前に、IIS をインストールする必要があります。その他の情報については、&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;こちら&lt;/a&gt;でご確認ください。"/>
 </WixLocalization>

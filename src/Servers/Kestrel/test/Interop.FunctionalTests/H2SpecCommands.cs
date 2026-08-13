@@ -16,31 +16,6 @@ namespace Interop.FunctionalTests;
 
 public static partial class H2SpecCommands
 {
-    #region chmod
-    // user permissions
-    const int S_IRUSR = 0x100;
-    const int S_IWUSR = 0x80;
-    const int S_IXUSR = 0x40;
-
-    // group permission
-    const int S_IRGRP = 0x20;
-    const int S_IXGRP = 0x8;
-
-    // other permissions
-    const int S_IROTH = 0x4;
-    const int S_IXOTH = 0x1;
-
-    const int _0755 =
-        S_IRUSR | S_IXUSR | S_IWUSR
-        | S_IRGRP | S_IXGRP
-        | S_IROTH | S_IXOTH;
-
-    [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8, SetLastError = true)]
-    private static partial int chmod(string pathname, int mode);
-
-    private static int chmod755(string pathname) => chmod(pathname, _0755);
-    #endregion
-
     private const int TimeoutSeconds = 15;
 
     private static string GetToolLocation()
@@ -52,23 +27,33 @@ public static partial class H2SpecCommands
         }
 
         var root = Path.Combine(Environment.CurrentDirectory, "h2spec");
+        string toolPath;
+
         if (OperatingSystem.IsWindows())
         {
-            return Path.Combine(root, "windows", "h2spec.exe");
+            toolPath = Path.Combine(root, "windows", "h2spec.exe");
         }
         else if (OperatingSystem.IsLinux())
         {
-            var toolPath = Path.Combine(root, "linux", "h2spec");
-            chmod755(toolPath);
-            return toolPath;
+            toolPath = Path.Combine(root, "linux", "h2spec");
         }
         else if (OperatingSystem.IsMacOS())
         {
-            var toolPath = Path.Combine(root, "darwin", "h2spec");
-            chmod755(toolPath);
-            return toolPath;
+            toolPath = Path.Combine(root, "darwin", "h2spec");
         }
-        throw new NotImplementedException("Invalid OS");
+        else
+        {
+            throw new NotImplementedException("Invalid OS");
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            // 0755: Owner (RWX), Group (RX), Other (RX)
+            File.SetUnixFileMode(toolPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+
+        return toolPath;
     }
 
     public static IList<Tuple<string, string>> EnumerateTestCases()

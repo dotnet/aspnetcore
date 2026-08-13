@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.1.1",
+  "openapi": "3.2.0",
   "info": {
     "title": "Sample | localized",
     "description": "This is a localized OpenAPI document for français (France).",
@@ -7,10 +7,480 @@
   },
   "servers": [
     {
-      "url": "http://localhost/"
+      "url": "http://localhost"
     }
   ],
   "paths": {
+    "/enums/pascalcase/nonnullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PascalCaseStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PascalCaseStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PascalCaseStatus"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nonnullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "Active",
+                "Inactive",
+                "Pending"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "Active",
+                "Inactive",
+                "Pending"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CamelCaseStatus"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nonnullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PascalCaseNonNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseNonNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PascalCaseNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nonnullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CamelCaseNonNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseNonNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CamelCaseNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nonnullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PascalCaseStatus"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PascalCaseStatus"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PascalCaseStatus"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nonnullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CamelCaseStatus"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CamelCaseStatus"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CamelCaseStatus"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first-doc/get1": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first-doc/get2": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/second-doc/get1": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/second-doc/get2": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/forms/form-file": {
       "post": {
         "tags": [
@@ -901,6 +1371,28 @@
         }
       }
     },
+    "/schemas-by-ref/pet": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/schemas-by-ref/category": {
       "post": {
         "tags": [
@@ -1255,6 +1747,23 @@
             "description": "OK"
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplexHierarchyModel"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/schemas-by-ref/nullable-array-elements": {
@@ -1275,6 +1784,71 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-and-non-nullable-array-elements": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "nullableValues",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TestEnum"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "values",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TestEnum"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/response-array-with-nullable-element": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TestEnum"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1317,7 +1891,60 @@
         }
       }
     },
+    "/schemas-by-ref/favorite-shape": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shape"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
     "/responses/200-add-xml": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Todo"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TodoWithDueDate"
+                    }
+                  ]
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-add-xml-results": {
       "get": {
         "tags": [
           "Sample"
@@ -1353,6 +1980,80 @@
               "text/xml": {
                 "schema": {
                   "$ref": "#/components/schemas/Todo"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoWithDueDate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-only-xml-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-multi-content-type": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoWithDueDate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-any-of": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Todo"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TodoWithDueDate"
+                    }
+                  ]
                 }
               }
             }
@@ -1391,6 +2092,253 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Shape"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/pet": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnionPet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/value": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/clinic": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/typed-result": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/any-of": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Clinic"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/any-of-unions": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/UnionIntString"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/multi-content-type": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/kitten-standalone": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kitten"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/obsolete/deprecated": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestWithObsoleteMembers"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestWithObsoleteMembers"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/obsolete/current": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentResponse"
                 }
               }
             }
@@ -1517,6 +2465,297 @@
           }
         }
       }
+    },
+    "/query": {
+      "query": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unsupported": {
+      "additionalOperations": {
+        "FOO": {
+          "tags": [
+            "Test"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query-with-body": {
+      "query": {
+        "tags": [
+          "Test"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/multi-content-type": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/any-of": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/CurrentWeather"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MvcTodo"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dup-description": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "Use it!\n\nReturns a Todo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-pet": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-value": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-clinic": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-any-of": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Clinic"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1555,6 +2794,39 @@
           }
         },
         "description": "An item on the board."
+      },
+      "CamelCaseNonNullableModel": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/CamelCaseStatus"
+          }
+        }
+      },
+      "CamelCaseNullableModel": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CamelCaseStatus"
+              }
+            ]
+          }
+        }
+      },
+      "CamelCaseStatus": {
+        "enum": [
+          "active",
+          "inactive",
+          "pending"
+        ]
       },
       "Category": {
         "required": [
@@ -1597,6 +2869,21 @@
         "properties": {
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "Clinic": {
+        "required": [
+          "address",
+          "patient"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/UnionPet"
           }
         }
       },
@@ -1731,6 +3018,17 @@
           }
         }
       },
+      "CurrentResponse": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        }
+      },
       "CurrentWeather": {
         "type": "object",
         "properties": {
@@ -1809,7 +3107,6 @@
       "JsonPatchDocument": {
         "type": "array",
         "items": {
-          "type": "object",
           "oneOf": [
             {
               "required": [
@@ -1878,6 +3175,22 @@
               "additionalProperties": false
             }
           ]
+        }
+      },
+      "Kitten": {
+        "required": [
+          "name",
+          "lives"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lives": {
+            "type": "integer",
+            "format": "int32"
+          }
         }
       },
       "LocationContainer": {
@@ -2061,6 +3374,18 @@
           }
         }
       },
+      "ObsoleteType": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "deprecated": true
+      },
       "ParentObject": {
         "type": "object",
         "properties": {
@@ -2075,6 +3400,39 @@
             }
           }
         }
+      },
+      "PascalCaseNonNullableModel": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PascalCaseStatus"
+          }
+        }
+      },
+      "PascalCaseNullableModel": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PascalCaseStatus"
+              }
+            ]
+          }
+        }
+      },
+      "PascalCaseStatus": {
+        "enum": [
+          "Active",
+          "Inactive",
+          "Pending"
+        ]
       },
       "Person": {
         "required": [
@@ -2098,6 +3456,7 @@
         }
       },
       "PersonStudent": {
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -2115,6 +3474,7 @@
         "required": [
           "subject"
         ],
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -2123,6 +3483,90 @@
             "type": "string"
           },
           "subject": {
+            "type": "string"
+          }
+        }
+      },
+      "Pet": {
+        "required": [
+          "$type"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PetCat"
+          },
+          {
+            "$ref": "#/components/schemas/PetDog"
+          },
+          {
+            "$ref": "#/components/schemas/PetPet"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "$type",
+          "mapping": {
+            "cat": "#/components/schemas/PetCat",
+            "dog": "#/components/schemas/PetDog",
+            "pet": "#/components/schemas/PetPet"
+          },
+          "defaultMapping": "#/components/schemas/Pet"
+        }
+      },
+      "PetCat": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "cat"
+            ],
+            "type": "string"
+          },
+          "isKitten": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "PetDog": {
+        "required": [
+          "breed",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "dog"
+            ],
+            "type": "string"
+          },
+          "breed": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "PetPet": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "$type": {
+            "enum": [
+              "pet"
+            ],
+            "type": "string"
+          },
+          "name": {
             "type": "string"
           }
         }
@@ -2210,6 +3654,21 @@
           }
         }
       },
+      "Puppy": {
+        "required": [
+          "name",
+          "breed"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "breed": {
+            "type": "string"
+          }
+        }
+      },
       "RefProfile": {
         "required": [
           "user"
@@ -2228,6 +3687,44 @@
             "type": "string"
           },
           "email": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestWithObsoleteMembers": {
+        "required": [
+          "current",
+          "currentReference",
+          "obsoleteType"
+        ],
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "string"
+          },
+          "legacy": {
+            "type": "string",
+            "deprecated": true
+          },
+          "currentReference": {
+            "$ref": "#/components/schemas/ReusableType"
+          },
+          "legacyReference": {
+            "deprecated": true,
+            "$ref": "#/components/schemas/ReusableType"
+          },
+          "obsoleteType": {
+            "$ref": "#/components/schemas/ObsoleteType"
+          }
+        }
+      },
+      "ReusableType": {
+        "required": [
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
             "type": "string"
           }
         }
@@ -2265,6 +3762,7 @@
         }
       },
       "ShapeSquare": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2286,6 +3784,7 @@
         }
       },
       "ShapeTriangle": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2511,6 +4010,28 @@
           }
         }
       },
+      "UnionIntString": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "UnionPet": {
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Kitten"
+          },
+          {
+            "$ref": "#/components/schemas/Puppy"
+          }
+        ]
+      },
       "WeatherForecastBase": {
         "required": [
           "$type"
@@ -2540,6 +4061,7 @@
         "required": [
           "city"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2556,6 +4078,7 @@
         "required": [
           "news"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2572,6 +4095,7 @@
         "required": [
           "summary"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2599,13 +4123,13 @@
       "name": "Sample"
     },
     {
-      "name": "users"
+      "name": "Test"
     },
     {
       "name": "Xml"
     },
     {
-      "name": "Test"
+      "name": "users"
     }
   ]
 }

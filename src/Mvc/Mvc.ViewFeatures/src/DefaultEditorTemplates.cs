@@ -19,6 +19,7 @@ internal static class DefaultEditorTemplates
 {
     private const string HtmlAttributeKey = "htmlAttributes";
     private const string UsePasswordValue = "Switch.Microsoft.AspNetCore.Mvc.UsePasswordValue";
+    private static readonly bool _usePasswordValue = AppContext.TryGetSwitch(UsePasswordValue, out var enabled) && enabled;
 
     public static IHtmlContent BooleanTemplate(IHtmlHelper htmlHelper)
     {
@@ -312,7 +313,7 @@ internal static class DefaultEditorTemplates
     public static IHtmlContent PasswordTemplate(IHtmlHelper htmlHelper)
     {
         object value = null;
-        if (AppContext.TryGetSwitch(UsePasswordValue, out var usePasswordValue) && usePasswordValue)
+        if (_usePasswordValue)
         {
             value = htmlHelper.ViewData.TemplateInfo.FormattedModelValue;
         }

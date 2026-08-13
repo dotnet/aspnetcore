@@ -36,6 +36,7 @@ public sealed class PublicPartialProgramClassAnalyzer : DiagnosticAnalyzer
         return syntaxNode is ClassDeclarationSyntax { Modifiers: { } modifiers } classDeclaration
             && classDeclaration.Parent is CompilationUnitSyntax parentNode
             && classDeclaration is { Identifier.ValueText: "Program" }
+            && classDeclaration.AttributeLists.Count == 0
             && (classDeclaration.Members == null || classDeclaration.Members.Count == 0) // Skip non-empty declarations
             && modifiers is { Count: > 1 }
             && modifiers.Any(SyntaxKind.PublicKeyword)
