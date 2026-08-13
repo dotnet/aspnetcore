@@ -854,8 +854,6 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 await operationsTask;
 
-                // Connection was aborted while handlers/rendering were in-flight; skip the send so
-                // the circuit survives and the client can reconnect.
                 if (!cancellation.IsCancellationRequested)
                 {
                     await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
@@ -867,7 +865,6 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 // Report errors asynchronously. UpdateRootComponents is designed not to throw.
                 Log.UpdateRootComponentsFailed(_logger, ex);
-                // Do not tear down the circuit for connection-abort errors; the client can reconnect.
                 if (!cancellation.IsCancellationRequested)
                 {
                     UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
