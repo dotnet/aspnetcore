@@ -176,14 +176,30 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             }
         }
 
-        // This listener owns its pump pool; stop the pump threads and release their epoll fds.
-        _pumpPool.Dispose();
+        // This listener owns its pump pool; stop the pump threads and release their epoll fds. Bound the wait so
+        // a pump stuck in a blocking TLS callback can't hang shutdown: after the budget elapses the pool reports
+        // the stuck pump as not-exited and we leak its resources rather than free memory it can still reach.
+        using var stopCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var allPumpsExited = await _pumpPool.StopAndConfirmExitAsync(stopCts.Token);
 
-        // Now that the pump threads are joined and no handshake can be in flight, release the OpenSSL server
-        // credentials (bootstrap + per-SNI contexts). Done last so disposal can't race a pump using a context;
-        // idempotent, so a second DisposeAsync is a no-op here.
-        _ownedServerContexts?.Dispose();
-        _memoryPool.Dispose();
+        if (allPumpsExited)
+        {
+            // Every pump thread has exited, so nothing can touch the shared OpenSSL server credentials
+            // (bootstrap + per-SNI contexts) or the memory pool. Release them (idempotent), last so disposal
+            // can't race a pump using a context.
+            _ownedServerContexts?.Dispose();
+            _memoryPool.Dispose();
+        }
+        else
+        {
+            // At least one pump thread is still running - a blocking TLS callback (certificate selector,
+            // certificate validation, or ClientHello listener) outlived the stop timeout. That thread can still
+            // reach the OpenSSL contexts and the memory pool, so freeing them now would be a use-after-free the
+            // instant it resumes. Deliberately leak them; the OS reclaims everything when the process exits. The
+            // stuck pump already logged a warning.
+            _logger.LogWarning(
+                "A DirectTls pump thread did not exit during listener shutdown; leaking its OpenSSL contexts and memory pool to avoid a use-after-free. This usually means a TLS certificate, validation, or ClientHello callback is blocking.");
+        }
     }
 
     public ValueTask UnbindAsync(CancellationToken cancellationToken = default)

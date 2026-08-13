@@ -86,11 +86,39 @@ internal sealed class TlsEventPumpPool : IDisposable
         }
     }
 
-    public void Dispose()
+    /// <summary>
+    /// Stops every pump and asynchronously waits for their threads to exit. Signals all pumps first so their
+    /// threads wind down concurrently, then awaits each. Returns <see langword="true"/> only if every pump
+    /// thread has actually exited - meaning no pump can touch the shared TLS contexts or memory pool any more,
+    /// so the listener may release them. Returns <see langword="false"/> if any pump thread is still running
+    /// after its stop timeout (a blocking TLS callback), in which case the listener MUST leak those shared
+    /// resources rather than free memory a live pump can still reach. Idempotent.
+    /// </summary>
+    public async Task<bool> StopAndConfirmExitAsync(CancellationToken cancellationToken)
     {
+        // Two phases: signal every pump before awaiting any, so a slow pump doesn't hold back the stop signal
+        // to the others. The awaits then overlap, bounding total shutdown by the slowest pump, not their sum.
         foreach (var pump in _pumps)
         {
-            pump.Dispose();
+            pump.SignalStop();
         }
+
+        var stops = new Task<bool>[_pumps.Length];
+        for (int i = 0; i < _pumps.Length; i++)
+        {
+            stops[i] = _pumps[i].StopAndJoinAsync(cancellationToken);
+        }
+
+        var results = await Task.WhenAll(stops).ConfigureAwait(false);
+
+        var allExited = true;
+        foreach (var exited in results)
+        {
+            allExited &= exited;
+        }
+
+        return allExited;
     }
+
+    public void Dispose() => StopAndConfirmExitAsync(CancellationToken.None).GetAwaiter().GetResult();
 }

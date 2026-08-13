@@ -44,7 +44,21 @@ internal class TlsEventPump : IDisposable
 
     private readonly Thread _pumpThread;
     private volatile bool _running = true;
-    private bool _disposed;
+
+    // Completed by the pump thread as the very last thing it does in PumpLoop's finally, after it has released
+    // its handshakes and closed its own epoll fd - so awaiting it is proof the thread can no longer reach the
+    // epoll fd, the TLS contexts, or the memory pool. RunContinuationsAsynchronously keeps StopAndJoinAsync's
+    // continuation off the pump thread. Set true just before the thread is started so a never-started pump
+    // (constructed by tests) can be detected and short-circuited.
+    private readonly TaskCompletionSource _exitSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool _threadStarted;
+    // Guards the one-time epoll fd close, which happens either in the pump thread's finally (started pump) or
+    // in StopAndJoinAsync (never-started pump) - never both. Interlocked so a double close can't hit an
+    // unrelated fd whose number was recycled.
+    private int _epollClosed;
+    // Memoizes StopAndJoinAsync so repeated/concurrent stop calls observe one shutdown, not a re-run.
+    private readonly object _stopLock = new();
+    private Task<bool>? _stopTask;
 
     // Listen socket (added with EPOLLEXCLUSIVE). Volatile: written by StopAccepting() (on the disposing
     // thread) and read by the pump thread in PumpLoop/AcceptConnections.
@@ -193,6 +207,10 @@ internal class TlsEventPump : IDisposable
 
         _logger.LogDebug("Pump {Id}: Added listen socket fd={Fd} with EPOLLEXCLUSIVE", _id, listenFd);
 
+        // Set before Start so a stop that races startup still awaits the exit signal instead of taking the
+        // never-started fast path (which would close the epoll fd underneath the just-launched thread).
+        _threadStarted = true;
+
         // Start the pump thread
         _pumpThread.Start();
     }
@@ -303,69 +321,81 @@ internal class TlsEventPump : IDisposable
         const int MaxEvents = 256;
         var events = new NativeTls.EpollEventBuffer(MaxEvents);
 
-        while (_running)
+        try
         {
-            try
+            while (_running)
             {
-                // Use shorter timeout when there are handshaking connections
-                int timeout = _handshaking.Count > 0 ? 10 : 1000;
-                int numEvents = events.Wait(_epollFd, timeout);
-
-                if (numEvents < 0)
+                try
                 {
-                    int errno = Marshal.GetLastWin32Error();
-                    if (errno == 4)
-                    {
-                        continue; // EINTR
-                    }
-                    _logger.LogError("epoll_wait failed: errno={Errno}", errno);
-                    break;
-                }
+                    // Use shorter timeout when there are handshaking connections
+                    int timeout = _handshaking.Count > 0 ? 10 : 1000;
+                    int numEvents = events.Wait(_epollFd, timeout);
 
-                for (int i = 0; i < numEvents; i++)
+                    if (numEvents < 0)
+                    {
+                        int errno = Marshal.GetLastWin32Error();
+                        if (errno == 4)
+                        {
+                            continue; // EINTR
+                        }
+                        _logger.LogError("epoll_wait failed: errno={Errno}", errno);
+                        break;
+                    }
+
+                    for (int i = 0; i < numEvents; i++)
+                    {
+                        var epollEvent = events[i];
+                        int fd = epollEvent.Data.Fd;
+                        uint mask = epollEvent.Events;
+
+                        if (fd == 0 && mask == 0)
+                        {
+                            continue;
+                        }
+
+                        // Check if this is the listen socket
+                        if (fd == _listenFd)
+                        {
+                            AcceptConnections();
+                            continue;
+                        }
+
+                        // Check if this is a handshaking connection
+                        if (_handshaking.TryGetValue(fd, out var handshakingConn))
+                        {
+                            TryAdvanceHandshake(fd, handshakingConn);
+                            continue;
+                        }
+
+                        // Established connection - dispatch its I/O. Extracted so the failure/drop paths are testable.
+                        HandleConnectionEvent(fd, mask);
+                    }
+
+                    // Drop connections whose handshake has taken too long. The epoll_wait timeout above is 10ms
+                    // while any handshake is in flight, so a stalled handshake (e.g. a slow-loris ClientHello) is
+                    // swept within ~10ms of its deadline even when the connection sends nothing to wake the pump.
+                    if (_handshakeTimeoutMs != long.MaxValue && _handshaking.Count > 0)
+                    {
+                        SweepExpiredHandshakes(Environment.TickCount64);
+                    }
+                }
+                catch (Exception ex)
                 {
-                    var epollEvent = events[i];
-                    int fd = epollEvent.Data.Fd;
-                    uint mask = epollEvent.Events;
-
-                    if (fd == 0 && mask == 0)
-                    {
-                        continue;
-                    }
-
-                    // Check if this is the listen socket
-                    if (fd == _listenFd)
-                    {
-                        AcceptConnections();
-                        continue;
-                    }
-
-                    // Check if this is a handshaking connection
-                    if (_handshaking.TryGetValue(fd, out var handshakingConn))
-                    {
-                        TryAdvanceHandshake(fd, handshakingConn);
-                        continue;
-                    }
-
-                    // Established connection - dispatch its I/O. Extracted so the failure/drop paths are testable.
-                    HandleConnectionEvent(fd, mask);
+                    _logger.LogError(ex, "Pump {Id} encountered an exception in PumpLoop", _id);
                 }
-
-                // Drop connections whose handshake has taken too long. The epoll_wait timeout above is 10ms
-                // while any handshake is in flight, so a stalled handshake (e.g. a slow-loris ClientHello) is
-                // swept within ~10ms of its deadline even when the connection sends nothing to wake the pump.
-                if (_handshakeTimeoutMs != long.MaxValue && _handshaking.Count > 0)
-                {
-                    SweepExpiredHandshakes(Environment.TickCount64);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Pump {Id} encountered an exception in PumpLoop", _id);
             }
         }
-
-        ReleasePendingHandshakes();
+        finally
+        {
+            // The thread owns its own teardown: release half-open handshakes, then close the epoll fd it created
+            // in the constructor, and only then signal exit. Ordering matters - _exitSignal is the proof
+            // StopAndJoinAsync waits on before the listener frees the TLS contexts and memory pool, so it must be
+            // the last thing this thread does after every resource access here. In a finally so a stray escape
+            // (or a break above) still signals, otherwise the awaiter would hang until its timeout and leak.
+            ReleasePendingHandshakes();
+            CloseEpollFd();
+            _exitSignal.TrySetResult();
+        }
     }
 
     // Release every half-open handshake after the event loop stops. Use the same ownership-aware teardown as
@@ -1009,26 +1039,80 @@ internal class TlsEventPump : IDisposable
         }
     }
 
-    public void Dispose()
+    /// <summary>
+    /// Signals the pump loop to stop at its next iteration without waiting for the thread to exit. The owner
+    /// signals every pump first, then awaits each (see <see cref="StopAndJoinAsync"/>), so the threads wind
+    /// down concurrently and the total shutdown wait is bounded by the slowest thread rather than their sum.
+    /// </summary>
+    internal void SignalStop() => _running = false;
+
+    /// <summary>
+    /// Signals the pump to stop and asynchronously waits for its thread to actually exit, giving up when
+    /// <paramref name="cancellationToken"/> is canceled. Unlike a blocking join, this does not park the caller's
+    /// thread while it waits. Memoized, so repeated or concurrent calls observe a single shutdown.
+    /// </summary>
+    /// <param name="cancellationToken">Bounds the wait; on cancellation the method reports the thread as still running.</param>
+    /// <returns>
+    /// <see langword="true"/> if the pump thread has exited (or was never started), meaning it can no longer
+    /// touch the epoll fd, the TLS contexts, or the memory pool, so the owner may safely release them.
+    /// <see langword="false"/> if the thread is still running when the wait is canceled - for example stuck in a
+    /// blocking user callback (certificate selector, certificate validation, or ClientHello listener). In that
+    /// case the caller MUST NOT release any resource the pump can still reach, or it risks a use-after-free.
+    /// </returns>
+    public Task<bool> StopAndJoinAsync(CancellationToken cancellationToken)
     {
-        // Dispose must be idempotent: close() is not idempotent, and double-closing _epollFd could close an
-        // unrelated fd whose number was recycled between calls. The pump is single-owner (the pool disposes it
-        // once), so a plain flag is sufficient.
-        if (_disposed)
+        // Memoize so a second (or concurrent) stop returns the same shutdown rather than re-running it - the
+        // never-started branch closes the epoll fd exactly once, and the started branch must not re-await with
+        // a fresh timeout.
+        lock (_stopLock)
+        {
+            return _stopTask ??= StopAndJoinCoreAsync(cancellationToken);
+        }
+    }
+
+    private async Task<bool> StopAndJoinCoreAsync(CancellationToken cancellationToken)
+    {
+        _running = false;
+
+        // Non-owning wrapper: disposing it does not close the listener-owned fd. Safe even if the thread is
+        // still alive - accept was already de-registered by StopAccepting, so the loop won't touch it.
+        _listenSocket?.Dispose();
+
+        if (!_threadStarted)
+        {
+            // The thread never ran, so PumpLoop's finally will never fire: close the epoll fd here instead.
+            // Nothing else (contexts, pool) was ever handed to the loop, so this is all the cleanup needed.
+            CloseEpollFd();
+            return true;
+        }
+
+        try
+        {
+            // The pump thread completes _exitSignal only after it has released its handshakes and closed its
+            // own epoll fd, so returning here proves it can no longer reach any owner-shared resource.
+            await _exitSignal.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            // The wait was canceled - a user callback on the pump thread is blocking. It still owns its
+            // epoll fd and may still reach the TLS contexts and the memory pool, so leave every resource intact
+            // (the thread closes its own epoll fd if the callback ever returns; the listener leaks the
+            // contexts/pool). The OS reclaims all of it at process exit; freeing it now would be a use-after-free.
+            _logger.LogWarning("Pump {Id} thread did not exit (a TLS certificate, validation, or ClientHello callback may be blocking); deferring resource release to avoid a use-after-free.", _id);
+            return false;
+        }
+    }
+
+    // Closes the pump-owned epoll fd exactly once. Called by the pump thread in PumpLoop's finally for a started
+    // pump, or by StopAndJoinCoreAsync for a never-started one - the Interlocked guard makes a stray double call
+    // a no-op so it can never close an unrelated fd whose number was recycled.
+    private void CloseEpollFd()
+    {
+        if (Interlocked.Exchange(ref _epollClosed, 1) != 0)
         {
             return;
         }
-        _disposed = true;
-
-        _running = false;
-        // IsAlive is false for a never-started thread (tests may construct a pump without starting it)
-        // and for an already-finished one; Join would throw on the former, so guard it.
-        if (_pumpThread.IsAlive)
-        {
-            _pumpThread.Join(2000);
-        }
-        // Non-owning wrapper: disposing it does not close the listener-owned fd.
-        _listenSocket?.Dispose();
 
         // close() is intentionally not retried: on Linux the fd is released even when close returns EINTR, so a
         // retry could close an unrelated fd. A failure here (realistically only EBADF) signals a lifecycle bug
@@ -1038,4 +1122,9 @@ internal class TlsEventPump : IDisposable
             _logger.LogDebug("close(epollFd={EpollFd}) failed: errno={Errno}", _epollFd, Marshal.GetLastWin32Error());
         }
     }
+
+    // Synchronous IDisposable bridge for callers (and tests) that use `using`. Blocking on the memoized stop
+    // task cannot deadlock: _exitSignal uses RunContinuationsAsynchronously, so the continuation completes on a
+    // thread pool thread, never inline on the thread calling Dispose.
+    public void Dispose() => StopAndJoinAsync(CancellationToken.None).GetAwaiter().GetResult();
 }
