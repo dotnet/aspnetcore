@@ -36,6 +36,8 @@
 
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
     <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
+    <!-- The trimmed app publishes share project intermediate outputs, so their project references cannot run concurrently. -->
+    <BuildInParallel Condition="'$(TestTrimmedApps)' == 'true'">false</BuildInParallel>
   </PropertyGroup>
 
   <ItemGroup>
