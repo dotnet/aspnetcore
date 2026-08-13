@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 /// </summary>
 internal sealed partial class DirectTlsConnection : TransportConnection
 {
+    // Mirrors the sockets transport's SocketConnection.MinAllocBufferSize (PinnedBlockMemoryPool.BlockSize / 2).
+    // Avoids defragmentation of the transport's shared memory pool
+    private const int MinAllocBufferSize = 4096 / 2;
+
     private readonly ConnectionIoState _connectionState;
     private readonly TlsEventPump _pump;
     private readonly ILogger _logger;
@@ -224,7 +228,7 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         {
             while (!_aborted)
             {
-                var memory = Application.Output.GetMemory();
+                var memory = Application.Output.GetMemory(MinAllocBufferSize);
 
                 // Use pump's async SSL_read (waits for epoll event, does SSL_read on pump thread)
                 int bytesRead = await _connectionState.ReadAsync(memory);
