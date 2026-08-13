@@ -1521,8 +1521,8 @@ public class EndpointHtmlRendererTest
         var assemblyProvider = new RazorComponentApplicationAssemblyProvider(state);
 
         Assert.Equal(
-            [typeof(App).Assembly, typeof(string).Assembly],
-            assemblyProvider.GetAssemblies());
+            [typeof(App).Assembly.GetName().Name, typeof(string).Assembly.GetName().Name],
+            assemblyProvider.GetAssemblies().Select(assembly => assembly.GetName().Name));
     }
 
     [Fact]
