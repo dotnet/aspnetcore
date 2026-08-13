@@ -70,6 +70,28 @@ public class ConnectionIoStateTests
     }
 
     [Fact]
+    public async Task Read_Renegotiation_ThenEof_DropsEpollOut()
+    {
+        var io = new ScriptedConnectionIoState();
+
+        // Read enters renegotiation: it must flush handshake output, so it waits for writable (EPOLLOUT armed).
+        io.ScriptRead(TlsOperationStatus.DestinationTooSmall);
+        var read = io.ReadAsync(new byte[16]);
+        Assert.False(read.IsCompleted);
+        Assert.Equal(InOut, io.LastEvents);
+
+        // Socket becomes writable, but the session reports EOF instead of resuming the flush. The read must
+        // complete with 0 AND drop the read side's EPOLLOUT - otherwise OnWritable keeps firing (level-triggered)
+        // with no active read until the connection is disposed.
+        io.ScriptRead(TlsOperationStatus.Closed);
+        io.OnWritable();
+
+        Assert.True(read.IsCompleted);
+        Assert.Equal(0, await read);
+        Assert.Equal(In, io.LastEvents); // EPOLLOUT dropped on EOF.
+    }
+
+    [Fact]
     public async Task Read_Eof_CompletesWithZero()
     {
         var io = new ScriptedConnectionIoState();

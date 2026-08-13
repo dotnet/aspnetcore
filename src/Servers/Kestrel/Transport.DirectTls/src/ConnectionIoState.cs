@@ -327,10 +327,22 @@ internal class ConnectionIoState : IDisposable
 
             case TlsOperationStatus.Closed:
             default:
+            {
+                // If this read was flushing renegotiation output, EPOLLOUT is armed. Recompute interest after
+                // clearing the flag so the read side's writable interest is dropped - otherwise OnWritable keeps
+                // firing (level-triggered) with no active read until the connection is disposed.
+                var wasWaitingForWrite = _readWantsWrite;
                 _readBuffer = default;
                 _readWantsWrite = false;
+
+                if (wasWaitingForWrite)
+                {
+                    UpdateEvents();
+                }
+
                 _readAwaitable.TrySetResult(0); // EOF
                 return;
+            }
         }
     }
 
