@@ -104,6 +104,8 @@ internal partial class EndpointHtmlRenderer
             writer.Write("<!--Blazor-Web-Initializers:");
             writer.Write(initializersBase64);
             writer.Write("-->");
+
+            EmitBrowserConfigurationOnce(writer);
         }
     }
 
