@@ -17,7 +17,6 @@ public class BrowserFixture : IAsyncLifetime
     public static string RoutingTestContext { get; } = "routing";
     public static string StreamingBackForwardCacheContext { get; } = "streaming.backforwardcache";
 
-    public static string RedirectionContext { get; } = "redirection";
     private readonly ConcurrentDictionary<string, (IWebDriver browser, ILogs log)> _browsers = new();
 
     public BrowserFixture(IMessageSink diagnosticsMessageSink)
@@ -144,7 +143,7 @@ public class BrowserFixture : IAsyncLifetime
             opts.UseWebSocketUrl = true;
         }
 
-        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true || context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true || context?.StartsWith(RedirectionContext, StringComparison.Ordinal) == true)
+        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true || context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true)
         {
             // Tells Selenium not to wait until the page navigation has completed before continuing with the tests
             opts.PageLoadStrategy = PageLoadStrategy.None;

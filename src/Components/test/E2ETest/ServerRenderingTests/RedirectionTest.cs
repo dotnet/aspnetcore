@@ -26,7 +26,8 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
     public override async Task InitializeAsync()
     {
-        await base.InitializeAsync(BrowserFixture.RedirectionContext);
+        // Use StreamingContext (PageLoadStrategy.None) to avoid blocking on external redirects that can exceed the 60s WebDriver timeout.
+        await base.InitializeAsync(BrowserFixture.StreamingContext);
         Navigate($"{ServerPathBase}/redirect");
 
         _originalH1Element = Browser.Exists(By.TagName("h1"));
