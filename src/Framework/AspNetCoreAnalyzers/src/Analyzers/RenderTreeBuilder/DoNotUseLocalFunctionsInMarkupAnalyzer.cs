@@ -130,7 +130,9 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
         private readonly Dictionary<IMethodSymbol, ILocalFunctionOperation> _localFunctions;
         private readonly HashSet<IMethodSymbol> _activeLocalFunctions = new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ISymbol, bool> _provenance = new(SymbolEqualityComparer.Default);
+        private readonly Stack<LoopContext> _loopContexts = new();
         private IMethodSymbol? _currentLocalFunction;
+        private bool _pathTerminated;
 
         public OwningBuilderWalker(
             IParameterSymbol owningBuilder,
@@ -182,21 +184,82 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             }
         }
 
+        public override void VisitBlock(IBlockOperation operation)
+        {
+            foreach (var child in operation.Operations)
+            {
+                Visit(child);
+                if (_pathTerminated)
+                {
+                    break;
+                }
+            }
+        }
+
+        public override void VisitBranch(IBranchOperation operation)
+        {
+            var correspondingOperation = operation.GetCorrespondingOperation();
+            foreach (var loopContext in _loopContexts)
+            {
+                if (!ReferenceEquals(correspondingOperation, loopContext.Operation))
+                {
+                    continue;
+                }
+
+                switch (operation.BranchKind)
+                {
+                    case BranchKind.Break:
+                        loopContext.BreakStates.Add(CloneProvenance());
+                        _pathTerminated = true;
+                        break;
+                    case BranchKind.Continue:
+                        loopContext.ContinueStates.Add(CloneProvenance());
+                        _pathTerminated = true;
+                        break;
+                }
+
+                return;
+            }
+        }
+
         public override void VisitConditional(IConditionalOperation operation)
         {
             Visit(operation.Condition);
             var initialProvenance = CloneProvenance();
 
+            _pathTerminated = false;
             Visit(operation.WhenTrue);
             var whenTrueProvenance = CloneProvenance();
+            var whenTrueTerminated = _pathTerminated;
 
             RestoreProvenance(initialProvenance);
+            _pathTerminated = false;
             if (operation.WhenFalse is { } whenFalse)
             {
                 Visit(whenFalse);
             }
 
-            MergeProvenance(whenTrueProvenance);
+            var whenFalseProvenance = CloneProvenance();
+            var whenFalseTerminated = _pathTerminated;
+            if (whenTrueTerminated && whenFalseTerminated)
+            {
+                _pathTerminated = true;
+            }
+            else if (whenTrueTerminated)
+            {
+                RestoreProvenance(whenFalseProvenance);
+                _pathTerminated = false;
+            }
+            else
+            {
+                RestoreProvenance(whenTrueProvenance);
+                if (!whenFalseTerminated)
+                {
+                    MergeProvenance(whenFalseProvenance);
+                }
+
+                _pathTerminated = false;
+            }
         }
 
         public override void VisitSwitch(ISwitchOperation operation)
@@ -208,7 +271,13 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             foreach (var @case in operation.Cases)
             {
                 RestoreProvenance(initialProvenance);
+                _pathTerminated = false;
                 Visit(@case);
+                if (_pathTerminated)
+                {
+                    continue;
+                }
+
                 var caseProvenance = CloneProvenance();
 
                 RestoreProvenance(mergedProvenance);
@@ -217,6 +286,24 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             }
 
             RestoreProvenance(mergedProvenance);
+            _pathTerminated = false;
+        }
+
+        public override void VisitSwitchCase(ISwitchCaseOperation operation)
+        {
+            foreach (var clause in operation.Clauses)
+            {
+                Visit(clause);
+            }
+
+            foreach (var child in operation.Body)
+            {
+                Visit(child);
+                if (_pathTerminated)
+                {
+                    break;
+                }
+            }
         }
 
         public override void VisitWhileLoop(IWhileLoopOperation operation)
@@ -224,22 +311,32 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             if (operation.ConditionIsTop)
             {
                 VisitLoop(
+                    operation,
                     () =>
                     {
                         Visit(operation.Condition);
-                        Visit(operation.Body);
+                        if (!_pathTerminated)
+                        {
+                            Visit(operation.Body);
+                        }
                     },
+                    visitContinue: null,
                     () => Visit(operation.Condition),
                     executesAtLeastOnce: false);
             }
             else
             {
                 VisitLoop(
+                    operation,
                     () =>
                     {
                         Visit(operation.Body);
-                        Visit(operation.Condition);
+                        if (!_pathTerminated)
+                        {
+                            Visit(operation.Condition);
+                        }
                     },
+                    () => Visit(operation.Condition),
                     visitExit: null,
                     executesAtLeastOnce: true);
             }
@@ -253,15 +350,21 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             }
 
             VisitLoop(
+                operation,
                 () =>
                 {
                     Visit(operation.Condition);
-                    Visit(operation.Body);
-                    foreach (var atLoopBottom in operation.AtLoopBottom)
+                    if (!_pathTerminated)
                     {
-                        Visit(atLoopBottom);
+                        Visit(operation.Body);
+                    }
+
+                    if (!_pathTerminated)
+                    {
+                        VisitForLoopBottom(operation);
                     }
                 },
+                () => VisitForLoopBottom(operation),
                 () => Visit(operation.Condition),
                 executesAtLeastOnce: false);
         }
@@ -270,15 +373,21 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
         {
             Visit(operation.Collection);
             VisitLoop(
+                operation,
                 () =>
                 {
                     Visit(operation.LoopControlVariable);
-                    Visit(operation.Body);
-                    foreach (var nextVariable in operation.NextVariables)
+                    if (!_pathTerminated)
                     {
-                        Visit(nextVariable);
+                        Visit(operation.Body);
+                    }
+
+                    if (!_pathTerminated)
+                    {
+                        VisitForEachLoopBottom(operation);
                     }
                 },
+                () => VisitForEachLoopBottom(operation),
                 visitExit: null,
                 executesAtLeastOnce: false);
         }
@@ -335,34 +444,111 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             _activeLocalFunctions.Remove(localFunction.Symbol);
         }
 
-        private void VisitLoop(Action visitIteration, Action? visitExit, bool executesAtLeastOnce)
+        private void VisitForLoopBottom(IForLoopOperation operation)
         {
-            var loopStates = CloneProvenance();
-            if (executesAtLeastOnce)
+            foreach (var atLoopBottom in operation.AtLoopBottom)
             {
-                visitIteration();
-                loopStates = CloneProvenance();
+                Visit(atLoopBottom);
             }
+        }
 
-            while (true)
+        private void VisitForEachLoopBottom(IForEachLoopOperation operation)
+        {
+            foreach (var nextVariable in operation.NextVariables)
             {
-                RestoreProvenance(loopStates);
-                visitIteration();
-                var iterationEnd = CloneProvenance();
+                Visit(nextVariable);
+            }
+        }
 
-                RestoreProvenance(loopStates);
-                MergeProvenance(iterationEnd);
-                var mergedStates = CloneProvenance();
-                if (HasSameProvenance(loopStates, mergedStates))
+        private void VisitLoop(
+            ILoopOperation operation,
+            Action visitIteration,
+            Action? visitContinue,
+            Action? visitExit,
+            bool executesAtLeastOnce)
+        {
+            var loopContext = new LoopContext(operation);
+            _loopContexts.Push(loopContext);
+            try
+            {
+                Dictionary<ISymbol, bool>? loopStates;
+                if (executesAtLeastOnce)
                 {
-                    break;
+                    loopStates = VisitLoopIteration(loopContext, visitIteration, visitContinue);
+                }
+                else
+                {
+                    loopStates = CloneProvenance();
                 }
 
-                loopStates = mergedStates;
+                while (loopStates is not null)
+                {
+                    RestoreProvenance(loopStates);
+                    var iterationEnd = VisitLoopIteration(loopContext, visitIteration, visitContinue);
+                    var mergedStates = MergeProvenance(loopStates, iterationEnd)!;
+                    if (HasSameProvenance(loopStates, mergedStates))
+                    {
+                        loopStates = mergedStates;
+                        break;
+                    }
+
+                    loopStates = mergedStates;
+                }
+
+                Dictionary<ISymbol, bool>? exitStates = null;
+                if (loopStates is not null)
+                {
+                    RestoreProvenance(loopStates);
+                    _pathTerminated = false;
+                    visitExit?.Invoke();
+                    if (!_pathTerminated)
+                    {
+                        exitStates = CloneProvenance();
+                    }
+                }
+
+                exitStates = MergeProvenance(exitStates, MergeProvenance(loopContext.BreakStates));
+                if (exitStates is not null)
+                {
+                    RestoreProvenance(exitStates);
+                }
+
+                _pathTerminated = exitStates is null;
+            }
+            finally
+            {
+                _loopContexts.Pop();
+            }
+        }
+
+        private Dictionary<ISymbol, bool>? VisitLoopIteration(
+            LoopContext loopContext,
+            Action visitIteration,
+            Action? visitContinue)
+        {
+            loopContext.ContinueStates.Clear();
+            _pathTerminated = false;
+            visitIteration();
+
+            var iterationStates = new List<Dictionary<ISymbol, bool>>();
+            if (!_pathTerminated)
+            {
+                iterationStates.Add(CloneProvenance());
             }
 
-            RestoreProvenance(loopStates);
-            visitExit?.Invoke();
+            foreach (var continueState in loopContext.ContinueStates)
+            {
+                RestoreProvenance(continueState);
+                _pathTerminated = false;
+                visitContinue?.Invoke();
+                if (!_pathTerminated)
+                {
+                    iterationStates.Add(CloneProvenance());
+                }
+            }
+
+            _pathTerminated = false;
+            return MergeProvenance(iterationStates);
         }
 
         private bool HasOwningBuilderProvenance(IOperation? operation)
@@ -419,6 +605,44 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             }
         }
 
+        private static Dictionary<ISymbol, bool>? MergeProvenance(
+            Dictionary<ISymbol, bool>? left,
+            Dictionary<ISymbol, bool>? right)
+        {
+            if (left is null)
+            {
+                return right;
+            }
+
+            if (right is null)
+            {
+                return left;
+            }
+
+            var merged = new Dictionary<ISymbol, bool>(left, SymbolEqualityComparer.Default);
+            foreach (var item in right)
+            {
+                if (item.Value)
+                {
+                    merged[item.Key] = true;
+                }
+            }
+
+            return merged;
+        }
+
+        private static Dictionary<ISymbol, bool>? MergeProvenance(
+            IEnumerable<Dictionary<ISymbol, bool>> states)
+        {
+            Dictionary<ISymbol, bool>? merged = null;
+            foreach (var state in states)
+            {
+                merged = MergeProvenance(merged, state);
+            }
+
+            return merged;
+        }
+
         private static bool HasSameProvenance(
             Dictionary<ISymbol, bool> left,
             Dictionary<ISymbol, bool> right)
@@ -428,5 +652,19 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
         private static bool GetProvenance(Dictionary<ISymbol, bool> provenance, ISymbol symbol)
             => provenance.TryGetValue(symbol, out var hasOwningBuilderProvenance) &&
                 hasOwningBuilderProvenance;
+
+        private sealed class LoopContext
+        {
+            public LoopContext(ILoopOperation operation)
+            {
+                Operation = operation;
+            }
+
+            public ILoopOperation Operation { get; }
+
+            public List<Dictionary<ISymbol, bool>> BreakStates { get; } = [];
+
+            public List<Dictionary<ISymbol, bool>> ContinueStates { get; } = [];
+        }
     }
 }

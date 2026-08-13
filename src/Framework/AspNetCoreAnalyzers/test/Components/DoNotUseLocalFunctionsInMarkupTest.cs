@@ -583,6 +583,95 @@ public class TestComponent : ComponentBase
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
     }
 
+    [Theory]
+    [InlineData("break;")]
+    [InlineData("continue;")]
+    public async Task LocalFunctionWithOwningBuilderOnLoopBranch_ProducesDiagnostic(string branch)
+    {
+        var source = TestSource.Read($$"""
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var childBuilder = new RenderTreeBuilder();
+        var alias = childBuilder;
+        while (GetCondition())
+        {
+            if (GetCondition())
+            {
+                alias = builder;
+                {{branch}}
+            }
+
+            alias = childBuilder;
+        }
+
+        void /*MM*/LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+}
+""");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Theory]
+    [InlineData("break;")]
+    [InlineData("continue;")]
+    public async Task LocalFunctionWithFreshBuilderOnDoLoopBranch_NoDiagnostic(string branch)
+    {
+        var source = $$"""
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var childBuilder = new RenderTreeBuilder();
+        var alias = builder;
+        do
+        {
+            if (GetCondition())
+            {
+                alias = childBuilder;
+                {{branch}}
+            }
+
+            alias = childBuilder;
+        }
+        while (GetCondition());
+
+        void LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+}
+""";
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        var analyzerDiagnostics = diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup);
+        Assert.Empty(analyzerDiagnostics);
+    }
+
     [Fact]
     public async Task NestedLocalFunctionWithFreshCapturedBuilder_NoDiagnostic()
     {
