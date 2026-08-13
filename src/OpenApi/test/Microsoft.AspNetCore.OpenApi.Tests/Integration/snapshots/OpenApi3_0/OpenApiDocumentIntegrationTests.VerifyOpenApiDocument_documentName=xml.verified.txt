@@ -350,37 +350,51 @@
         "properties": {
           "booleanType": {
             "type": "boolean",
-            "example": true
+            "examples": [
+              true
+            ]
           },
           "integerType": {
             "type": "integer",
             "format": "int32",
-            "example": 42
+            "examples": [
+              42
+            ]
           },
           "longType": {
             "type": "integer",
             "format": "int64",
-            "example": 1234567890123456789
+            "examples": [
+              1234567890123456789
+            ]
           },
           "doubleType": {
             "type": "number",
             "format": "double",
-            "example": 3.14
+            "examples": [
+              3.14
+            ]
           },
           "floatType": {
             "type": "number",
             "format": "float",
-            "example": 3.14
+            "examples": [
+              3.14
+            ]
           },
           "dateTimeType": {
             "type": "string",
             "format": "date-time",
-            "example": "2022-01-01T00:00:00Z"
+            "examples": [
+              "2022-01-01T00:00:00Z"
+            ]
           },
           "dateOnlyType": {
             "type": "string",
             "format": "date",
-            "example": "2022-01-01"
+            "examples": [
+              "2022-01-01"
+            ]
           }
         }
       }

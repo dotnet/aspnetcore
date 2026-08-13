@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new Dictionary<string, XmlComment>();
 
-            cache.Add(@"T:ModelWithSummary", new XmlComment(@"Comment on class ModelWithSummary.", null, null, null, null, false, [@"{ ""street"": ""ModelWithSummaryClass"" }"], null, null));
+            cache.Add(@"T:ModelWithSummary", new XmlComment(@"Comment on class ModelWithSummary.", null, null, null, null, false, [@"{ ""street"": ""ModelWithSummaryClass"" }", @"{ ""street"": ""ModelWithSummaryClass2"" }"], null, null));
             cache.Add(@"T:ModelInline", new XmlComment(@"Comment on class ModelInline.", null, null, null, null, false, [@"{ ""street"": ""ModelInlineClass"" }"], null, null));
             cache.Add(@"T:RootModel", new XmlComment(@"Comment on class RootModel.", null, null, null, null, false, [@"{ }"], null, null));
             cache.Add(@"P:RootModel.ModelWithSummary1", new XmlComment(@"Comment on property ModelWithSummary1.", null, null, null, null, false, [@"{ ""street"": ""ModelWithSummary1Prop"" }"], null, null));
@@ -593,9 +593,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
-                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
+                if (typeComment.Examples is { Count: > 0 } typeExamples)
                 {
-                    schema.Example = jsonString.Parse();
+                    schema.Examples = typeExamples.ConvertAll(example => example.Parse()!);
                 }
             }
 
@@ -619,9 +619,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     {
                         // Inlined schema
                         schema.Description = description;
-                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        if (propertyComment.Examples is { Count: > 0 } propertyExamples)
                         {
-                            schema.Example = jsonString.Parse();
+                            schema.Examples = propertyExamples.ConvertAll(example => example.Parse()!);
                         }
                     }
                     else

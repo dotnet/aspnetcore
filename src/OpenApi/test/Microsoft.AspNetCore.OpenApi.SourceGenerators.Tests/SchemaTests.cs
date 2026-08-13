@@ -138,6 +138,7 @@ public class TypeWithExamples
     /// <example>2022-01-01</example>
     public DateOnly DateOnlyType { get; set; }
     /// <example>Hello, World!</example>
+    /// <example>Goodbye, World!</example>
     public string StringType { get; set; }
     /// <example>2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d</example>
     public Guid GuidType { get; set; }
@@ -217,46 +218,48 @@ internal class User : IUser
             path = document.Paths["/type-with-examples"].Operations[HttpMethod.Post];
             var typeWithExamples = path.RequestBody.Content["application/json"].Schema;
 
-            var booleanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["booleanType"].Example);
+            var booleanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["booleanType"].Examples[0]);
             Assert.True(booleanTypeExample.GetValue<bool>());
 
-            var integerTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["integerType"].Example);
+            var integerTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["integerType"].Examples[0]);
             Assert.Equal(42, integerTypeExample.GetValue<int>());
 
-            var longTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["longType"].Example);
+            var longTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["longType"].Examples[0]);
             Assert.Equal(1234567890123456789, longTypeExample.GetValue<long>());
 
-            var doubleTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["doubleType"].Example);
+            var doubleTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["doubleType"].Examples[0]);
             Assert.Equal(3.14, doubleTypeExample.GetValue<double>());
 
-            var floatTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["floatType"].Example);
+            var floatTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["floatType"].Examples[0]);
             Assert.Equal(3.14f, floatTypeExample.GetValue<float>());
 
-            var dateTimeTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateTimeType"].Example);
+            var dateTimeTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateTimeType"].Examples[0]);
             Assert.Equal(new DateTime(2022, 01, 01), dateTimeTypeExample.GetValue<DateTime>());
 
-            var dateOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateOnlyType"].Example);
+            var dateOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateOnlyType"].Examples[0]);
             Assert.Equal("2022-01-01", dateOnlyTypeExample.GetValue<string>());
 
-            var stringTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["stringType"].Example);
+            var stringTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["stringType"].Examples[0]);
             Assert.Equal("Hello, World!", stringTypeExample.GetValue<string>());
+            var secondStringTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["stringType"].Examples[1]);
+            Assert.Equal("Goodbye, World!", secondStringTypeExample.GetValue<string>());
 
-            var guidTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["guidType"].Example);
+            var guidTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["guidType"].Examples[0]);
             Assert.Equal("2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d", guidTypeExample.GetValue<string>());
 
-            var byteTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["byteType"].Example);
+            var byteTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["byteType"].Examples[0]);
             Assert.Equal(255, byteTypeExample.GetValue<int>());
 
-            var timeOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeOnlyType"].Example);
+            var timeOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeOnlyType"].Examples[0]);
             Assert.Equal("12:30:45", timeOnlyTypeExample.GetValue<string>());
 
-            var timeSpanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeSpanType"].Example);
+            var timeSpanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeSpanType"].Examples[0]);
             Assert.Equal("P3DT4H5M", timeSpanTypeExample.GetValue<string>());
 
-            var decimalTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["decimalType"].Example);
+            var decimalTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["decimalType"].Examples[0]);
             Assert.Equal(3.14159265359m, decimalTypeExample.GetValue<decimal>());
 
-            var uriTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["uriType"].Example);
+            var uriTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["uriType"].Examples[0]);
             Assert.Equal("https://example.com", uriTypeExample.GetValue<string>());
 
             path = document.Paths["/user"].Operations[HttpMethod.Post];
@@ -292,6 +295,9 @@ app.Run();
 /// </summary>
 /// <example>
 /// { "street": "ModelWithSummaryClass" }
+/// </example>
+/// <example>
+/// { "street": "ModelWithSummaryClass2" }
 /// </example>
 public class ModelWithSummary
 {
@@ -386,7 +392,8 @@ public class RootModel
 
             var modelWithSummary = document.Components.Schemas["ModelWithSummary"];
             Assert.Equal("Comment on class ModelWithSummary.", modelWithSummary.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass" }"""), modelWithSummary.Example));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass" }"""), modelWithSummary.Examples[0]));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass2" }"""), modelWithSummary.Examples[1]));
 
             var modelWithoutSummary = document.Components.Schemas["ModelWithoutSummary"];
             Assert.Null(modelWithoutSummary.Description);
@@ -415,11 +422,11 @@ public class RootModel
 
             var modelInline1Prop = Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["modelInline1"]);
             Assert.Equal("Comment on property ModelInline1.", modelInline1Prop.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline1Prop" }"""), modelInline1Prop.Example));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline1Prop" }"""), modelInline1Prop.Examples[0]));
 
             var modelInline2Prop = Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["modelInline2"]);
             Assert.Equal("Comment on property ModelInline2.", modelInline2Prop.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline2Prop" }"""), modelInline2Prop.Example));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline2Prop" }"""), modelInline2Prop.Examples[0]));
         });
     }
 }

@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"P:TypeWithExamples.FloatType", new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
             cache.Add(@"P:TypeWithExamples.DateTimeType", new XmlComment(null, null, null, null, null, false, [@"2022-01-01T00:00:00Z"], null, null));
             cache.Add(@"P:TypeWithExamples.DateOnlyType", new XmlComment(null, null, null, null, null, false, [@"2022-01-01"], null, null));
-            cache.Add(@"P:TypeWithExamples.StringType", new XmlComment(null, null, null, null, null, false, [@"Hello, World!"], null, null));
+            cache.Add(@"P:TypeWithExamples.StringType", new XmlComment(null, null, null, null, null, false, [@"Hello, World!", @"Goodbye, World!"], null, null));
             cache.Add(@"P:TypeWithExamples.GuidType", new XmlComment(null, null, null, null, null, false, [@"2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d"], null, null));
             cache.Add(@"P:TypeWithExamples.TimeOnlyType", new XmlComment(null, null, null, null, null, false, [@"12:30:45"], null, null));
             cache.Add(@"P:TypeWithExamples.TimeSpanType", new XmlComment(null, null, null, null, null, false, [@"P3DT4H5M"], null, null));
@@ -614,9 +614,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
-                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
+                if (typeComment.Examples is { Count: > 0 } typeExamples)
                 {
-                    schema.Example = jsonString.Parse();
+                    schema.Examples = typeExamples.ConvertAll(example => example.Parse()!);
                 }
             }
 
@@ -640,9 +640,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     {
                         // Inlined schema
                         schema.Description = description;
-                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        if (propertyComment.Examples is { Count: > 0 } propertyExamples)
                         {
-                            schema.Example = jsonString.Parse();
+                            schema.Examples = propertyExamples.ConvertAll(example => example.Parse()!);
                         }
                     }
                     else

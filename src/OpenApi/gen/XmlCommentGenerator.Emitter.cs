@@ -602,9 +602,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
-                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
+                if (typeComment.Examples is { Count: > 0 } typeExamples)
                 {
-                    schema.Example = jsonString.Parse();
+                    schema.Examples = typeExamples.ConvertAll(example => example.Parse()!);
                 }
             }
 
@@ -628,9 +628,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     {
                         // Inlined schema
                         schema.Description = description;
-                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        if (propertyComment.Examples is { Count: > 0 } propertyExamples)
                         {
-                            schema.Example = jsonString.Parse();
+                            schema.Examples = propertyExamples.ConvertAll(example => example.Parse()!);
                         }
                     }
                     else
