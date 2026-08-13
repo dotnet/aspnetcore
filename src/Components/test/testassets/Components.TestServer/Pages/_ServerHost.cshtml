@@ -54,6 +54,16 @@
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
         Blazor.start({
+            configureSignalR: builder => {
+                if (new URLSearchParams(location.search).has('captureAuthenticationRefresh')) {
+                    const build = builder.build.bind(builder);
+                    builder.build = () => {
+                        const connection = build();
+                        window.authenticationRefreshConnection = connection;
+                        return connection;
+                    };
+                }
+            },
             reconnectionOptions: {
                 // It's easier to test the reconnection logic if we wait a bit
                 // before attempting to reconnect

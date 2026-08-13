@@ -82,7 +82,9 @@ internal sealed class RenderFragmentCapture
                     // populates innerCapture._capturedFrames. Looking up the capture by frame
                     // index in _childCaptures would otherwise find an entry whose frames were
                     // never recorded.
+#pragma warning disable ASP0032
                     builder.SetAttributeValue(j, (RenderFragment)innerCapture.Invoke);
+#pragma warning restore ASP0032
                     _childCaptures[j - start] = innerCapture;
                 }
             }

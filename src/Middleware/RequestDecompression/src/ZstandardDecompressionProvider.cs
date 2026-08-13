@@ -17,7 +17,7 @@ internal sealed class ZstandardDecompressionProvider : IDecompressionProvider
     // most 2 MB and is unaffected.
     private static readonly ZstandardDecompressionOptions s_decompressionOptions = new()
     {
-        MaxWindowLog = 23,
+        MaxWindowLog2 = 23,
     };
 
     /// <inheritdoc />

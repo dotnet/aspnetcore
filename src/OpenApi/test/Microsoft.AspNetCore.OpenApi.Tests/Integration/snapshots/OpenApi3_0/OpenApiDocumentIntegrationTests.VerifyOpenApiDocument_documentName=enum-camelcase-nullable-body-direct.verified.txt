@@ -14,13 +14,16 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "string",
                 "oneOf": [
+                  {
+                    "enum": [
+                      null
+                    ]
+                  },
                   {
                     "$ref": "#/components/schemas/CamelCaseStatus"
                   }
-                ],
-                "nullable": true
+                ]
               }
             }
           }
@@ -31,7 +34,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CamelCaseStatus"
+                  "oneOf": [
+                    {
+                      "enum": [
+                        null
+                      ]
+                    },
+                    {
+                      "$ref": "#/components/schemas/CamelCaseStatus"
+                    }
+                  ]
                 }
               }
             }
@@ -46,8 +58,7 @@
         "enum": [
           "active",
           "inactive",
-          "pending",
-          null
+          "pending"
         ]
       }
     }

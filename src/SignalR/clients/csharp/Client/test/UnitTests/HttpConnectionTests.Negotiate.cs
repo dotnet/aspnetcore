@@ -63,6 +63,9 @@ public partial class HttpConnectionTests
         [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/negotiate?negotiateVersion=1")]
         [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/negotiate?negotiateVersion=1")]
         [InlineData("http://fakeuri.org/endpoint?q=1/0", "http://fakeuri.org/endpoint/negotiate?q=1/0&negotiateVersion=1")]
+        [InlineData("http://fakeuri.org/?x=negotiateVersion", "http://fakeuri.org/negotiate?x=negotiateVersion&negotiateVersion=1")]
+        [InlineData("http://fakeuri.org/?negotiateVersion=42", "http://fakeuri.org/negotiate?negotiateVersion=42")]
+        [InlineData("http://fakeuri.org/?q=negotiateVersionValue&negotiateVersion=42", "http://fakeuri.org/negotiate?q=negotiateVersionValue&negotiateVersion=42")]
         public async Task CorrectlyHandlesQueryStringWhenAppendingNegotiateToUrl(string requestedUrl, string expectedNegotiate)
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);

@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Web.AssetPathAttributes
 Microsoft.AspNetCore.Components.Web.EnvironmentView
 Microsoft.AspNetCore.Components.Web.EnvironmentView.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.EnvironmentView.ChildContent.set -> void
@@ -7,6 +8,9 @@ Microsoft.AspNetCore.Components.Web.EnvironmentView.Exclude.get -> string?
 Microsoft.AspNetCore.Components.Web.EnvironmentView.Exclude.set -> void
 Microsoft.AspNetCore.Components.Web.EnvironmentView.Include.get -> string?
 Microsoft.AspNetCore.Components.Web.EnvironmentView.Include.set -> void
+abstract Microsoft.AspNetCore.Components.Forms.ClientValidationProvider.RenderClientValidationRules(Microsoft.AspNetCore.Components.Forms.EditContext! editContext, System.Collections.Generic.IReadOnlyDictionary<Microsoft.AspNetCore.Components.Forms.FieldIdentifier, string!>! renderedFields) -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Forms.ClientValidationProvider
+Microsoft.AspNetCore.Components.Forms.ClientValidationProvider.ClientValidationProvider() -> void
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="PreReleaseVersionLabel;PreReleaseVersionIteration">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -9,8 +9,17 @@
     <!-- NU5100: Tasks DLL is intentionally in tasks/ folder, not lib/ -->
     <!-- RS0026: New package with no prior shipped API; optional parameter backcompat is N/A -->
     <NoWarn>$(NoWarn);NU5100;RS0026</NoWarn>
-    <Description>Cross-render-mode E2E testing library for Blazor using Playwright, xUnit V3, and YARP.</Description>
-    <PackageTags>blazor;e2e;testing;playwright</PackageTags>
+    <Description>Cross-render-mode E2E testing library for Blazor using Playwright, MSTest on the Microsoft Testing Platform, and YARP.</Description>
+    <PackageTags>blazor;e2e;testing;playwright;mstest</PackageTags>
+    <!--
+      This package does not ship a stable version as part of .NET 11.0. Keep producing dated prerelease versions even
+      when the repo builds RC or RTM versions. The label/iteration overrides are required so the version reads
+      sensibly (and so Arcade's version suffix logic keeps running) once the branch moves to 'rc' or 'rtm'; they are
+      listed in TreatAsLocalProperty above so they win even if the label is passed in as a global property.
+    -->
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionLabel>$(PreviewOnlyPackagePreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>$(PreviewOnlyPackagePreReleaseVersionIteration)</PreReleaseVersionIteration>
   </PropertyGroup>
 
 
@@ -34,8 +43,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Playwright.Xunit.v3" />
-    <Reference Include="xunit.v3.extensibility.core" />
+    <Reference Include="Microsoft.Playwright" />
+    <Reference Include="Microsoft.Playwright.TestAdapter" />
     <Reference Include="Yarp.ReverseProxy" />
   </ItemGroup>
 
@@ -50,17 +59,35 @@
   <!-- Pack the source generator into analyzers/ folder -->
   <Target Name="_IncludeGeneratorInPackage" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Generators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Generators.dll"
+      <None Include="$(_GeneratorAssembly)"
             Pack="true"
             PackagePath="analyzers/dotnet/cs"
             Visible="false" />
     </ItemGroup>
   </Target>
 
-  <!-- Pack the MSBuild task assembly into tasks/ folder -->
+  <PropertyGroup>
+    <_GeneratorAssembly>$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Generators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Generators.dll</_GeneratorAssembly>
+    <_TasksAssembly>$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_TasksAssembly>
+  </PropertyGroup>
+
+  <!-- Build the package's source generator and MSBuild task before collecting package files. -->
+  <Target Name="_BuildPackageDependencies"
+          BeforeTargets="_IncludeGeneratorInPackage;_IncludeTasksInPackage"
+          Condition="(!Exists('$(_GeneratorAssembly)') or !Exists('$(_TasksAssembly)')) and ('$(BuildProjectReferences)' == 'false' or '$(NoBuild)' == 'true')">
+    <PropertyGroup>
+      <_PackageDependenciesBuildProperties>Configuration=$(Configuration)</_PackageDependenciesBuildProperties>
+      <_PackageDependenciesBuildProperties Condition="!Exists('$(_GeneratorAssembly)') or !Exists('$(_TasksAssembly)')">$(_PackageDependenciesBuildProperties);_ForcePackageDependenciesBuild=$([System.Guid]::NewGuid())</_PackageDependenciesBuildProperties>
+    </PropertyGroup>
+    <MSBuild Projects="../gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj;../tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
+             Targets="Build"
+             Properties="$(_PackageDependenciesBuildProperties)"
+             RemoveProperties="NoBuild" />
+  </Target>
+
   <Target Name="_IncludeTasksInPackage" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll"
+      <None Include="$(_TasksAssembly)"
             Pack="true"
             PackagePath="tasks/netstandard2.0"
             Visible="false" />
