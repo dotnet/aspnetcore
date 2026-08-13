@@ -1188,6 +1188,98 @@ public class ChunkedResponseTests : LoggedTest
         }
     }
 
+    [Fact]
+    public async Task ChunkGetMemoryAdvanceThenBodyWriterWriteAsync()
+    {
+        // Regression test: verifies that GetMemory → Advance → BodyWriter.WriteAsync
+        // correctly produces two separate chunks. This exercises the path where pending
+        // chunk data from GetMemory/Advance must be flushed to the PipeWriter before
+        // creating a BufferWriter for the WriteAsync buffer.
+        var testContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            var response = httpContext.Response;
+
+            await response.StartAsync();
+
+            var memory = response.BodyWriter.GetMemory(4096);
+            var firstPart = Encoding.ASCII.GetBytes("Hello ");
+            firstPart.CopyTo(memory);
+            response.BodyWriter.Advance(6);
+
+            await response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("World!"));
+        }, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "GET / HTTP/1.1",
+                    "Host: ",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "6",
+                    "Hello ",
+                    "6",
+                    "World!",
+                    "0",
+                    "",
+                    "");
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ChunkGetMemoryAdvanceThenFlushAndBodyWriterWriteAsync()
+    {
+        // Regression test: verifies that GetMemory → Advance → FlushAsync → BodyWriter.WriteAsync
+        // works correctly, exercising the FlushAsyncChunked path followed by a WriteAsync.
+        var testContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(async httpContext =>
+        {
+            var response = httpContext.Response;
+
+            await response.StartAsync();
+
+            var memory = response.BodyWriter.GetMemory(4096);
+            var firstPart = Encoding.ASCII.GetBytes("Hello ");
+            firstPart.CopyTo(memory);
+            response.BodyWriter.Advance(6);
+
+            await response.BodyWriter.FlushAsync();
+
+            await response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("World!"));
+        }, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "GET / HTTP/1.1",
+                    "Host: ",
+                    "",
+                    "");
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "6",
+                    "Hello ",
+                    "6",
+                    "World!",
+                    "0",
+                    "",
+                    "");
+            }
+        }
+    }
+
     private class IntAsRef
     {
         public int Value { get; set; }

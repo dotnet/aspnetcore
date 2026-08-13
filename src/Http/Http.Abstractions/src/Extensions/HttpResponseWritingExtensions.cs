@@ -117,5 +117,6 @@ public static class HttpResponseWritingExtensions
 
             destination = writer.GetSpan(minimumByteSize);
         }
+        writer.Advance(0);
     }
 }

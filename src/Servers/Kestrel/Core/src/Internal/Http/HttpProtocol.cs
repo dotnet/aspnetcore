@@ -1480,8 +1480,16 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         if (_responseBodyMode != ResponseBodyMode.Disabled)
         {
-            VerifyAndUpdateWrite(bytes);
-            Output.Advance(bytes);
+            var advance = 0;
+            try
+            {
+                VerifyAndUpdateWrite(bytes);
+                advance = bytes;
+            }
+            finally
+            {
+                Output.Advance(advance);
+            }
         }
         else
         {
