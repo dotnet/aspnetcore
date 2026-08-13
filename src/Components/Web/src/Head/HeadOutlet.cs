@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.JSInterop;
@@ -24,12 +25,27 @@ public sealed class HeadOutlet : ComponentBase
     private IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <inheritdoc/>
+    protected override void OnInitialized()
+    {
+        // WebAssembly supports synchronous JS interop, so seed the title before our first render to avoid a gap (#68346).
+        if (JSRuntime is IJSInProcessRuntime jsInProcessRuntime)
+        {
+            _defaultTitle = GetDocumentTitle(jsInProcessRuntime);
+        }
+    }
+
+    /// <inheritdoc/>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            _defaultTitle = await JSRuntime.InvokeAsync<string>(GetAndRemoveExistingTitle);
-            StateHasChanged();
+            // Only overwrite the title captured in OnInitialized if a genuine static (non-Blazor) title was found.
+            var existingTitle = await JSRuntime.InvokeAsync<string>(GetAndRemoveExistingTitle);
+            if (!string.IsNullOrEmpty(existingTitle))
+            {
+                _defaultTitle = existingTitle;
+                StateHasChanged();
+            }
         }
     }
 
@@ -63,4 +79,8 @@ public sealed class HeadOutlet : ComponentBase
         builder.AddContent(1, _defaultTitle);
         builder.CloseElement();
     }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Reading a string-valued JS property does not require dynamically-accessed members.")]
+    private static string? GetDocumentTitle(IJSInProcessRuntime jsInProcessRuntime)
+        => jsInProcessRuntime.GetValue<string>("document.title");
 }
