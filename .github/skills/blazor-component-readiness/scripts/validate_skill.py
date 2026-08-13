@@ -256,8 +256,11 @@ def validate_wiring(errors: list[str]) -> None:
     report = REPORT_TEMPLATE.read_text(encoding="utf-8")
     for reference in (
         "references/areas/index.md",
+        "references/artifact-acquisition.md",
         "references/feedback.md",
         "references/overlays/",
+        "references/status-boundaries.md",
+        "references/targeted-profiles.md",
         "scripts/validate_scorecard.py",
         "scripts/validate_skill.py",
         "evals/regression.vally.yaml",

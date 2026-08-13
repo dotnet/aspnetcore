@@ -2,6 +2,9 @@
 
 Applies to `LP-*` and `PI-*`.
 
+Follow `../artifact-acquisition.md` before selecting review mode or classifying released-package
+rows.
+
 ## Evidence to collect
 
 - Download the exact published package and preserve its version, digest, nuspec, signatures, and
@@ -19,13 +22,14 @@ Applies to `LP-*` and `PI-*`.
 
 ## Minimum probes
 
-1. Inspect nuspec metadata and package repository signature.
-2. Enumerate DLLs for every target framework and verify strong-name state.
-3. Verify Authenticode presence and signer identity using an appropriate platform. Record
+1. Preserve and hash the exact original nupkg after the v3-then-v2 acquisition protocol.
+2. Inspect nuspec metadata and package author/repository signatures separately.
+3. Enumerate DLLs for every target framework and verify strong-name state.
+4. Verify Authenticode presence and signer identity using an appropriate platform. Record
    certificate-chain and revocation/current-validity evidence separately; request maintainer
    evidence when the review environment cannot establish it.
-4. Compare published package digest with the digest named by SBOM/provenance.
-5. Confirm the SBOM covers the package's actual dependency and bundled-asset inventory.
+5. Compare published package digest with the digest named by SBOM/provenance.
+6. Confirm the SBOM covers the package's actual dependency and bundled-asset inventory.
 
 ## Scoring boundaries
 

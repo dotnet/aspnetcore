@@ -60,6 +60,10 @@ Read before a complete review:
 - `references/checklist.md`: versioned public 110-ID released-package core.
 - `references/overlays/`: opt-in scaffolder and AI-skill requirements.
 - `references/areas/index.md`: evidence precedence and quality-area playbooks.
+- `references/artifact-acquisition.md`: deterministic package retrieval, mode selection, minimum
+  checks, and shared exact-artifact evidence.
+- `references/status-boundaries.md`: paired classification examples.
+- `references/targeted-profiles.md`: non-authoritative targeted starter sets.
 - `references/report-template.md`: concise report, annex, handoff, and evidence-anchor shape.
 
 Read each mapped area playbook while scoring that family. Read `references/feedback.md` when
@@ -68,9 +72,11 @@ capturing run feedback, and `references/learning-loop.md` only when improving th
 ## Review modes
 
 - **Complete readiness review:** include all 110 core IDs exactly once, plus only the overlays
-  actually present in the bounded deliverable, and validate the scorecard.
+  actually present in the bounded deliverable. For a distributed package, complete the minimum
+  exact-artifact checks before classifying package rows.
 - **Targeted follow-up:** investigate named IDs/findings only. State that it is not a complete
-  readiness review, validate only those IDs, and do not imply unchanged rows were reverified.
+  readiness review, record how IDs were selected, validate only those IDs, and do not imply
+  unchanged rows were reverified.
 - **Inventory/selection pass:** identify representative components without scoring readiness.
 
 ## Workflow
@@ -84,10 +90,21 @@ Record:
 - released package/version, digest, and source commit when available;
 - why this component is representative;
 - explicit exclusions and timebox;
-- review mode and rubric version.
+- candidate review mode and rubric version.
 
 Use the narrowest independently consumable unit. In a generated suite, choose one control and
 distinguish its generated output, handwritten partials, shared runtime, and upstream web component.
+
+For anything publicly distributed as a NuGet package, follow `references/artifact-acquisition.md`
+before finalizing the review mode:
+
+1. attempt the configured source's NuGet v3 registration/flat-container path;
+2. if transport fails, attempt its NuGet v2 package endpoint;
+3. record endpoint outcomes and distinguish transport failure from package absence;
+4. hash the original nupkg before extraction;
+5. select complete or targeted mode using the evidence-state table.
+
+A first-path retrieval failure must not turn a released package into a source-only component.
 
 ### 2. Pin the bundled rubric
 
@@ -110,6 +127,11 @@ Organization-specific requirements belong in an explicit overlay, not hidden ass
 Read prior exact-snapshot reports and ledgers first. For every reused claim, record its source,
 SHA/package, whether it was independently rechecked, and whether the current snapshot changed.
 Re-run only the smallest probe needed for stale, disputed, missing, or potentially fixed evidence.
+
+For batched controls sharing the same repository SHA and package ID/version/digest, create one
+repository-wide exact-artifact ledger. Import it into later reports with provenance rather than
+rescoring identical package facts. Explicitly supersede an imported row only with stronger
+exact-snapshot proof; never reuse component-specific runtime evidence across controls.
 
 For a rubric migration replay:
 
@@ -138,6 +160,11 @@ For a targeted review, name the exact IDs:
 python3 scripts/validate_scorecard.py --ids BEQ-12,BEQ-15 --emit-template
 ```
 
+Use the closest starter profile in `references/targeted-profiles.md`, then record every added or
+removed ID and why. When a distributed package is listed but exact bytes remain unavailable after
+the acquisition protocol, use the package supplement rather than calling package rows not
+applicable.
+
 Inspect repository-wide evidence once: licensing, package metadata, dependency inventory,
 signatures, SBOM/provenance, security process, CI/release, documentation, support, servicing, and
 release revalidation.
@@ -154,6 +181,10 @@ Use the smallest real consumer applications that cover documented behavior:
 - trimmed WASM publish plus browser exercise;
 - native AOT only when claimed or requested;
 - representative data size, lifecycle, callbacks, cleanup, and accessibility interactions.
+
+Run the cheap preflight from `references/areas/blazor-runtime.md` before expensive restore/browser
+work: verify prerequisites, route/assets, host startup, one rendered target, and one critical probe.
+Expand only after the smoke gate passes.
 
 A successful build is not runtime proof. Source inspection is not browser or assistive-technology
 proof. Stop when the declared timebox expires: mark remaining applicable rows `not tested`, add
@@ -196,6 +227,11 @@ Boundary rules:
 - Signature presence/identity and certificate-chain or revocation evidence are separate claims.
 - Passing source, scanner, or browser evidence does not establish formal accessibility conformance.
 
+Use `references/status-boundaries.md` for paired examples. In particular, an environmental blocker
+for an applicable probe is `not tested`; required public metadata that is directly absent is a
+`defect`; inaccessible private evidence is `maintainer evidence required`; and `not applicable`
+requires an explicit lack of applicable surface or support claim.
+
 Each defect must identify the exact snapshot, path/member/artifact, expected and observed behavior,
 reproduction or direct proof, owning layer, scope, confidence, and remediation direction.
 
@@ -214,16 +250,19 @@ the evidence ledger. Do not use generic or unresolved references.
 For a complete review, run:
 
 ```bash
-python3 scripts/validate_scorecard.py <readiness-report.md>
+python3 scripts/validate_scorecard.py <readiness-report.md> \
+  --receipt <validation-receipt.json>
 ```
 
 Include selected overlays with the matching `--overlay` options. For targeted work, validate with
 the same `--ids` list used to emit the template.
 
-The validator proves structural coverage, canonical order, status vocabulary, and evidence-anchor
-resolution within the selected core, overlays, or targeted IDs. Targeted validation never proves
-complete readiness. `scripts/validate_skill.py` is contributor infrastructure, not part of normal
-component reviews.
+Describe the result as **structural validation passed** and include the receipt's rubric version,
+mode/selection, row count, timestamp, and report digest. The validator proves structural coverage,
+canonical order, status vocabulary, and evidence-anchor resolution within the selected core,
+overlays, or targeted IDs. It does not prove evidence truth or classification quality. Targeted
+validation never proves complete readiness. `scripts/validate_skill.py` is contributor
+infrastructure, not part of normal component reviews.
 
 ### 10. Invite privacy-safe feedback
 

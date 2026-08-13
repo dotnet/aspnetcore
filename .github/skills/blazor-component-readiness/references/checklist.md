@@ -1,6 +1,6 @@
 # Blazor component readiness baseline
 
-**Rubric version:** 1.1.0
+**Rubric version:** 1.2.0
 
 This independently maintained 110-ID public core is the self-contained source of truth for
 readiness reviews of released Blazor component packages. It does not require an external policy
@@ -180,6 +180,9 @@ TA-01 through TA-03 while TA-08 remains a configuration or documentation defect.
 
 ## Version history
 
+- **1.2.0:** Standardized released-package acquisition and mode selection, shared exact-artifact
+  evidence across batched controls, clarified status boundaries, added targeted starter profiles and
+  probe preflight, and added structural validation receipts. Requirement IDs and intent are unchanged.
 - **1.1.0:** Moved the 12 scaffolder and AI-skill requirements into opt-in overlays, leaving a
   110-ID released-package core. Rephrased accessibility tooling requirements as outcomes.
 - **1.0.1:** Restored SUP-10 as a maintainer-owned release-governance obligation after migration

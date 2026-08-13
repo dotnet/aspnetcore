@@ -5,10 +5,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import re
 import sys
 from collections import Counter
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -22,6 +25,7 @@ REQUIREMENT_PATTERN = re.compile(
     r"^- \*\*([A-Z][A-Z0-9]*-\d{2})\*\*\s+(.+?)\s*$",
     re.MULTILINE,
 )
+RUBRIC_VERSION_PATTERN = re.compile(r"^\*\*Rubric version:\*\*\s+(\S+)\s*$", re.MULTILINE)
 STATUS_VALUES = {
     "verified",
     "defect",
@@ -84,6 +88,14 @@ def load_requirements(checklist_path: Path = DEFAULT_CHECKLIST) -> list[Requirem
             "duplicate canonical requirement IDs: " + ", ".join(sorted(duplicates))
         )
     return requirements
+
+
+def load_rubric_version(checklist_path: Path = DEFAULT_CHECKLIST) -> str:
+    content = checklist_path.read_text(encoding="utf-8")
+    match = RUBRIC_VERSION_PATTERN.search(content)
+    if match is None:
+        raise ValueError(f"rubric version not found in {checklist_path}")
+    return match.group(1)
 
 
 def load_requirement_set(
@@ -363,6 +375,58 @@ def render_template(requirements: list[Requirement]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def build_validation_receipt(
+    checklist_path: Path,
+    report_path: Path,
+    mode: str,
+    requirements: list[Requirement],
+    rows: list[ScorecardRow],
+    overlays: list[str],
+    validated_at: datetime | None = None,
+) -> dict[str, object]:
+    timestamp = validated_at or datetime.now(timezone.utc)
+    if timestamp.tzinfo is None:
+        raise ValueError("validation receipt timestamp must include a timezone")
+    return {
+        "schema_version": 1,
+        "structural_validation": "passed",
+        "rubric_version": load_rubric_version(checklist_path),
+        "mode": mode,
+        "selected_overlays": list(overlays),
+        "selected_ids": (
+            [requirement.identifier for requirement in requirements]
+            if mode == "targeted"
+            else []
+        ),
+        "canonical_row_count": len(requirements),
+        "valid_row_count": len(rows),
+        "validated_at_utc": timestamp.astimezone(timezone.utc)
+        .isoformat()
+        .replace("+00:00", "Z"),
+        "report_filename": report_path.name,
+        "report_sha256": sha256_file(report_path),
+        "limitation": (
+            "Structural validation does not establish factual evidence or "
+            "classification quality."
+        ),
+    }
+
+
+def write_validation_receipt(receipt_path: Path, receipt: dict[str, object]) -> None:
+    receipt_path.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Validate or emit the canonical readiness scorecard."
@@ -393,9 +457,19 @@ def main() -> int:
             "Targeted validation does not establish complete readiness coverage."
         ),
     )
+    parser.add_argument(
+        "--receipt",
+        type=Path,
+        help=(
+            "Write a machine-readable structural validation receipt. The receipt "
+            "does not establish factual evidence or classification quality."
+        ),
+    )
     args = parser.parse_args()
     if args.ids and args.overlay:
         parser.error("--ids cannot be combined with --overlay; name overlay IDs directly")
+    if args.emit_template and args.receipt is not None:
+        parser.error("--receipt cannot be combined with --emit-template")
 
     try:
         mode = "complete"
@@ -415,6 +489,8 @@ def main() -> int:
             return 0
         if args.report is None:
             parser.error("report is required unless --emit-template is used")
+        if args.receipt is not None and args.receipt.resolve() == args.report.resolve():
+            parser.error("--receipt must not overwrite the report")
 
         rows = parse_scorecard(args.report)
         evidence_ledger, ledger_errors = parse_evidence_ledger(args.report)
@@ -428,12 +504,33 @@ def main() -> int:
             print(f"ERROR: {error}", file=sys.stderr)
         return 1
 
+    if args.receipt is not None:
+        try:
+            receipt = build_validation_receipt(
+                args.checklist,
+                args.report,
+                mode,
+                requirements,
+                rows,
+                args.overlay,
+            )
+            write_validation_receipt(args.receipt, receipt)
+        except (OSError, ValueError) as error:
+            print(f"ERROR: failed to write validation receipt: {error}", file=sys.stderr)
+            return 1
+
     print(
-        f"{mode.capitalize()} scorecard structure is complete: "
-        f"{len(requirements)} canonical requirements, {len(rows)} valid rows."
+        f"Structural validation passed: {mode} scorecard has "
+        f"{len(requirements)} canonical requirements and {len(rows)} valid rows."
+    )
+    print(
+        "Structural validation does not establish factual evidence or "
+        "classification quality."
     )
     if mode == "targeted":
         print("Targeted validation does not establish complete readiness coverage.")
+    if args.receipt is not None:
+        print(f"Structural validation receipt written to {args.receipt}.")
     return 0
 
 

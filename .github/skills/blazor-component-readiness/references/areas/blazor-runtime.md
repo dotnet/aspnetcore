@@ -14,6 +14,20 @@ Use the smallest package-based applications that cover the maintainer's document
 A build is not runtime proof. Confirm interactivity with state changes, callbacks, browser console,
 and network evidence.
 
+## Cheap probe preflight
+
+Before a restore, browser installation, or broad selector suite consumes the timebox:
+
+1. verify documented tool versions and build prerequisites;
+2. confirm the expected sample/test assets and route exist;
+3. run the smallest build or host-start command;
+4. assert one target element renders and interactivity is available;
+5. run one critical selector/probe;
+6. expand only after the smoke gate passes.
+
+Treat missing prerequisites, stale routes, absent test assets, and host startup failures as probe
+blockers unless direct evidence ties them to the released component. Record the blocker and cleanup.
+
 ## Implementation review
 
 - Public parameters, mutation, binding pairs, required parameters, docs, and compatibility policy.

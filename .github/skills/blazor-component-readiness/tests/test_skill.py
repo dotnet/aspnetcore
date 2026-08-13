@@ -1,6 +1,8 @@
+import json
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -11,6 +13,7 @@ from validate_scorecard import (
     OVERLAY_PATHS,
     STATUS_VALUES,
     ScorecardRow,
+    build_validation_receipt,
     load_requirement_set,
     load_requirements,
     parse_evidence_ledger,
@@ -18,6 +21,7 @@ from validate_scorecard import (
     render_template,
     select_requirements,
     validate_rows,
+    write_validation_receipt,
 )
 from validate_skill import (
     VALLY_PACKAGE,
@@ -46,7 +50,7 @@ class SkillStructureTests(unittest.TestCase):
         checklist = (SKILL_ROOT / "references/checklist.md").read_text(
             encoding="utf-8"
         )
-        self.assertIn("**Rubric version:** 1.1.0", checklist)
+        self.assertIn("**Rubric version:** 1.2.0", checklist)
 
         by_prefix: dict[str, list[int]] = {}
         for identifier in all_identifiers:
@@ -214,6 +218,45 @@ class SkillStructureTests(unittest.TestCase):
             ledger, errors = parse_evidence_ledger(report_path)
         self.assertEqual({"E-001": 3}, ledger)
         self.assertIn("duplicate evidence ledger ID E-001", "\n".join(errors))
+
+    def test_structural_validation_receipt_records_selection_and_digest(self):
+        requirements = load_requirements()[:2]
+        report = render_template(requirements)
+        report = report.replace("[scope]", "component-specific")
+        report = report.replace("[status]", "not tested")
+        report = report.replace("[evidence]", "The bounded probe was not run.")
+        report = report.replace("[maintainer action]", "-")
+        report = report.replace("[reviewer follow-up]", "Run the bounded probe.")
+        validated_at = datetime(2026, 8, 13, 18, 0, tzinfo=timezone.utc)
+
+        with tempfile.TemporaryDirectory() as directory:
+            report_path = Path(directory) / "targeted.md"
+            receipt_path = Path(directory) / "receipt.json"
+            report_path.write_text(report, encoding="utf-8")
+            rows = parse_scorecard(report_path)
+            receipt = build_validation_receipt(
+                SKILL_ROOT / "references/checklist.md",
+                report_path,
+                "targeted",
+                requirements,
+                rows,
+                [],
+                validated_at,
+            )
+            write_validation_receipt(receipt_path, receipt)
+            persisted = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+        self.assertEqual("1.2.0", persisted["rubric_version"])
+        self.assertEqual("targeted", persisted["mode"])
+        self.assertEqual(
+            [requirement.identifier for requirement in requirements],
+            persisted["selected_ids"],
+        )
+        self.assertEqual(2, persisted["canonical_row_count"])
+        self.assertEqual(2, persisted["valid_row_count"])
+        self.assertEqual("2026-08-13T18:00:00Z", persisted["validated_at_utc"])
+        self.assertEqual(64, len(persisted["report_sha256"]))
+        self.assertIn("does not establish factual evidence", persisted["limitation"])
 
     def test_targeted_scorecard_selects_only_named_ids_in_canonical_order(self):
         all_requirements = load_requirement_set(overlays=tuple(OVERLAY_PATHS))

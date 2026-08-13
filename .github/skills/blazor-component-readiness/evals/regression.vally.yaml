@@ -247,7 +247,7 @@ stimuli:
       - "Overall response matches this expected outcome: The complete report contains the 110-ID core and omits both unselected overlays."
       - "No SCF requirement receives a scorecard row because the deliverable has no scaffolder."
       - "No AI requirement receives a scorecard row because the deliverable has no AI skill or plugin."
-      - "The report names rubric 1.1.0 and records that no overlays were selected."
+      - "The report names rubric 1.2.0 and records that no overlays were selected."
       - "The response explains how --overlay scaffolder or --overlay ai-skill would opt in the relevant six IDs."
       - "The review does not expand into evaluating unrelated scaffolders or AI assets."
   - name: "eval-10-cross-area-adjudication"
@@ -377,7 +377,7 @@ stimuli:
       - "The plan remains bounded to the selected control and does not infer catalog-wide defects."
   - name: "eval-14-rubric-migration-replay"
     prompt: |-
-      Replay an existing exact-snapshot Blazor component review from public rubric 1.0.1 onto rubric 1.1.0. The old 122-row report marked all SCF and AI rows not applicable, the component contains neither overlay feature, the old source/package evidence remains available, and public main has advanced. Do not perform a fresh audit. Explain how to migrate the scorecard and report count changes.
+      Replay an existing exact-snapshot Blazor component review from public rubric 1.0.1 onto rubric 1.2.0. The old 122-row report marked all SCF and AI rows not applicable, the component contains neither overlay feature, the old source/package evidence remains available, and public main has advanced. Do not perform a fresh audit. Explain how to migrate the scorecard and report count changes.
     tags:
       eval_id: "14"
       area: "rubric-migration"
@@ -399,7 +399,8 @@ stimuli:
       - "Stable IDs and canonical wording are diffed before classifications are changed."
       - "Unchanged rows retain their old exact-snapshot evidence and confidence."
       - "The 12 old not-applicable SCF and AI rows are removed because neither overlay is selected; this is a rubric-structure change, not improved product evidence."
-      - "The resulting complete report contains all 110 core IDs and names rubric 1.1.0 with no selected overlays."
+      - "The resulting complete report contains all 110 core IDs and names rubric 1.2.0 with no selected overlays."
+      - "The 1.2.0 acquisition, shared-evidence, status, targeting, preflight, and receipt guidance changes do not create new requirement rows or upgrade old product evidence."
       - "The migration delta separates terminology, policy, evidence-driven classification, and new-ID changes."
       - "Aggregate count movement without new product evidence is explicitly explained rather than presented as improved readiness."
       - "The advanced public head is excluded, expensive probes are not rerun, and the final 110-row core report is structurally validated."
@@ -430,3 +431,110 @@ stimuli:
       - "Final validation uses the same --ids BEQ-12,BEQ-15 selection."
       - "The output records new evidence, status deltas, and a bounded next action without repeating the complete scorecard."
       - "Targeted structural validation is not presented as a complete adoption or release decision."
+  - name: "eval-16-artifact-acquisition-mode"
+    prompt: |-
+      Plan review mode for a released Blazor input package. NuGet v3 registration confirms version 2.0.0, but the flat-container request fails through the review proxy. A source checkout is available and the reviewer is about to call the control source-only. Explain the bounded acquisition sequence, mode decision, and minimum package checks.
+    tags:
+      eval_id: "16"
+      area: "artifact-acquisition"
+      score_family: "mode-consistency"
+      tier: "held-out"
+      requirement_prefixes: "LP,PI"
+      provenance_kind: "multi-run-generalization"
+      provenance_source: "seven-control package retrieval inconsistency"
+      positive_controls: "0,1,2,4,5"
+      negative_controls: "3"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: Transport failure does not redefine the released package as source-only; the reviewer completes the ordered acquisition protocol before selecting mode."
+      - "The reviewer records the v3 endpoint/outcome and tries the configured source's NuGet v2 package endpoint."
+      - "The original nupkg is hashed before extraction and its package ID, exact version, endpoint, digest, and retrieval state are recorded."
+      - "If v2 obtains the exact package, complete mode is used even when RepositoryCommit mapping is absent or invalid."
+      - "If exact bytes remain unavailable after both paths, targeted mode is used and applicable selected package rows are not tested rather than not applicable."
+      - "Complete mode includes nuspec, license, file/TFM inventory, every assembly's strong-name state, signature layers, SBOM/provenance digest binding, and public source reachability."
+      - "A local rebuild or package-manager cache of unknown origin is not substituted for the released artifact."
+  - name: "eval-17-shared-artifact-ledger"
+    prompt: |-
+      Three isolated control reviews share repository SHA abc123 and package Widget.Blazor 3.1.0 with SHA-256 deadbeef. The first review directly inspected package metadata, signatures, every TFM, license, SECURITY.md, and provenance. The second and third are about to independently rescore those repository-wide rows and have already chosen conflicting statuses. Explain how to reuse and supersede evidence without laundering component behavior.
+    tags:
+      eval_id: "17"
+      area: "evidence-reuse"
+      score_family: "batch-consistency"
+      tier: "train"
+      requirement_prefixes: "LP,PI,SEC"
+      provenance_kind: "multi-run-generalization"
+      provenance_source: "three complete same-package control reviews"
+      positive_controls: "0,1,2,4"
+      negative_controls: "3"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: One shared repository-wide exact-artifact ledger is keyed by repository SHA, package ID/version, and digest and imported into later reports."
+      - "Imported rows retain their original evidence source, classification, and recheck state."
+      - "A later report explicitly supersedes a shared row only with stronger evidence for the same exact snapshot."
+      - "Different package versions, digests, source SHAs, or release candidates are not merged."
+      - "Component-specific runtime, accessibility, and performance evidence remains local to each control."
+      - "The shared ledger reduces duplicate scoring but does not imply one control proves catalog readiness."
+  - name: "eval-18-targeting-and-status-boundaries"
+    prompt: |-
+      Prepare a targeted review for a publicly listed text input whose exact package bytes remain unavailable after both NuGet paths. The exact nuspec cannot be inspected; a private servicing attestation is unavailable; a browser probe was blocked by a missing local prerequisite; source contains plausible aria attributes; and Auto mode is explicitly unsupported and unclaimed. Select a starter scope and classify these evidence states without claiming complete readiness.
+    tags:
+      eval_id: "18"
+      area: "targeted-review"
+      score_family: "classification-consistency"
+      tier: "held-out"
+      requirement_prefixes: "LP,PI,A11Y,BEQ,SUP"
+      provenance_kind: "multi-run-generalization"
+      provenance_source: "seven-control status and targeted-selection divergence"
+      positive_controls: "0,1,2,3,5"
+      negative_controls: "4"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A clearly targeted text-input review uses a documented starter profile, records ID additions/removals, and makes no complete-readiness claim."
+      - "The distributed-package supplement is considered because the package is listed but exact bytes are unavailable."
+      - "Blocked direct package and browser checks are not tested, not not applicable or defects."
+      - "The inaccessible private servicing attestation is maintainer evidence required."
+      - "Plausible source ARIA may verify only an exact source-structure property; computed browser semantics and conformance remain unverified."
+      - "Explicitly unsupported, unclaimed, safe Auto behavior can be not applicable."
+      - "The report records the prerequisite blocker and a bounded next probe."
+  - name: "eval-19-preflight-and-receipt"
+    prompt: |-
+      A Blazor component pilot is about to restore a large repository and install browsers. The documented route may be stale and no one has confirmed that the target element renders. Describe the probe preflight and the final scorecard validation evidence that should be retained. The review is targeted to BEQ-06 and A11Y-08.
+    tags:
+      eval_id: "19"
+      area: "probe-and-validation"
+      score_family: "operational-reliability"
+      tier: "train"
+      requirement_prefixes: "A11Y,BEQ"
+      provenance_kind: "multi-run-generalization"
+      provenance_source: "five pilot prerequisite and validator-receipt cases"
+      positive_controls: "0,1,3,4"
+      negative_controls: "2,5"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A cheap smoke gate precedes expensive setup and a machine-readable structural receipt replaces an unsupported narrative PASS."
+      - "Preflight verifies documented tools/prerequisites, route/assets, host startup, one rendered target, and one critical selector before expansion."
+      - "A stale route, missing prerequisite, or absent test asset is recorded as a probe blocker unless tied directly to the released component."
+      - "Validation uses the same targeted ID selection and describes the result as structural validation passed."
+      - "The receipt includes rubric version, targeted selection, canonical/valid row counts, UTC timestamp, and report SHA-256."
+      - "The report states that structural validation proves neither factual evidence nor classification quality and that targeted validation is not complete readiness."
+      - "No expensive selector suite is expanded after the smoke gate fails."

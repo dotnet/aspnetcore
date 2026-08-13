@@ -13,7 +13,8 @@ Keep the decision document concise. Put complete coverage evidence in annexes.
 7. Recommended next decision
 8. Annex A: complete scorecard
 9. Annex B: evidence ledger
-10. Annex C: repository cleanliness and limitations
+10. Annex C: structural validation receipt
+11. Annex D: repository cleanliness and limitations
 
 Lead with what was exercised successfully, whether the component is ready for the stated use,
 decisive blockers, material evidence gaps, and the bounded next decision. Avoid certification
@@ -44,7 +45,8 @@ Rules:
 - Give a concrete maintainer action for `maintainer evidence required`.
 - Give a bounded reviewer follow-up for `not tested`.
 - Link concrete defects to detailed finding blocks.
-- Validate with `python3 scripts/validate_scorecard.py <report.md>`.
+- Validate with
+  `python3 scripts/validate_scorecard.py <report.md> --receipt <validation-receipt.json>`.
 
 ## Targeted follow-up
 
@@ -72,6 +74,14 @@ Use the same scorecard columns, evidence anchors, and finding blocks. A targeted
 
 Do not repeat unchanged repository-wide findings or imply a complete adoption/release decision.
 
+## Shared repository-wide evidence
+
+For batched controls with the same repository SHA and package ID/version/digest, create one shared
+ledger using the evidence-ledger columns below. Import exact rows into each control report and record
+the source ledger/report in `Reproduction/source`; use `Rechecked now?` to distinguish direct recheck
+from imported evidence. A later report may supersede a row only with stronger exact-snapshot proof.
+Never reuse component-specific runtime evidence across controls.
+
 ## Evidence anchors
 
 Use anchors to avoid repeating the same exact package, workflow, or attestation evidence across
@@ -84,6 +94,25 @@ multiple rows:
 Anchors must match `E-\d{3}`. Every scorecard reference such as `[E-001]` must resolve to exactly
 one ledger row. The ledger entry must contain the substantive proof, gap, omission, or rationale;
 an anchor is not permission to use generic evidence.
+
+## Structural validation receipt
+
+Generate a receipt with:
+
+```bash
+python3 scripts/validate_scorecard.py <report.md> --receipt <validation-receipt.json>
+```
+
+Attach or summarize:
+
+```markdown
+**Structural validation:** Passed for rubric [version], [complete/targeted] selection, [row count]
+canonical rows. Receipt: `[path]`, report SHA-256 `[digest]`.
+
+This proves scorecard structure, selected coverage, canonical order, status vocabulary, and
+evidence-anchor resolution. It does not prove that the evidence or classifications are factually
+correct.
+```
 
 ## Maintainer handoff
 
