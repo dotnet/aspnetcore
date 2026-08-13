@@ -188,7 +188,13 @@ export class BrowserRenderer {
             // focus to avoid clobbering the caret position of a user who is actively typing.
             const parentElement = textNode.parentElement;
             if (parentElement instanceof HTMLTextAreaElement && document.activeElement !== parentElement) {
-              parentElement.value = newText || '';
+              let fullContent = '';
+              for (const node of Array.from(parentElement.childNodes)) {
+                if (node instanceof Text) {
+                  fullContent += node.textContent || '';
+                }
+              }
+              parentElement.value = fullContent || '';
             }
           } else {
             throw new Error('Cannot set text content on non-text child');
