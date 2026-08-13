@@ -514,6 +514,26 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let pendingJumpToEnd = false;
   let pendingJumpToStart = false;
 
+  function handleUserScrollInput(): void {
+    const selfScrollInProgress = scrollActivity.source === ScrollSource.AlignToItem
+      || scrollActivity.source === ScrollSource.RestoreSnapshot;
+    scrollActivity.consumeIgnoreScroll();
+    scrollActivity.source = ScrollSource.UserScroll;
+    if (selfScrollInProgress) {
+      reobserveSpacers();
+    }
+  }
+
+  function handleUserPointerMove(e: Event): void {
+    if ((e as PointerEvent).buttons !== 0) {
+      handleUserScrollInput();
+    }
+  }
+
+  function isUserScrollKey(key: string): boolean {
+    return ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' '].includes(key);
+  }
+
   const keydownTarget: EventTarget = scrollContainer || document;
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
@@ -538,12 +558,35 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       if (!convergence.top && spacerBefore.offsetHeight > 0) {
         startConvergenceObserving('top');
       }
+    } else if (isUserScrollKey(ke.key)) {
+      handleUserScrollInput();
     }
   }
-  keydownTarget.addEventListener('keydown', handleJumpKeys);
 
   const scrollEventTarget: EventTarget = scrollContainer ?? window;
-  function handleUserScroll(): void {
+  function subscribeToUserScroll(): void {
+    keydownTarget.addEventListener('keydown', handleJumpKeys);
+    scrollEventTarget.addEventListener('wheel', handleUserScrollInput, { passive: true });
+    scrollEventTarget.addEventListener('touchmove', handleUserScrollInput, { passive: true });
+    scrollEventTarget.addEventListener('pointermove', handleUserPointerMove, { passive: true });
+  }
+
+  function unsubscribeFromUserScroll(): void {
+    keydownTarget.removeEventListener('keydown', handleJumpKeys);
+    scrollEventTarget.removeEventListener('wheel', handleUserScrollInput);
+    scrollEventTarget.removeEventListener('touchmove', handleUserScrollInput);
+    scrollEventTarget.removeEventListener('pointermove', handleUserPointerMove);
+  }
+
+  function subscribeToScroll(): void {
+    scrollEventTarget.addEventListener('scroll', handleScroll, { passive: true });
+  }
+
+  function unsubscribeFromScroll(): void {
+    scrollEventTarget.removeEventListener('scroll', handleScroll);
+  }
+
+  function handleScroll(): void {
     if (convergence.isConverging() || scrollActivity.consumeIgnoreScroll()) {
       return;
     }
@@ -551,8 +594,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     const selfScrollInProgress = scrollActivity.source === ScrollSource.AlignToItem
       || scrollActivity.source === ScrollSource.RestoreSnapshot;
     if (selfScrollInProgress) {
-    // IntersectionObserver only fires on change, so spacers suppressed during a self-scroll would stay silent
-    // once the user takes over. Re-observe to force them to re-fire and be processed under the user scroll.
+      // IntersectionObserver only fires on change, so spacers suppressed during a self-scroll would stay silent
+      // once the user takes over. Re-observe to force them to re-fire and be processed under the user scroll.
       reobserveSpacers();
     }
     scrollActivity.source = ScrollSource.UserScroll;
@@ -566,7 +609,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     updateAnchorSnapshot();
   }
-  scrollEventTarget.addEventListener('scroll', handleUserScroll, { passive: true });
+
+  subscribeToUserScroll();
+  subscribeToScroll();
 
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
@@ -647,8 +692,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       stopConvergenceObserving();
       anchoredItems.clear();
       resizeObserver.disconnect();
-      keydownTarget.removeEventListener('keydown', handleJumpKeys);
-      scrollEventTarget.removeEventListener('scroll', handleUserScroll);
+      unsubscribeFromUserScroll();
+      unsubscribeFromScroll();
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
