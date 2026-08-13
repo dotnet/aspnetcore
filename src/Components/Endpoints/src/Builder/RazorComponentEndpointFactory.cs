@@ -26,7 +26,7 @@ internal class RazorComponentEndpointFactory
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
         ConfiguredRenderModesMetadata configuredRenderModesMetadata,
-        RazorComponentApplicationAssembliesMetadata? configuredAssembliesMetadata = null)
+        RazorComponentApplicationAssembliesMetadata configuredAssembliesMetadata)
     {
         // We do not provide a way to establish the order or the name for the page routes.
         // Order is not supported in our client router.
@@ -51,10 +51,7 @@ internal class RazorComponentEndpointFactory
         builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type));
         builder.Metadata.Add(new RootComponentMetadata(rootComponent));
         builder.Metadata.Add(configuredRenderModesMetadata);
-        if (configuredAssembliesMetadata is not null)
-        {
-            builder.Metadata.Add(configuredAssembliesMetadata);
-        }
+        builder.Metadata.Add(configuredAssembliesMetadata);
 
         builder.RequestDelegate = static httpContext =>
         {

@@ -54,6 +54,7 @@ internal sealed class RazorComponentApplicationAssemblyProvider(PersistentCompon
                 }
                 catch
                 {
+                    // The configured assembly might not be available in this process.
                 }
             }
 
