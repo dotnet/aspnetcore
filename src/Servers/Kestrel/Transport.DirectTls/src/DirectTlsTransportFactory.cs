@@ -45,7 +45,7 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
     }
 
     /// <inheritdoc />
-    public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
+    public async ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
     {
         if (!OperatingSystem.IsLinux())
         {
@@ -157,8 +157,17 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
 
         _logger.LogInformation("DirectTls listener bound for endpoint {Endpoint}.", endpoint);
 
-        transport.Bind();
-        return new ValueTask<IConnectionListener>(transport);
+        try
+        {
+            transport.Bind();
+        }
+        catch
+        {
+            await transport.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
+
+        return transport;
     }
 
     /// <inheritdoc />

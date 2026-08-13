@@ -165,6 +165,46 @@ public class DirectTlsTransportFactoryTests
         Assert.True(memoryPoolFactory.Pool.IsDisposed);
     }
 
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task BindAsync_WhenBindFails_RollsBackListenerResources()
+    {
+        // Occupy an ephemeral port with a first listener, then bind a second listener to that exact port. The
+        // second Bind() fails with AddressInUse AFTER the pump pool, TLS contexts, and memory pool are already
+        // allocated - so the factory must roll the listener back (dispose it) rather than leak those resources.
+        var firstFactory = CreateFactory(new DirectTlsTransportOptions { WorkerCount = 1 });
+        var firstEndpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0)
+        {
+            Options = { ServerCertificate = TestResources.GetTestCertificate() },
+        };
+
+        var firstListener = await firstFactory.BindAsync(firstEndpoint);
+        try
+        {
+            var boundPort = ((IPEndPoint)firstListener.EndPoint).Port;
+
+            var memoryPoolFactory = new TrackingMemoryPoolFactory();
+            var secondFactory = CreateFactory(new DirectTlsTransportOptions
+            {
+                WorkerCount = 1,
+                MemoryPoolFactory = memoryPoolFactory,
+            });
+            var secondEndpoint = new DirectTlsEndpoint(IPAddress.Loopback, boundPort)
+            {
+                Options = { ServerCertificate = TestResources.GetTestCertificate() },
+            };
+
+            await Assert.ThrowsAsync<AddressInUseException>(() => secondFactory.BindAsync(secondEndpoint).AsTask());
+
+            // The rolled-back listener owns the memory pool it allocated; a proper rollback disposes it.
+            Assert.True(memoryPoolFactory.Pool.IsDisposed);
+        }
+        finally
+        {
+            await firstListener.DisposeAsync();
+        }
+    }
+
     [Fact]
     public void BuildClientCertificateValidation_DisposesConvertedCertificate()
     {

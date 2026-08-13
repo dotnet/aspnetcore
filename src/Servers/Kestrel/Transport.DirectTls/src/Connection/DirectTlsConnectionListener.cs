@@ -96,6 +96,8 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             throw new AddressInUseException(e.Message, e);
         }
 
+        _listenSocket = listenSocket;
+
         Debug.Assert(listenSocket.LocalEndPoint != null);
         EndPoint = listenSocket.LocalEndPoint;
 
@@ -105,8 +107,6 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         // Each pump waits on epoll and calls Socket.Accept(); non-blocking mode makes
         // a drained accept throw SocketError.WouldBlock instead of blocking the pump.
         listenSocket.Blocking = false;
-
-        _listenSocket = listenSocket;
 
         // Start all pump threads with the listen socket (EPOLLEXCLUSIVE)
         // Each pump will accept connections directly in its epoll loop
