@@ -45,6 +45,24 @@ public class TlsEventPumpAcceptTests
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void AcceptConnections_CapsBatch_WhenBacklogNeverDrains()
+    {
+        // A sustained flood: accept4 always returns a fresh fd and never yields EAGAIN. The loop must stop after
+        // MaxAcceptsPerIteration so the pump thread returns to established I/O and the handshake-timeout sweep
+        // instead of accepting forever. The listen fd is level-triggered, so the remaining backlog re-wakes epoll.
+        using var pump = new ScriptedAcceptPump(
+            script: Array.Empty<Func<int>>(),
+            defaultOutcome: () => 100);   // never drains
+        pump.SetListenFd(1);
+
+        pump.AcceptConnections();
+
+        Assert.Equal(TlsEventPump.MaxAcceptsPerIteration, pump.ProcessedCount);
+        Assert.Equal(TlsEventPump.MaxAcceptsPerIteration, pump.AcceptCallCount);
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void AcceptConnections_StopsDrain_OnAcceptError()
     {
         // A non-EAGAIN accept error ends the current drain. epoll re-arms (level-triggered) if more connections

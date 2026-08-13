@@ -34,6 +34,9 @@ internal class TlsEventPump : IDisposable
 
     private readonly int _epollFd;
 
+    // Maximum connections accepted per AcceptConnections() call (one listen-fd epoll wake).
+    internal const int MaxAcceptsPerIteration = 64;
+
     private const uint DefaultEpollInterest = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP;
 
     // Established connections (handshake complete) - use fd as key
@@ -510,10 +513,12 @@ internal class TlsEventPump : IDisposable
     /// pending we are re-woken immediately, and once <see cref="StopAccepting"/> has de-registered the fd we are
     /// never woken for it again. This makes the loop spin-proof without a failure counter - a persistently
     /// failing accept cannot tight-loop because a closed listen fd is always de-registered before it is closed.
-    /// Successful accepts still loop, so backlog draining under load is unaffected.
+    /// Successful accepts loop up to <see cref="MaxAcceptsPerIteration"/> per call so backlog draining under
+    /// load is unaffected while a sustained flood still yields the pump thread between batches.
     /// </remarks>
     internal void AcceptConnections()
     {
+        int acceptedCount = 0;
         while (_running && _listenFd >= 0)
         {
             int accepted = AcceptOne();
@@ -528,7 +533,7 @@ internal class TlsEventPump : IDisposable
                 if (errno is NativeTls.EINTR)
                 {
                     // Interrupted by a signal before a connection was accepted - retry (the guard above still
-                    // lets a concurrent shutdown break out).
+                    // lets a concurrent shutdown break out). Interrupted attempts don't count against the batch cap.
                     continue;
                 }
 
@@ -548,6 +553,15 @@ internal class TlsEventPump : IDisposable
             {
                 _logger.LogDebug(ex, "Processing an accepted socket threw; disposing it to release its fd.");
                 socket.Dispose();
+            }
+
+            // Cap accepts per wake so a sustained connection flood can't pin this thread in the accept drain and
+            // starve established-connection I/O or the handshake-timeout sweep. The listen fd is level-triggered,
+            // so any remaining backlog re-wakes epoll_wait immediately - we yield between batches without dropping
+            // pending connections. In the common case the backlog is smaller than the cap and we exit via EAGAIN.
+            if (++acceptedCount >= MaxAcceptsPerIteration)
+            {
+                break;
             }
         }
     }
