@@ -419,6 +419,65 @@ public class BindConverterTest
         Assert.Null(actual);
     }
 
+    [Theory]
+    [InlineData("A")]
+    [InlineData("Q")]
+    public void ConvertToEnumDynamicCodeSafe_ParsesDefinedValues(string text)
+    {
+        var success = BindConverter.ConvertToEnumDynamicCodeSafe<SomeLetters>(
+            text,
+            CultureInfo.InvariantCulture,
+            out var actual);
+
+        Assert.True(success);
+        Assert.Equal(Enum.Parse<SomeLetters>(text), actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Z")]
+    [InlineData("42")]
+    public void ConvertToEnumDynamicCodeSafe_MatchesDynamicCodePath(string text)
+    {
+        var expectedSuccess = BindConverter.TryConvertTo<SomeLetters>(
+            text,
+            CultureInfo.InvariantCulture,
+            out var expected);
+        var actualSuccess = BindConverter.ConvertToEnumDynamicCodeSafe<SomeLetters>(
+            text,
+            CultureInfo.InvariantCulture,
+            out var actual);
+
+        Assert.Equal(expectedSuccess, actualSuccess);
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ConvertToNullableEnumDynamicCodeSafe_ParsesDefinedValue()
+    {
+        var success = BindConverter.ConvertToNullableEnumDynamicCodeSafe<SomeLetters?>(
+            "C",
+            CultureInfo.InvariantCulture,
+            out var actual);
+
+        Assert.True(success);
+        Assert.Equal(SomeLetters.C, actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Z")]
+    public void ConvertToNullableEnumDynamicCodeSafe_HandlesEmptyAndInvalidValues(string text)
+    {
+        var success = BindConverter.ConvertToNullableEnumDynamicCodeSafe<SomeLetters?>(
+            text,
+            CultureInfo.InvariantCulture,
+            out var actual);
+
+        Assert.Equal(text.Length == 0, success);
+        Assert.Null(actual);
+    }
+
     private enum SomeLetters
     {
         A,
