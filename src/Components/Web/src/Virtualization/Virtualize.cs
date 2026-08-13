@@ -332,7 +332,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         if (refetchRequired)
         {
-            await RefreshDataCoreAsync(renderOnSuccess: true);
+            await RefreshDataCoreAsync(renderOnSuccess: true, token);
             token.ThrowIfCancellationRequested();
         }
         else
@@ -861,9 +861,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
     }
 
-    private async ValueTask RefreshDataCoreAsync(bool renderOnSuccess)
+    private ValueTask RefreshDataCoreAsync(bool renderOnSuccess)
+        => RefreshDataCoreAsync(renderOnSuccess, CancellationToken.None);
+
+    private async ValueTask RefreshDataCoreAsync(bool renderOnSuccess, CancellationToken ownerCancellationToken)
     {
         _refreshCts?.Cancel();
+        CancellationTokenSource? refreshCts = null;
         CancellationToken cancellationToken;
 
         if (_itemsProvider == DefaultItemsProvider)
@@ -872,12 +876,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // Items collection) we know it will complete synchronously, and there's no point
             // instantiating a new CancellationTokenSource
             _refreshCts = null;
-            cancellationToken = CancellationToken.None;
+            cancellationToken = ownerCancellationToken;
         }
         else
         {
-            _refreshCts = new CancellationTokenSource();
-            cancellationToken = _refreshCts.Token;
+            refreshCts = ownerCancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(ownerCancellationToken)
+                : new CancellationTokenSource();
+            _refreshCts = refreshCts;
+            cancellationToken = refreshCts.Token;
             _loading = true;
         }
 
@@ -996,6 +1003,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 // Re-render the component to throw the exception.
                 StateHasChanged();
             }
+        }
+        finally
+        {
+            if (refreshCts is not null && ReferenceEquals(_refreshCts, refreshCts))
+            {
+                _refreshCts = null;
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _loading = false;
+                }
+            }
+            refreshCts?.Dispose();
         }
     }
 
