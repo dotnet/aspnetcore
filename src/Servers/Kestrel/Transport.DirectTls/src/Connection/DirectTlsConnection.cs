@@ -387,25 +387,17 @@ internal sealed partial class DirectTlsConnection : TransportConnection
     /// </summary>
     private void OnTlsFatalError(Exception ex)
     {
-        // Check if already disposed or aborted - connection may have been cleaned up already
         if (_aborted || Volatile.Read(ref _disposed) != 0)
         {
             return;
         }
 
-        try
-        {
-            _logger.LogDebug(ex, "TLS fatal error for fd={Fd}, aborting connection", _connectionState.Fd);
+        _logger.LogDebug(ex, "TLS fatal error for fd={Fd}, aborting connection", _connectionState.Fd);
 
-            // Just abort to cancel pending operations - don't trigger disposal here
-            // Kestrel will call DisposeAsync when it's done with the connection
-            // This prevents premature disposal while SendLoop is still writing
-            Abort(new ConnectionAbortedException("TLS connection error", ex));
-        }
-        catch (ObjectDisposedException)
-        {
-            // Race with DisposeAsync - connection is already being torn down
-        }
+        // Just abort to cancel pending operations - don't trigger disposal here. Kestrel calls DisposeAsync
+        // when it's done with the connection, which prevents premature disposal while SendLoop is still writing.
+        // Abort only cancels awaitables and pipe reads/flushes (none of which throw), so no guard is needed here.
+        Abort(new ConnectionAbortedException("TLS connection error", ex));
     }
 
     public override async ValueTask DisposeAsync()
