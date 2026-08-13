@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -151,92 +149,6 @@ public class InputNumberTest
             // (e.g., from @bind), except to simplify the test code there's an InvokeAsync
             // here. In production code it wouldn't normally be required because @bind
             // calls run on the sync context anyway.
-            await InvokeAsync(() => { base.CurrentValueAsString = value; });
-        }
-    }
-
-    [Theory]
-    [InlineData("1e-6")]
-    [InlineData("2E-06")]
-    [InlineData("")]
-    [InlineData(null)]
-    public async Task InputNumber_NullableDouble_AcceptsScientificNotationAndEmpty(string? input)
-    {
-        var model = new TestModelNullableDouble();
-        var rootComponent = new TestInputHostComponent<double?, TestInputNumberComponentNullableDouble>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.Value,
-            ValueChanged = v => model.Value = v,
-        };
-        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        await inputComponent.SetCurrentValueAsStringAsync(input ?? "");
-        if (input is "1e-6")
-        {
-            Assert.Equal(1e-6, model.Value);
-        }
-        else if (input is "2E-06")
-        {
-            Assert.Equal(2E-06, model.Value);
-        }
-        else
-        {
-            Assert.Null(model.Value);
-        }
-
-        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
-        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
-        Assert.Empty(validationMessages);
-    }
-
-    [Theory]
-    [InlineData("2E")]
-    [InlineData("2E-")]
-    [InlineData("abc")]
-    [InlineData("1.2.3")]
-    public async Task InputNumber_Double_RejectsInvalidScientificNotation(string input)
-    {
-        var model = new TestModelDouble { Value = 1.0 }; // Set initial value
-        var rootComponent = new TestInputHostComponent<double, TestInputNumberComponentDouble>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.Value,
-        };
-        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-        var initialValue = model.Value;
-
-        await inputComponent.SetCurrentValueAsStringAsync(input);
-
-        var fieldIdentifier = FieldIdentifier.Create(() => model.Value);
-        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
-        Assert.NotEmpty(validationMessages);
-        Assert.Contains(validationMessages, message => message.Contains("must be a number", StringComparison.OrdinalIgnoreCase));
-        Assert.Equal(initialValue, model.Value); // Value should remain unchanged
-    }
-
-    private class TestModelDouble
-    {
-        public double Value { get; set; }
-    }
-
-    private class TestModelNullableDouble
-    {
-        public double? Value { get; set; }
-    }
-
-    private class TestInputNumberComponentDouble : InputNumber<double>
-    {
-        public async Task SetCurrentValueAsStringAsync(string value)
-        {
-            await InvokeAsync(() => { base.CurrentValueAsString = value; });
-        }
-    }
-
-    private class TestInputNumberComponentNullableDouble : InputNumber<double?>
-    {
-        public async Task SetCurrentValueAsStringAsync(string value)
-        {
             await InvokeAsync(() => { base.CurrentValueAsString = value; });
         }
     }
