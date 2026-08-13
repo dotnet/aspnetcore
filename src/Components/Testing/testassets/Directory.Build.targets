@@ -1,0 +1,20 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+  <Target Name="_BuildE2ETasks"
+          BeforeTargets="PrepareE2EApps"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true' and '$(_E2ETasksProject)' != '' and ('$(NoBuild)' != 'true' or !Exists('$(_E2ETasksAssembly)'))">
+    <PropertyGroup>
+      <_E2ETasksBuildProperties>Configuration=$(Configuration);TargetFramework=netstandard2.0</_E2ETasksBuildProperties>
+      <_E2ETasksBuildProperties Condition="!Exists('$(_E2ETasksAssembly)')">$(_E2ETasksBuildProperties);_ForceE2ETasksBuild=$([System.Guid]::NewGuid())</_E2ETasksBuildProperties>
+    </PropertyGroup>
+    <MSBuild Projects="$(_E2ETasksProject)"
+             Targets="Build"
+             Properties="$(_E2ETasksBuildProperties)"
+             RemoveProperties="NoBuild" />
+  </Target>
+</Project>

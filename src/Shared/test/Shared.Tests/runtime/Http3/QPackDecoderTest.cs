@@ -340,6 +340,20 @@ namespace System.Net.Http.Unit.Tests.QPack
             Assert.Empty(_handler.DecodedHeaders);
         }
 
+        [Theory]
+        // Indexed Field Line - Static Table - Index 99 (out of range)
+        [InlineData(new byte[] { 0xff, 0x24 }, 99)]
+        // Literal Header Field With Name Reference - Static Table - Index 99 (out of range)
+        [InlineData(new byte[] { 0x5f, 0x54, 0x01, 0x61 }, 99)]
+        public void DecodesIndexOutsideStaticTable_Error(byte[] encoded, int index)
+        {
+            _decoder.Decode([0x00, 0x00], endHeaders: false, handler: _handler);
+
+            var exception = Assert.Throws<QPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: _handler));
+            Assert.Equal(SR.Format(SR.net_http_qpack_invalid_index, index), exception.Message);
+            Assert.Empty(_handler.DecodedHeaders);
+        }
+
         private static void TestDecodeWithoutIndexing(byte[] encoded, string expectedHeaderName, string expectedHeaderValue)
         {
             KeyValuePair<string, string>[] expectedValues = new[] { new KeyValuePair<string, string>(expectedHeaderName, expectedHeaderValue) };
