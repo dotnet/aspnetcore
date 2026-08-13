@@ -29,9 +29,9 @@ public class RenderBatchWriterBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        // Build a frame array that exercises every supported RenderTreeFrameType
-        // so the benchmark is representative of real workloads (and so it
-        // traverses every branch in the switch in Write).
+        // Build a frame array that exercises a representative set of RenderTreeFrameType values
+        // so the benchmark is closer to real workloads (and so it traverses multiple branches
+        // in the switch in Write).
         var frames = new RenderTreeFrame[ReferenceFrameCount];
         for (var i = 0; i < frames.Length; i++)
         {

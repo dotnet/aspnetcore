@@ -315,7 +315,7 @@ public class RenderBatchWriterTest
         //    but the caller's original array must remain unchanged.
         for (var i = 0; i < sourceFrames.Length; i++)
         {
-            AssertFrameEqual(before[i], sourceFrames[i], i);
+            Assert.Equal(before[i], sourceFrames[i]);
         }
     }
 
