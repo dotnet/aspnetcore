@@ -391,6 +391,11 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         if (Options.SessionStore != null && _sessionKey != null)
         {
             await Options.SessionStore.RemoveAsync(_sessionKey, Context, Context.RequestAborted);
+
+            // Clear the cached session key so a subsequent SignInAsync call in the same request
+            // generates a new key via StoreAsync rather than reusing the just-removed key via RenewAsync.
+            // See https://github.com/dotnet/aspnetcore/issues/47503.
+            _sessionKey = null;
         }
 
         var context = new CookieSigningOutContext(
@@ -480,7 +485,9 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
     private string? GetTlsTokenBinding()
     {
+#pragma warning disable ASPDEPR010 // ITlsTokenBindingFeature is obsolete; kept for back-compat inside cookie auth handler.
         var binding = Context.Features.Get<ITlsTokenBindingFeature>()?.GetProvidedTokenBindingId();
+#pragma warning restore ASPDEPR010
         return binding == null ? null : Convert.ToBase64String(binding);
     }
 }

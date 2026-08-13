@@ -778,7 +778,7 @@ public partial class HubConnection : IAsyncDisposable
             }
             else
             {
-                // Reset StopCts if there isn't an active connection so that the next StartAsync wont immediately fail due to the token being canceled
+                // Reset StopCts if there isn't an active connection so that the next StartAsync won't immediately fail due to the token being canceled
                 _state.StopCts = new CancellationTokenSource();
             }
 

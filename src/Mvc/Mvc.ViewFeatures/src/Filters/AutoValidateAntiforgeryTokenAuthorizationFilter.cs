@@ -20,10 +20,7 @@ internal sealed class AutoValidateAntiforgeryTokenAuthorizationFilter : Validate
         ArgumentNullException.ThrowIfNull(context);
 
         var method = context.HttpContext.Request.Method;
-        if (HttpMethods.IsGet(method) ||
-            HttpMethods.IsHead(method) ||
-            HttpMethods.IsTrace(method) ||
-            HttpMethods.IsOptions(method))
+        if (SafeHttpMethods.IsSafe(method))
         {
             return false;
         }

@@ -111,11 +111,15 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
                     // Note that we only slice off the `*`. We want to match the leading `.` also.
                     MemoryExtensions.EndsWith(requestHost, host.Slice(WildcardHost.Length), StringComparison.OrdinalIgnoreCase) &&
-                    // We don't want to match anything that starts with `.` (includes empty wildcard).
+                    // We don't want to match anything that contains an empty label
+                    // (i.e. starts with `.`, includes empty wildcard, or contains consecutive dots).
                     // For example:
-                    //   - `*.example.com` should not match `.foo.example.com`
                     //   - `*.example.com` should not match `.example.com`
-                    requestHost[0] != '.')
+                    //   - `*.example.com` should not match `.foo.example.com`
+                    //   - `*.example.com` should not match `foo..example.com`
+                    //   - `*.example.com` should not match `foo..bar.example.com`
+                    requestHost[0] != '.' &&
+                    requestHost.IndexOf("..", StringComparison.Ordinal) < 0)
                 {
                     // Matches a suffix wildcard.
                 }
@@ -454,11 +458,15 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                 if (HasHostWildcard)
                 {
                     return host.EndsWith(_wildcardEndsWith!, StringComparison.OrdinalIgnoreCase) &&
-                        // We don't want to match anything that starts with `.` (includes empty wildcard).
+                        // We don't want to match anything that contains an empty label
+                        // (i.e. starts with `.`, includes empty wildcard, or contains consecutive dots).
                         // For example:
-                        //   - `*.example.com` should not match `.foo.example.com`
                         //   - `*.example.com` should not match `.example.com`
-                        host[0] != '.';
+                        //   - `*.example.com` should not match `.foo.example.com`
+                        //   - `*.example.com` should not match `foo..example.com`
+                        //   - `*.example.com` should not match `foo..bar.example.com`
+                        host[0] != '.' &&
+                        !host.Contains("..", StringComparison.Ordinal);
                 }
                 else
                 {
