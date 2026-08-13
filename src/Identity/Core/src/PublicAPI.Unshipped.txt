@@ -7,5 +7,17 @@ Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult.SignalOptionsJson
 Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult.SignalOptionsJson.init -> void
 Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.MakeKnownPasskeysSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult!>!
 Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.SupportsKnownPasskeysSignalOptions.get -> bool
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Enroll.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Enroll.set -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Manage.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Manage.set -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PasskeyEndpointsOptions() -> void
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PrfUsageDetails.get -> string?
+Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.PrfUsageDetails.set -> void
+Microsoft.AspNetCore.Routing.PasskeyEndpointsEndpointRouteBuilderExtensions
+Microsoft.Extensions.DependencyInjection.PasskeyEndpointsServiceCollectionExtensions
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.MakeKnownPasskeysSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity) -> System.Threading.Tasks.Task<string!>!
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SupportsKnownPasskeysSignalOptions.get -> bool
+static Microsoft.AspNetCore.Routing.PasskeyEndpointsEndpointRouteBuilderExtensions.MapWellKnownPasskeyEndpoints(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.Extensions.DependencyInjection.PasskeyEndpointsServiceCollectionExtensions.AddPasskeyEndpoints(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
