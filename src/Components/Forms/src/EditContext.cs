@@ -94,7 +94,11 @@ public sealed class EditContext
         OnFieldChanged?.Invoke(this, new FieldChangedEventArgs(fieldIdentifier));
     }
 
-    internal void MarkAsModified(in FieldIdentifier fieldIdentifier)
+    /// <summary>
+    /// Marks the specified field as modified.
+    /// </summary>
+    /// <param name="fieldIdentifier">Identifies the field whose modification flag should be set.</param>
+    public void MarkAsModified(in FieldIdentifier fieldIdentifier)
         => GetOrAddFieldState(fieldIdentifier).IsModified = true;
 
     /// <summary>
