@@ -6,6 +6,11 @@
 * Never change package.json or package-lock.json files unless explicitly asked to.
 * Never change NuGet.config files unless explicitly asked to.
 
+## Framework assembly boundaries
+
+* Do not use `InternalsVisibleTo` or `UnsafeAccessor` to access non-public members across ASP.NET Core framework assemblies.
+* If framework code in one assembly needs an API from another, design an explicit public API and follow the repository API-review and baseline process. Existing uses are not precedent for adding another cross-assembly bridge.
+
 ## Formatting
 
 * Apply code-formatting style defined in `.editorconfig`.
