@@ -59,6 +59,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     // Guards User swaps in UpdateUser so concurrent /refresh requests (or long-polling polls racing
     // explicit /refresh requests) can't roll the connection back to an older identity.
     private readonly object _userLock = new object();
+    // Refresh validation is synchronous, so temporarily expose the candidate request context to callbacks
+    // without publishing it as the connection's accepted HttpContext.
+    [ThreadStatic]
+    private static HttpConnectionContext? t_userRefreshHttpContextConnection;
+    [ThreadStatic]
+    private static HttpContext? t_userRefreshHttpContext;
     // True only for the WindowsIdentity user clone created by the first long-polling request.
     private bool _ownsUserIdentities;
     private readonly object _userRefreshCallbackLock = new object();
@@ -217,7 +223,21 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     public TransferFormat ActiveFormat { get; set; }
 
-    public HttpContext? HttpContext { get; set; }
+    private HttpContext? _httpContext;
+
+    public HttpContext? HttpContext
+    {
+        get
+        {
+            if (ReferenceEquals(t_userRefreshHttpContextConnection, this))
+            {
+                return t_userRefreshHttpContext;
+            }
+
+            return _httpContext;
+        }
+        set => _httpContext = value;
+    }
 
     public override CancellationToken ConnectionClosed { get; set; }
 
@@ -303,13 +323,17 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// </summary>
     /// <param name="user">The refreshed principal to apply to the connection.</param>
     /// <param name="authenticationExpiration">The expiration of the refreshed authentication.</param>
+    /// <param name="userRefreshHttpContext">The request context to expose while validating the refreshed principal.</param>
     /// <remarks>
     /// The update is skipped if <paramref name="authenticationExpiration"/> is older than the currently
     /// applied <see cref="AuthenticationExpiration"/>. This makes the staleness check and the swap atomic
     /// so a caller racing a concurrent refresh that already applied a newer token can't roll the connection
     /// back to an older identity.
     /// </remarks>
-    internal UserUpdateResult UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+    internal UserUpdateResult UpdateUser(
+        ClaimsPrincipal user,
+        DateTimeOffset authenticationExpiration,
+        HttpContext? userRefreshHttpContext = null)
     {
         ClaimsPrincipal? previouslyOwnedUser = null;
 
@@ -325,7 +349,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                 return UserUpdateResult.Stale;
             }
 
-            if (!IsUserRefreshAccepted(user))
+            if (!IsUserRefreshAccepted(user, userRefreshHttpContext))
             {
                 return UserUpdateResult.Rejected;
             }
@@ -380,10 +404,18 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         return UserUpdateResult.Updated;
     }
 
-    internal bool IsUserRefreshAccepted(ClaimsPrincipal user)
+    internal bool IsUserRefreshAccepted(ClaimsPrincipal user, HttpContext? userRefreshHttpContext = null)
     {
         lock (_userLock)
         {
+            var previousConnection = t_userRefreshHttpContextConnection;
+            var previousHttpContext = t_userRefreshHttpContext;
+            if (userRefreshHttpContext is not null)
+            {
+                t_userRefreshHttpContextConnection = this;
+                t_userRefreshHttpContext = userRefreshHttpContext;
+            }
+
             try
             {
                 return OnUserRefreshing!(user);
@@ -392,6 +424,11 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             {
                 Log.UserRefreshingCallbackFailed(_logger, ex);
                 return false;
+            }
+            finally
+            {
+                t_userRefreshHttpContextConnection = previousConnection;
+                t_userRefreshHttpContext = previousHttpContext;
             }
         }
     }

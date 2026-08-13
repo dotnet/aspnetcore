@@ -192,7 +192,7 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        if (!connection.IsUserRefreshAccepted(newPrincipal))
+        if (!connection.IsUserRefreshAccepted(newPrincipal, context))
         {
             LogUserChanged(connection.User, newPrincipal);
             await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "user_changed");
@@ -213,7 +213,7 @@ internal sealed partial class HttpConnectionDispatcher
             }
         }
 
-        if (connection.UpdateUser(newPrincipal, newExpiration) == HttpConnectionContext.UserUpdateResult.Rejected)
+        if (connection.UpdateUser(newPrincipal, newExpiration, context) == HttpConnectionContext.UserUpdateResult.Rejected)
         {
             // Revalidate atomically with the swap because the connection user or validation callback
             // may have changed while the application callback was running.
@@ -1003,7 +1003,7 @@ internal sealed partial class HttpConnectionDispatcher
             // AuthenticationExpiration, so no separate swap or UpdateExpiration call is needed on this path.
             // If a concurrent /refresh applied a newer token between the stale check and here, UpdateUser skips
             // the rollback atomically with the swap.
-            if (connection.UpdateUser(newPrincipal, newExpiration) == HttpConnectionContext.UserUpdateResult.Rejected)
+            if (connection.UpdateUser(newPrincipal, newExpiration, context) == HttpConnectionContext.UserUpdateResult.Rejected)
             {
                 // Revalidate atomically with the swap because the connection user or validation callback
                 // may have changed while the application callback was running.
@@ -1198,7 +1198,7 @@ internal sealed partial class HttpConnectionDispatcher
     // replaceable user-refresh policy before mutating any connection state.
     private async Task<bool> RejectIfUserChangedAsync(HttpConnectionContext connection, HttpContext context)
     {
-        if (connection.IsUserRefreshAccepted(context.User))
+        if (connection.IsUserRefreshAccepted(context.User, context))
         {
             return false;
         }
