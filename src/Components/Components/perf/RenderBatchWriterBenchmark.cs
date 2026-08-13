@@ -11,9 +11,10 @@ namespace Microsoft.AspNetCore.Components.Performance;
 /// <summary>
 /// Measures the cost of serializing a <see cref="RenderBatch"/> reference-frame
 /// section through <see cref="RenderBatchWriter"/>. The ref-based <c>Write</c>
-/// overload (post-optimization) avoids the per-property defensive copies that
-/// the <c>in</c>-based overload triggered inside the JIT-compiled body.
+/// overload avoids the per-property defensive copies that the <c>in</c>-based
+/// overload triggered inside the JIT-compiled body.
 /// </summary>
+[MemoryDiagnoser]
 public class RenderBatchWriterBenchmark
 {
     // A handful of representative batch sizes — small, medium, large. Real-world
@@ -63,7 +64,7 @@ public class RenderBatchWriterBenchmark
         _output = new MemoryStream(capacity: 64 * 1024);
     }
 
-    [Benchmark(Baseline = true, Description = "RenderBatchWriter: serialize N reference frames.")]
+    [Benchmark(Description = "RenderBatchWriter: serialize N reference frames.")]
     public int WriteReferenceFrames()
     {
         _output.Position = 0;

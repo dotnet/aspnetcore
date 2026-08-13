@@ -271,7 +271,7 @@ public class RenderBatchWriterTest
     }
 
     [Fact]
-    public void WritingReferenceFramesDoesNotMutateSourceFrames()
+    public void SerializationIsDeterministicAndDoesNotModifySourceArray()
     {
         var sourceFrames = new RenderTreeFrame[]
         {
@@ -309,10 +309,10 @@ public class RenderBatchWriterTest
         var bytes2 = SnapshotRenderBatch(renderBatch);
         Assert.Equal(bytes, bytes2);
 
-        // 2) Per-frame field-by-field equality. This catches a regression where
-        //    the writer mutates a frame under the new `ref` parameter (e.g. for
-        //    "padding" purposes) and would otherwise be invisible to a pure
-        //    property-equality check.
+        // 2) The original source array reference is not modified by serialization.
+        //    Note: This verifies that the source array passed to the writer is not
+        //    mutated. The writer uses direct ref to array elements internally,
+        //    but the caller's original array must remain unchanged.
         for (var i = 0; i < sourceFrames.Length; i++)
         {
             AssertFrameEqual(before[i], sourceFrames[i], i);

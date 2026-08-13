@@ -132,8 +132,7 @@ internal sealed class RenderBatchWriter : IDisposable
         _binaryWriter.Write(count);
         for (var i = 0; i < count; i++)
         {
-            var frame = array[i];
-            Write(ref frame);
+            Write(ref array[i]);
         }
 
         return startPos;
