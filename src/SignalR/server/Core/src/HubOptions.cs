@@ -86,6 +86,18 @@ public class HubOptions
     public bool DisableImplicitFromServicesParameters { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether authentication refresh can change the user identifier associated with a connection.
+    /// </summary>
+    /// <remarks>
+    /// The default value is <see langword="false"/>. When enabled, the configured
+    /// <see cref="HubLifetimeManager{THub}"/> is notified so user-targeted routing can be updated.
+    /// A backplane that keys user routing when the connection is established, rather than resolving it per
+    /// send, continues to route <c>Clients.User</c> sends using the previous identifier until it handles
+    /// that notification.
+    /// </remarks>
+    public bool AllowUserIdentifierChangeOnAuthenticationRefresh { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum bytes to buffer per connection when using stateful reconnect.
     /// </summary>
     /// <remarks>Defaults to 100,000 bytes.</remarks>

@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
@@ -186,21 +187,27 @@ internal sealed partial class HttpConnectionDispatcher
         // IAuthenticateResultFeature — the same source negotiate and the connect/poll paths read. This keeps
         // /refresh consistent with those paths and avoids re-authenticating against the app's default scheme,
         // which throws or picks the wrong credential in multi-scheme apps.
+        // The middleware only publishes the feature when authentication succeeded, so a missing or unsuccessful
+        // result is the expected shape after a sign out and is accepted for endpoints that allow anonymous access.
         var authResult = context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult;
-        if (authResult is null || !authResult.Succeeded)
+        var endpoint = context.GetEndpoint();
+        var allowsAnonymous = endpoint is not null &&
+            (endpoint.Metadata.GetMetadata<IAllowAnonymous>() is not null ||
+                endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count == 0);
+        if (authResult?.Failure is not null || (!allowsAnonymous && authResult?.Succeeded != true))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status401Unauthorized, "invalid_token");
             return;
         }
 
-        var newPrincipal = authResult.Principal ?? context.User;
+        var newPrincipal = authResult?.Principal ?? context.User;
         if (HasWindowsIdentity(connection.User) || HasWindowsIdentity(newPrincipal))
         {
             await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "windows_identity_not_supported");
             return;
         }
 
-        var newExpiration = GetAuthenticationExpiration(authResult, context.User);
+        var newExpiration = authResult is null ? DateTimeOffset.MaxValue : GetAuthenticationExpiration(authResult, context.User);
 
         if (options.OnAuthenticationRefresh is { } callback)
         {

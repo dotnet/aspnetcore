@@ -28,6 +28,25 @@ public abstract class HubLifetimeManager<THub> where THub : Hub
     public abstract Task OnDisconnectedAsync(HubConnectionContext connection);
 
     /// <summary>
+    /// Called when authentication refresh changes the user identifier associated with a connection.
+    /// </summary>
+    /// <param name="connection">The connection whose user identifier is changing.</param>
+    /// <param name="previousUserIdentifier">The previous user identifier.</param>
+    /// <param name="newUserIdentifier">The new user identifier.</param>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous update.</returns>
+    /// <remarks>
+    /// This method is called after <see cref="HubConnectionContext.UserIdentifier"/> is updated, so
+    /// implementations that maintain user mappings should re-key them before the returned task completes.
+    /// </remarks>
+    public virtual Task OnUserIdentifierChangedAsync(
+        HubConnectionContext connection,
+        string? previousUserIdentifier,
+        string? newUserIdentifier)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Sends an invocation message to all hub connections.
     /// </summary>
     /// <param name="methodName">The invocation method name.</param>

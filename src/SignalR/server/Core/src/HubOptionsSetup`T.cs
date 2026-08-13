@@ -38,6 +38,7 @@ public class HubOptionsSetup<THub> : IConfigureOptions<HubOptions<THub>> where T
         options.StreamBufferCapacity = _hubOptions.StreamBufferCapacity;
         options.MaximumParallelInvocationsPerClient = _hubOptions.MaximumParallelInvocationsPerClient;
         options.DisableImplicitFromServicesParameters = _hubOptions.DisableImplicitFromServicesParameters;
+        options.AllowUserIdentifierChangeOnAuthenticationRefresh = _hubOptions.AllowUserIdentifierChangeOnAuthenticationRefresh;
 
         options.UserHasSetValues = true;
 
