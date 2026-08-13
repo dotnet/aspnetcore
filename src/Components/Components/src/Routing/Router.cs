@@ -44,10 +44,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private IReadOnlyList<Assembly> _configuredAssemblies;
 
-    private Assembly _appAssembly;
-
-    private IEnumerable<Assembly> _additionalAssemblies;
-
     [Inject] private NavigationManager NavigationManager { get; set; }
 
     [Inject] private INavigationInterception NavigationInterception { get; set; }
@@ -134,10 +130,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         parameters.SetParameterProperties(this);
 
-        _appAssembly = AppAssembly ?? _configuredAssemblies?[0];
-        _additionalAssemblies = AdditionalAssemblies ?? GetConfiguredAdditionalAssemblies();
-
-        if (_appAssembly == null && RoutingStateProvider?.RouteData is null)
+        if (AppAssembly is null && _configuredAssemblies is null && RoutingStateProvider?.RouteData is null)
         {
             throw new InvalidOperationException(
                 $"The {nameof(Router)} component requires a value for the parameter {nameof(AppAssembly)}, " +
@@ -212,7 +205,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private void RefreshRouteTable()
     {
-        var routeKey = new RouteKey(_appAssembly, _additionalAssemblies);
+        var appAssembly = AppAssembly ?? _configuredAssemblies?[0];
+        var additionalAssemblies = AdditionalAssemblies ?? GetConfiguredAdditionalAssemblies(appAssembly);
+        var routeKey = new RouteKey(appAssembly, additionalAssemblies);
 
         if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
         {
@@ -221,7 +216,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    private IEnumerable<Assembly> GetConfiguredAdditionalAssemblies()
+    private IEnumerable<Assembly> GetConfiguredAdditionalAssemblies(Assembly appAssembly)
     {
         if (_configuredAssemblies is null)
         {
@@ -232,7 +227,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         for (var i = 0; i < _configuredAssemblies.Count; i++)
         {
             var assembly = _configuredAssemblies[i];
-            if (assembly != _appAssembly)
+            if (assembly != appAssembly)
             {
                 additionalAssemblies.Add(assembly);
             }
