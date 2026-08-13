@@ -311,6 +311,35 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             stateValue: "other");
     }
 
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/63996
+    // Declarative state with AllowUpdates enabled must be available during initialization each time
+    // enhanced navigation reactivates a component on an already-running interactive runtime.
+    [Theory]
+    [InlineData("server", typeof(InteractiveServerRenderMode))]
+    [InlineData("wasm", typeof(InteractiveWebAssemblyRenderMode))]
+    public void DeclarativeStateAllowingUpdatesIsRestoredOnSubsequentEnhancedNavigations(string mode, Type renderMode)
+    {
+        Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('keep-circuit-alive', 'true')");
+        Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}");
+
+        Browser.Click(By.Id("page-with-components-link-and-declarative-state"));
+        AssertStateIsRestored();
+
+        Browser.Click(By.Id("page-no-components-link"));
+        Browser.Click(By.Id("page-with-components-link-and-declarative-state"));
+        AssertStateIsRestored();
+
+        void AssertStateIsRestored()
+        {
+            AssertDeclarativePageState(
+                mode: mode,
+                renderMode: renderMode.Name,
+                interactive: true,
+                stateValue: "other");
+        }
+    }
+
     // Same regression as above, but with streaming rendering, where the persisted state only reaches
     // the document on a streaming update at the end of the response, after the interactive components
     // have already been discovered.
