@@ -3975,38 +3975,52 @@
         "type": "object",
         "properties": {
           "booleanType": {
-            "type": "boolean",
-            "example": true
+            "examples": [
+              true
+            ],
+            "type": "boolean"
           },
           "integerType": {
+            "examples": [
+              42
+            ],
             "type": "integer",
-            "format": "int32",
-            "example": 42
+            "format": "int32"
           },
           "longType": {
+            "examples": [
+              1234567890123456789
+            ],
             "type": "integer",
-            "format": "int64",
-            "example": 1234567890123456789
+            "format": "int64"
           },
           "doubleType": {
+            "examples": [
+              3.14
+            ],
             "type": "number",
-            "format": "double",
-            "example": 3.14
+            "format": "double"
           },
           "floatType": {
+            "examples": [
+              3.14
+            ],
             "type": "number",
-            "format": "float",
-            "example": 3.14
+            "format": "float"
           },
           "dateTimeType": {
+            "examples": [
+              "2022-01-01T00:00:00Z"
+            ],
             "type": "string",
-            "format": "date-time",
-            "example": "2022-01-01T00:00:00Z"
+            "format": "date-time"
           },
           "dateOnlyType": {
+            "examples": [
+              "2022-01-01"
+            ],
             "type": "string",
-            "format": "date",
-            "example": "2022-01-01"
+            "format": "date"
           }
         }
       },
