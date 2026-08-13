@@ -252,7 +252,7 @@ internal sealed class HostingApplicationDiagnostics
             }
         }
 
-        // Logging Scope is finshed with
+        // Logging Scope is finished with
         context.Scope?.Dispose();
     }
 

@@ -54,4 +54,22 @@ internal static class ComponentsApi
         public const string AuthenticationStateChanged = "AuthenticationStateChanged";
         public const string GetAuthenticationStateAsync = "GetAuthenticationStateAsync";
     }
+
+    public static class BindConverter
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.BindConverter";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class EventCallbackFactory
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.EventCallbackFactory";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class RenderTreeBuilder
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
+        public const string MetadataName = FullTypeName;
+    }
 }

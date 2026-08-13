@@ -181,11 +181,6 @@ export class BrowserRenderer {
           if (textNode instanceof Text) {
             const newText = frameReader.textContent(frame);
             textNode.textContent = newText;
-            // If this text node is inside a <textarea>, also update the textarea's 'value' property.
-            // Browsers track the displayed value (the 'value' property) separately from the initial
-            // text content (defaultValue/textContent) once the user has edited the field, so updating
-            // textContent alone won't update what the user sees. We skip this while the textarea has
-            // focus to avoid clobbering the caret position of a user who is actively typing.
             const parentElement = textNode.parentElement;
             if (parentElement instanceof HTMLTextAreaElement && document.activeElement !== parentElement) {
               let fullContent = '';

@@ -8,6 +8,16 @@ ci=${ci:-false}
 # Build mode
 source_build=${source_build:-false}
 
+# Set to true to use the pipelines logger which will enable Azure logging output.
+# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
+# This flag is meant as a temporary opt-in for the feature while validating it across
+# our consumers. It will be deleted in the future.
+if [[ "$ci" == true ]]; then
+  pipelines_log=${pipelines_log:-true}
+else
+  pipelines_log=${pipelines_log:-false}
+fi
+
 # Build configuration. Common values include 'Debug' and 'Release', but the repository may use other names.
 configuration=${configuration:-'Debug'}
 
@@ -67,6 +77,8 @@ runtime_source_feed_key=${runtime_source_feed_key:-''}
 
 # True when the build is running within the VMR.
 from_vmr=${from_vmr:-false}
+
+disable_pipeline_set_result=${disable_pipeline_set_result:-false}
 
 # Resolve any symlinks in the given path.
 function ResolvePath {
@@ -353,6 +365,15 @@ function GetDotNetInstallScript {
 }
 
 function InitializeBuildTool {
+  # Allow a caller (e.g. a bootstrap script running out-of-proc) to inject the build tool via
+  # environment variables instead of the in-proc _InitializeBuildTool variable. Only the tool path and
+  # command are consumed by the MSBuild function below, so those are all that's needed.
+  if [[ -n "${_BuildToolPath:-}" ]]; then
+    _InitializeBuildTool="$_BuildToolPath"
+    _InitializeBuildToolCommand="$_BuildToolCommand"
+    return
+  fi
+
   if [[ -n "${_InitializeBuildTool:-}" ]]; then
     return
   fi
@@ -423,7 +444,7 @@ function InitializeToolset {
   if [[ -z "$nuget_config" ]]; then
     # Search for any variation of nuget.config in the RepoRoot
     local found_config
-    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname "nuget.config" -print -quit)
+    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname nuget.config | head -n 1)
 
     if [[ -n "$found_config" ]]; then
       nuget_config="$found_config"
@@ -433,7 +454,16 @@ function InitializeToolset {
   if [[ -n "$nuget_config" ]]; then
     download_args+=("--configfile" "$nuget_config")
   fi
-  DotNet "${download_args[@]}"
+
+  # 'dotnet package download' fails outright if any source in the repo's NuGet.config is
+  # unavailable (for example a transport feed that was decommissioned after a release). The
+  # Arcade SDK is always published to the public dotnet-eng feed, so if the config-driven
+  # download fails, retry once against that feed directly (which ignores the other sources)
+  # before giving up, so a single dead source doesn't block the build.
+  if ! DotNet true "${download_args[@]}"; then
+    echo "Restoring the Arcade SDK from the configured sources failed; retrying from the public dotnet-eng feed."
+    DotNet "${download_args[@]}" --source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"
+  fi
 
   local package_dir="$_InitializeNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
 
@@ -457,7 +487,7 @@ function InitializeToolset {
 }
 
 function ExitWithExitCode {
-  if [[ "$ci" == true && "$prepare_machine" == true ]]; then
+  if [[ "$prepare_machine" == true ]]; then
     StopProcesses
   fi
   exit $1
@@ -466,11 +496,21 @@ function ExitWithExitCode {
 function StopProcesses {
   echo "Killing running build processes..."
   pkill -9 "dotnet" || true
-  pkill -9 "vbcscompiler" || true
+  pkill -9 -i -x VBCSCompiler || true
+  pkill -9 -i -x MSBuild || true
   return 0
 }
 
 function DotNet {
+  # When the first argument is 'true' or 'false' it controls the exit behavior on failure:
+  # 'true' returns the dotnet exit code to the caller (so it can implement its own fallback),
+  # while the default terminates the script. Any other first argument is treated as a dotnet argument.
+  local ignore_failure=false
+  if [[ "$1" == 'true' || "$1" == 'false' ]]; then
+    ignore_failure="$1"
+    shift
+  fi
+
   InitializeDotNetCli $restore
 
   local dotnet_path="$_InitializeDotNetCli/dotnet"
@@ -479,9 +519,14 @@ function DotNet {
 
   "$dotnet_path" "$@" || {
     local exit_code=$?
+
+    if [[ "$ignore_failure" == true ]]; then
+      return $exit_code
+    fi
+
     echo "dotnet command failed with exit code $exit_code. Check errors above."
 
-    if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true ]]; then
+    if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true && "$disable_pipeline_set_result" != true ]]; then
       Write-PipelineSetResult -result "Failed" -message "dotnet command execution failed."
       ExitWithExitCode 0
     else
@@ -493,19 +538,27 @@ function DotNet {
 function MSBuild {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true && "$exclude_ci_binary_log" != true ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the -noBinaryLog switch."
-      ExitWithExitCode 1
-    fi
-
-    # Node reuse must be disabled in CI builds unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
-    # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
-    if [[ "$node_reuse" == true && "${MSBUILD_NODEREUSE_ENABLED:-}" != "1" ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Node reuse must be disabled in CI build."
+      Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the --excludeCIBinarylog switch."
       ExitWithExitCode 1
     fi
   fi
 
   InitializeBuildTool
+
+  local logger_switch=()
+  if [[ "$pipelines_log" == true ]]; then
+    InitializeToolset
+
+    local toolset_dir="${_InitializeToolset%/*}"
+    local selectedPath="$toolset_dir/net/Microsoft.DotNet.ArcadeLogging.dll"
+
+    # Only inject the logger when it's present. A last-known-good Arcade used to bootstrap
+    # the build may not ship the logger yet, so its absence must not be a hard error.
+    # Specify the logger type explicitly so loading is deterministic.
+    if [[ -f "$selectedPath" ]]; then
+      logger_switch=("-logger:Microsoft.DotNet.ArcadeLogging.PipelinesLogger,$selectedPath")
+    fi
+  fi
 
   local warnaserror_switch=""
   if [[ $warn_as_error == true ]]; then
@@ -522,8 +575,8 @@ function MSBuild {
       echo "Build failed with exit code $exit_code. Check errors above."
 
       # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-      # Skip this when the build is a child of the VMR build.
-      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true ]]; then
+      # Skip this when the build is a child of the VMR build, or when -disablePipelineSetResult is set so the real exit code propagates.
+      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true && "$disable_pipeline_set_result" != true ]]; then
         Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
         # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
         # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
@@ -542,10 +595,10 @@ function MSBuild {
 
   local warnnotaserror_switch=""
   if [[ -n "$warn_not_as_error" && "$warn_as_error" == true ]]; then
-    warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=$warn_not_as_error"
+    warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=${warn_not_as_error//;/%3B}"
   fi
 
-  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
+  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch ${logger_switch[@]+"${logger_switch[@]}"} /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
 function GetDarc {

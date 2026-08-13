@@ -557,7 +557,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         IncrementRequestHeadersCount();
 
-        // This method should be overriden in specific implementations and the base should be
+        // This method should be overridden in specific implementations and the base should be
         // called to validate the header count.
     }
 
@@ -593,7 +593,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         try
         {
-            // We run the request processing loop in a seperate async method so per connection
+            // We run the request processing loop in a separate async method so per connection
             // exception handling doesn't complicate the generated asm for the loop.
             await ProcessRequests(application);
         }
@@ -1251,6 +1251,15 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             {
                 DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
             }
+        }
+
+        // Close the connection when rejecting an HTTP/1.1 CONNECT request.
+        // See https://www.rfc-editor.org/rfc/rfc9931#section-8.
+        if (_httpVersion == Http.HttpVersion.Http11 &&
+            Method == HttpMethod.Connect &&
+            StatusCode >= StatusCodes.Status300MultipleChoices)
+        {
+            DisableKeepAlive(ConnectionEndReason.ResponseNoKeepAlive);
         }
 
         responseHeaders.SetReadOnly();
