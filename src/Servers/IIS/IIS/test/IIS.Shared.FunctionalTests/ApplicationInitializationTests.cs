@@ -89,7 +89,13 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
             EnablePreload(deploymentParameters);
 
             var result = await DeployAsync(deploymentParameters);
-            using var client = result.CreateClient(new HttpClientHandler());
+            // The deployment client's LoggingHandler buffers the response body, defeating ResponseHeadersRead.
+            // We're purposefully blocking the response from being sent on the server side until the app shutdown starts.
+            using var client = new HttpClient
+            {
+                BaseAddress = new Uri(result.ApplicationBaseUri),
+                Timeout = TimeSpan.FromSeconds(200),
+            };
             using var response = await client.GetAsync("/CompleteAfterAppStartsShuttingDown", HttpCompletionOption.ResponseHeadersRead);
             var responseBodyTask = response.Content.ReadAsStringAsync();
 
