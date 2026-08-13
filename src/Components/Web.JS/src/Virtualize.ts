@@ -594,9 +594,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     const selfScrollInProgress = scrollActivity.source === ScrollSource.AlignToItem
       || scrollActivity.source === ScrollSource.RestoreSnapshot;
     if (selfScrollInProgress) {
-      // IntersectionObserver only fires on change, so spacers suppressed during a self-scroll would stay silent
-      // once the user takes over. Re-observe to force them to re-fire and be processed under the user scroll.
-      reobserveSpacers();
+      return;
     }
     scrollActivity.source = ScrollSource.UserScroll;
 

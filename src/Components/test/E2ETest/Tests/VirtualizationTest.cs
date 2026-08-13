@@ -5564,13 +5564,56 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("scroll-to-item")).Click();
         WaitForScrollStatus("Completed: 150");
 
-        SetScrollTargetIndex(-1);
-        Browser.Exists(By.Id("scroll-to-item")).Click();
-        WaitForScrollStatus("Completed: -1");
+        InstallExtraScrollEventRecorder();
+        try
+        {
+            SetScrollTargetIndex(-1);
+            Browser.Exists(By.Id("scroll-to-item")).Click();
+            WaitForScrollStatus("Completed: -1");
 
-        Browser.True(() => GetScrollTop(js, container) <= 1,
-            $"Negative index should clamp to top; scrollTop={GetScrollTop(js, container)}");
-        Browser.True(() => GetTopRenderedIndex(js) == 0);
+            Browser.True(() => (bool)js.ExecuteScript("return window.__extraScrollEventDispatched;"));
+            Assert.False((bool)js.ExecuteScript("return window.__programmaticScrollWasUserScroll;"));
+            Browser.True(() => GetScrollTop(js, container) <= 1,
+                $"Negative index should clamp to top; scrollTop={GetScrollTop(js, container)}");
+            Browser.True(() => GetTopRenderedIndex(js) == 0);
+        }
+        finally
+        {
+            js.ExecuteScript("window.__restoreExtraScrollEventRecorder();");
+        }
+
+        void InstallExtraScrollEventRecorder()
+            => js.ExecuteScript(
+                """
+                const originalScrollTo = Element.prototype.scrollTo;
+                const originalInvokeMethodAsync = DotNet.DotNetObject.prototype.invokeMethodAsync;
+                window.__extraScrollEventDispatched = false;
+                window.__programmaticScrollWasUserScroll = false;
+
+                Element.prototype.scrollTo = function(...args) {
+                    const result = originalScrollTo.apply(this, args);
+                    this.dispatchEvent(new Event('scroll'));
+                    this.dispatchEvent(new Event('scroll'));
+                    window.__extraScrollEventDispatched = true;
+                    return result;
+                };
+
+                DotNet.DotNetObject.prototype.invokeMethodAsync = function(methodName, ...args) {
+                    if ((methodName === 'OnSpacerBeforeVisible' || methodName === 'OnSpacerAfterVisible')
+                        && args[3] === 0) {
+                        window.__programmaticScrollWasUserScroll = true;
+                    }
+                    return originalInvokeMethodAsync.apply(this, [methodName, ...args]);
+                };
+
+                window.__restoreExtraScrollEventRecorder = () => {
+                    Element.prototype.scrollTo = originalScrollTo;
+                    DotNet.DotNetObject.prototype.invokeMethodAsync = originalInvokeMethodAsync;
+                    delete window.__restoreExtraScrollEventRecorder;
+                    delete window.__extraScrollEventDispatched;
+                    delete window.__programmaticScrollWasUserScroll;
+                };
+                """);
     }
 
     [Theory]
