@@ -667,13 +667,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
                   "oneOf": [
+                    {
+                      "enum": [
+                        null
+                      ],
+                      "nullable": true
+                    },
                     {
                       "$ref": "#/components/schemas/NullableResponseModel"
                     }
-                  ],
-                  "nullable": true
+                  ]
                 }
               }
             }
@@ -690,13 +694,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
                 "oneOf": [
+                  {
+                    "enum": [
+                      null
+                    ],
+                    "nullable": true
+                  },
                   {
                     "$ref": "#/components/schemas/NullableRequestModel"
                   }
-                ],
-                "nullable": true
+                ]
               }
             }
           }
@@ -871,13 +879,17 @@
             "type": "string"
           },
           "optionalNested": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/NestedModel"
               }
-            ],
-            "nullable": true
+            ]
           },
           "requiredNested": {
             "$ref": "#/components/schemas/NestedModel"
@@ -995,13 +1007,17 @@
             "$ref": "#/components/schemas/TestEnum"
           },
           "nullableEnum": {
-            "type": "integer",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/TestEnum"
               }
-            ],
-            "nullable": true
+            ]
           },
           "listOfNullableEnums": {
             "type": "array",
@@ -1156,13 +1172,17 @@
             "nullable": true
           },
           "deepNested": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ComplexType"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1234,13 +1254,17 @@
             "nullable": true
           },
           "nullableComplexProperty": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ComplexType"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1469,13 +1493,17 @@
             "$ref": "#/components/schemas/RefProfile"
           },
           "secondaryUser": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/RefProfile"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
