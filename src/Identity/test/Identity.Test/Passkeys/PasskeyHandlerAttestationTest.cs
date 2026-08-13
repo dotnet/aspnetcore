@@ -21,6 +21,17 @@ using static CredentialHelpers;
 public class PasskeyHandlerAttestationTest
 {
     [Fact]
+    public void SupportsConditionalCreation()
+    {
+        var userManager = MockHelpers.MockUserManager<PocoUser>();
+        var handler = new PasskeyHandler<PocoUser>(
+            userManager.Object,
+            Options.Create(new IdentityPasskeyOptions()));
+
+        Assert.True(handler.SupportsConditionalCreation);
+    }
+
+    [Fact]
     public async Task CanSucceed()
     {
         var test = new AttestationTest();
@@ -966,6 +977,94 @@ public class PasskeyHandlerAttestationTest
         Assert.StartsWith("The credential is already registered for a user", result.Failure.Message);
     }
 
+    [Fact]
+    public async Task Fails_WhenUserIsNotPresent()
+    {
+        var test = new AttestationTest();
+        test.AuthenticatorDataArgs.Transform(args => args with
+        {
+            Flags = args.Flags & ~AuthenticatorDataFlags.UserPresent,
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The authenticator data flags did not include the 'UserPresent' flag", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Fails_WhenUserIsNotVerifiedAndUserVerificationIsRequired()
+    {
+        var test = new AttestationTest();
+        test.PasskeyOptions.UserVerificationRequirement = "required";
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("User verification is required", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task CanSucceed_WhenConditionallyMediatedAndUserIsNotPresentOrVerified()
+    {
+        var test = new AttestationTest
+        {
+            IsConditionallyMediated = true,
+        };
+        test.PasskeyOptions.UserVerificationRequirement = "required";
+        test.AuthenticatorDataArgs.Transform(args => args with
+        {
+            Flags = args.Flags & ~(AuthenticatorDataFlags.UserPresent | AuthenticatorDataFlags.UserVerified),
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.True(result.Succeeded);
+        Assert.False(result.Passkey.IsUserVerified);
+    }
+
+    [Theory]
+    [InlineData("required", false, "required")]
+    [InlineData("required", true, "preferred")]
+    [InlineData("preferred", true, "preferred")]
+    [InlineData("discouraged", true, "discouraged")]
+    public async Task ReducesRequiredUserVerification_WhenConditionallyMediated(
+        string configuredRequirement,
+        bool isConditionallyMediated,
+        string expectedRequirement)
+    {
+        var test = new AttestationTest
+        {
+            IsConditionallyMediated = isConditionallyMediated,
+        };
+        test.PasskeyOptions.UserVerificationRequirement = configuredRequirement;
+
+        await test.RunAsync();
+
+        var creationOptions = test.CreationOptionsJson.GetValueAsJsonElement();
+        var userVerification = creationOptions
+            .GetProperty("authenticatorSelection")
+            .GetProperty("userVerification")
+            .GetString();
+        Assert.Equal(expectedRequirement, userVerification);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConditionalMediationRoundTripsThroughAttestationState(bool isConditionallyMediated)
+    {
+        var test = new AttestationTest
+        {
+            IsConditionallyMediated = isConditionallyMediated,
+        };
+
+        await test.RunAsync();
+
+        var attestationState = test.AttestationStateJson.GetValueAsJsonElement();
+        Assert.Equal(isConditionallyMediated, attestationState.GetProperty("isConditionallyMediated").GetBoolean());
+    }
+
     private static string GetInvalidBase64UrlValue(string base64UrlValue)
     {
         var rawValue = Base64Url.DecodeFromChars(base64UrlValue);
@@ -986,6 +1085,7 @@ public class PasskeyHandlerAttestationTest
         public string? UserName { get; set; } = "johndoe";
         public string? UserDisplayName { get; set; } = "John Doe";
         public string? Origin { get; set; } = "https://example.com";
+        public bool IsConditionallyMediated { get; set; }
         public bool DoesCredentialAlreadyExistForAnotherUser { get; set; }
         public COSEAlgorithmIdentifier Algorithm { get; set; } = COSEAlgorithmIdentifier.ES256;
         public ReadOnlyMemory<byte> CredentialId { get; set; } = _defaultCredentialId;
@@ -996,6 +1096,7 @@ public class PasskeyHandlerAttestationTest
         public ComputedValue<ReadOnlyMemory<byte>> AuthenticatorData { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> AttestationObject { get; } = new();
         public ComputedJsonObject AttestationStateJson { get; } = new();
+        public ComputedJsonObject CreationOptionsJson { get; } = new();
         public ComputedJsonObject ClientDataJson { get; } = new();
         public ComputedJsonObject CredentialJson { get; } = new();
 
@@ -1031,9 +1132,13 @@ public class PasskeyHandlerAttestationTest
                 DisplayName = UserDisplayName!,
             };
 
-            var creationOptionsResult = await handler.MakeCreationOptionsAsync(userEntity, httpContext.Object);
+            var creationOptionsResult = await handler.MakeCreationOptionsAsync(
+                userEntity,
+                IsConditionallyMediated,
+                httpContext.Object);
+            var creationOptionsJson = CreationOptionsJson.Compute(creationOptionsResult.CreationOptionsJson);
             var creationOptions = JsonSerializer.Deserialize(
-                creationOptionsResult.CreationOptionsJson,
+                creationOptionsJson!,
                 IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions)
                 ?? throw new InvalidOperationException("Failed to deserialize creation options JSON.");
 
