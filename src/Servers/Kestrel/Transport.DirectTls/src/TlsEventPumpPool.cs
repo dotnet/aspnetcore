@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Net;
 using System.Net.Security;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
@@ -46,6 +47,7 @@ internal sealed class TlsEventPumpPool : IDisposable
     /// </summary>
     public void StartWithListenSocket(
         int listenFd,
+        EndPoint listenEndPoint,
         TlsContext tlsContext,
         Func<ConnectionContext?, string?, (TlsContext Context, RemoteCertificateValidationCallback? ClientCertificateValidation)>? contextResolver,
         ChannelWriter<DirectTlsConnection> readyConnections,
@@ -60,6 +62,7 @@ internal sealed class TlsEventPumpPool : IDisposable
         {
             pump.StartWithListenSocket(
                 listenFd,
+                listenEndPoint,
                 tlsContext,
                 contextResolver,
                 readyConnections,

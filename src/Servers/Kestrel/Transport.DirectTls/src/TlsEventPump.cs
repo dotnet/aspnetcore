@@ -63,9 +63,6 @@ internal class TlsEventPump : IDisposable
     // Listen socket (added with EPOLLEXCLUSIVE). Volatile: written by StopAccepting() (on the disposing
     // thread) and read by the pump thread in PumpLoop/AcceptConnections.
     private volatile int _listenFd = -1;
-    // Managed, non-owning wrapper over the listen fd used to call Socket.Accept().
-    // The fd is owned by DirectTlsConnectionListener; this wrapper never closes it.
-    private Socket? _listenSocket;
     private TlsContext? _tlsContext;
     private Func<ConnectionContext?, string?, (TlsContext Context, RemoteCertificateValidationCallback? ClientCertificateValidation)>? _contextResolver;
     private ChannelWriter<DirectTlsConnection>? _readyConnections;
@@ -156,6 +153,7 @@ internal class TlsEventPump : IDisposable
     /// </summary>
     public void StartWithListenSocket(
         int listenFd,
+        EndPoint listenEndPoint,
         TlsContext tlsContext,
         Func<ConnectionContext?, string?, (TlsContext Context, RemoteCertificateValidationCallback? ClientCertificateValidation)>? contextResolver,
         ChannelWriter<DirectTlsConnection> readyConnections,
@@ -179,17 +177,11 @@ internal class TlsEventPump : IDisposable
         _maxWriteBufferSize = maxWriteBufferSize;
         _clientHelloCallback = clientHelloCallback;
         _connectionTracker = connectionTracker ?? ConnectionTracker.Unlimited;
+        _listenEndPoint = listenEndPoint;
 
         // Cache loggers for connection creation
         _connectionIoStateLogger = loggerFactory.CreateLogger<ConnectionIoState>();
         _directTlsConnectionLogger = loggerFactory.CreateLogger<DirectTlsConnection>();
-
-        // Managed, non-owning wrapper over the listen fd. Used both to read the local
-        // endpoint once and to accept connections via Socket.Accept() in the pump loop.
-        // ownsHandle:false so disposing it never closes the listener-owned fd.
-        _listenSocket = new Socket(new SafeSocketHandle((IntPtr)listenFd, ownsHandle: false));
-        _listenSocket.Blocking = false;
-        _listenEndPoint = _listenSocket.LocalEndPoint;
 
         // Add listen socket with EPOLLEXCLUSIVE - only one worker wakes per connection
         var ev = new EpollEvent
@@ -505,66 +497,82 @@ internal class TlsEventPump : IDisposable
     internal void TrackConnectionForTest(int fd, ConnectionIoState conn) => _connections[fd] = conn;
 
     /// <summary>
-    /// Accept new connections from the listen socket via the managed Socket API.
-    /// Drains the accept backlog until <see cref="SocketError.WouldBlock"/>, and stops if the pump is
-    /// shutting down (<see cref="_running"/> cleared) or the listen socket has been detached
+    /// Accept new connections from the listen fd via <c>accept4</c>.
+    /// Drains the accept backlog until <c>EAGAIN</c>, and stops if the pump is shutting down
+    /// (<see cref="_running"/> cleared) or the listen socket has been detached
     /// (<see cref="_listenFd"/> set to -1 by <see cref="StopAccepting"/>).
     /// </summary>
     /// <remarks>
-    /// On any accept error we stop the drain and return to <c>epoll_wait</c> rather than looping: the
-    /// listen socket is level-triggered, so if connections are still pending we are re-woken immediately,
-    /// and once <see cref="StopAccepting"/> has de-registered the fd we are never woken for it again. This
-    /// makes the loop spin-proof without a failure counter - a persistently failing accept cannot tight-loop
-    /// because a closed listen fd is always de-registered before it is closed. Successful accepts still loop,
-    /// so backlog draining under load is unaffected.
+    /// accept4 reports outcomes as errno return values, so the drain runs without exceptions: no managed
+    /// <see cref="Socket"/> exists until after a successful accept, so there is no ObjectDisposedException to
+    /// race on shutdown. On any accept error other than EAGAIN/EINTR we stop the drain and return to
+    /// <c>epoll_wait</c> rather than looping: the listen socket is level-triggered, so if connections are still
+    /// pending we are re-woken immediately, and once <see cref="StopAccepting"/> has de-registered the fd we are
+    /// never woken for it again. This makes the loop spin-proof without a failure counter - a persistently
+    /// failing accept cannot tight-loop because a closed listen fd is always de-registered before it is closed.
+    /// Successful accepts still loop, so backlog draining under load is unaffected.
     /// </remarks>
     internal void AcceptConnections()
     {
         while (_running && _listenFd >= 0)
         {
-            Socket accepted;
-            try
+            int accepted = AcceptOne();
+            if (accepted < 0)
             {
-                accepted = AcceptOne();
-            }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.WouldBlock)
-            {
-                // Backlog drained - nothing more to accept right now.
-                break;
-            }
-            catch (ObjectDisposedException)
-            {
-                // Listen socket wrapper was disposed during shutdown - stop accepting.
-                break;
-            }
-            catch (SocketException ex)
-            {
-                // Rare accept failure: a per-connection error (e.g. peer reset before accept) or a listen
-                // socket torn down mid-drain. Stop this drain and let epoll decide if there is more to do.
-                _logger.LogDebug(ex, "Accept failed: {Error}", ex.SocketErrorCode);
+                int errno = -accepted;
+                if (errno is NativeTls.EAGAIN)
+                {
+                    // Backlog drained - nothing more to accept right now.
+                    break;
+                }
+                if (errno is NativeTls.EINTR)
+                {
+                    // Interrupted by a signal before a connection was accepted - retry (the guard above still
+                    // lets a concurrent shutdown break out).
+                    continue;
+                }
+
+                // Rare accept failure: a per-connection error (e.g. peer reset before accept) or the listen fd
+                // torn down mid-drain (EBADF once the listener closes it). Stop this drain and let epoll decide
+                // if there is more to do.
+                _logger.LogDebug("Accept failed: errno={Errno}", errno);
                 break;
             }
 
+            Socket socket = WrapAcceptedFd(accepted);
             try
             {
-                ProcessAcceptedSocket(accepted);
+                ProcessAcceptedSocket(socket);
             }
             catch (Exception ex)
             {
                 _logger.LogDebug(ex, "Processing an accepted socket threw; disposing it to release its fd.");
-                accepted.Dispose();
+                socket.Dispose();
             }
         }
     }
 
     /// <summary>
-    /// Accept a single pending connection from the listen socket. Isolated as the sole native accept
-    /// call so tests can script accept outcomes without a real listen socket.
+    /// Accept a single pending connection from the listen fd. Isolated as the sole native accept call so tests
+    /// can script accept outcomes without a real listen socket. Returns the accepted fd (>= 0) on success, or
+    /// the negated errno (&lt; 0) on failure - accept4 reports EAGAIN/EBADF/EINTR as return values rather than
+    /// exceptions.
     /// </summary>
-    internal virtual Socket AcceptOne()
+    internal virtual int AcceptOne()
     {
-        return _listenSocket!.Accept();
+        int fd = NativeTls.accept4(_listenFd, IntPtr.Zero, IntPtr.Zero, NativeTls.SOCK_NONBLOCK);
+        return fd >= 0 ? fd : -Marshal.GetLastWin32Error();
     }
+
+    /// <summary>
+    /// Wrap a freshly accepted fd in a managed <see cref="Socket"/> so its <see cref="Socket.RemoteEndPoint"/>
+    /// and TCP_NODELAY option can be read/set without hand-rolling sockaddr parsing or a setsockopt P/Invoke.
+    /// The wrapper owns the fd; ownership is transferred to the TLS session in
+    /// <see cref="ProcessAcceptedSocket"/> before it is disposed. Isolated as a seam so accept-loop tests can
+    /// inject a fake without a real fd.
+    /// </summary>
+    internal virtual Socket WrapAcceptedFd(int fd)
+        => new Socket(new SafeSocketHandle((IntPtr)fd, ownsHandle: true));
 
     /// <summary>
     /// Configure a freshly accepted socket, create its TLS session, and register it for handshake
@@ -573,9 +581,8 @@ internal class TlsEventPump : IDisposable
     /// </summary>
     internal virtual void ProcessAcceptedSocket(Socket accepted)
     {
-        // Configure the accepted socket through the managed API: non-blocking so the
-        // session can drive readiness via epoll, and TCP_NODELAY for low latency.
-        accepted.Blocking = false;
+        // The accepted fd is already non-blocking (accept4 was called with SOCK_NONBLOCK), so the session can
+        // drive readiness via epoll. Only TCP_NODELAY remains to configure for low latency.
         if (_noDelay)
         {
             accepted.NoDelay = true;
@@ -1158,10 +1165,6 @@ internal class TlsEventPump : IDisposable
     private async Task<bool> StopAndJoinCoreAsync(CancellationToken cancellationToken)
     {
         _running = false;
-
-        // Non-owning wrapper: disposing it does not close the listener-owned fd. Safe even if the thread is
-        // still alive - accept was already de-registered by StopAccepting, so the loop won't touch it.
-        _listenSocket?.Dispose();
 
         if (!_threadStarted)
         {

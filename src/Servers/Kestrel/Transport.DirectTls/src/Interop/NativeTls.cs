@@ -25,6 +25,12 @@ internal static partial class NativeTls
     [LibraryImport(LIBC, SetLastError = true)] public static partial int epoll_ctl(int epfd, int op, int fd, IntPtr ev);
     [LibraryImport(LIBC, SetLastError = true)] public static partial int close(int fd);
 
+    // accept4: accept a pending connection and return a new fd, or -1 with errno set. addr/addrlen are passed
+    // as IntPtr.Zero (the peer is read later via the wrapped managed Socket's RemoteEndPoint, so no sockaddr is
+    // parsed here). SOCK_NONBLOCK sets the accepted fd non-blocking atomically, saving a follow-up fcntl.
+    // Reporting EAGAIN/EBADF/EINTR as errno return values lets the accept loop drain without exceptions.
+    [LibraryImport(LIBC, SetLastError = true)] public static partial int accept4(int sockfd, IntPtr addr, IntPtr addrlen, int flags);
+
     [LibraryImport(LIBC, SetLastError = true)]
     private static partial int epoll_ctl(int epfd, int op, int fd, ref EpollEventPacked ev);
 
@@ -95,4 +101,12 @@ internal static partial class NativeTls
     public const uint EPOLLET = 0x80000000;
     public const uint EPOLLRDHUP = 0x2000;
     public const uint EPOLLEXCLUSIVE = 0x10000000;  // Prevents thundering herd - only one worker wakes per event
+
+    // accept4 flag: set the accepted fd non-blocking atomically (Linux O_NONBLOCK == 0x800).
+    public const int SOCK_NONBLOCK = 0x800;
+
+    // errno values the accept loop distinguishes (Linux asm-generic/errno-base.h). EWOULDBLOCK == EAGAIN on Linux.
+    public const int EINTR = 4;    // interrupted by a signal before a connection was accepted - retry
+    public const int EBADF = 9;    // listen fd closed underneath the pump during shutdown
+    public const int EAGAIN = 11;  // backlog drained (non-blocking accept has nothing pending)
 }

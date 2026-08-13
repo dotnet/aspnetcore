@@ -113,6 +113,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         int listenFd = (int)listenSocket.Handle;
         _pumpPool.StartWithListenSocket(
             listenFd,
+            EndPoint,
             _tlsContext,
             _contextResolver,
             _readyConnections.Writer,

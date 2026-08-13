@@ -69,6 +69,7 @@ public class TlsEventPumpStopTests
 
         pump.StartWithListenSocket(
             listenFd,
+            endpoint,
             bootstrap,
             contextResolver: null,
             readyConnections.Writer,
@@ -111,11 +112,11 @@ public class TlsEventPumpStopTests
             : base(NullLogger<TlsEventPump>.Instance, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
             => _release = release;
 
-        internal override Socket AcceptOne()
+        internal override int AcceptOne()
         {
             AcceptEntered.Set();
             _release.Wait();
-            throw new SocketException((int)SocketError.WouldBlock);
+            return -NativeTls.EAGAIN;   // report a drained backlog so the loop winds down once released
         }
 
         internal override void ProcessAcceptedSocket(Socket accepted)
