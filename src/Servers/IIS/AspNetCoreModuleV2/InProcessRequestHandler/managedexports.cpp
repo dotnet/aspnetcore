@@ -439,6 +439,16 @@ http_close_connection(
 
 EXTERN_C __declspec(dllexport)
 HRESULT
+http_set_close(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler
+)
+{
+    pInProcessHandler->QueryHttpContext()->GetResponse()->SetNeedDisconnect();
+    return S_OK;
+}
+
+EXTERN_C __declspec(dllexport)
+HRESULT
 http_response_set_unknown_header(
     _In_ IN_PROCESS_HANDLER* pInProcessHandler,
     _In_ PCSTR pszHeaderName,

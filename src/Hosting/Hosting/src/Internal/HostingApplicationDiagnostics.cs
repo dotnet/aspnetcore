@@ -252,7 +252,7 @@ internal sealed class HostingApplicationDiagnostics
             }
         }
 
-        // Logging Scope is finshed with
+        // Logging Scope is finished with
         context.Scope?.Dispose();
     }
 
@@ -541,7 +541,7 @@ internal sealed class HostingApplicationDiagnostics
         if (exception != null)
         {
             activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, exception.GetType().FullName);
-            activity.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity.SetStatus(ActivityStatusCode.Error);
         }
         else if (HostingTelemetryHelpers.IsErrorStatusCode(response.StatusCode))
         {

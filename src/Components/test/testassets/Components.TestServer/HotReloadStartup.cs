@@ -32,8 +32,6 @@ public class HotReloadStartup
         {
             app.UseDeveloperExceptionPage();
         }
-
-        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
         app.UseRouting();

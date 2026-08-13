@@ -63,6 +63,16 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         }
 
         _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
+
+        try
+        {
+            this.PerformSelfTest();
+        }
+        catch
+        {
+            _keyDerivationKey.Dispose();
+            throw;
+        }
     }
 
     public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
@@ -121,6 +131,7 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
                         validationSubkey: Span<byte>.Empty /* filling in derivedKey only */);
 
                     // Perform the decryption operation directly into destination
+                    // codeql[SM04193] - By design: reviewed and signed off by the Crypto Board; managed AES-GCM is not the Data Protection default (AES-256-CBC is) and is only used when an app explicitly opts into GCM.
                     using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
                     aes.Decrypt(nonce, encrypted, tag, plaintext);
 

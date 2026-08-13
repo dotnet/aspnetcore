@@ -73,6 +73,7 @@ internal class EndpointResponse
         !IsIResult &&
         !HasNoResponse &&
         ResponseType != null &&
+        ResponseType.TypeKind != TypeKind.Error &&
         ResponseType.SpecialType != SpecialType.System_String &&
         ResponseType.SpecialType != SpecialType.System_Object;
 

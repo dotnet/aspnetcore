@@ -1,0 +1,31 @@
+@page "/agentic_chat"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject IChatClient ChatClient
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>Agentic Chat</PageTitle>
+
+<ChatPage Agent="_agent"
+          Placeholder="Type a message..."
+          data-scenario="agentic_chat">
+    <Header>
+        <h1 class="dojo-scenario__title">Agentic Chat</h1>
+    </Header>
+    <WelcomeContent>
+        <p class="dojo-scenario__welcome">Ask the agent something to start the conversation.</p>
+    </WelcomeContent>
+</ChatPage>
+
+@code {
+    private UIAgent _agent = default!;
+
+    protected override void OnInitialized()
+    {
+        // The injected IChatClient is an AGUIChatClient pointed at AGUIDojoApi, so every
+        // message crosses the real AG-UI HTTP + SSE boundary.
+        _agent = new UIAgent(ChatClient, configure: null, LoggerFactory);
+    }
+
+    public void Dispose() => _agent?.Dispose();
+}

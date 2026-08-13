@@ -70,11 +70,6 @@ public class Program
             "--ClientApps:app:PathPrefix", "",
         ]);
 
-        if (WebAssemblyTestHelper.MultithreadingIsEnabled())
-        {
-            finalArgs.Add("--apply-cop-headers");
-        }
-
         var host = BlazorGateway.BuildWebHost(finalArgs.ToArray());
         return (host, "/subdir");
     }

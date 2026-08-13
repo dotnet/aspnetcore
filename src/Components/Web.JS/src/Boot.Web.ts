@@ -25,10 +25,11 @@ import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel } from './Platform/Logging/Logger';
-import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
+import { resolveOptions, CircuitStartOptions, ReconnectionOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { createBlazorValidation, ensureNovalidateOnForms } from './Validation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -51,8 +52,8 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     }
   };
 
-  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
   const jsEventRegistry = JSEventRegistry.create(Blazor);
+  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000, jsEventRegistry);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {
@@ -77,6 +78,13 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   }
 
   enableFocusOnNavigate(jsEventRegistry);
+
+  // Client-side validation is initialized only when the page contains the
+  // SSR-rendered custom element bearing the client validation data.
+  // This avoids adding event listeners in interactive-only apps that never use client validation.
+  jsEventRegistry.addEventListener('enhancedload', () => {
+    initFormValidationIfNeeded();
+  });
 
   // Wait until the initial page response completes before activating interactive components.
   // If stream rendering is used, this helps to ensure that only the final set of interactive
@@ -111,8 +119,11 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
     // Circuit/Server options
     if (browserConfig.server) {
-      const circuitOpts = options.circuit = options.circuit || {} as any;
-      const reconnOpts = circuitOpts.reconnectionOptions = circuitOpts.reconnectionOptions || {} as any;
+      const circuitOpts: Partial<CircuitStartOptions> = options.circuit ?? {};
+      options.circuit = circuitOpts as CircuitStartOptions;
+
+      const reconnOpts: Partial<ReconnectionOptions> = circuitOpts.reconnectionOptions ?? {};
+      circuitOpts.reconnectionOptions = reconnOpts as ReconnectionOptions;
       if (browserConfig.server.reconnectionMaxRetries !== undefined) {
         reconnOpts.maxRetries = browserConfig.server.reconnectionMaxRetries;
       }
@@ -121,6 +132,13 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
       }
       if (browserConfig.server.reconnectionDialogId !== undefined) {
         reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
+      }
+
+      // Pass through library extension keys (server-side [JsonExtensionData]) to the circuit options.
+      for (const [key, value] of Object.entries(browserConfig.server)) {
+        if (value !== undefined) {
+          (circuitOpts as Record<string, unknown>)[key] = value;
+        }
       }
     }
   }
@@ -150,7 +168,21 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
   rootComponentManager.onDocumentUpdated();
 
+  // Initialize client-side validation if the page has validatable fields.
+  initFormValidationIfNeeded();
+
   callAfterStartedCallbacks(initializersPromise);
+}
+
+function initFormValidationIfNeeded(): void {
+  if (Blazor.formValidation) {
+    // The service already exists. An enhanced-navigation morph reuses forms in place and strips the
+    // JS-added novalidate, so re-add it.
+    ensureNovalidateOnForms();
+    return;
+  }
+
+  Blazor.formValidation = createBlazorValidation();
 }
 
 async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {

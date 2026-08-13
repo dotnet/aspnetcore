@@ -99,6 +99,9 @@ internal partial class TempDataCascadingValueSupplier
 
         [LoggerMessage(2, LogLevel.Warning, "Deserialization of the element from TempData failed.", EventName = "TempDataDeserializeFail")]
         public static partial void TempDataDeserializeFail(ILogger logger, Exception exception);
+
+        [LoggerMessage(3, LogLevel.Warning, "No active HttpContext is available (interactive rendering); the [SupplyParameterFromTempData] value is skipped and will be null.", EventName = "TempDataUnavailableForRead")]
+        public static partial void TempDataUnavailableForRead(ILogger logger);
     }
 
     internal partial class TempDataSubscription : CascadingParameterSubscription
@@ -137,6 +140,7 @@ internal partial class TempDataCascadingValueSupplier
             var tempData = _owner.GetTempData();
             if (tempData is null)
             {
+                Log.TempDataUnavailableForRead(_owner._logger);
                 return null;
             }
 

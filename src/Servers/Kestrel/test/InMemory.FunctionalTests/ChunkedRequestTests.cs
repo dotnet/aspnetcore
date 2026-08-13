@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
@@ -119,7 +120,7 @@ public class ChunkedRequestTests : LoggedTest
         }
     }
 
-    private async Task AppChunked(HttpContext httpContext)
+    private static async Task AppChunked(HttpContext httpContext)
     {
         var request = httpContext.Request;
         var response = httpContext.Response;
@@ -1266,5 +1267,89 @@ public class ChunkedRequestTests : LoggedTest
                     "");
             }
         }
+    }
+
+    [Fact]
+    public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(AppChunked, testContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                for (var i = 0; i < 2; i++)
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "Connection: keep-alive",
+                        "Content-Length: 7",
+                        "",
+                        "5", "Hello",
+                        "6", " World",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 11",
+                    "Connection: close",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "",
+                    "Hello World");
+            }
+        }
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void CanKeepProcessingRequestsAfterContentLengthPlusChunkedRequest_WithAppContext()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Server.Kestrel.AllowKeepAliveAfterCLTE", "true");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
+        {
+            var testContext = new TestServiceContext();
+
+            await using (var server = new TestServer(AppChunked, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    for (var i = 0; i < 2; i++)
+                    {
+                        await connection.Send(
+                            "POST / HTTP/1.1",
+                            "Host:",
+                            "Transfer-Encoding: chunked",
+                            "Connection: keep-alive",
+                            "Content-Length: 7",
+                            "",
+                            "5", "Hello",
+                            "6", " World",
+                            "0",
+                            "",
+                            "");
+                    }
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "Hello World");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "Hello World");
+                }
+            }
+        }, options);
     }
 }

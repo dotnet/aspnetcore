@@ -70,6 +70,16 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         AlgorithmAssert.IsAllowableValidationAlgorithmDigestSize(checked((uint)_validationAlgorithmDigestLengthInBytes * 8));
 
         _contextHeader = CreateContextHeader();
+
+        try
+        {
+            this.PerformSelfTest();
+        }
+        catch
+        {
+            _keyDerivationKey.Dispose();
+            throw;
+        }
     }
 
 #if NET
@@ -377,8 +387,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 }
                 finally
                 {
-                    Array.Clear(keyModifier, 0, keyModifierLength);
-                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
+                    CryptoUtil.ZeroMemory(keyModifier);
+                    CryptoUtil.ZeroMemory(decryptedKdk);
                 }
             }
         }
@@ -453,7 +463,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
         finally
         {
-            Array.Clear(correctHashArray, 0, correctHashArray.Length);
+            CryptoUtil.ZeroMemory(correctHashArray);
         }
     }
 #endif
@@ -573,7 +583,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 {
                     // delete since these contain secret material
                     validationSubkey.Clear();
-                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
+                    CryptoUtil.ZeroMemory(decryptedKdk);
                 }
             }
         }

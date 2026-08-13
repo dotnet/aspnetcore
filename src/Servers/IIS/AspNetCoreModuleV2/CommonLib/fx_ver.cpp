@@ -155,7 +155,7 @@ namespace aspnet
         assert(a.m_pre[0] == TEXT('-'));
         assert(b.m_pre[0] == TEXT('-'));
 
-        // First idenitifier starts at position 1
+        // First identifier starts at position 1
         size_t idStart = 1;
         for (size_t i = idStart; true; ++i)
         {
@@ -164,13 +164,13 @@ namespace aspnet
                 // Found first character with a difference
                 if (a.m_pre[i] == 0 && b.m_pre[i] == TEXT('.'))
                 {
-                    // identifiers both complete, b has an additional idenitifier
+                    // identifiers both complete, b has an additional identifier
                     return -1;
                 }
 
                 if (b.m_pre[i] == 0 && a.m_pre[i] == TEXT('.'))
                 {
-                    // identifiers both complete, a has an additional idenitifier
+                    // identifiers both complete, a has an additional identifier
                     return 1;
                 }
 

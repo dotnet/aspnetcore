@@ -49,7 +49,6 @@
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\**\*.cs" Link="Shared\ThrowHelpers\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\**\*.cs" Link="Shared\CallerArgument\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
-    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
     <Compile Include="$(SharedSourceRoot)SegmentWriteStream.cs" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />

@@ -1195,6 +1195,30 @@ public partial class Startup
         }
     }
 
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/66720.
+    // RFC 7230 §7 allows trailing empty list elements; http.sys treats
+    // "chunked," as chunked, and the managed layer must agree.
+    private async Task TransferEncodingWithTrailingCommaAndContentLengthShouldBeRemove(HttpContext ctx)
+    {
+        try
+        {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
+            Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
+            Assert.Equal("chunked,", ctx.Request.Headers["Transfer-Encoding"]);
+            Assert.False(ctx.Request.Headers.ContainsKey("Content-Length"));
+            Assert.True(ctx.Request.Headers.ContainsKey("X-Content-Length"));
+            Assert.Equal("5", ctx.Request.Headers["X-Content-Length"]);
+            return;
+        }
+        catch (Exception exception)
+        {
+            ctx.Response.StatusCode = 500;
+            await ctx.Response.WriteAsync(exception.ToString());
+        }
+    }
+
 #if !FORWARDCOMPAT
     public Task ResponseTrailers_HTTP2_TrailersAvailable(HttpContext context)
     {

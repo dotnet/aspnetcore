@@ -171,7 +171,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
         context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA", "HeaderC" };
 
-        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueAValueB{KeyDelimiter}HeaderC=",
+        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeySubDelimiter}ValueB{KeyDelimiter}HeaderC=",
             cacheKeyProvider.CreateStorageKey(context));
     }
 
