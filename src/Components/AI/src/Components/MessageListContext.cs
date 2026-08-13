@@ -90,7 +90,9 @@ public class MessageListContext
     {
         foreach (var node in nodes)
         {
+            builder.OpenRegion(0);
             RenderRichTextNode(builder, node);
+            builder.CloseRegion();
         }
     }
 

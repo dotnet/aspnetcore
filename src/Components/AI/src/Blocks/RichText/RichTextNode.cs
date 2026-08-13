@@ -6,6 +6,12 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// <summary>
 /// Represents a node in structured conversational text.
 /// </summary>
+/// <remarks>
+/// This hierarchy describes presentation semantics and does not prescribe a source format
+/// or parser. Applications can map output from Markdig or any other parser into these nodes.
+/// The mapper is responsible for interpreting source syntax, resolving references, and
+/// deciding which presentation node represents each source construct.
+/// </remarks>
 public abstract class RichTextNode
 {
     private List<RichTextNode>? _children;

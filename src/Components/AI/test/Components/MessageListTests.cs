@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.AI.Tests.TestFramework;
 using Microsoft.AspNetCore.Components.AI.Tests.TestHelpers;
 using Microsoft.Extensions.AI;
@@ -93,6 +94,31 @@ public class MessageListTests
         Assert.Contains("&lt;script&gt;alert(", html);
         Assert.Contains("&lt;/script&gt;", html);
         Assert.DoesNotContain("<script>", html);
+    }
+
+    [Fact]
+    public async Task StreamingRichTextContent_ReplacesHeterogeneousSiblings()
+    {
+        var gate = new TaskCompletionSource();
+        var cut = RenderMessageList(ct => EmitStreamingRichTextResponse(gate.Task, ct));
+        var context = GetAgentContext(cut);
+
+        var sendTask = cut.InvokeAsync(() => context.SendMessageAsync("Format this"));
+
+        await WaitForHtmlAsync(cut, "Initial paragraph");
+        var initialHtml = cut.GetHtml();
+        Assert.Contains("<p", initialHtml);
+        Assert.DoesNotContain("Final heading", initialHtml);
+
+        gate.SetResult();
+        await sendTask;
+
+        var finalHtml = cut.GetHtml();
+        Assert.Contains("<h3", finalHtml);
+        Assert.Contains("Final heading", finalHtml);
+        Assert.Contains("<ul", finalHtml);
+        Assert.Contains("Final list item", finalHtml);
+        Assert.DoesNotContain("Initial paragraph", finalHtml);
     }
 
     [Fact]
@@ -243,6 +269,44 @@ public class MessageListTests
         };
 
         await Task.CompletedTask;
+    }
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> EmitStreamingRichTextResponse(
+        Task gate,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        yield return new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = "streaming-rich-text",
+            Contents =
+            [
+                new RichTextContent(
+                    "Initial paragraph",
+                    [Node<ParagraphNode>(new TextNode("Initial paragraph"))]),
+            ],
+        };
+
+        await gate.WaitAsync(cancellationToken);
+
+        var heading = Node<HeadingNode>(new TextNode("Final heading"));
+        heading.Level = 3;
+        yield return new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = "streaming-rich-text",
+            Contents =
+            [
+                new RichTextContent(
+                    "Final heading\n\nFinal list item",
+                    [
+                        heading,
+                        Node<ListNode>(
+                            Node<ListItemNode>(
+                                Node<ParagraphNode>(new TextNode("Final list item")))),
+                    ]),
+            ],
+        };
     }
 
     private static TNode Node<TNode>(params RichTextNode[] children)

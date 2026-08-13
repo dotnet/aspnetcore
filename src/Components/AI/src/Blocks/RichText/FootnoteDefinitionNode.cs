@@ -6,6 +6,10 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// <summary>
 /// Represents a footnote definition.
 /// </summary>
+/// <remarks>
+/// A mapper can use this node for labeled footnote content, such as content represented by
+/// a Markdig footnote container. The core library does not parse or resolve footnote syntax.
+/// </remarks>
 public class FootnoteDefinitionNode : RichTextNode
 {
     /// <summary>

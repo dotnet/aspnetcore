@@ -4,6 +4,11 @@
 namespace Microsoft.AspNetCore.Components.AI;
 
 /// <summary>
-/// Represents a line break.
+/// Represents a forced visual line break.
 /// </summary>
+/// <remarks>
+/// This node does not encode a parser-specific soft or hard line-ending distinction. A
+/// mapper from Markdig or any other parser decides whether a source line ending becomes
+/// whitespace, text, or a <see cref="LineBreakNode"/>.
+/// </remarks>
 public class LineBreakNode : RichTextNode;

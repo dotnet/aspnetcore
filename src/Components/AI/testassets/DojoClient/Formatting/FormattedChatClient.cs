@@ -20,13 +20,19 @@ internal sealed class FormattedChatClient : DelegatingChatClient
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var text = new StringBuilder();
+        var textByMessageId = new Dictionary<string, StringBuilder>(StringComparer.Ordinal);
 
         await foreach (var update in base.GetStreamingResponseAsync(
             messages,
             options,
             cancellationToken).ConfigureAwait(false))
         {
+            if (string.IsNullOrEmpty(update.MessageId))
+            {
+                yield return update;
+                continue;
+            }
+
             var firstTextIndex = -1;
             var chunks = new List<string>();
             for (var i = 0; i < update.Contents.Count; i++)
@@ -53,6 +59,12 @@ internal sealed class FormattedChatClient : DelegatingChatClient
 
             if (firstTextIndex >= 0)
             {
+                if (!textByMessageId.TryGetValue(update.MessageId, out var text))
+                {
+                    text = new StringBuilder();
+                    textByMessageId.Add(update.MessageId, text);
+                }
+
                 foreach (var chunk in chunks)
                 {
                     text.Append(chunk);
