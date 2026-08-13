@@ -4,6 +4,7 @@
 #pragma warning disable CS0618 // Type or member is obsolete
 
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -35,6 +36,42 @@ public class RouterTest
         _router.AppAssembly = Assembly.GetExecutingAssembly();
         _router.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
         _renderer.AssignRootComponentId(_router);
+    }
+
+    [Fact]
+    public async Task UsesConfiguredAssembliesWhenAppAssemblyIsNotSpecified()
+    {
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(
+            new Dictionary<string, byte[]>
+            {
+                [RazorComponentApplicationAssemblyProvider.PersistenceKey] = JsonSerializer.SerializeToUtf8Bytes(
+                    new[]
+                    {
+                        typeof(ComponentBase).Assembly.GetName().Name!,
+                        typeof(RouterTest).Assembly.GetName().Name!,
+                    }),
+            },
+            RestoreContext.InitialValue);
+
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(_navigationManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        services.AddSingleton(state);
+        services.AddSingleton<RazorComponentApplicationAssemblyProvider>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        var router = (Router)renderer.InstantiateComponent<Router>();
+        router.Found = routeData => builder => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+        renderer.AssignRootComponentId(router);
+
+        await renderer.Dispatcher.InvokeAsync(() => router.SetParametersAsync(ParameterView.Empty));
+
+        var renderedFrame = renderer.Batches.Single().ReferenceFrames.Single();
+        Assert.Equal($"Rendering route matching {typeof(JanComponent)}", renderedFrame.TextContent);
     }
 
     [Fact]

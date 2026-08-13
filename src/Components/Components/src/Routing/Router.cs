@@ -42,6 +42,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private bool _onNavigateCalled;
 
+    private IReadOnlyList<Assembly> _configuredAssemblies;
+
+    private Assembly _appAssembly;
+
+    private IEnumerable<Assembly> _additionalAssemblies;
+
     [Inject] private NavigationManager NavigationManager { get; set; }
 
     [Inject] private INavigationInterception NavigationInterception { get; set; }
@@ -55,15 +61,16 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     private IRoutingStateProvider? RoutingStateProvider { get; set; }
 
     /// <summary>
-    /// Gets or sets the assembly that should be searched for components matching the URI.
+    /// Gets or sets the assembly that should be searched for components matching the URI. If not specified,
+    /// the assembly is determined from the application configured by <c>MapRazorComponents</c>, if available.
     /// </summary>
     [Parameter]
-    [EditorRequired]
     public Assembly AppAssembly { get; set; }
 
     /// <summary>
     /// Gets or sets a collection of additional assemblies that should be searched for components
-    /// that can match URIs.
+    /// that can match URIs. If not specified, the assemblies are determined from the application
+    /// configured by <c>MapRazorComponents</c>, if available.
     /// </summary>
     [Parameter] public IEnumerable<Assembly> AdditionalAssemblies { get; set; }
 
@@ -110,6 +117,11 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         NavigationManager.LocationChanged += OnLocationChanged;
         NavigationManager.OnNotFound += OnNotFound;
         RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
+        var configuredAssemblies = ServiceProvider.GetService<RazorComponentApplicationAssemblyProvider>()?.GetAssemblies();
+        if (configuredAssemblies is { Count: > 0 })
+        {
+            _configuredAssemblies = configuredAssemblies;
+        }
 
         if (HotReloadManager.IsSupported)
         {
@@ -122,9 +134,14 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         parameters.SetParameterProperties(this);
 
-        if (AppAssembly == null)
+        _appAssembly = AppAssembly ?? _configuredAssemblies?[0];
+        _additionalAssemblies = AdditionalAssemblies ?? GetConfiguredAdditionalAssemblies();
+
+        if (_appAssembly == null && RoutingStateProvider?.RouteData is null)
         {
-            throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(AppAssembly)}.");
+            throw new InvalidOperationException(
+                $"The {nameof(Router)} component requires a value for the parameter {nameof(AppAssembly)}, " +
+                "or an assembly configured with MapRazorComponents.");
         }
 
         // Found content is mandatory, because even though we could use something like <RouteView ...> as a
@@ -195,13 +212,33 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private void RefreshRouteTable()
     {
-        var routeKey = new RouteKey(AppAssembly, AdditionalAssemblies);
+        var routeKey = new RouteKey(_appAssembly, _additionalAssemblies);
 
         if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
         {
             Routes = RouteTableFactory.Instance.Create(routeKey, ServiceProvider);
             _routeTableLastBuiltForRouteKey = routeKey;
         }
+    }
+
+    private IEnumerable<Assembly> GetConfiguredAdditionalAssemblies()
+    {
+        if (_configuredAssemblies is null)
+        {
+            return null;
+        }
+
+        var additionalAssemblies = new List<Assembly>(_configuredAssemblies.Count - 1);
+        for (var i = 0; i < _configuredAssemblies.Count; i++)
+        {
+            var assembly = _configuredAssemblies[i];
+            if (assembly != _appAssembly)
+            {
+                additionalAssemblies.Add(assembly);
+            }
+        }
+
+        return additionalAssemblies;
     }
 
     private void ClearRouteCaches()
