@@ -641,9 +641,9 @@ T", null, null, false, null, null, null));
             if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
-                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
+                if (typeComment.Examples?.FirstOrDefault().Parse() is { } example)
                 {
-                    schema.Example = jsonString.Parse();
+                    schema.Examples = [example];
                 }
             }
 
@@ -667,9 +667,9 @@ T", null, null, false, null, null, null));
                     {
                         // Inlined schema
                         schema.Description = description;
-                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        if (propertyComment.Examples?.FirstOrDefault().Parse() is { } example)
                         {
-                            schema.Example = jsonString.Parse();
+                            schema.Examples = [example];
                         }
                     }
                     else
