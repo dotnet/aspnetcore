@@ -8,8 +8,8 @@
 
 ## Framework assembly boundaries
 
-* Do not use `InternalsVisibleTo` or `UnsafeAccessor` to access non-public members across ASP.NET Core framework assemblies.
-* If framework code in one assembly needs an API from another, design an explicit public API and follow the repository API-review and baseline process. Existing uses are not precedent for adding another cross-assembly bridge.
+* In shipping framework code, do not add `InternalsVisibleTo` or use `[UnsafeAccessor]` to access non-public members in another framework assembly. Existing uses of these mechanisms are not precedent for new uses.
+* Redesign the assembly boundary instead. If that requires a public API, follow the repository API-review and baseline process.
 
 ## Formatting
 
