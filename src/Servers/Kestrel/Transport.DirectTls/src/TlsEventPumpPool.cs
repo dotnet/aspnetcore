@@ -53,7 +53,8 @@ internal sealed class TlsEventPumpPool : IDisposable
         bool noDelay,
         long maxReadBufferSize,
         long maxWriteBufferSize,
-        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null)
+        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
+        ConnectionTracker? connectionTracker = null)
     {
         foreach (var pump in _pumps)
         {
@@ -67,7 +68,8 @@ internal sealed class TlsEventPumpPool : IDisposable
                 noDelay,
                 maxReadBufferSize,
                 maxWriteBufferSize,
-                clientHelloCallback);
+                clientHelloCallback,
+                connectionTracker);
         }
     }
 

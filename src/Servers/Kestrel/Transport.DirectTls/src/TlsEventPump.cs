@@ -73,6 +73,12 @@ internal class TlsEventPump : IDisposable
     private ILogger<ConnectionIoState> _connectionIoStateLogger = NullLogger<ConnectionIoState>.Instance;
     private ILogger<DirectTlsConnection> _directTlsConnectionLogger = NullLogger<DirectTlsConnection>.Instance;
 
+    // Listener-level connection tracker shared by all pumps of this listener. Always non-null: defaults to the
+    // disabled ConnectionTracker.Unlimited (no-op acquire/release) until StartWithListenSocket supplies the
+    // listener's tracker. When a MaxConcurrentHandshakes cap is configured, a freshly accepted connection is
+    // rejected (its fd closed before the handshake) once the in-flight handshake count reaches the cap.
+    private ConnectionTracker _connectionTracker = ConnectionTracker.Unlimited;
+
     // Cached listen endpoint to avoid getsockname syscall per connection
     private EndPoint? _listenEndPoint;
 
@@ -144,7 +150,8 @@ internal class TlsEventPump : IDisposable
         bool noDelay,
         long maxReadBufferSize,
         long maxWriteBufferSize,
-        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null)
+        Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
+        ConnectionTracker? connectionTracker = null)
     {
         _listenFd = listenFd;
         ArgumentNullException.ThrowIfNull(tlsContext);
@@ -157,6 +164,7 @@ internal class TlsEventPump : IDisposable
         _maxReadBufferSize = maxReadBufferSize;
         _maxWriteBufferSize = maxWriteBufferSize;
         _clientHelloCallback = clientHelloCallback;
+        _connectionTracker = connectionTracker ?? ConnectionTracker.Unlimited;
 
         // Cache loggers for connection creation
         _connectionIoStateLogger = loggerFactory.CreateLogger<ConnectionIoState>();
@@ -532,6 +540,15 @@ internal class TlsEventPump : IDisposable
             return;
         }
 
+        // match Kestrel's MaxConcurrentConnections: accept, but if over limit reject the connection.
+        if (!_connectionTracker.TryAcquireHandshake())
+        {
+            _logger.LogDebug("Rejecting fd={Fd}: in-flight connection cap reached", clientFd);
+            NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, clientFd, IntPtr.Zero);
+            session.Dispose();
+            return;
+        }
+
         // Track handshaking connection with captured remote endpoint. CurrentEpollInterest mirrors the ADD
         // above so later steps can reconcile the interest set (arm/clear EPOLLOUT) without a redundant syscall.
         _handshaking[clientFd] = new HandshakingConnection
@@ -708,6 +725,7 @@ internal class TlsEventPump : IDisposable
             {
                 // Channel closed (shutting down) - dispose connection
                 directConnection.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                _connectionTracker.ReleaseHandshake();
             }
 
             return;
@@ -877,6 +895,7 @@ internal class TlsEventPump : IDisposable
     private void DropHandshake(int fd, in HandshakingConnection conn)
     {
         _handshaking.Remove(fd);
+        _connectionTracker.ReleaseHandshake();
         NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
         ReleaseHandshakeResources(conn);
     }

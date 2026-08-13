@@ -59,6 +59,11 @@ public static class WebHostBuilderDirectTlsExtensions
             // Copies each DirectTlsEndpoint's ListenOptions.Protocols onto the endpoint after all endpoints
             // are configured, so the transport can read the ALPN protocols off the endpoint itself.
             services.AddSingleton<IPostConfigureOptions<KestrelServerOptions>, DirectTlsEndpointProtocolsSetup>();
+
+            // Defaults MaxConcurrentHandshakes from KestrelServerLimits.MaxConcurrentConnections when the
+            // transport option was not set explicitly, so the pre-handshake flood cap tracks the server's
+            // configured connection limit without a separate knob.
+            services.AddSingleton<IPostConfigureOptions<DirectTlsTransportOptions>, DirectTlsHandshakeLimitSetup>();
         });
     }
 

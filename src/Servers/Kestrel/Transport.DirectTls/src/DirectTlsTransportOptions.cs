@@ -67,6 +67,29 @@ public sealed class DirectTlsTransportOptions
     internal int Backlog { get; set; } = 512;
 
     /// <summary>
+    /// Gets or sets the maximum number of connections that may be simultaneously handshaking or awaiting
+    /// acceptance by Kestrel (handshake complete, but not yet returned from <c>AcceptAsync</c>). When the
+    /// limit is reached, a freshly accepted connection is rejected - its socket is closed before the TLS
+    /// handshake starts - until in-flight connections drain, bounding the work a TLS-handshake flood can
+    /// create. This mirrors Kestrel's <c>MaxConcurrentConnections</c> reject behavior, but pre-handshake.
+    /// <para>
+    /// On this transport the TLS handshake runs before a connection is surfaced to Kestrel, so Kestrel's own
+    /// <c>MaxConcurrentConnections</c> limit - which only counts already-accepted connections - cannot gate
+    /// handshakes as it does on the <c>SslStream</c> path. This cap closes that gap.
+    /// </para>
+    /// <para>
+    /// A value of <see langword="null"/> disables the limit (unlimited). When left unset, it defaults to
+    /// <c>KestrelServerLimits.MaxConcurrentConnections</c> (also <see langword="null"/> by default), so the
+    /// pre-handshake cap tracks the server's configured connection limit unless overridden.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>KestrelServerLimits.MaxConcurrentConnections</c> (<see langword="null"/> / unlimited
+    /// unless a connection limit is configured).
+    /// </remarks>
+    internal long? MaxConcurrentHandshakes { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum number of unconsumed inbound (decrypted read) bytes the transport will buffer
     /// before applying backpressure to the peer.
     /// <para>

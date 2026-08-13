@@ -40,6 +40,9 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     // Channel for connections that have completed handshake and are ready to be returned
     private readonly Channel<DirectTlsConnection> _readyConnections;
 
+    // Listener-level cap on connections that are handshaking or waiting to be accepted by Kestrel, shared by all pumps.
+    private readonly ConnectionTracker _connectionTracker;
+
     public EndPoint EndPoint { get; private set; }
 
     public DirectTlsConnectionListener(
@@ -72,6 +75,8 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             SingleReader = false,  // Multiple AcceptAsync callers possible
             SingleWriter = false,  // Multiple pump threads write concurrently
         });
+
+        _connectionTracker = new ConnectionTracker(options.MaxConcurrentHandshakes);
     }
 
     internal void Bind()
@@ -115,7 +120,8 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             _options.NoDelay,
             _options.MaxReadBufferSize ?? 0,
             _options.MaxWriteBufferSize ?? 0,
-            _clientHelloCallback);
+            _clientHelloCallback,
+            _connectionTracker);
 
         _logger.LogInformation("DirectTls listener started with EPOLLEXCLUSIVE worker accept");
     }
@@ -125,7 +131,9 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         try
         {
             // Wait for a connection that has completed handshake
-            return await _readyConnections.Reader.ReadAsync(cancellationToken);
+            var connection = await _readyConnections.Reader.ReadAsync(cancellationToken);
+            _connectionTracker.ReleaseHandshake();
+            return connection;
         }
         catch (ChannelClosedException)
         {
