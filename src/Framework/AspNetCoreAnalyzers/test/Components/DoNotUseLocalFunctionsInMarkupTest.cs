@@ -27,7 +27,7 @@ public class TestComponent : ComponentBase
             builder.OpenElement(0, ""div"");
             builder.CloseElement();
         }
-        
+
         LocalFunction();
     }
 }
@@ -57,7 +57,7 @@ public class TestComponent : ComponentBase
             builder.AddContent(1, ""text"");
             builder.CloseElement();
         }
-        
+
         LocalFunction();
     }
 }
@@ -103,7 +103,7 @@ public class TestComponent : ComponentBase
             builderParam.OpenElement(0, ""div"");
             builderParam.CloseElement();
         }
-        
+
         LocalFunction(builder);
     }
 }
@@ -243,10 +243,10 @@ public class TestComponent : ComponentBase
                 builder.OpenElement(0, ""div"");
                 builder.CloseElement();
             }
-            
+
             InnerFunction();
         }
-        
+
         OuterFunction();
     }
 }
@@ -275,7 +275,7 @@ public class TestComponent : ComponentBase
             builderParam.OpenElement(0, ""div"");
             builderParam.CloseElement();
         }
-        
+
         LocalFunction(builder);
     }
 }
@@ -301,7 +301,7 @@ public class TestComponent : ComponentBase
         {
             builder.AddMarkupContent(0, ""<div>Hello</div>"");
         }
-        
+
         LocalFunction();
     }
 }
@@ -324,13 +324,13 @@ public class NotAComponent
     public void SomeMethod()
     {
         var builder = new RenderTreeBuilder();
-        
+
         void LocalFunction()
         {
             builder.OpenElement(0, ""div"");
             builder.CloseElement();
         }
-        
+
         LocalFunction();
     }
 }
@@ -411,13 +411,13 @@ public class TestComponent : ComponentBase
     private void SomeOtherMethod()
     {
         var builder = new RenderTreeBuilder();
-        
+
         void LocalFunction()
         {
             builder.OpenElement(0, ""div"");
             builder.CloseElement();
         }
-        
+
         LocalFunction();
     }
 }
