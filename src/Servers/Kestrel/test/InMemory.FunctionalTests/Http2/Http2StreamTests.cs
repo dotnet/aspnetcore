@@ -394,8 +394,11 @@ public class Http2StreamTests : Http2TestBase
     [InlineData("/a/path?q=a b")]
     [InlineData("/a/path?q=a\tb")]
     [InlineData("/a/path?q=a\u0001b")]
+    [InlineData("/a/path?q=a\u001Fb")]
     [InlineData("/a/path?q=a\u007Fb")]
     [InlineData("/a/path? ")]
+    [InlineData("/a/path?\t")]
+    [InlineData("/a/path? q=a")]
     public async Task HEADERS_Received_QueryWithInvalidCharacter_Reset(string path)
     {
         await InitializeConnectionAsync(_noopApplication);
@@ -406,17 +409,19 @@ public class Http2StreamTests : Http2TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, path)
         };
-        
+
         await StartStreamAsync(1, headers, endStream: true);
         await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.FormatHttp2StreamErrorPathInvalid(path));
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
 
+    // https://www.rfc-editor.org/rfc/rfc3986#section-3.4
     [Theory]
     [InlineData("/a/path?")]
     [InlineData("/a/path?a=b&c=d")]
     [InlineData("/a/path?q=a%20b+c/d?e")]
     [InlineData("/a/path?q=~!$'()*,;:@[]")]
+    [InlineData("/a/path?q=<>\"\\^`{|}")]
     public async Task HEADERS_Received_QueryWithValidCharacters_Accepted(string path)
     {
         var expectedQuery = path[path.IndexOf('?')..];

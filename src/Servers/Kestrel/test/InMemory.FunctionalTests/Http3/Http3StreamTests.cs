@@ -228,8 +228,11 @@ public class Http3StreamTests : Http3TestBase
     [InlineData("/a/path?q=a b")]
     [InlineData("/a/path?q=a\tb")]
     [InlineData("/a/path?q=a\u0001b")]
+    [InlineData("/a/path?q=a\u001Fb")]
     [InlineData("/a/path?q=a\u007Fb")]
     [InlineData("/a/path? ")]
+    [InlineData("/a/path?\t")]
+    [InlineData("/a/path? q=a")]
     public async Task QueryWithInvalidCharacter_Reset(string path)
     {
         var headers = new[] { new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
@@ -244,11 +247,13 @@ public class Http3StreamTests : Http3TestBase
             CoreStrings.FormatHttp3StreamErrorPathInvalid(path));
     }
 
+    // https://www.rfc-editor.org/rfc/rfc3986#section-3.4
     [Theory]
     [InlineData("/a/path?")]
     [InlineData("/a/path?a=b&c=d")]
     [InlineData("/a/path?q=a%20b+c/d?e")]
     [InlineData("/a/path?q=~!$'()*,;:@[]")]
+    [InlineData("/a/path?q=<>\"\\^`{|}")]
     public async Task QueryWithValidCharacters_Accepted(string path)
     {
         var expectedQuery = path[path.IndexOf('?')..];

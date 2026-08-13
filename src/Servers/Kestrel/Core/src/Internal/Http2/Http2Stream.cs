@@ -336,11 +336,11 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             return false;
         }
 
-        // :path carries both the path and query components - https://www.rfc-editor.org/rfc/rfc9113#section-8.3.1
+        // https://www.rfc-editor.org/rfc/rfc9113#section-8.3.1
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 
-        if (HttpCharacters.IndexOfInvalidQueryChar(QueryString) >= 0)
+        if (HttpCharacters.ContainsInvalidQueryChar(QueryString))
         {
             ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
             return false;
