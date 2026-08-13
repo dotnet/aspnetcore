@@ -673,6 +673,52 @@ public class TestComponent : ComponentBase
     }
 
     [Fact]
+    public async Task LocalFunctionWithOwningBuilderInUnreachableCodeAfterSwitch_NoDiagnostic()
+    {
+        var source = """
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var alias = new RenderTreeBuilder();
+        while (GetCondition())
+        {
+            switch (GetValue())
+            {
+                case 0:
+                    continue;
+                default:
+                    continue;
+            }
+
+#pragma warning disable CS0162
+            alias = builder;
+#pragma warning restore CS0162
+        }
+
+        void LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+    private int GetValue() => 0;
+}
+""";
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        var analyzerDiagnostics = diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup);
+        Assert.Empty(analyzerDiagnostics);
+    }
+
+    [Fact]
     public async Task NestedLocalFunctionWithFreshCapturedBuilder_NoDiagnostic()
     {
         var source = @"

@@ -266,7 +266,10 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
         {
             Visit(operation.Value);
             var initialProvenance = CloneProvenance();
-            var mergedProvenance = CloneProvenance();
+            Dictionary<ISymbol, bool>? mergedProvenance = operation.Cases.Any(
+                @case => @case.Clauses.Any(clause => clause.CaseKind == CaseKind.Default))
+                    ? null
+                    : CloneProvenance();
 
             foreach (var @case in operation.Cases)
             {
@@ -279,14 +282,19 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
                 }
 
                 var caseProvenance = CloneProvenance();
-
-                RestoreProvenance(mergedProvenance);
-                MergeProvenance(caseProvenance);
-                mergedProvenance = CloneProvenance();
+                mergedProvenance = MergeProvenance(mergedProvenance, caseProvenance);
             }
 
-            RestoreProvenance(mergedProvenance);
-            _pathTerminated = false;
+            if (mergedProvenance is null)
+            {
+                RestoreProvenance(initialProvenance);
+                _pathTerminated = true;
+            }
+            else
+            {
+                RestoreProvenance(mergedProvenance);
+                _pathTerminated = false;
+            }
         }
 
         public override void VisitSwitchCase(ISwitchCaseOperation operation)
