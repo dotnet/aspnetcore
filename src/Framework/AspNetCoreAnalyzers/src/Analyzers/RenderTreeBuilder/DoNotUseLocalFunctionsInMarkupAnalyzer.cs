@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -49,7 +50,7 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                context.RegisterOperationBlockStartAction(context =>
+                context.RegisterOperationBlockAction(context =>
                 {
                     if (context.OwningSymbol is not IMethodSymbol method ||
                         !Overrides(method, buildRenderTreeMethod))
@@ -57,24 +58,25 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
                         return;
                     }
 
-                    context.RegisterOperationAction(context =>
+                    var localFunctions = new Dictionary<IMethodSymbol, ILocalFunctionOperation>(SymbolEqualityComparer.Default);
+                    foreach (var operationBlock in context.OperationBlocks)
                     {
-                        var localFunction = (ILocalFunctionOperation)context.Operation;
-                        if (localFunction.Symbol.IsStatic ||
-                            localFunction.Body is null ||
-                            !ContainsCapturedRenderTreeBuilderCall(
-                                localFunction.Body,
-                                ImmutableArray.Create(localFunction.Symbol),
-                                renderTreeBuilderType))
-                        {
-                            return;
-                        }
+                        CollectLocalFunctions(operationBlock, localFunctions);
+                    }
 
+                    var walker = new OwningBuilderWalker(method.Parameters[0], renderTreeBuilderType, localFunctions);
+                    foreach (var operationBlock in context.OperationBlocks)
+                    {
+                        walker.Visit(operationBlock);
+                    }
+
+                    foreach (var localFunction in walker.LocalFunctionsUsingOwningBuilder)
+                    {
                         context.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup,
-                            localFunction.Symbol.Locations.First(),
-                            localFunction.Symbol.Name));
-                    }, OperationKind.LocalFunction);
+                            localFunction.Locations.First(),
+                            localFunction.Name));
+                    }
                 });
             }, SymbolKind.NamedType);
         });
@@ -106,62 +108,190 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool ContainsCapturedRenderTreeBuilderCall(
+    private static void CollectLocalFunctions(
         IOperation operation,
-        ImmutableArray<IMethodSymbol> localScopes,
-        INamedTypeSymbol renderTreeBuilderType)
+        Dictionary<IMethodSymbol, ILocalFunctionOperation> localFunctions)
     {
-        if (operation is ILocalFunctionOperation)
+        if (operation is ILocalFunctionOperation localFunction)
         {
-            return false;
-        }
-
-        if (operation is IAnonymousFunctionOperation anonymousFunction)
-        {
-            return ContainsCapturedRenderTreeBuilderCall(
-                anonymousFunction.Body,
-                localScopes.Add(anonymousFunction.Symbol),
-                renderTreeBuilderType);
-        }
-
-        if (operation is IInvocationOperation invocation &&
-            SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, renderTreeBuilderType) &&
-            IsCaptured(invocation.Instance, localScopes))
-        {
-            return true;
+            localFunctions.Add(localFunction.Symbol, localFunction);
         }
 
         foreach (var child in operation.ChildOperations)
         {
-            if (ContainsCapturedRenderTreeBuilderCall(child, localScopes, renderTreeBuilderType))
-            {
-                return true;
-            }
+            CollectLocalFunctions(child, localFunctions);
         }
-
-        return false;
     }
 
-    private static bool IsCaptured(IOperation? operation, ImmutableArray<IMethodSymbol> localScopes)
-        => operation switch
-        {
-            IConversionOperation conversion => IsCaptured(conversion.Operand, localScopes),
-            IFieldReferenceOperation => true,
-            ILocalReferenceOperation local => !IsDeclaredInLocalScope(local.Local, localScopes),
-            IParameterReferenceOperation parameter => !IsDeclaredInLocalScope(parameter.Parameter, localScopes),
-            _ => false,
-        };
-
-    private static bool IsDeclaredInLocalScope(ISymbol symbol, ImmutableArray<IMethodSymbol> localScopes)
+    private sealed class OwningBuilderWalker : OperationWalker
     {
-        foreach (var localScope in localScopes)
+        private readonly INamedTypeSymbol _renderTreeBuilderType;
+        private readonly Dictionary<IMethodSymbol, ILocalFunctionOperation> _localFunctions;
+        private readonly HashSet<IMethodSymbol> _activeLocalFunctions = new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ISymbol, bool> _provenance = new(SymbolEqualityComparer.Default);
+        private IMethodSymbol? _currentLocalFunction;
+
+        public OwningBuilderWalker(
+            IParameterSymbol owningBuilder,
+            INamedTypeSymbol renderTreeBuilderType,
+            Dictionary<IMethodSymbol, ILocalFunctionOperation> localFunctions)
         {
-            if (SymbolEqualityComparer.Default.Equals(symbol.ContainingSymbol, localScope))
+            _renderTreeBuilderType = renderTreeBuilderType;
+            _localFunctions = localFunctions;
+            _provenance.Add(owningBuilder, true);
+        }
+
+        public HashSet<IMethodSymbol> LocalFunctionsUsingOwningBuilder { get; } = new(SymbolEqualityComparer.Default);
+
+        public override void VisitLocalFunction(ILocalFunctionOperation operation)
+        {
+        }
+
+        public override void VisitAnonymousFunction(IAnonymousFunctionOperation operation)
+        {
+            var previousProvenance = CloneProvenance();
+            foreach (var parameter in operation.Symbol.Parameters)
             {
-                return true;
+                _provenance[parameter] = false;
+            }
+
+            Visit(operation.Body);
+            RestoreProvenance(previousProvenance);
+        }
+
+        public override void VisitVariableDeclarator(IVariableDeclaratorOperation operation)
+        {
+            if (operation.Initializer is { } initializer)
+            {
+                Visit(initializer.Value);
+                _provenance[operation.Symbol] = HasOwningBuilderProvenance(initializer.Value);
+            }
+            else
+            {
+                _provenance[operation.Symbol] = false;
             }
         }
 
-        return false;
+        public override void VisitSimpleAssignment(ISimpleAssignmentOperation operation)
+        {
+            Visit(operation.Value);
+            if (GetReferencedSymbol(operation.Target) is { } target)
+            {
+                _provenance[target] = HasOwningBuilderProvenance(operation.Value);
+            }
+        }
+
+        public override void VisitConditional(IConditionalOperation operation)
+        {
+            Visit(operation.Condition);
+            var initialProvenance = CloneProvenance();
+
+            Visit(operation.WhenTrue);
+            var whenTrueProvenance = CloneProvenance();
+
+            RestoreProvenance(initialProvenance);
+            if (operation.WhenFalse is { } whenFalse)
+            {
+                Visit(whenFalse);
+            }
+
+            MergeProvenance(whenTrueProvenance);
+        }
+
+        public override void VisitInvocation(IInvocationOperation operation)
+        {
+            Visit(operation.Instance);
+            foreach (var argument in operation.Arguments)
+            {
+                Visit(argument.Value);
+            }
+
+            if (_currentLocalFunction is not null &&
+                SymbolEqualityComparer.Default.Equals(operation.TargetMethod.ContainingType, _renderTreeBuilderType) &&
+                HasOwningBuilderProvenance(operation.Instance))
+            {
+                LocalFunctionsUsingOwningBuilder.Add(_currentLocalFunction);
+            }
+
+            if (_localFunctions.TryGetValue(operation.TargetMethod, out var localFunction))
+            {
+                VisitLocalFunctionInvocation(localFunction);
+            }
+        }
+
+        private void VisitLocalFunctionInvocation(ILocalFunctionOperation localFunction)
+        {
+            if (localFunction.Symbol.IsStatic ||
+                localFunction.Body is null ||
+                !_activeLocalFunctions.Add(localFunction.Symbol))
+            {
+                return;
+            }
+
+            var previousLocalFunction = _currentLocalFunction;
+            _currentLocalFunction = localFunction.Symbol;
+            foreach (var parameter in localFunction.Symbol.Parameters)
+            {
+                _provenance[parameter] = false;
+            }
+
+            Visit(localFunction.Body);
+
+            _currentLocalFunction = previousLocalFunction;
+            _activeLocalFunctions.Remove(localFunction.Symbol);
+        }
+
+        private bool HasOwningBuilderProvenance(IOperation? operation)
+            => operation switch
+            {
+                IConversionOperation conversion => HasOwningBuilderProvenance(conversion.Operand),
+                IParenthesizedOperation parenthesized => HasOwningBuilderProvenance(parenthesized.Operand),
+                ILocalReferenceOperation local => GetProvenance(local.Local),
+                IParameterReferenceOperation parameter => GetProvenance(parameter.Parameter),
+                IFieldReferenceOperation field => GetProvenance(field.Field),
+                IConditionalOperation conditional => HasOwningBuilderProvenance(conditional.WhenTrue) ||
+                    HasOwningBuilderProvenance(conditional.WhenFalse),
+                ICoalesceOperation coalesce => HasOwningBuilderProvenance(coalesce.Value) ||
+                    HasOwningBuilderProvenance(coalesce.WhenNull),
+                _ => false,
+            };
+
+        private bool GetProvenance(ISymbol symbol)
+            => _provenance.TryGetValue(symbol, out var hasOwningBuilderProvenance) &&
+                hasOwningBuilderProvenance;
+
+        private static ISymbol? GetReferencedSymbol(IOperation operation)
+            => operation switch
+            {
+                IConversionOperation conversion => GetReferencedSymbol(conversion.Operand),
+                IParenthesizedOperation parenthesized => GetReferencedSymbol(parenthesized.Operand),
+                ILocalReferenceOperation local => local.Local,
+                IParameterReferenceOperation parameter => parameter.Parameter,
+                IFieldReferenceOperation field => field.Field,
+                _ => null,
+            };
+
+        private Dictionary<ISymbol, bool> CloneProvenance()
+            => new(_provenance, SymbolEqualityComparer.Default);
+
+        private void RestoreProvenance(Dictionary<ISymbol, bool> provenance)
+        {
+            _provenance.Clear();
+            foreach (var item in provenance)
+            {
+                _provenance.Add(item.Key, item.Value);
+            }
+        }
+
+        private void MergeProvenance(Dictionary<ISymbol, bool> provenance)
+        {
+            foreach (var item in provenance)
+            {
+                if (item.Value)
+                {
+                    _provenance[item.Key] = true;
+                }
+            }
+        }
     }
 }
