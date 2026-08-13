@@ -96,19 +96,12 @@
   <Target Name="RestoreDotnetTools" BeforeTargets="IncludeAspNetRuntime">
     <Exec Command="dotnet tool restore" WorkingDirectory="$(RepoRoot)" IgnoreExitCode="true" />
     <ItemGroup>
-      <_HelixTestRunnerTool Include="dotnet-dump;dotnet-ef;dotnet-serve" />
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" AsArchive="false" />
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" AsArchive="false" />
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" AsArchive="false" />
     </ItemGroup>
-    <ResolveDotnetToolPackagePaths
-        ToolManifestPath="$([MSBuild]::NormalizePath('$(RepoRoot)', '.config', 'dotnet-tools.json'))"
-        NuGetPackageRoot="$(NUGET_PACKAGES)"
-        PackageIds="@(_HelixTestRunnerTool)">
-      <Output TaskParameter="ToolPackages" ItemName="_HelixTestRunnerToolPackage" />
-    </ResolveDotnetToolPackagePaths>
-    <ItemGroup>
-      <HelixCorrelationPayload Include="@(_HelixTestRunnerToolPackage)" AsArchive="false" />
-    </ItemGroup>
-    <Warning Text="%(_HelixTestRunnerToolPackage.PackageId) nupkg not found at '%(_HelixTestRunnerToolPackage.Identity)'. HelixTestRunner cannot install the tool."
-        Condition="!Exists('%(_HelixTestRunnerToolPackage.Identity)')" />
+    <Warning Text="dotnet-ef nupkg not found at '$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg'. Helix template tests may install an incompatible version."
+        Condition="!Exists('$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg')" />
   </Target>
 
   <Choose>
