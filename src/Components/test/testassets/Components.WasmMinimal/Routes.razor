@@ -8,6 +8,15 @@
     [SupplyParameterFromQuery(Name = "useCustomNotFoundPage")]
     public string? UseCustomNotFoundPage { get; set; }
 
+    [Parameter]
+    public bool UseConfiguredAssemblies { get; set; }
+
+    private System.Reflection.Assembly? AppAssembly =>
+        UseConfiguredAssemblies ? null : typeof(Program).Assembly;
+
+    private IEnumerable<System.Reflection.Assembly>? AdditionalAssemblies =>
+        UseConfiguredAssemblies ? null : new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly };
+
     private Type? NotFoundPageType { get; set; }
 
     protected override void OnParametersSet()
@@ -25,7 +34,7 @@
 
 @if (NotFoundPageType != null)
 {
-    <Router NotFoundPage="NotFoundPageType">
+    <Router AppAssembly="AppAssembly" AdditionalAssemblies="AdditionalAssemblies" NotFoundPage="NotFoundPageType">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -34,7 +43,7 @@
 }
 else
 {
-    <Router>
+    <Router AppAssembly="AppAssembly" AdditionalAssemblies="AdditionalAssemblies">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
