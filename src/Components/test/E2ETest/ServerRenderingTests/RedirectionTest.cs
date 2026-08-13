@@ -298,9 +298,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         // Navigate to the page that triggers the circular redirect.
         Navigate($"{ServerPathBase}/redirect/circular");
 
-        // Wait for the counter element to appear and stabilize.
-        // The circular redirect flow performs 3 retry attempts with multiple render cycles,
-        // so we need to wait for the page to fully settle before asserting.
+        // Wait for the circular redirects to settle.
         Browser.Exists(By.Id("unobserved-exceptions-count"));
 
         // The component will stop redirecting after 3 attempts and render the exception count.
