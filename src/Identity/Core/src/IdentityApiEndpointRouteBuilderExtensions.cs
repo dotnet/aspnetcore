@@ -25,17 +25,23 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public static class IdentityApiEndpointRouteBuilderExtensions
 {
+    private const int MaxPasskeyNameLength = 200;
+
     // Validate the email address using DataAnnotations like the UserValidator does when RequireUniqueEmail = true.
     private static readonly EmailAddressAttribute _emailAddressAttribute = new();
 
     /// <summary>
-    /// Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity.
+    /// Add endpoints for registering, logging in, managing passkeys, and logging out using ASP.NET Core Identity.
     /// </summary>
     /// <typeparam name="TUser">The type describing the user. This should match the generic parameter in <see cref="UserManager{TUser}"/>.</typeparam>
     /// <param name="endpoints">
     /// The <see cref="IEndpointRouteBuilder"/> to add the identity endpoints to.
     /// Call <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, string)"/> to add a prefix to all the endpoints.
     /// </param>
+    /// <remarks>
+    /// The passkey endpoints use the <see cref="IdentityConstants.TwoFactorUserIdScheme"/> cookie to store state between
+    /// the options and completion requests. This scheme is registered by <c>AddIdentityApiEndpoints</c>.
+    /// </remarks>
     /// <returns>An <see cref="IEndpointConventionBuilder"/> to further customize the added endpoints.</returns>
     public static IEndpointConventionBuilder MapIdentityApi<TUser>(this IEndpointRouteBuilder endpoints)
         where TUser : class, new()
@@ -91,10 +97,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             ([FromBody] LoginRequest login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp) =>
         {
             var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
-
-            var useCookieScheme = (useCookies == true) || (useSessionCookies == true);
-            var isPersistent = (useCookies == true) && (useSessionCookies != true);
-            signInManager.AuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
+            var isPersistent = ConfigureAuthenticationScheme(signInManager, useCookies, useSessionCookies);
 
             var result = await signInManager.PasswordSignInAsync(login.Email, login.Password, isPersistent, lockoutOnFailure: true);
 
@@ -108,6 +111,55 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 {
                     result = await signInManager.TwoFactorRecoveryCodeSignInAsync(login.TwoFactorRecoveryCode);
                 }
+            }
+
+            if (!result.Succeeded)
+            {
+                return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
+            }
+
+            // The signInManager already produced the needed response in the form of a cookie or bearer token.
+            return TypedResults.Empty;
+        });
+
+        var passkeyGroup = routeGroup.MapGroup("/passkeys");
+
+        passkeyGroup.MapPost("/requestOptions", async Task<ContentHttpResult>
+            ([FromBody] PasskeyRequestOptionsRequest request, [FromServices] IServiceProvider sp) =>
+        {
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
+            var userManager = signInManager.UserManager;
+            EnsurePasskeySupport(userManager);
+
+            var user = string.IsNullOrEmpty(request.Email)
+                ? null
+                : await userManager.FindByEmailAsync(request.Email);
+            var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
+
+            return TypedResults.Content(optionsJson, contentType: "application/json");
+        });
+
+        passkeyGroup.MapPost("/login", async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult, ValidationProblem>>
+            ([FromBody] PasskeyLoginRequest login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp) =>
+        {
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
+            EnsurePasskeySupport(signInManager.UserManager);
+
+            if (string.IsNullOrEmpty(login.CredentialJson))
+            {
+                return CreateValidationProblem("InvalidPasskey", "The passkey could not be validated.");
+            }
+
+            var isPersistent = ConfigureAuthenticationScheme(signInManager, useCookies, useSessionCookies);
+
+            SignInResult result;
+            try
+            {
+                result = await signInManager.PasskeySignInAsync(login.CredentialJson, isPersistent);
+            }
+            catch (PasskeyAuthenticationStateException)
+            {
+                return CreateValidationProblem("InvalidPasskeyState", "The passkey operation is invalid or has expired.");
             }
 
             if (!result.Succeeded)
@@ -256,6 +308,91 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         });
 
         var accountGroup = routeGroup.MapGroup("/manage").RequireAuthorization();
+        var passkeyAccountGroup = accountGroup.MapGroup("/passkeys");
+
+        passkeyAccountGroup.MapPost("/creationOptions", async Task<Results<ContentHttpResult, NotFound>>
+            (ClaimsPrincipal claimsPrincipal, [FromServices] IServiceProvider sp) =>
+        {
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
+            var userManager = signInManager.UserManager;
+            EnsurePasskeySupport(userManager);
+
+            if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
+            {
+                return TypedResults.NotFound();
+            }
+
+            var userId = await userManager.GetUserIdAsync(user);
+            var userName = await userManager.GetUserNameAsync(user)
+                ?? throw new NotSupportedException("Users must have a user name.");
+            var optionsJson = await signInManager.MakePasskeyCreationOptionsAsync(new()
+            {
+                Id = userId,
+                Name = userName,
+                DisplayName = userName,
+            });
+
+            return TypedResults.Content(optionsJson, contentType: "application/json");
+        });
+
+        passkeyAccountGroup.MapPost("", async Task<Results<Ok<PasskeyRegistrationResponse>, ValidationProblem, NotFound>>
+            (ClaimsPrincipal claimsPrincipal, [FromBody] PasskeyRegistrationRequest registration, [FromServices] IServiceProvider sp) =>
+        {
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
+            var userManager = signInManager.UserManager;
+            EnsurePasskeySupport(userManager);
+
+            if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
+            {
+                return TypedResults.NotFound();
+            }
+
+            if (registration.Name is { Length: > MaxPasskeyNameLength })
+            {
+                return CreateValidationProblem(
+                    "InvalidPasskeyName",
+                    $"Passkey names must be no longer than {MaxPasskeyNameLength} characters.");
+            }
+
+            if (string.IsNullOrEmpty(registration.CredentialJson))
+            {
+                return CreateValidationProblem("InvalidPasskey", "The passkey could not be validated.");
+            }
+
+            PasskeyAttestationResult attestationResult;
+            try
+            {
+                attestationResult = await signInManager.PerformPasskeyAttestationAsync(registration.CredentialJson);
+            }
+            catch (PasskeyAuthenticationStateException)
+            {
+                return CreateValidationProblem("InvalidPasskeyState", "The passkey operation is invalid or has expired.");
+            }
+
+            if (!attestationResult.Succeeded)
+            {
+                return CreateValidationProblem("InvalidPasskey", "The passkey could not be validated.");
+            }
+
+            var userId = await userManager.GetUserIdAsync(user);
+            if (!string.Equals(userId, attestationResult.UserEntity.Id, StringComparison.Ordinal))
+            {
+                return CreateValidationProblem("InvalidPasskey", "The passkey could not be validated.");
+            }
+
+            attestationResult.Passkey.Name = string.IsNullOrEmpty(registration.Name) ? null : registration.Name;
+            var result = await userManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
+            }
+
+            return TypedResults.Ok(new PasskeyRegistrationResponse
+            {
+                CredentialId = WebEncoders.Base64UrlEncode(attestationResult.Passkey.CredentialId),
+                Name = attestationResult.Passkey.Name,
+            });
+        });
 
         accountGroup.MapPost("/2fa", async Task<Results<Ok<TwoFactorResponse>, ValidationProblem, NotFound>>
             (ClaimsPrincipal claimsPrincipal, [FromBody] TwoFactorRequest tfaRequest, [FromServices] IServiceProvider sp) =>
@@ -419,6 +556,28 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         }
 
         return new IdentityEndpointsConventionBuilder(routeGroup);
+    }
+
+    private static bool ConfigureAuthenticationScheme<TUser>(
+        SignInManager<TUser> signInManager,
+        bool? useCookies,
+        bool? useSessionCookies)
+        where TUser : class
+    {
+        var useCookieScheme = (useCookies == true) || (useSessionCookies == true);
+        var isPersistent = (useCookies == true) && (useSessionCookies != true);
+        signInManager.AuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
+
+        return isPersistent;
+    }
+
+    private static void EnsurePasskeySupport<TUser>(UserManager<TUser> userManager)
+        where TUser : class
+    {
+        if (!userManager.SupportsUserPasskey)
+        {
+            throw new NotSupportedException($"{nameof(MapIdentityApi)} requires a user store with passkey support.");
+        }
     }
 
     private static ValidationProblem CreateValidationProblem(string errorCode, string errorDescription) =>

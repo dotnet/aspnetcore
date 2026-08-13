@@ -1,4 +1,25 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.Data.PasskeyLoginRequest
+Microsoft.AspNetCore.Identity.Data.PasskeyLoginRequest.CredentialJson.get -> string!
+Microsoft.AspNetCore.Identity.Data.PasskeyLoginRequest.CredentialJson.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyLoginRequest.PasskeyLoginRequest() -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.CredentialJson.get -> string!
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.CredentialJson.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.Name.get -> string?
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.Name.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationRequest.PasskeyRegistrationRequest() -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.CredentialId.get -> string!
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.CredentialId.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.Name.get -> string?
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.Name.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyRegistrationResponse.PasskeyRegistrationResponse() -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyRequestOptionsRequest
+Microsoft.AspNetCore.Identity.Data.PasskeyRequestOptionsRequest.Email.get -> string?
+Microsoft.AspNetCore.Identity.Data.PasskeyRequestOptionsRequest.Email.init -> void
+Microsoft.AspNetCore.Identity.Data.PasskeyRequestOptionsRequest.PasskeyRequestOptionsRequest() -> void
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.PasskeySignInAsync(string! credentialJson, bool isPersistent) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult!>!
 Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions
 Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Enroll.get -> string?
 Microsoft.AspNetCore.Identity.PasskeyEndpointsOptions.Enroll.set -> void
