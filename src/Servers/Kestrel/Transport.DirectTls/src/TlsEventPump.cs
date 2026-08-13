@@ -528,7 +528,15 @@ internal class TlsEventPump : IDisposable
                 break;
             }
 
-            ProcessAcceptedSocket(accepted);
+            try
+            {
+                ProcessAcceptedSocket(accepted);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Processing an accepted socket threw; disposing it to release its fd.");
+                accepted.Dispose();
+            }
         }
     }
 

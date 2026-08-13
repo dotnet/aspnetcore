@@ -155,6 +155,29 @@ public class TlsEventPumpAcceptTests
         pump.StopAccepting();   // second call must be a no-op, not throw
     }
 
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void AcceptConnections_DisposesSocket_WhenProcessingThrows()
+    {
+        // ProcessAcceptedSocket can throw before the fd is transferred to the TLS session (Blocking/NoDelay/
+        // RemoteEndPoint on a peer that reset after accept). The accept loop must dispose the accepted socket so
+        // its fd is not leaked to a finalizer, and must keep draining the rest of the backlog.
+        using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        using var pump = new ThrowingProcessPump(
+            new Func<Socket>[]
+            {
+                () => socket,             // processing throws for this one
+                () => throw WouldBlock(), // backlog drained
+            });
+        pump.SetListenFd(1);
+
+        pump.AcceptConnections();
+
+        Assert.True(socket.SafeHandle.IsClosed);   // disposed - fd reclaimed
+        Assert.Equal(1, pump.ProcessAttemptCount);
+        Assert.Equal(2, pump.AcceptCallCount);     // drain continued past the failure
+    }
+
     /// <summary>
     /// A pump that scripts <see cref="TlsEventPump.AcceptOne"/> outcomes and records how many sockets
     /// reached <see cref="TlsEventPump.ProcessAcceptedSocket"/>, without ever touching a real listen
@@ -187,6 +210,41 @@ public class TlsEventPumpAcceptTests
         internal override void ProcessAcceptedSocket(Socket accepted)
         {
             ProcessedCount++;
+        }
+    }
+
+    /// <summary>
+    /// A pump that returns real sockets from <see cref="TlsEventPump.AcceptOne"/> and makes
+    /// <see cref="TlsEventPump.ProcessAcceptedSocket"/> throw, to model a pre-transfer configuration failure and
+    /// verify the accept loop reclaims the socket's fd.
+    /// </summary>
+    private sealed class ThrowingProcessPump : TlsEventPump
+    {
+        private readonly Queue<Func<Socket>> _script;
+
+        public int AcceptCallCount { get; private set; }
+        public int ProcessAttemptCount { get; private set; }
+
+        public ThrowingProcessPump(IEnumerable<Func<Socket>> script)
+            : base(tlsPumpLogger: NullLogger<TlsEventPump>.Instance, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
+        {
+            _script = new Queue<Func<Socket>>(script);
+        }
+
+        internal override Socket AcceptOne()
+        {
+            AcceptCallCount++;
+            var next = _script.Count > 0
+                ? _script.Dequeue()
+                : (() => throw new SocketException((int)SocketError.WouldBlock));
+            return next();
+        }
+
+        internal override void ProcessAcceptedSocket(Socket accepted)
+        {
+            ProcessAttemptCount++;
+            // Model a throw from the socket-configuration window, before ownership transfers to the session.
+            throw new SocketException((int)SocketError.NotConnected);
         }
     }
 }
