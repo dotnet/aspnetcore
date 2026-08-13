@@ -77,8 +77,6 @@ internal static partial class NativeTls
             }
         }
 
-        public int MaxEvents => _packed?.Length ?? _aligned!.Length;
-
         public int Wait(int epfd, int timeout)
             => _packed is not null
                 ? epoll_wait(epfd, _packed, _packed.Length, timeout)

@@ -775,7 +775,7 @@ internal class TlsEventPump : IDisposable
                     clientCertificate = presentedCertificate;
                 }
 
-                // Both are set before the pump thread starts and never cleared, so this is unreachable;
+                // Both are set before the pump thread starts and never cleared, so this is unreachable.
                 if (_readyConnections is null || _memoryPool is null)
                 {
                     Debug.Assert(false, "Handshake completed before the pump was initialized.");
@@ -895,20 +895,13 @@ internal class TlsEventPump : IDisposable
                 return;
             }
 
-            // Fire the optional ClientHello listener as early as possible - the session has parsed the
-            // ClientHello (which is what produced this NeedsTlsContext suspension), but the real context
-            // has not been installed yet and OpenSSL has not run the expensive key exchange / certificate
-            // signing. The listener is observable-only today; it does not decide whether the handshake
-            // proceeds. Allocate the DirectTlsConnection now (its handshake is not yet complete) so the
-            // callback sees the same ConnectionContext / ConnectionId that will later serve the request,
-            // then reuse it in the Complete branch. The Connection-is-null guard fires it exactly once even
-            // if the handshake needs several more epoll round-trips.
             // Allocate the DirectTlsConnection now (its handshake is not yet complete) so both the
-            // certificate selector and the optional ClientHello listener see the same ConnectionContext /
-            // ConnectionId that will later serve the request; it is reused in the Complete branch. The
-            // Connection-is-null guard makes this run exactly once even if the handshake needs several more
-            // epoll round-trips. Because the bootstrap context carries no credentials, every connection
-            // reaches NeedsTlsContext, so this early allocation is net-neutral (moved from Complete, not added).
+            // certificate selector below and the optional ClientHello listener see the same
+            // ConnectionContext / ConnectionId that will later serve the request; it is reused in the
+            // Complete branch. The Connection-is-null guard makes this run exactly once even if the
+            // handshake needs several more epoll round-trips. Because the bootstrap context carries no
+            // credentials, every connection reaches NeedsTlsContext, so this early allocation is net-neutral
+            // (moved from Complete, not added).
             if (conn.Connection is null && _memoryPool is not null)
             {
                 var earlyState = new ConnectionIoState(fd, conn.Session, _connectionIoStateLogger) { Pump = this };

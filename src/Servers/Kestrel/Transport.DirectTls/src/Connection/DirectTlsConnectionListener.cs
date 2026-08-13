@@ -103,9 +103,9 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
 
         listenSocket.Listen(_options.Backlog);
 
-        // Set listen socket to non-blocking for the EPOLLEXCLUSIVE accept pattern.
-        // Each pump waits on epoll and calls Socket.Accept(); non-blocking mode makes
-        // a drained accept throw SocketError.WouldBlock instead of blocking the pump.
+        // Set the listen socket non-blocking for the EPOLLEXCLUSIVE accept pattern. Each pump waits on epoll
+        // and drains the backlog with accept4(); a non-blocking listen fd makes a drained accept return
+        // EAGAIN (surfaced as a negative errno by AcceptOne) instead of blocking the pump thread.
         listenSocket.Blocking = false;
 
         // Start all pump threads with the listen socket (EPOLLEXCLUSIVE)

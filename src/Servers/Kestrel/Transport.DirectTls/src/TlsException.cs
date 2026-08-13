@@ -5,8 +5,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
 
 internal class TlsException : Exception
 {
-    public TlsException(string message, Exception ex) : base(message, ex) { }
-
     public TlsException(string message) : base(message) { }
-    public TlsException(int error) : base($"TLS error: {error}") { }
 }
