@@ -5,24 +5,8 @@ registries:
     url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
 updates:
 - package-ecosystem: "nuget"
-  directories:
-  - "/"
   # Exposes packages Dependabot otherwise can't see; see eng/tools/DependabotDiscovery/README.md
-  - "/eng/tools/DependabotDiscovery"
-  # Scanning every project under "/" times out (repo has 600+ csproj files, most of which have
-  # no explicit PackageReference versions and rely on Directory.Build.props/Dependencies.props
-  # indirection, so restoring them individually adds cost without adding visibility). Excluding
-  # test/sample/benchmark trees keeps the scan within Dependabot's job time limit.
-  exclude-paths:
-  - "**/test/**"
-  - "**/tests/**"
-  - "**/*.Tests/**"
-  - "**/*.FunctionalTests/**"
-  - "**/sample/**"
-  - "**/samples/**"
-  - "**/testassets/**"
-  - "**/perf/**"
-  - "**/benchmark*/**"
+  directory: "/eng/tools/DependabotDiscovery"
   registries:
   - dotnet-public
   open-pull-requests-limit: 10
@@ -302,4 +286,3 @@ updates:
   schedule:
     interval: monthly
   target-branch: release/10.0
-
