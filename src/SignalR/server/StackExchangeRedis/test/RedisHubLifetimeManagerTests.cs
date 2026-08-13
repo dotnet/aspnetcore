@@ -43,6 +43,34 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
     }
 
     [Fact]
+    public async Task OnUserIdentifierChangedAsyncReKeysUserSubscription()
+    {
+        var server = new TestRedisServer();
+
+        using (var client = new TestClient())
+        {
+            var manager = CreateLifetimeManager(server);
+            var connection = HubConnectionContextUtils.Create(client.Connection, userIdentifier: "userA");
+
+            await manager.OnConnectedAsync(connection).DefaultTimeout();
+
+            // The connection handler applies the new identifier before notifying the lifetime manager.
+            connection.UserIdentifier = "userB";
+            await manager.OnUserIdentifierChangedAsync(connection, "userA", "userB").DefaultTimeout();
+
+            await manager.SendUserAsync("userA", "Hello", new object[] { "World" }).DefaultTimeout();
+            Assert.Null(client.TryRead());
+
+            await manager.SendUserAsync("userB", "Hello", new object[] { "World" }).DefaultTimeout();
+
+            var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("Hello", message.Target);
+            Assert.Single(message.Arguments);
+            Assert.Equal("World", (string)message.Arguments[0]);
+        }
+    }
+
+    [Fact]
     public async Task CamelCasedJsonIsPreservedAcrossRedisBoundary()
     {
         var server = new TestRedisServer();

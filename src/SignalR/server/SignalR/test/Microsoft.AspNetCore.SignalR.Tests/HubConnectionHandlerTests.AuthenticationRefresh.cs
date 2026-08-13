@@ -330,6 +330,49 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
+    public async Task UserIdentifierChangeOnRefreshUpdatesConnectionWhenEnabled()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthenticationRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSingleton(hubObserver);
+                services.AddSignalR().AddHubOptions<AuthenticationRefreshHub>(options =>
+                {
+                    options.AllowUserIdentifierChangeOnAuthenticationRefresh = true;
+                });
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthenticationRefreshHub>>();
+
+            using (var client = new TestClient(userIdentifier: "user-1"))
+            {
+                var feature = new TestConnectionUserRefreshFeature();
+                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, "user-2"),
+                    new Claim(ClaimTypes.NameIdentifier, "user-2"),
+                }, "Test"));
+                client.Connection.User = refreshedUser;
+                feature.Raise(refreshedUser);
+
+                Assert.Equal("user-2", await hubObserver.RefreshedTask.DefaultTimeout());
+
+                var pair = await client.InvokeAsync(nameof(AuthenticationRefreshHub.GetUserNameIdentifierAndUserIdentifier)).DefaultTimeout();
+                Assert.Null(pair.Error);
+                Assert.Equal("user-2:user-2", pair.Result);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
     public async Task UserIdProviderExceptionOnRefreshIsLoggedAndAbortsConnection()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "ErrorApplyingAuthenticationRefresh"))

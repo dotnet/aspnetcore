@@ -25,7 +25,9 @@ public class AuthenticationStartupBase
     {
         services.AddMvc();
 
-        services.AddServerSideBlazor();
+        services.AddServerSideBlazor()
+            .AddHubOptions(options =>
+                options.AllowUserIdentifierChangeOnAuthenticationRefresh = true);
 
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
         services.AddAuthorization(options =>

@@ -112,6 +112,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal(globalHubOptions.ClientTimeoutInterval, hubOptions.ClientTimeoutInterval);
             Assert.Equal(globalHubOptions.MaximumParallelInvocationsPerClient, hubOptions.MaximumParallelInvocationsPerClient);
             Assert.Equal(globalHubOptions.DisableImplicitFromServicesParameters, hubOptions.DisableImplicitFromServicesParameters);
+            Assert.Equal(globalHubOptions.AllowUserIdentifierChangeOnAuthenticationRefresh, hubOptions.AllowUserIdentifierChangeOnAuthenticationRefresh);
             Assert.Equal(globalHubOptions.StatefulReconnectBufferSize, hubOptions.StatefulReconnectBufferSize);
             Assert.True(hubOptions.UserHasSetValues);
         }
@@ -148,6 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(1);
                 options.MaximumParallelInvocationsPerClient = 3;
                 options.DisableImplicitFromServicesParameters = true;
+                options.AllowUserIdentifierChangeOnAuthenticationRefresh = true;
                 options.StatefulReconnectBufferSize = 23;
             });
 
@@ -163,6 +165,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal(3, globalOptions.MaximumParallelInvocationsPerClient);
             Assert.Equal(TimeSpan.FromSeconds(1), globalOptions.ClientTimeoutInterval);
             Assert.True(globalOptions.DisableImplicitFromServicesParameters);
+            Assert.True(globalOptions.AllowUserIdentifierChangeOnAuthenticationRefresh);
             Assert.Equal(23, globalOptions.StatefulReconnectBufferSize);
         }
 
