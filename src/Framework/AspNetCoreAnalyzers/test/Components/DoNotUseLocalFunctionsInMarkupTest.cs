@@ -234,6 +234,103 @@ public class TestComponent : ComponentBase
     }
 
     [Fact]
+    public async Task LocalFunctionWithChainedOwningBuilderAlias_ProducesDiagnostic()
+    {
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var alias = new RenderTreeBuilder();
+        var another = alias = builder;
+
+        void /*MM*/LocalFunction()
+        {
+            another.OpenElement(0, ""div"");
+            another.CloseElement();
+        }
+
+        LocalFunction();
+    }
+}
+");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Fact]
+    public async Task LocalFunctionUsedAsRenderFragmentMethodGroup_ProducesDiagnostic()
+    {
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        void /*MM*/LocalFunction(RenderTreeBuilder childBuilder)
+        {
+            builder.OpenElement(0, ""div"");
+            builder.CloseElement();
+        }
+
+        RenderFragment fragment = LocalFunction;
+        builder.AddContent(0, fragment);
+    }
+}
+");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Fact]
+    public async Task LocalFunctionInIndependentSwitchCaseWithOwningBuilderAlias_ProducesDiagnostic()
+    {
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var childBuilder = new RenderTreeBuilder();
+        var alias = builder;
+        var value = 2;
+
+        switch (value)
+        {
+            case 1:
+                alias = childBuilder;
+                break;
+            case 2:
+                void /*MM*/LocalFunction()
+                {
+                    alias.OpenElement(0, ""div"");
+                    alias.CloseElement();
+                }
+
+                LocalFunction();
+                break;
+        }
+    }
+}
+");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Fact]
     public async Task NestedLocalFunctionWithFreshCapturedBuilder_NoDiagnostic()
     {
         var source = @"

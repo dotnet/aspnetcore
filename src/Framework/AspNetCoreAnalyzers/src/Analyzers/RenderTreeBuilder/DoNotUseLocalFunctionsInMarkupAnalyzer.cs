@@ -198,6 +198,26 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             MergeProvenance(whenTrueProvenance);
         }
 
+        public override void VisitSwitch(ISwitchOperation operation)
+        {
+            Visit(operation.Value);
+            var initialProvenance = CloneProvenance();
+            var mergedProvenance = CloneProvenance();
+
+            foreach (var @case in operation.Cases)
+            {
+                RestoreProvenance(initialProvenance);
+                Visit(@case);
+                var caseProvenance = CloneProvenance();
+
+                RestoreProvenance(mergedProvenance);
+                MergeProvenance(caseProvenance);
+                mergedProvenance = CloneProvenance();
+            }
+
+            RestoreProvenance(mergedProvenance);
+        }
+
         public override void VisitInvocation(IInvocationOperation operation)
         {
             Visit(operation.Instance);
@@ -214,6 +234,15 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             }
 
             if (_localFunctions.TryGetValue(operation.TargetMethod, out var localFunction))
+            {
+                VisitLocalFunctionInvocation(localFunction);
+            }
+        }
+
+        public override void VisitMethodReference(IMethodReferenceOperation operation)
+        {
+            Visit(operation.Instance);
+            if (_localFunctions.TryGetValue(operation.Method, out var localFunction))
             {
                 VisitLocalFunctionInvocation(localFunction);
             }
@@ -253,6 +282,7 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
                     HasOwningBuilderProvenance(conditional.WhenFalse),
                 ICoalesceOperation coalesce => HasOwningBuilderProvenance(coalesce.Value) ||
                     HasOwningBuilderProvenance(coalesce.WhenNull),
+                ISimpleAssignmentOperation assignment => HasOwningBuilderProvenance(assignment.Value),
                 _ => false,
             };
 
