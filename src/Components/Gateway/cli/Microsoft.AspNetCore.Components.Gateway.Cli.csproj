@@ -37,11 +37,13 @@
                       PrivateAssets="All" />
   </ItemGroup>
 
-  <!-- Build and publish the gateway before packing so its binaries are available to the nuspec. -->
+  <!-- Build and publish the gateway before packing so its binaries are available to the nuspec.
+       No Properties override: Gateway.csproj is also built as a top-level project elsewhere in the
+       build, and forcing TargetFramework here made MSBuild treat the two as separate, racing builds
+       (see https://github.com/dotnet/dotnet/issues/8005). -->
   <Target Name="_PublishGatewayForTool" BeforeTargets="GenerateNuspec">
     <MSBuild Projects="$(_GatewayProject)"
-             Targets="Publish"
-             Properties="Configuration=$(Configuration);TargetFramework=$(DefaultNetCoreTargetFramework)" />
+             Targets="Publish" />
 
     <Error Condition="!Exists('$(_GatewayPublishDir)blazor-gateway.dll')"
            Text="Expected the gateway to publish 'blazor-gateway.dll' to '$(_GatewayPublishDir)' but it was not found." />

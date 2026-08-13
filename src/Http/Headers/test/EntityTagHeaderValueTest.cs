@@ -509,6 +509,21 @@ public class EntityTagHeaderValueTest
         Assert.Equal(1, parser.GetParsedValueLengthCallCount);
     }
 
+    [Theory]
+    [InlineData(16)]
+    [InlineData(256)]
+    [InlineData(4096)]
+    public void TryParseValues_PathologicalSeparatorsSkipPreviouslyScannedInput(int separatorCount)
+    {
+        var parser = new CountingEntityTagParser(supportsMultipleValues: true);
+        var input = $"{new string(',', separatorCount)}@, \"tag\"";
+
+        Assert.True(parser.PublicTryParseValues(new[] { input }, out var results));
+
+        Assert.Equal(3, parser.GetParsedValueLengthCallCount);
+        Assert.Equal(new[] { new EntityTagHeaderValue("\"tag\"") }, results);
+    }
+
     private sealed class CountingEntityTagParser : BaseHeaderParser<EntityTagHeaderValue>
     {
         public CountingEntityTagParser(bool supportsMultipleValues) : base(supportsMultipleValues) { }

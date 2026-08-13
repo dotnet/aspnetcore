@@ -5,10 +5,8 @@ registries:
     url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
 updates:
 - package-ecosystem: "nuget"
-  directories:
-  - "/"
   # Exposes packages Dependabot otherwise can't see; see eng/tools/DependabotDiscovery/README.md
-  - "/eng/tools/DependabotDiscovery"
+  directory: "/eng/tools/DependabotDiscovery"
   registries:
   - dotnet-public
   open-pull-requests-limit: 10
@@ -288,4 +286,3 @@ updates:
   schedule:
     interval: monthly
   target-branch: release/10.0
-
