@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
                 {
-                    schema.Example = jsonString.Parse();
+                    schema.Examples = [jsonString.Parse()!];
                 }
             }
 
@@ -571,7 +571,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         schema.Description = description;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
-                            schema.Example = jsonString.Parse();
+                            schema.Examples = [jsonString.Parse()!];
                         }
                     }
                     else
