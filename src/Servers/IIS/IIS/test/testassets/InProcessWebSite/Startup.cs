@@ -604,9 +604,16 @@ public partial class Startup
     {
         await ctx.Response.WriteAsync("Started");
         await ctx.Response.Body.FlushAsync();
-        GetApplicationStopping(ctx).WaitHandle.WaitOne();
+        await WaitForCancellationAsync(GetApplicationStopping(ctx));
         await Task.Delay(TimeSpan.FromSeconds(3));
         await ctx.Response.WriteAsync("Completed");
+    }
+
+    private static async Task WaitForCancellationAsync(CancellationToken token)
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var registration = token.Register(static state => ((TaskCompletionSource)state).TrySetResult(), tcs);
+        await tcs.Task;
     }
 
     private static CancellationToken GetApplicationStopping(HttpContext ctx)

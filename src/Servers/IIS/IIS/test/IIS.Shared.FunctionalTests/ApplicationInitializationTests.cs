@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -92,10 +93,17 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
             using var response = await client.GetAsync("/CompleteAfterAppStartsShuttingDown", HttpCompletionOption.ResponseHeadersRead);
             var responseBodyTask = response.Content.ReadAsStringAsync();
 
+            Logger.LogInformation("Creating app_offline.htm.");
             AddAppOffline(result.ContentRoot);
 
-            Assert.Equal("StartedCompleted", await responseBodyTask);
+            Logger.LogInformation("Waiting for the response body to complete.");
+            var responseBody = await responseBodyTask;
+            Logger.LogInformation("The response body completed.");
+            Assert.Equal("StartedCompleted", responseBody);
+
+            Logger.LogInformation("Waiting for the worker process to stop.");
             result.AssertWorkerProcessStop();
+            Logger.LogInformation("The worker process stopped.");
         }
     }
 
