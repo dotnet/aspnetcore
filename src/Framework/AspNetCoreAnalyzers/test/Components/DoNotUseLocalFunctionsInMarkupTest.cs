@@ -4,7 +4,6 @@
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzer.Testing;
-using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 
@@ -330,6 +329,260 @@ public class TestComponent : ComponentBase
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
     }
 
+    [Theory]
+    [InlineData("""
+while (GetCondition())
+{
+    alias = childBuilder;
+}
+""")]
+    [InlineData("""
+for (var i = 0; i < GetCount(); i++)
+{
+    alias = childBuilder;
+}
+""")]
+    [InlineData("""
+foreach (var item in GetItems())
+{
+    alias = childBuilder;
+}
+""")]
+    public async Task LocalFunctionWithOwningBuilderReassignedInZeroOrMoreLoop_ProducesDiagnostic(string loop)
+    {
+        var source = TestSource.Read($$"""
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var childBuilder = new RenderTreeBuilder();
+        var alias = builder;
+        {{loop}}
+
+        void /*MM*/LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+    private int GetCount() => 0;
+    private int[] GetItems() => [];
+}
+""");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Theory]
+    [InlineData("""
+while (GetCondition())
+{
+    alias = builder;
+}
+""")]
+    [InlineData("""
+for (var i = 0; i < GetCount(); i++)
+{
+    alias = builder;
+}
+""")]
+    [InlineData("""
+foreach (var item in GetItems())
+{
+    alias = builder;
+}
+""")]
+    public async Task LocalFunctionWithFreshBuilderReassignedToOwningInZeroOrMoreLoop_ProducesDiagnostic(string loop)
+    {
+        var source = TestSource.Read($$"""
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var alias = new RenderTreeBuilder();
+        {{loop}}
+
+        void /*MM*/LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+    private int GetCount() => 0;
+    private int[] GetItems() => [];
+}
+""");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Fact]
+    public async Task LocalFunctionWithOwningBuilderReassignedInDoLoop_NoDiagnostic()
+    {
+        var source = """
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var alias = builder;
+        do
+        {
+            alias = new RenderTreeBuilder();
+        }
+        while (GetCondition());
+
+        void LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+}
+""";
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        var analyzerDiagnostics = diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup);
+        Assert.Empty(analyzerDiagnostics);
+    }
+
+    [Fact]
+    public async Task LocalFunctionWithFreshBuilderReassignedToOwningInDoLoop_ProducesDiagnostic()
+    {
+        var source = TestSource.Read("""
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var alias = new RenderTreeBuilder();
+        do
+        {
+            alias = builder;
+        }
+        while (GetCondition());
+
+        void /*MM*/LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+}
+""");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Fact]
+    public async Task LocalFunctionWithDefiniteReassignmentFromWhileCondition_NoDiagnostic()
+    {
+        var source = """
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var alias = builder;
+
+        bool ShouldContinue()
+        {
+            alias = new RenderTreeBuilder();
+            return false;
+        }
+
+        while (ShouldContinue())
+        {
+        }
+
+        void LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+}
+""";
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        var analyzerDiagnostics = diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup);
+        Assert.Empty(analyzerDiagnostics);
+    }
+
+    [Fact]
+    public async Task LocalFunctionWithOwningBuilderAliasPropagatedAcrossLoopIterations_ProducesDiagnostic()
+    {
+        var source = TestSource.Read("""
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var first = new RenderTreeBuilder();
+        var second = new RenderTreeBuilder();
+
+        while (GetCondition())
+        {
+            first = second;
+            second = builder;
+        }
+
+        void /*MM*/LocalFunction()
+        {
+            first.OpenElement(0, "div");
+            first.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+}
+""");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
     [Fact]
     public async Task NestedLocalFunctionWithFreshCapturedBuilder_NoDiagnostic()
     {
@@ -595,43 +848,17 @@ public class TestComponent : ComponentBase
     [Fact]
     public async Task LocalFunctionInRazorGeneratedBuildRenderTree_ProducesDiagnostic()
     {
-        var razorSource = """
-@using Microsoft.AspNetCore.Components
-@inherits ComponentBase
-@{
-    void RenderTree(int depth, int maxDepth)
-    {
-        if (depth >= maxDepth)
-        {
-            return;
-        }
-
-        <FluentTreeItem Text="item">
-            @{ RenderTree(depth + 1, maxDepth); }
-        </FluentTreeItem>
-    }
-
-    RenderTree(0, 2);
-}
-""";
-        var projectEngine = RazorProjectEngine.Create(
-            RazorConfiguration.Default,
-            RazorProjectFileSystem.Create("/"),
-            builder => builder.SetRootNamespace("Test"));
-        var codeDocument = projectEngine.Process(
-            RazorSourceDocument.Create(razorSource, "/IssueSample.razor"),
-            FileKinds.Component,
-            Array.Empty<RazorSourceDocument>(),
-            Array.Empty<TagHelperDescriptor>());
-        var generatedCode = codeDocument.GetCSharpDocument().GeneratedCode;
+        var generatedCode = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "IssueSample_razor.g.cs"));
 
         Assert.Contains("void RenderTree(int depth, int maxDepth)", generatedCode);
-        Assert.Contains("__builder.OpenElement", generatedCode);
+        Assert.Contains("__builder.OpenComponent<global::DoNotUseLocalFunctionsInMarkup.FluentTreeItem>", generatedCode);
+        Assert.Contains("\"ChildContent\"", generatedCode);
+        Assert.Contains("RenderTree(depth + 1, maxDepth)", generatedCode);
 
         var diagnostics = await Runner.GetDiagnosticsAsync(generatedCode);
 
         var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
-        Assert.Equal("/IssueSample.razor", analyzerDiagnostic.Location.GetMappedLineSpan().Path);
+        Assert.Equal("IssueSample.razor", Path.GetFileName(analyzerDiagnostic.Location.GetMappedLineSpan().Path));
     }
 
     [Fact]

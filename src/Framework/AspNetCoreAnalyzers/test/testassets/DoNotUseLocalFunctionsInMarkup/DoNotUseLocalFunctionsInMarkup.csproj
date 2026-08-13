@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(IntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components" />
+  </ItemGroup>
+
+</Project>

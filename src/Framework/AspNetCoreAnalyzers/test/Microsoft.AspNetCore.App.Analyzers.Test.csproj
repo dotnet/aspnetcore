@@ -16,6 +16,7 @@
     <!-- Also bring in Microsoft.AspNetCore.App.Analyzers. -->
     <ProjectReference Include="..\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj" />
     <ProjectReference Include="..\src\SourceGenerators\Microsoft.AspNetCore.App.SourceGenerators.csproj" />
+    <ProjectReference Include="testassets\DoNotUseLocalFunctionsInMarkup\DoNotUseLocalFunctionsInMarkup.csproj" ReferenceOutputAssembly="false" />
 
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
 
@@ -51,12 +52,18 @@
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.RateLimiting" />
     <Reference Include="Microsoft.AspNetCore.Razor" />
-    <Reference Include="$(NuGetPackageRoot)microsoft.aspnetcore.razor.language/$(MicrosoftAspNetCoreRazorLanguageVersion)/lib/netstandard2.0/Microsoft.AspNetCore.Razor.Language.dll" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
     <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="$(ArtifactsObjDir)DoNotUseLocalFunctionsInMarkup\$(Configuration)\generated\Microsoft.CodeAnalysis.Razor.Compiler\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\IssueSample_razor.g.cs"
+             Link="IssueSample_razor.g.cs"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

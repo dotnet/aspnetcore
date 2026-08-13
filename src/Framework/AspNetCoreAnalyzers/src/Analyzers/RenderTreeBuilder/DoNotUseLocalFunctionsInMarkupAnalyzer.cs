@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -218,6 +219,70 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             RestoreProvenance(mergedProvenance);
         }
 
+        public override void VisitWhileLoop(IWhileLoopOperation operation)
+        {
+            if (operation.ConditionIsTop)
+            {
+                VisitLoop(
+                    () =>
+                    {
+                        Visit(operation.Condition);
+                        Visit(operation.Body);
+                    },
+                    () => Visit(operation.Condition),
+                    executesAtLeastOnce: false);
+            }
+            else
+            {
+                VisitLoop(
+                    () =>
+                    {
+                        Visit(operation.Body);
+                        Visit(operation.Condition);
+                    },
+                    visitExit: null,
+                    executesAtLeastOnce: true);
+            }
+        }
+
+        public override void VisitForLoop(IForLoopOperation operation)
+        {
+            foreach (var before in operation.Before)
+            {
+                Visit(before);
+            }
+
+            VisitLoop(
+                () =>
+                {
+                    Visit(operation.Condition);
+                    Visit(operation.Body);
+                    foreach (var atLoopBottom in operation.AtLoopBottom)
+                    {
+                        Visit(atLoopBottom);
+                    }
+                },
+                () => Visit(operation.Condition),
+                executesAtLeastOnce: false);
+        }
+
+        public override void VisitForEachLoop(IForEachLoopOperation operation)
+        {
+            Visit(operation.Collection);
+            VisitLoop(
+                () =>
+                {
+                    Visit(operation.LoopControlVariable);
+                    Visit(operation.Body);
+                    foreach (var nextVariable in operation.NextVariables)
+                    {
+                        Visit(nextVariable);
+                    }
+                },
+                visitExit: null,
+                executesAtLeastOnce: false);
+        }
+
         public override void VisitInvocation(IInvocationOperation operation)
         {
             Visit(operation.Instance);
@@ -268,6 +333,36 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
 
             _currentLocalFunction = previousLocalFunction;
             _activeLocalFunctions.Remove(localFunction.Symbol);
+        }
+
+        private void VisitLoop(Action visitIteration, Action? visitExit, bool executesAtLeastOnce)
+        {
+            var loopStates = CloneProvenance();
+            if (executesAtLeastOnce)
+            {
+                visitIteration();
+                loopStates = CloneProvenance();
+            }
+
+            while (true)
+            {
+                RestoreProvenance(loopStates);
+                visitIteration();
+                var iterationEnd = CloneProvenance();
+
+                RestoreProvenance(loopStates);
+                MergeProvenance(iterationEnd);
+                var mergedStates = CloneProvenance();
+                if (HasSameProvenance(loopStates, mergedStates))
+                {
+                    break;
+                }
+
+                loopStates = mergedStates;
+            }
+
+            RestoreProvenance(loopStates);
+            visitExit?.Invoke();
         }
 
         private bool HasOwningBuilderProvenance(IOperation? operation)
@@ -323,5 +418,15 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
                 }
             }
         }
+
+        private static bool HasSameProvenance(
+            Dictionary<ISymbol, bool> left,
+            Dictionary<ISymbol, bool> right)
+            => left.All(item => !item.Value || GetProvenance(right, item.Key)) &&
+                right.All(item => !item.Value || GetProvenance(left, item.Key));
+
+        private static bool GetProvenance(Dictionary<ISymbol, bool> provenance, ISymbol symbol)
+            => provenance.TryGetValue(symbol, out var hasOwningBuilderProvenance) &&
+                hasOwningBuilderProvenance;
     }
 }
