@@ -50,6 +50,48 @@ public class TlsEventPumpHandshakeTimeoutTests
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void ComputePollTimeoutMs_FiniteTimeout_WithHandshakes_PollsFast()
+    {
+        // A finite handshake timeout is configured and a handshake is in flight, so the sweep can run: pay the
+        // fast poll so a stalled handshake is dropped near its deadline even if it sends nothing.
+        using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));
+
+        Assert.Equal(TlsEventPump.HandshakeSweepPollTimeoutMs, pump.ComputePollTimeoutMs(handshakingCount: 1));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void ComputePollTimeoutMs_FiniteTimeout_NoHandshakes_StaysIdle()
+    {
+        // No handshake in flight, so nothing for the sweep to do this iteration: use the idle timeout.
+        using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));
+
+        Assert.Equal(TlsEventPump.IdlePollTimeoutMs, pump.ComputePollTimeoutMs(handshakingCount: 0));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void ComputePollTimeoutMs_InfiniteTimeout_WithHandshakes_StaysIdle()
+    {
+        // Timeouts disabled: the sweep is skipped every iteration, so a fast poll would only spin the pump at
+        // 100Hz for as long as handshakes are in flight. Stay at the idle timeout - handshake progress is still
+        // event-driven, so nothing is delayed.
+        using var pump = new RecordingDropPump(Timeout.InfiniteTimeSpan);
+
+        Assert.Equal(TlsEventPump.IdlePollTimeoutMs, pump.ComputePollTimeoutMs(handshakingCount: 5));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void ComputePollTimeoutMs_InfiniteTimeout_NoHandshakes_StaysIdle()
+    {
+        using var pump = new RecordingDropPump(Timeout.InfiniteTimeSpan);
+
+        Assert.Equal(TlsEventPump.IdlePollTimeoutMs, pump.ComputePollTimeoutMs(handshakingCount: 0));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public void SweepExpiredHandshakes_DropsExpired_KeepsPending()
     {
         using var pump = new RecordingDropPump(TimeSpan.FromSeconds(10));

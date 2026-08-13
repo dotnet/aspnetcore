@@ -37,6 +37,13 @@ internal class TlsEventPump : IDisposable
     // Maximum connections accepted per AcceptConnections() call (one listen-fd epoll wake).
     internal const int MaxAcceptsPerIteration = 64;
 
+    // Idle epoll_wait timeout when nothing time-based is pending: any real I/O wakes the loop immediately, so
+    // this is just the maximum sleep between otherwise-idle iterations.
+    internal const int IdlePollTimeoutMs = 1000;
+    // Fast epoll_wait timeout used only while a handshake-timeout sweep is pending, so a stalled handshake is
+    // swept within ~this many ms of its deadline even when the peer sends nothing to wake the loop.
+    internal const int HandshakeSweepPollTimeoutMs = 10;
+
     private const uint DefaultEpollInterest = NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP;
 
     // Established connections (handshake complete) - use fd as key
@@ -346,8 +353,7 @@ internal class TlsEventPump : IDisposable
             {
                 try
                 {
-                    // Use shorter timeout when there are handshaking connections
-                    int timeout = _handshaking.Count > 0 ? 10 : 1000;
+                    int timeout = ComputePollTimeoutMs(_handshaking.Count);
                     int numEvents = events.Wait(_epollFd, timeout);
 
                     if (numEvents < 0)
@@ -390,9 +396,10 @@ internal class TlsEventPump : IDisposable
                         HandleConnectionEvent(fd, mask);
                     }
 
-                    // Drop connections whose handshake has taken too long. The epoll_wait timeout above is 10ms
-                    // while any handshake is in flight, so a stalled handshake (e.g. a slow-loris ClientHello) is
-                    // swept within ~10ms of its deadline even when the connection sends nothing to wake the pump.
+                    // Drop connections whose handshake has taken too long. While a finite handshake timeout is
+                    // configured and any handshake is in flight the epoll_wait timeout above is short (see
+                    // ComputePollTimeoutMs), so a stalled handshake (e.g. a slow-loris ClientHello) is swept
+                    // within ~that interval of its deadline even when the connection sends nothing to wake the pump.
                     if (_handshakeTimeoutMs != long.MaxValue && _handshaking.Count > 0)
                     {
                         SweepExpiredHandshakes(Environment.TickCount64);
@@ -1052,6 +1059,11 @@ internal class TlsEventPump : IDisposable
     // or long.MaxValue when handshake timeouts are disabled for this pump.
     internal long ComputeHandshakeDeadline(long nowTimestamp)
         => _handshakeTimeoutMs == long.MaxValue ? long.MaxValue : nowTimestamp + _handshakeTimeoutMs;
+
+    // Chooses the PumpLoop epoll_wait timeout. The fast poll is only worth paying when the sweep can actually
+    // run - i.e. a finite handshake timeout is configured AND at least one handshake is in flight
+    internal int ComputePollTimeoutMs(int handshakingCount)
+        => _handshakeTimeoutMs != long.MaxValue && handshakingCount > 0 ? HandshakeSweepPollTimeoutMs : IdlePollTimeoutMs;
 
     // Drops every handshaking connection whose deadline has passed. Returns the number dropped this sweep.
     // Runs on the pump thread only. Connections with a long.MaxValue deadline (timeout disabled) are never
