@@ -4,12 +4,12 @@
 namespace Microsoft.AspNetCore.Identity;
 
 /// <summary>
-/// Represents the result of a passkey signal options generation.
+/// Represents the result of a known passkeys signal options generation.
 /// </summary>
-public sealed class PasskeySignalOptionsResult
+public sealed class KnownPasskeysSignalOptionsResult
 {
     /// <summary>
-    /// Gets or sets the JSON representation of the signal options.
+    /// Gets or sets the JSON representation of the known passkeys signal options.
     /// </summary>
     /// <remarks>
     /// The structure of this JSON is a superset of the options accepted by the

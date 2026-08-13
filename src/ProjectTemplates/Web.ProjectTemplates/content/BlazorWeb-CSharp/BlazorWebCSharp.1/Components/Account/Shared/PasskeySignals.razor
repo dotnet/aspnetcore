@@ -18,7 +18,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!SignInManager.SupportsPasskeySignalOptions)
+        if (!SignInManager.SupportsKnownPasskeysSignalOptions)
         {
             return;
         }
@@ -28,7 +28,7 @@
         var userId = await UserManager.GetUserIdAsync(User);
         var userName = await UserManager.GetUserNameAsync(User) ?? "User";
 
-        signalOptionsJson = await SignInManager.MakePasskeySignalOptionsAsync(User, new()
+        signalOptionsJson = await SignInManager.MakeKnownPasskeysSignalOptionsAsync(User, new()
         {
             Id = userId,
             Name = userName,

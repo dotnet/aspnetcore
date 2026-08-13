@@ -35,7 +35,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     }
 
     /// <inheritdoc />
-    public bool SupportsSignalOptions => _userManager.SupportsUserPasskey;
+    public bool SupportsKnownPasskeysSignalOptions => _userManager.SupportsUserPasskey;
 
     /// <inheritdoc />
     public async Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext)
@@ -161,7 +161,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     }
 
     /// <inheritdoc />
-    public async Task<PasskeySignalOptionsResult> MakeSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
+    public async Task<KnownPasskeysSignalOptionsResult> MakeKnownPasskeysSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(userEntity);
@@ -175,7 +175,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         }
 
         var passkeys = await _userManager.GetPasskeysAsync(user).ConfigureAwait(false);
-        var options = new PasskeySignalOptions
+        var options = new KnownPasskeysSignalOptions
         {
             RpId = GetServerDomain(httpContext),
             UserId = BufferSource.FromString(userEntity.Id),
@@ -183,9 +183,9 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             Name = userEntity.Name,
             DisplayName = userEntity.DisplayName,
         };
-        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PasskeySignalOptions);
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.KnownPasskeysSignalOptions);
 
-        return new PasskeySignalOptionsResult
+        return new KnownPasskeysSignalOptionsResult
         {
             SignalOptionsJson = optionsJson,
         };

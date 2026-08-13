@@ -1,11 +1,11 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.MakeSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeySignalOptionsResult!>!
-Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.SupportsSignalOptions.get -> bool
-Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.MakeSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeySignalOptionsResult!>!
-Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.SupportsSignalOptions.get -> bool
-Microsoft.AspNetCore.Identity.PasskeySignalOptionsResult
-Microsoft.AspNetCore.Identity.PasskeySignalOptionsResult.PasskeySignalOptionsResult() -> void
-Microsoft.AspNetCore.Identity.PasskeySignalOptionsResult.SignalOptionsJson.get -> string!
-Microsoft.AspNetCore.Identity.PasskeySignalOptionsResult.SignalOptionsJson.init -> void
-virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.MakePasskeySignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity) -> System.Threading.Tasks.Task<string!>!
-virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SupportsPasskeySignalOptions.get -> bool
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.MakeKnownPasskeysSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult!>!
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.SupportsKnownPasskeysSignalOptions.get -> bool
+Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult
+Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult.KnownPasskeysSignalOptionsResult() -> void
+Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult.SignalOptionsJson.get -> string!
+Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult.SignalOptionsJson.init -> void
+Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.MakeKnownPasskeysSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.KnownPasskeysSignalOptionsResult!>!
+Microsoft.AspNetCore.Identity.PasskeyHandler<TUser>.SupportsKnownPasskeysSignalOptions.get -> bool
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.MakeKnownPasskeysSignalOptionsAsync(TUser! user, Microsoft.AspNetCore.Identity.PasskeyUserEntity! userEntity) -> System.Threading.Tasks.Task<string!>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SupportsKnownPasskeysSignalOptions.get -> bool

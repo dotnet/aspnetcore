@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.Identity.Test;
 public class PasskeyHandlerSignalTest
 {
     [Fact]
-    public async Task CanMakeSignalOptions()
+    public async Task CanMakeKnownPasskeysSignalOptions()
     {
         var user = new PocoUser { UserName = "Foo" };
         var userManager = SetupUserManager(user, CreatePasskey([1, 2, 3]), CreatePasskey([4, 5, 6]));
         var handler = CreateHandler(userManager);
         var httpContext = CreateHttpContext("contoso.com", port: 5001);
 
-        var result = await handler.MakeSignalOptionsAsync(user, CreateUserEntity(user, "Foo", "Foo Bar"), httpContext);
+        var result = await handler.MakeKnownPasskeysSignalOptionsAsync(user, CreateUserEntity(user, "Foo", "Foo Bar"), httpContext);
 
         var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
         Assert.Equal("contoso.com", options.GetProperty("rpId").GetString());
@@ -35,53 +35,53 @@ public class PasskeyHandlerSignalTest
     }
 
     [Fact]
-    public void SupportsSignalOptionsIsTrue()
+    public void SupportsKnownPasskeysSignalOptionsIsTrue()
     {
         var user = new PocoUser { UserName = "Foo" };
         var handler = CreateHandler(SetupUserManager(user));
 
-        Assert.True(handler.SupportsSignalOptions);
+        Assert.True(handler.SupportsKnownPasskeysSignalOptions);
     }
 
     [Fact]
-    public void SupportsSignalOptionsIsFalseWhenStoreDoesNotSupportPasskeys()
+    public void SupportsKnownPasskeysSignalOptionsIsFalseWhenStoreDoesNotSupportPasskeys()
     {
         var user = new PocoUser { UserName = "Foo" };
         var userManager = MockHelpers.MockUserManager<PocoUser>();
         userManager.Setup(m => m.SupportsUserPasskey).Returns(false);
         var handler = CreateHandler(userManager.Object);
 
-        Assert.False(handler.SupportsSignalOptions);
+        Assert.False(handler.SupportsKnownPasskeysSignalOptions);
     }
 
     [Fact]
-    public async Task MakeSignalOptionsUsesConfiguredServerDomain()
+    public async Task MakeKnownPasskeysSignalOptionsUsesConfiguredServerDomain()
     {
         var user = new PocoUser { UserName = "Foo" };
         var userManager = SetupUserManager(user);
         var handler = CreateHandler(userManager, new() { ServerDomain = "fabrikam.com" });
         var httpContext = CreateHttpContext("contoso.com");
 
-        var result = await handler.MakeSignalOptionsAsync(user, CreateUserEntity(user), httpContext);
+        var result = await handler.MakeKnownPasskeysSignalOptionsAsync(user, CreateUserEntity(user), httpContext);
 
         var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
         Assert.Equal("fabrikam.com", options.GetProperty("rpId").GetString());
     }
 
     [Fact]
-    public async Task MakeSignalOptionsWithoutPasskeysReturnsEmptyCredentialList()
+    public async Task MakeKnownPasskeysSignalOptionsWithoutPasskeysReturnsEmptyCredentialList()
     {
         var user = new PocoUser { UserName = "Foo" };
         var handler = CreateHandler(SetupUserManager(user));
 
-        var result = await handler.MakeSignalOptionsAsync(user, CreateUserEntity(user), CreateHttpContext());
+        var result = await handler.MakeKnownPasskeysSignalOptionsAsync(user, CreateUserEntity(user), CreateHttpContext());
 
         var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
         Assert.Empty(options.GetProperty("allAcceptedCredentialIds").EnumerateArray());
     }
 
     [Fact]
-    public async Task MakeSignalOptionsThrowsWhenUserEntityIdDoesNotMatchUser()
+    public async Task MakeKnownPasskeysSignalOptionsThrowsWhenUserEntityIdDoesNotMatchUser()
     {
         var user = new PocoUser { UserName = "Foo" };
         var handler = CreateHandler(SetupUserManager(user));
@@ -93,7 +93,7 @@ public class PasskeyHandlerSignalTest
         };
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => handler.MakeSignalOptionsAsync(user, userEntity, CreateHttpContext()));
+            () => handler.MakeKnownPasskeysSignalOptionsAsync(user, userEntity, CreateHttpContext()));
 
         Assert.Equal($"The user entity ID 'some-other-id' does not match the ID '{user.Id}' of the specified user.", ex.Message);
     }

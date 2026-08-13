@@ -545,16 +545,16 @@ public class SignInManager<TUser> where TUser : class
 
     /// <summary>
     /// Gets a value indicating whether the registered <see cref="IPasskeyHandler{TUser}"/> supports
-    /// generating passkey signal options.
+    /// generating known passkeys signal options.
     /// </summary>
     /// <remarks>
-    /// Check this before calling <see cref="MakePasskeySignalOptionsAsync(TUser, PasskeyUserEntity)"/>,
-    /// which throws when the handler does not support signal options.
+    /// Check this before calling <see cref="MakeKnownPasskeysSignalOptionsAsync(TUser, PasskeyUserEntity)"/>,
+    /// which throws when the handler does not support known passkeys signal options.
     /// </remarks>
-    public virtual bool SupportsPasskeySignalOptions => _passkeyHandler?.SupportsSignalOptions ?? false;
+    public virtual bool SupportsKnownPasskeysSignalOptions => _passkeyHandler?.SupportsKnownPasskeysSignalOptions ?? false;
 
     /// <summary>
-    /// Generates the options used to signal the current state of a user's passkeys to authenticators.
+    /// Generates the options used to signal the current state of a user's known passkeys to authenticators.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -574,10 +574,10 @@ public class SignInManager<TUser> where TUser : class
     /// </remarks>
     /// <param name="user">The user whose passkeys should be signaled.</param>
     /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
-    /// <returns>A JSON string representing the passkey signal options.</returns>
+    /// <returns>A JSON string representing the known passkeys signal options.</returns>
     /// <exception cref="NotSupportedException">
-    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support signal options.
-    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support known passkeys signal options.
+    /// See <see cref="SupportsKnownPasskeysSignalOptions"/>.
     /// </exception>
     /// <example>
     /// The following example shows how the result is used from JavaScript.
@@ -587,13 +587,13 @@ public class SignInManager<TUser> where TUser : class
     /// await PublicKeyCredential.signalCurrentUserDetails?.({ rpId, userId, name, displayName });
     /// </code>
     /// </example>
-    public virtual async Task<string> MakePasskeySignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
+    public virtual async Task<string> MakeKnownPasskeysSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(userEntity);
 
-        var result = await _passkeyHandler.MakeSignalOptionsAsync(user, userEntity, Context);
+        var result = await _passkeyHandler.MakeKnownPasskeysSignalOptionsAsync(user, userEntity, Context);
         return result.SignalOptionsJson;
     }
 
