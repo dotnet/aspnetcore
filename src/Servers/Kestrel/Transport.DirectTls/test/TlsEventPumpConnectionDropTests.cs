@@ -52,6 +52,26 @@ public class TlsEventPumpConnectionDropTests
         Assert.Contains(fd, pump.DeregisteredFds);
     }
 
+    [ConditionalTheory]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    [InlineData(NativeTls.EPOLLERR)]
+    [InlineData(NativeTls.EPOLLHUP)]
+    [InlineData(NativeTls.EPOLLERR | NativeTls.EPOLLHUP)]
+    public void HandleConnectionEvent_ErrorOrHangupOnIdleConnection_DeregistersFdFromEpoll(uint mask)
+    {
+        using var pump = new RecordingDeregisterPump();
+        const int fd = 44;
+        // Idle established connection: no read or write awaitable is active, so OnReadable/OnWritable are
+        // no-ops and never throw. EPOLLERR/EPOLLHUP is level-triggered, so without an unconditional drop the
+        // event would re-fire on every epoll_wait and tight-spin the pump.
+        var conn = new ConnectionIoState(fd, session: null!, logger: NullLogger<ConnectionIoState>.Instance);
+        pump.TrackConnectionForTest(fd, conn);
+
+        pump.HandleConnectionEvent(fd, mask);
+
+        Assert.Contains(fd, pump.DeregisteredFds);
+    }
+
     /// <summary>A pump whose only real state is a live epoll fd; the epoll de-registration is recorded, not issued.</summary>
     private sealed class RecordingDeregisterPump : TlsEventPump
     {

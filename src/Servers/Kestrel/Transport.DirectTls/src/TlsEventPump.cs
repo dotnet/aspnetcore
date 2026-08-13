@@ -443,9 +443,13 @@ internal class TlsEventPump : IDisposable
             return;
         }
 
-        if ((mask & (NativeTls.EPOLLERR | NativeTls.EPOLLHUP)) != 0)
+        // EPOLLERR/EPOLLHUP are terminal: the socket is errored or fully hung up and can make no further
+        // progress. They are also level-triggered, so the event re-fires on every epoll_wait until the fd is
+        // de-registered. Force a final read/write dispatch below so an active awaitable can observe the real
+        // failure through the normal I/O path, then drop unconditionally regardless of what the handlers did.
+        bool errorOrHangup = (mask & (NativeTls.EPOLLERR | NativeTls.EPOLLHUP)) != 0;
+        if (errorOrHangup)
         {
-            // When error events occur, add EPOLLIN|EPOLLOUT to handle the events in at least one active handler.
             mask |= NativeTls.EPOLLIN | NativeTls.EPOLLOUT;
         }
 
@@ -469,6 +473,19 @@ internal class TlsEventPump : IDisposable
             _logger.LogDebug(ex, "Connection I/O threw for fd={Fd}", fd);
             DropEstablishedConnection(fd);
             conn.OnError(ex);
+            return;
+        }
+
+        // Terminal error/hangup: drop unconditionally after the dispatch above. When the connection is idle
+        // (no active read or write awaitable) both handlers are no-ops and never throw, so without this the
+        // level-triggered EPOLLERR/EPOLLHUP would re-fire on every epoll_wait and tight-spin the pump at 100%
+        // CPU. OnError is a no-op on any awaitable the dispatch already completed and drives owner disposal for
+        // an idle one. This also subsumes the EPOLLRDHUP handling below (which the mask|=EPOLLIN above would
+        // otherwise defeat), so return here.
+        if (errorOrHangup)
+        {
+            DropEstablishedConnection(fd);
+            conn.OnError(new IOException("Connection error or hangup (EPOLLERR/EPOLLHUP)"));
             return;
         }
 
