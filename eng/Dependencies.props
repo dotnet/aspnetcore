@@ -14,6 +14,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />
+    <LatestPackageReference Include="Microsoft.Bcl.Cryptography" />
     <LatestPackageReference Include="Microsoft.Bcl.HashCode" />
     <LatestPackageReference Include="Microsoft.Bcl.TimeProvider" />
     <LatestPackageReference Include="Microsoft.Css.Parser" />
