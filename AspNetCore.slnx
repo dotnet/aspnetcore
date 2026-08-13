@@ -124,6 +124,8 @@
     <Project Path="src/Components/Testing/src/Microsoft.AspNetCore.Components.Testing.csproj" />
     <Project Path="src/Components/Testing/tasks/Microsoft.AspNetCore.Components.Testing.Tasks.csproj" />
     <Project Path="src/Components/Testing/test/Microsoft.AspNetCore.Components.Testing.Tests.csproj" />
+    <Project Path="src/Components/Testing/testassets/NativeAotTestApp.E2E.Tests/NativeAotTestApp.E2E.Tests.csproj" />
+    <Project Path="src/Components/Testing/testassets/NativeAotTestApp/NativeAotTestApp.csproj" />
     <Project Path="src/Components/Testing/testassets/TestApp.Client/TestApp.Client.csproj" />
     <Project Path="src/Components/Testing/testassets/TestApp.E2E.Tests/TestApp.E2E.Tests.csproj" />
     <Project Path="src/Components/Testing/testassets/TestApp/TestApp.csproj" />
