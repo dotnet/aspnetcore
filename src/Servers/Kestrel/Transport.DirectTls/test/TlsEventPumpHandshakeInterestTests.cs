@@ -100,6 +100,25 @@ public class TlsEventPumpHandshakeInterestTests
         Assert.Equal(NativeTls.EPOLLIN | NativeTls.EPOLLOUT | NativeTls.EPOLLRDHUP, conn.CurrentEpollInterest);
     }
 
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void ArmWritableInterest_WhenEpollModRejected_ReportsFailure()
+    {
+        // If the kernel rejects arming EPOLLOUT, the transition must report failure so the caller drops the
+        // connection rather than waiting on a writable event that was never registered until the handshake
+        // times out. The cached interest must stay at the value the kernel last accepted.
+        using var pump = new RecordingInterestPump { RejectInterestChange = true };
+        const int fd = 20;
+        pump.Seed(fd);
+        var conn = pump.Handshakes[fd];
+
+        var applied = pump.ApplyInProgressHandshakeInterest(fd, ref conn, TlsOperationStatus.DestinationTooSmall);
+
+        Assert.False(applied);
+        Assert.Equal(NativeTls.EPOLLIN | NativeTls.EPOLLOUT | NativeTls.EPOLLRDHUP, Assert.Single(pump.InterestMasks));
+        Assert.Equal(NativeTls.EPOLLIN | NativeTls.EPOLLRDHUP, pump.Handshakes[fd].CurrentEpollInterest);
+    }
+
     /// <summary>
     /// A pump whose only real state is a live epoll fd; the handshake interest updates are recorded, not issued.
     /// </summary>
@@ -107,12 +126,20 @@ public class TlsEventPumpHandshakeInterestTests
     {
         public List<uint> InterestMasks { get; } = new();
 
+        // When true, the seam records the attempted mask but reports the kernel rejected it, simulating an
+        // epoll_ctl MOD failure so tests can drive the drop-on-failure path.
+        public bool RejectInterestChange { get; set; }
+
         public RecordingInterestPump()
             : base(tlsPumpLogger: NullLogger<TlsEventPump>.Instance, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
         {
         }
 
-        internal override void UpdateHandshakeInterest(int fd, uint events) => InterestMasks.Add(events);
+        internal override bool TryModifyHandshakeInterest(int fd, uint events)
+        {
+            InterestMasks.Add(events);
+            return !RejectInterestChange;
+        }
 
         // Mirrors real registration: a handshaking fd is added EPOLLIN | EPOLLRDHUP.
         public void Seed(int fd)

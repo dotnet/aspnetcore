@@ -233,34 +233,57 @@ internal class TlsEventPump : IDisposable
     internal virtual void DeregisterFromEpoll(int fd)
         => NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
 
-    // Issues the EPOLL_CTL_MOD syscall for a handshaking fd. Callers should go through SetHandshakeInterest so
-    // the cached CurrentEpollInterest stays in sync. internal and virtual for testing.
-    internal virtual void UpdateHandshakeInterest(int fd, uint events)
+    // The single checked EPOLL_CTL_MOD choke point for a handshaking fd. internal virtual so tests observe the
+    // interest masks without a live epoll instance. Returns false (after logging errno) when the kernel rejects
+    // the change, so callers can drop the connection rather than (a) waiting on an EPOLLOUT event that was never
+    // registered mid-handshake or (b) leaving writable interest armed on a socket being promoted to established.
+    // Callers that also track a HandshakingConnection should go through SetHandshakeInterest so the cached
+    // CurrentEpollInterest stays in sync with the kernel interest set.
+    internal virtual bool TryModifyHandshakeInterest(int fd, uint events)
     {
         var ev = new EpollEvent
         {
             Events = events,
             Data = new EpollData { Fd = fd }
         };
-        NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev);
+
+        if (NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev) < 0)
+        {
+            _logger.LogWarning("epoll_ctl MOD failed for handshaking fd={Fd}: errno={Errno}", fd, Marshal.GetLastWin32Error());
+            return false;
+        }
+
+        return true;
     }
 
     // The single choke point for changing a handshaking fd's epoll interest set: rewrites the kernel interest
-    // (via the UpdateHandshakeInterest seam) AND records the new mask on the handshaking entry so
+    // (via the TryModifyHandshakeInterest seam) AND records the new mask on the handshaking entry so
     // CurrentEpollInterest always mirrors what the kernel is subscribed to. Every mid-handshake interest
-    // change must go through here so the cached mask cannot drift.
-    private void SetHandshakeInterest(int fd, ref HandshakingConnection conn, uint events)
+    // change must go through here so the cached mask cannot drift. Returns false when the kernel rejected the
+    // change; the cache is then left untouched and the caller is expected to drop the connection.
+    private bool SetHandshakeInterest(int fd, ref HandshakingConnection conn, uint events)
     {
-        UpdateHandshakeInterest(fd, events);
+        if (!TryModifyHandshakeInterest(fd, events))
+        {
+            return false;
+        }
+
         conn.CurrentEpollInterest = events;
         _handshaking[fd] = conn;
+        return true;
     }
 
     /// <summary>
-    /// Modify the epoll events for a file descriptor.
+    /// Modify the epoll events for an established connection's file descriptor.
     /// Used to dynamically add EPOLLOUT when a write would block.
     /// </summary>
-    public void ModifyEvents(int fd, uint events)
+    /// <returns>
+    /// <see langword="true"/> when the kernel accepted the change; <see langword="false"/> (after logging errno)
+    /// when it rejected it, so the caller can drop the connection instead of leaving it wedged on an interest the
+    /// kernel never applied - a blocked write waiting on an EPOLLOUT that was never armed, or a level-triggered
+    /// spin on writable interest that could not be cleared.
+    /// </returns>
+    public virtual bool ModifyEvents(int fd, uint events)
     {
         // Level-triggered mode (no EPOLLET) for stability. EPOLLRDHUP (peer half-close) rides with read interest:
         // arm it only when EPOLLIN is requested, so a connection whose read interest is suspended for backpressure
@@ -276,12 +299,13 @@ internal class TlsEventPump : IDisposable
             Data = new EpollData { Fd = fd }
         };
 
-        int result = NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev);
-        if (result < 0)
+        if (NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev) < 0)
         {
-            int errno = Marshal.GetLastWin32Error();
-            _logger.LogWarning("epoll_ctl MOD failed for fd={Fd}: errno={Errno}", fd, errno);
+            _logger.LogWarning("epoll_ctl MOD failed for fd={Fd}: errno={Errno}", fd, Marshal.GetLastWin32Error());
+            return false;
         }
+
+        return true;
     }
 
     // internal for testing
@@ -747,7 +771,15 @@ internal class TlsEventPump : IDisposable
                 return;
             }
 
-            PromoteHandshakeToConnection(fd, connectionState);
+            if (!PromoteHandshakeToConnection(fd, connectionState))
+            {
+                // The socket could not be re-armed to the established interest set, so don't surface a
+                // connection whose epoll interest is wrong (it would spin the pump on a stuck EPOLLOUT). It was
+                // built but never Started and the fd is still registered as handshaking, so tear it down on
+                // that path.
+                DropCompletedHandshake(fd, directConnection);
+                return;
+            }
 
             directConnection.Start();
 
@@ -763,7 +795,12 @@ internal class TlsEventPump : IDisposable
 
         if (status is TlsOperationStatus.NeedMoreData or TlsOperationStatus.DestinationTooSmall)
         {
-            ApplyInProgressHandshakeInterest(fd, ref conn, status);
+            if (!ApplyInProgressHandshakeInterest(fd, ref conn, status))
+            {
+                // The socket could not be re-armed (for example arming EPOLLOUT failed). Dropping now avoids
+                // stalling the handshake until its timeout, waiting on an event that was never registered.
+                DropHandshake(fd, conn);
+            }
             return;
         }
 
@@ -884,8 +921,9 @@ internal class TlsEventPump : IDisposable
     // registered handshake is EPOLLIN-only, so a plain NeedMoreData (the common case) is a no-op here, and
     // repeated DestinationTooSmall steps re-use the already-armed interest. The caller only invokes this for
     // NeedMoreData / DestinationTooSmall, so any non-DestinationTooSmall status here means "back to EPOLLIN".
-    // internal for testing.
-    internal void ApplyInProgressHandshakeInterest(int fd, ref HandshakingConnection conn, TlsOperationStatus status)
+    // Returns false when re-arming the interest set was rejected by the kernel so the caller drops the
+    // connection instead of waiting on an event that was never registered. internal for testing.
+    internal bool ApplyInProgressHandshakeInterest(int fd, ref HandshakingConnection conn, TlsOperationStatus status)
     {
         uint desiredInterest = status switch
         {
@@ -896,23 +934,39 @@ internal class TlsEventPump : IDisposable
 
         if (desiredInterest != conn.CurrentEpollInterest)
         {
-            SetHandshakeInterest(fd, ref conn, desiredInterest);
+            return SetHandshakeInterest(fd, ref conn, desiredInterest);
         }
+
+        return true;
     }
 
     // Counterpart to DropHandshake: resets the fd to DefaultEpollInterest (dropping any handshake EPOLLOUT)
-    // and moves it from _handshaking to _connections. Non-throwing, so the caller's start/enqueue tail is safe.
-    private void PromoteHandshakeToConnection(int fd, ConnectionIoState connectionState)
+    // and moves it from _handshaking to _connections. Returns false (without touching either dictionary) when
+    // the kernel rejects the interest change, so the caller drops the built-but-not-yet-started connection
+    // rather than surface one whose socket keeps writable interest armed and spins the pump.
+    private bool PromoteHandshakeToConnection(int fd, ConnectionIoState connectionState)
     {
-        var ev = new EpollEvent
+        if (!TryModifyHandshakeInterest(fd, DefaultEpollInterest))
         {
-            Events = DefaultEpollInterest,
-            Data = new EpollData { Fd = fd }
-        };
-        NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_MOD, fd, ref ev);
+            return false;
+        }
 
         _connections[fd] = connectionState;
         _handshaking.Remove(fd);
+        return true;
+    }
+
+    // Teardown for a handshake that completed but could not be promoted to an established connection (the
+    // socket could not be re-armed to the established interest set). Mirrors DropHandshake's pump-thread
+    // bookkeeping, but the DirectTlsConnection was already built, so it is aborted directly - AbortBeforeStart
+    // idempotently completes its idle pipes and closes the fd (via the session) for both the early-allocated
+    // and default connection paths - instead of releasing the raw handshake session a second time.
+    private void DropCompletedHandshake(int fd, DirectTlsConnection connection)
+    {
+        _handshaking.Remove(fd);
+        _connectionTracker.ReleaseHandshake();
+        NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
+        connection.AbortBeforeStart();
     }
 
     // Tears down a handshake we will not surface to Kestrel - whether it failed (the handshake or the

@@ -3,6 +3,7 @@
 
 using System.Net.Security;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Tests;
@@ -163,6 +164,20 @@ public class ConnectionIoStateTests
     {
         var io = new ScriptedConnectionIoState();
         io.ScriptWrite(TlsOperationStatus.CertificateRequested);
+
+        Assert.Throws<TlsException>(() => io.WriteAsync(new byte[10]));
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public void Write_WouldBlock_WhenEpollModRejected_ThrowsTlsException()
+    {
+        // A write that WouldBlock re-arms EPOLLOUT through UpdateEvents -> ApplyEvents -> pump.ModifyEvents.
+        // If the kernel rejects the epoll_ctl MOD, the connection would otherwise be left parked on a writable
+        // interest that was never registered. Assert the state machine turns that into a fatal TlsException so
+        // the established-path drop convention (pump-thread guard / receive-send loop) tears the connection down.
+        using var pump = new RejectingModifyPump();
+        var io = new WouldBlockWriteIoState { Pump = pump };
 
         Assert.Throws<TlsException>(() => io.WriteAsync(new byte[10]));
     }
@@ -520,5 +535,40 @@ public class ConnectionIoStateTests
         }
 
         internal override void DisposeSession() => DisposeCallCount++;
+    }
+
+    /// <summary>
+    /// A <see cref="ConnectionIoState"/> whose first write always reports a WouldBlock
+    /// (<see cref="TlsOperationStatus.DestinationTooSmall"/>), driving the base <see cref="ConnectionIoState.ApplyEvents"/>
+    /// through a real (rejecting) pump so the epoll-MOD failure path can be exercised end to end.
+    /// </summary>
+    private sealed class WouldBlockWriteIoState : ConnectionIoState
+    {
+        public WouldBlockWriteIoState()
+            : base(fd: 7, session: null!, logger: NullLogger<ConnectionIoState>.Instance)
+        {
+            SetHandshakeComplete();
+        }
+
+        internal override TlsOperationStatus RawWrite(ReadOnlySpan<byte> buffer, out int bytesWritten)
+        {
+            bytesWritten = 0;
+            return TlsOperationStatus.DestinationTooSmall;
+        }
+    }
+
+    /// <summary>
+    /// A pump whose <see cref="TlsEventPump.ModifyEvents"/> always reports the kernel rejected the change,
+    /// without issuing a real <c>epoll_ctl</c>. Constructing it calls <c>epoll_create1</c>, so tests using it
+    /// are Linux-only.
+    /// </summary>
+    private sealed class RejectingModifyPump : TlsEventPump
+    {
+        public RejectingModifyPump()
+            : base(tlsPumpLogger: NullLogger<TlsEventPump>.Instance, id: 0, handshakeTimeout: Timeout.InfiniteTimeSpan)
+        {
+        }
+
+        public override bool ModifyEvents(int fd, uint events) => false;
     }
 }

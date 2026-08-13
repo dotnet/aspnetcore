@@ -126,7 +126,10 @@ internal class ConnectionIoState : IDisposable
 
     internal virtual void ApplyEvents(uint events)
     {
-        Pump?.ModifyEvents(Fd, events);
+        if (Pump is { } pump && !pump.ModifyEvents(Fd, events))
+        {
+            throw new TlsException($"Failed to update epoll interest for fd={Fd}");
+        }
     }
 
     internal virtual void ShutdownSession() => _session.Shutdown();
