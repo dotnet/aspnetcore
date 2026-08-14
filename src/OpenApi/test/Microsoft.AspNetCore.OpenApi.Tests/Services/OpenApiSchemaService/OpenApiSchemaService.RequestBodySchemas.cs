@@ -1078,7 +1078,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task HandlesNullableEnumWithOneOf()
+    public async Task HandlesNullableAndNonNullableEnumPropertiesWithSharedComponentAndOneOf()
     {
         var builder = CreateBuilder();
 
@@ -1088,8 +1088,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var enumDtoSchema = document.Components.Schemas["NullableEnumDto"];
 
-            var statusPropertySchema = enumDtoSchema.Properties["status"];
-            Assert.Collection(statusPropertySchema.OneOf,
+            var nullableStatusPropertySchema = enumDtoSchema.Properties["nullableStatus"];
+            Assert.Collection(nullableStatusPropertySchema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -1101,6 +1101,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id);
                 });
 
+            var statusPropertySchema = Assert.IsType<OpenApiSchemaReference>(enumDtoSchema.Properties["status"]);
+            Assert.Equal("Status", statusPropertySchema.Reference.Id);
+
             var statusEnumSchema = document.Components.Schemas["Status"];
             Assert.Equal(3, statusEnumSchema.Enum.Count);
             Assert.DoesNotContain(null, statusEnumSchema.Enum);
@@ -1109,6 +1112,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
     internal class NullableEnumDto
     {
-        public Status? Status { get; set; }
+        public Status? NullableStatus { get; set; }
+        public Status Status { get; set; }
     }
 }
