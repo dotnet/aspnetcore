@@ -534,7 +534,7 @@ internal static class JsonNodeSchemaExtensions
         var shouldApplyNullableSchema = propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable);
 
         // Work around a System.Text.Json schema export issue where get-only properties can report
-        // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602 
+        // IsGetNullable == false and IsSetNullable == true, which incorrectly marks them as nullable, documented in dotnet/runtime#131602
         var shouldPruneNullFromReadOnlyProperty = propertyInfo.PropertyType != typeof(object) &&
             propertyInfo.Set is null &&
             !propertyInfo.IsGetNullable &&
@@ -594,13 +594,9 @@ internal static class JsonNodeSchemaExtensions
                     schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
                 }
             }
-            else if (schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray enumArray)
+            if (schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray enumArray)
             {
-                var hasRemovedNull = enumArray.Remove(null);
-                if (hasRemovedNull)
-                {
-                    schema[OpenApiConstants.NullableProperty] = true;
-                }
+                enumArray.Remove(null);
             }
         }
     }
