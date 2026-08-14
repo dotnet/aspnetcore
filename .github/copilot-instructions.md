@@ -6,6 +6,11 @@
 * Never change package.json or package-lock.json files unless explicitly asked to.
 * Never change NuGet.config files unless explicitly asked to.
 
+## Framework assembly boundaries
+
+* In shipping framework code, do not add `InternalsVisibleTo` or use `[UnsafeAccessor]` to access non-public members in another framework assembly. Existing uses of these mechanisms are not precedent for new uses.
+* Redesign the assembly boundary instead. If that requires a public API, follow the repository API-review and baseline process.
+
 ## Formatting
 
 * Apply code-formatting style defined in `.editorconfig`.

@@ -40,6 +40,7 @@ permissions:
   pull-requests: read
 
 tools:
+  bash: []
   github:
     toolsets: [issues]
     min-integrity: none

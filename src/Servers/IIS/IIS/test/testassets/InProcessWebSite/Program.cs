@@ -199,6 +199,24 @@ public static class Program
                     host.Build().Run();
                     return 0;
                 }
+            case "HostBuilder":
+                {
+                    var host = new HostBuilder().ConfigureWebHost((c) =>
+                    {
+                        c.ConfigureLogging((_, factory) =>
+                        {
+                            factory.AddConsole();
+                            factory.AddFilter("Console", level => level >= LogLevel.Information);
+                        })
+                        .UseKestrel()
+                        .UseIIS()
+                        .UseIISIntegration()
+                        .UseStartup<Startup>();
+                    });
+
+                    host.Build().Run();
+                    return 0;
+                }
 #endif
             default:
                 return StartServer();
