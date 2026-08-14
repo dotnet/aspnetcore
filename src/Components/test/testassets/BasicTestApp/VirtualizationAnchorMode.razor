@@ -122,14 +122,17 @@
     private int providerCallIndex;
     private List<string> providerEvents = new();
     private Virtualize<DynamicItem> virtualizeRef;
-    private int initialItemIndex;
     private int manualInitialIndex;
+    private int initialItemIndex;
     private bool listLoaded = true;
     private int scrollTargetIndex = 200;
     private string scrollStatus = "Idle";
     private CancellationTokenSource _userScrollCts;
     private static readonly IEqualityComparer<DynamicItem> _itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
+
+    [Parameter]
+    public int InitialItemIndex { get; set; }
 
     private static readonly IReadOnlyDictionary<string, object> _emptyComparerSplat =
         new Dictionary<string, object>();
@@ -147,6 +150,7 @@
 
     protected override void OnInitialized()
     {
+        initialItemIndex = InitialItemIndex;
         items = Enumerable.Range(0, 1000)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
