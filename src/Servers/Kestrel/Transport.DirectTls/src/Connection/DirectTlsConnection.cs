@@ -329,7 +329,8 @@ internal sealed partial class DirectTlsConnection : TransportConnection
                             var written = await _connectionState.WriteAsync(segment);
                             if (written == 0)
                             {
-                                // Peer closed connection
+                                // Peer closed the connection mid-send.
+                                Application.Input.AdvanceTo(buffer.End);
                                 return;
                             }
                         }
