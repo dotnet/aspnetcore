@@ -340,7 +340,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 
-        if (HttpCharacters.ContainsInvalidQueryChar(QueryString))
+        if (queryIndex != -1 && HttpCharacters.ContainsInvalidQueryChar(QueryString))
         {
             ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
             return false;

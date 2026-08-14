@@ -1118,7 +1118,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
 
-        if (HttpCharacters.ContainsInvalidQueryChar(QueryString))
+        if (queryIndex != -1 && HttpCharacters.ContainsInvalidQueryChar(QueryString))
         {
             Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
             return false;
