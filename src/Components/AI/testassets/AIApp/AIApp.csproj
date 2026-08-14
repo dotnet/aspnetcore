@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
-    <!-- This test asset intentionally references projects whose names match shared-framework packages. -->
     <NoWarn>$(NoWarn);NU1511</NoWarn>
   </PropertyGroup>
 
@@ -12,8 +12,8 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
     <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.AI" />
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
-    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
@@ -25,20 +25,9 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.AspNetCore.StaticAssets" />
+    <Reference Include="Microsoft.Extensions.AI" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Http" />
     <Reference Include="Microsoft.JSInterop" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- The dojo UI talks to AGUIDojoApi over the AG-UI protocol. AGUI.Client brings
-         AGUI.Abstractions and AGUI.Formatting transitively. -->
-    <Reference Include="AGUI.Client" />
-    <Reference Include="Microsoft.AspNetCore.Components.AI" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="DojoClient.E2E.Tests" />
   </ItemGroup>
 
 </Project>

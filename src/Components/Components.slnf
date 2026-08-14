@@ -10,6 +10,8 @@
       "src\\Components\\AI\\src\\Microsoft.AspNetCore.Components.AI.csproj",
       "src\\Components\\AI\\test\\Microsoft.AspNetCore.Components.AI.Tests.csproj",
       "src\\Components\\AI\\testassets\\AGUIDojoApi\\AGUIDojoApi.csproj",
+      "src\\Components\\AI\\testassets\\AIApp\\AIApp.csproj",
+      "src\\Components\\AI\\testassets\\AIApp.E2E.Tests\\AIApp.E2E.Tests.csproj",
       "src\\Components\\AI\\testassets\\DojoClient\\DojoClient.csproj",
       "src\\Components\\AI\\testassets\\DojoClient.E2E.Tests\\DojoClient.E2E.Tests.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
