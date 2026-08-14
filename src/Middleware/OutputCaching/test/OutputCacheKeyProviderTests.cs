@@ -95,6 +95,13 @@ public class OutputCacheKeyProviderTests
         contextB.HttpContext.Request.Path = PathString.Empty;
 
         Assert.NotEqual(cacheKeyProvider.CreateStorageKey(contextA), cacheKeyProvider.CreateStorageKey(contextB));
+
+        var contextC = TestUtils.CreateTestContext();
+        contextC.HttpContext.Request.Method = HttpMethods.Get;
+        contextC.HttpContext.Request.PathBase = PathString.Empty;
+        contextC.HttpContext.Request.Path = "/a/b";
+
+        Assert.NotEqual(cacheKeyProvider.CreateStorageKey(contextC), cacheKeyProvider.CreateStorageKey(contextB));
     }
 
     [Fact]
