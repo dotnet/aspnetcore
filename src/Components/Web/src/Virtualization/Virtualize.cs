@@ -673,9 +673,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 CancelInFlightScrollForUserInteraction();
                 break;
             case SpacerVisibilityReason.ViewportFill:
-                // A fill callback while our own scroll is in flight, or while the initial target is pinned,
-                // is a side effect of that scroll — acting on it would move the target.
-                if (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.Pending)
+                // A fill callback while our own scroll is in flight is a side effect of that scroll —
+                // acting on it would move the target.
+                if (_currentScrollCts is not null)
                 {
                     return;
                 }
@@ -683,6 +683,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
+
+        if (_initialIndex.Phase == InitialIndexPhase.Pending)
+        {
+            GrowWindowOrCompleteInitialIndex(spacerSeparation, containerSize, visibleItemCapacity, unusedItemCapacity);
+            return;
+        }
 
         // Slide window up by at least one if spacer is visible but position unchanged.
         if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore > 0)
@@ -719,6 +725,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         if (_initialIndex.Phase == InitialIndexPhase.Pending)
         {
+            GrowWindowOrCompleteInitialIndex(spacerSeparation, containerSize, visibleItemCapacity, unusedItemCapacity);
             return;
         }
 
@@ -742,6 +749,22 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
+    }
+
+    private void GrowWindowOrCompleteInitialIndex(float spacerSeparation, float containerSize, int visibleItemCapacity, int unusedItemCapacity)
+    {
+        var viewportCovered = _lastRenderedPlaceholderCount == 0 && spacerSeparation >= containerSize;
+        if (viewportCovered)
+        {
+            _initialIndex.Complete();
+            return;
+        }
+
+        if (visibleItemCapacity > _visibleItemCapacity)
+        {
+            _skipNextDistributionRefresh = false;
+            UpdateItemDistribution(_itemsBefore, visibleItemCapacity, unusedItemCapacity);
+        }
     }
 
     private float GetEffectiveItemSizeForStaleSpacer()
