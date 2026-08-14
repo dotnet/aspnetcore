@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Collections;
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -77,6 +78,119 @@ public class ComponentStatePersistenceManagerTest
         // Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => persistenceManager.RestoreStateAsync(store));
     }
+
+    [Fact]
+    public async Task RestoreStateAsync_TransfersRouteActivityContext()
+    {
+        var routeContext = CreateActivityContext();
+        var interactiveLinkStore = new ComponentsActivityLinkStore(null);
+        var interactiveActivitySource = new ComponentsActivitySource();
+        interactiveActivitySource.Init(interactiveLinkStore);
+        var interactivePersistenceManager = CreatePersistenceManager(interactiveActivitySource);
+
+        var persistedState = CreatePersistedRouteState(routeContext, "/counter");
+        await interactivePersistenceManager.RestoreStateAsync(persistedState);
+
+        Assert.Empty(persistedState.State);
+        Assert.True(interactiveLinkStore.TryGetActivityContext(
+            ComponentsActivityLinkStore.Route,
+            out var restoredContext,
+            out var restoredTag));
+        Assert.Equal(routeContext, restoredContext);
+        Assert.Equal(new KeyValuePair<string, object>("aspnetcore.components.route", "/counter"), restoredTag);
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_TransfersRouteActivityContextWhenActivitySourceIsSetAfterRestore()
+    {
+        var routeContext = CreateActivityContext();
+        var persistedState = CreatePersistedRouteState(routeContext, "/counter");
+        var interactivePersistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+
+        await interactivePersistenceManager.RestoreStateAsync(persistedState);
+
+        var interactiveLinkStore = new ComponentsActivityLinkStore(null);
+        var interactiveActivitySource = new ComponentsActivitySource();
+        interactiveActivitySource.Init(interactiveLinkStore);
+        interactivePersistenceManager.SetComponentsActivitySource(interactiveActivitySource);
+
+        Assert.Empty(persistedState.State);
+        Assert.True(interactiveLinkStore.TryGetActivityContext(
+            ComponentsActivityLinkStore.Route,
+            out var restoredContext,
+            out var restoredTag));
+        Assert.Equal(routeContext, restoredContext);
+        Assert.Equal(new KeyValuePair<string, object>("aspnetcore.components.route", "/counter"), restoredTag);
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_ValueUpdateReplacesAndClearsRouteActivityContext()
+    {
+        var initialContext = CreateActivityContext();
+        var updatedContext = CreateActivityContext();
+        var interactiveLinkStore = new ComponentsActivityLinkStore(null);
+        var interactiveActivitySource = new ComponentsActivitySource();
+        interactiveActivitySource.Init(interactiveLinkStore);
+        var interactivePersistenceManager = CreatePersistenceManager(interactiveActivitySource);
+
+        await interactivePersistenceManager.RestoreStateAsync(
+            CreatePersistedRouteState(initialContext, "/initial"));
+        await interactivePersistenceManager.RestoreStateAsync(
+            CreatePersistedRouteState(updatedContext, "/updated"),
+            RestoreContext.ValueUpdate);
+
+        Assert.True(interactiveLinkStore.TryGetActivityContext(
+            ComponentsActivityLinkStore.Route,
+            out var restoredContext,
+            out var restoredTag));
+        Assert.Equal(updatedContext, restoredContext);
+        Assert.Equal(new KeyValuePair<string, object>("aspnetcore.components.route", "/updated"), restoredTag);
+
+        await interactivePersistenceManager.RestoreStateAsync(new TestStore([]), RestoreContext.ValueUpdate);
+
+        Assert.False(interactiveLinkStore.TryGetActivityContext(
+            ComponentsActivityLinkStore.Route,
+            out _,
+            out _));
+    }
+
+    private static TestStore CreatePersistedRouteState(ActivityContext context, string route)
+    {
+        var linkStore = new ComponentsActivityLinkStore(null);
+        linkStore.SetActivityContext(
+            ComponentsActivityLinkStore.Route,
+            context,
+            new KeyValuePair<string, object>("aspnetcore.components.route", route));
+
+        Assert.True(linkStore.TryCreatePersistentRouteState(out var persistentState));
+        var state = JsonSerializer.SerializeToUtf8Bytes(
+            persistentState,
+            ComponentsActivityPersistentStateJsonContext.Default.ComponentsActivityPersistentState);
+
+        return new TestStore(new Dictionary<string, byte[]>
+        {
+            [ComponentsActivityLinkStore.PersistentRouteStateKey] = state
+        });
+    }
+
+    private static ComponentStatePersistenceManager CreatePersistenceManager(ComponentsActivitySource activitySource)
+    {
+        var manager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+        manager.SetComponentsActivitySource(activitySource);
+        return manager;
+    }
+
+    private static ActivityContext CreateActivityContext()
+        => new(
+            ActivityTraceId.CreateRandom(),
+            ActivitySpanId.CreateRandom(),
+            ActivityTraceFlags.Recorded,
+            traceState: "vendor=value",
+            isRemote: false);
 
     private IServiceProvider CreateServiceProvider() =>
         new ServiceCollection().BuildServiceProvider();

@@ -112,7 +112,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         if (ComponentsActivitySource.IsSupported)
         {
             _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
-            _componentsActivitySource?.Init(new ComponentsActivityLinkStore(this));
+            if (_componentsActivitySource is not null)
+            {
+                _componentsActivitySource.Init(new ComponentsActivityLinkStore(this));
+                serviceProvider.GetService<ComponentStatePersistenceManager>()?.SetComponentsActivitySource(_componentsActivitySource);
+            }
         }
 
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null

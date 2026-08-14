@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components;
@@ -27,6 +28,34 @@ internal class ComponentsActivitySource
     public void Init(ComponentsActivityLinkStore store)
     {
         _componentsActivityLinkStore = store;
+    }
+
+    internal void RestoreRouteActivityContext(IDictionary<string, byte[]> state)
+    {
+        if (_componentsActivityLinkStore is null)
+        {
+            return;
+        }
+
+        if (!state.TryGetValue(ComponentsActivityLinkStore.PersistentRouteStateKey, out var data))
+        {
+            _componentsActivityLinkStore.RemoveActivityContext(ComponentsActivityLinkStore.Route);
+            return;
+        }
+
+        state.Remove(ComponentsActivityLinkStore.PersistentRouteStateKey);
+        var persistentState = JsonSerializer.Deserialize(
+            data,
+            ComponentsActivityPersistentStateJsonContext.Default.ComponentsActivityPersistentState);
+
+        if (persistentState is not null)
+        {
+            _componentsActivityLinkStore.RestorePersistentRouteState(persistentState);
+        }
+        else
+        {
+            _componentsActivityLinkStore.RemoveActivityContext(ComponentsActivityLinkStore.Route);
+        }
     }
 
     public ComponentsActivityHandle StartNavigateActivity(string componentType, string route)
