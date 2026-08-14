@@ -154,7 +154,7 @@
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.15.0</GoogleApiCommonProtosVersion>
-    <GoogleProtobufVersion>3.31.1</GoogleProtobufVersion>
+    <GoogleProtobufVersion>3.33.6</GoogleProtobufVersion>
     <GrpcAspNetCoreVersion>2.83.0</GrpcAspNetCoreVersion>
     <GrpcAspNetCoreServerVersion>2.83.0</GrpcAspNetCoreServerVersion>
     <GrpcAuthVersion>2.83.0</GrpcAuthVersion>
