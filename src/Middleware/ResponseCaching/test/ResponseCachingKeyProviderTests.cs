@@ -9,6 +9,7 @@ public class ResponseCachingKeyProviderTests
 {
     private static readonly char KeyDelimiter = '\x1e';
     private static readonly char KeySubDelimiter = '\x1f';
+    private static readonly char KeyNameValueDelimiter = '\x1d';
 
     [Fact]
     public void ResponseCachingKeyProvider_CreateStorageBaseKey_IncludesOnlyNormalizedMethodSchemeHostPortAndPath()
@@ -87,7 +88,7 @@ public class ResponseCachingKeyProviderTests
             Headers = new string[] { "HeaderA", "HeaderC" }
         };
 
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC=",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}ValueA{KeyDelimiter}HeaderC{KeyNameValueDelimiter}",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -103,7 +104,7 @@ public class ResponseCachingKeyProviderTests
             Headers = new string[] { "HeaderA", "HeaderC" }
         };
 
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeySubDelimiter}ValueB{KeyDelimiter}HeaderC=",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}ValueA{KeySubDelimiter}ValueB{KeyDelimiter}HeaderC{KeyNameValueDelimiter}",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -119,7 +120,7 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "QueryA", "QueryC" }
         };
 
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC=",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QueryA{KeyNameValueDelimiter}ValueA{KeyDelimiter}QueryC{KeyNameValueDelimiter}",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -135,7 +136,7 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "QueryA", "QueryC" }
         };
 
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC=",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QueryA{KeyNameValueDelimiter}ValueA{KeyDelimiter}QueryC{KeyNameValueDelimiter}",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -153,7 +154,7 @@ public class ResponseCachingKeyProviderTests
 
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeyDelimiter}QUERYB=ValueB",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueA{KeyDelimiter}QUERYB{KeyNameValueDelimiter}ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -171,7 +172,7 @@ public class ResponseCachingKeyProviderTests
 
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueA{KeySubDelimiter}ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -189,7 +190,7 @@ public class ResponseCachingKeyProviderTests
 
         // To support case insensitivity, all query keys are converted to upper case.
         // Explicit query keys uses the casing specified in the setting.
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA{KeyNameValueDelimiter}ValueA{KeySubDelimiter}ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -208,15 +209,17 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "QueryA", "QueryC" }
         };
 
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC={KeyDelimiter}Q{KeyDelimiter}QueryA=ValueA{KeyDelimiter}QueryC=",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA{KeyNameValueDelimiter}ValueA{KeyDelimiter}HeaderC{KeyNameValueDelimiter}{KeyDelimiter}Q{KeyDelimiter}QueryA{KeyNameValueDelimiter}ValueA{KeyDelimiter}QueryC{KeyNameValueDelimiter}",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
     [Theory]
     [InlineData("\u001e")]
     [InlineData("\u001f")]
+    [InlineData("\u001d")]
     [InlineData("before\u001eafter")]
     [InlineData("before\u001fafter")]
+    [InlineData("before\u001dafter")]
     public void ThrowIfContainsDelimiters_ThrowsForValuesWithDelimiters(string value)
     {
         Assert.Throws<CacheKeyDelimiterException>(() => ResponseCachingKeyProvider.ThrowIfContainsDelimiters(value));
@@ -312,5 +315,46 @@ public class ResponseCachingKeyProviderTests
         };
 
         Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Fact]
+    public void CreateStorageVaryByKey_Throws_IfQueryValueContainsNameValueDelimiter_WildcardMode()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?key=value\u001dinjected");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            QueryKeys = new string[] { "*" }
+        };
+
+        Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateStorageVaryByKey(context));
+    }
+
+    [Fact]
+    public void CreateStorageVaryByKey_QueryValuesWithEncodedEquals_DoNotCollide_WildcardMode()
+    {
+        // Two distinct query inputs that previously serialized to the same vary key because '='
+        // was used as the name/value separator: (key "a", value "B=") vs (key "a=B", value "").
+        var keyProvider = TestUtils.CreateTestKeyProvider();
+
+        var contextA = TestUtils.CreateTestContext();
+        contextA.HttpContext.Request.QueryString = QueryString.Create("a", "B=");
+        contextA.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = "prefix",
+            QueryKeys = new string[] { "*" }
+        };
+
+        var contextB = TestUtils.CreateTestContext();
+        contextB.HttpContext.Request.QueryString = QueryString.Create("a=B", string.Empty);
+        contextB.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = "prefix",
+            QueryKeys = new string[] { "*" }
+        };
+
+        Assert.NotEqual(keyProvider.CreateStorageVaryByKey(contextA), keyProvider.CreateStorageVaryByKey(contextB));
     }
 }
