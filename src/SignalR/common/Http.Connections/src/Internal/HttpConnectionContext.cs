@@ -296,7 +296,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
-    public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, DateTimeOffset, object?> callback, object? state)
+    public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
     {
         ArgumentNullException.ThrowIfNull(callback);
 
@@ -387,7 +387,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             {
                 try
                 {
-                    callback.Invoke(user, authenticationExpiration);
+                    callback.Invoke(user);
                 }
                 catch (Exception ex)
                 {
@@ -991,16 +991,16 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     private sealed class UserRefreshedCallbackRegistration(
         HttpConnectionContext connection,
-        Action<ClaimsPrincipal, DateTimeOffset, object?> callback,
+        Action<ClaimsPrincipal, object?> callback,
         object? state) : IDisposable
     {
         private HttpConnectionContext? _connection = connection;
 
-        public void Invoke(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+        public void Invoke(ClaimsPrincipal user)
         {
             if (_connection is not null)
             {
-                callback(user, authenticationExpiration, state);
+                callback(user, state);
             }
         }
 

@@ -415,14 +415,13 @@ public partial class HubConnectionHandlerTests
                     new Claim(ClaimTypes.NameIdentifier, "alice"),
                     new Claim(ClaimTypes.Name, "newer"),
                 }, "Test"));
-                var newerExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
-
                 client.Connection.User = newerUser;
-                feature.Raise(newerUser, newerExpiration);
+                feature.Raise(newerUser);
                 await hubObserver.RefreshedTask.DefaultTimeout();
 
-                client.Connection.User = olderUser;
-                feature.Raise(olderUser, newerExpiration.AddMinutes(-10));
+                // The lower-layer connection has already advanced to newerUser. A delayed callback for
+                // olderUser must not overwrite the HubCallerContext with a principal that is no longer current.
+                feature.Raise(olderUser);
 
                 var seenUser = await client.InvokeAsync(nameof(AuthenticationRefreshHub.GetUserName)).DefaultTimeout();
                 Assert.Null(seenUser.Error);
@@ -638,12 +637,12 @@ public partial class HubConnectionHandlerTests
 
     private sealed class TestConnectionUserRefreshFeature : IConnectionUserRefreshFeature
     {
-        private Action<ClaimsPrincipal, DateTimeOffset, object?>? _callback;
+        private Action<ClaimsPrincipal, object?>? _callback;
         private object? _state;
 
         public Func<ClaimsPrincipal, bool>? OnUserRefreshing { get; set; }
 
-        public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, DateTimeOffset, object?> callback, object? state)
+        public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
         {
             _callback = callback;
             _state = state;
@@ -658,12 +657,7 @@ public partial class HubConnectionHandlerTests
 
         public void Raise(ClaimsPrincipal current)
         {
-            Raise(current, DateTimeOffset.UtcNow.AddMinutes(15));
-        }
-
-        public void Raise(ClaimsPrincipal current, DateTimeOffset authenticationExpiration)
-        {
-            _callback?.Invoke(current, authenticationExpiration, _state);
+            _callback?.Invoke(current, _state);
         }
 
         private sealed class UserRefreshedRegistration(TestConnectionUserRefreshFeature feature) : IDisposable

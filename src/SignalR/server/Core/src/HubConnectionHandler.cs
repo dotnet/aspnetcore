@@ -159,13 +159,12 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
             userRefreshingCallback = user =>
                 userRefreshState.Handler.OnUserRefreshing(userRefreshState.Connection, user);
             userRefreshFeature.OnUserRefreshing = userRefreshingCallback;
-            userRefreshedRegistration = userRefreshFeature.OnUserRefreshed(static (user, authenticationExpiration, state) =>
+            userRefreshedRegistration = userRefreshFeature.OnUserRefreshed(static (user, state) =>
             {
                 var userRefreshState = (UserRefreshState)state!;
                 userRefreshState.Handler.OnUserRefreshed(
                     userRefreshState.Connection,
                     user,
-                    authenticationExpiration,
                     userRefreshState.AuthenticationRefreshLock);
             }, userRefreshState);
         }
@@ -233,18 +232,21 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         return null;
     }
 
-    private void OnUserRefreshed(HubConnectionContext connection, ClaimsPrincipal user, DateTimeOffset authenticationExpiration, SemaphoreSlim authenticationRefreshLock)
+    private void OnUserRefreshed(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
     {
         // Fire and forget; HandleUserRefreshedAsync serializes work per connection through authenticationRefreshLock.
-        _ = HandleUserRefreshedAsync(connection, user, authenticationExpiration, authenticationRefreshLock);
+        _ = HandleUserRefreshedAsync(connection, user, authenticationRefreshLock);
     }
 
-    private async Task HandleUserRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal user, DateTimeOffset authenticationExpiration, SemaphoreSlim authenticationRefreshLock)
+    private async Task HandleUserRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
     {
         await authenticationRefreshLock.WaitAsync();
         try
         {
-            if (connection.IsAuthenticationRefreshStale(authenticationExpiration))
+            // The connection user can advance again before this asynchronous callback acquires the lock.
+            // Only publish a callback that still represents the current lower-layer connection state.
+            var connectionUserFeature = connection.Features.Get<IConnectionUserFeature>();
+            if (connectionUserFeature is not null && !ReferenceEquals(connectionUserFeature.User, user))
             {
                 return;
             }
@@ -256,7 +258,7 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
                 Log.UserIdentifierChangedOnRefresh(_logger, connection.UserIdentifier, newUserId);
             }
 
-            connection.ApplyUserState(user, newUserId, authenticationExpiration);
+            connection.ApplyUserState(user, newUserId);
         }
         catch (Exception ex)
         {

@@ -327,6 +327,31 @@ public partial class HubConnectionTests
         }
 
         [Fact]
+        public async Task StartClampsLongLivedTokenRefreshToMaximumTimerDelay()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.FromSeconds(int.MaxValue) };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection);
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
+                    Assert.Equal(TimeSpan.FromMilliseconds(int.MaxValue), GetLastAuthenticationRefreshDelay(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
         public async Task StartSchedulesShortLivedTokenRefreshAtHalfLifetime()
         {
             using (StartVerifiableLog())

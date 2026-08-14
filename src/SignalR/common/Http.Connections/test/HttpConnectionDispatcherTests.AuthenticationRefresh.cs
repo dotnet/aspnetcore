@@ -107,36 +107,6 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public async Task RefreshReturnsUnauthorizedWhenAuthenticationFails()
-    {
-        using (StartVerifiableLog())
-        {
-            var manager = CreateConnectionManager(LoggerFactory);
-            var dispatcher = CreateDispatcher(manager, LoggerFactory);
-            var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
-            var connection = manager.CreateConnection(options, negotiateVersion: 1);
-
-            var context = new DefaultHttpContext();
-            context.Request.Path = "/foo/refresh";
-            context.Request.Method = "POST";
-            context.Response.Body = new MemoryStream();
-            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-            {
-                ["id"] = connection.ConnectionToken,
-            });
-
-            // The authorization middleware produced a failed authentication result for this request.
-            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Fail("Bad token")));
-
-            await dispatcher.ExecuteRefreshAsync(context, options);
-
-            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
-            var json = ReadJson(context.Response.Body);
-            AssertRefreshError(json, "invalid_token");
-        }
-    }
-
-    [Fact]
     public async Task RefreshUpdatesConnectionUserAndReturnsTokenLifetime()
     {
         using (StartVerifiableLog())
@@ -779,18 +749,15 @@ public partial class HttpConnectionDispatcherTests
             ClaimsPrincipal capturedCurrent = null;
             var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
             Assert.NotNull(feature);
-            DateTimeOffset capturedExpiration = default;
-            feature.OnUserRefreshed((current, expiration, state) =>
+            feature.OnUserRefreshed((current, state) =>
             {
                 capturedCurrent = current;
-                capturedExpiration = expiration;
             }, state: null);
 
             var expiration = DateTimeOffset.UtcNow.AddMinutes(15);
             connection.UpdateUser(newUser, expiration);
 
             Assert.Same(newUser, capturedCurrent);
-            Assert.Equal(expiration, capturedExpiration);
         }
     }
 
@@ -936,7 +903,7 @@ public partial class HttpConnectionDispatcherTests
             Assert.NotNull(feature);
 
             var invoked = false;
-            var registration = feature.OnUserRefreshed((_, _, state) => invoked = true, state: null);
+            var registration = feature.OnUserRefreshed((_, state) => invoked = true, state: null);
             registration.Dispose();
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "new") }, "Test"));
@@ -956,7 +923,7 @@ public partial class HttpConnectionDispatcherTests
 
             var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
             Assert.NotNull(feature);
-            feature.OnUserRefreshed((_, _, state) => throw new InvalidOperationException("boom"), state: null);
+            feature.OnUserRefreshed((_, state) => throw new InvalidOperationException("boom"), state: null);
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
             var expiration = DateTimeOffset.UtcNow.AddMinutes(15);
@@ -1435,13 +1402,14 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public async Task LongPollingChangedUserRejectedWhenAuthenticationRefreshDisabled()
+    public async Task LongPollingChangedUserRejectedWhenAuthenticationRefreshDisabledEvenWhenRefreshPolicyAllows()
     {
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
+            connection.Features.Get<IConnectionUserRefreshFeature>().OnUserRefreshing = _ => true;
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var refreshCount = 0;
@@ -1721,7 +1689,7 @@ public partial class HttpConnectionDispatcherTests
 
             var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
             var notified = 0;
-            feature.OnUserRefreshed((_, _, state) => notified++, state: null);
+            feature.OnUserRefreshed((_, state) => notified++, state: null);
 
             // An older token must be skipped (no swap, no notification).
             var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "B") }, "Test"));

@@ -70,6 +70,7 @@ public partial class HubConnection : IAsyncDisposable
 
     private static readonly MethodInfo _sendStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendStreamItems)));
     private static readonly MethodInfo _sendIAsyncStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendIAsyncEnumerableStreamItems)));
+    private static readonly TimeSpan _maximumAuthenticationRefreshDelay = TimeSpan.FromMilliseconds(int.MaxValue);
 
     // Persistent across all connections
     private readonly ILoggerFactory _loggerFactory;
@@ -694,6 +695,11 @@ public partial class HubConnection : IAsyncDisposable
 
     private void ScheduleAuthenticationRefreshAt(TimeSpan refreshIn, ConnectionState connectionState)
     {
+        if (refreshIn > _maximumAuthenticationRefreshDelay)
+        {
+            refreshIn = _maximumAuthenticationRefreshDelay;
+        }
+
         Timer? previousTimer;
         lock (_authRefreshTimerLock)
         {

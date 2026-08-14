@@ -179,12 +179,6 @@ internal sealed partial class HttpConnectionDispatcher
         // request, so treat context.User (normally anonymous) as the candidate and let the connection's user
         // refresh policy decide whether the transition is valid.
         var authResult = context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult;
-        if (authResult?.Failure is not null)
-        {
-            await WriteRefreshErrorAsync(context, StatusCodes.Status401Unauthorized, "invalid_token");
-            return;
-        }
-
         var newPrincipal = authResult?.Principal ?? context.User;
         if (HasWindowsIdentity(connection.User) || HasWindowsIdentity(newPrincipal))
         {
@@ -870,7 +864,10 @@ internal sealed partial class HttpConnectionDispatcher
         // rejected request leaves the existing connection fully intact. A registered user-refresh
         // validator can use an application-specific identity mapping; otherwise the connection applies
         // its secure sub/NameIdentifier/Upn fallback.
-        if (connection.ClientReconnectExpected() && await RejectIfUserChangedAsync(connection, context))
+        if (connection.ClientReconnectExpected()
+            && await (options.EnableAuthenticationRefresh
+                ? RejectIfUserChangedAsync(connection, context)
+                : RejectIfConnectionUserChangedAsync(connection, context)))
         {
             return false;
         }

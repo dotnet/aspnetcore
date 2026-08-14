@@ -27,7 +27,7 @@ public interface IConnectionUserRefreshFeature
     /// <summary>
     /// Registers a callback to be invoked after the <see cref="IConnectionUserFeature.User"/> has been refreshed.
     /// </summary>
-    /// <param name="callback">The callback to invoke with the refreshed principal, its authentication expiration, and associated <paramref name="state"/>.</param>
+    /// <param name="callback">The callback to invoke with the refreshed principal and associated <paramref name="state"/>.</param>
     /// <param name="state">The state to pass to <paramref name="callback"/>.</param>
     /// <returns>An <see cref="IDisposable"/> that can be disposed to unregister the callback.</returns>
     /// <remarks>
@@ -37,5 +37,5 @@ public interface IConnectionUserRefreshFeature
     /// (for example a <c>WindowsIdentity</c>'s <c>SafeHandle</c>) may be disposed when the
     /// authentication-refresh request completes, making later access unsafe.
     /// </remarks>
-    IDisposable OnUserRefreshed(Action<ClaimsPrincipal, DateTimeOffset, object?> callback, object? state);
+    IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state);
 }
