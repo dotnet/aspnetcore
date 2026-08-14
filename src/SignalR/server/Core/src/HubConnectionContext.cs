@@ -222,6 +222,11 @@ public partial class HubConnectionContext
         PublishHubCallerContext(new DefaultHubCallerContext(this, user));
     }
 
+    internal void ApplyUser(ClaimsPrincipal user)
+    {
+        PublishHubCallerContext(new DefaultHubCallerContext(this, user));
+    }
+
     private sealed class UserIdProviderUserState
     {
         public UserIdProviderUserState(HubConnectionContext connection, ClaimsPrincipal user)

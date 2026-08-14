@@ -174,10 +174,11 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        // Use the principal and AuthenticateResult produced by the authentication/authorization middleware.
-        // A missing result means no identity was established. Endpoint authorization has already accepted the
-        // request, so treat context.User (normally anonymous) as the candidate and let the connection's user
-        // refresh policy decide whether the transition is valid.
+        // Use the principal and AuthenticateResult produced by authentication middleware. Endpoints with
+        // authorization metadata cannot reach this dispatcher unless authorization middleware has run.
+        // On endpoints that allow anonymous access, a missing result means no identity was established, so
+        // treat context.User as the candidate and let the connection's user refresh policy decide whether
+        // the transition is valid.
         var authResult = context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult;
         var newPrincipal = authResult?.Principal ?? context.User;
         if (HasWindowsIdentity(connection.User) || HasWindowsIdentity(newPrincipal))
@@ -296,58 +297,6 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         return true;
-    }
-
-    private static bool ClaimsPrincipalContentEquals(ClaimsPrincipal current, ClaimsPrincipal incoming)
-    {
-        return SequenceEqual(current.Identities, incoming.Identities, ClaimsIdentityContentEquals);
-    }
-
-    private static bool ClaimsIdentityContentEquals(ClaimsIdentity current, ClaimsIdentity incoming)
-    {
-        if (!string.Equals(current.AuthenticationType, incoming.AuthenticationType, StringComparison.Ordinal)
-            || !string.Equals(current.NameClaimType, incoming.NameClaimType, StringComparison.Ordinal)
-            || !string.Equals(current.RoleClaimType, incoming.RoleClaimType, StringComparison.Ordinal)
-            || !string.Equals(current.Label, incoming.Label, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        return SequenceEqual(current.Claims, incoming.Claims, ClaimContentEquals);
-    }
-
-    private static bool ClaimContentEquals(Claim current, Claim incoming)
-    {
-        return string.Equals(current.Type, incoming.Type, StringComparison.Ordinal)
-            && string.Equals(current.Value, incoming.Value, StringComparison.Ordinal)
-            && string.Equals(current.ValueType, incoming.ValueType, StringComparison.Ordinal)
-            && string.Equals(current.Issuer, incoming.Issuer, StringComparison.Ordinal)
-            && string.Equals(current.OriginalIssuer, incoming.OriginalIssuer, StringComparison.Ordinal);
-    }
-
-    private static bool SequenceEqual<T>(IEnumerable<T> current, IEnumerable<T> incoming, Func<T, T, bool> equals)
-    {
-        using var currentEnumerator = current.GetEnumerator();
-        using var incomingEnumerator = incoming.GetEnumerator();
-
-        while (true)
-        {
-            var currentHasValue = currentEnumerator.MoveNext();
-            if (currentHasValue != incomingEnumerator.MoveNext())
-            {
-                return false;
-            }
-
-            if (!currentHasValue)
-            {
-                return true;
-            }
-
-            if (!equals(currentEnumerator.Current, incomingEnumerator.Current))
-            {
-                return false;
-            }
-        }
     }
 
     private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
@@ -863,7 +812,7 @@ internal sealed partial class HttpConnectionDispatcher
         // request per connection. This must run before any connection state is mutated below so a
         // rejected request leaves the existing connection fully intact. A registered user-refresh
         // validator can use an application-specific identity mapping; otherwise the connection applies
-        // its secure sub/NameIdentifier/Upn fallback.
+        // its secure standard-identity or unchanged-principal fallback.
         if (connection.ClientReconnectExpected()
             && await (options.EnableAuthenticationRefresh
                 ? RejectIfUserChangedAsync(connection, context)
@@ -933,7 +882,7 @@ internal sealed partial class HttpConnectionDispatcher
                 // A refreshed token presents either different claims or a different expiration; a request that
                 // carries the same token (same claims and expiration) is not treated as a refresh so we don't
                 // run the callback or fire UserRefreshed on every poll/reconnect.
-                var principalChanged = !ClaimsPrincipalContentEquals(currentUser, newPrincipal)
+                var principalChanged = !HttpConnectionContext.ClaimsPrincipalContentEquals(currentUser, newPrincipal)
                     || newExpiration != connection.AuthenticationExpiration;
 
                 // A request that arrives carrying an older token than the one already applied (e.g. a poll that

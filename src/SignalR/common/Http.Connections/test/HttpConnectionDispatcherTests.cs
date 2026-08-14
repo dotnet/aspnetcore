@@ -2720,7 +2720,7 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task LongPollingWithoutStandardIdentityClaimDoesNotReject()
+    public async Task LongPollingAuthenticatedUserWithoutStableIdentityRejectsNewPrincipal()
     {
         using (StartVerifiableLog())
         {
@@ -2745,10 +2745,81 @@ public partial class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-            // Neither principal carries a standard identity claim (sub/NameIdentifier/Upn), so the
-            // dispatcher can't tell them apart and does not reject; behavior matches the pre-hardening path.
             var reconnectContext = MakeRequest("/foo", connection, services);
             reconnectContext.User = MakeUserWithClaim("employeeId", "2");
+
+            await dispatcher.ExecuteAsync(reconnectContext, options, app).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, reconnectContext.Response.StatusCode);
+            Assert.Equal("1", connection.User.FindFirst("employeeId")?.Value);
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingAuthenticatedUserWithoutStableIdentityAllowsEquivalentPrincipal()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddLogging();
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            var context = MakeRequest("/foo", connection, services);
+            context.User = MakeUserWithClaim("employeeId", "1");
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            var reconnectContext = MakeRequest("/foo", connection, services);
+            reconnectContext.User = MakeUserWithClaim("employeeId", "1");
+
+            var pollTask = dispatcher.ExecuteAsync(reconnectContext, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.NotEqual(StatusCodes.Status403Forbidden, reconnectContext.Response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingAnonymousUserWithoutStableIdentityAllowsNewPrincipal()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddLogging();
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            var context = MakeRequest("/foo", connection, services);
+            context.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            var reconnectContext = MakeRequest("/foo", connection, services);
+            reconnectContext.User = new ClaimsPrincipal(new ClaimsIdentity());
 
             var pollTask = dispatcher.ExecuteAsync(reconnectContext, options, app);
             await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();

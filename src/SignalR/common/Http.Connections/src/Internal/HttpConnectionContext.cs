@@ -35,8 +35,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IStatefulReconnectFeature
 #pragma warning restore CA2252 // This API requires opting into preview features
 {
-    // Match the standard identity-claim precedence used by DefaultClaimUidExtractor when no
-    // application-specific validator is registered.
+    // Prefer the standard identity-claim precedence used by DefaultClaimUidExtractor before
+    // falling back to exact principal content.
     private static readonly string[] _userIdentityClaimTypes = ["sub", ClaimTypes.NameIdentifier, ClaimTypes.Upn];
 
     private readonly HttpConnectionDispatcherOptions _options;
@@ -442,7 +442,28 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     }
 
     private bool IsUserRefreshAcceptedByDefault(ClaimsPrincipal user)
-        => User is null || GetUserIdentityKey(User) == GetUserIdentityKey(user);
+    {
+        var currentUser = User;
+        if (currentUser is null || ReferenceEquals(currentUser, user))
+        {
+            return true;
+        }
+
+        var currentIdentityKey = GetUserIdentityKey(currentUser);
+        var newIdentityKey = GetUserIdentityKey(user);
+        if (currentIdentityKey is not null || newIdentityKey is not null)
+        {
+            return currentIdentityKey == newIdentityKey;
+        }
+
+        if (!HasAuthenticatedIdentity(currentUser) && !HasAuthenticatedIdentity(user))
+        {
+            return true;
+        }
+
+        // Without a stable identity key, require the authenticated principal content to remain unchanged.
+        return ClaimsPrincipalContentEquals(currentUser, user);
+    }
 
     internal static (string Type, string Value, string Issuer)? GetUserIdentityKey(ClaimsPrincipal user)
     {
@@ -456,6 +477,71 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
 
         return null;
+    }
+
+    internal static bool ClaimsPrincipalContentEquals(ClaimsPrincipal current, ClaimsPrincipal incoming)
+    {
+        return SequenceEqual(current.Identities, incoming.Identities, ClaimsIdentityContentEquals);
+    }
+
+    private static bool ClaimsIdentityContentEquals(ClaimsIdentity current, ClaimsIdentity incoming)
+    {
+        if (!string.Equals(current.AuthenticationType, incoming.AuthenticationType, StringComparison.Ordinal)
+            || !string.Equals(current.NameClaimType, incoming.NameClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.RoleClaimType, incoming.RoleClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.Label, incoming.Label, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return SequenceEqual(current.Claims, incoming.Claims, ClaimContentEquals);
+    }
+
+    private static bool ClaimContentEquals(Claim current, Claim incoming)
+    {
+        return string.Equals(current.Type, incoming.Type, StringComparison.Ordinal)
+            && string.Equals(current.Value, incoming.Value, StringComparison.Ordinal)
+            && string.Equals(current.ValueType, incoming.ValueType, StringComparison.Ordinal)
+            && string.Equals(current.Issuer, incoming.Issuer, StringComparison.Ordinal)
+            && string.Equals(current.OriginalIssuer, incoming.OriginalIssuer, StringComparison.Ordinal);
+    }
+
+    private static bool SequenceEqual<T>(IEnumerable<T> current, IEnumerable<T> incoming, Func<T, T, bool> equals)
+    {
+        using var currentEnumerator = current.GetEnumerator();
+        using var incomingEnumerator = incoming.GetEnumerator();
+
+        while (true)
+        {
+            var currentHasValue = currentEnumerator.MoveNext();
+            if (currentHasValue != incomingEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            if (!currentHasValue)
+            {
+                return true;
+            }
+
+            if (!equals(currentEnumerator.Current, incomingEnumerator.Current))
+            {
+                return false;
+            }
+        }
+    }
+
+    private static bool HasAuthenticatedIdentity(ClaimsPrincipal user)
+    {
+        foreach (var identity in user.Identities)
+        {
+            if (identity.IsAuthenticated)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal void MarkUserOwned()

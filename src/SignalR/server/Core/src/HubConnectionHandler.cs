@@ -199,10 +199,10 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
             if (string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
             {
                 // A non-empty IUserIdProvider result is the application's authoritative identity mapping.
-                // If neither principal maps to a SignalR user, retain the transport's secure standard-claim
-                // fallback instead of treating all unmapped authenticated users as the same user.
+                // If neither principal maps to a SignalR user, retain the transport's standard-identity
+                // and unchanged-principal fallbacks instead of treating all unmapped users as the same user.
                 if (!string.IsNullOrEmpty(newUserId)
-                    || GetUserIdentityKey(connection.User) == GetUserIdentityKey(user))
+                    || IsSameUserByDefault(connection.User, user))
                 {
                     return true;
                 }
@@ -218,6 +218,28 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
     }
 
+    private static bool IsSameUserByDefault(ClaimsPrincipal currentUser, ClaimsPrincipal newUser)
+    {
+        if (ReferenceEquals(currentUser, newUser))
+        {
+            return true;
+        }
+
+        var currentIdentityKey = GetUserIdentityKey(currentUser);
+        var newIdentityKey = GetUserIdentityKey(newUser);
+        if (currentIdentityKey is not null || newIdentityKey is not null)
+        {
+            return currentIdentityKey == newIdentityKey;
+        }
+
+        if (!HasAuthenticatedIdentity(currentUser) && !HasAuthenticatedIdentity(newUser))
+        {
+            return true;
+        }
+
+        return ClaimsPrincipalContentEquals(currentUser, newUser);
+    }
+
     private static (string Type, string Value, string Issuer)? GetUserIdentityKey(ClaimsPrincipal user)
     {
         foreach (var claimType in _userIdentityClaimTypes)
@@ -231,6 +253,61 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
 
         return null;
     }
+
+    private static bool ClaimsPrincipalContentEquals(ClaimsPrincipal current, ClaimsPrincipal incoming)
+    {
+        return SequenceEqual(current.Identities, incoming.Identities, ClaimsIdentityContentEquals);
+    }
+
+    private static bool ClaimsIdentityContentEquals(ClaimsIdentity current, ClaimsIdentity incoming)
+    {
+        if (!string.Equals(current.AuthenticationType, incoming.AuthenticationType, StringComparison.Ordinal)
+            || !string.Equals(current.NameClaimType, incoming.NameClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.RoleClaimType, incoming.RoleClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.Label, incoming.Label, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return SequenceEqual(current.Claims, incoming.Claims, ClaimContentEquals);
+    }
+
+    private static bool ClaimContentEquals(Claim current, Claim incoming)
+    {
+        return string.Equals(current.Type, incoming.Type, StringComparison.Ordinal)
+            && string.Equals(current.Value, incoming.Value, StringComparison.Ordinal)
+            && string.Equals(current.ValueType, incoming.ValueType, StringComparison.Ordinal)
+            && string.Equals(current.Issuer, incoming.Issuer, StringComparison.Ordinal)
+            && string.Equals(current.OriginalIssuer, incoming.OriginalIssuer, StringComparison.Ordinal);
+    }
+
+    private static bool SequenceEqual<T>(IEnumerable<T> current, IEnumerable<T> incoming, Func<T, T, bool> equals)
+    {
+        using var currentEnumerator = current.GetEnumerator();
+        using var incomingEnumerator = incoming.GetEnumerator();
+
+        while (true)
+        {
+            var currentHasValue = currentEnumerator.MoveNext();
+            if (currentHasValue != incomingEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            if (!currentHasValue)
+            {
+                return true;
+            }
+
+            if (!equals(currentEnumerator.Current, incomingEnumerator.Current))
+            {
+                return false;
+            }
+        }
+    }
+
+    private static bool HasAuthenticatedIdentity(ClaimsPrincipal user)
+        => user.Identities.Any(static identity => identity.IsAuthenticated);
 
     private void OnUserRefreshed(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
     {
@@ -251,14 +328,24 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
                 return;
             }
 
-            // Recompute inside the lock so a concurrent refresh observes the latest principal and identifier.
-            var newUserId = connection.GetUserIdentifier(user, _userIdProvider);
-            if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
+            try
             {
-                Log.UserIdentifierChangedOnRefresh(_logger, connection.UserIdentifier, newUserId);
+                // Compute the refreshed mapping for diagnostics, but keep the connection's routing identifier
+                // fixed because lifetime managers have no contract for rekeying an existing connection.
+                var newUserId = connection.GetUserIdentifier(user, _userIdProvider);
+                if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
+                {
+                    Log.UserIdentifierChangedOnRefresh(_logger, connection.UserIdentifier, newUserId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // The principal has already been accepted and published by the transport. A diagnostic
+                // IUserIdProvider failure must not prevent the hub layer from publishing the same principal.
+                Log.ErrorResolvingRefreshedUserIdentifier(_logger, ex);
             }
 
-            connection.ApplyUserState(user, newUserId);
+            connection.ApplyUser(user);
         }
         catch (Exception ex)
         {

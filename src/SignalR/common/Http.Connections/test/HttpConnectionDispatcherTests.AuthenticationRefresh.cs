@@ -116,11 +116,11 @@ public partial class HttpConnectionDispatcherTests
             var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
 
-            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            var originalUser = CreateAuthenticatedUserWithStableIdentity("old");
             connection.User = originalUser;
             connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(1);
 
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newUser = CreateAuthenticatedUserWithStableIdentity("new");
             var newExpires = DateTimeOffset.UtcNow.AddMinutes(30);
             var authProps = new AuthenticationProperties { ExpiresUtc = newExpires };
             var ticket = new AuthenticationTicket(newUser, authProps, "Test");
@@ -253,10 +253,10 @@ public partial class HttpConnectionDispatcherTests
             var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
 
-            connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.User = CreateAuthenticatedUserWithStableIdentity("old");
             connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(1);
 
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newUser = CreateAuthenticatedUserWithStableIdentity("new");
             var authProps = new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddYears(100) };
             var ticket = new AuthenticationTicket(newUser, authProps, "Test");
 
@@ -363,10 +363,10 @@ public partial class HttpConnectionDispatcherTests
             var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
 
-            connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.User = CreateAuthenticatedUserWithStableIdentity("old");
             connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(1);
 
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newUser = CreateAuthenticatedUserWithStableIdentity("new");
             var newExpires = DateTimeOffset.UtcNow.AddMinutes(30);
 
             var services = new ServiceCollection();
@@ -414,11 +414,11 @@ public partial class HttpConnectionDispatcherTests
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true }, negotiateVersion: 1);
 
-            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "original") }, "Test"));
+            var originalUser = CreateAuthenticatedUserWithStableIdentity("original");
             connection.User = originalUser;
             connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(1);
 
-            var newerUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "newer") }, "Test"));
+            var newerUser = CreateAuthenticatedUserWithStableIdentity("newer");
             var newerExpires = DateTimeOffset.UtcNow.AddMinutes(30);
 
             var options = new HttpConnectionDispatcherOptions
@@ -431,7 +431,7 @@ public partial class HttpConnectionDispatcherTests
                 },
             };
 
-            var olderUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "older") }, "Test"));
+            var olderUser = CreateAuthenticatedUserWithStableIdentity("older");
             var olderExpires = DateTimeOffset.UtcNow.AddMinutes(5);
             var ticket = new AuthenticationTicket(olderUser, new AuthenticationProperties { ExpiresUtc = olderExpires }, "Test");
 
@@ -481,6 +481,103 @@ public partial class HttpConnectionDispatcherTests
             var json = ReadJson(context.Response.Body);
             AssertRefreshError(json, "user_changed");
             Assert.Same(originalUser, connection.User);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshRejectsAuthenticatedPrincipalWithoutStableIdentityByDefault()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim("employeeId", "1") }, "Test"));
+            connection.User = originalUser;
+
+            var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim("employeeId", "2") }, "Test"));
+            var ticket = new AuthenticationTicket(refreshedUser, "Test");
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+            context.Features.Set<IAuthenticateResultFeature>(
+                new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+            var json = ReadJson(context.Response.Body);
+            AssertRefreshError(json, "user_changed");
+            Assert.Same(originalUser, connection.User);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshAllowsEquivalentAuthenticatedPrincipalWithoutStableIdentityByDefault()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            connection.User = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim("employeeId", "1") }, "Test"));
+
+            var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim("employeeId", "1") }, "Test"));
+            var ticket = new AuthenticationTicket(refreshedUser, "Test");
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+            context.Features.Set<IAuthenticateResultFeature>(
+                new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Same(refreshedUser, connection.User);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshAllowsDistinctAnonymousPrincipalsByDefault()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            connection.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Same(context.User, connection.User);
+            Assert.False(connection.User.Identity?.IsAuthenticated ?? false);
         }
     }
 
@@ -955,10 +1052,10 @@ public partial class HttpConnectionDispatcherTests
             };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
 
-            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            var originalUser = CreateAuthenticatedUserWithStableIdentity("old");
             connection.User = originalUser;
 
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newUser = CreateAuthenticatedUserWithStableIdentity("new");
             var newExpires = DateTimeOffset.UtcNow.AddMinutes(30);
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties { ExpiresUtc = newExpires }, "Test");
 
@@ -1005,12 +1102,12 @@ public partial class HttpConnectionDispatcherTests
             };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
 
-            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            var originalUser = CreateAuthenticatedUserWithStableIdentity("old");
             connection.User = originalUser;
             var originalExpiration = DateTimeOffset.UtcNow.AddMinutes(2);
             connection.AuthenticationExpiration = originalExpiration;
 
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newUser = CreateAuthenticatedUserWithStableIdentity("new");
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) }, "Test");
 
             var context = new DefaultHttpContext();
@@ -1050,9 +1147,9 @@ public partial class HttpConnectionDispatcherTests
                 OnAuthenticationRefresh = _ => Task.FromResult(false),
             };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
-            connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.User = CreateAuthenticatedUserWithStableIdentity("old");
 
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newUser = CreateAuthenticatedUserWithStableIdentity("new");
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
 
             var context = new DefaultHttpContext();
@@ -1088,10 +1185,10 @@ public partial class HttpConnectionDispatcherTests
                 OnAuthenticationRefresh = _ => throw new InvalidOperationException("boom"),
             };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
-            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            var originalUser = CreateAuthenticatedUserWithStableIdentity("old");
             connection.User = originalUser;
 
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newUser = CreateAuthenticatedUserWithStableIdentity("new");
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
 
             var context = new DefaultHttpContext();
@@ -1786,6 +1883,15 @@ public partial class HttpConnectionDispatcherTests
         }
         var ticket = new AuthenticationTicket(principal, props, "Test");
         context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+    }
+
+    private static ClaimsPrincipal CreateAuthenticatedUserWithStableIdentity(string name)
+    {
+        return new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.NameIdentifier, "test-user"),
+            new Claim("name", name),
+        ], "Test"));
     }
 
     private sealed class TestAuthenticateResultFeature : IAuthenticateResultFeature

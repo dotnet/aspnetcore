@@ -25,7 +25,7 @@ internal static partial class HubConnectionHandlerLog
     [LoggerMessage(6, LogLevel.Debug, "OnConnectedAsync ending.", EventName = "ConnectedEnding")]
     public static partial void ConnectedEnding(ILogger logger);
 
-    [LoggerMessage(7, LogLevel.Warning, "Authentication refresh changed the user identifier (old: '{PreviousUserIdentifier}', new: '{NewUserIdentifier}'). The configured refresh policy accepted the change, but SignalR user routing is not rekeyed.", EventName = "UserIdentifierChangedOnRefresh")]
+    [LoggerMessage(7, LogLevel.Warning, "The refreshed principal maps to a different user identifier (current: '{PreviousUserIdentifier}', refreshed: '{NewUserIdentifier}'). The configured refresh policy accepted the principal, but SignalR retained the current identifier because user routing cannot be rekeyed.", EventName = "UserIdentifierChangedOnRefresh")]
     public static partial void UserIdentifierChangedOnRefresh(ILogger logger, string? previousUserIdentifier, string? newUserIdentifier);
 
     [LoggerMessage(8, LogLevel.Error, "Error when applying refreshed authentication state.", EventName = "ErrorApplyingAuthenticationRefresh")]
@@ -36,4 +36,7 @@ internal static partial class HubConnectionHandlerLog
 
     [LoggerMessage(10, LogLevel.Error, "Error when validating refreshed authentication state. The refresh was rejected.", EventName = "ErrorValidatingAuthenticationRefresh")]
     public static partial void ErrorValidatingAuthenticationRefresh(ILogger logger, Exception exception);
+
+    [LoggerMessage(11, LogLevel.Warning, "Error when resolving the refreshed principal's user identifier for diagnostics. SignalR retained the connection's current user identifier.", EventName = "ErrorResolvingRefreshedUserIdentifier")]
+    public static partial void ErrorResolvingRefreshedUserIdentifier(ILogger logger, Exception exception);
 }
