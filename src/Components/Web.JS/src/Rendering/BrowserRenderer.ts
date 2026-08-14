@@ -189,7 +189,10 @@ export class BrowserRenderer {
                   fullContent += node.textContent || '';
                 }
               }
-              parentElement.value = fullContent || '';
+              const newValue = fullContent || '';
+              if (parentElement.value !== newValue) {
+                parentElement.value = newValue;
+              }
             }
           } else {
             throw new Error('Cannot set text content on non-text child');
