@@ -37,6 +37,10 @@ public sealed class DirectTlsEndpointOptions
     /// The first argument is the <see cref="ConnectionContext"/> for the connection being negotiated (already
     /// allocated so it carries the same connection id that will later serve the request); the second is the
     /// requested SNI host name, or <see langword="null"/> when the client did not send one.
+    /// <para>
+    /// This callback runs synchronously on the epoll worker thread that owns the connection and must not block.
+    /// A blocking or long-running callback stalls the handshake and I/O of every connection assigned to that worker.
+    /// </para>
     /// </remarks>
     public Func<ConnectionContext?, string?, X509Certificate2?>? ServerCertificateSelector { get; set; }
 
@@ -60,6 +64,10 @@ public sealed class DirectTlsEndpointOptions
     /// Return <see langword="true"/> to accept the certificate. When not set, a certificate is accepted only
     /// when it produced no <see cref="SslPolicyErrors"/>.
     /// </summary>
+    /// <remarks>
+    /// This callback runs synchronously on the epoll worker thread that owns the connection and must not block.
+    /// A blocking or long-running callback stalls the handshake and I/O of every connection assigned to that worker.
+    /// </remarks>
     public Func<X509Certificate2, X509Chain?, SslPolicyErrors, bool>? ClientCertificateValidation { get; set; }
 
     /// <summary>
@@ -70,6 +78,10 @@ public sealed class DirectTlsEndpointOptions
     /// The <see cref="ReadOnlySequence{T}"/> is only valid for the duration of the callback; copy the bytes
     /// (for example with <c>ToArray()</c>) if they must outlive the call. The first argument is the
     /// <see cref="ConnectionContext"/> for the connection being negotiated.
+    /// <para>
+    /// This callback runs synchronously on the epoll worker thread that owns the connection and must not block.
+    /// A blocking or long-running callback stalls the handshake and I/O of every connection assigned to that worker.
+    /// </para>
     /// </remarks>
     public Action<ConnectionContext, ReadOnlySequence<byte>>? TlsClientHelloBytesCallback { get; set; }
 
