@@ -12,10 +12,8 @@ public class ComponentsActivityStateTest
     public void CircuitInitialization_AppliesStateRestoredBeforeRendererInitialization()
     {
         var routeContext = CreateActivityContext();
-        var activityState = new ComponentsActivityState
-        {
-            ActivityState = CreateState(routeContext, "/counter")
-        };
+        var activityState = new ComponentsActivityState();
+        activityState.Apply(CreateState(routeContext, "/counter"));
         var linkStore = new ComponentsActivityLinkStore(null);
 
         activityState.Initialize(linkStore);
@@ -31,9 +29,9 @@ public class ComponentsActivityStateTest
         var linkStore = new ComponentsActivityLinkStore(null);
         var activityState = new ComponentsActivityState();
         activityState.Initialize(linkStore);
-        activityState.ActivityState = CreateState(initialContext, "/initial");
+        activityState.Apply(CreateState(initialContext, "/initial"));
 
-        activityState.ActivityState = CreateState(updatedContext, "/updated");
+        activityState.Apply(CreateState(updatedContext, "/updated"));
 
         AssertRoute(linkStore, updatedContext, "/updated");
     }
@@ -44,9 +42,22 @@ public class ComponentsActivityStateTest
         var linkStore = new ComponentsActivityLinkStore(null);
         var activityState = new ComponentsActivityState();
         activityState.Initialize(linkStore);
-        activityState.ActivityState = CreateState(CreateActivityContext(), "/counter");
+        activityState.Apply(CreateState(CreateActivityContext(), "/counter"));
 
-        activityState.ActivityState = new ComponentsActivityPersistentStateUpdate(null);
+        activityState.Apply(new ComponentsActivityPersistentStateUpdate(null));
+
+        Assert.False(linkStore.TryGetActivityContext(ComponentsActivityLinkStore.Route, out _, out _));
+    }
+
+    [Fact]
+    public void CircuitInitialization_IgnoresMalformedActivityContext()
+    {
+        var activityState = new ComponentsActivityState();
+        activityState.Apply(new ComponentsActivityPersistentStateUpdate(
+            new ComponentsActivityPersistentState("invalid", null, false, "/counter")));
+        var linkStore = new ComponentsActivityLinkStore(null);
+
+        activityState.Initialize(linkStore);
 
         Assert.False(linkStore.TryGetActivityContext(ComponentsActivityLinkStore.Route, out _, out _));
     }

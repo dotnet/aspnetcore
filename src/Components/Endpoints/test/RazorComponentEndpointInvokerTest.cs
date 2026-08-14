@@ -7,7 +7,6 @@ using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
-using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -20,23 +19,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.AspNetCore.Components.Endpoints.Tests;
 public class RazorComponentEndpointInvokerTest
 {
-    [Fact]
-    public async Task ComponentsActivityState_IsNotPersistedForWebAssemblyStore()
-    {
-        var services = new ServiceCollection().AddRazorComponents()
-            .Services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
-            .AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment())
-            .BuildServiceProvider();
-        var renderer = new EndpointHtmlRenderer(services, NullLoggerFactory.Instance);
-        var persistenceManager = services.GetRequiredService<ComponentStatePersistenceManager>();
-        await persistenceManager.RestoreStateAsync(new PrerenderComponentApplicationStore());
-        var store = new PrerenderComponentApplicationStore();
-
-        await persistenceManager.PersistStateAsync(store, renderer);
-
-        Assert.Null(store.PersistedState);
-    }
-
     [Fact]
     public async Task Invoker_RejectsPostRequestsWithNonFormDataContentTypesAsync()
     {

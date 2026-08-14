@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -55,6 +57,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
+        services.AddOpenTelemetry().WithTracing(tracing => tracing
+            .AddSource("Microsoft.AspNetCore.Components")
+            .AddSource("Microsoft.AspNetCore.Components.Server.Circuits")
+            .SetSampler(new ComponentsActivityTestSampler())
+            .AddProcessor(new SimpleActivityExportProcessor(new ComponentsActivityTestExporter())));
 
         // Increase 10 MB hub message limit (default 32 KB)
         if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
@@ -228,9 +235,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Use((ctx, nxt) =>
         {
-            if (ctx.Request.Path.StartsWithSegments("/activity-links"))
+            if (ctx.Request.Query.TryGetValue("activity-links-test-id", out var testId))
             {
-                ComponentsActivityTestListener.Enable();
+                ComponentsActivityTestCollector.Start(testId.ToString());
             }
 
             if (ctx.Request.Query.ContainsKey("add-csp"))
@@ -291,6 +298,21 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             MapEnhancedNavigationEndpoints(endpoints);
             endpoints.MapAutoPauseTestEndpoints();
+            endpoints.MapPost("activity-links/telemetry/{testId}", async (string testId, HttpRequest request) =>
+            {
+                if (await request.ReadFromJsonAsync<ActivityLinksTestSpan[]>() is { } spans)
+                {
+                    ComponentsActivityTestCollector.Add(testId, spans);
+                }
+                return Results.Ok();
+            });
+            endpoints.MapGet("activity-links/telemetry/{testId}", (string testId) =>
+                ComponentsActivityTestCollector.Get(testId));
+            endpoints.MapDelete("activity-links/telemetry/{testId}", (string testId) =>
+            {
+                ComponentsActivityTestCollector.Complete(testId);
+                return Results.NoContent();
+            });
         });
     }
 

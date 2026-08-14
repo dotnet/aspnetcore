@@ -11,21 +11,18 @@ internal sealed class ComponentsActivityState
     private ComponentsActivityPersistentStateUpdate? _pendingState;
     private bool _hasPendingState;
 
-    [PersistentState(AllowUpdates = true)]
-    public ComponentsActivityPersistentStateUpdate ActivityState
+    public ComponentsActivityPersistentStateUpdate Capture()
     {
-        get
-        {
-            ComponentsActivityPersistentState? routeState = null;
-            _activityLinkStore?.TryCreatePersistentRouteState(out routeState);
-            return new ComponentsActivityPersistentStateUpdate(routeState);
-        }
-        set
-        {
-            _pendingState = value;
-            _hasPendingState = true;
-            ApplyPendingState();
-        }
+        ComponentsActivityPersistentState? routeState = null;
+        _activityLinkStore?.TryCreatePersistentRouteState(out routeState);
+        return new ComponentsActivityPersistentStateUpdate(routeState);
+    }
+
+    public void Apply(ComponentsActivityPersistentStateUpdate state)
+    {
+        _pendingState = state;
+        _hasPendingState = true;
+        ApplyPendingState();
     }
 
     public void Initialize(ComponentsActivityLinkStore activityLinkStore)
@@ -52,5 +49,25 @@ internal sealed class ComponentsActivityState
 
         _pendingState = null;
         _hasPendingState = false;
+    }
+}
+
+internal sealed class ServerComponentsActivityState(ComponentsActivityState activityState)
+{
+    [PersistentState(AllowUpdates = true)]
+    public ComponentsActivityPersistentStateUpdate ActivityState
+    {
+        get => activityState.Capture();
+        set => activityState.Apply(value);
+    }
+}
+
+internal sealed class WebAssemblyComponentsActivityState(ComponentsActivityState activityState)
+{
+    [PersistentState(AllowUpdates = true)]
+    public ComponentsActivityPersistentStateUpdate ActivityState
+    {
+        get => activityState.Capture();
+        set => activityState.Apply(value);
     }
 }

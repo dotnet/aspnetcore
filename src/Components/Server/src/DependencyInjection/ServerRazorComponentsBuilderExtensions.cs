@@ -6,7 +6,6 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
-using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -37,7 +36,7 @@ public static class ServerRazorComponentsBuilderExtensions
 
         builder.Services.AddServerSideBlazor(configure);
         builder.Services.AddKeyedSingleton<IComponentRenderMode>(
-            typeof(ComponentsMetricsServiceCollectionExtensions),
+            "Microsoft.AspNetCore.Components.ActivityState.Server",
             RenderMode.InteractiveServer);
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, CircuitEndpointProvider>());
 
