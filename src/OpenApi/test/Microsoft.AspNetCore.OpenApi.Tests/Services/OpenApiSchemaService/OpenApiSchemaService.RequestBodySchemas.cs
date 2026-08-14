@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
@@ -1084,30 +1085,38 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         builder.MapPost("/nullableEnum", (NullableEnumDto body) => { });
 
-        await VerifyOpenApiDocument(builder, (document) =>
-        {
-            var enumDtoSchema = document.Components.Schemas["NullableEnumDto"];
-
-            var nullableStatusPropertySchema = enumDtoSchema.Properties["nullableStatus"];
-            Assert.Collection(nullableStatusPropertySchema.OneOf,
-                item =>
-                {
-                    Assert.NotNull(item);
-                    Assert.Equal(JsonSchemaType.Null, item.Type);
-                },
-                item =>
-                {
-                    Assert.NotNull(item);
-                    Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id);
-                });
-
-            var statusPropertySchema = Assert.IsType<OpenApiSchemaReference>(enumDtoSchema.Properties["status"]);
-            Assert.Equal("Status", statusPropertySchema.Reference.Id);
-
-            var statusEnumSchema = document.Components.Schemas["Status"];
-            Assert.Equal(3, statusEnumSchema.Enum.Count);
-            Assert.DoesNotContain(null, statusEnumSchema.Enum);
-        });
+        var document = await VerifyOpenApiDocument(builder, _ => { });
+        var actualComponents = JsonNode.Parse(await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2))!["components"]!["schemas"];
+        var expectedComponents = """
+            {
+              "NullableEnumDto": {
+                "type": "object",
+                "properties": {
+                  "nullableStatus": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/components/schemas/Status"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "$ref": "#/components/schemas/Status"
+                  }
+                }
+              },
+              "Status": {
+                "enum": [
+                  "Pending",
+                  "Approved",
+                  "Rejected"
+                ]
+              }
+            }
+            """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedComponents), actualComponents), $"Actual: {actualComponents}");
     }
 
     internal class NullableEnumDto
