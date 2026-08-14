@@ -1114,8 +1114,15 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             return false;
         }
 
+        // https://www.rfc-editor.org/rfc/rfc9114#section-4.3.1
         var queryIndex = path.IndexOf('?');
         QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
+
+        if (queryIndex != -1 && HttpCharacters.ContainsInvalidQueryChar(QueryString))
+        {
+            Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+            return false;
+        }
 
         var pathSegment = queryIndex == -1 ? path.AsSpan() : path.AsSpan(0, queryIndex);
 
