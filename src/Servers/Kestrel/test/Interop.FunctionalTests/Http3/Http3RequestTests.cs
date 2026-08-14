@@ -519,6 +519,8 @@ public class Http3RequestTests : LoggedTest
 
             var serverReadTask = await readAsyncTask.Task.DefaultTimeout();
 
+            // This test verifies that client cancellation triggers RequestAborted on the server.
+            // The subsequent read can observe either EOF or a reset depending on client timing.
             try
             {
                 int bytesRead = await serverReadTask;
