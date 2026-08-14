@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 // this internal helper class is used in both Components and Components.Server projects as a different type
@@ -26,7 +25,6 @@ internal class ComponentsActivityLinkStore
     public const string Route = "Route";
     public const string Circuit = "Circuit";
     public const string Event = "Event";
-    public const string PersistentRouteStateKey = "__aspnetcore.components.route.activity";
 
     private readonly Dictionary<string, CategoryLink> _store;
 
@@ -131,8 +129,4 @@ internal sealed record ComponentsActivityPersistentState(
     bool IsRemote,
     string Route);
 
-[JsonSerializable(typeof(ComponentsActivityPersistentState))]
-[JsonSourceGenerationOptions(
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    PropertyNameCaseInsensitive = true)]
-internal sealed partial class ComponentsActivityPersistentStateJsonContext : JsonSerializerContext;
+internal sealed record ComponentsActivityPersistentStateUpdate(ComponentsActivityPersistentState? Route);

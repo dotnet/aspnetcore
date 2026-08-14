@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
@@ -11,7 +10,6 @@ using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -27,7 +25,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     private readonly EndpointHtmlRenderer _renderer;
     private readonly ILogger<RazorComponentEndpointInvoker> _logger;
     private readonly ComponentsActivityLinkStore _activityLinkStore;
-    private bool _activityStatePersistenceRegistered;
 
     public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, ILogger<RazorComponentEndpointInvoker> logger)
     {
@@ -80,8 +77,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         {
             _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivityContext, null);
         }
-
-        RegisterActivityStatePersistence(context);
 
         await _renderer.InitializeStandardComponentServicesAsync(
             context,
@@ -208,32 +203,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
         // response as part of the Dispose which has a perf impact.
         await bufferWriter.FlushAsync();
-    }
-
-    internal void RegisterActivityStatePersistence(HttpContext context)
-    {
-        if (_activityStatePersistenceRegistered)
-        {
-            return;
-        }
-
-        var state = context.RequestServices.GetRequiredService<PersistentComponentState>();
-        state.RegisterOnPersisting(PersistActivityState, RenderMode.InteractiveServer);
-        _activityStatePersistenceRegistered = true;
-
-        [UnconditionalSuppressMessage(
-            "Trimming",
-            "IL2026",
-            Justification = "Razor Components endpoints do not support trimming or native AOT.")]
-        Task PersistActivityState()
-        {
-            if (_activityLinkStore.TryCreatePersistentRouteState(out var routeState) && routeState is not null)
-            {
-                state.PersistAsJson(ComponentsActivityLinkStore.PersistentRouteStateKey, routeState);
-            }
-
-            return Task.CompletedTask;
-        }
     }
 
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context)

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -22,23 +21,20 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Tests;
 public class RazorComponentEndpointInvokerTest
 {
     [Fact]
-    public void ActivityStatePersistence_RegistersForInteractiveServerOnly()
+    public async Task ComponentsActivityState_IsNotPersistedForWebAssemblyStore()
     {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddRazorComponents();
-        serviceCollection.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-        serviceCollection.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
-        var services = serviceCollection.BuildServiceProvider();
+        var services = new ServiceCollection().AddRazorComponents()
+            .Services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
+            .AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment())
+            .BuildServiceProvider();
         var renderer = new EndpointHtmlRenderer(services, NullLoggerFactory.Instance);
-        var invoker = new RazorComponentEndpointInvoker(
-            renderer,
-            NullLogger<RazorComponentEndpointInvoker>.Instance);
-        var context = new DefaultHttpContext { RequestServices = services };
+        var persistenceManager = services.GetRequiredService<ComponentStatePersistenceManager>();
+        await persistenceManager.RestoreStateAsync(new PrerenderComponentApplicationStore());
+        var store = new PrerenderComponentApplicationStore();
 
-        invoker.RegisterActivityStatePersistence(context);
+        await persistenceManager.PersistStateAsync(store, renderer);
 
-        var registration = Assert.Single(services.GetRequiredService<ComponentStatePersistenceManager>().RegisteredCallbacks);
-        Assert.IsType<InteractiveServerRenderMode>(registration.RenderMode);
+        Assert.Null(store.PersistedState);
     }
 
     [Fact]

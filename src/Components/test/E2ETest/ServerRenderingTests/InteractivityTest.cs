@@ -28,6 +28,43 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
+    public void PerPageActivityLinks_AreRestoredWhenCircuitIsInitialized()
+    {
+        Navigate($"{ServerPathBase}/activity-links/circuit-initialization");
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("activity-links-probe-interactive")).Text);
+        Browser.Click(By.Id("activity-links-capture"));
+
+        Browser.Equal(
+            "/activity-links/circuit-initialization",
+            () => Browser.FindElement(By.Id("activity-links-route")).Text);
+        Browser.Equal("2", () => Browser.FindElement(By.Id("activity-links-count")).Text);
+    }
+
+    [Fact]
+    public void PerPageActivityLinks_AreUpdatedWhenCircuitReceivesEnhancedNavigation()
+    {
+        Navigate($"{ServerPathBase}/activity-links/navigation/one");
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("activity-links-probe-interactive")).Text);
+        var instanceId = Browser.FindElement(By.Id("activity-links-probe-instance")).Text;
+
+        Browser.Click(By.Id("activity-links-navigate"));
+
+        Browser.Equal(
+            "Activity links navigation two",
+            () => Browser.FindElement(By.TagName("h1")).Text);
+        Browser.Equal(
+            instanceId,
+            () => Browser.FindElement(By.Id("activity-links-probe-instance")).Text);
+        Browser.Click(By.Id("activity-links-capture"));
+        Browser.Equal(
+            "/activity-links/navigation/two",
+            () => Browser.FindElement(By.Id("activity-links-route")).Text);
+        Browser.Equal("2", () => Browser.FindElement(By.Id("activity-links-count")).Text);
+    }
+
+    [Fact]
     public void CanRenderInteractiveServerComponent()
     {
         // '2' configures the increment amount.

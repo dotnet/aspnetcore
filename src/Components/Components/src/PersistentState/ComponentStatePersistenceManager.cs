@@ -19,8 +19,6 @@ public class ComponentStatePersistenceManager
     private bool _stateIsInitialized;
     private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
-    private ComponentsActivitySource? _componentsActivitySource;
-    private IDictionary<string, byte[]>? _pendingComponentActivityState;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
@@ -53,16 +51,6 @@ public class ComponentStatePersistenceManager
     /// </summary>
     public PersistentComponentState State { get; }
 
-    internal void SetComponentsActivitySource(ComponentsActivitySource componentsActivitySource)
-    {
-        _componentsActivitySource = componentsActivitySource;
-        if (_pendingComponentActivityState is not null)
-        {
-            _componentsActivitySource.RestoreRouteActivityContext(_pendingComponentActivityState);
-            _pendingComponentActivityState = null;
-        }
-    }
-
     /// <summary>
     /// Restores the component application state from the given <see cref="IPersistentComponentStateStore"/>.
     /// </summary>
@@ -82,14 +70,6 @@ public class ComponentStatePersistenceManager
     public async Task RestoreStateAsync(IPersistentComponentStateStore store, RestoreContext context)
     {
         var data = await store.GetPersistedStateAsync();
-        if (_componentsActivitySource is not null)
-        {
-            _componentsActivitySource.RestoreRouteActivityContext(data);
-        }
-        else
-        {
-            _pendingComponentActivityState = data;
-        }
 
         if (_stateIsInitialized)
         {

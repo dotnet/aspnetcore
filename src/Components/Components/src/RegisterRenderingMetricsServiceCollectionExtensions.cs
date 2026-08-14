@@ -39,8 +39,31 @@ public static class ComponentsMetricsServiceCollectionExtensions
         IServiceCollection services)
     {
         services.TryAddScoped<ComponentsActivitySource>();
+        services.TryAddScoped<ComponentsActivityState>();
+        services.TryAddKeyedSingleton<IComponentRenderMode, UnsupportedComponentsActivityStateRenderMode>(
+            typeof(ComponentsMetricsServiceCollectionExtensions));
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IPersistentServiceRegistration, ComponentsActivityStatePersistentServiceRegistration>());
 
         return services;
+    }
+
+    private sealed class UnsupportedComponentsActivityStateRenderMode : IComponentRenderMode;
+
+    private sealed class ComponentsActivityStatePersistentServiceRegistration(IServiceProvider serviceProvider)
+        : IPersistentServiceRegistration
+    {
+        private readonly PersistentServiceRegistration<ComponentsActivityState> _registration = new(
+            serviceProvider.GetRequiredKeyedService<IComponentRenderMode>(
+                typeof(ComponentsMetricsServiceCollectionExtensions)));
+
+        public string Assembly => _registration.Assembly;
+
+        public string FullTypeName => _registration.FullTypeName;
+
+        public IComponentRenderMode? GetRenderModeOrDefault() => _registration.GetRenderModeOrDefault();
+
+        public Type? GetResolvedTypeOrNull() => _registration.GetResolvedTypeOrNull();
     }
 
     private static bool IsMeterFactoryRegistered(IServiceCollection services)

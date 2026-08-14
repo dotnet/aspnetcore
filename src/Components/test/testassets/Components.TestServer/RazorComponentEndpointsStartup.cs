@@ -228,6 +228,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Use((ctx, nxt) =>
         {
+            if (ctx.Request.Path.StartsWithSegments("/activity-links"))
+            {
+                ComponentsActivityTestListener.Enable();
+            }
+
             if (ctx.Request.Query.ContainsKey("add-csp"))
             {
                 ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");

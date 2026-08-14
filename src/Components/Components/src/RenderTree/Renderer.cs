@@ -114,8 +114,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
             if (_componentsActivitySource is not null)
             {
-                _componentsActivitySource.Init(new ComponentsActivityLinkStore(this));
-                serviceProvider.GetService<ComponentStatePersistenceManager>()?.SetComponentsActivitySource(_componentsActivitySource);
+                var activityLinkStore = new ComponentsActivityLinkStore(this);
+                _componentsActivitySource.Init(activityLinkStore);
+                serviceProvider.GetService<ComponentsActivityState>()?.Initialize(activityLinkStore);
             }
         }
 
