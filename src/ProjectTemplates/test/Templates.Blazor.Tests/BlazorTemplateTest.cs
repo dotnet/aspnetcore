@@ -215,6 +215,44 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                     page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
 
+                // Adding a passkey requires a confirmation first, so the add button is not shown yet
+                await page.WaitForSelectorAsync("text=Confirm it's you");
+                Assert.Equal(0, await page.Locator("text=Add a new passkey").CountAsync());
+
+                // The add form is rejected until the confirmation is done
+                await page.EvaluateAsync("""
+                    () => {
+                        const form = document.createElement('form');
+                        form.method = 'post';
+                        form.action = location.pathname;
+                        const fields = {
+                            '_handler': 'add-passkey',
+                            'Input.CredentialJson': '{}',
+                        };
+                        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                        if (token) {
+                            fields['__RequestVerificationToken'] = token.value;
+                        }
+                        for (const [name, value] of Object.entries(fields)) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = name;
+                            input.value = value;
+                            form.appendChild(input);
+                        }
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                    """);
+
+                await page.WaitForSelectorAsync("text=Error: You must confirm your identity before adding a passkey.");
+                await page.WaitForSelectorAsync("text=No passkeys are registered.");
+
+                // Confirm with the account password to unlock the add button
+                await page.FillAsync("[name=\"Input.Password\"]", password);
+                await page.ClickAsync("text=Confirm password");
+                await page.WaitForSelectorAsync("text=Add a new passkey");
+
                 await page.EvaluateAsync("""
                     () => {
                         navigator.credentials.create = () => {
