@@ -517,6 +517,10 @@ public class SignInManager<TUser> where TUser : class
     /// <summary>
     /// Generates passkey creation options for the specified <paramref name="userEntity"/>.
     /// </summary>
+    /// <remarks>
+    /// A passkey is a permanent credential. Callers should require the user to confirm their identity
+    /// with a credential the account already holds before calling this method.
+    /// </remarks>
     /// <param name="userEntity">The user entity for which to create passkey options.</param>
     /// <returns>A JSON string representing the created passkey options.</returns>
     public virtual async Task<string> MakePasskeyCreationOptionsAsync(PasskeyUserEntity userEntity)
