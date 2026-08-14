@@ -77,7 +77,8 @@ public class TlsEventPumpStopTests
             NullLoggerFactory.Instance,
             noDelay: false,
             maxReadBufferSize: 0,
-            maxWriteBufferSize: 0);
+            maxWriteBufferSize: 0,
+            onFatalError: static _ => { });
 
         // Drive one connection so the pump thread wakes on the listen fd and enters AcceptOne, where it blocks -
         // this stands in for a user callback that never returns.

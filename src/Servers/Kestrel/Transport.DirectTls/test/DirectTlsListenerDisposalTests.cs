@@ -39,6 +39,7 @@ public class DirectTlsListenerDisposalTests
             new IPEndPoint(IPAddress.Loopback, 0),
             new DirectTlsTransportOptions(),
             MemoryPool<byte>.Shared,
+            new TestHostApplicationLifetime(),
             clientHelloCallback: null,
             ownedServerContexts: ownedServerContexts);
 

@@ -55,6 +55,7 @@ internal sealed class TlsEventPumpPool : IDisposable
         bool noDelay,
         long maxReadBufferSize,
         long maxWriteBufferSize,
+        Action<Exception> onFatalError,
         Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
         ConnectionTracker? connectionTracker = null)
     {
@@ -71,6 +72,7 @@ internal sealed class TlsEventPumpPool : IDisposable
                 noDelay,
                 maxReadBufferSize,
                 maxWriteBufferSize,
+                onFatalError,
                 clientHelloCallback,
                 connectionTracker);
         }

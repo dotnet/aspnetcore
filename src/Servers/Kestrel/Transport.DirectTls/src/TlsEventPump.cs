@@ -90,6 +90,11 @@ internal class TlsEventPump : IDisposable
     // common case) means no capture work is done.
     private Action<ConnectionContext, ReadOnlySequence<byte>>? _clientHelloCallback;
 
+    // Invoked once if the epoll loop hits an unrecoverable (non-EINTR) failure. Lets the listener escalate a
+    // single dead pump into a listener-wide fatal error (fault Accept + request host shutdown) instead of
+    // silently leaving this pump's established connections unserviced.
+    private Action<Exception> _onFatalError = static _ => { };
+
     // Cached loggers for connection creation (initialized in StartWithListenSocket)
     private ILogger<ConnectionIoState> _connectionIoStateLogger = NullLogger<ConnectionIoState>.Instance;
     private ILogger<DirectTlsConnection> _directTlsConnectionLogger = NullLogger<DirectTlsConnection>.Instance;
@@ -172,11 +177,13 @@ internal class TlsEventPump : IDisposable
         bool noDelay,
         long maxReadBufferSize,
         long maxWriteBufferSize,
+        Action<Exception> onFatalError,
         Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
         ConnectionTracker? connectionTracker = null)
     {
         _listenFd = listenFd;
         ArgumentNullException.ThrowIfNull(tlsContext);
+        ArgumentNullException.ThrowIfNull(onFatalError);
         _tlsContext = tlsContext;
         _contextResolver = contextResolver;
         _readyConnections = readyConnections;
@@ -187,6 +194,7 @@ internal class TlsEventPump : IDisposable
         _maxWriteBufferSize = maxWriteBufferSize;
         _clientHelloCallback = clientHelloCallback;
         _connectionTracker = connectionTracker ?? ConnectionTracker.Unlimited;
+        _onFatalError = onFatalError;
         _listenEndPoint = listenEndPoint;
 
         // Cache loggers for connection creation
@@ -361,9 +369,20 @@ internal class TlsEventPump : IDisposable
                         int errno = Marshal.GetLastWin32Error();
                         if (errno == 4)
                         {
-                            continue; // EINTR
+                            // EINTR: epoll_wait was interrupted by a signal before any fd was ready. Harmless
+                            _logger.LogDebug("Pump {Id}: epoll_wait interrupted by a signal (EINTR); retrying.", _id);
+                            continue;
                         }
-                        _logger.LogError("epoll_wait failed: errno={Errno}", errno);
+
+                        _logger.LogCritical("epoll_wait failed: errno={Errno}", errno);
+
+                        // Unrecoverable failure for this pump: retrying would leave this pump's established connections permanently unserviced
+                        // while the listen socket and the other pumps keep the listener looking healthy.
+                        if (_running)
+                        {
+                            _onFatalError.Invoke(new InvalidOperationException($"The DirectTls event pump {_id} failed: epoll_wait returned errno={errno}."));
+                        }
+
                         break;
                     }
 

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -26,22 +27,30 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
 
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
+    private readonly IHostApplicationLifetime _applicationLifetime;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DirectTlsTransportFactory"/> class.
     /// </summary>
     /// <param name="options">The transport options.</param>
     /// <param name="loggerFactory">The logger factory.</param>
+    /// <param name="applicationLifetime">
+    /// The host application lifetime, used to stop the host if a pump fails unrecoverably. Supplied by the DI
+    /// container.
+    /// </param>
     public DirectTlsTransportFactory(
         IOptions<DirectTlsTransportOptions> options,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IHostApplicationLifetime applicationLifetime)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(applicationLifetime);
 
         _options = options.Value;
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<DirectTlsTransportFactory>();
+        _applicationLifetime = applicationLifetime;
     }
 
     /// <inheritdoc />
@@ -152,6 +161,7 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
             endpoint,
             _options,
             memoryPool,
+            _applicationLifetime,
             clientHelloCallback,
             ownedServerContexts);
 

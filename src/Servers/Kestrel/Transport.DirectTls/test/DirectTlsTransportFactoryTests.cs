@@ -52,7 +52,8 @@ public class DirectTlsTransportFactoryTests
     {
         return new DirectTlsTransportFactory(
             Options.Create(options ?? new DirectTlsTransportOptions()),
-            NullLoggerFactory.Instance);
+            NullLoggerFactory.Instance,
+            new TestHostApplicationLifetime());
     }
 
     [Fact]

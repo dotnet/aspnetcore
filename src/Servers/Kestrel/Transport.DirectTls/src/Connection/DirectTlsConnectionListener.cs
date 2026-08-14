@@ -8,6 +8,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
@@ -43,6 +44,12 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     // Listener-level cap on connections that are handshaking or waiting to be accepted by Kestrel, shared by all pumps.
     private readonly ConnectionTracker _connectionTracker;
 
+    // Host lifetime used to request a graceful shutdown when a pump dies unrecoverably. Never null.
+    private readonly IHostApplicationLifetime _appLifetime;
+
+    private int _fatalErrorReported;
+    private Exception? _fatalError;
+
     public EndPoint EndPoint { get; private set; }
 
     public DirectTlsConnectionListener(
@@ -53,10 +60,12 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         EndPoint endpoint,
         DirectTlsTransportOptions options,
         MemoryPool<byte> memoryPool,
+        IHostApplicationLifetime applicationLifetime,
         Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
         IDisposable? ownedServerContexts = null)
     {
         ArgumentNullException.ThrowIfNull(tlsContext);
+        ArgumentNullException.ThrowIfNull(applicationLifetime);
 
         _logger = loggerFactory.CreateLogger<DirectTlsConnectionListener>();
         _options = options;
@@ -67,6 +76,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         _contextResolver = contextResolver;
         _clientHelloCallback = clientHelloCallback;
         _ownedServerContexts = ownedServerContexts;
+        _appLifetime = applicationLifetime;
         EndPoint = endpoint;
 
         // Unbounded channel - handshakes complete asynchronously and we don't want to block them
@@ -121,10 +131,30 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             _options.NoDelay,
             _options.MaxReadBufferSize ?? 0,
             _options.MaxWriteBufferSize ?? 0,
+            OnPumpFatalError,
             _clientHelloCallback,
             _connectionTracker);
 
         _logger.LogInformation("DirectTls listener started with EPOLLEXCLUSIVE worker accept");
+    }
+
+    // Invoked by a pump thread when its epoll loop hits an unrecoverable failure. A single dead pump leaves its
+    // established connections permanently unserviced while the listen socket and the surviving pumps keep the
+    // listener looking healthy, so escalate to a listener-wide fatal error: fault Accept so the connection
+    // dispatcher logs the failure, then ask Kestrel to stop the host. Runs at most once per listener.
+    internal void OnPumpFatalError(Exception error)
+    {
+        if (Interlocked.CompareExchange(ref _fatalErrorReported, 1, 0) != 0)
+        {
+            return;
+        }
+
+        // Publish the error before completing the channel so AcceptAsync observes it when it wakes.
+        _fatalError = error;
+        _logger.LogCritical(error, "A DirectTls pump thread failed unrecoverably; stopping the application.");
+
+        _readyConnections.Writer.TryComplete(error);
+        _appLifetime.StopApplication();
     }
 
     public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
@@ -138,7 +168,11 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         }
         catch (ChannelClosedException)
         {
-            // Channel closed during shutdown
+            if (_fatalError is not null)
+            {
+                throw _fatalError;
+            }
+
             return null;
         }
         catch (OperationCanceledException)
