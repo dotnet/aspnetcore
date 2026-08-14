@@ -9,7 +9,7 @@
     <!-- Microsoft.NET.Sdk.Web defaults IsPackable to false. Override it so the
          <NuspecFile> below is honored and the shipping package is produced. -->
     <IsPackable>true</IsPackable>
-    <Description>Gateway server for hosting standalone Blazor WebAssembly applications.</Description>
+    <Description>Gateway server for hosting Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Assemblies should not reference this assembly directly -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>

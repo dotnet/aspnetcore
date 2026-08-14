@@ -111,9 +111,74 @@ public class AuthorizationPolicy
     /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
     /// authorization policies provided by the specified <paramref name="policyProvider"/>.
     /// </returns>
-    public static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
+    public static Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
         IEnumerable<IAuthorizeData> authorizeData,
-        IEnumerable<AuthorizationPolicy> policies)
+        IEnumerable<AuthorizationPolicy> policies) => CombineAsync(policyProvider, authorizeData, policies, Array.Empty<IAuthorizationRequirementData>());
+
+#if NETCOREAPP
+    /// <summary>
+    /// Combines the authorization metadata associated with an endpoint into a single <see cref="AuthorizationPolicy"/>.
+    /// </summary>
+    /// <param name="policyProvider">A <see cref="IAuthorizationPolicyProvider"/> which provides the policies to combine.</param>
+    /// <param name="metadata">
+    /// The endpoint metadata. Items implementing <see cref="IAuthorizeData"/>, <see cref="AuthorizationPolicy"/>,
+    /// or <see cref="IAuthorizationRequirementData"/> contribute to the result; other items are ignored.
+    /// </param>
+    /// <returns>
+    /// The combined <see cref="AuthorizationPolicy"/>, or <see langword="null"/> if no authorization
+    /// metadata is present and no fallback policy is configured.
+    /// </returns>
+    /// <remarks>
+    /// This applies the same logic as the authorization middleware, so the effective policy can be computed
+    /// consistently outside of it (for example in SignalR, Blazor, or MVC).
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var policy = await AuthorizationPolicy.CombineAsync(policyProvider, endpoint.Metadata);
+    /// </code>
+    /// </example>
+    public static Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
+        IEnumerable<object> metadata)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(policyProvider);
+        ArgumentNullThrowHelper.ThrowIfNull(metadata);
+
+        List<IAuthorizeData>? authorizeData = null;
+        List<AuthorizationPolicy>? policies = null;
+        List<IAuthorizationRequirementData>? requirementData = null;
+
+        foreach (var datum in metadata)
+        {
+            // A single piece of metadata (e.g. an attribute) can implement more than one of these
+            // interfaces, so every applicable bucket must be considered.
+            if (datum is IAuthorizeData authorizeDatum)
+            {
+                (authorizeData ??= new List<IAuthorizeData>()).Add(authorizeDatum);
+            }
+
+            if (datum is AuthorizationPolicy policy)
+            {
+                (policies ??= new List<AuthorizationPolicy>()).Add(policy);
+            }
+
+            if (datum is IAuthorizationRequirementData requirementDatum)
+            {
+                (requirementData ??= new List<IAuthorizationRequirementData>()).Add(requirementDatum);
+            }
+        }
+
+        return CombineAsync(
+            policyProvider,
+            authorizeData ?? (IEnumerable<IAuthorizeData>)Array.Empty<IAuthorizeData>(),
+            policies ?? Enumerable.Empty<AuthorizationPolicy>(),
+            requirementData ?? (IReadOnlyList<IAuthorizationRequirementData>)Array.Empty<IAuthorizationRequirementData>());
+    }
+#endif
+
+    private static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
+        IEnumerable<IAuthorizeData> authorizeData,
+        IEnumerable<AuthorizationPolicy> policies,
+        IReadOnlyList<IAuthorizationRequirementData> requirementData)
     {
         ArgumentNullThrowHelper.ThrowIfNull(policyProvider);
         ArgumentNullThrowHelper.ThrowIfNull(authorizeData);
@@ -186,16 +251,36 @@ public class AuthorizationPolicy
             }
         }
 
+        AuthorizationPolicy? combinedPolicy;
+
         // If we have no policy by now, use the fallback policy if we have one
         if (policyBuilder == null)
         {
-            var fallbackPolicy = await policyProvider.GetFallbackPolicyAsync().ConfigureAwait(false);
-            if (fallbackPolicy != null)
-            {
-                return fallbackPolicy;
-            }
+            combinedPolicy = await policyProvider.GetFallbackPolicyAsync().ConfigureAwait(false);
+        }
+        else
+        {
+            combinedPolicy = policyBuilder.Build();
         }
 
-        return policyBuilder?.Build();
+        // Combine any requirements contributed by IAuthorizationRequirementData metadata.
+        if (requirementData.Count > 0)
+        {
+            var reqPolicy = new AuthorizationPolicyBuilder();
+            foreach (var rd in requirementData)
+            {
+                foreach (var r in rd.GetRequirements())
+                {
+                    reqPolicy.AddRequirements(r);
+                }
+            }
+
+            // Combine policy with requirements or just use requirements if no policy
+            combinedPolicy = combinedPolicy is null
+                ? reqPolicy.Build()
+                : Combine(combinedPolicy, reqPolicy.Build());
+        }
+
+        return combinedPolicy;
     }
 }

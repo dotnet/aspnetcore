@@ -85,6 +85,14 @@ internal sealed partial class ComponentHub : Hub
         return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
     }
 
+    public override Task OnAuthenticationRefreshedAsync()
+    {
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        circuitHost?.SetCircuitUser(Context.User);
+
+        return Task.CompletedTask;
+    }
+
     public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
     {
         var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
@@ -161,7 +169,7 @@ internal sealed partial class ComponentHub : Hub
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
-            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize. See the server logs for more information.");
             Context.Abort();
             return null;
         }
@@ -417,7 +425,7 @@ internal sealed partial class ComponentHub : Hub
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
-            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize. See the server logs for more information.");
             Context.Abort();
             return null;
         }
