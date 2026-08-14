@@ -10,7 +10,7 @@ public class OutputCacheKeyProviderTests
 {
     private const char KeyDelimiter = '\x1e';
     private const char KeySubDelimiter = '\x1f';
-    private static readonly string EmptyBaseKey = $"{KeyDelimiter}{KeyDelimiter}";
+    private static readonly string EmptyBaseKey = $"{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}";
 
     [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_IncludesOnlyNormalizedMethodSchemeHostPortAndPath()
@@ -24,7 +24,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.PathBase = "/pathBase";
         context.HttpContext.Request.QueryString = new QueryString("?query.Key=a&query.Value=b");
 
-        Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}EXAMPLE.COM:80/PATHBASE/PATH/SUBPATH", cacheKeyProvider.CreateStorageKey(context));
+        Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}EXAMPLE.COM:80/PATHBASE{KeyDelimiter}/PATH/SUBPATH", cacheKeyProvider.CreateStorageKey(context));
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.PathBase = "/pathBase";
         context.HttpContext.Request.QueryString = new QueryString("?query.Key=a&query.Value=b");
 
-        Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}*:*/PATHBASE/PATH/SUBPATH", cacheKeyProvider.CreateStorageKey(context));
+        Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}*:*/PATHBASE{KeyDelimiter}/PATH/SUBPATH", cacheKeyProvider.CreateStorageKey(context));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Path = "/Path";
 
-        Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}/PATH", cacheKeyProvider.CreateStorageKey(context));
+        Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}/PATH", cacheKeyProvider.CreateStorageKey(context));
     }
 
     [Fact]
@@ -70,7 +70,31 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Path = "/Path";
 
-        Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}/Path", cacheKeyProvider.CreateStorageKey(context));
+        Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}/Path", cacheKeyProvider.CreateStorageKey(context));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void OutputCachingKeyProvider_CreateStorageKey_PathBaseAndPathBoundaryIsInjective(bool useCaseSensitivePaths)
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new OutputCacheOptions()
+        {
+            UseCaseSensitivePaths = useCaseSensitivePaths
+        });
+
+        // Distinct (PathBase, Path) pairs whose concatenations are equal must not collide.
+        var contextA = TestUtils.CreateTestContext();
+        contextA.HttpContext.Request.Method = HttpMethods.Get;
+        contextA.HttpContext.Request.PathBase = "/a";
+        contextA.HttpContext.Request.Path = "/b";
+
+        var contextB = TestUtils.CreateTestContext();
+        contextB.HttpContext.Request.Method = HttpMethods.Get;
+        contextB.HttpContext.Request.PathBase = "/a/b";
+        contextB.HttpContext.Request.Path = PathString.Empty;
+
+        Assert.NotEqual(cacheKeyProvider.CreateStorageKey(contextA), cacheKeyProvider.CreateStorageKey(contextB));
     }
 
     [Fact]

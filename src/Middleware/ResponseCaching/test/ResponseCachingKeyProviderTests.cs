@@ -23,7 +23,7 @@ public class ResponseCachingKeyProviderTests
         context.HttpContext.Request.PathBase = "/pathBase";
         context.HttpContext.Request.QueryString = new QueryString("?query.Key=a&query.Value=b");
 
-        Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}EXAMPLE.COM:80/PATHBASE/PATH/SUBPATH", cacheKeyProvider.CreateBaseKey(context));
+        Assert.Equal($"HEAD{KeyDelimiter}HTTPS{KeyDelimiter}EXAMPLE.COM:80/PATHBASE{KeyDelimiter}/PATH/SUBPATH", cacheKeyProvider.CreateBaseKey(context));
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class ResponseCachingKeyProviderTests
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Path = "/Path";
 
-        Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}/PATH", cacheKeyProvider.CreateBaseKey(context));
+        Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}/PATH", cacheKeyProvider.CreateBaseKey(context));
     }
 
     [Fact]
@@ -51,7 +51,31 @@ public class ResponseCachingKeyProviderTests
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Path = "/Path";
 
-        Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}/Path", cacheKeyProvider.CreateBaseKey(context));
+        Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}{KeyDelimiter}{KeyDelimiter}/Path", cacheKeyProvider.CreateBaseKey(context));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ResponseCachingKeyProvider_CreateStorageBaseKey_PathBaseAndPathBoundaryIsInjective(bool useCaseSensitivePaths)
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new ResponseCachingOptions()
+        {
+            UseCaseSensitivePaths = useCaseSensitivePaths
+        });
+
+        // Distinct (PathBase, Path) pairs whose concatenations are equal must not collide.
+        var contextA = TestUtils.CreateTestContext();
+        contextA.HttpContext.Request.Method = HttpMethods.Get;
+        contextA.HttpContext.Request.PathBase = "/a";
+        contextA.HttpContext.Request.Path = "/b";
+
+        var contextB = TestUtils.CreateTestContext();
+        contextB.HttpContext.Request.Method = HttpMethods.Get;
+        contextB.HttpContext.Request.PathBase = "/a/b";
+        contextB.HttpContext.Request.Path = PathString.Empty;
+
+        Assert.NotEqual(cacheKeyProvider.CreateBaseKey(contextA), cacheKeyProvider.CreateBaseKey(contextB));
     }
 
     [Fact]
