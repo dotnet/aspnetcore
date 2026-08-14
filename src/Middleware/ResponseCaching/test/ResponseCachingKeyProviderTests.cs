@@ -76,6 +76,13 @@ public class ResponseCachingKeyProviderTests
         contextB.HttpContext.Request.Path = PathString.Empty;
 
         Assert.NotEqual(cacheKeyProvider.CreateBaseKey(contextA), cacheKeyProvider.CreateBaseKey(contextB));
+
+        var contextC = TestUtils.CreateTestContext();
+        contextC.HttpContext.Request.Method = HttpMethods.Get;
+        contextC.HttpContext.Request.PathBase = PathString.Empty;
+        contextC.HttpContext.Request.Path = "/a/b";
+
+        Assert.NotEqual(cacheKeyProvider.CreateBaseKey(contextC), cacheKeyProvider.CreateBaseKey(contextB));
     }
 
     [Fact]
