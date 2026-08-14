@@ -28,9 +28,9 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         _options = options.Value;
     }
 
-    public IEnumerable<string> CreateLookupVaryByKeys(ResponseCachingContext context)
+    public StringValues CreateLookupVaryByKeys(ResponseCachingContext context)
     {
-        return new string[] { CreateStorageVaryByKey(context) };
+        return CreateStorageVaryByKey(context);
     }
 
     // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH

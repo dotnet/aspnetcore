@@ -313,4 +313,116 @@ public class ResponseCachingKeyProviderTests
 
         Assert.Throws<CacheKeyDelimiterException>(() => cacheKeyProvider.CreateStorageVaryByKey(context));
     }
+
+    [Fact]
+    public void CreateLookupVaryByKeys_NoVaryRules_YieldsSinglePrefixKey()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString
+        };
+
+        var keys = MaterializeLookupKeys(cacheKeyProvider, context);
+
+        Assert.Equal(new[] { cacheKeyProvider.CreateStorageVaryByKey(context) }, keys);
+        Assert.Equal(context.CachedVaryByRules.VaryByKeyPrefix, Assert.Single(keys));
+    }
+
+    [Fact]
+    public void CreateLookupVaryByKeys_VaryByHeader_YieldsSingleStorageKey()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "ValueA";
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            Headers = new string[] { "HeaderA", "HeaderC" }
+        };
+
+        var keys = MaterializeLookupKeys(cacheKeyProvider, context);
+
+        Assert.Equal(new[] { cacheKeyProvider.CreateStorageVaryByKey(context) }, keys);
+    }
+
+    [Fact]
+    public void CreateLookupVaryByKeys_VaryByQueryKeys_YieldsSingleStorageKey()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryB=ValueB");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            QueryKeys = new string[] { "QueryA", "QueryC" }
+        };
+
+        var keys = MaterializeLookupKeys(cacheKeyProvider, context);
+
+        Assert.Equal(new[] { cacheKeyProvider.CreateStorageVaryByKey(context) }, keys);
+    }
+
+    [Fact]
+    public void CreateLookupVaryByKeys_VaryByQueryKeysWildcard_YieldsSingleStorageKey()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA&QueryB=ValueB");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            QueryKeys = new string[] { "*" }
+        };
+
+        var keys = MaterializeLookupKeys(cacheKeyProvider, context);
+
+        Assert.Equal(new[] { cacheKeyProvider.CreateStorageVaryByKey(context) }, keys);
+    }
+
+    [Fact]
+    public void CreateLookupVaryByKeys_VaryByHeadersAndQueryKeys_YieldsSingleStorageKey()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "ValueA";
+        context.HttpContext.Request.QueryString = new QueryString("?QueryA=ValueA");
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            Headers = new string[] { "HeaderA", "HeaderC" },
+            QueryKeys = new string[] { "QueryA", "QueryC" }
+        };
+
+        var keys = MaterializeLookupKeys(cacheKeyProvider, context);
+
+        Assert.Equal(new[] { cacheKeyProvider.CreateStorageVaryByKey(context) }, keys);
+    }
+
+    [Fact]
+    public void CreateLookupVaryByKeys_Throws_IfHeaderValueContainsDelimiter()
+    {
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Headers["HeaderA"] = "Value\u001eInjected";
+        context.CachedVaryByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            Headers = new string[] { "HeaderA" }
+        };
+
+        Assert.Throws<CacheKeyDelimiterException>(() => MaterializeLookupKeys(cacheKeyProvider, context));
+    }
+
+    private static List<string> MaterializeLookupKeys(IResponseCachingKeyProvider cacheKeyProvider, ResponseCachingContext context)
+    {
+        var keys = new List<string>();
+        foreach (var key in cacheKeyProvider.CreateLookupVaryByKeys(context))
+        {
+            keys.Add(key);
+        }
+
+        return keys;
+    }
 }

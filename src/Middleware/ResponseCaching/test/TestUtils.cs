@@ -346,12 +346,20 @@ internal class TestResponseCachingKeyProvider : IResponseCachingKeyProvider
         }
     }
 
-    public IEnumerable<string> CreateLookupVaryByKeys(ResponseCachingContext context)
+    public StringValues CreateLookupVaryByKeys(ResponseCachingContext context)
     {
-        foreach (var varyKey in _varyKey)
+        if (_varyKey.Count == 0)
         {
-            yield return _baseKey + varyKey;
+            return StringValues.Empty;
         }
+
+        var keys = new string[_varyKey.Count];
+        for (var i = 0; i < _varyKey.Count; i++)
+        {
+            keys[i] = _baseKey + _varyKey[i];
+        }
+
+        return new StringValues(keys);
     }
 
     public string CreateBaseKey(ResponseCachingContext context)
