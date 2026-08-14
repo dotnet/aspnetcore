@@ -839,10 +839,18 @@ public partial class HttpConnectionDispatcherTests
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
 
-            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "old") }, "Test"));
+            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "user"),
+                new Claim("n", "old"),
+            ], "Test"));
             connection.User = originalUser;
 
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "new") }, "Test"));
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "user"),
+                new Claim("n", "new"),
+            ], "Test"));
             ClaimsPrincipal capturedCurrent = null;
             var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
             Assert.NotNull(feature);
@@ -1780,7 +1788,11 @@ public partial class HttpConnectionDispatcherTests
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
 
-            var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "A") }, "Test"));
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "user"),
+                new Claim("name", "A"),
+            ], "Test"));
             var laterExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
             connection.UpdateUser(userA, laterExpiration);
 
@@ -1789,7 +1801,11 @@ public partial class HttpConnectionDispatcherTests
             feature.OnUserRefreshed((_, state) => notified++, state: null);
 
             // An older token must be skipped (no swap, no notification).
-            var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "B") }, "Test"));
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "user"),
+                new Claim("name", "B"),
+            ], "Test"));
             connection.UpdateUser(userB, DateTimeOffset.UtcNow.AddMinutes(5));
 
             Assert.Same(userA, connection.User);
@@ -1797,7 +1813,11 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(0, notified);
 
             // A newer token is still applied.
-            var userC = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "C") }, "Test"));
+            var userC = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, "user"),
+                new Claim("name", "C"),
+            ], "Test"));
             var newerExpiration = DateTimeOffset.UtcNow.AddMinutes(60);
             connection.UpdateUser(userC, newerExpiration);
 
