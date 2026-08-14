@@ -209,7 +209,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             return null;
         }
 
-        if (credential is null)
+        if (credential?.Id is not { Length: > 0 })
         {
             return null;
         }

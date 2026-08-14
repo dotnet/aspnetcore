@@ -575,6 +575,9 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="user">The user whose passkeys should be signaled.</param>
     /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
     /// <returns>A JSON string representing the known passkeys signal options.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
     /// <exception cref="NotSupportedException">
     /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support known passkeys signal options.
     /// See <see cref="SupportsKnownPasskeysSignalOptions"/>.
@@ -582,7 +585,7 @@ public class SignInManager<TUser> where TUser : class
     /// <example>
     /// The following example shows how the result is used from JavaScript.
     /// <code language="javascript">
-    /// const { rpId, userId, allAcceptedCredentialIds, name, displayName } = signalOptions;
+    /// const { rpId, userId, allAcceptedCredentialIds, name, displayName } = JSON.parse(signalOptionsJson);
     /// await PublicKeyCredential.signalAllAcceptedCredentials?.({ rpId, userId, allAcceptedCredentialIds });
     /// await PublicKeyCredential.signalCurrentUserDetails?.({ rpId, userId, name, displayName });
     /// </code>
