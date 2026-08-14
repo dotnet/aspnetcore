@@ -859,8 +859,8 @@ internal class TlsEventPump : IDisposable
             if (!_readyConnections.TryWrite(directConnection))
             {
                 // Channel closed (shutting down) - dispose connection
-                directConnection.DisposeAsync().AsTask().GetAwaiter().GetResult();
                 _connectionTracker.ReleaseHandshake();
+                _ = DisposeAbandonedConnectionAsync(directConnection);
             }
 
             return;
@@ -1036,6 +1036,19 @@ internal class TlsEventPump : IDisposable
         _connectionTracker.ReleaseHandshake();
         NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, fd, IntPtr.Zero);
         connection.AbortBeforeStart();
+    }
+
+    // Fire-and-forget teardown for a connection
+    private async Task DisposeAbandonedConnectionAsync(DirectTlsConnection connection)
+    {
+        try
+        {
+            await connection.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Disposing a connection abandoned during shutdown threw.");
+        }
     }
 
     // Tears down a handshake we will not surface to Kestrel - whether it failed (the handshake or the
