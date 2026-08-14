@@ -27,7 +27,8 @@ internal static partial class NativeTls
 
     // accept4: accept a pending connection and return a new fd, or -1 with errno set. addr/addrlen are passed
     // as IntPtr.Zero (the peer is read later via the wrapped managed Socket's RemoteEndPoint, so no sockaddr is
-    // parsed here). SOCK_NONBLOCK sets the accepted fd non-blocking atomically, saving a follow-up fcntl.
+    // parsed here). SOCK_NONBLOCK sets the accepted fd non-blocking atomically and SOCK_CLOEXEC sets close-on-exec
+    // atomically (so the fd is not inherited across exec), both saving a follow-up fcntl.
     // Reporting EAGAIN/EBADF/EINTR as errno return values lets the accept loop drain without exceptions.
     [LibraryImport(LIBC, SetLastError = true)] public static partial int accept4(int sockfd, IntPtr addr, IntPtr addrlen, int flags);
 
@@ -100,8 +101,13 @@ internal static partial class NativeTls
     public const uint EPOLLRDHUP = 0x2000;
     public const uint EPOLLEXCLUSIVE = 0x10000000;  // Prevents thundering herd - only one worker wakes per event
 
-    // accept4 flag: set the accepted fd non-blocking atomically (Linux O_NONBLOCK == 0x800).
-    public const int SOCK_NONBLOCK = 0x800;
+    // accept4 / epoll_create1 flags. Both CLOEXEC values equal Linux O_CLOEXEC (0x80000) on the architectures
+    // this transport targets (x64/arm64/arm). SOCK_NONBLOCK sets the accepted fd non-blocking atomically;
+    // SOCK_CLOEXEC / EPOLL_CLOEXEC set close-on-exec atomically so accepted connection fds and the epoll fd are
+    // not inherited by a child process across exec (matching the runtime's own socket layer).
+    public const int SOCK_NONBLOCK = 0x800;    // Linux O_NONBLOCK
+    public const int SOCK_CLOEXEC = 0x80000;   // Linux O_CLOEXEC
+    public const int EPOLL_CLOEXEC = 0x80000;  // Linux O_CLOEXEC
 
     // errno values the accept loop distinguishes (Linux asm-generic/errno-base.h). EWOULDBLOCK == EAGAIN on Linux.
     public const int EINTR = 4;    // interrupted by a signal before a connection was accepted - retry

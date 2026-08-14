@@ -144,7 +144,7 @@ internal class TlsEventPump : IDisposable
             ? long.MaxValue
             : (long)handshakeTimeout.TotalMilliseconds;
 
-        _epollFd = NativeTls.epoll_create1(0);
+        _epollFd = NativeTls.epoll_create1(NativeTls.EPOLL_CLOEXEC);
         if (_epollFd < 0)
         {
             throw new InvalidOperationException($"epoll_create1 failed: {Marshal.GetLastWin32Error()}");
@@ -581,7 +581,7 @@ internal class TlsEventPump : IDisposable
     /// </summary>
     internal virtual int AcceptOne()
     {
-        int fd = NativeTls.accept4(_listenFd, IntPtr.Zero, IntPtr.Zero, NativeTls.SOCK_NONBLOCK);
+        int fd = NativeTls.accept4(_listenFd, IntPtr.Zero, IntPtr.Zero, NativeTls.SOCK_NONBLOCK | NativeTls.SOCK_CLOEXEC);
         return fd >= 0 ? fd : -Marshal.GetLastWin32Error();
     }
 
