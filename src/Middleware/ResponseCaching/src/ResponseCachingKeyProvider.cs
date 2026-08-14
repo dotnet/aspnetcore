@@ -36,7 +36,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         return new string[] { CreateStorageVaryByKey(context) };
     }
 
-    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH
+    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE<delimiter>/PATH
     public string CreateBaseKey(ResponseCachingContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -61,12 +61,14 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
             {
                 builder
                     .Append(request.PathBase.Value)
+                    .Append(KeyDelimiter)
                     .Append(request.Path.Value);
             }
             else
             {
                 builder
                     .AppendUpperInvariant(request.PathBase.Value)
+                    .Append(KeyDelimiter)
                     .AppendUpperInvariant(request.Path.Value);
             }
 
