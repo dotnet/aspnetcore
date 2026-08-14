@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 internal sealed partial class DirectTlsConnection : ITlsConnectionFeature, ITlsHandshakeFeature, ITlsApplicationProtocolFeature, IConnectionSocketFeature
 {
     private Socket? _socket;
+    private readonly object _socketLock = new();
 
     // The ALPN protocol negotiated during the handshake (empty when none was negotiated). Set in the
     // constructor and again at CompleteHandshake once the handshake has actually completed.
@@ -98,23 +99,18 @@ internal sealed partial class DirectTlsConnection : ITlsConnectionFeature, ITlsH
     {
         get
         {
-            if (_socket is { } existing)
+            lock (_socketLock)
             {
-                return existing;
+                if (_socket is { } existing)
+                {
+                    return existing;
+                }
+
+                ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+
+                _socket = new Socket(new SafeSocketHandle((IntPtr)_connectionState.Fd, ownsHandle: false));
+                return _socket;
             }
-
-            ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
-
-            var created = new Socket(new SafeSocketHandle((IntPtr)_connectionState.Fd, ownsHandle: false));
-            if (Interlocked.CompareExchange(ref _socket, created, null) is { } winner)
-            {
-                // Another accessor cached its wrapper first; discard ours (non-owning, so this never touches the
-                // fd) and return the shared instance so callers always see the same Socket.
-                created.Dispose();
-                return winner;
-            }
-
-            return created;
         }
     }
 }

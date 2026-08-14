@@ -118,7 +118,7 @@ public class DirectTlsFunctionalTests
             var feature = context.Features.Get<IConnectionSocketFeature>();
             Assert.NotNull(feature);
 
-            // Two reads must return the identical wrapper (the compare-exchange caches exactly one).
+            // Two reads must return the identical wrapper.
             firstRead = feature.Socket;
             secondRead = feature.Socket;
 

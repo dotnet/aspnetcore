@@ -189,7 +189,10 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         try
         {
             // Close the socket fd of the half-open handshake without the graceful close_notify.
-            _connectionState.Session.Dispose();
+            lock (_socketLock)
+            {
+                _connectionState.Session.Dispose();
+            }
         }
         catch (Exception ex)
         {
@@ -437,7 +440,10 @@ internal sealed partial class DirectTlsConnection : TransportConnection
         //    (the session owns the SafeSocketHandle), so no manual shutdown/close here.
         try
         {
-            _connectionState.Dispose();
+            lock (_socketLock)
+            {
+                _connectionState.Dispose();
+            }
         }
         catch (Exception ex)
         {
