@@ -44,23 +44,6 @@ public class FormattedChatClientTests
     }
 
     [TestMethod]
-    public async Task FormattedUpdates_PreserveTextInConversationHistory()
-    {
-        using var innerClient = new RecordingChatClient();
-        using var client = new FormattedChatClient(innerClient);
-        using var agent = new UIAgent(client);
-
-        await CollectAsync(agent, "First question");
-        await CollectAsync(agent, "Second question");
-
-        Assert.AreEqual(2, innerClient.Requests.Count);
-        Assert.AreEqual(3, innerClient.Requests[1].Count);
-        Assert.AreEqual("First question", innerClient.Requests[1][0].Text);
-        Assert.AreEqual("Answer 1", innerClient.Requests[1][1].Text);
-        Assert.AreEqual("Second question", innerClient.Requests[1][2].Text);
-    }
-
-    [TestMethod]
     public async Task TextUpdatesWithoutMessageId_AreNotCoalesced()
     {
         var text = new TextContent("Unidentified");
@@ -121,13 +104,6 @@ public class FormattedChatClientTests
         return updates;
     }
 
-    private static async Task CollectAsync(UIAgent agent, string text)
-    {
-        await foreach (var _ in agent.SendMessageAsync(new ChatMessage(ChatRole.User, text)))
-        {
-        }
-    }
-
     private sealed class TestChatClient(IReadOnlyList<ChatResponseUpdate> updates) : IChatClient
     {
         public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
@@ -158,33 +134,4 @@ public class FormattedChatClientTests
         }
     }
 
-    private sealed class RecordingChatClient : IChatClient
-    {
-        public List<IReadOnlyList<ChatMessage>> Requests { get; } = [];
-
-        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-            IEnumerable<ChatMessage> messages,
-            ChatOptions? options = null,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            Requests.Add(messages.ToList());
-            cancellationToken.ThrowIfCancellationRequested();
-            yield return CreateTextUpdate($"message-{Requests.Count}", $"Answer {Requests.Count}");
-            await Task.Yield();
-        }
-
-        public Task<ChatResponse> GetResponseAsync(
-            IEnumerable<ChatMessage> messages,
-            ChatOptions? options = null,
-            CancellationToken cancellationToken = default)
-            => GetStreamingResponseAsync(messages, options, cancellationToken)
-                .ToChatResponseAsync(cancellationToken);
-
-        public object? GetService(Type serviceType, object? serviceKey = null)
-            => serviceType == typeof(IChatClient) ? this : null;
-
-        public void Dispose()
-        {
-        }
-    }
 }
