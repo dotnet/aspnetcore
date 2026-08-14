@@ -100,6 +100,57 @@ public class BlockMappingPipelineTests
     }
 
     [Fact]
+    public async Task Process_RichTextSnapshotsWithDifferentMessageIds_EmitSeparateBlocks()
+    {
+        var pipeline = CreatePipeline();
+
+        var firstBlocks = await ProcessAsync(
+            pipeline,
+            CreateRichTextUpdate(
+                "msg-1",
+                "First",
+                [CreateNode<ParagraphNode>(new TextNode("First"))]));
+        var secondBlocks = await ProcessAsync(
+            pipeline,
+            CreateRichTextUpdate(
+                "msg-2",
+                "Second",
+                [CreateNode<ParagraphNode>(new TextNode("Second"))]));
+
+        var firstBlock = Assert.IsType<RichContentBlock>(Assert.Single(firstBlocks));
+        var secondBlock = Assert.IsType<RichContentBlock>(Assert.Single(secondBlocks));
+        Assert.Equal("msg-1", firstBlock.Id);
+        Assert.Equal("First", firstBlock.RawText);
+        Assert.Equal(BlockLifecycleState.Inactive, firstBlock.LifecycleState);
+        Assert.Equal("msg-2", secondBlock.Id);
+        Assert.Equal("Second", secondBlock.RawText);
+    }
+
+    [Fact]
+    public async Task Process_RichTextSnapshotWithTextFallback_EmitsSingleBlock()
+    {
+        var pipeline = CreatePipeline();
+        var update = new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = "msg-1",
+            Contents =
+            [
+                new RichTextContent(
+                    "Formatted",
+                    [CreateNode<ParagraphNode>(new TextNode("Formatted"))]),
+                new TextContent("Formatted"),
+            ],
+        };
+
+        var blocks = await ProcessAsync(pipeline, update);
+
+        var block = Assert.IsType<RichContentBlock>(Assert.Single(blocks));
+        Assert.Equal("Formatted", block.RawText);
+        Assert.IsType<ParagraphNode>(Assert.Single(block.Content));
+    }
+
+    [Fact]
     public async Task Process_UpdateWithoutText_CompletesActiveBlock()
     {
         var pipeline = CreatePipeline();

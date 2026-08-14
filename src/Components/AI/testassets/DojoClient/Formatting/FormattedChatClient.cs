@@ -49,14 +49,6 @@ internal sealed class FormattedChatClient : DelegatingChatClient
                 chunks.Add(textContent.Text ?? string.Empty);
             }
 
-            for (var i = update.Contents.Count - 1; i >= 0; i--)
-            {
-                if (update.Contents[i] is TextContent)
-                {
-                    update.Contents.RemoveAt(i);
-                }
-            }
-
             if (firstTextIndex >= 0)
             {
                 if (!textByMessageId.TryGetValue(update.MessageId, out var text))

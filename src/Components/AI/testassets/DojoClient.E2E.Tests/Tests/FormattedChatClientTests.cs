@@ -35,9 +35,29 @@ public class FormattedChatClientTests
 
         var updates = await CollectAsync(client);
 
+        Assert.AreEqual("message-1", updates[0].MessageId);
+        Assert.AreEqual("message-2", updates[1].MessageId);
+        Assert.AreEqual("message-1", updates[2].MessageId);
         Assert.AreEqual("First", GetRichText(updates[0]).Text);
         Assert.AreEqual("Second", GetRichText(updates[1]).Text);
         Assert.AreEqual("First continued", GetRichText(updates[2]).Text);
+    }
+
+    [TestMethod]
+    public async Task FormattedUpdates_PreserveTextInConversationHistory()
+    {
+        using var innerClient = new RecordingChatClient();
+        using var client = new FormattedChatClient(innerClient);
+        using var agent = new UIAgent(client);
+
+        await CollectAsync(agent, "First question");
+        await CollectAsync(agent, "Second question");
+
+        Assert.AreEqual(2, innerClient.Requests.Count);
+        Assert.AreEqual(3, innerClient.Requests[1].Count);
+        Assert.AreEqual("First question", innerClient.Requests[1][0].Text);
+        Assert.AreEqual("Answer 1", innerClient.Requests[1][1].Text);
+        Assert.AreEqual("Second question", innerClient.Requests[1][2].Text);
     }
 
     [TestMethod]
@@ -87,10 +107,7 @@ public class FormattedChatClientTests
 
     private static RichTextContent GetRichText(ChatResponseUpdate update)
     {
-        Assert.AreEqual(1, update.Contents.Count);
-        var content = update.Contents[0];
-        Assert.IsInstanceOfType(content, typeof(RichTextContent));
-        return (RichTextContent)content;
+        return update.Contents.OfType<RichTextContent>().Single();
     }
 
     private static async Task<List<ChatResponseUpdate>> CollectAsync(IChatClient client)
@@ -102,6 +119,13 @@ public class FormattedChatClientTests
         }
 
         return updates;
+    }
+
+    private static async Task CollectAsync(UIAgent agent, string text)
+    {
+        await foreach (var _ in agent.SendMessageAsync(new ChatMessage(ChatRole.User, text)))
+        {
+        }
     }
 
     private sealed class TestChatClient(IReadOnlyList<ChatResponseUpdate> updates) : IChatClient
@@ -117,6 +141,36 @@ public class FormattedChatClientTests
                 yield return update;
                 await Task.Yield();
             }
+        }
+
+        public Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => GetStreamingResponseAsync(messages, options, cancellationToken)
+                .ToChatResponseAsync(cancellationToken);
+
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => serviceType == typeof(IChatClient) ? this : null;
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class RecordingChatClient : IChatClient
+    {
+        public List<IReadOnlyList<ChatMessage>> Requests { get; } = [];
+
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            Requests.Add(messages.ToList());
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return CreateTextUpdate($"message-{Requests.Count}", $"Answer {Requests.Count}");
+            await Task.Yield();
         }
 
         public Task<ChatResponse> GetResponseAsync(

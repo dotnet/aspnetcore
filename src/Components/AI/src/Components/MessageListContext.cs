@@ -321,7 +321,8 @@ public class MessageListContext
                 continue;
             }
 
-            builder.OpenElement(5, "tr");
+            builder.OpenRegion(5);
+            builder.OpenElement(0, "tr");
             var columnIndex = 0;
             foreach (var rowChild in row.Children)
             {
@@ -330,20 +331,23 @@ public class MessageListContext
                     continue;
                 }
 
-                builder.OpenElement(6, "td");
+                builder.OpenRegion(1);
+                builder.OpenElement(0, "td");
                 if (columnIndex < table.Alignment.Count &&
                     table.Alignment[columnIndex] != TableColumnAlignment.None)
                 {
                     builder.AddAttribute(
-                        7,
+                        1,
                         "class",
                         $"sc-ai-rich-text__table-cell--{table.Alignment[columnIndex].ToString().ToLowerInvariant()}");
                 }
                 RenderRichTextNodes(builder, cell.Children);
                 builder.CloseElement();
+                builder.CloseRegion();
                 columnIndex++;
             }
             builder.CloseElement();
+            builder.CloseRegion();
         }
 
         builder.CloseElement();

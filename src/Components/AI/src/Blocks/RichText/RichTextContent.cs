@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.AI;
 /// <remarks>
 /// Providers can emit a new snapshot as text streams. The block mapping pipeline replaces
 /// the previous snapshot without exposing a partially mutated tree to renderers.
+/// The constructor copies the top-level node list, but the nodes themselves remain shared.
+/// Callers must not mutate nodes after publishing the content.
 /// </remarks>
 public class RichTextContent : AIContent
 {
@@ -18,7 +20,10 @@ public class RichTextContent : AIContent
     /// Initializes a new instance of <see cref="RichTextContent"/>.
     /// </summary>
     /// <param name="text">The plain-text representation of the content.</param>
-    /// <param name="nodes">The structured nodes that represent <paramref name="text"/>.</param>
+    /// <param name="nodes">
+    /// The structured nodes that represent <paramref name="text"/>. The constructor copies this
+    /// list but does not clone the nodes.
+    /// </param>
     public RichTextContent(string text, IReadOnlyList<RichTextNode> nodes)
     {
         ArgumentNullException.ThrowIfNull(text);
