@@ -15,6 +15,9 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     private const char KeyDelimiter = '\x1e';
     // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
     private const char KeySubDelimiter = '\x1f';
+    // Use the group separator for delimiting a name from its value to avoid possible collisions.
+    // A literal '=' cannot be used because it can legitimately appear in decoded header/query names and values.
+    private const char KeyNameValueDelimiter = '\x1d';
 
     private readonly ObjectPool<StringBuilder> _builderPool;
     private readonly ResponseCachingOptions _options;
@@ -75,7 +78,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
         }
     }
 
-    // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue1<subdelimiter>HeaderValue2<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
+    // BaseKey<delimiter>H<delimiter>HeaderName<namevaluedelimiter>HeaderValue1<subdelimiter>HeaderValue2<delimiter>Q<delimiter>QueryName<namevaluedelimiter>QueryValue1<subdelimiter>QueryValue2
     public string CreateStorageVaryByKey(ResponseCachingContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -114,7 +117,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                     var headerValues = requestHeaders[header];
                     builder.Append(KeyDelimiter)
                         .Append(header)
-                        .Append('=');
+                        .Append(KeyNameValueDelimiter);
 
                     var headerValuesArray = headerValues.ToArray();
                     Array.Sort(headerValuesArray, StringComparer.Ordinal);
@@ -152,7 +155,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
 
                         builder.Append(KeyDelimiter)
                             .AppendUpperInvariant(queryArray[i].Key)
-                            .Append('=');
+                            .Append(KeyNameValueDelimiter);
 
                         var queryValueArray = queryArray[i].Value.ToArray();
                         Array.Sort(queryValueArray, StringComparer.Ordinal);
@@ -177,7 +180,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
                         var queryKeyValues = context.HttpContext.Request.Query[queryKey];
                         builder.Append(KeyDelimiter)
                             .Append(queryKey)
-                            .Append('=');
+                            .Append(KeyNameValueDelimiter);
 
                         var queryValueArray = queryKeyValues.ToArray();
                         Array.Sort(queryValueArray, StringComparer.Ordinal);
@@ -206,7 +209,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
 
     internal static void ThrowIfContainsDelimiters(string? value)
     {
-        if (!string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter))
+        if (!string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter, KeyNameValueDelimiter))
         {
             throw new CacheKeyDelimiterException();
         }
