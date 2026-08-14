@@ -13,7 +13,7 @@ public class TextBlockHandlerParagraphTests
 
         TextBlockHandler.RebuildParagraphs(block);
 
-        Assert.Equal("Hello world", Assert.Single(block.Paragraphs));
+        Assert.Equal("Hello world", GetParagraphText(Assert.Single(block.Content)));
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class TextBlockHandlerParagraphTests
 
         TextBlockHandler.RebuildParagraphs(block);
 
-        Assert.Equal(["First", "Second"], block.Paragraphs);
+        Assert.Equal(["First", "Second"], block.Content.Select(GetParagraphText));
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class TextBlockHandlerParagraphTests
 
         TextBlockHandler.RebuildParagraphs(block);
 
-        Assert.Equal("Hello", Assert.Single(block.Paragraphs));
+        Assert.Equal("Hello", GetParagraphText(Assert.Single(block.Content)));
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class TextBlockHandlerParagraphTests
 
         TextBlockHandler.RebuildParagraphs(block);
 
-        Assert.Equal(["First", "Second"], block.Paragraphs);
+        Assert.Equal(["First", "Second"], block.Content.Select(GetParagraphText));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class TextBlockHandlerParagraphTests
 
         TextBlockHandler.RebuildParagraphs(block);
 
-        Assert.Empty(block.Paragraphs);
+        Assert.Empty(block.Content);
     }
 
     [Fact]
@@ -67,6 +67,12 @@ public class TextBlockHandlerParagraphTests
 
         TextBlockHandler.RebuildParagraphs(block);
 
-        Assert.Equal("First\nSecond", Assert.Single(block.Paragraphs));
+        Assert.Equal("First\nSecond", GetParagraphText(Assert.Single(block.Content)));
+    }
+
+    private static string GetParagraphText(RichTextNode node)
+    {
+        var paragraph = Assert.IsType<ParagraphNode>(node);
+        return Assert.IsType<TextNode>(Assert.Single(paragraph.Children)).Text;
     }
 }

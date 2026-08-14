@@ -38,6 +38,8 @@ Microsoft.AspNetCore.Components.AI.BlockMappingContext.UnhandledContentsEnumerat
 Microsoft.AspNetCore.Components.AI.BlockMappingContext.Update.get -> Microsoft.Extensions.AI.ChatResponseUpdate!
 Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
 Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>.BlockMappingResult() -> void
+Microsoft.AspNetCore.Components.AI.BlockQuoteNode
+Microsoft.AspNetCore.Components.AI.BlockQuoteNode.BlockQuoteNode() -> void
 Microsoft.AspNetCore.Components.AI.BlockRenderer<TBlock>
 Microsoft.AspNetCore.Components.AI.BlockRenderer<TBlock>.BlockRenderer() -> void
 Microsoft.AspNetCore.Components.AI.BlockRenderer<TBlock>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<TBlock!>?
@@ -65,6 +67,13 @@ Microsoft.AspNetCore.Components.AI.ChatPage.Placeholder.get -> string?
 Microsoft.AspNetCore.Components.AI.ChatPage.Placeholder.set -> void
 Microsoft.AspNetCore.Components.AI.ChatPage.WelcomeContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.AI.ChatPage.WelcomeContent.set -> void
+Microsoft.AspNetCore.Components.AI.CodeBlockNode
+Microsoft.AspNetCore.Components.AI.CodeBlockNode.Code.get -> string!
+Microsoft.AspNetCore.Components.AI.CodeBlockNode.Code.set -> void
+Microsoft.AspNetCore.Components.AI.CodeBlockNode.CodeBlockNode() -> void
+Microsoft.AspNetCore.Components.AI.CodeBlockNode.CodeBlockNode(string! code, string? language = null) -> void
+Microsoft.AspNetCore.Components.AI.CodeBlockNode.Language.get -> string?
+Microsoft.AspNetCore.Components.AI.CodeBlockNode.Language.set -> void
 Microsoft.AspNetCore.Components.AI.ContentBlock
 Microsoft.AspNetCore.Components.AI.ContentBlock.AuthorName.get -> string?
 Microsoft.AspNetCore.Components.AI.ContentBlock.ContentBlock() -> void
@@ -88,6 +97,84 @@ Microsoft.AspNetCore.Components.AI.ConversationTurn.ConversationTurn() -> void
 Microsoft.AspNetCore.Components.AI.ConversationTurn.Id.get -> string!
 Microsoft.AspNetCore.Components.AI.ConversationTurn.RequestBlocks.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.ContentBlock!>!
 Microsoft.AspNetCore.Components.AI.ConversationTurn.ResponseBlocks.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.ContentBlock!>!
+Microsoft.AspNetCore.Components.AI.DefinitionNode
+Microsoft.AspNetCore.Components.AI.DefinitionNode.DefinitionNode() -> void
+Microsoft.AspNetCore.Components.AI.DefinitionNode.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.DefinitionNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.DefinitionNode.Title.get -> string?
+Microsoft.AspNetCore.Components.AI.DefinitionNode.Title.set -> void
+Microsoft.AspNetCore.Components.AI.DefinitionNode.Url.get -> string!
+Microsoft.AspNetCore.Components.AI.DefinitionNode.Url.set -> void
+Microsoft.AspNetCore.Components.AI.EmphasisNode
+Microsoft.AspNetCore.Components.AI.EmphasisNode.EmphasisNode() -> void
+Microsoft.AspNetCore.Components.AI.FootnoteDefinitionNode
+Microsoft.AspNetCore.Components.AI.FootnoteDefinitionNode.FootnoteDefinitionNode() -> void
+Microsoft.AspNetCore.Components.AI.FootnoteDefinitionNode.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.FootnoteDefinitionNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.FootnoteNode
+Microsoft.AspNetCore.Components.AI.FootnoteNode.FootnoteNode() -> void
+Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode
+Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.FootnoteReferenceNode() -> void
+Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.FootnoteReferenceNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.HeadingNode
+Microsoft.AspNetCore.Components.AI.HeadingNode.HeadingNode() -> void
+Microsoft.AspNetCore.Components.AI.HeadingNode.HeadingNode(int level) -> void
+Microsoft.AspNetCore.Components.AI.HeadingNode.Level.get -> int
+Microsoft.AspNetCore.Components.AI.HeadingNode.Level.set -> void
+Microsoft.AspNetCore.Components.AI.HtmlNode
+Microsoft.AspNetCore.Components.AI.HtmlNode.HtmlNode() -> void
+Microsoft.AspNetCore.Components.AI.HtmlNode.HtmlNode(string! value) -> void
+Microsoft.AspNetCore.Components.AI.HtmlNode.Value.get -> string!
+Microsoft.AspNetCore.Components.AI.HtmlNode.Value.set -> void
+Microsoft.AspNetCore.Components.AI.ImageNode
+Microsoft.AspNetCore.Components.AI.ImageNode.Alt.get -> string?
+Microsoft.AspNetCore.Components.AI.ImageNode.Alt.set -> void
+Microsoft.AspNetCore.Components.AI.ImageNode.ImageNode() -> void
+Microsoft.AspNetCore.Components.AI.ImageNode.ImageNode(string! url, string? alt = null, string? title = null) -> void
+Microsoft.AspNetCore.Components.AI.ImageNode.Title.get -> string?
+Microsoft.AspNetCore.Components.AI.ImageNode.Title.set -> void
+Microsoft.AspNetCore.Components.AI.ImageNode.Url.get -> string!
+Microsoft.AspNetCore.Components.AI.ImageNode.Url.set -> void
+Microsoft.AspNetCore.Components.AI.ImageReferenceNode
+Microsoft.AspNetCore.Components.AI.ImageReferenceNode.Alt.get -> string?
+Microsoft.AspNetCore.Components.AI.ImageReferenceNode.Alt.set -> void
+Microsoft.AspNetCore.Components.AI.ImageReferenceNode.ImageReferenceNode() -> void
+Microsoft.AspNetCore.Components.AI.ImageReferenceNode.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.ImageReferenceNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.ImageReferenceNode.ReferenceKind.get -> Microsoft.AspNetCore.Components.AI.ReferenceKind
+Microsoft.AspNetCore.Components.AI.ImageReferenceNode.ReferenceKind.set -> void
+Microsoft.AspNetCore.Components.AI.InlineCodeNode
+Microsoft.AspNetCore.Components.AI.InlineCodeNode.Code.get -> string!
+Microsoft.AspNetCore.Components.AI.InlineCodeNode.Code.set -> void
+Microsoft.AspNetCore.Components.AI.InlineCodeNode.InlineCodeNode() -> void
+Microsoft.AspNetCore.Components.AI.InlineCodeNode.InlineCodeNode(string! code) -> void
+Microsoft.AspNetCore.Components.AI.LineBreakNode
+Microsoft.AspNetCore.Components.AI.LineBreakNode.LineBreakNode() -> void
+Microsoft.AspNetCore.Components.AI.LinkNode
+Microsoft.AspNetCore.Components.AI.LinkNode.LinkNode() -> void
+Microsoft.AspNetCore.Components.AI.LinkNode.LinkNode(string! url, string? title = null) -> void
+Microsoft.AspNetCore.Components.AI.LinkNode.Title.get -> string?
+Microsoft.AspNetCore.Components.AI.LinkNode.Title.set -> void
+Microsoft.AspNetCore.Components.AI.LinkNode.Url.get -> string!
+Microsoft.AspNetCore.Components.AI.LinkNode.Url.set -> void
+Microsoft.AspNetCore.Components.AI.LinkReferenceNode
+Microsoft.AspNetCore.Components.AI.LinkReferenceNode.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.LinkReferenceNode.Label.set -> void
+Microsoft.AspNetCore.Components.AI.LinkReferenceNode.LinkReferenceNode() -> void
+Microsoft.AspNetCore.Components.AI.LinkReferenceNode.ReferenceKind.get -> Microsoft.AspNetCore.Components.AI.ReferenceKind
+Microsoft.AspNetCore.Components.AI.LinkReferenceNode.ReferenceKind.set -> void
+Microsoft.AspNetCore.Components.AI.ListItemNode
+Microsoft.AspNetCore.Components.AI.ListItemNode.Checked.get -> bool?
+Microsoft.AspNetCore.Components.AI.ListItemNode.Checked.set -> void
+Microsoft.AspNetCore.Components.AI.ListItemNode.ListItemNode() -> void
+Microsoft.AspNetCore.Components.AI.ListNode
+Microsoft.AspNetCore.Components.AI.ListNode.ListNode() -> void
+Microsoft.AspNetCore.Components.AI.ListNode.ListNode(bool ordered, int? start = null) -> void
+Microsoft.AspNetCore.Components.AI.ListNode.Ordered.get -> bool
+Microsoft.AspNetCore.Components.AI.ListNode.Ordered.set -> void
+Microsoft.AspNetCore.Components.AI.ListNode.Start.get -> int?
+Microsoft.AspNetCore.Components.AI.ListNode.Start.set -> void
 Microsoft.AspNetCore.Components.AI.MessageInput
 Microsoft.AspNetCore.Components.AI.MessageInput.AgentContext.get -> Microsoft.AspNetCore.Components.AI.AgentContext!
 Microsoft.AspNetCore.Components.AI.MessageInput.AgentContext.set -> void
@@ -113,11 +200,49 @@ Microsoft.AspNetCore.Components.AI.MessageList.MessageList() -> void
 Microsoft.AspNetCore.Components.AI.MessageListContext
 Microsoft.AspNetCore.Components.AI.MessageListContext.MessageListContext() -> void
 Microsoft.AspNetCore.Components.AI.MessageListContext.RenderBlock(Microsoft.AspNetCore.Components.AI.ContentBlock! block) -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.AI.ParagraphNode
+Microsoft.AspNetCore.Components.AI.ParagraphNode.ParagraphNode() -> void
+Microsoft.AspNetCore.Components.AI.ReferenceKind
+Microsoft.AspNetCore.Components.AI.ReferenceKind.Collapsed = 1 -> Microsoft.AspNetCore.Components.AI.ReferenceKind
+Microsoft.AspNetCore.Components.AI.ReferenceKind.Full = 2 -> Microsoft.AspNetCore.Components.AI.ReferenceKind
+Microsoft.AspNetCore.Components.AI.ReferenceKind.Shortcut = 0 -> Microsoft.AspNetCore.Components.AI.ReferenceKind
 Microsoft.AspNetCore.Components.AI.RichContentBlock
 Microsoft.AspNetCore.Components.AI.RichContentBlock.AppendText(string! text) -> void
-Microsoft.AspNetCore.Components.AI.RichContentBlock.Paragraphs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.AspNetCore.Components.AI.RichContentBlock.Content.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.RichTextNode!>!
 Microsoft.AspNetCore.Components.AI.RichContentBlock.RawText.get -> string!
 Microsoft.AspNetCore.Components.AI.RichContentBlock.RichContentBlock() -> void
+Microsoft.AspNetCore.Components.AI.RichTextContent
+Microsoft.AspNetCore.Components.AI.RichTextContent.Nodes.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.RichTextNode!>!
+Microsoft.AspNetCore.Components.AI.RichTextContent.RichTextContent(string! text, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.RichTextNode!>! nodes) -> void
+Microsoft.AspNetCore.Components.AI.RichTextContent.Text.get -> string!
+Microsoft.AspNetCore.Components.AI.RichTextNode
+Microsoft.AspNetCore.Components.AI.RichTextNode.AddChild(Microsoft.AspNetCore.Components.AI.RichTextNode! child) -> void
+Microsoft.AspNetCore.Components.AI.RichTextNode.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.RichTextNode!>!
+Microsoft.AspNetCore.Components.AI.RichTextNode.RichTextNode() -> void
+Microsoft.AspNetCore.Components.AI.StrikethroughNode
+Microsoft.AspNetCore.Components.AI.StrikethroughNode.StrikethroughNode() -> void
+Microsoft.AspNetCore.Components.AI.StrongNode
+Microsoft.AspNetCore.Components.AI.StrongNode.StrongNode() -> void
+Microsoft.AspNetCore.Components.AI.TableCellNode
+Microsoft.AspNetCore.Components.AI.TableCellNode.TableCellNode() -> void
+Microsoft.AspNetCore.Components.AI.TableColumnAlignment
+Microsoft.AspNetCore.Components.AI.TableColumnAlignment.Center = 2 -> Microsoft.AspNetCore.Components.AI.TableColumnAlignment
+Microsoft.AspNetCore.Components.AI.TableColumnAlignment.Left = 1 -> Microsoft.AspNetCore.Components.AI.TableColumnAlignment
+Microsoft.AspNetCore.Components.AI.TableColumnAlignment.None = 0 -> Microsoft.AspNetCore.Components.AI.TableColumnAlignment
+Microsoft.AspNetCore.Components.AI.TableColumnAlignment.Right = 3 -> Microsoft.AspNetCore.Components.AI.TableColumnAlignment
+Microsoft.AspNetCore.Components.AI.TableNode
+Microsoft.AspNetCore.Components.AI.TableNode.Alignment.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.AI.TableColumnAlignment>!
+Microsoft.AspNetCore.Components.AI.TableNode.Alignment.set -> void
+Microsoft.AspNetCore.Components.AI.TableNode.TableNode() -> void
+Microsoft.AspNetCore.Components.AI.TableRowNode
+Microsoft.AspNetCore.Components.AI.TableRowNode.TableRowNode() -> void
+Microsoft.AspNetCore.Components.AI.TextNode
+Microsoft.AspNetCore.Components.AI.TextNode.Text.get -> string!
+Microsoft.AspNetCore.Components.AI.TextNode.Text.set -> void
+Microsoft.AspNetCore.Components.AI.TextNode.TextNode() -> void
+Microsoft.AspNetCore.Components.AI.TextNode.TextNode(string! text) -> void
+Microsoft.AspNetCore.Components.AI.ThematicBreakNode
+Microsoft.AspNetCore.Components.AI.ThematicBreakNode.ThematicBreakNode() -> void
 Microsoft.AspNetCore.Components.AI.UIAgent
 Microsoft.AspNetCore.Components.AI.UIAgent.Dispose() -> void
 Microsoft.AspNetCore.Components.AI.UIAgent.SendMessageAsync(Microsoft.Extensions.AI.ChatMessage! message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.AspNetCore.Components.AI.ContentBlock!>!

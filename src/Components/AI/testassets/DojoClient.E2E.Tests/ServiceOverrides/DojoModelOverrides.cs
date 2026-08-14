@@ -14,6 +14,9 @@ internal class DojoModelOverrides
     public static void AgenticChat(IServiceCollection services)
         => AddRecordedModel(services, "AgenticChat.recording.json");
 
+    public static void AgenticChatRichText(IServiceCollection services)
+        => AddRecordedModel(services, "AgenticChatRichText.recording.json");
+
     private static void AddRecordedModel(IServiceCollection services, string recordingFileName)
     {
         services.AddSingleton(_ => RecordedScript.Load(recordingFileName));
