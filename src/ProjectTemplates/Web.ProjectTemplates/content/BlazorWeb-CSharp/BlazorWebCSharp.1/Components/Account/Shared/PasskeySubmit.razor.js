@@ -40,12 +40,13 @@ async function requestCredential(email, mediation, signal) {
 customElements.define('passkey-submit', class extends HTMLElement {
     static formAssociated = true;
 
-    connectedCallback() {
+    async connectedCallback() {
         this.internals = this.attachInternals();
         this.attrs = {
             operation: this.getAttribute('operation'),
             name: this.getAttribute('name'),
             emailName: this.getAttribute('email-name'),
+            unknownCredentialSignalOptions: this.getAttribute('unknown-credential-signal-options'),
         };
 
         this.internals.form.addEventListener('submit', (event) => {
@@ -55,7 +56,14 @@ customElements.define('passkey-submit', class extends HTMLElement {
             }
         });
 
-        this.tryAutofillPasskey();
+        try {
+            if (this.attrs.unknownCredentialSignalOptions) {
+                const options = JSON.parse(this.attrs.unknownCredentialSignalOptions);
+                await PublicKeyCredential.signalUnknownCredential?.(options);
+            }
+        } finally {
+            this.tryAutofillPasskey();
+        }
     }
 
     disconnectedCallback() {

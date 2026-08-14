@@ -98,16 +98,132 @@ public class PasskeyHandlerSignalTest
         Assert.Equal($"The user entity ID 'some-other-id' does not match the ID '{user.Id}' of the specified user.", ex.Message);
     }
 
+    [Fact]
+    public async Task CanMakeUnknownPasskeySignalOptions()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var credentialId = (byte[])[1, 2, 3];
+        var userManager = SetupUserManager(user);
+        var handler = CreateHandler(userManager);
+
+        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+            CreateAssertionCredentialJson(credentialId),
+            CreateHttpContext());
+
+        Assert.NotNull(result);
+        var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
+        Assert.Equal("contoso.com", options.GetProperty("rpId").GetString());
+        Assert.Equal(Base64Url.EncodeToString(credentialId), options.GetProperty("credentialId").GetString());
+        Mock.Get(userManager).Verify(
+            m => m.FindByPasskeyIdAsync(It.Is<byte[]>(id => id.SequenceEqual(credentialId))),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task MakeUnknownPasskeySignalOptionsReturnsNullWhenCredentialBelongsToAUser()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var credentialId = (byte[])[1, 2, 3];
+        var userManager = SetupUserManagerMock(user);
+        userManager
+            .Setup(m => m.FindByPasskeyIdAsync(It.Is<byte[]>(id => id.SequenceEqual(credentialId))))
+            .ReturnsAsync(user);
+        var handler = CreateHandler(userManager.Object);
+
+        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+            CreateAssertionCredentialJson(credentialId),
+            CreateHttpContext());
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task MakeUnknownPasskeySignalOptionsReturnsNullForMalformedJson()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var handler = CreateHandler(SetupUserManager(user));
+
+        var result = await handler.MakeUnknownPasskeySignalOptionsAsync("{", CreateHttpContext());
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task MakeUnknownPasskeySignalOptionsReturnsNullWhenStoreDoesNotSupportPasskeys()
+    {
+        var handler = CreateHandler(MockHelpers.TestUserManager<PocoUser>());
+
+        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+            CreateAssertionCredentialJson([1, 2, 3]),
+            CreateHttpContext());
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task CanMakeUnknownPasskeySignalOptionsFromAttestationCredential()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var credentialId = (byte[])[1, 2, 3];
+        var handler = CreateHandler(SetupUserManager(user));
+
+        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+            CreateAttestationCredentialJson(credentialId),
+            CreateHttpContext());
+
+        Assert.NotNull(result);
+        var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
+        Assert.Equal(Base64Url.EncodeToString(credentialId), options.GetProperty("credentialId").GetString());
+    }
+
+    [Fact]
+    public async Task MakeUnknownPasskeySignalOptionsUsesConfiguredServerDomain()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var handler = CreateHandler(SetupUserManager(user), new() { ServerDomain = "fabrikam.com" });
+
+        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+            CreateAssertionCredentialJson([1, 2, 3]),
+            CreateHttpContext("contoso.com"));
+
+        Assert.NotNull(result);
+        var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
+        Assert.Equal("fabrikam.com", options.GetProperty("rpId").GetString());
+    }
+
+    [Fact]
+    public async Task MakeUnknownPasskeySignalOptionsUsesUnpaddedBase64UrlCredentialId()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var credentialId = (byte[])[251, 255];
+        var handler = CreateHandler(SetupUserManager(user));
+
+        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+            CreateAssertionCredentialJson(credentialId),
+            CreateHttpContext());
+
+        Assert.NotNull(result);
+        var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
+        var encodedCredentialId = options.GetProperty("credentialId").GetString();
+        Assert.Equal("-_8", encodedCredentialId);
+        Assert.NotNull(encodedCredentialId);
+        Assert.DoesNotContain('=', encodedCredentialId);
+    }
+
     private static PasskeyHandler<PocoUser> CreateHandler(UserManager<PocoUser> userManager, IdentityPasskeyOptions? options = null)
         => new(userManager, Options.Create(options ?? new IdentityPasskeyOptions()));
 
     private static UserManager<PocoUser> SetupUserManager(PocoUser user, params UserPasskeyInfo[] passkeys)
+        => SetupUserManagerMock(user, passkeys).Object;
+
+    private static Mock<UserManager<PocoUser>> SetupUserManagerMock(PocoUser user, params UserPasskeyInfo[] passkeys)
     {
         var manager = MockHelpers.MockUserManager<PocoUser>();
         manager.Setup(m => m.SupportsUserPasskey).Returns(true);
         manager.Setup(m => m.GetUserIdAsync(user)).ReturnsAsync(user.Id);
         manager.Setup(m => m.GetPasskeysAsync(user)).ReturnsAsync(passkeys);
-        return manager.Object;
+        manager.Setup(m => m.FindByPasskeyIdAsync(It.IsAny<byte[]>())).ReturnsAsync((PocoUser?)null);
+        return manager;
     }
 
     private static HttpContext CreateHttpContext(string host = "contoso.com", int? port = null)
@@ -127,4 +243,35 @@ public class PasskeyHandlerSignalTest
 
     private static UserPasskeyInfo CreatePasskey(byte[] credentialId)
         => new(credentialId, [], default, 0, null, false, false, false, [], []);
+
+    private static string CreateAssertionCredentialJson(byte[] credentialId)
+        => CreateCredentialJson(credentialId, new
+        {
+            clientDataJSON = "",
+            authenticatorData = "",
+            signature = "",
+            userHandle = (string?)null,
+        });
+
+    private static string CreateAttestationCredentialJson(byte[] credentialId)
+        => CreateCredentialJson(credentialId, new
+        {
+            clientDataJSON = "",
+            attestationObject = "",
+            transports = Array.Empty<string>(),
+        });
+
+    private static string CreateCredentialJson(byte[] credentialId, object response)
+    {
+        var encodedCredentialId = Base64Url.EncodeToString(credentialId);
+        return JsonSerializer.Serialize(new
+        {
+            id = encodedCredentialId,
+            rawId = encodedCredentialId,
+            response,
+            type = "public-key",
+            clientExtensionResults = new { },
+            authenticatorAttachment = "platform",
+        });
+    }
 }

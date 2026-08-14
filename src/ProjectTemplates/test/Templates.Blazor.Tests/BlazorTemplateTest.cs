@@ -166,12 +166,33 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             // the browser version bundled with Playwright.
             await page.AddInitScriptAsync("""
                 window.__passkeySignals = [];
+                window.__passkeyAutofillStarted = false;
+                window.__resolveUnknownCredentialSignal = null;
+                if (navigator.credentials) {
+                    const originalGet = navigator.credentials.get.bind(navigator.credentials);
+                    navigator.credentials.get = async function (options) {
+                        const credential = await originalGet(options);
+                        sessionStorage.setItem('__passkeyCredentialJson', JSON.stringify(credential));
+                        return credential;
+                    };
+                }
                 if (window.PublicKeyCredential) {
-                    for (const name of ['signalAllAcceptedCredentials', 'signalCurrentUserDetails']) {
-                        const original = window.PublicKeyCredential[name];
+                    if (sessionStorage.getItem('__forcePasskeyAutofillOnce')) {
+                        sessionStorage.removeItem('__forcePasskeyAutofillOnce');
+                        window.PublicKeyCredential.isConditionalMediationAvailable = () => {
+                            window.__passkeyAutofillStarted = true;
+                            return new Promise(() => {});
+                        };
+                    } else if (sessionStorage.getItem('__skipPasskeyAutofillOnce')) {
+                        sessionStorage.removeItem('__skipPasskeyAutofillOnce');
+                        window.PublicKeyCredential.isConditionalMediationAvailable = () => Promise.resolve(false);
+                    }
+                    for (const name of ['signalAllAcceptedCredentials', 'signalCurrentUserDetails', 'signalUnknownCredential']) {
                         window.PublicKeyCredential[name] = function (options) {
                             window.__passkeySignals.push({ name, options });
-                            return original ? original.call(this, options) : Promise.resolve();
+                            return name === 'signalUnknownCredential'
+                                ? new Promise(resolve => window.__resolveUnknownCredentialSignal = resolve)
+                                : Promise.resolve();
                         };
                     }
                 }
@@ -270,6 +291,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 var storedCredentials = await GetAuthenticatorCredentialsAsync(cdpSession, authenticatorId);
                 Assert.Single(storedCredentials);
                 Assert.Equal(storedCredentials, acceptedCredentials);
+                var passkeyCredentialId = storedCredentials[0];
 
                 var userDetails = await GetPasskeySignalAsync(page, "signalCurrentUserDetails");
                 Assert.Equal(new Uri(page.Url).Host, userDetails.GetProperty("rpId").GetString());
@@ -331,6 +353,35 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 await page.WaitForSelectorAsync("text=Passkey deleted successfully");
 
                 Assert.Empty(await GetSignalledCredentialIdsAsync(page));
+
+                // Submit the revoked credential again. The unknown credential signal remains pending,
+                // so a conditional autofill request can only start if the template gets the ordering wrong.
+                await page.EvaluateAsync("() => sessionStorage.setItem('__skipPasskeyAutofillOnce', 'true')");
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Logout"));
+
+                await page.EvaluateAsync("""
+                    () => {
+                        const credentialJson = sessionStorage.getItem('__passkeyCredentialJson');
+                        if (!credentialJson) {
+                            throw new Error('The revoked passkey credential was not captured.');
+                        }
+                        sessionStorage.setItem('__forcePasskeyAutofillOnce', 'true');
+                        navigator.credentials.get = () => Promise.resolve(JSON.parse(credentialJson));
+                    }
+                    """);
+
+                await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await page.ClickAsync("text=Log in with a passkey");
+                await page.WaitForSelectorAsync("text=Error: Invalid login attempt.");
+                var unknownCredential = await GetPasskeySignalAsync(page, "signalUnknownCredential");
+                Assert.Equal(new Uri(page.Url).Host, unknownCredential.GetProperty("rpId").GetString());
+                Assert.Equal(passkeyCredentialId, unknownCredential.GetProperty("credentialId").GetString());
+                Assert.False(await page.EvaluateAsync<bool>("() => window.__passkeyAutofillStarted"));
+
+                await page.EvaluateAsync("() => window.__resolveUnknownCredentialSignal()");
+                await page.WaitForFunctionAsync("() => window.__passkeyAutofillStarted");
             }
         }
 

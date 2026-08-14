@@ -191,6 +191,48 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         };
     }
 
+    /// <inheritdoc />
+    public async Task<UnknownPasskeySignalOptionsResult?> MakeUnknownPasskeySignalOptionsAsync(string credentialJson, HttpContext httpContext)
+    {
+        if (!_userManager.SupportsUserPasskey)
+        {
+            return null;
+        }
+
+        PublicKeyCredentialId? credential;
+        try
+        {
+            credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialId);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+
+        if (credential is null)
+        {
+            return null;
+        }
+
+        var user = await _userManager.FindByPasskeyIdAsync(credential.Id.ToArray()).ConfigureAwait(false);
+        if (user is not null)
+        {
+            return null;
+        }
+
+        var options = new UnknownPasskeySignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            CredentialId = credential.Id,
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.UnknownPasskeySignalOptions);
+
+        return new UnknownPasskeySignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
+    }
+
     /// <inheritdoc/>
     public async Task<PasskeyAttestationResult> PerformAttestationAsync(PasskeyAttestationContext context)
     {

@@ -598,6 +598,38 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
+    /// Generates options used to signal that a passkey credential is unknown to the server.
+    /// </summary>
+    /// <remarks>
+    /// The returned JSON is accepted by the <c>PublicKeyCredential.signalUnknownCredential()</c> JavaScript API.
+    /// Calling that API permanently deletes the passkey from the browser's passkey provider. This method only
+    /// returns options when no user on the server has the credential.
+    /// </remarks>
+    /// <param name="credentialJson">The JSON representation of the passkey credential.</param>
+    /// <returns>
+    /// A JSON string representing the unknown passkey signal options when the credential is unknown to the server,
+    /// otherwise <see langword="null"/>.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="credentialJson"/> is <see langword="null"/> or empty.</exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalUnknownCredential?.(signalOptions);
+    /// </code>
+    /// </example>
+    public virtual async Task<string?> MakeUnknownPasskeySignalOptionsAsync(string credentialJson)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+
+        var result = await _passkeyHandler.MakeUnknownPasskeySignalOptionsAsync(credentialJson, Context);
+        return result?.SignalOptionsJson;
+    }
+
+    /// <summary>
     /// Performs passkey attestation for the given <paramref name="credentialJson"/>.
     /// </summary>
     /// <remarks>

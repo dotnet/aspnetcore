@@ -54,6 +54,23 @@ public interface IPasskeyHandler<TUser>
         => throw new NotSupportedException($"'{GetType()}' does not support generating known passkeys signal options.");
 
     /// <summary>
+    /// Generates options used to signal that a passkey credential is unknown to the server.
+    /// </summary>
+    /// <remarks>
+    /// The signal permanently deletes the passkey from the browser's passkey provider. A handler must only return
+    /// options when the credential is not registered to any user on the server.
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </remarks>
+    /// <param name="credentialJson">The JSON representation of the passkey credential.</param>
+    /// <param name="httpContext">The HTTP context associated with the request.</param>
+    /// <returns>
+    /// An <see cref="UnknownPasskeySignalOptionsResult"/> when the credential is unknown to the server,
+    /// otherwise <see langword="null"/>.
+    /// </returns>
+    Task<UnknownPasskeySignalOptionsResult?> MakeUnknownPasskeySignalOptionsAsync(string credentialJson, HttpContext httpContext)
+        => Task.FromResult<UnknownPasskeySignalOptionsResult?>(null);
+
+    /// <summary>
     /// Performs passkey attestation using the provided <see cref="PasskeyAttestationContext"/>.
     /// </summary>
     /// <param name="context">The context containing necessary information for passkey attestation.</param>
