@@ -602,6 +602,14 @@ internal class TlsEventPump : IDisposable
     /// </summary>
     internal virtual void ProcessAcceptedSocket(Socket accepted)
     {
+        // Match Kestrel's MaxConcurrentConnections: accept, but if over limit reject the connection
+        if (!_connectionTracker.TryAcquireHandshake())
+        {
+            _logger.LogDebug("Rejecting connection: in-flight connection cap reached");
+            accepted.Dispose();
+            return;
+        }
+
         // The accepted fd is already non-blocking (accept4 was called with SOCK_NONBLOCK), so the session can
         // drive readiness via epoll. Only TCP_NODELAY remains to configure for low latency.
         if (_noDelay)
@@ -628,6 +636,7 @@ internal class TlsEventPump : IDisposable
         {
             _logger.LogDebug(ex, "Failed to initialize TLS session for fd={Fd}", clientFd);
             session.Dispose();
+            _connectionTracker.ReleaseHandshake();
             return;
         }
 
@@ -644,15 +653,7 @@ internal class TlsEventPump : IDisposable
             int errno = Marshal.GetLastWin32Error();
             _logger.LogWarning("epoll_ctl ADD failed for handshaking fd={Fd}: errno={Errno}", clientFd, errno);
             session.Dispose();
-            return;
-        }
-
-        // match Kestrel's MaxConcurrentConnections: accept, but if over limit reject the connection.
-        if (!_connectionTracker.TryAcquireHandshake())
-        {
-            _logger.LogDebug("Rejecting fd={Fd}: in-flight connection cap reached", clientFd);
-            NativeTls.epoll_ctl(_epollFd, NativeTls.EPOLL_CTL_DEL, clientFd, IntPtr.Zero);
-            session.Dispose();
+            _connectionTracker.ReleaseHandshake();
             return;
         }
 
