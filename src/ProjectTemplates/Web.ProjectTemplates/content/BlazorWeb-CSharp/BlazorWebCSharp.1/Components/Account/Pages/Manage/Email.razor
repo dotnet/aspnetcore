@@ -20,7 +20,6 @@
 <div class="row">
     <div class="col-xl-6">
         <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
-            <AntiforgeryToken />
         </form>
         <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
@@ -64,17 +63,22 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
     [SupplyParameterFromForm(FormName = "change-email")]
     private InputModel Input { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
         Input ??= new();
 
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -94,7 +98,7 @@
 
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -119,7 +123,7 @@
 
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 

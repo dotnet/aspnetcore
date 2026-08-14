@@ -26,6 +26,9 @@ public class Program
 
         builder.Services.AddValidation();
 
+        // Interactive host registers the gate so the async validation E2E tests control settling deterministically.
+        builder.Services.AddSingleton<BasicTestApp.FormsTest.AsyncValidationGate>();
+
         builder.RootComponents.Add<HeadOutlet>("head::after");
         builder.RootComponents.Add<Index>("root");
         builder.RootComponents.RegisterForJavaScript<DynamicallyAddedRootComponent>("my-dynamic-root-component");
@@ -50,8 +53,8 @@ public class Program
 
         builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
-        builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(_ =>
-            new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"]));
+        builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>
+            new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"], s.GetService<IJSRuntime>()));
 
         var host = builder.Build();
         ConfigureCulture(host);

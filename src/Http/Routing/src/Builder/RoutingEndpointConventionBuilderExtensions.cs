@@ -199,7 +199,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     }
 
     /// <summary>
-    /// Configures <see cref="FormOptionsMetadata"/> for all endpoints produced
+    /// Configures <see cref="IFormOptionsMetadata"/> for all endpoints produced
     /// on the target <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>

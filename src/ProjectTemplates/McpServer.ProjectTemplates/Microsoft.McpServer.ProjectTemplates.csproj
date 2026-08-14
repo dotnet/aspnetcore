@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageId>Microsoft.McpServer.ProjectTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
+    <Description>MCP Server Template Pack for Microsoft Template Engine</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Lists the versions of dependencies not built in this repo. -->
+    <GeneratedContentProperties>
+      DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+      MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
+      ModelContextProtocolVersion=$(ModelContextProtocolVersion);
+      ModelContextProtocolAspNetCoreVersion=$(ModelContextProtocolAspNetCoreVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <GeneratedContent Include="McpServer-Local-CSharp.csproj.in" OutputPath="content/McpServer-CSharp/local/McpServer-CSharp.csproj" />
+    <GeneratedContent Include="McpServer-Remote-CSharp.csproj.in" OutputPath="content/McpServer-CSharp/remote/McpServer-CSharp.csproj" />
+  </ItemGroup>
+
+</Project>

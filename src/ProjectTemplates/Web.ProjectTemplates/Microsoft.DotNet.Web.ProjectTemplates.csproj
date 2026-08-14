@@ -17,13 +17,20 @@
       MicrosoftEntityFrameworkCoreDesignVersion=$(MicrosoftEntityFrameworkCoreDesignVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
       MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
+      MicrosoftDataSqlClientExtensionsAzureVersion=$(MicrosoftDataSqlClientExtensionsAzureVersion);
       MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
       MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
       MicrosoftExtensionsHttpVersion=$(MicrosoftExtensionsHttpVersion);
+      MicrosoftExtensionsHttpResilienceVersion=$(MicrosoftExtensionsHttpResilienceVersion);
+      MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
       MicrosoftIdentityWebVersion=$(MicrosoftIdentityWebVersion);
       MicrosoftIdentityWebGraphServiceClientVersion=$(MicrosoftIdentityWebGraphServiceClientVersion);
       MicrosoftIdentityWebUIVersion=$(MicrosoftIdentityWebUIVersion);
       MicrosoftIdentityWebDownstreamApiVersion=$(MicrosoftIdentityWebDownstreamApiVersion);
+      OpenTelemetryExporterOpenTelemetryProtocolVersion=$(OpenTelemetryExporterOpenTelemetryProtocolVersion);
+      OpenTelemetryExtensionsHostingVersion=$(OpenTelemetryExtensionsHostingVersion);
+      OpenTelemetryInstrumentationHttpVersion=$(OpenTelemetryInstrumentationHttpVersion);
+      OpenTelemetryInstrumentationRuntimeVersion=$(OpenTelemetryInstrumentationRuntimeVersion);
       SystemNetHttpJsonVersion=$(SystemNetHttpJsonVersion);
       MicrosoftGraphVersion=$(MicrosoftGraphVersion);
     </GeneratedContentProperties>
@@ -43,6 +50,7 @@
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\OpenIdConnect\src\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Components\Gateway\src\Microsoft.AspNetCore.Components.Gateway.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />
@@ -63,8 +71,9 @@
     <GeneratedContent Include="Worker-FSharp.fsproj.in" OutputPath="content/Worker-FSharp/Company.Application1.fsproj" />
     <GeneratedContent Include="BlazorWebCSharp.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1/BlazorWebCSharp.1.csproj" />
     <GeneratedContent Include="BlazorWebCSharp.Client.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj" />
+    <GeneratedContent Include="BlazorWasmServiceDefaults-CSharp.csproj.in" OutputPath="content/BlazorWasmServiceDefaults-CSharp/BlazorWasm.ServiceDefaults1.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/ComponentsWebAssembly-CSharp.csproj" />
-    <GeneratedContent Include="WebWorker-CSharp.csproj.in" OutputPath="content/WebWorker-CSharp/Company.WebWorker1.csproj" />
+    <GeneratedContent Include="BlazorWebWorker-CSharp.csproj.in" OutputPath="content/BlazorWebWorker-CSharp/Company.WebWorker1.csproj" />
   </ItemGroup>
 
 </Project>

@@ -9,7 +9,7 @@ internal sealed class UpgradeFeature : IHttpUpgradeFeature
 {
     public bool IsUpgradableRequest => false;
 
-    // TestHost provides an IHttpWebSocketFeature so it wont call UpgradeAsync()
+    // TestHost provides an IHttpWebSocketFeature so it won't call UpgradeAsync()
     public Task<Stream> UpgradeAsync()
     {
         throw new NotSupportedException();

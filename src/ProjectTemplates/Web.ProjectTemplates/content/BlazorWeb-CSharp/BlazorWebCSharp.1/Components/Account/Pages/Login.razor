@@ -82,6 +82,9 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
 
@@ -90,6 +93,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        errorMessage = IdentityStatusMessage;
+        IdentityStatusMessage = null;
         Input ??= new();
 
         editContext = new EditContext(Input);
@@ -118,7 +123,7 @@
         else
         {
             // If doing a password sign-in, validate the form.
-            if (!editContext.Validate())
+            if (!await editContext.ValidateAsync())
             {
                 return;
             }

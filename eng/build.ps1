@@ -200,6 +200,9 @@ param(
     # Intentionally lowercase as tools.ps1 depends on it
     [switch]$fromVMR,
 
+    # Passed through to tools.ps1 MSBuild function
+    [string]$warnNotAsError = '',
+
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
@@ -338,12 +341,6 @@ $performDotnetBuild = $msBuildEngine -ne 'vs' -and ($BuildJava -or $BuildManaged
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
-# Though VS Code may indicate $nodeReuse is unused, tools.ps1 uses them.
-
-# Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
-$nodeReuse = $false
-$env:MSBUILDDISABLENODEREUSE=1
-
 # Ensure passing neither -bl nor -nobl on CI avoids errors in tools.ps1. This is needed because both parameters are
 # $false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
 if ($CI -and -not $excludeCIBinarylog) {
@@ -412,6 +409,23 @@ function LocateJava {
     if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
         Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
     }
+}
+
+function GetMSBuildBinaryLogCommandLineArgument($arguments) {
+  foreach ($argument in $arguments) {
+    if ($argument -ne $null) {
+      $arg = $argument.Trim()
+      if ($arg.StartsWith('/bl:', "OrdinalIgnoreCase")) {
+        return $arg.Substring('/bl:'.Length)
+      }
+
+      if ($arg.StartsWith('/binaryLogger:', 'OrdinalIgnoreCase')) {
+        return $arg.Substring('/binaryLogger:'.Length)
+      }
+    }
+  }
+
+  return $null
 }
 
 # Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks

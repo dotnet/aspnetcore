@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestRunnerName>Microsoft.Testing.Platform</TestRunnerName>
+    <TestCaptureOutput>false</TestCaptureOutput>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
+    <TestRunnerAdditionalArguments>--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --filter "TestCategory!=Quarantined"</TestRunnerAdditionalArguments>
+    <IsPackable>false</IsPackable>
+    <!-- MSTest.TestAdapter must be listed as an explicit PackageReference (not Reference) so
+         the version is pinned to MSTest.TestFramework; DisablePackageReferenceRestrictions
+         allows that explicit PackageReference. -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <!-- NETSDK1023: SDK warns about explicit MSTest.TestAdapter PackageReference; we want the
+         explicit one so the version is pinned to MSTest.TestFramework. -->
+    <!-- MSTEST0001: Parallelism analyzer requires an explicit assembly-level declaration.
+         This project intentionally retains MSTest's sequential default for now. -->
+    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="MSTest.TestFramework" />
+    <Reference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <Reference Include="Microsoft.Playwright" />
+  </ItemGroup>
+
+  <!-- MSTest.TestAdapter is implicitly referenced by the SDK for test projects.
+       We list it as an explicit PackageReference (not Reference, to avoid the aspnetcore
+       custom resolver replacing it) so the version is pinned to match MSTest.TestFramework. -->
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <ProjectReference Include="../TestApp/TestApp.csproj">
+      <E2EApp>true</E2EApp>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!--
+    Development layout: apply the source generator as an analyzer from the local project.
+    When the library is consumed via NuGet the generator is picked up automatically from
+    the package's analyzers/dotnet/cs/ folder instead.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="../../gen/Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'" />
+
+  <Target Name="_PreparePublishedE2EApps"
+          AfterTargets="Publish"
+          Condition="'$(_ImportComponentsTestingTargets)' == 'true'">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="PrepareE2EApps"
+             Properties="_E2EIsPublishing=true;E2EAppMode=publish;PublishDir=$(PublishDir)"
+             RemoveProperties="NoBuild" />
+  </Target>
+
+</Project>

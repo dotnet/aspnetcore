@@ -36,6 +36,7 @@ source_build=''
 product_build=''
 from_vmr=''
 warn_as_error=true
+warn_not_as_error=''
 from_vmr=''
 
 source "$DIR/common/native/init-os-and-arch.sh"
@@ -82,6 +83,7 @@ Options:
     --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
     --warnAsError                     Sets warnaserror msbuild parameter: 'true' or 'false'
+    --warnNotAsError                  Sets a semi-colon delimited list of warning codes that should not be treated as errors
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
@@ -258,6 +260,11 @@ while [[ $# -gt 0 ]]; do
             [ -z "${1:-}" ] && __error "Missing value for parameter --warnaserror" && __usage
             warn_as_error="${1:-}"
             ;;
+        -warnnotaserror)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --warnNotAsError" && __usage
+            warn_not_as_error="${1:-}"
+            ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
             ;;
@@ -354,10 +361,6 @@ fi
 
 # Initialize global variables need to be set before the import of Arcade is imported
 restore=$run_restore
-
-# Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
-nodeReuse=false
-export MSBUILDDISABLENODEREUSE=1
 
 # Ensure passing neither --bl nor --nobl on CI avoids errors in tools.sh. This is needed because we set both variables
 # to false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)

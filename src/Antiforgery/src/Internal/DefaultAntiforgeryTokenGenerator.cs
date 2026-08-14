@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 
@@ -147,13 +148,12 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
         if (authenticatedIdentity != null)
         {
-            if (requestToken.ClaimUid is null)
+            extractedClaimUidBytes = _claimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
+
+            if (!extractedClaimUidBytes)
             {
+                // User has no extractable claims - fall back to username-based validation
                 currentUsername = authenticatedIdentity.Name ?? string.Empty;
-            }
-            else
-            {
-                extractedClaimUidBytes = _claimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
             }
         }
 
@@ -168,13 +168,17 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
 
         if (!comparer.Equals(requestToken.Username, currentUsername))
         {
-            message = Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername);
+            message = IsTokenForAuthenticatedUserButCurrentUserIsNot(authenticatedIdentity, requestToken)
+                ? Resources.AntiforgeryToken_UnauthenticatedUser
+                : Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername);
             return false;
         }
 
         if (!AreIdenticalClaimUids(requestToken, extractedClaimUidBytes, currentClaimUidBytes))
         {
-            message = Resources.AntiforgeryToken_ClaimUidMismatch;
+            message = IsTokenForAuthenticatedUserButCurrentUserIsNot(authenticatedIdentity, requestToken)
+                ? Resources.AntiforgeryToken_UnauthenticatedUser
+                : Resources.AntiforgeryToken_ClaimUidMismatch;
             return false;
         }
 
@@ -189,6 +193,17 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         message = null;
         return true;
 
+        static bool IsTokenForAuthenticatedUserButCurrentUserIsNot(
+            ClaimsIdentity? currentAuthenticatedIdentity,
+            AntiforgeryToken token)
+        {
+            // The current request has no authenticated identity, yet the incoming token was generated for one
+            // (it carries a ClaimUid or a Username). This most commonly happens when UseAntiforgery() runs before
+            // UseAuthentication(), so the user has not been authenticated yet when the token is validated.
+            return currentAuthenticatedIdentity is null
+                && (token.ClaimUid is not null || !string.IsNullOrEmpty(token.Username));
+        }
+
         static bool AreIdenticalClaimUids(AntiforgeryToken token, bool claimUidBytesExtracted, Span<byte> claimUidBytes)
         {
             if (token.ClaimUid is null)
@@ -201,7 +216,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
                 return false;
             }
 
-            return token.ClaimUid.GetData().SequenceEqual(claimUidBytes);
+            return CryptographicOperations.FixedTimeEquals(token.ClaimUid.GetData(), claimUidBytes);
         }
     }
 

@@ -86,7 +86,10 @@ public abstract class WebRenderer : Renderer
     /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
     protected abstract void AttachRootComponentToBrowser(int componentId, string domElementSelector);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Releases the resources used by the current <see cref="WebRenderer"/> instance.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> to release managed resources; otherwise, <see langword="false"/>.</param>
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -131,6 +134,12 @@ public abstract class WebRenderer : Renderer
         }
         else
         {
+            if (!jsonOptions.IsReadOnly &&
+                !jsonOptions.TypeInfoResolverChain.Contains(WebRendererSerializerContext.Default))
+            {
+                jsonOptions.TypeInfoResolverChain.Insert(0, WebRendererSerializerContext.Default);
+            }
+
             jsRuntime.InvokeVoidAsync(JSMethodIdentifier, args).Preserve();
         }
     }
@@ -182,6 +191,11 @@ public abstract class WebRenderer : Renderer
 // 'Blazor._internal.attachWebRendererInterop'
 [JsonSerializable(typeof(object[]))]
 [JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(long))]
+[JsonSerializable(typeof(float))]
+[JsonSerializable(typeof(JsonElement))]
+[JsonSerializable(typeof(ChangeEventArgs))]
+[JsonSerializable(typeof(NavigationOptions))]
 [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
 [JsonSerializable(typeof(Dictionary<string, List<string>>))]
 internal sealed partial class WebRendererSerializerContext : JsonSerializerContext;

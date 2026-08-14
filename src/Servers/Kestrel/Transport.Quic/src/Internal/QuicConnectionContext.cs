@@ -90,6 +90,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
     }
 
     [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+    [RuntimeAsyncMethodGeneration(false)]
     public override async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
     {
         try

@@ -43,6 +43,8 @@ internal sealed class RedirectAction : UrlAction
             return;
         }
 
+        pattern = UrlNormalizer.CollapseLeadingSlashes(pattern);
+
         if (!pattern.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal) && pattern[0] != '/')
         {
             pattern = '/' + pattern;
@@ -51,7 +53,6 @@ internal sealed class RedirectAction : UrlAction
 
         // url can either contain the full url or the path and query
         // always add to location header.
-        // TODO check for false positives
 
         var split = pattern.IndexOf('?');
         if (split >= 0 && QueryStringAppend)

@@ -63,4 +63,29 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
 
         return builder;
     }
+
+    /// <summary>
+    /// Configures a <see cref="BrowserOptions"/> that will be emitted as a DOM comment
+    /// to the browser for all Razor component endpoints.
+    /// </summary>
+    /// <param name="builder">The <see cref="RazorComponentsEndpointConventionBuilder"/>.</param>
+    /// <param name="configureOptions">An action to configure the <see cref="BrowserOptions"/>.</param>
+    /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
+    public static RazorComponentsEndpointConventionBuilder WithBrowserOptions(
+        this RazorComponentsEndpointConventionBuilder builder,
+        Action<BrowserOptions> configureOptions)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        var options = new BrowserOptions();
+        configureOptions(options);
+
+        builder.Add(endpointBuilder =>
+        {
+            endpointBuilder.Metadata.Add(options);
+        });
+
+        return builder;
+    }
 }

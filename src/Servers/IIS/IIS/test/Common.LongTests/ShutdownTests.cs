@@ -457,6 +457,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68150")]
     [ConditionalFact]
     [RequiresNewShim]
     public async Task ConfigurationChangeForcesChildProcessRestart()
@@ -556,7 +557,6 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55937")]
     [ConditionalFact]
     public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
     {

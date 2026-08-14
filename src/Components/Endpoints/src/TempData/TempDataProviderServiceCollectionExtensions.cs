@@ -12,13 +12,15 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal static class TempDataProviderServiceCollectionExtensions
 {
+    internal static readonly object HttpContextItemKey = new object();
+
     internal static IServiceCollection AddTempData(this IServiceCollection services)
     {
-        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
+        services.TryAddSingleton<IStoredDataSerializer, JsonStoredDataSerializer>();
         services.TryAddSingleton<ITempDataProvider>(serviceProvider =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
-            var serializer = serviceProvider.GetRequiredService<ITempDataSerializer>();
+            var serializer = serviceProvider.GetRequiredService<IStoredDataSerializer>();
             var dataProtectionProvider = serviceProvider.GetRequiredService<IDataProtectionProvider>();
             var logger = serviceProvider.GetRequiredService<ILogger<CookieTempDataProvider>>();
             return options.Value.TempDataProviderType switch
@@ -45,20 +47,23 @@ internal static class TempDataProviderServiceCollectionExtensions
         return services;
     }
 
-    private static ITempData GetOrCreateTempData(HttpContext httpContext)
+    internal static ITempData GetOrCreateTempData(HttpContext httpContext)
     {
-        var key = typeof(ITempData);
-        if (!httpContext.Items.ContainsKey(key))
+        if (httpContext.Items.TryGetValue(HttpContextItemKey, out var tempDataObj) && tempDataObj is ITempData tempData)
         {
-            var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
-            var tempDataInstance = tempDataService.CreateEmpty(httpContext);
-            httpContext.Items[key] = tempDataInstance;
-            httpContext.Response.OnStarting(() =>
-            {
-                tempDataService.Save(httpContext, tempDataInstance);
-                return Task.CompletedTask;
-            });
+            return tempData;
         }
-        return (ITempData)httpContext.Items[key]!;
+
+        var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
+        var tempDataInstance = tempDataService.CreateEmpty(httpContext);
+        httpContext.Items[HttpContextItemKey] = tempDataInstance;
+
+        // Ensure that session cookie is issued to allow for persistence from streaming context
+        if (httpContext.RequestServices.GetService<ITempDataProvider>() is SessionStorageTempDataProvider)
+        {
+            SessionEstablishmentHelper.TryRegisterSessionEstablishment(httpContext);
+        }
+
+        return tempDataInstance;
     }
 }

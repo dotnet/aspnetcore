@@ -58,7 +58,7 @@ internal static unsafe class DpapiSecretSerializerHelper
             finally
             {
                 // To limit exposure to the GC.
-                Array.Clear(plaintextSecret, 0, plaintextSecret.Length);
+                CryptoUtil.ZeroMemory(plaintextSecret);
             }
         }
     }
@@ -136,7 +136,7 @@ internal static unsafe class DpapiSecretSerializerHelper
             finally
             {
                 // Limits secret exposure to garbage collector.
-                Array.Clear(plaintextSecret, 0, plaintextSecret.Length);
+                CryptoUtil.ZeroMemory(plaintextSecret);
             }
         }
     }

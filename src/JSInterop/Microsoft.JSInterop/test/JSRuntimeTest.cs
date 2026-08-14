@@ -83,6 +83,22 @@ public class JSRuntimeTest
     }
 
     [Fact]
+    public void PendingAsyncCall_CompletionAfterCancellationDoesNotThrow()
+    {
+        using var cts = new CancellationTokenSource();
+        var runtime = new TestJSRuntime();
+        var pendingCall = new PendingAsyncCall<string>();
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes("\"result\""));
+
+        cts.Cancel();
+        pendingCall.Cancel(cts.Token);
+        pendingCall.Complete(runtime, ref reader);
+        pendingCall.Fail(new JSException("Failure"));
+
+        Assert.True(pendingCall.Task.IsCanceled);
+    }
+
+    [Fact]
     public async Task InvokeAsync_DoesNotStartWorkWhenCancellationHasBeenRequested()
     {
         // Arrange

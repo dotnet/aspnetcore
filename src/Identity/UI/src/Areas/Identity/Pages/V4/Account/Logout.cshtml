@@ -9,6 +9,7 @@
     @{
         if (User.Identity!.IsAuthenticated)
         {
+            @* codeql[SM00430] - returnUrl is Url.Page with constant arguments (the app root), not user input, and Razor HTML-encodes the attribute value. codeql[SM02175] - returnUrl is Url.Page with constant arguments (the app root), not user input, and Razor HTML-encodes the attribute value. *@
             <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
                 <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
             </form>

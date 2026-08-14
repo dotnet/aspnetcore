@@ -1,0 +1,171 @@
+@page "/persistent-state/auto-pause-download"
+@rendermode RenderMode.InteractiveServer
+@using System.IO.Pipelines
+@using Microsoft.JSInterop
+@using TestServer
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject AutoPauseTestStreamGate Gate
+
+<h1>Auto-pause download deferral test</h1>
+
+@* Captures Blazor console output (info/log/warn/error) so the E2E tests
+   can deterministically wait for specific log messages. *@
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>The <code>DotNetStreamReference</code> download is <strong>circuit-routed</strong>
+— pause must be deferred while it's in flight. The other three downloads use plain
+HTTP and pause should proceed normally.</p>
+
+<hr />
+
+<h3>Download via <code>DotNetStreamReference</code> (circuit-routed)</h3>
+<button id="streamref-button" @onclick="StartStreamRef" disabled="@_streamrefRunning" data-token="@_streamrefToken">
+    Download via DotNetStreamReference
+</button>
+<p>Status: <span id="streamref-status">@_streamrefStatus</span> — bytes: <span id="streamref-bytes">@_streamrefBytes</span></p>
+
+<hr />
+
+<h3>Download via anchor with <code>target="_blank"</code></h3>
+<a id="anchor-blank-link" href="/subdir/autopause-test/download/@_anchorBlankToken" target="_blank" rel="noopener" data-token="@_anchorBlankToken">
+    Download via anchor (new tab)
+</a>
+<p>Status: <span id="anchor-blank-status">click triggers browser GET; main page preserved</span></p>
+
+<hr />
+
+<h3>Download via <code>NavigationManager.NavigateTo</code> with <code>forceLoad</code></h3>
+<button id="navigate-button" @onclick="StartNavigateTo" data-token="@_navigateToken">
+    Navigate to download URL
+</button>
+<p>Status: <span id="navigate-status">click navigates current tab away</span></p>
+
+<hr />
+
+<h3>Download via anchor with <code>download</code> attribute</h3>
+<a id="anchor-download-link" href="/subdir/autopause-test/download/@_anchorDownloadToken" download="autopause-anchor-download.bin" data-token="@_anchorDownloadToken">
+    Download via anchor[download]
+</a>
+<p>Status: <span id="anchor-download-status">click triggers browser download; main page preserved</span></p>
+
+@* Helper used by the DotNetStreamReference download. Inlined as a window-scoped
+   object so the page doesn't need an importable JS module. *@
+<script>
+    window.AutoPauseDownloadTest ??= {
+        async readStream(streamRef, statusId, bytesId) {
+            const statusEl = document.getElementById(statusId);
+            const bytesEl = document.getElementById(bytesId);
+            // Use a custom data-* attribute so Blazor's diff doesn't compete
+            // with JS over the element's text content.
+            const setStatus = v => statusEl.setAttribute('data-status', v);
+            const setBytes = v => bytesEl.setAttribute('data-bytes', String(v));
+            try {
+                setStatus('streaming');
+                const buffer = await streamRef.arrayBuffer();
+                setBytes(buffer.byteLength);
+                setStatus('complete');
+            } catch (err) {
+                setStatus('failed:' + (err && err.message ? err.message : String(err)));
+            }
+        }
+    };
+</script>
+
+@code {
+    private readonly string _streamrefToken = Guid.NewGuid().ToString("N");
+    private readonly string _anchorBlankToken = Guid.NewGuid().ToString("N");
+    private readonly string _navigateToken = Guid.NewGuid().ToString("N");
+    private readonly string _anchorDownloadToken = Guid.NewGuid().ToString("N");
+
+    private bool _streamrefRunning;
+    private string _streamrefStatus = "idle";
+    private long _streamrefBytes;
+
+    private CancellationTokenSource? _streamrefCts;
+
+    private async Task StartStreamRef()
+    {
+        _streamrefRunning = true;
+        _streamrefStatus = "starting";
+        _streamrefBytes = 0;
+        _streamrefCts = new CancellationTokenSource();
+
+        var pipe = new Pipe();
+        var producer = ProduceGatedAsync(pipe.Writer, _streamrefToken, _streamrefCts.Token);
+        var streamRef = new DotNetStreamReference(pipe.Reader.AsStream(), leaveOpen: false);
+
+        try
+        {
+            await JS.InvokeVoidAsync(
+                "AutoPauseDownloadTest.readStream",
+                streamRef,
+                "streamref-status",
+                "streamref-bytes");
+            await producer;
+            _streamrefStatus = "complete";
+        }
+        catch (Exception ex)
+        {
+            _streamrefStatus = $"failed:{ex.GetType().Name}:{ex.Message}";
+        }
+        finally
+        {
+            _streamrefRunning = false;
+        }
+    }
+
+    private async Task ProduceGatedAsync(PipeWriter writer, string token, CancellationToken ct)
+    {
+        try
+        {
+            // Emit a small prefix so the client sees the stream as having started.
+            var prefix = new byte[1024];
+            new Random(42).NextBytes(prefix);
+            await writer.WriteAsync(prefix, ct);
+            await writer.FlushAsync(ct);
+            _streamrefBytes = prefix.Length;
+            await InvokeAsync(StateHasChanged);
+            Gate.MarkStarted(token);
+
+            // Block until the test releases the gate (or 30 s timeout).
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+            try
+            {
+                await Gate.WaitAsync(token, timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Either the request was aborted or the timeout fired.
+            }
+
+            // Emit a small trailer and complete.
+            var trailer = new byte[64];
+            await writer.WriteAsync(trailer, ct);
+            _streamrefBytes += trailer.Length;
+        }
+        finally
+        {
+            await writer.CompleteAsync();
+            Gate.MarkCompleted(token);
+        }
+    }
+
+    private void StartNavigateTo()
+    {
+        Nav.NavigateTo($"/subdir/autopause-test/download/{_navigateToken}", forceLoad: true);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _streamrefCts?.Cancel();
+        await Task.CompletedTask;
+    }
+}

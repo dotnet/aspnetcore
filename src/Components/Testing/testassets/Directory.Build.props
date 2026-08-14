@@ -1,0 +1,39 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup Condition=" $(IsTestProject) ">
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <_ImportComponentsTestingTargets>true</_ImportComponentsTestingTargets>
+    <_ImportComponentsTestingTargets Condition="'$(ExcludeFromBuild)' == 'true' or '$(SkipTestBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">false</_ImportComponentsTestingTargets>
+    <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
+  <!-- Remove auto-added xUnit v2 test infra from CSharp.Common.props -->
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Remove="Moq" />
+    <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+  </ItemGroup>
+
+  <!-- Test apps and the E2E host require ASP.NET Core at runtime. -->
+  <PropertyGroup>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!--
+    Development layout: point the tasks assembly to the artifacts bin output so that
+    Microsoft.AspNetCore.Components.Testing.targets (which only handles the NuGet package
+    layout) can find it when building inside the aspnetcore repo.
+  -->
+  <PropertyGroup Condition=" $(IsTestProject) and '$(_ImportComponentsTestingTargets)' == 'true' ">
+    <_E2ETasksProject>$(MSBuildThisFileDirectory)..\tasks\Microsoft.AspNetCore.Components.Testing.Tasks.csproj</_E2ETasksProject>
+    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == ''">$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
+  </PropertyGroup>
+
+</Project>

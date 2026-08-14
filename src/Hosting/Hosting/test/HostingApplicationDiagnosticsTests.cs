@@ -1381,7 +1381,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.Equal("1.1", tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
         Assert.Equal("System.InvalidOperationException", tags[HostingTelemetryHelpers.AttributeErrorType]);
         Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
-        Assert.Equal("Test exception", stoppedActivity.StatusDescription);
+        Assert.Null(stoppedActivity.StatusDescription);
     }
 
     [Theory]
@@ -1552,10 +1552,12 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     [InlineData("OPTIONS", null, "OPTIONS")]
     [InlineData("TRACE", null, "TRACE")]
     [InlineData("CONNECT", null, "CONNECT")]
+    [InlineData("QUERY", null, "QUERY")]
     [InlineData("CUSTOM", null, "HTTP")]
     [InlineData("weird", null, "HTTP")]
     [InlineData("GET", "hello/{name}", "GET hello/{name}")]
     [InlineData("POST", "hello/{name}", "POST hello/{name}")]
+    [InlineData("QUERY", "hello/{name}", "QUERY hello/{name}")]
     [InlineData("CUSTOM", "hello/{name}", "HTTP hello/{name}")]
     public void ActivityListeners_DisplayName(string method, string route, string expectedDisplayName)
     {

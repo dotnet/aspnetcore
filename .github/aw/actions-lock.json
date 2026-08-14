@@ -1,19 +1,21 @@
 {
   "entries": {
-    "actions/github-script@v8": {
+    "actions/github-script@v9.0.0": {
       "repo": "actions/github-script",
-      "version": "v8",
-      "sha": "ed597411d8f924073f98dfc5c65a23a2325f34cd"
+      "version": "v9.0.0",
+      "sha": "3a2844b7e9c422d3c10d287c895573f7108da1b3"
     },
-    "github/gh-aw-actions/setup@v0.59.0": {
+    "github/gh-aw-actions/setup@v0.86.2": {
       "repo": "github/gh-aw-actions/setup",
-      "version": "v0.59.0",
-      "sha": "066087f607f52664010289ddd52198f33044c38a"
-    },
-    "github/gh-aw-actions/setup@v0.61.0": {
-      "repo": "github/gh-aw-actions/setup",
-      "version": "v0.61.0",
-      "sha": "df014dd7d03b638e860b2aeca95c833fd97c8cf1"
+      "version": "v0.86.2",
+      "sha": "6aab9e5b5c91c615506061f09bedd81a23babe3c"
+    }
+  },
+  "containers": {
+    "mcr.microsoft.com/dotnet/sdk:10.0": {
+      "image": "mcr.microsoft.com/dotnet/sdk:10.0",
+      "digest": "sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664",
+      "pinned_image": "mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664"
     }
   }
 }

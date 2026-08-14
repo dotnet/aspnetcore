@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Authentication;
 
 /// <summary>
-/// Contract for serialzing authentication data.
+/// Contract for serializing authentication data.
 /// </summary>
 /// <typeparam name="TModel">The type of the model being serialized.</typeparam>
 public interface IDataSerializer<TModel>

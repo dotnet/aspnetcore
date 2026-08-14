@@ -25,6 +25,8 @@
     <button id="expand-item-5" @onclick="() => ExpandItem(5)">Expand Item 5</button>
     <button id="collapse-all" @onclick="CollapseAll">Collapse All</button>
     <button id="simulate-image-load" @onclick="SimulateImageLoad">Simulate Image Load (Item 3)</button>
+    <button id="prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
+    <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
 </div>
 
 <p id="status">@statusMessage</p>
@@ -35,8 +37,10 @@
 
     protected override void OnInitialized()
     {
-        // 75 items with initial height of 50px (enough for true off-screen virtualization)
-        items = Enumerable.Range(0, 75)
+        // 500 items with initial height of 50px.
+        // With OverscanCount=15 (default), the initial render covers ~37 items (~2300px).
+        // 500 items provides enough content to force true virtualization when scrolling.
+        items = Enumerable.Range(0, 500)
             .Select(i => new DynamicItem { Index = i, Height = 50, IsExpanded = false })
             .ToList();
     }
@@ -79,6 +83,30 @@
             statusMessage = "Item 3 height changed (simulated image load)";
             StateHasChanged();
         }
+    }
+
+    private int nextPrependIndex = -1;
+    private int nextAppendIndex = 500;
+
+    private void PrependItems()
+    {
+        var newItems = Enumerable.Range(0, 10)
+            .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = 50, IsExpanded = false })
+            .ToList();
+        items.InsertRange(0, newItems);
+        nextPrependIndex -= 10;
+        statusMessage = $"Prepended 10 items (indices {newItems.Last().Index}..{newItems.First().Index})";
+    }
+
+    private void AppendItems()
+    {
+        var startIndex = nextAppendIndex;
+        var newItems = Enumerable.Range(startIndex, 10)
+            .Select(i => new DynamicItem { Index = i, Height = 50, IsExpanded = false })
+            .ToList();
+        items.AddRange(newItems);
+        nextAppendIndex += 10;
+        statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
     }
 
     private class DynamicItem

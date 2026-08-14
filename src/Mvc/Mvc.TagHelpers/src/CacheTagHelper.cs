@@ -127,7 +127,7 @@ public class CacheTagHelper : CacheTagHelperBase
             // can't be put inside a using block.
             entry.Dispose();
 
-            // Set the result on the TCS once we've committed the entry to the cache since commiting to the cache
+            // Set the result on the TCS once we've committed the entry to the cache since committing to the cache
             // may throw.
             tcs.SetResult(content);
             return content;

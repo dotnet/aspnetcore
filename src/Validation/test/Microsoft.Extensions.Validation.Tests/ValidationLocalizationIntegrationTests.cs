@@ -1,0 +1,613 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+
+namespace Microsoft.Extensions.Validation.Tests;
+
+// End-to-end coverage for the validation localization pipeline that is now emitted into the
+// generated code and driven purely by ValidationOptions.LocalizerProvider, the built-in message
+// key convention, and a registered IStringLocalizerFactory.
+public class ValidationLocalizationIntegrationTests : ValidationTestBase
+{
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_NoLocalizerFactory_UsesAttributeDefaults(bool useAsync)
+    {
+        var (provider, options) = CreateServices(translations: null);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
+
+        Assert.Equal("The Name field is required.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_NoLocalizerFactory_LiteralDisplayNamePassesThrough(bool useAsync)
+    {
+        var (provider, options) = CreateServices(translations: null);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedLiteralDisplayModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedLiteralDisplayModel(), context, useAsync, default);
+
+        Assert.Equal("The Customer Name field is required.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_WithLocalizer_LocalizesDisplayNameAndErrorMessage(bool useAsync)
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["Customer Name"] = "Nom du client",
+            ["RequiredKey"] = "Le {0} est requis.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedKeyedModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedKeyedModel(), context, useAsync, default);
+
+        // The localized display name is resolved first and then substituted into the localized template.
+        Assert.Equal("Le Nom du client est requis.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_LookupMiss_FallsBackToAttributeErrorMessage(bool useAsync)
+    {
+        // Factory is present but neither the explicit key nor any conventional key is translated,
+        // so the message produced by the attribute is used as the fallback.
+        var (provider, options) = CreateServices(new Dictionary<string, string>());
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedKeyedModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedKeyedModel(), context, useAsync, default);
+
+        Assert.Equal("RequiredKey", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_RangeAttribute_UsesBuiltInFormatter(bool useAsync)
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["RangeKey"] = "{0} must be between {1} and {2}.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedRangeModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedRangeModel { Age = 0 }, context, useAsync, default);
+
+        Assert.Equal("Age must be between 1 and 100.", Single(context, "Age"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_SelfFormattingAttribute_UsesFormatMessageHook(bool useAsync)
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["SelfKey"] = "{0}: extra={1}",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedSelfFormattingModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedSelfFormattingModel(), context, useAsync, default);
+
+        Assert.Equal("Field: extra=EXTRA", Single(context, "Value"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ConventionKey_MemberTier_TakesPrecedence(bool useAsync)
+    {
+        // All three conventional keys resolve, so the most specific one wins.
+        var translations = new Dictionary<string, string>
+        {
+            ["LocalizedDefaultModel_Name_RequiredAttribute_Error"] = "{0} is required for this member.",
+            ["LocalizedDefaultModel_RequiredAttribute_Error"] = "{0} is required for this type.",
+            ["RequiredAttribute_Error"] = "{0} is mandatory.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
+
+        Assert.Equal("Name is required for this member.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ConventionKey_TypeTier_UsedWhenMemberKeyMissing(bool useAsync)
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["LocalizedDefaultModel_RequiredAttribute_Error"] = "{0} is required for this type.",
+            ["RequiredAttribute_Error"] = "{0} is mandatory.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
+
+        Assert.Equal("Name is required for this type.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ConventionKey_GlobalTier_UsedWhenSpecificKeysMissing(bool useAsync)
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["RequiredAttribute_Error"] = "{0} is mandatory.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
+
+        Assert.Equal("Name is mandatory.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ConventionKey_NoMatch_FallsBackToAttributeMessage(bool useAsync)
+    {
+        // A factory is registered but no conventional key resolves, so the attribute's own
+        // non-localized message is used.
+        var translations = new Dictionary<string, string>
+        {
+            ["UnrelatedKey"] = "unused",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultModel(), context, useAsync, default);
+
+        Assert.Equal("The Name field is required.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TypeLevelAttribute_WithoutMemberNames_SkipsMemberTier(bool useAsync)
+    {
+        // A type-level attribute that reports no member names has no member to key on, so the
+        // member tier is skipped rather than repeating the type name in the key.
+        var translations = new Dictionary<string, string>
+        {
+            ["LocalizedTypeLevelModel_LocalizedTypeLevelModel_AlwaysFailsAttribute_Error"] = "doubled key",
+            ["LocalizedTypeLevelModel_AlwaysFailsAttribute_Error"] = "{0} failed type-level validation.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedTypeLevelModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedTypeLevelModel(), context, useAsync, default);
+
+        Assert.Equal("LocalizedTypeLevelModel failed type-level validation.", Single(context, string.Empty));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ExplicitErrorMessage_WinsOverConvention(bool useAsync)
+    {
+        // An explicit ErrorMessage on the validator is used as the key directly and takes
+        // precedence over the built-in convention when it resolves.
+        var translations = new Dictionary<string, string>
+        {
+            ["RequiredKey"] = "Explicit {0}.",
+            ["LocalizedKeyedModel_Name_RequiredAttribute_Error"] = "Convention {0}.",
+            ["RequiredAttribute_Error"] = "Convention {0}.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedKeyedModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedKeyedModel(), context, useAsync, default);
+
+        Assert.Equal("Explicit Customer Name.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ExplicitErrorMessageMiss_FallsThroughToConvention(bool useAsync)
+    {
+        // The explicit ErrorMessage is not a known resource key, so the lookup falls through to the
+        // conventional keys rather than giving up on localization.
+        var translations = new Dictionary<string, string>
+        {
+            ["LocalizedKeyedModel_Name_RequiredAttribute_Error"] = "Convention {0}.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedKeyedModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedKeyedModel(), context, useAsync, default);
+
+        Assert.Equal("Convention Customer Name.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_AttributeWithBuiltInDefaultMessage_UsesConvention(bool useAsync)
+    {
+        // Several built-in attributes expose a non-null ErrorMessage holding their own default
+        // message even when the developer never set one. The convention must still reach them.
+        var translations = new Dictionary<string, string>
+        {
+            ["EmailAddressAttribute_Error"] = "{0} is not a valid address.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedDefaultMessageModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedDefaultMessageModel { Email = "not-an-email" }, context, useAsync, default);
+
+        Assert.Equal("Email is not a valid address.", Single(context, "Email"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_LocalizerProvider_InvokedWithDeclaringTypeAndUsed(bool useAsync)
+    {
+        var translations = new Dictionary<string, string> { ["RequiredKey"] = "Le {0} est requis." };
+        Type? seenType = null;
+        var (provider, options) = CreateServices(translations, o => o.LocalizerProvider = (type, factory) =>
+        {
+            seenType = type;
+            return factory.Create(type ?? typeof(object));
+        });
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedKeyedModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedKeyedModel(), context, useAsync, default);
+
+        Assert.Equal(typeof(LocalizedKeyedModel), seenType);
+        Assert.Equal("Le Customer Name est requis.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task LocalizerProvider_ReturnsNull_Throws(bool useAsync)
+    {
+        // The LocalizerProvider contract requires a non-null localizer; returning null throws
+        // consistently on both the display-name and error-message paths.
+        var translations = new Dictionary<string, string> { ["RequiredKey"] = "unused" };
+        var (provider, options) = CreateServices(translations, o => o.LocalizerProvider = (_, _) => null!);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedKeyedModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => ValidateAsync(typeInfo, new LocalizedKeyedModel(), context, useAsync, default));
+        Assert.Contains(nameof(ValidationOptions.LocalizerProvider), ex.Message);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ErrorMessageResourceType_BypassesLocalization(bool useAsync)
+    {
+        var translations = new Dictionary<string, string> { ["Customer Name"] = "Nom du client" };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedResourceErrorModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedResourceErrorModel(), context, useAsync, default);
+
+        Assert.Equal(LocalizedResources.RequiredError, Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ResourceDisplayName_BypassesDisplayNameLocalization(bool useAsync)
+    {
+        // A [Display(ResourceType=...)] name is the canonical localized source, so the localizer is
+        // not consulted for the display name even when a translation would otherwise match.
+        var translations = new Dictionary<string, string> { ["Resource-Resolved Name"] = "SHOULD NOT APPEAR" };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedResourceDisplayModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedResourceDisplayModel(), context, useAsync, default);
+
+        Assert.Equal("The Resource-Resolved Name field is required.", Single(context, "Name"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IValidatableObject_ResultsNotLocalized(bool useAsync)
+    {
+        var translations = new Dictionary<string, string> { ["Object error"] = "SHOULD NOT APPEAR" };
+        var (provider, options) = CreateServices(translations);
+        var typeInfo = GeneratedValidationTestHelpers.GetTypeInfo<LocalizedValidatableObjectModel>(options);
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(typeInfo, new LocalizedValidatableObjectModel(), context, useAsync, default);
+
+        Assert.Equal("Object error", Single(context, "Value"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Parameter_LocalizerProvider_InvokedWithParameterType_AndUsed(bool useAsync)
+    {
+        // A top-level parameter has no declaring type, so the localizer is resolved from the
+        // parameter's own type (mirrors MVC's ContainerType ?? ModelType) instead of falling back to
+        // typeof(object).
+        var translations = new Dictionary<string, string> { ["Parameter Name"] = "Nom du paramètre" };
+        Type? seenType = null;
+        var (provider, options) = CreateServices(translations, o => o.LocalizerProvider = (type, factory) =>
+        {
+            seenType = type;
+            return factory.Create(type ?? typeof(object));
+        });
+        var parameterInfo = typeof(LocalizedParameterActions)
+            .GetMethod(nameof(LocalizedParameterActions.Action))!
+            .GetParameters()[0];
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
+
+        Assert.Equal(typeof(string), seenType);
+        Assert.Equal("The Nom du paramètre field is required.", Single(context, "value"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Parameter_ConventionKey_IncludesParameterTypeSegment(bool useAsync)
+    {
+        // A top-level parameter has no declaring type, so the parameter's own type supplies the
+        // type segment and is kept in the key just like any other declaring type.
+        var translations = new Dictionary<string, string>
+        {
+            ["String_value_RequiredAttribute_Error"] = "{0} is required for this parameter.",
+            ["String_RequiredAttribute_Error"] = "{0} is required for this type.",
+            ["RequiredAttribute_Error"] = "{0} is mandatory.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var parameterInfo = typeof(LocalizedParameterActions)
+            .GetMethod(nameof(LocalizedParameterActions.Action))!
+            .GetParameters()[0];
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
+
+        Assert.Equal("Parameter Name is required for this parameter.", Single(context, "value"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Parameter_ConventionKey_UnwrapsNullableValueType(bool useAsync)
+    {
+        // A nullable value type contributes its underlying type as the key segment, so int? and int
+        // share the same keys instead of every nullable collapsing onto "Nullable".
+        var translations = new Dictionary<string, string>
+        {
+            ["Nullable_count_RangeAttribute_Error"] = "wrapper-typed key",
+            ["Nullable_RangeAttribute_Error"] = "wrapper-typed key",
+            ["Int32_count_RangeAttribute_Error"] = "{0} is out of range for this parameter.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var parameterInfo = typeof(LocalizedParameterActions)
+            .GetMethod(nameof(LocalizedParameterActions.NullableAction))!
+            .GetParameters()[0];
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(paramInfo, 42, context, useAsync, default);
+
+        Assert.Equal("count is out of range for this parameter.", Single(context, "count"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Parameter_ConventionKey_StripsGenericArityFromTypeSegment(bool useAsync)
+    {
+        // A generic type contributes its name without the arity marker, so the key stays typeable
+        // in a resx and all closed constructions share it.
+        var translations = new Dictionary<string, string>
+        {
+            ["LocalizedWrapper_value_RequiredAttribute_Error"] = "{0} is required for this parameter.",
+        };
+        var (provider, options) = CreateServices(translations);
+        var parameterInfo = typeof(LocalizedParameterActions)
+            .GetMethod(nameof(LocalizedParameterActions.GenericAction))!
+            .GetParameters()[0];
+        Assert.True(options.TryGetValidatableParameterInfo(parameterInfo, out var paramInfo));
+        var context = GeneratedValidationTestHelpers.CreateContext(provider, options);
+
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
+
+        Assert.Equal("value is required for this parameter.", Single(context, "value"));
+    }
+
+    private static string Single(ValidateContext context, string key)
+        => Assert.Single(context.ValidationErrors![key].Select(e => e.ErrorMessage));
+
+    private static (IServiceProvider Provider, ValidationOptions Options) CreateServices(
+        IDictionary<string, string>? translations,
+        Action<ValidationOptions>? configureOptions = null)
+    {
+        var services = new ServiceCollection();
+        if (translations is not null)
+        {
+            services.AddSingleton<IStringLocalizerFactory>(new FakeStringLocalizerFactory(translations));
+        }
+        services.AddValidation(configureOptions);
+        var provider = services.BuildServiceProvider();
+        return (provider, provider.GetRequiredService<IOptions<ValidationOptions>>().Value);
+    }
+
+    private sealed class FakeStringLocalizerFactory(IDictionary<string, string> translations) : IStringLocalizerFactory
+    {
+        public IStringLocalizer Create(Type resourceSource) => new FakeStringLocalizer(translations);
+        public IStringLocalizer Create(string baseName, string location) => new FakeStringLocalizer(translations);
+    }
+
+    private sealed class FakeStringLocalizer(IDictionary<string, string> translations) : IStringLocalizer
+    {
+        public LocalizedString this[string name] => translations.TryGetValue(name, out var value)
+            ? new LocalizedString(name, value, resourceNotFound: false)
+            : new LocalizedString(name, name, resourceNotFound: true);
+
+        public LocalizedString this[string name, params object[] arguments] => this[name];
+
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+            => throw new NotSupportedException();
+    }
+}
+
+[ValidatableType]
+public class LocalizedDefaultModel
+{
+    [Required]
+    public string? Name { get; set; }
+}
+
+[ValidatableType]
+public class LocalizedLiteralDisplayModel
+{
+    [Display(Name = "Customer Name")]
+    [Required]
+    public string? Name { get; set; }
+}
+
+[ValidatableType]
+public class LocalizedKeyedModel
+{
+    [Display(Name = "Customer Name")]
+    [Required(ErrorMessage = "RequiredKey")]
+    public string? Name { get; set; }
+}
+
+[ValidatableType]
+public class LocalizedRangeModel
+{
+    [Display(Name = "Age")]
+    [Range(1, 100, ErrorMessage = "RangeKey")]
+    public int Age { get; set; }
+}
+
+[ValidatableType]
+public class LocalizedSelfFormattingModel
+{
+    [Display(Name = "Field")]
+    [SelfFormatting(ErrorMessage = "SelfKey", Extra = "EXTRA")]
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+[AlwaysFails]
+public class LocalizedTypeLevelModel
+{
+    public string? Value { get; set; }
+}
+
+[ValidatableType]
+public class LocalizedDefaultMessageModel
+{
+    [EmailAddress]
+    public string? Email { get; set; }
+}
+
+public class LocalizedWrapper<T>
+{
+    public T? Value { get; set; }
+}
+
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class AlwaysFailsAttribute : ValidationAttribute
+{
+    public override bool IsValid(object? value) => false;
+}
+
+[ValidatableType]
+public class LocalizedResourceErrorModel
+{
+    [Display(Name = "Customer Name")]
+    [Required(ErrorMessageResourceType = typeof(LocalizedResources), ErrorMessageResourceName = nameof(LocalizedResources.RequiredError))]
+    public string? Name { get; set; }
+}
+
+[ValidatableType]
+public class LocalizedResourceDisplayModel
+{
+    [Display(Name = nameof(LocalizedResources.DisplayName), ResourceType = typeof(LocalizedResources))]
+    [Required]
+    public string? Name { get; set; }
+}
+
+public static class LocalizedResources
+{
+    public static string RequiredError => "Resource required error";
+    public static string DisplayName => "Resource-Resolved Name";
+}
+
+[ValidatableType]
+public class LocalizedValidatableObjectModel : IValidatableObject
+{
+    public string? Value { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        yield return new ValidationResult("Object error", [nameof(Value)]);
+    }
+}
+
+public static class LocalizedParameterActions
+{
+    public static void Action([Display(Name = "Parameter Name")][Required] string? value) { }
+
+    public static void NullableAction([Range(1, 10)] int? count) { }
+
+    public static void GenericAction([Required] LocalizedWrapper<int>? value) { }
+}
+
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class SelfFormattingAttribute : ValidationAttribute, IValidationMessageFormatter
+{
+    public string Extra { get; set; } = string.Empty;
+
+    public override bool IsValid(object? value) => value is not null;
+
+    public string FormatMessage(CultureInfo culture, string messageTemplate, string displayName)
+        => string.Format(culture, messageTemplate, displayName, Extra);
+}

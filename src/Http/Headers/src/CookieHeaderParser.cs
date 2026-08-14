@@ -12,18 +12,22 @@ internal sealed class CookieHeaderParser : HttpHeaderParser<CookieHeaderValue>
     {
     }
 
-    public override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue? cookieValue)
+    public override bool TryParseValue(StringSegment value, int startIndex, out int parsedLength, out CookieHeaderValue? cookieValue)
     {
         cookieValue = null;
+        var index = startIndex;
 
         if (!CookieHeaderParserShared.TryParseValue(value, ref index, SupportsMultipleValues, out var parsedName, out var parsedValue))
         {
+            parsedLength = index - startIndex;
             return false;
         }
 
+        parsedLength = index - startIndex;
+
         if (parsedName == null || parsedValue == null)
         {
-            // Successfully parsed, but no values.
+            // Successfully consumed input, but no value to produce.
             return true;
         }
 

@@ -9,6 +9,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
+    <!-- SocketTransportFactory.CanBind references the [Experimental] DirectTlsEndpoint (defined in
+         Kestrel.Core) to explicitly refuse it, so DirectTls endpoints can never fall through to the plaintext
+         socket transport regardless of transport registration order. Suppress the experimental-usage warning. -->
+    <NoWarn>$(NoWarn);ASPNETCORE_DIRECTTLS_001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +27,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
   </ItemGroup>
 
   <ItemGroup>
