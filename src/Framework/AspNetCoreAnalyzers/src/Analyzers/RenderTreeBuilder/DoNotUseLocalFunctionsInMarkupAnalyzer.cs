@@ -153,6 +153,8 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
         public override void VisitAnonymousFunction(IAnonymousFunctionOperation operation)
         {
             var previousProvenance = CloneProvenance();
+            var previousPathTerminated = _pathTerminated;
+            _pathTerminated = false;
             foreach (var parameter in operation.Symbol.Parameters)
             {
                 _provenance[parameter] = false;
@@ -160,6 +162,7 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
 
             Visit(operation.Body);
             RestoreProvenance(previousProvenance);
+            _pathTerminated = previousPathTerminated;
         }
 
         public override void VisitVariableDeclarator(IVariableDeclaratorOperation operation)
@@ -220,6 +223,12 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
 
                 return;
             }
+        }
+
+        public override void VisitReturn(IReturnOperation operation)
+        {
+            Visit(operation.ReturnedValue);
+            _pathTerminated = true;
         }
 
         public override void VisitConditional(IConditionalOperation operation)
@@ -440,7 +449,9 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
             }
 
             var previousLocalFunction = _currentLocalFunction;
+            var previousPathTerminated = _pathTerminated;
             _currentLocalFunction = localFunction.Symbol;
+            _pathTerminated = false;
             foreach (var parameter in localFunction.Symbol.Parameters)
             {
                 _provenance[parameter] = false;
@@ -448,6 +459,7 @@ public sealed class DoNotUseLocalFunctionsInMarkupAnalyzer : DiagnosticAnalyzer
 
             Visit(localFunction.Body);
 
+            _pathTerminated = previousPathTerminated;
             _currentLocalFunction = previousLocalFunction;
             _activeLocalFunctions.Remove(localFunction.Symbol);
         }

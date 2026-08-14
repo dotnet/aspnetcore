@@ -719,6 +719,112 @@ public class TestComponent : ComponentBase
     }
 
     [Fact]
+    public async Task LocalFunctionWithOwningBuilderOnlyOnReturningBranch_NoDiagnostic()
+    {
+        var source = """
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var alias = new RenderTreeBuilder();
+        if (GetCondition())
+        {
+            alias = builder;
+            return;
+        }
+
+        void LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+
+    private bool GetCondition() => false;
+}
+""";
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        var analyzerDiagnostics = diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup);
+        Assert.Empty(analyzerDiagnostics);
+    }
+
+    [Fact]
+    public async Task ReturnInInvokedLocalFunctionDoesNotTerminateCaller_ProducesDiagnostic()
+    {
+        var source = TestSource.Read("""
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var alias = new RenderTreeBuilder();
+
+        void AssignOwningBuilder()
+        {
+            alias = builder;
+            return;
+        }
+
+        AssignOwningBuilder();
+
+        void /*MM*/LocalFunction()
+        {
+            alias.OpenElement(0, "div");
+            alias.CloseElement();
+        }
+
+        LocalFunction();
+    }
+}
+""");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Fact]
+    public async Task ReturnInAnonymousFunctionDoesNotTerminateCaller_ProducesDiagnostic()
+    {
+        var source = TestSource.Read("""
+using System;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+public class TestComponent : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        Action callback = () =>
+        {
+            return;
+        };
+
+        void /*MM*/LocalFunction()
+        {
+            builder.OpenElement(0, "div");
+            builder.CloseElement();
+        }
+
+        LocalFunction();
+    }
+}
+""");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
+    }
+
+    [Fact]
     public async Task NestedLocalFunctionWithFreshCapturedBuilder_NoDiagnostic()
     {
         var source = @"
@@ -993,7 +1099,10 @@ public class TestComponent : ComponentBase
         var diagnostics = await Runner.GetDiagnosticsAsync(generatedCode);
 
         var analyzerDiagnostic = Assert.Single(diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup));
-        Assert.Equal("IssueSample.razor", Path.GetFileName(analyzerDiagnostic.Location.GetMappedLineSpan().Path));
+        var mappedPath = analyzerDiagnostic.Location.GetMappedLineSpan().Path
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar);
+        Assert.Equal("IssueSample.razor", Path.GetFileName(mappedPath));
     }
 
     [Fact]
