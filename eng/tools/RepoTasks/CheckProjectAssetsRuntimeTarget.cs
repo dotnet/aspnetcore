@@ -55,7 +55,7 @@ public sealed class CheckProjectAssetsRuntimeTarget : Microsoft.Build.Utilities.
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
         {
-            Log.LogError($"Unable to inspect NuGet assets file '{ProjectAssetsFile}': {exception.Message}");
+            Log.LogError($"Unable to inspect NuGet assets file '{ProjectAssetsFile}': {exception.GetType().FullName}: {exception.Message}");
             return false;
         }
     }
