@@ -13,6 +13,7 @@ import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Serv
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { setInteractiveRouterConnectionChecker } from './Services/NavigationUtils';
 
 let initializersPromise: Promise<void> | undefined;
 let appState: string;
@@ -105,6 +106,10 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   }, (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     return circuit.sendLocationChanging(callId, uri, state, intercepted);
   });
+
+  // Navigations can only be routed through the circuit while it is connected. This reads the
+  // module-level 'circuit', so it keeps reporting the current one after a reconnection replaces it.
+  setInteractiveRouterConnectionChecker(() => circuit.isConnected());
 
   Blazor._internal.forceCloseConnection = () => circuit.disconnect();
   Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => circuit.sendJsDataStream(data, streamId, chunkSize);

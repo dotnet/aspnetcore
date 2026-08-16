@@ -4,7 +4,7 @@
 import '@microsoft/dotnet-js-interop';
 import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isInteractiveRouterConnected, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 import { IBlazor } from '../GlobalExports';
@@ -78,6 +78,14 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // So instead of registering our own native event, register using the EventDelegator.
   eventDelegator.notifyAfterClick(event => {
     if (!hasInteractiveRouter()) {
+      return;
+    }
+
+    if (!isInteractiveRouterConnected()) {
+      // The interactive router can't be reached (e.g., the circuit was lost), so leave the click
+      // alone. The browser then performs a normal page load, which both follows the link and gives
+      // the app a chance to establish a new connection. Intercepting it here would instead fail
+      // with 'Cannot send data if the connection is not in the "Connected" State'.
       return;
     }
 
@@ -288,7 +296,9 @@ function getInteractiveRouterNavigationCallbacks(): NavigationCallbacks | undefi
 
 function currentPageLoadMechanism(): PageLoadMechanism {
   if (hasInteractiveRouter()) {
-    return 'clientside-router';
+    // While the interactive router is unreachable, routing client-side would fail, so fall back to
+    // a full page load. That performs the navigation and lets the app reconnect on the new page.
+    return isInteractiveRouterConnected() ? 'clientside-router' : 'serverside-fullpageload';
   } else if (hasProgrammaticEnhancedNavigationHandler()) {
     return 'serverside-enhanced';
   } else {
