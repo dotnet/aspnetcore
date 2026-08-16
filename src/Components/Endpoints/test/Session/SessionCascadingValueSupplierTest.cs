@@ -14,10 +14,18 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 public class SessionCascadingValueSupplierTest
 {
     private readonly SessionCascadingValueSupplier _supplier;
+    private static readonly JsonStoredDataSerializer _serializer = new();
 
     public SessionCascadingValueSupplierTest()
     {
-        _supplier = new SessionCascadingValueSupplier(NullLogger<SessionCascadingValueSupplier>.Instance);
+        _supplier = new SessionCascadingValueSupplier(new JsonStoredDataSerializer(), NullLogger<SessionCascadingValueSupplier>.Instance);
+    }
+
+    private static void AssertSessionValue(ISession session, string key, object? expected)
+    {
+        Assert.True(session.TryGetValue(key, out var bytes));
+        var value = _serializer.DeserializeValue(bytes, expected?.GetType() ?? typeof(object));
+        Assert.Equal(expected, value);
     }
 
     [Fact]
@@ -57,7 +65,7 @@ public class SessionCascadingValueSupplierTest
         _supplier.SetRequestContext(httpContext);
         await _supplier.PersistAllValues();
 
-        Assert.Equal("\"persisted value\"", httpContext.Session.GetString("key"));
+        AssertSessionValue(httpContext.Session, "key", "persisted value");
     }
 
     [Fact]
@@ -82,7 +90,7 @@ public class SessionCascadingValueSupplierTest
         _supplier.SetRequestContext(httpContext);
         await _supplier.PersistAllValues();
 
-        Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
+        AssertSessionValue(httpContext.Session, "key", "value");
     }
 
     [Fact]
@@ -96,9 +104,9 @@ public class SessionCascadingValueSupplierTest
         _supplier.SetRequestContext(httpContext);
         await _supplier.PersistAllValues();
 
-        Assert.Equal("\"value1\"", httpContext.Session.GetString("key1"));
-        Assert.Equal("\"value2\"", httpContext.Session.GetString("key2"));
-        Assert.Equal("\"value3\"", httpContext.Session.GetString("key3"));
+        AssertSessionValue(httpContext.Session, "key1", "value1");
+        AssertSessionValue(httpContext.Session, "key2", "value2");
+        AssertSessionValue(httpContext.Session, "key3", "value3");
     }
 
     [Fact]
@@ -112,21 +120,18 @@ public class SessionCascadingValueSupplierTest
         await _supplier.PersistAllValues();
 
         Assert.Null(httpContext.Session.GetString("key1"));
-        Assert.Equal("\"value2\"", httpContext.Session.GetString("key2"));
+        AssertSessionValue(httpContext.Session, "key2", "value2");
     }
 
     [Fact]
-    public async Task PersistAllValues_ContinuesOnSerializationException()
+    public async Task PersistAllValues_Throws_ForUnsupportedType()
     {
         _supplier.RegisterValueCallback("key1", () => new IntPtr(42));
-        _supplier.RegisterValueCallback("key2", () => "value2");
 
         var httpContext = CreateHttpContextWithSession();
         _supplier.SetRequestContext(httpContext);
-        await _supplier.PersistAllValues();
 
-        Assert.Null(httpContext.Session.GetString("key1"));
-        Assert.Equal("\"value2\"", httpContext.Session.GetString("key2"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _supplier.PersistAllValues());
     }
 
     [Fact]
@@ -138,7 +143,7 @@ public class SessionCascadingValueSupplierTest
         _supplier.SetRequestContext(httpContext);
         await _supplier.PersistAllValues();
 
-        Assert.Equal("\"value\"", httpContext.Session.GetString("mykey"));
+        AssertSessionValue(httpContext.Session, "mykey", "value");
     }
 
     [Fact]
@@ -146,6 +151,7 @@ public class SessionCascadingValueSupplierTest
     {
         var sink = new TestSink();
         var supplier = new SessionCascadingValueSupplier(
+            new JsonStoredDataSerializer(),
             new TestLoggerFactory(sink, enabled: true).CreateLogger<SessionCascadingValueSupplier>());
         supplier.RegisterValueCallback("key", () => "value");
 
@@ -212,7 +218,7 @@ public class SessionCascadingValueSupplierTest
         Assert.Null(httpContext.Session.GetString("key"));
 
         await _supplier.PersistAllValues();
-        Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
+        AssertSessionValue(httpContext.Session, "key", "value");
     }
 
     internal static DefaultHttpContext CreateHttpContextWithSession()

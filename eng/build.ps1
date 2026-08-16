@@ -341,12 +341,6 @@ $performDotnetBuild = $msBuildEngine -ne 'vs' -and ($BuildJava -or $BuildManaged
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
-# Though VS Code may indicate $nodeReuse is unused, tools.ps1 uses them.
-
-# Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
-$nodeReuse = $false
-$env:MSBUILDDISABLENODEREUSE=1
-
 # Ensure passing neither -bl nor -nobl on CI avoids errors in tools.ps1. This is needed because both parameters are
 # $false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
 if ($CI -and -not $excludeCIBinarylog) {

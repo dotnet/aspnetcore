@@ -8,4 +8,5 @@
   <UsingTask TaskName="RepoTasks.GenerateTestDevCert" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="RepoTasks.BatchHelixWorkItems" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="RepoTasks.CheckProjectAssetsRuntimeTarget" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="RepoTasks.ResolveDotnetToolPackagePaths" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
 </Project>
