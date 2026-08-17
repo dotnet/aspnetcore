@@ -44,7 +44,7 @@ let currentContentUrl = location.href;
 
 export interface NavigationEnhancementCallbacks {
   enhancedNavigationStarted: () => void;
-  documentReceived: (source: Document) => void;
+  documentReceived: (source: Node) => void;
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
 }

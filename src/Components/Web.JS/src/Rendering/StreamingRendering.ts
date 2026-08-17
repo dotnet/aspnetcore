@@ -97,6 +97,11 @@ function redirect(node: HTMLTemplateElement, changeUrl: boolean, isEnhancedNav: 
 }
 
 function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag: DocumentFragment): void {
+  // Streamed content can carry server-emitted browser configuration (e.g. emitted just before an
+  // interactive component marker). Discover it before synchronizing so options are applied before
+  // the component activates and any circuit starts.
+  navigationEnhancementCallbacks.documentReceived(docFrag);
+
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
     const { startMarker, endMarker } = markers;

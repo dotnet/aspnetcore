@@ -125,7 +125,7 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   callAfterStartedCallbacks(initializersPromise);
 }
 
-function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>, source: Document = document): void {
+function updateOptionsFromBrowserConfiguration(options: Partial<WebStartOptions>, source: Node = document): void {
   const browserConfig = discoverBrowserConfiguration(source);
   if (browserConfig) {
     if (browserConfig.logLevel !== undefined) {
