@@ -723,13 +723,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         var hadNewMeasurements = CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
-        var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
-
         if (_initialIndex.Phase == InitialIndexPhase.Pending)
         {
-            GrowWindowOrCompleteInitialIndex(itemsBefore, spacerSeparation, containerSize, visibleItemCapacity, unusedItemCapacity);
+            GrowWindowOrCompleteInitialIndex(_itemsBefore, spacerSeparation, containerSize, visibleItemCapacity, unusedItemCapacity);
             return;
         }
+
+        var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
         // Slide window down by at least one if spacer is visible but position unchanged.
         if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
@@ -760,11 +760,26 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return;
         }
 
-        var viewportCovered = _lastRenderedPlaceholderCount == 0 && spacerSeparation >= containerSize;
-        if (viewportCovered)
+        var itemsAboveTarget = Math.Max(0, ClampToItemRange(InitialItemIndex) - itemsBefore);
+        var visibleSeparation = spacerSeparation - itemsAboveTarget * GetEffectiveItemSizeForStaleSpacer();
+        var viewportCovered = _lastRenderedPlaceholderCount == 0 && visibleSeparation >= containerSize;
+
+        if (viewportCovered || itemsBefore + visibleItemCapacity >= _itemCount)
         {
+            // Either the viewport is genuinely filled, or we've grown the window all the way
+            // to the end of the list and can't grow any further.
             _initialIndex.Complete();
+            return;
         }
+
+        var missing = containerSize - visibleSeparation;
+        var growBy = Math.Max(1, (int)Math.Ceiling(missing / GetEffectiveItemSizeForStaleSpacer()));
+
+        var baseCapacity = Math.Max(visibleItemCapacity, _visibleItemCapacity);
+        var grownCapacity = Math.Min(baseCapacity + growBy, _itemCount - itemsBefore);
+
+        _skipNextDistributionRefresh = false;
+        UpdateItemDistribution(itemsBefore, grownCapacity, unusedItemCapacity);
     }
 
     private float GetEffectiveItemSizeForStaleSpacer()
@@ -796,9 +811,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private void RecalibrateItemSize(float spacerSeparation)
     {
-        if (_lastRenderedItemCount > 0)
+        if (_lastRenderedItemCount > 0 && _lastRenderedPlaceholderCount == 0)
         {
-            _itemSize = (spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize)) / _lastRenderedItemCount;
+            _itemSize = spacerSeparation / _lastRenderedItemCount;
         }
 
         if (_itemSize <= 0)
