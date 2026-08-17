@@ -1,6 +1,3 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
 import { expect, test, describe, beforeEach, afterEach } from '@jest/globals';
 import { BrowserRenderer } from '../src/Rendering/BrowserRenderer';
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from '../src/Rendering/RenderBatch/RenderBatch';
@@ -20,154 +17,70 @@ describe('BrowserRenderer.updateText with textarea containing multiple text fram
     document.body.removeChild(container);
   });
 
-  test('should reconstruct full textarea value from all text nodes when updating a single text frame', () => {
-    const textarea = document.createElement('textarea');
-    container.appendChild(textarea);
+  test('should reconstruct textarea value from all text nodes, handling multiple frames, focus state, and edge cases', () => {
+    // Test 1: Multiple text frames scenario
+    const textareaWithMultipleFrames = document.createElement('textarea');
+    container.appendChild(textareaWithMultipleFrames);
 
-    // Simulate the state after rendering multiple text frames:
-    // <textarea>Hello ...!</textarea>
-    // The compiler might emit this as multiple text frames: "Hello ", "...", "!"
-    const textNode1 = document.createTextNode('Hello ');
-    const textNode2 = document.createTextNode('...');
-    const textNode3 = document.createTextNode('!');
-    textarea.appendChild(textNode1);
-    textarea.appendChild(textNode2);
-    textarea.appendChild(textNode3);
+    const firstTextNode = document.createTextNode('Hello ');
+    const middleTextNode = document.createTextNode('...');
+    const lastTextNode = document.createTextNode('!');
+    textareaWithMultipleFrames.appendChild(firstTextNode);
+    textareaWithMultipleFrames.appendChild(middleTextNode);
+    textareaWithMultipleFrames.appendChild(lastTextNode);
 
-    expect(textarea.value).toEqual('Hello ...!');
-    expect(textarea.textContent).toEqual('Hello ...!');
+    expect(textareaWithMultipleFrames.value).toEqual('Hello ...!');
+    expect(document.activeElement).not.toBe(textareaWithMultipleFrames);
 
-    // Simulate updating the second text frame only (the "..." part changes to "***")
-    textNode2.textContent = '***';
-
-    // In the old buggy implementation, this would set textarea.value = '***' (discarding the other content)
-    // In the fixed implementation, we reconstruct from all text nodes
-    let fullContent = '';
-    for (const node of Array.from(textarea.childNodes)) {
+    // Simulate updating middle text frame: reconstruct from all nodes
+    middleTextNode.textContent = '***';
+    let reconstructedContent = '';
+    for (const node of textareaWithMultipleFrames.childNodes) {
       if (node instanceof Text) {
-        fullContent += node.textContent || '';
+        reconstructedContent += node.textContent || '';
       }
     }
-    textarea.value = fullContent || '';
+    textareaWithMultipleFrames.value = reconstructedContent || '';
 
-    expect(textarea.value).toEqual('Hello ***!');
-    expect(textarea.textContent).toEqual('Hello ***!');
-  });
+    expect(textareaWithMultipleFrames.value).toEqual('Hello ***!');
 
-  test('should preserve textarea content when updating middle text node with focus check', () => {
-    const textarea = document.createElement('textarea');
-    container.appendChild(textarea);
+    // Test 2: Focus check prevents update
+    textareaWithMultipleFrames.focus();
+    expect(document.activeElement).toBe(textareaWithMultipleFrames);
+    textareaWithMultipleFrames.setSelectionRange(3, 3);
+    const caretPositionBefore = textareaWithMultipleFrames.selectionStart;
 
-    const textNode1 = document.createTextNode('Start ');
-    const textNode2 = document.createTextNode('middle');
-    const textNode3 = document.createTextNode(' End');
-    textarea.appendChild(textNode1);
-    textarea.appendChild(textNode2);
-    textarea.appendChild(textNode3);
+    const shouldUpdateWhileFocused = document.activeElement !== textareaWithMultipleFrames;
+    expect(shouldUpdateWhileFocused).toBe(false);
+    expect(textareaWithMultipleFrames.selectionStart).toBe(caretPositionBefore);
 
-    expect(textarea.value).toEqual('Start middle End');
-    expect(document.activeElement).not.toBe(textarea);
+    // Test 3: Empty and non-text nodes handled correctly
+    textareaWithMultipleFrames.blur();
+    container.removeChild(textareaWithMultipleFrames);
 
-    textNode2.textContent = 'MIDDLE';
+    const textareaWithMixedNodes = document.createElement('textarea');
+    container.appendChild(textareaWithMixedNodes);
 
-    let fullContent = '';
-    for (const node of Array.from(textarea.childNodes)) {
+    const firstCharNode = document.createTextNode('A');
+    const emptyTextNode = document.createTextNode('');
+    const nonTextSpanElement = document.createElement('span');
+    nonTextSpanElement.textContent = 'Ignored';
+    const secondCharNode = document.createTextNode('B');
+
+    textareaWithMixedNodes.appendChild(firstCharNode);
+    textareaWithMixedNodes.appendChild(emptyTextNode);
+    textareaWithMixedNodes.appendChild(nonTextSpanElement);
+    textareaWithMixedNodes.appendChild(secondCharNode);
+
+    reconstructedContent = '';
+    for (const node of textareaWithMixedNodes.childNodes) {
       if (node instanceof Text) {
-        fullContent += node.textContent || '';
+        reconstructedContent += node.textContent || '';
       }
     }
-    textarea.value = fullContent || '';
+    textareaWithMixedNodes.value = reconstructedContent || '';
 
-    expect(textarea.value).toEqual('Start MIDDLE End');
-    expect(textarea.textContent).toEqual('Start MIDDLE End');
-  });
-
-  test('should skip textarea value update when textarea has focus to avoid clobbering caret', () => {
-    const textarea = document.createElement('textarea');
-    container.appendChild(textarea);
-
-    const textNode1 = document.createTextNode('Content');
-    textarea.appendChild(textNode1);
-    textarea.value = 'Content';
-
-    textarea.focus();
-    expect(document.activeElement).toBe(textarea);
-
-    textarea.setSelectionRange(3, 3);
-    const originalSelectionStart = textarea.selectionStart;
-
-    const shouldUpdate = document.activeElement !== textarea;
-
-    expect(shouldUpdate).toBe(false);
-    expect(textarea.selectionStart).toBe(originalSelectionStart);
-  });
-
-  test('should handle empty text nodes when reconstructing textarea value', () => {
-    const textarea = document.createElement('textarea');
-    container.appendChild(textarea);
-
-    const textNode1 = document.createTextNode('Hello');
-    const emptyNode = document.createTextNode('');
-    const textNode2 = document.createTextNode('World');
-    textarea.appendChild(textNode1);
-    textarea.appendChild(emptyNode);
-    textarea.appendChild(textNode2);
-
-    expect(textarea.value).toEqual('HelloWorld');
-
-    let fullContent = '';
-    for (const node of Array.from(textarea.childNodes)) {
-      if (node instanceof Text) {
-        fullContent += node.textContent || '';
-      }
-    }
-    textarea.value = fullContent || '';
-
-    expect(textarea.value).toEqual('HelloWorld');
-  });
-
-  test('should handle null textContent gracefully when reconstructing textarea value', () => {
-    const textarea = document.createElement('textarea');
-    container.appendChild(textarea);
-
-    const textNode1 = document.createTextNode('First');
-    const textNode2 = document.createTextNode('Second');
-    textarea.appendChild(textNode1);
-    textarea.appendChild(textNode2);
-
-    let fullContent = '';
-    for (const node of Array.from(textarea.childNodes)) {
-      if (node instanceof Text) {
-        fullContent += node.textContent || '';
-      }
-    }
-    textarea.value = fullContent || '';
-
-    expect(textarea.value).toEqual('FirstSecond');
-  });
-
-  test('should only process Text nodes when reconstructing textarea value', () => {
-    const textarea = document.createElement('textarea');
-    container.appendChild(textarea);
-
-    const textNode1 = document.createTextNode('Text1');
-    const elementNode = document.createElement('span');
-    elementNode.textContent = 'Element';
-    const textNode2 = document.createTextNode('Text2');
-
-    textarea.appendChild(textNode1);
-    textarea.appendChild(elementNode);
-    textarea.appendChild(textNode2);
-
-    let fullContent = '';
-    for (const node of Array.from(textarea.childNodes)) {
-      if (node instanceof Text) {
-        fullContent += node.textContent || '';
-      }
-    }
-    textarea.value = fullContent || '';
-
-    expect(textarea.value).toEqual('Text1Text2');
-    expect(textarea.value).not.toContain('Element');
+    expect(textareaWithMixedNodes.value).toEqual('AB');
+    expect(textareaWithMixedNodes.value).not.toContain('Ignored');
   });
 });

@@ -184,14 +184,13 @@ export class BrowserRenderer {
             const parentElement = textNode.parentElement;
             if (parentElement instanceof HTMLTextAreaElement && document.activeElement !== parentElement) {
               let fullContent = '';
-              for (const node of Array.from(parentElement.childNodes)) {
+              for (const node of parentElement.childNodes) {
                 if (node instanceof Text) {
                   fullContent += node.textContent || '';
                 }
               }
-              const newValue = fullContent || '';
-              if (parentElement.value !== newValue) {
-                parentElement.value = newValue;
+              if (parentElement.value !== fullContent) {
+                parentElement.value = fullContent;
               }
             }
           } else {
