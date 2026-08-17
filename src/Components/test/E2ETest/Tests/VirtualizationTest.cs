@@ -6135,6 +6135,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68559")]
     public void QuickGrid_ScrollToItem_NegativeIndex_ScrollsToTop(bool useItemsProvider)
     {
         MountQuickGridForScrollToItem(useItemsProvider);
