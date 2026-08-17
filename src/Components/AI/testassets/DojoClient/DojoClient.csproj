@@ -37,4 +37,8 @@
     <Reference Include="Microsoft.AspNetCore.Components.AI" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DojoClient.E2E.Tests" />
+  </ItemGroup>
+
 </Project>

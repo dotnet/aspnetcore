@@ -266,6 +266,26 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
+    [Theory]
+    [InlineData("1e-6", 1e-6)]
+    [InlineData("2E-06", 2E-06)]
+    [InlineData("3.5e10", 3.5e10)]
+    [InlineData("123+", 123d)]
+    [InlineData("123.45-", -123.45d)]
+    [InlineData("1,234", 1234d)]
+    [InlineData("-1,234.56", -1234.56d)]
+    public void TryConvertToDouble_HandlesSpecialFormats(string input, double expected)
+    {
+        var culture = input.Contains(',') ? CultureInfo.GetCultureInfo("en-US") : CultureInfo.InvariantCulture;
+        var result = BindConverter.TryConvertTo<double>(
+            input,
+            culture,
+            out var value);
+
+        Assert.True(result);
+        Assert.Equal(expected, value);
+    }
+
     [Fact]
     public void FormatValue_NullableEnum()
     {
@@ -296,6 +316,36 @@ public class BindConverterTest
 
         // Assert
         Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public void TryConvertToNullableDouble_AllowsEmptyValue(object input)
+    {
+        var result = BindConverter.TryConvertTo<double?>(
+            (string)input,
+            CultureInfo.InvariantCulture,
+            out var value);
+
+        Assert.True(result);
+        Assert.Null(value);
+    }
+
+    [Theory]
+    [InlineData("2E")]
+    [InlineData("2E-")]
+    [InlineData("e10")]
+    public void TryConvertToDouble_RejectsInvalidScientificNotation(
+        string input)
+    {
+        var result = BindConverter.TryConvertTo<double>(
+            input,
+            CultureInfo.InvariantCulture,
+            out var value);
+
+        Assert.False(result);
+        Assert.Equal(default, value);
     }
 
     [Fact]
