@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -71,6 +72,15 @@ internal sealed partial class ComponentHub : Hub
     /// Gets the default endpoint path for incoming connections.
     /// </summary>
     public static PathString DefaultPath { get; } = "/_blazor";
+
+    public override Task OnConnectedAsync()
+    {
+        // ComponentHub owns authentication state at the circuit layer and does not use SignalR
+        // groups or user routing, so it can accept an identity change without rekeying those.
+        Context.Features.Get<IConnectionUserRefreshFeature>()?.OnUserRefreshing = static _ => true;
+
+        return Task.CompletedTask;
+    }
 
     public override Task OnDisconnectedAsync(Exception exception)
     {
