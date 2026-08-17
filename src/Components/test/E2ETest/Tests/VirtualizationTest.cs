@@ -5596,15 +5596,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
 
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
+        Browser.Exists(By.Id("toggle-height")).Click();
         Browser.Exists(By.Id("unload-list")).Click();
         Browser.Exists(By.Id("list-not-loaded"));
-        SetManualInitialIndex(990);
+        SetManualInitialIndex(950);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
-        Browser.True(() => GetBottomRenderedIndex(js) == 999);
         Browser.True(() => ViewportEdgeCoveredByRealItem(js, "top"),
             $"Viewport top should be covered by a real item, but a gap was found " +
             $"(bottom={GetBottomRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
+        Browser.True(() => ViewportEdgeCoveredByRealItem(js, "bottom"),
+            $"Viewport bottom should be covered by a real item, but a gap was found " +
+            $"(top={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
     }
 
     [Fact]
@@ -5616,15 +5619,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
 
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
+        Browser.Exists(By.Id("toggle-height")).Click();
         Browser.Exists(By.Id("unload-list")).Click();
         Browser.Exists(By.Id("list-not-loaded"));
-        SetManualInitialIndex(990);
+        SetManualInitialIndex(950);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
-        Browser.True(() => GetBottomRenderedIndex(js) == 999);
         Browser.True(() => ViewportEdgeCoveredByRealItem(js, "top"),
             $"Viewport top should be covered by a real item, but a gap was found " +
             $"(bottom={GetBottomRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
+        Browser.True(() => ViewportEdgeCoveredByRealItem(js, "bottom"),
+            $"Viewport bottom should be covered by a real item, but a gap was found " +
+            $"(top={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
     }
 
     [Theory]

@@ -686,7 +686,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         if (_initialIndex.Phase == InitialIndexPhase.Pending)
         {
-            GrowWindowOrCompleteInitialIndex(spacerSeparation, containerSize, visibleItemCapacity, unusedItemCapacity);
+            GrowWindowOrCompleteInitialIndex(itemsBefore, spacerSeparation, containerSize, visibleItemCapacity, unusedItemCapacity);
             return;
         }
 
@@ -723,13 +723,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         var hadNewMeasurements = CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
+        var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
+
         if (_initialIndex.Phase == InitialIndexPhase.Pending)
         {
-            GrowWindowOrCompleteInitialIndex(spacerSeparation, containerSize, visibleItemCapacity, unusedItemCapacity);
+            GrowWindowOrCompleteInitialIndex(itemsBefore, spacerSeparation, containerSize, visibleItemCapacity, unusedItemCapacity);
             return;
         }
-
-        var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
         // Slide window down by at least one if spacer is visible but position unchanged.
         if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
@@ -751,19 +751,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    private void GrowWindowOrCompleteInitialIndex(float spacerSeparation, float containerSize, int visibleItemCapacity, int unusedItemCapacity)
+    private void GrowWindowOrCompleteInitialIndex(int itemsBefore, float spacerSeparation, float containerSize, int visibleItemCapacity, int unusedItemCapacity)
     {
+        if (visibleItemCapacity > _visibleItemCapacity || itemsBefore != _itemsBefore)
+        {
+            _skipNextDistributionRefresh = false;
+            UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
+            return;
+        }
+
         var viewportCovered = _lastRenderedPlaceholderCount == 0 && spacerSeparation >= containerSize;
         if (viewportCovered)
         {
             _initialIndex.Complete();
-            return;
-        }
-
-        if (visibleItemCapacity > _visibleItemCapacity)
-        {
-            _skipNextDistributionRefresh = false;
-            UpdateItemDistribution(_itemsBefore, visibleItemCapacity, unusedItemCapacity);
         }
     }
 
