@@ -37,11 +37,13 @@ public class RemoteAuthenticationTest :
     {
         // The client uses the authorization code flow, so the callback parameters are in the
         // query string. The provider supplied error_description must not reach the UI.
-        Navigate("/subdir/test-remote-authentication?callbackResponseMode=query&callbackError=access_denied&callbackErrorDescription=sensitive-provider-message");
+        NavigateWithFreshAuthenticationState("/subdir/test-remote-authentication?callbackResponseMode=query&callbackError=access_denied&callbackErrorDescription=sensitive-provider-message");
 
-        var message = Browser.Exists(By.TagName("p"));
-        Browser.Equal("There was an error trying to log you in: 'Access was denied during sign-in.'", () => message.Text);
-        Assert.DoesNotContain("sensitive-provider-message", message.Text);
+        var messageText = "";
+        Browser.Equal(
+            "There was an error trying to log you in: 'Access was denied during sign-in.'",
+            () => messageText = Browser.FindElement(By.TagName("p")).Text);
+        Assert.DoesNotContain("sensitive-provider-message", messageText);
     }
 
     [Fact]
@@ -51,10 +53,24 @@ public class RemoteAuthenticationTest :
         // also present in the fragment. The client is configured for the authorization code
         // flow, whose parameters are defined to be in the query, so the fragment must be
         // ignored. Reading the fragment first would surface the stray error instead.
-        Navigate("/subdir/test-remote-authentication?callbackResponseMode=strayFragment&callbackError=access_denied");
+        NavigateWithFreshAuthenticationState("/subdir/test-remote-authentication?callbackResponseMode=strayFragment&callbackError=access_denied");
 
-        var message = Browser.Exists(By.TagName("p"));
-        Browser.Equal("There was an error trying to log you in: 'There was an error signing in.'", () => message.Text);
-        Assert.DoesNotContain("Access was denied", message.Text);
+        var messageText = "";
+        Browser.Equal(
+            "There was an error trying to log you in: 'There was an error signing in.'",
+            () => messageText = Browser.FindElement(By.TagName("p")).Text);
+        Assert.DoesNotContain("Access was denied", messageText);
+    }
+
+    // Every test in this class shares one browser session, and oidc-client caches the
+    // signed-in user in sessionStorage, which survives same-tab navigation. A test that
+    // runs after a successful login would load the app already authenticated and never
+    // reach RedirectToLogin. Storage is origin-scoped, so clear it from a same-origin
+    // endpoint that neither boots the app nor starts an authentication flow.
+    private void NavigateWithFreshAuthenticationState(string url)
+    {
+        Navigate("/subdir/oidc/.well-known/openid-configuration");
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.clear(); localStorage.clear();");
+        Navigate(url);
     }
 }
