@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
@@ -336,6 +337,21 @@ public class ComponentHubTest
     }
 
     [Fact]
+    public async Task OnConnectedAsyncReplacesSignalRUserRefreshPolicy()
+    {
+        var userRefreshFeature = new Mock<IConnectionUserRefreshFeature>();
+        userRefreshFeature.SetupAllProperties();
+        userRefreshFeature.Object.OnUserRefreshing = static _ => false;
+        var (_, hub) = InitializeComponentHub(userRefreshFeature: userRefreshFeature.Object);
+
+        await hub.OnConnectedAsync();
+
+        var callback = userRefreshFeature.Object.OnUserRefreshing;
+        Assert.NotNull(callback);
+        Assert.True(callback(new ClaimsPrincipal()));
+    }
+
+    [Fact]
     public async Task OnAuthenticationRefreshedAsyncUpdatesCircuitUser()
     {
         var authenticationStateProvider = new ServerAuthenticationStateProvider();
@@ -372,7 +388,8 @@ public class ComponentHubTest
         ICircuitHandleRegistry handleRegistry = null,
         ICircuitPersistenceProvider provider = null,
         ICircuitFactory circuitFactory = null,
-        ClaimsPrincipal user = null)
+        ClaimsPrincipal user = null,
+        IConnectionUserRefreshFeature userRefreshFeature = null)
     {
         deserializer ??= new TestServerComponentDeserializer();
         var ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -416,6 +433,10 @@ public class ComponentHubTest
         var httpContextFeature = new Mock<IHttpContextFeature>();
         httpContextFeature.Setup(x => x.HttpContext).Returns(() => new DefaultHttpContext());
         feature.Set(httpContextFeature.Object);
+        if (userRefreshFeature is not null)
+        {
+            feature.Set(userRefreshFeature);
+        }
         mockContext.Setup(x => x.Features).Returns(feature);
         mockContext.Setup(x => x.ConnectionId).Returns("123");
         mockContext.Setup(x => x.User).Returns(user ?? new ClaimsPrincipal());
