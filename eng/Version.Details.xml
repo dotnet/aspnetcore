@@ -386,9 +386,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>64a29867c5c5c8e0babc9e31313cf3b6e50f0193</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26410.101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>64a29867c5c5c8e0babc9e31313cf3b6e50f0193</Sha>
+    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26412.5">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>4e948e7c5bbfab4e87a02fc9b27bfaa068d0d4b3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="11.0.0-beta.26410.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>

@@ -5,6 +5,7 @@ using System.Net.Http;
 using AGUI.Client;
 using DojoClient;
 using DojoClient.Components;
+using DojoClient.Formatting;
 using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +27,9 @@ builder.Services.AddScoped<IChatClient>(sp =>
 {
     var httpClient = sp.GetRequiredService<IHttpClientFactory>()
         .CreateClient(DojoScenarios.ApiHttpClientName);
-    return new AGUIChatClient(new AGUIChatClientOptions(httpClient, DojoScenarios.AgenticChatEndpoint));
+    var aguiClient = new AGUIChatClient(
+        new AGUIChatClientOptions(httpClient, DojoScenarios.AgenticChatEndpoint));
+    return new FormattedChatClient(aguiClient);
 });
 
 var app = builder.Build();

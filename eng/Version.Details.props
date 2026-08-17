@@ -14,7 +14,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetBuildTasksArchivesPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetBuildTasksArchivesPackageVersion>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksTemplatingPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
-    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetHelixJobMonitorPackageVersion>
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26412.5</MicrosoftDotNetHelixJobMonitorPackageVersion>
     <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetHelixSdkPackageVersion>
     <MicrosoftDotNetRemoteExecutorPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetRemoteExecutorPackageVersion>
     <MicrosoftDotNetSharedFrameworkSdkPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
@@ -125,16 +125,17 @@ This file should be imported by eng/Versions.props
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
+    <!-- dotnet-arcade dependencies -->
+    <MicrosoftDotNetArcadeSdkVersion>$(MicrosoftDotNetArcadeSdkPackageVersion)</MicrosoftDotNetArcadeSdkVersion>
+    <MicrosoftDotNetHelixJobMonitorVersion>$(MicrosoftDotNetHelixJobMonitorPackageVersion)</MicrosoftDotNetHelixJobMonitorVersion>
     <!-- dotnet-dotnet dependencies -->
     <dotnetefVersion>$(dotnetefPackageVersion)</dotnetefVersion>
     <MicrosoftBclAsyncInterfacesVersion>$(MicrosoftBclAsyncInterfacesPackageVersion)</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBclCryptographyVersion>$(MicrosoftBclCryptographyPackageVersion)</MicrosoftBclCryptographyVersion>
     <MicrosoftBclTimeProviderVersion>$(MicrosoftBclTimeProviderPackageVersion)</MicrosoftBclTimeProviderVersion>
-    <MicrosoftDotNetArcadeSdkVersion>$(MicrosoftDotNetArcadeSdkPackageVersion)</MicrosoftDotNetArcadeSdkVersion>
     <MicrosoftDotNetBuildTasksArchivesVersion>$(MicrosoftDotNetBuildTasksArchivesPackageVersion)</MicrosoftDotNetBuildTasksArchivesVersion>
     <MicrosoftDotNetBuildTasksInstallersVersion>$(MicrosoftDotNetBuildTasksInstallersPackageVersion)</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>$(MicrosoftDotNetBuildTasksTemplatingPackageVersion)</MicrosoftDotNetBuildTasksTemplatingVersion>
-    <MicrosoftDotNetHelixJobMonitorVersion>$(MicrosoftDotNetHelixJobMonitorPackageVersion)</MicrosoftDotNetHelixJobMonitorVersion>
     <MicrosoftDotNetHelixSdkVersion>$(MicrosoftDotNetHelixSdkPackageVersion)</MicrosoftDotNetHelixSdkVersion>
     <MicrosoftDotNetRemoteExecutorVersion>$(MicrosoftDotNetRemoteExecutorPackageVersion)</MicrosoftDotNetRemoteExecutorVersion>
     <MicrosoftDotNetSharedFrameworkSdkVersion>$(MicrosoftDotNetSharedFrameworkSdkPackageVersion)</MicrosoftDotNetSharedFrameworkSdkVersion>
