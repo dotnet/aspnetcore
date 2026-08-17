@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -112,6 +113,7 @@ public sealed class CircuitOptions
     /// <remarks>
     /// Resolvers are queried in registration order before the reflection-based fallback.
     /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Experimental("ASPNETCORE9004", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public IList<IJsonTypeInfoResolver> JsonTypeInfoResolvers { get; } = new List<IJsonTypeInfoResolver>();
 
