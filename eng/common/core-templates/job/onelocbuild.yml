@@ -14,6 +14,15 @@ parameters:
   # exist, and any pipeline that sets this to '' fall back to PAT-based auth via the CeapexPat parameter.
   CeapexServiceConnection: 'dnceng-onelocbuild-ceapex'
 
+  # GitHub App authentication for the OneLoc check-in PR (dnceng/internal only).
+  # The infrastructure identifiers are centralized here and the App path is enabled by default.
+  # DevDiv requires its own project-scoped service connection before this path can be enabled there.
+  UseGitHubAppAuthentication: true
+  GitHubAppServiceConnection: 'dnceng-oneloc-githubapp'
+  GitHubAppClientId: 'Iv23lijBU8x3gc9lDOc9'
+  GitHubAppKeyVaultName: 'EngKeyVault'
+  GitHubAppKeyName: 'oneloc-localization-app-key'
+
   SourcesDirectory: $(System.DefaultWorkingDirectory)
   CreatePr: true
   AutoCompletePr: false
@@ -89,6 +98,20 @@ jobs:
           outputVariableName: 'CeapexEntraToken'
           condition: ${{ parameters.condition }}
 
+    # Mint a short-lived GitHub App installation token for the loc check-in PR (dnceng/internal only).
+    # All other projects fall back to PAT-based auth, since the app service connection is scoped to dnceng/internal.
+    - ${{ if and(eq(parameters.RepoType, 'gitHub'), eq(parameters.UseGitHubAppAuthentication, true), eq(variables['System.TeamProject'], 'internal')) }}:
+      - template: /eng/common/core-templates/steps/get-github-app-token.yml
+        parameters:
+          is1ESPipeline: ${{ parameters.is1ESPipeline }}
+          azureSubscription: ${{ parameters.GitHubAppServiceConnection }}
+          keyVaultName: ${{ parameters.GitHubAppKeyVaultName }}
+          keyName: ${{ parameters.GitHubAppKeyName }}
+          appClientId: ${{ parameters.GitHubAppClientId }}
+          installationOwner: ${{ parameters.GitHubOrg }}
+          outputVariableName: 'GitHubAppInstallationToken'
+          condition: ${{ parameters.condition }}
+
     - task: OneLocBuild@2
       displayName: OneLocBuild
       env:
@@ -110,7 +133,10 @@ jobs:
           patVariable: ${{ parameters.CeapexPat }}
         ${{ if eq(parameters.RepoType, 'gitHub') }}:
           repoType: ${{ parameters.RepoType }}
-          gitHubPatVariable: "${{ parameters.GithubPat }}"
+          ${{ if and(eq(parameters.UseGitHubAppAuthentication, true), eq(variables['System.TeamProject'], 'internal')) }}:
+            gitHubPatVariable: "$(GitHubAppInstallationToken)"
+          ${{ if or(eq(parameters.UseGitHubAppAuthentication, false), ne(variables['System.TeamProject'], 'internal')) }}:
+            gitHubPatVariable: "${{ parameters.GithubPat }}"
         ${{ if ne(parameters.MirrorRepo, '') }}:
           isMirrorRepoSelected: true
           gitHubOrganization: ${{ parameters.GitHubOrg }}

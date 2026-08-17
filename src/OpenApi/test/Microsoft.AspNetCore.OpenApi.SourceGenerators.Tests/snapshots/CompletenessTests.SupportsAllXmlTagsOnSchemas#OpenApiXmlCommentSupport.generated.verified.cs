@@ -713,7 +713,7 @@ T", null, null, false, null, null, null));
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
                 {
-                    schema.Example = jsonString.Parse();
+                    schema.Examples = [jsonString.Parse()!];
                 }
             }
 
@@ -739,7 +739,7 @@ T", null, null, false, null, null, null));
                         schema.Description = description;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
-                            schema.Example = jsonString.Parse();
+                            schema.Examples = [jsonString.Parse()!];
                         }
                     }
                     else

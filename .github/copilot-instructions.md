@@ -12,6 +12,11 @@
 * If approval is missing, stop and explain the required [API review process](../docs/APIReviewProcess.md): an issue owner or champion drives an `api-suggestion` with the proposal in ref-assembly form, then applies `api-ready-for-review` and notifies `@dotnet/aspnet-api-review` when it is mature. Implementation starts only after `api-approved`.
 * When reporting this gate, explicitly say that `PublicAPI.Unshipped.txt` tracks compatibility but does not grant API approval, and that any implementation change to the approved API shape must return to API review.
 
+## Framework assembly boundaries
+
+* In shipping framework code, do not add `InternalsVisibleTo` or use `[UnsafeAccessor]` to access non-public members in another framework assembly. Existing uses of these mechanisms are not precedent for new uses.
+* Redesign the assembly boundary instead. If that requires a public API, follow the repository API-review and baseline process.
+
 ## Formatting
 
 * Apply code-formatting style defined in `.editorconfig`.
@@ -38,6 +43,8 @@
 ## Running tests
 
 * To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder. For example, to run the build with tests in the `src/Http` directory, run `./src/Http/build.sh -test`.
+* Before claiming a bug fix is verified, confirm that the relevant test or check fails for the expected reason without the fix and passes with it. Reading the source or seeing a test pass on its own is not proof that the bug is fixed.
+* If that red/green verification isn't practical, explain why, state what you did verify, and don't describe the fix as verified.
 
 ## .NET Environment
 

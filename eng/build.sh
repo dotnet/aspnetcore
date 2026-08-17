@@ -362,10 +362,6 @@ fi
 # Initialize global variables need to be set before the import of Arcade is imported
 restore=$run_restore
 
-# Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
-nodeReuse=false
-export MSBUILDDISABLENODEREUSE=1
-
 # Ensure passing neither --bl nor --nobl on CI avoids errors in tools.sh. This is needed because we set both variables
 # to false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
 if [[ "$ci" == true && "$exclude_ci_binary_log" == false ]]; then
