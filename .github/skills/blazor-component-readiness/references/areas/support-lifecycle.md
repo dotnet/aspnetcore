@@ -2,8 +2,11 @@
 
 Applies to `SUP-*`.
 
-These requirements are primarily repository-wide and maintainer-owned. Public documentation can
-verify a published commitment; absence of private operational records is not a product defect.
+These requirements are primarily repository-wide and maintainer-owned. `SUP-09` is intentionally
+component-specific because a release-wide process can reverify some controls while omitting the
+selected control. `SUP-01` proves named package/product support ownership and contact, not separate
+implementation ownership for each control. Public documentation can verify a published commitment;
+absence of private operational records is not a product defect.
 
 ## Evidence to collect
 

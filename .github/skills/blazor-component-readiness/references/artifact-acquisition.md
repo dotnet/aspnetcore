@@ -22,6 +22,19 @@ source-only.
 A package-manager cache is acceptable only when its source and exact original bytes can be
 established. A locally rebuilt package is not the released artifact.
 
+For the stable ledger, canonical package ID and version come only from `<metadata><id>` and
+`<metadata><version>` inside the exact digest-identified nupkg. Registration metadata is discovery
+evidence, not canonical identity. Routed acquisition rejects nupkgs larger than 256 MiB before
+hashing/ZIP inspection and independently stops nuspec expansion after 1 MiB.
+
+Canonical repository identity requires a public DNS/IDN HTTPS host. IP literals, localhost,
+single-label hosts, and `.local`/`.internal` authorities are rejected.
+
+Serialized reports, evidence bundles, and validation receipts have a shared 64 MiB public-command
+ceiling with length precheck plus growth detection. Ledger bundling enforces the same aggregate and
+output ceiling. This is separate from the 256 MiB streamed nupkg input and 1 MiB nuspec expansion
+limits.
+
 ## Mode decision
 
 | Evidence state | Review consequence |
@@ -53,14 +66,20 @@ workflow configuration.
 
 ## Shared exact-artifact ledger
 
-For multiple controls sharing the same repository SHA and package ID/version/digest:
+Repository-wide evidence may be reused only for the same pinned repository SHA and exact package
+ID/version/digest. For multiple controls sharing that exact identity:
 
-1. create one repository-wide evidence ledger keyed by those exact identities;
-2. classify package/repository rows once;
-3. import those ledger rows into later reports with the original provenance and recheck state;
-4. explicitly supersede a shared classification only with stronger or newer exact-snapshot evidence;
-5. keep component-specific source and behavior evidence in each control report.
+1. build one immutable `repository` source ledger keyed by those exact identities;
+2. classify only rubric-owned `repository-wide` rows once;
+3. embed the complete source ledger in each later companion and select the required stable EV1 subset;
+4. represent a changed observation as a new immutable record and use a compatible `supersedes` link
+   when reviewer judgment supports it;
+5. keep component-specific source and behavior evidence in an exact-component `component` ledger.
 
 Never merge evidence across a different package version, digest, source SHA, or release candidate.
 Shared evidence reduces clerical work; it does not turn one control's runtime result into evidence
 for another control.
+
+For source-only reviews, repository-wide rows remain available but the repository ledger subject is
+bound to the exact component ID. It may be reused by a same-component follow-up at the same snapshot,
+never by a sibling control.

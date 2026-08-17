@@ -22,6 +22,10 @@ For component-specific lessons, record exact SHA/package, date, evidence type, s
 reproduction, freshness requirements, and whether it is a positive, defect, evidence gap, or
 non-finding. Never present a component fact as current without checking drift.
 
+Retain reusable facts only as immutable atomic records in canonical source ledgers. Never edit or
+rebind an EV1 identity. A changed observation gets a new identity-bearing record; use `supersedes`
+only when reviewer judgment supports the structural relationship, and keep the prior record.
+
 ## Require repeated evidence for core changes
 
 Prefer a core workflow change when it:
@@ -41,10 +45,13 @@ new guidance does not manufacture findings or expand into catalog audits.
 Validate skill maintenance changes with:
 
 ```bash
-python3 scripts/validate_skill.py
-python3 -m unittest discover -s tests -p 'test_*.py'
+source activate.sh
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  validate-skill --skill-dir .github/skills/blazor-component-readiness
+dotnet test \
+  eng/tools/BlazorComponentReadiness.Tests/BlazorComponentReadiness.Tests.csproj
 npx --yes --package @microsoft/vally-cli@0.13.0 vally lint \
-  --eval-spec evals/regression.vally.yaml --strict
+  --eval-spec .github/skills/blazor-component-readiness/evals/regression.vally.yaml --strict
 ```
 
 ## Review for overfitting

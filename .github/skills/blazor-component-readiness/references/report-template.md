@@ -1,24 +1,137 @@
 # Report templates
 
-## Readiness report
+## Validated source report
 
-Keep the decision document concise. Put complete coverage evidence in annexes.
+The source report is the evidence record used for structural validation. Keep direct observations
+separate from optional reviewer synthesis.
 
-1. Executive result
-2. Scope, exact snapshots, rubric version, review mode, and timebox
-3. Verified positives
-4. Highest-priority defects
-5. Maintainer evidence requests
-6. Security, accessibility, render-mode, trimming, and release conclusions
-7. Recommended next decision
-8. Annex A: complete scorecard
-9. Annex B: evidence ledger
-10. Annex C: structural validation receipt
-11. Annex D: repository cleanliness and limitations
+1. Scope, exact snapshots, rubric version, review mode, and timebox
+2. Classification counts
+3. Direct findings needed to substantiate scorecard classifications
+4. Annex A: complete scorecard
+5. Annex B: evidence ledger
+6. Annex C: structural validation receipt
+7. Annex D: repository cleanliness and limitations
 
-Lead with what was exercised successfully, whether the component is ready for the stated use,
-decisive blockers, material evidence gaps, and the bounded next decision. Avoid certification
-language unless the user defines a formal gate.
+Do not add a verdict, ranked findings, remediation plan, acceptance gate, or next decision by
+default. Those are reviewer synthesis rather than the assessment record. Produce them only when the
+user explicitly requests a decision brief.
+
+## Evidence-only evaluation result
+
+Use this as the default presentation when copying evaluation results into an issue, project draft,
+ticket, or comparable tracker. It has exactly one shape. Do not introduce local variations: two
+reports of the same rubric must differ only in their content.
+
+Emit these `##` sections, in this order, and no others:
+
+1. `# [Component] readiness assessment — [package] [version]` title line, followed by the
+   privacy/scope callout and the AI-review limitation callout.
+2. `## Areas we believe need to be fixed`
+3. `## Full report`
+4. `## Exact review scope`
+5. `## Review-result counts`
+6. `## Status terminology`
+7. `## Complete rubric requirement mapping`
+8. `## Evidence ledger`
+9. `## Structural validation and limitations`
+
+Validate the finished body before writing it to any tracker:
+
+```bash
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  tracker --skill-dir .github/skills/blazor-component-readiness \
+  --evidence-bundle <evidence.json> --source-report <report.md> \
+  --shared-row-projection <shared-row-projection.json> <tracker-body.md>
+```
+
+Omit `--shared-row-projection` only for a review that does not import a shared repository
+foundation. If the tracker declares the source-report digest, `--source-report` supplies the live
+bytes that declaration must match.
+
+GitHub persists a tracker body without a terminal newline. Write the artifact without one, and read
+it back with `jq -j` rather than `--jq`, which appends a newline and hides a one-byte difference.
+
+### Areas we believe need to be fixed
+
+Open the section with exactly this sentence, substituting digits:
+
+```markdown
+The {defect count} canonical `defect` rows in the full report consolidate into the {area count}
+areas below. These areas are not ordered by priority and require human confirmation. Each should be
+confirmed against the linked evidence before it is treated as a final product or release
+determination.
+```
+
+Then give a concise table that groups every canonical `defect` row into evidence-backed themes:
+
+| Area | What we believe needs attention | Requirement IDs | Evidence |
+|---|---|---|---|
+| [Descriptive area] | [Concise observation derived from defect evidence.] | `[IDs]` | [Evidence anchors] |
+
+Represent every `defect` ID exactly once, retain evidence anchors, and do not include
+`maintainer evidence required` or `not tested` rows as things that need to be fixed. This is a
+bijection: the validator fails if any defect is missing or any non-defect appears. Do not add
+remediation steps, acceptance gates, a verdict, or inferred next actions.
+
+Follow the summary with:
+
+> **Feedback requested:** Please let us know if any item above is a false positive, misses important
+> context, or is not useful. Specific examples will help us correct this report and improve future
+> reviews.
+
+### Full report
+
+Place the complete canonical assessment under `## Full report` at the bottom of the tracker item,
+led by the sentence `The complete 110-requirement assessment and evidence ledger follow unchanged.`
+Preserve its content rather than replacing it with the summary. Include exact scope and artifact
+identity, status counts and terminology, every selected canonical requirement row, the complete
+evidence ledger, and the structural coverage statement.
+
+Use exactly these columns in the presented requirement table, with the canonical status in
+backticks:
+
+| Requirement ID | Requirement | Requirement scope | Canonical status | Review result | Evidence |
+|---|---|---|---|---|---|
+| LP-01 | Uses an OSI-approved, non-copyleft license. | repository-wide | `verified` | Copilot-reviewed positive evidence | [EV1-<64 lowercase hex>] |
+
+`Review result` is a cautious display label for a partner audience. It is derived, not judged: it is
+a total function of the canonical status and carries no independent meaning. Use this mapping
+verbatim, in `## Review-result counts` as well as in the requirement table:
+
+| Canonical status | Review result |
+|---|---|
+| `verified` | Copilot-reviewed positive evidence |
+| `defect` | Potential issue identified |
+| `maintainer evidence required` | Maintainer confirmation requested |
+| `not tested` | Not tested by this review |
+| `not applicable` | Not applicable to reviewed scope |
+
+Never drop the canonical status, reorder the statuses, or invent an alternative label. The counts in
+`## Review-result counts` must be derived from the presented rows rather than written by hand; the
+validator recomputes them and fails on any disagreement.
+
+Canonical status tokens are exact and case-sensitive. Use `not applicable`; do not emit `N/A`,
+capitalization variants, or aliases.
+
+Copy requirement wording, status, and evidence references from the validated source report. Copy
+core requirement scope from the pinned rubric, not from a report-authored classification; the
+source and tracker validators reject overrides.
+Do not copy the source report's maintainer-action or reviewer-follow-up columns into this result
+unless the user explicitly asks for recommendations. The grouped defect-area summary is not a
+priority narrative; exclude ranked priorities, remediation directions, recommended next steps, and
+acceptance gates by default.
+
+Retain public reproduction anchors such as source paths, commands, workflow run IDs, artifact
+digests, and probe descriptions in the evidence ledger. Scrub credentials, private URLs, local
+absolute paths, and unrelated workplace context rather than dropping the entire source column. For
+a private probe artifact, retain a non-sensitive artifact basename and the probe method instead of
+leaving a generic "private artifact" reference.
+
+Attribute the requirements to the bundled rubric. Never claim that rubric wording was copied,
+derived, or row-mapped from an external policy or requirements document unless a requirement-level
+crosswalk was completed and retained. A supplied category summary may inform scope but is not
+requirement-level provenance.
 
 ## Complete scorecard annex
 
@@ -26,12 +139,13 @@ Use exactly:
 
 | Requirement ID | Requirement | Requirement scope | Status | Evidence | Maintainer action | Reviewer follow-up |
 |---|---|---|---|---|---|---|
-| LP-01 | Uses an OSI-approved, non-copyleft license. | repository-wide | verified | [E-001] | - | - |
+| LP-01 | Uses an OSI-approved, non-copyleft license. | repository-wide | verified | [EV1-<64 lowercase hex>] | - | - |
 
 Generate the complete table with:
 
 ```bash
-python3 scripts/validate_scorecard.py --emit-template
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  scorecard --skill-dir .github/skills/blazor-component-readiness --emit-template
 ```
 
 Add `--overlay scaffolder` or `--overlay ai-skill` only when applicable.
@@ -46,7 +160,7 @@ Rules:
 - Give a bounded reviewer follow-up for `not tested`.
 - Link concrete defects to detailed finding blocks.
 - Validate with
-  `python3 scripts/validate_scorecard.py <report.md> --receipt <validation-receipt.json>`.
+  `dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- scorecard --skill-dir .github/skills/blazor-component-readiness --evidence-bundle <evidence.json> --shared-row-projection <shared-row-projection.json> <report.md> --receipt <validation-receipt.json>` for a shared-foundation batch. Omit only the projection option for an independent review.
 
 ## Targeted follow-up
 
@@ -60,8 +174,12 @@ review, and unchanged requirements were not reverified.
 Emit and validate only the named IDs:
 
 ```bash
-python3 scripts/validate_scorecard.py --ids BEQ-12,BEQ-15 --emit-template
-python3 scripts/validate_scorecard.py --ids BEQ-12,BEQ-15 <targeted-report.md>
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  scorecard --skill-dir .github/skills/blazor-component-readiness \
+  --ids BEQ-12,BEQ-15 --emit-template
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  scorecard --skill-dir .github/skills/blazor-component-readiness \
+  --ids BEQ-12,BEQ-15 --evidence-bundle <evidence.json> <targeted-report.md>
 ```
 
 Use the same scorecard columns, evidence anchors, and finding blocks. A targeted report contains:
@@ -76,45 +194,124 @@ Do not repeat unchanged repository-wide findings or imply a complete adoption/re
 
 ## Shared repository-wide evidence
 
-For batched controls with the same repository SHA and package ID/version/digest, create one shared
-ledger using the evidence-ledger columns below. Import exact rows into each control report and record
-the source ledger/report in `Reproduction/source`; use `Rechecked now?` to distinguish direct recheck
-from imported evidence. A later report may supersede a row only with stronger exact-snapshot proof.
-Never reuse component-specific runtime evidence across controls.
+For batched controls with the same repository SHA and package ID/version/digest, build one immutable
+repository source ledger. Each report companion embeds its complete canonical bytes and selects an
+explicit subset. Released-package repository ledgers may cross controls under exact identity;
+source-only repository and component ledgers require the exact component ID. There is no authored
+direct/imported/rechecked state.
 
-## Evidence anchors
+Also retain one schema-1 shared-row projection keyed to that repository ledger:
 
-Use anchors to avoid repeating the same exact package, workflow, or attestation evidence across
-multiple rows:
+```json
+{
+  "schema_version": 1,
+  "source_ledger_sha256": "<64 lowercase hex>",
+  "rows": [
+    {
+      "requirement_id": "LP-01",
+      "requirement": "Uses an OSI-approved, non-copyleft license.",
+      "requirement_scope": "repository-wide",
+      "status": "verified",
+      "evidence_anchors": "[EV1-<64 lowercase hex>]",
+      "maintainer_action": "-",
+      "reviewer_follow_up": "-"
+    }
+  ]
+}
+```
 
-| Evidence ID | Claim | Repository/SHA or package | Evidence type | Reproduction/source | Rechecked now? |
-|---|---|---|---|---|---|
-| E-001 | Repository license is MIT. | owner/repo@SHA | source | `LICENSE` | yes |
+The projection contains every repository-wide row represented by the report or tracker. Source
+validation compares all six imported fields; tracker validation compares its four presented fields.
+This prevents a child report from silently dropping or locally deriving shared actions, follow-ups,
+or classifications.
 
-Anchors must match `E-\d{3}`. Every scorecard reference such as `[E-001]` must resolve to exactly
-one ledger row. The ledger entry must contain the substantive proof, gap, omission, or rationale;
-an anchor is not permission to use generic evidence.
+## Stable evidence companion and projection
+
+Every record originates in a canonical `repository` or `component` source ledger and has a full
+content-addressed `EV1-` plus 64 lowercase hex ID. Build a self-contained companion with:
+
+```bash
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  ledger build --kind repository --subject <repository-subject.json> \
+  --nupkg <exact.nupkg> <repository-draft.json> --output <repository-ledger.json>
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  ledger build --kind component --subject <assessment.json> \
+  --nupkg <exact.nupkg> <component-draft.json> --output <component-ledger.json>
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  ledger bundle --assessment <assessment.json> \
+  --source-ledger <repository-ledger.json> --source-ledger <component-ledger.json> \
+  --ids <EV1,...> --output <evidence.json>
+```
+
+Released-package builds require `--nupkg` so the routed tool derives and compares nuspec ID/version
+and the total package digest. Source-only subjects omit `--nupkg`.
+Individual authored ledger JSON inputs remain capped at 4 MiB. The final self-contained bundle and
+all public report/bundle/receipt reads share a 64 MiB serialized-artifact ceiling.
+
+The report contains exactly one canonical `bcr-assessment-v1` block and one selected-record table:
+
+| Display order | Evidence ID | Claim | Requirement scope | Component ID | Source ledger kind | Source ledger SHA-256 | Provenance kind | Reproduction/source | Captured at UTC | Content SHA-256 |
+|---:|---|---|---|---|---|---|---|---|---|---|
+| 1 | EV1-<64 lowercase hex> | Repository license is MIT. | repository-wide |  | repository | <64 lowercase hex> | repository-path | `LICENSE` | 2026-08-16T20:00:00Z | <64 lowercase hex> |
+
+Every selected record appears exactly once in companion order, every scorecard evidence cell contains
+at least one selected full anchor, and every selected record is referenced. The validator compares
+the assessment and every projection field with the companion. Content SHA-256 is a commitment only;
+it does not establish retained or available source bytes. Complete embedded ledgers may include
+unselected historical records; those records remain audit context and must not appear in the selected
+projection unless the current scorecard cites them.
+
+Any 64-lowercase-hex SHA-256 literal written into the stable report or tracker is a provenance claim.
+Validation fails unless it resolves to a supplied live input or canonical embedded identity. Do not
+copy superseded report, bundle, or ledger hashes into validated prose.
 
 ## Structural validation receipt
 
 Generate a receipt with:
 
 ```bash
-python3 scripts/validate_scorecard.py <report.md> --receipt <validation-receipt.json>
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  scorecard --skill-dir .github/skills/blazor-component-readiness \
+  --evidence-bundle <evidence.json> \
+  --shared-row-projection <shared-row-projection.json> <report.md> \
+  --receipt <validation-receipt.json>
 ```
+
+The projection is optional for an independent review. When supplied, its digest is part of the
+receipt's closed validation-input manifest.
 
 Attach or summarize:
 
 ```markdown
 **Structural validation:** Passed for rubric [version], [complete/targeted] selection, [row count]
-canonical rows. Receipt: `[path]`, report SHA-256 `[digest]`.
+canonical rows. Receipt schema 3: `[basename]`, checklist SHA-256 `[checklist digest]`, scope schema
+[version], report SHA-256 `[report digest]`, evidence bundle SHA-256 `[bundle digest]`.
 
 This proves scorecard structure, selected coverage, canonical order, status vocabulary, and
 evidence-anchor resolution. It does not prove that the evidence or classifications are factually
 correct.
 ```
 
-## Maintainer handoff
+Before publishing, validate the receipt against the exact historical skill inputs:
+
+```bash
+dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
+  receipt validate --skill-dir <exact-historical-skill-snapshot> \
+  --evidence-bundle <evidence.json> \
+  --shared-row-projection <shared-row-projection.json> --report <report.md> \
+  <validation-receipt.json>
+```
+
+This detects later report/companion/input mutation. The unsigned self-reported validator hash does not
+authenticate execution; `--producer-validator <archived-assembly>` checks byte correspondence only.
+Historical schema-2 artifacts remain byte-compatible through explicit `--legacy-evidence`; their
+limited success does not establish exact historical overlay/input provenance.
+
+## Optional decision brief or maintainer handoff
+
+Create this only when the user explicitly requests synthesis, recommendations, prioritization,
+remediation guidance, a verdict, or next steps. Label it as reviewer synthesis rather than canonical
+rubric content.
 
 ```markdown
 # [Component] readiness handoff

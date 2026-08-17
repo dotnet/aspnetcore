@@ -6,6 +6,9 @@ These are opt-in overlays, not part of the 110-ID core. Include `SCF-*` only whe
 deliverable contains a supported scaffolder and `AI-*` only when it contains an AI skill or plugin.
 Do not emit placeholder `not applicable` rows when an overlay was not selected.
 
+Core requirements use the versioned scope metadata in `../checklist.md`. These overlays retain
+report-authored binary scope in schema 1; they cannot introduce, replace, or override a core ID.
+
 ## Scaffolders
 
 When applicable, inspect the generated output as a deliverable:

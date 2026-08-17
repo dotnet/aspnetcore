@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <!-- Internal experiment tooling only. Do not add to AspNetCore.slnx or official build/pack graphs. -->
+    <IsImplementationProject>false</IsImplementationProject>
+    <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
+    <SignAssembly>false</SignAssembly>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BlazorComponentReadiness</RootNamespace>
+  </PropertyGroup>
+
+</Project>

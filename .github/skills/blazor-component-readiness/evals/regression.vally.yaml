@@ -1,6 +1,6 @@
 # This Vally specification is the eval source of truth.
 # Validated with @microsoft/vally-cli@0.13.0.
-# Run vally lint --strict and scripts/validate_skill.py after changes.
+# Run vally lint --strict and the repository C# validate-skill command after changes.
 name: blazor-component-readiness
 description: "Capability and governance regressions for the public Blazor component-readiness skill."
 type: capability
@@ -90,7 +90,8 @@ stimuli:
     rubric:
       - "Overall response matches this expected outcome: A one-control vertical review that applies repository-wide rows once, separates generated output from owning layers, and avoids catalog-wide conclusions."
       - "The component-specific scope remains the selected control."
-      - "Repository-wide requirements are labeled separately."
+      - "Core requirement scope is copied from the pinned rubric rather than selected by the report."
+      - "Repository-wide evidence is reused only for the same pinned repository SHA and exact package ID/version/digest."
       - "Generated defects are assigned to generator, schema, handwritten partial, or shared runtime where supported."
       - "The result does not generalize one control into catalog-wide readiness."
       - "The report includes a complete scorecard and a concise maintainer handoff."
@@ -247,7 +248,7 @@ stimuli:
       - "Overall response matches this expected outcome: The complete report contains the 110-ID core and omits both unselected overlays."
       - "No SCF requirement receives a scorecard row because the deliverable has no scaffolder."
       - "No AI requirement receives a scorecard row because the deliverable has no AI skill or plugin."
-      - "The report names rubric 1.2.0 and records that no overlays were selected."
+      - "The report names rubric 1.3.0, scope schema 1, and records that no overlays were selected."
       - "The response explains how --overlay scaffolder or --overlay ai-skill would opt in the relevant six IDs."
       - "The review does not expand into evaluating unrelated scaffolders or AI assets."
   - name: "eval-10-cross-area-adjudication"
@@ -278,11 +279,11 @@ stimuli:
     rubric:
       - "Overall response matches this expected outcome: A concise, evidence-backed cross-area adjudication plus an accurate explanation of the 110-row core structural-completeness gate."
       - "Exactly one representative canonical requirement is explicitly identified for each core prefix: LP, PI, SEC, A11Y, BEQ, TA, PERF, CI, and SUP."
-      - "Only verified, defect, maintainer evidence required, not tested, and not applicable are used."
+      - "Only the exact case-sensitive tokens verified, defect, maintainer evidence required, not tested, and not applicable are used; N/A and status aliases are rejected."
       - "Published-package evidence is distinguished from current source and separately rebuilt artifacts."
       - "Concrete defects, maintainer-owned evidence gaps, and unperformed reviewer probes are classified separately."
       - "SCF and AI rows are omitted because neither optional overlay was selected for the bounded deliverable."
-      - "The response states that the final core report must retain all 110 core IDs exactly once in canonical order and pass validate_scorecard.py."
+      - "The response states that the final core report must retain all 110 core IDs exactly once in canonical order and pass the repository C# scorecard validator."
       - "The response explains that structural validation does not prove factual truth."
       - "No attestation, test result, or catalog-wide conclusion is invented."
   - name: "eval-11-bounded-no-defect"
@@ -377,7 +378,7 @@ stimuli:
       - "The plan remains bounded to the selected control and does not infer catalog-wide defects."
   - name: "eval-14-rubric-migration-replay"
     prompt: |-
-      Replay an existing exact-snapshot Blazor component review from public rubric 1.0.1 onto rubric 1.2.0. The old 122-row report marked all SCF and AI rows not applicable, the component contains neither overlay feature, the old source/package evidence remains available, and public main has advanced. Do not perform a fresh audit. Explain how to migrate the scorecard and report count changes.
+      Replay an existing exact-snapshot Blazor component review from public rubric 1.0.1 onto rubric 1.3.0. The old 122-row report marked all SCF and AI rows not applicable, the component contains neither overlay feature, the old source/package evidence remains available, and public main has advanced. Do not perform a fresh audit. Explain how to migrate the scorecard and report count changes.
     tags:
       eval_id: "14"
       area: "rubric-migration"
@@ -399,8 +400,8 @@ stimuli:
       - "Stable IDs and canonical wording are diffed before classifications are changed."
       - "Unchanged rows retain their old exact-snapshot evidence and confidence."
       - "The 12 old not-applicable SCF and AI rows are removed because neither overlay is selected; this is a rubric-structure change, not improved product evidence."
-      - "The resulting complete report contains all 110 core IDs and names rubric 1.2.0 with no selected overlays."
-      - "The 1.2.0 acquisition, shared-evidence, status, targeting, preflight, and receipt guidance changes do not create new requirement rows or upgrade old product evidence."
+      - "The resulting complete report contains all 110 core IDs, copies every scope from rubric 1.3.0 scope schema 1, and selects no overlays."
+      - "The 1.2.0 workflow changes and 1.3.0 normative scope metadata do not create new requirement rows or upgrade old product evidence; not applicable remains the exact status token."
       - "The migration delta separates terminology, policy, evidence-driven classification, and new-ID changes."
       - "Aggregate count movement without new product evidence is explicitly explained rather than presented as improved readiness."
       - "The advanced public head is excluded, expensive probes are not rerun, and the final 110-row core report is structurally validated."
@@ -427,7 +428,7 @@ stimuli:
       - "Overall response matches this expected outcome: A two-ID targeted follow-up tied to the new release candidate and prior exact-snapshot evidence, without implying complete readiness."
       - "The report prominently states that only BEQ-12 and BEQ-15 were revalidated and that unchanged requirements were not reverified."
       - "The scorecard contains exactly BEQ-12 and BEQ-15 in canonical order."
-      - "Template emission uses validate_scorecard.py --ids BEQ-12,BEQ-15 --emit-template."
+      - "Template emission uses the repository C# scorecard command with --ids BEQ-12,BEQ-15 --emit-template."
       - "Final validation uses the same --ids BEQ-12,BEQ-15 selection."
       - "The output records new evidence, status deltas, and a bounded next action without repeating the complete scorecard."
       - "Targeted structural validation is not presented as a complete adoption or release decision."
@@ -460,7 +461,7 @@ stimuli:
       - "A local rebuild or package-manager cache of unknown origin is not substituted for the released artifact."
   - name: "eval-17-shared-artifact-ledger"
     prompt: |-
-      Three isolated control reviews share repository SHA abc123 and package Widget.Blazor 3.1.0 with SHA-256 deadbeef. The first review directly inspected package metadata, signatures, every TFM, license, SECURITY.md, and provenance. The second and third are about to independently rescore those repository-wide rows and have already chosen conflicting statuses. Explain how to reuse and supersede evidence without laundering component behavior.
+      Three isolated control reviews share repository SHA abc123 and package Widget.Blazor 3.1.0 with SHA-256 deadbeef. The first review directly inspected package metadata, signatures, every TFM, license, SECURITY.md, and provenance. The second and third are about to independently rescore those repository-wide rows and have already chosen conflicting statuses. Explain how to build immutable source ledgers, a self-contained selected companion, stable evidence references, and structural receipts without laundering component behavior.
     tags:
       eval_id: "17"
       area: "evidence-reuse"
@@ -478,11 +479,13 @@ stimuli:
         config:
           threshold: 0.7
     rubric:
-      - "Overall response matches this expected outcome: One shared repository-wide exact-artifact ledger is keyed by repository SHA, package ID/version, and digest and imported into later reports."
-      - "Imported rows retain their original evidence source, classification, and recheck state."
-      - "A later report explicitly supersedes a shared row only with stronger evidence for the same exact snapshot."
+      - "Overall response matches this expected outcome: One immutable repository source ledger is keyed by repository SHA, nuspec package ID/version, and nupkg digest, embedded completely in each self-contained companion, and selected by full EV1 IDs."
+      - "Every selected record is proven to be a member of the recomputed embedded source ledger; an arbitrary source hash or copied record is rejected."
+      - "There is no authored imported/direct/rechecked label. A changed observation is a new immutable identity-bearing record and may structurally supersede compatible prior evidence."
       - "Different package versions, digests, source SHAs, or release candidates are not merged."
-      - "Component-specific runtime, accessibility, and performance evidence remains local to each control."
+      - "Component-specific runtime, accessibility, and performance evidence remains in an exact-component ledger and cannot cross controls."
+      - "Stable scorecard/tracker validation requires an exact assessment block, selected-evidence projection, evidence companion, and schema-3 receipt binding."
+      - "Legacy E-### reports require explicit legacy mode and cannot donate cross-report evidence."
       - "The shared ledger reduces duplicate scoring but does not imply one control proves catalog readiness."
   - name: "eval-18-targeting-and-status-boundaries"
     prompt: |-
@@ -538,3 +541,90 @@ stimuli:
       - "The receipt includes rubric version, targeted selection, canonical/valid row counts, UTC timestamp, and report SHA-256."
       - "The report states that structural validation proves neither factual evidence nor classification quality and that targeted validation is not complete readiness."
       - "No expensive selector suite is expanded after the smoke gate fails."
+  - name: "eval-20-evidence-only-tracker-result"
+    prompt: |-
+      A complete Blazor component review has already produced a structurally validated 110-row report against the bundled rubric. The user also supplied a partner-readiness DOCX, but only a category summary was available and no requirement-level crosswalk or drift reconciliation was performed. Draft the evaluation-result shape for a private project-board item. Lead with a concise "Areas we believe need to be fixed" summary derived only from canonical defect rows, invite feedback about false positives or unhelpful content, and put the unchanged complete assessment and evidence ledger under "Full report" at the bottom. Include all positive and negative classifications and direct evidence, but do not add remediation guidance, ranked priorities, a verdict, acceptance gates, or next steps.
+    tags:
+      eval_id: "20"
+      area: "reporting-and-provenance"
+      score_family: "evidence-only-output"
+      tier: "held-out"
+      requirement_prefixes: "LP,PI,SEC,A11Y,BEQ,TA,PERF,CI,SUP"
+      provenance_kind: "multi-model-consensus"
+      provenance_source: "four-model review of an evidence-only private tracker draft"
+      positive_controls: "0,2,3,4,6,7"
+      negative_controls: "1,5,8"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A private tracker result leads with an unranked evidence-backed summary of areas believed to need fixes, invites corrective feedback, and preserves the complete canonical assessment at the bottom."
+      - "The top summary groups every canonical defect ID exactly once, cites evidence, and does not present maintainer-evidence-required or not-tested rows as fixes."
+      - "The proposed Full report section requires all 110 canonical IDs, requirements, scopes, statuses, and evidence references to remain represented exactly once."
+      - "The output attributes requirements to the independently maintained bundled rubric and explicitly avoids claiming a row-level DOCX mapping."
+      - "Canonical rubric statuses remain visible; any cautious audience-facing labels are shown only as aliases."
+      - "The evidence ledger retains sanitized public reproduction anchors such as paths, commands, run IDs, artifact digests, and probe descriptions."
+      - "The output includes a clear request to report false positives, missing context, or unhelpful content."
+      - "The output excludes ranked priorities, remediation direction, maintainer actions, reviewer follow-ups, verdicts, acceptance gates, and next-step requests."
+      - "The AI-review and structural-validation limitations remain explicit."
+      - "No project item, issue, repository, or other external system is modified without explicit authorization."
+  - name: "eval-21-stable-evidence-integrity"
+    prompt: |-
+      Two readiness reports both use local anchor E-008 for different claims. A proposed migration copies one record beside a claimed source-ledger hash, changes Tree to Radio in the report scope, and validates without an explicit evidence mode. Explain the fail-closed stable workflow, receipt verification boundary, and historical compatibility behavior.
+    tags:
+      eval_id: "21"
+      area: "evidence-integrity"
+      score_family: "stable-evidence-integrity"
+      tier: "held-out"
+      requirement_prefixes: "LP,PI,BEQ,A11Y"
+      provenance_kind: "multi-model-consensus"
+      provenance_source: "immutable evidence ledger architecture review"
+      positive_controls: "0,1,2,3,5,6"
+      negative_controls: "4,7"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: Local E-008 anchors remain schema-2 report-local identifiers; new reports use full content-addressed EV1 IDs from immutable canonical source ledgers."
+      - "The companion embeds complete canonical source-ledger bytes, recomputes each digest and record ID, and proves every selected ID is a member."
+      - "Released-package repository reuse requires exact repository commit plus nuspec ID/version and nupkg digest; source-only repository and component evidence additionally require exact component ID."
+      - "The report and tracker assessment block and selected-evidence projection must match the companion field-for-field, so Tree-to-Radio rebinding fails."
+      - "Validation requires exactly one of --evidence-bundle or --legacy-evidence; omission and mixed-mode anchors fail."
+      - "A publishable stable result requires a schema-3 receipt and later receipt validation against the exact historical checklist and selected overlays."
+      - "The unsigned validator hash is self-reported metadata; an archived binary can establish byte correspondence only, not producer execution or authenticity."
+      - "Historical schema-2 receipts retain exact bytes and limited structural revalidation wording without claiming schema-3 evidence membership or overlay provenance."
+      - "No status voting, contradiction engine, factual-proof claim, or cross-control component reuse is introduced."
+  - name: "eval-22-shared-projection-and-provenance"
+    prompt: |-
+      Four isolated Blazor control reports share one exact repository/package foundation. A child report copied the shared statuses and evidence anchors but replaced the canonical maintainer actions and reviewer follow-ups with local text. Another report still cites the prior component-ledger and evidence-bundle SHA-256 values after regeneration. Explain the fail-closed artifacts and validator commands that prevent both defects without discarding unselected component-ledger history.
+    tags:
+      eval_id: "22"
+      area: "reporting-and-provenance"
+      score_family: "cross-report-integrity"
+      tier: "held-out"
+      requirement_prefixes: "LP,PI,SEC,CI,SUP"
+      provenance_kind: "multi-run-generalization"
+      provenance_source: "four same-foundation control reports"
+      positive_controls: "0,1,2,3,5"
+      negative_controls: "4,6"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A schema-1 shared-row projection binds every repository-wide source-report field and declared artifact digests are resolved against live canonical inputs."
+      - "The shared-row projection is bound to the exact repository source-ledger digest and contains every represented repository-wide requirement."
+      - "Source validation compares requirement, scope, status, evidence anchors, maintainer action, and reviewer follow-up exactly rather than checking only status and evidence."
+      - "Tracker validation compares every repository-wide row it presents and rejects a partial shared import."
+      - "Scorecard receipt generation includes the shared-row projection in the closed validation-input manifest, and later receipt validation requires the same projection bytes."
+      - "Any declared 64-lowercase-hex SHA-256 in the source report or tracker must resolve to a supplied live canonical input; stale component-ledger, bundle, or report digests fail."
+      - "Complete component ledgers may retain unselected historical records, while every selected record remains cited by the current assessment."
+      - "Structural and provenance binding still do not establish factual evidence or classification quality."

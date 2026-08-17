@@ -4,6 +4,8 @@ These profiles reduce arbitrary ID selection. They are non-authoritative startin
 miniature readiness certifications. Record every added or removed ID and why it changes the bounded
 question.
 
+Targeted selection changes which IDs are evaluated, not their rubric-owned scope.
+
 ## Distributed-package supplement
 
 When a package is publicly listed but exact bytes remain unavailable after the acquisition protocol,

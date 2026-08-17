@@ -3,6 +3,9 @@
 Use these paired examples to keep classification stable across reviewers. The requirement wording
 and exact evidence still control the final result.
 
+Status tokens are exact and case-sensitive. Use `not applicable` exactly; `N/A`, capitalization
+variants, and misspellings are invalid.
+
 | Situation | Status | Why |
 |---|---|---|
 | Required public nuspec field is absent from the exact nupkg | `defect` | The released public artifact observably conflicts with the requirement. |
