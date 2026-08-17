@@ -56,6 +56,8 @@ internal static class GatewayCliTestData
 
     public static string DefaultTargetFramework => GetValue("DefaultNetCoreTargetFramework");
 
+    public static string FrameworkVersion => GetValue("GatewayCliFrameworkVersion");
+
     public static string HostRuntimeIdentifier => RuntimeInformation.RuntimeIdentifier;
 
     public static string AnyPackageId => $"{PackageId}.any";

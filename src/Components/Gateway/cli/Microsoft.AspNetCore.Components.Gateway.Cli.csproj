@@ -69,7 +69,27 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" AllowExplicitReference="true" />
   </ItemGroup>
+
+  <Target Name="PreserveGatewayCliRuntimeConfigPolicy"
+          AfterTargets="GenerateBuildRuntimeConfigurationFiles"
+          Condition="'$(RuntimeIdentifier)' == 'any'">
+    <PropertyGroup>
+      <_GatewayCliRuntimeConfigProperties Condition="'$(IsServicingBuild)' == 'true'">
+        FrameworkVersion=$(AspNetCoreMajorMinorVersion).0;
+      </_GatewayCliRuntimeConfigProperties>
+      <_GatewayCliRuntimeConfigProperties Condition="'$(IsServicingBuild)' != 'true'">
+        FrameworkVersion=$(SharedFxVersion);
+      </_GatewayCliRuntimeConfigProperties>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)..\src\blazor-gateway.runtimeconfig.json.in"
+      Properties="$(_GatewayCliRuntimeConfigProperties)"
+      SkipUnchanged="true"
+      OutputPath="$(ProjectRuntimeConfigFilePath)" />
+  </Target>
 
   <Target Name="RemoveGatewayCliStaticWebAssetsPackItems" AfterTargets="IncludeStaticWebAssetsPackItems">
     <ItemGroup>

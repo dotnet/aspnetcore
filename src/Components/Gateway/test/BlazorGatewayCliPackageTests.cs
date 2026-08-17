@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.InternalTesting;
 
@@ -86,13 +87,19 @@ public class BlazorGatewayCliPackageTests
     }
 
     [ConditionalFact]
-    public void AnyPackage_RuntimeConfigTargetsAspNetCoreSharedFramework()
+    public void AnyPackage_RuntimeConfigPreservesGatewayRollForwardPolicy()
     {
         var runtimeConfig = ReadPackageFile(
             GatewayCliTestData.AnyPackageId,
             $"{AnyToolDir}/blazor-gateway.runtimeconfig.json");
 
-        Assert.Contains("Microsoft.AspNetCore.App", runtimeConfig, StringComparison.Ordinal);
+        using var document = JsonDocument.Parse(runtimeConfig);
+        var runtimeOptions = document.RootElement.GetProperty("runtimeOptions");
+        var framework = runtimeOptions.GetProperty("framework");
+
+        Assert.Equal("Microsoft.AspNetCore.App", framework.GetProperty("name").GetString());
+        Assert.Equal(GatewayCliTestData.FrameworkVersion, framework.GetProperty("version").GetString());
+        Assert.Equal(2, runtimeOptions.GetProperty("rollForwardOnNoCandidateFx").GetInt32());
     }
 
     [ConditionalFact]
