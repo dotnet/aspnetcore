@@ -363,7 +363,7 @@
         await Task.Yield();
         if (useProviderDelay)
         {
-            await Task.Delay(500);
+            await Task.Delay(500, request.CancellationToken);
         }
         if (useProviderGate)
         {

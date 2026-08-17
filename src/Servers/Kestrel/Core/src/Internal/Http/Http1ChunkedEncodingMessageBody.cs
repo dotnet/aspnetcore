@@ -28,8 +28,6 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
     private readonly Pipe _requestBodyPipe;
     private ReadResult _readResult;
 
-    private static readonly bool InsecureChunkedParsing = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.EnableInsecureChunkedRequestParsing", out var value) && value;
-
     public Http1ChunkedEncodingMessageBody(Http1Connection context, bool keepAlive)
         : base(context, keepAlive)
     {
@@ -363,15 +361,7 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
 
         do
         {
-            SequencePosition? extensionCursorPosition;
-            if (InsecureChunkedParsing)
-            {
-                extensionCursorPosition = buffer.PositionOf(ByteCR);
-            }
-            else
-            {
-                extensionCursorPosition = buffer.PositionOfAny(ByteCR, ByteLF);
-            }
+            SequencePosition? extensionCursorPosition = buffer.PositionOfAny(ByteCR, ByteLF);
 
             if (extensionCursorPosition == null)
             {
@@ -398,9 +388,7 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
             suffixBuffer = suffixBuffer.Slice(0, 2);
             var suffixSpan = suffixBuffer.ToSpan();
 
-            if (InsecureChunkedParsing
-                ? (suffixSpan[1] == ByteLF)
-                : (suffixSpan[0] == ByteCR && suffixSpan[1] == ByteLF))
+            if (suffixSpan[0] == ByteCR && suffixSpan[1] == ByteLF)
             {
                 // We consumed the \r\n at the end of the extension, so switch modes.
                 _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;
@@ -408,14 +396,6 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                 consumed = suffixBuffer.End;
                 examined = suffixBuffer.End;
                 AddAndCheckObservedBytes(charsToByteCRExclusive + 2);
-            }
-            else if (InsecureChunkedParsing)
-            {
-                examined = buffer.Start;
-                // Don't consume suffixSpan[1] in case it is also a \r.
-                buffer = buffer.Slice(charsToByteCRExclusive + 1);
-                consumed = extensionCursor;
-                AddAndCheckObservedBytes(charsToByteCRExclusive + 1);
             }
             else
             {
