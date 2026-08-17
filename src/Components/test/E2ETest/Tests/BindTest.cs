@@ -729,9 +729,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTime has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateTime preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -788,9 +786,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTimeOffset has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateTimeOffset preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => DateTimeOffset.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -847,9 +843,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateOnly preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => DateOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -906,9 +900,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable TimeOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable TimeOnly preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => TimeOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -965,9 +957,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTime has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateTime preserved when textbox cleared
         target.Clear();
         target.SendKeys("\t");
         Browser.Equal("03-04", () => target.GetDomProperty("value"));
@@ -1025,9 +1015,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTimeOffset has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateTimeOffset preserved when textbox cleared
         target.Clear();
         Browser.Equal("03-04", () => target.GetDomProperty("value"));
         Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1087,9 +1075,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateOnly preserved when textbox cleared
         target.Clear();
         target.SendKeys("\t");
         Browser.Equal("03-04", () => target.GetDomProperty("value"));
@@ -1147,9 +1133,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable TimeOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable TimeOnly preserved when textbox cleared
         target.Clear();
         target.SendKeys("\t");
         Browser.Equal("08:05:00", () => target.GetDomProperty("value"));
@@ -1483,9 +1467,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTime has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateTime preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1544,9 +1526,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateOnly preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => DateOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1605,9 +1585,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable TimeOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable TimeOnly preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => TimeOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1668,9 +1646,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected.AddDays(3), DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected.AddDays(3), DateTime.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTime has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660). The displayed value is truncated to the 1st of the month.
+        // Non-nullable DateTime preserved when cleared; displayed value truncated to 1st of month
         target.Clear();
         Browser.Equal(expected, () => DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected.AddDays(3), DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1731,9 +1707,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected.AddDays(3), DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected.AddDays(3), DateOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660). The displayed value is truncated to the 1st of the month.
+        // Non-nullable DateOnly preserved when cleared; displayed value truncated to 1st of month
         target.Clear();
         Browser.Equal(expected, () => DateOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected.AddDays(3), DateOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1792,9 +1766,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTime has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateTime preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1853,9 +1825,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable TimeOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable TimeOnly preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => TimeOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1914,9 +1884,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTime has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable DateTime preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -1975,9 +1943,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(mirrorValue.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable TimeOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660).
+        // Non-nullable TimeOnly preserved when textbox cleared
         target.Clear();
         Browser.Equal(expected, () => TimeOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -2035,9 +2001,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         var expected = DateTime.Now.Date.Add(new TimeSpan(8, 5, 0)); // Notice the "seconds" part is zero here, even though the original data has seconds=30
         Assert.Equal(expected, DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTime has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660). The displayed value has its seconds stripped (issue #41731).
+        // Non-nullable DateTime preserved when cleared; seconds stripped from display
         target.Clear();
         Browser.Equal(expected, () => DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(DateTime.Now.Date.Add(new TimeSpan(8, 5, 30)), DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -2053,16 +2017,14 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     {
         // This test differs from the other "step"-related test in that the DOM element has no "step" attribute
         // and hence defaults to step=60, and for this the framework has explicit logic to strip off the "seconds"
-        // part of the bound value (otherwise the browser reports it as invalid - issue #41731)
+        // part of the bound value (strips seconds)
 
         var target = Browser.Exists(By.Id("time-default-step-textbox-datetime"));
         var boundValue = Browser.Exists(By.Id("time-default-step-textbox-datetime-value"));
         var expected = DateTime.Now.Date.Add(new TimeSpan(8, 5, 0)); // Notice the "seconds" part is zero here, even though the original data has seconds=30
         Assert.Equal(expected, DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable DateTime has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660). The displayed value has its seconds stripped (issue #41731).
+        // Non-nullable DateTime preserved when cleared; seconds stripped from display
         target.Clear();
         Browser.Equal(expected, () => DateTime.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(DateTime.Now.Date.Add(new TimeSpan(8, 5, 30)), DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
@@ -2085,9 +2047,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         var expected = new TimeOnly(8, 5, 0); // Notice the "seconds" part is zero here, even though the original data has seconds=30
         Assert.Equal(expected, TimeOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
 
-        // Clearing the textbox leaves the value unchanged: a non-nullable TimeOnly has no
-        // meaningful empty representation, so the bound value is preserved rather than reset
-        // to the default (issue #40660). The displayed value has its seconds stripped (issue #41731).
+        // Non-nullable TimeOnly preserved when cleared; seconds stripped from display
         target.Clear();
         Browser.Equal(expected, () => TimeOnly.Parse(target.GetDomProperty("value"), CultureInfo.InvariantCulture));
         Assert.Equal(new TimeOnly(8, 5, 30), TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));

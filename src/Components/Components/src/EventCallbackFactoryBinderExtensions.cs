@@ -23,6 +23,17 @@ namespace Microsoft.AspNetCore.Components;
 public static class EventCallbackFactoryBinderExtensions
 {
     /// <summary>
+    /// Determines how empty string input should be handled when binding.
+    /// </summary>
+    private enum EmptyStringHandling
+    {
+        /// <summary>Reset the bound value to default(T).</summary>
+        SetDefault,
+        /// <summary>Preserve the existing value unchanged.</summary>
+        PreserveExistingValue,
+    }
+
+    /// <summary>
     /// For internal use only.
     /// </summary>
     /// <param name="factory"></param>
@@ -639,7 +650,7 @@ public static class EventCallbackFactoryBinderExtensions
         DateTime existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
+        return CreateBinderCore<DateTime>(factory, receiver, setter, culture, ConvertToDateTime, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -659,7 +670,7 @@ public static class EventCallbackFactoryBinderExtensions
         DateTime existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
+        return CreateBinderCoreAsync<DateTime>(factory, receiver, setter, culture, ConvertToDateTime, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -681,7 +692,7 @@ public static class EventCallbackFactoryBinderExtensions
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat);
+        return CreateBinderCore<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -703,7 +714,7 @@ public static class EventCallbackFactoryBinderExtensions
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat);
+        return CreateBinderCoreAsync<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -807,7 +818,7 @@ public static class EventCallbackFactoryBinderExtensions
         DateTimeOffset existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset);
+        return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -827,7 +838,7 @@ public static class EventCallbackFactoryBinderExtensions
         DateTimeOffset existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset);
+        return CreateBinderCoreAsync<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -849,7 +860,7 @@ public static class EventCallbackFactoryBinderExtensions
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat);
+        return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -871,7 +882,7 @@ public static class EventCallbackFactoryBinderExtensions
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat);
+        return CreateBinderCoreAsync<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -975,7 +986,7 @@ public static class EventCallbackFactoryBinderExtensions
         DateOnly existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateOnly>(factory, receiver, setter, culture, ConvertToDateOnly);
+        return CreateBinderCore<DateOnly>(factory, receiver, setter, culture, ConvertToDateOnly, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -995,7 +1006,7 @@ public static class EventCallbackFactoryBinderExtensions
         DateOnly existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<DateOnly>(factory, receiver, setter, culture, ConvertToDateOnly);
+        return CreateBinderCoreAsync<DateOnly>(factory, receiver, setter, culture, ConvertToDateOnly, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -1017,7 +1028,7 @@ public static class EventCallbackFactoryBinderExtensions
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<DateOnly>(factory, receiver, setter, culture, format, ConvertToDateOnlyWithFormat);
+        return CreateBinderCore<DateOnly>(factory, receiver, setter, culture, format, ConvertToDateOnlyWithFormat, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -1039,7 +1050,7 @@ public static class EventCallbackFactoryBinderExtensions
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<DateOnly>(factory, receiver, setter, culture, format, ConvertToDateOnlyWithFormat);
+        return CreateBinderCoreAsync<DateOnly>(factory, receiver, setter, culture, format, ConvertToDateOnlyWithFormat, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -1143,7 +1154,7 @@ public static class EventCallbackFactoryBinderExtensions
         TimeOnly existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<TimeOnly>(factory, receiver, setter, culture, ConvertToTimeOnly);
+        return CreateBinderCore<TimeOnly>(factory, receiver, setter, culture, ConvertToTimeOnly, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -1163,7 +1174,7 @@ public static class EventCallbackFactoryBinderExtensions
         TimeOnly existingValue,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<TimeOnly>(factory, receiver, setter, culture, ConvertToTimeOnly);
+        return CreateBinderCoreAsync<TimeOnly>(factory, receiver, setter, culture, ConvertToTimeOnly, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -1185,7 +1196,7 @@ public static class EventCallbackFactoryBinderExtensions
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCore<TimeOnly>(factory, receiver, setter, culture, format, ConvertToTimeOnlyWithFormat);
+        return CreateBinderCore<TimeOnly>(factory, receiver, setter, culture, format, ConvertToTimeOnlyWithFormat, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -1207,7 +1218,7 @@ public static class EventCallbackFactoryBinderExtensions
         string format,
         CultureInfo? culture = null)
     {
-        return CreateBinderCoreAsync<TimeOnly>(factory, receiver, setter, culture, format, ConvertToTimeOnlyWithFormat);
+        return CreateBinderCoreAsync<TimeOnly>(factory, receiver, setter, culture, format, ConvertToTimeOnlyWithFormat, EmptyStringHandling.PreserveExistingValue);
     }
 
     /// <summary>
@@ -1341,7 +1352,8 @@ public static class EventCallbackFactoryBinderExtensions
         object receiver,
         Action<T> setter,
         CultureInfo? culture,
-        BindConverter.BindParser<T> converter)
+        BindConverter.BindParser<T> converter,
+        EmptyStringHandling emptyStringHandling = EmptyStringHandling.SetDefault)
     {
         Action<ChangeEventArgs> callback = e =>
         {
@@ -1371,7 +1383,7 @@ public static class EventCallbackFactoryBinderExtensions
             {
                 setter(value!);
             }
-            else if (string.Empty.Equals(e.Value) && ShouldSetDefaultOnEmptyString<T>())
+            else if (string.Empty.Equals(e.Value) && emptyStringHandling == EmptyStringHandling.SetDefault)
             {
                 setter(default!);
             }
@@ -1384,7 +1396,8 @@ public static class EventCallbackFactoryBinderExtensions
         object receiver,
         Func<T, Task> setter,
         CultureInfo? culture,
-        BindConverter.BindParser<T> converter)
+        BindConverter.BindParser<T> converter,
+        EmptyStringHandling emptyStringHandling = EmptyStringHandling.SetDefault)
     {
         Func<ChangeEventArgs, Task> callback = async e =>
         {
@@ -1414,7 +1427,7 @@ public static class EventCallbackFactoryBinderExtensions
             {
                 await setter(value!);
             }
-            else if (string.Empty.Equals(e.Value) && ShouldSetDefaultOnEmptyString<T>())
+            else if (string.Empty.Equals(e.Value) && emptyStringHandling == EmptyStringHandling.SetDefault)
             {
                 await setter(default!);
             }
@@ -1428,7 +1441,8 @@ public static class EventCallbackFactoryBinderExtensions
         Action<T> setter,
         CultureInfo? culture,
         string format,
-        BindConverter.BindParserWithFormat<T> converter)
+        BindConverter.BindParserWithFormat<T> converter,
+        EmptyStringHandling emptyStringHandling = EmptyStringHandling.SetDefault)
     {
         Action<ChangeEventArgs> callback = e =>
         {
@@ -1458,7 +1472,7 @@ public static class EventCallbackFactoryBinderExtensions
             {
                 setter(value!);
             }
-            else if (string.Empty.Equals(e.Value) && ShouldSetDefaultOnEmptyString<T>())
+            else if (string.Empty.Equals(e.Value) && emptyStringHandling == EmptyStringHandling.SetDefault)
             {
                 setter(default!);
             }
@@ -1472,7 +1486,8 @@ public static class EventCallbackFactoryBinderExtensions
         Func<T, Task> setter,
         CultureInfo? culture,
         string format,
-        BindConverter.BindParserWithFormat<T> converter)
+        BindConverter.BindParserWithFormat<T> converter,
+        EmptyStringHandling emptyStringHandling = EmptyStringHandling.SetDefault)
     {
         Func<ChangeEventArgs, Task> callback = async e =>
         {
@@ -1502,25 +1517,11 @@ public static class EventCallbackFactoryBinderExtensions
             {
                 await setter(value!);
             }
-            else if (string.Empty.Equals(e.Value) && ShouldSetDefaultOnEmptyString<T>())
+            else if (string.Empty.Equals(e.Value) && emptyStringHandling == EmptyStringHandling.SetDefault)
             {
                 await setter(default!);
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
-    }
-
-    // Determines whether an empty string input should reset the bound value to default(T).
-    // For most types an empty string maps to default(T) (e.g., string => null, int => 0, int? => null).
-    // However, non-nullable date/time types have no meaningful "empty" representation, so resetting them
-    // to default (e.g., DateTime.MinValue) would be surprising. For those we leave the existing value
-    // unchanged instead.
-    private static bool ShouldSetDefaultOnEmptyString<T>()
-    {
-        var typeInfo = typeof(T);
-        return typeInfo != typeof(DateTime)
-            && typeInfo != typeof(DateTimeOffset)
-            && typeInfo != typeof(DateOnly)
-            && typeInfo != typeof(TimeOnly);
     }
 }
