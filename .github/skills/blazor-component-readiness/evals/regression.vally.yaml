@@ -602,7 +602,7 @@ stimuli:
       - "No status voting, contradiction engine, factual-proof claim, or cross-control component reuse is introduced."
   - name: "eval-22-shared-projection-and-provenance"
     prompt: |-
-      Four isolated Blazor control reports share one exact repository/package foundation. A child report copied the shared statuses and evidence anchors but replaced the canonical maintainer actions and reviewer follow-ups with local text. Another report still cites the prior component-ledger and evidence-bundle SHA-256 values after regeneration. Explain the fail-closed artifacts and validator commands that prevent both defects without discarding unselected component-ledger history.
+      Four isolated Blazor control reports share one exact repository/package foundation. A child report copied the shared statuses and evidence anchors but replaced the canonical maintainer actions and reviewer follow-ups with local text. Another report still cites the prior component-ledger and evidence-bundle SHA-256 values after regeneration, while a third declares a live target-manifest digest outside the evidence bundle. Explain the fail-closed artifacts and validator commands that prevent these defects without discarding unselected component-ledger history.
     tags:
       eval_id: "22"
       area: "reporting-and-provenance"
@@ -620,11 +620,12 @@ stimuli:
         config:
           threshold: 0.7
     rubric:
-      - "Overall response matches this expected outcome: A schema-1 shared-row projection binds every repository-wide source-report field and declared artifact digests are resolved against live canonical inputs."
+      - "Overall response matches this expected outcome: A semantic */shared-row-projection/v1 envelope binds every repository-wide source-report field and declared artifact digests are resolved against live canonical inputs."
       - "The shared-row projection is bound to the exact repository source-ledger digest and contains every represented repository-wide requirement."
       - "Source validation compares requirement, scope, status, evidence anchors, maintainer action, and reviewer follow-up exactly rather than checking only status and evidence."
       - "Tracker validation compares every repository-wide row it presents and rejects a partial shared import."
       - "Scorecard receipt generation includes the shared-row projection in the closed validation-input manifest, and later receipt validation requires the same projection bytes."
       - "Any declared 64-lowercase-hex SHA-256 in the source report or tracker must resolve to a supplied live canonical input; stale component-ledger, bundle, or report digests fail."
+      - "Additional declared artifacts such as a target manifest use repeated --provenance-input options; schema-3 receipts bind their exact bytes and argument order, and revalidation requires the same inputs."
       - "Complete component ledgers may retain unselected historical records, while every selected record remains cited by the current assessment."
       - "Structural and provenance binding still do not establish factual evidence or classification quality."

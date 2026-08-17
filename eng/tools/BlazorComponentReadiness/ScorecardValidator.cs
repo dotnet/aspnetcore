@@ -645,10 +645,14 @@ internal static class ScorecardValidator
         return string.Join('\n', lines) + '\n';
     }
 
-    internal static ReportSnapshot ReadReportSnapshot(string reportPath)
+    internal static ReportSnapshot ReadReportSnapshot(
+        string reportPath,
+        long maximumBytes = FileSystemUtilities.MaximumSerializedArtifactBytes)
     {
         var fullPath = Path.GetFullPath(reportPath);
-        var bytes = FileSystemUtilities.ReadAllBytesBounded(fullPath);
+        var bytes = FileSystemUtilities.ReadAllBytesBounded(
+            fullPath,
+            maximumBytes);
         using var stream = new MemoryStream(bytes, writable: false);
         using var reader = new StreamReader(
             stream,

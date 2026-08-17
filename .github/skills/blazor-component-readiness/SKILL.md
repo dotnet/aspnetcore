@@ -144,8 +144,9 @@ evidence require the exact component ID and repository snapshot. Rechecks create
 record only when an identity-bearing field changes; optional `supersedes` links preserve old records.
 Content digests are commitments, not proof that source bytes remain available.
 
-For batched controls that share one repository foundation, retain a schema-1 shared-row projection
-bound to the repository source-ledger digest. Import every repository-wide row from it without local
+For batched controls that share one repository foundation, retain a semantic
+`*/shared-row-projection/v1` envelope bound to the repository source-ledger digest. Import every
+repository-wide row from it without local
 rewriting: requirement, scope, status, evidence anchors, maintainer action, and reviewer follow-up
 must remain exact. Complete embedded ledgers may retain unselected historical records; select only
 records used by the current assessment, and cite every selected record.
@@ -281,8 +282,13 @@ cannot import evidence into stable reports.
 Treat every 64-lowercase-hex SHA-256 literal in a stable source report or tracker as a live
 provenance declaration. The validators reject a declaration unless it resolves to the supplied
 rubric/overlay input, evidence bundle, embedded ledger or record, exact package, assessment,
-shared-row projection, or source report. Do not preserve obsolete artifact hashes in validated prose;
-put intentionally historical identities in a separate migration record.
+shared-row projection, source report, or explicit `--provenance-input` bytes. Supply each additional
+live artifact whose digest the prose declares, such as a target manifest or retained probe receipt,
+with one repeated `--provenance-input <path>` option. The option binds exact bytes and ordered input
+position into schema-3 receipts; receipt revalidation requires the same inputs in the same order.
+Never treat digests merely mentioned inside one supplied input as recursively trusted. Do not
+preserve obsolete artifact hashes in validated prose; put intentionally historical identities in a
+separate migration record.
 
 Build an evidence-only evaluation result mechanically from the validated source report:
 
@@ -312,6 +318,7 @@ body to any issue, project draft, or ticket, validate it and resolve every repor
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
   tracker --skill-dir .github/skills/blazor-component-readiness \
   --evidence-bundle <evidence.json> --source-report <readiness-report.md> \
+  --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> <tracker-body.md>
 ```
 
@@ -321,11 +328,13 @@ defect-to-summary bijection, evidence-anchor resolution, exact shared-row import
 SHA-256 bindings, absence of local absolute paths, and the absence of a terminal newline. Omit
 `--shared-row-projection` only when the review is not part of a shared-foundation batch. Write the
 tracker body without a terminal newline, and read it back with `jq -j` rather than `--jq`, which
-appends a newline and hides a one-byte difference.
+appends a newline and hides a one-byte difference. Omit the example `--provenance-input` when no
+additional digest-bearing input is declared; repeat it once per additional live input when needed.
 
 Public scorecard, tracker, and receipt commands reject any serialized report, evidence bundle, or
 receipt larger than 64 MiB. Ledger bundle creation enforces the same aggregate/output ceiling so it
-cannot emit a companion that public consumers reject.
+cannot emit a companion that public consumers reject. Validation accepts at most 32 explicit
+provenance inputs with at most 64 MiB of aggregate input bytes.
 
 Structural and presentation validation prove shape only. Neither establishes that the evidence or
 classifications are factually correct.
@@ -342,13 +351,15 @@ For a complete review, run:
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
   scorecard --skill-dir .github/skills/blazor-component-readiness \
   --evidence-bundle <evidence.json> \
+  --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> <readiness-report.md> \
   --receipt <validation-receipt.json>
 ```
 
 Include selected overlays with the matching `--overlay` options. For targeted work, validate with
 the same `--ids` list used to emit the template. Omit `--shared-row-projection` only when no shared
-repository-row foundation applies.
+repository-row foundation applies. Omit `--provenance-input` when the report declares no additional
+live artifact digest; otherwise repeat it in a stable order for every such input.
 
 Before publication, verify schema-3 bindings against the exact retained skill inputs:
 
@@ -356,10 +367,14 @@ Before publication, verify schema-3 bindings against the exact retained skill in
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
   receipt validate --skill-dir <exact-historical-skill-snapshot> \
   --evidence-bundle <evidence.json> \
+  --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> \
   --report <readiness-report.md> \
   <validation-receipt.json>
 ```
+
+Pass the same repeated provenance inputs in the same order used to create the receipt. Omit the
+option only when the receipt contains no `provenance-inputs/####` entries.
 
 The receipt is unsigned. `validator_sha256` is self-reported producer metadata; only an explicitly
 supplied archived assembly can establish byte correspondence, never producer execution/authenticity.

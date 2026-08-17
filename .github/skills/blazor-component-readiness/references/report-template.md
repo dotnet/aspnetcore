@@ -42,12 +42,14 @@ Validate the finished body before writing it to any tracker:
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
   tracker --skill-dir .github/skills/blazor-component-readiness \
   --evidence-bundle <evidence.json> --source-report <report.md> \
+  --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> <tracker-body.md>
 ```
 
 Omit `--shared-row-projection` only for a review that does not import a shared repository
 foundation. If the tracker declares the source-report digest, `--source-report` supplies the live
-bytes that declaration must match.
+bytes that declaration must match. Omit the example `--provenance-input` when the tracker declares
+no additional artifact digest; otherwise repeat it once per live digest-bearing input.
 
 GitHub persists a tracker body without a terminal newline. Write the artifact without one, and read
 it back with `jq -j` rather than `--jq`, which appends a newline and hides a one-byte difference.
@@ -160,7 +162,7 @@ Rules:
 - Give a bounded reviewer follow-up for `not tested`.
 - Link concrete defects to detailed finding blocks.
 - Validate with
-  `dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- scorecard --skill-dir .github/skills/blazor-component-readiness --evidence-bundle <evidence.json> --shared-row-projection <shared-row-projection.json> <report.md> --receipt <validation-receipt.json>` for a shared-foundation batch. Omit only the projection option for an independent review.
+  `dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- scorecard --skill-dir .github/skills/blazor-component-readiness --evidence-bundle <evidence.json> --shared-row-projection <shared-row-projection.json> --provenance-input <target-manifest.json> <report.md> --receipt <validation-receipt.json>` for a shared-foundation batch that declares the target-manifest digest. Omit the projection option for an independent review and omit the provenance-input option when no additional live artifact digest is declared.
 
 ## Targeted follow-up
 
@@ -200,21 +202,38 @@ explicit subset. Released-package repository ledgers may cross controls under ex
 source-only repository and component ledgers require the exact component ID. There is no authored
 direct/imported/rechecked state.
 
-Also retain one schema-1 shared-row projection keyed to that repository ledger:
+Also retain one semantic-versioned shared-row projection keyed to that repository ledger. The
+producer prefix is intentionally open, but the schema must end in `shared-row-projection/v1`:
 
 ```json
 {
-  "schema_version": 1,
-  "source_ledger_sha256": "<64 lowercase hex>",
+  "schema": "<producer>/shared-row-projection/v1",
+  "purpose": "Canonical repository-wide projection for a batch.",
+  "owner": "<coordinator>",
+  "import_rule": "Copy every projected field unchanged.",
+  "identity": {
+    "repository_uri": "https://github.com/example/components",
+    "reviewed_assessment_commit": "<40 lowercase hex>"
+  },
+  "bound_artifacts": {
+    "repository_ledger_path": "repository-ledger.json",
+    "repository_ledger_sha256": "<64 lowercase hex>"
+  },
+  "rubric": {
+    "version": "1.3.0",
+    "scope_schema_version": 1,
+    "row_count": 1
+  },
   "rows": [
     {
       "requirement_id": "LP-01",
       "requirement": "Uses an OSI-approved, non-copyleft license.",
       "requirement_scope": "repository-wide",
       "status": "verified",
+      "evidence": ["EV1-<64 lowercase hex>"],
       "evidence_anchors": "[EV1-<64 lowercase hex>]",
       "maintainer_action": "-",
-      "reviewer_follow_up": "-"
+      "notes": "-"
     }
   ]
 }
@@ -263,7 +282,10 @@ projection unless the current scorecard cites them.
 
 Any 64-lowercase-hex SHA-256 literal written into the stable report or tracker is a provenance claim.
 Validation fails unless it resolves to a supplied live input or canonical embedded identity. Do not
-copy superseded report, bundle, or ledger hashes into validated prose.
+copy superseded report, bundle, or ledger hashes into validated prose. For an additional declared
+artifact such as a target manifest or retained probe receipt, pass its exact bytes with repeated
+`--provenance-input <path>` options. This is explicit trust: digests merely mentioned inside an input
+do not become recursively allowed.
 
 ## Structural validation receipt
 
@@ -273,12 +295,16 @@ Generate a receipt with:
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
   scorecard --skill-dir .github/skills/blazor-component-readiness \
   --evidence-bundle <evidence.json> \
+  --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> <report.md> \
   --receipt <validation-receipt.json>
 ```
 
 The projection is optional for an independent review. When supplied, its digest is part of the
-receipt's closed validation-input manifest.
+receipt's closed validation-input manifest. The provenance-input example is optional when the report
+declares no additional input digest. Each repeated provenance input is captured as
+`provenance-inputs/####`; preserve argument order for later revalidation. Supply at most 32 explicit
+provenance inputs totaling no more than 64 MiB.
 
 Attach or summarize:
 
@@ -298,11 +324,13 @@ Before publishing, validate the receipt against the exact historical skill input
 dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj -- \
   receipt validate --skill-dir <exact-historical-skill-snapshot> \
   --evidence-bundle <evidence.json> \
+  --provenance-input <target-manifest.json> \
   --shared-row-projection <shared-row-projection.json> --report <report.md> \
   <validation-receipt.json>
 ```
 
-This detects later report/companion/input mutation. The unsigned self-reported validator hash does not
+Pass the same provenance inputs in the same order used during receipt creation, or omit them when the
+receipt contains none. This detects later report/companion/input mutation. The unsigned self-reported validator hash does not
 authenticate execution; `--producer-validator <archived-assembly>` checks byte correspondence only.
 Historical schema-2 artifacts remain byte-compatible through explicit `--legacy-evidence`; their
 limited success does not establish exact historical overlay/input provenance.

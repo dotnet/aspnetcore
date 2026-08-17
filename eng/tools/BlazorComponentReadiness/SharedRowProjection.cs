@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace BlazorComponentReadiness;
 
 internal sealed record SharedRowProjection(
     int SchemaVersion,
     string SourceLedgerSha256,
+    bool UsesLegacyEvidenceCells,
     IReadOnlyList<SharedRowProjectionRow> Rows);
 
 internal sealed record SharedRowProjectionRow(
@@ -22,33 +24,22 @@ internal sealed record SharedRowProjectionRow(
 internal static class SharedRowProjectionParser
 {
     private const int SchemaVersion = 1;
+    private const string SchemaSuffix = "shared-row-projection/v1";
 
     internal static SharedRowProjection Parse(ReportSnapshot snapshot)
     {
         using var document = JsonDocument.Parse(snapshot.Bytes);
         var root = document.RootElement;
         RequireObject(root, "shared-row projection");
-        RequireProperties(
-            root,
-            ["rows", "schema_version", "source_ledger_sha256"],
-            "shared-row projection");
-
-        var version = GetRequiredInt32(root, "schema_version");
-        if (version != SchemaVersion)
-        {
-            throw new InvalidDataException(
-                $"PROJ001: shared-row projection schema version {version} is unsupported.");
-        }
-
-        var sourceLedgerSha256 = GetRequiredString(
-            root,
-            "source_ledger_sha256");
+        var version = ReadSchemaVersion(root);
+        var usesLegacyEvidenceCells = !root.TryGetProperty("schema", out _);
+        var sourceLedgerSha256 = ReadSourceLedgerSha256(root);
         EvidenceIdentity.ValidateDigest(
             new Sha256Digest("sha256", sourceLedgerSha256),
             "shared-row projection source_ledger_sha256");
 
-        var rowsElement = root.GetProperty("rows");
-        if (rowsElement.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("rows", out var rowsElement) ||
+            rowsElement.ValueKind != JsonValueKind.Array)
         {
             throw new InvalidDataException(
                 "PROJ001: shared-row projection 'rows' must be an array.");
@@ -58,26 +49,22 @@ internal static class SharedRowProjectionParser
         foreach (var element in rowsElement.EnumerateArray())
         {
             RequireObject(element, "shared-row projection row");
-            RequireProperties(
+            var reviewerFollowUp = ReadAliasedString(
                 element,
-                [
-                    "evidence_anchors",
-                    "maintainer_action",
-                    "requirement",
-                    "requirement_id",
-                    "requirement_scope",
-                    "reviewer_follow_up",
-                    "status",
-                ],
-                "shared-row projection row");
+                "reviewer_follow_up",
+                "notes");
+            var evidenceAnchors = GetRequiredString(
+                element,
+                "evidence_anchors");
+            ValidateEvidenceArray(element, evidenceAnchors);
             rows.Add(new SharedRowProjectionRow(
                 GetRequiredString(element, "requirement_id"),
                 GetRequiredString(element, "requirement"),
                 GetRequiredString(element, "requirement_scope"),
                 GetRequiredString(element, "status"),
-                GetRequiredString(element, "evidence_anchors"),
+                evidenceAnchors,
                 GetRequiredString(element, "maintainer_action"),
-                GetRequiredString(element, "reviewer_follow_up")));
+                reviewerFollowUp));
         }
 
         if (rows.Count == 0)
@@ -98,7 +85,130 @@ internal static class SharedRowProjectionParser
         return new SharedRowProjection(
             version,
             sourceLedgerSha256,
+            usesLegacyEvidenceCells,
             rows);
+    }
+
+    private static int ReadSchemaVersion(JsonElement root)
+    {
+        var foundVersion = false;
+        if (root.TryGetProperty("schema_version", out var versionElement))
+        {
+            if (versionElement.ValueKind != JsonValueKind.Number ||
+                !versionElement.TryGetInt32(out var version) ||
+                version != SchemaVersion)
+            {
+                throw new InvalidDataException(
+                    $"PROJ001: shared-row projection schema version must be {SchemaVersion}.");
+            }
+
+            foundVersion = true;
+        }
+
+        var schema = root.TryGetProperty("schema", out _)
+            ? GetRequiredString(root, "schema")
+            : null;
+        if (schema is not null &&
+            !schema.EndsWith(SchemaSuffix, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                $"PROJ001: shared-row projection schema must end with '{SchemaSuffix}'.");
+        }
+
+        if (!foundVersion && schema is null)
+        {
+            throw new InvalidDataException(
+                "PROJ001: shared-row projection requires 'schema_version' or 'schema'.");
+        }
+
+        return SchemaVersion;
+    }
+
+    private static string ReadSourceLedgerSha256(JsonElement root)
+    {
+        var direct = TryGetString(root, "source_ledger_sha256");
+        string? bound = null;
+        if (root.TryGetProperty("bound_artifacts", out var boundArtifacts))
+        {
+            RequireObject(boundArtifacts, "shared-row projection bound_artifacts");
+            bound = TryGetString(
+                boundArtifacts,
+                "repository_ledger_sha256");
+        }
+
+        if (direct is not null &&
+            bound is not null &&
+            !string.Equals(direct, bound, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                "PROJ001: shared-row projection source ledger digests disagree.");
+        }
+
+        return direct ??
+            bound ??
+            throw new InvalidDataException(
+                "PROJ001: shared-row projection requires a source repository " +
+                "ledger digest.");
+    }
+
+    private static string ReadAliasedString(
+        JsonElement element,
+        string primaryName,
+        string alternateName)
+    {
+        var primary = TryGetString(element, primaryName);
+        var alternate = TryGetString(element, alternateName);
+        if (primary is not null &&
+            alternate is not null &&
+            !string.Equals(primary, alternate, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                $"PROJ001: '{primaryName}' and '{alternateName}' disagree.");
+        }
+
+        return primary ??
+            alternate ??
+            throw new InvalidDataException(
+                $"PROJ001: shared-row projection row requires '{primaryName}' " +
+                $"or '{alternateName}'.");
+    }
+
+    private static void ValidateEvidenceArray(
+        JsonElement element,
+        string evidenceAnchors)
+    {
+        if (!element.TryGetProperty("evidence", out var evidence))
+        {
+            return;
+        }
+
+        if (evidence.ValueKind != JsonValueKind.Array)
+        {
+            throw new InvalidDataException(
+                "PROJ001: shared-row projection row 'evidence' must be an array.");
+        }
+
+        var identifiers = evidence.EnumerateArray()
+            .Select(item =>
+            {
+                if (item.ValueKind != JsonValueKind.String)
+                {
+                    throw new InvalidDataException(
+                        "PROJ001: shared-row projection evidence IDs must be strings.");
+                }
+
+                return item.GetString()!;
+            })
+            .ToArray();
+        var expected = string.Join(
+            ' ',
+            identifiers.Select(identifier => $"[{identifier}]"));
+        if (!string.Equals(expected, evidenceAnchors, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                "PROJ001: shared-row projection evidence array differs from " +
+                "evidence_anchors.");
+        }
     }
 
     private static void RequireObject(JsonElement element, string context)
@@ -108,23 +218,14 @@ internal static class SharedRowProjectionParser
             throw new InvalidDataException(
                 $"PROJ001: {context} must be a JSON object.");
         }
-    }
 
-    private static void RequireProperties(
-        JsonElement element,
-        IReadOnlyCollection<string> expected,
-        string context)
-    {
-        var actual = element.EnumerateObject()
-            .Select(property => property.Name)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        var orderedExpected = expected.Order(StringComparer.Ordinal).ToArray();
-        if (!actual.SequenceEqual(orderedExpected, StringComparer.Ordinal))
+        var duplicate = element.EnumerateObject()
+            .GroupBy(property => property.Name, StringComparer.Ordinal)
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicate is not null)
         {
             throw new InvalidDataException(
-                $"PROJ001: {context} properties must be exactly: " +
-                string.Join(", ", orderedExpected) + ".");
+                $"PROJ001: {context} repeats property '{duplicate.Key}'.");
         }
     }
 
@@ -132,7 +233,20 @@ internal static class SharedRowProjectionParser
         JsonElement element,
         string propertyName)
     {
-        var property = element.GetProperty(propertyName);
+        return TryGetString(element, propertyName) ??
+            throw new InvalidDataException(
+                $"PROJ001: '{propertyName}' must be a non-empty JSON string.");
+    }
+
+    private static string? TryGetString(
+        JsonElement element,
+        string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property))
+        {
+            return null;
+        }
+
         if (property.ValueKind != JsonValueKind.String)
         {
             throw new InvalidDataException(
@@ -148,24 +262,9 @@ internal static class SharedRowProjectionParser
 
         return value;
     }
-
-    private static int GetRequiredInt32(
-        JsonElement element,
-        string propertyName)
-    {
-        var property = element.GetProperty(propertyName);
-        if (property.ValueKind != JsonValueKind.Number ||
-            !property.TryGetInt32(out var value))
-        {
-            throw new InvalidDataException(
-                $"PROJ001: '{propertyName}' must be an integer.");
-        }
-
-        return value;
-    }
 }
 
-internal static class SharedRowProjectionValidator
+internal static partial class SharedRowProjectionValidator
 {
     private const string RepositoryScope = "repository-wide";
 
@@ -220,7 +319,9 @@ internal static class SharedRowProjectionValidator
                 expected.Identifier,
                 "evidence anchors",
                 expected.EvidenceAnchors,
-                actual.Evidence,
+                projection.UsesLegacyEvidenceCells
+                    ? actual.Evidence
+                    : ExtractEvidenceAnchors(actual.Evidence),
                 "source report");
             Compare(
                 errors,
@@ -292,7 +393,9 @@ internal static class SharedRowProjectionValidator
                 expected.Identifier,
                 "evidence anchors",
                 expected.EvidenceAnchors,
-                actual.EvidenceAnchors,
+                projection.UsesLegacyEvidenceCells
+                    ? actual.EvidenceAnchors
+                    : ExtractEvidenceAnchors(actual.EvidenceAnchors),
                 "tracker");
         }
 
@@ -391,6 +494,13 @@ internal static class SharedRowProjectionValidator
         }
     }
 
+    private static string ExtractEvidenceAnchors(string value)
+    {
+        return string.Join(
+            ' ',
+            EvidenceAnchorRegex().Matches(value).Select(match => match.Value));
+    }
+
     private static IReadOnlyList<TrackerProjectionRow> ParseTrackerRows(
         ReportSnapshot tracker)
     {
@@ -441,4 +551,9 @@ internal static class SharedRowProjectionValidator
         string RequirementScope,
         string Status,
         string EvidenceAnchors);
+
+    [GeneratedRegex(
+        @"\[EV1-[0-9a-f]{64}\]",
+        RegexOptions.CultureInvariant)]
+    private static partial Regex EvidenceAnchorRegex();
 }

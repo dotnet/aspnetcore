@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 namespace BlazorComponentReadiness.Tests;
 
@@ -1702,7 +1703,7 @@ public sealed class EvidenceIntegrationTests
             actionError.ToString());
 
         row["maintainer_action"] = "-";
-        row["reviewer_follow_up"] = "Re-run the bounded release probe.";
+        row["notes"] = "Re-run the bounded release probe.";
         File.WriteAllText(
             projectionPath,
             root.ToJsonString(),
@@ -1719,6 +1720,211 @@ public sealed class EvidenceIntegrationTests
         Assert.Contains(
             "reviewer follow-up differs",
             followUpError.ToString());
+    }
+
+    [Fact]
+    public void SharedProjectionPreservesLegacyShapeCompatibility()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var bundle = KnownBundle();
+        var legacyRows = new JsonArray();
+        var report = ScorecardValidator.ReadReportSnapshot(reportPath);
+        foreach (var row in ScorecardValidator.ParseScorecard(report)
+            .Where(row => row.Scope == "repository-wide"))
+        {
+            legacyRows.Add(new JsonObject
+            {
+                ["requirement_id"] = row.Identifier,
+                ["requirement"] = row.Requirement,
+                ["requirement_scope"] = row.Scope,
+                ["status"] = row.Status,
+                ["evidence_anchors"] = row.Evidence,
+                ["maintainer_action"] = row.MaintainerAction,
+                ["reviewer_follow_up"] = row.ReviewerFollowUp,
+            });
+        }
+
+        var repository = Assert.Single(
+            bundle.SourceLedgers,
+            source => source.Ledger.LedgerKind == "repository");
+        var legacyProjectionPath = Path.Combine(
+            directory.DirectoryPath,
+            "legacy-shared-row-projection.json");
+        File.WriteAllText(
+            legacyProjectionPath,
+            new JsonObject
+            {
+                ["schema_version"] = 1,
+                ["source_ledger_sha256"] = repository.SourceLedgerSha256,
+                ["rows"] = legacyRows,
+            }.ToJsonString(),
+            new UTF8Encoding(false));
+
+        Assert.Equal(
+            0,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath: null,
+                sharedRowProjectionPath: legacyProjectionPath));
+
+        var repositoryEvidence = string.Join(
+            ' ',
+            bundle.Selection
+                .Where(selection =>
+                    selection.SourceLedgerSha256 ==
+                    repository.SourceLedgerSha256)
+                .Select(selection => $"[{selection.EvidenceId}]"));
+        repositoryEvidence =
+            "The bcr-assessment-v1 projection was reviewed. " +
+            "Display order and Evidence ID confirmed. " +
+            repositoryEvidence;
+        var completeLegacyRows = new JsonArray();
+        foreach (var requirement in ScorecardValidator
+            .LoadRequirementSet(Layout, [])
+            .Where(requirement => requirement.Scope == "repository-wide"))
+        {
+            completeLegacyRows.Add(new JsonObject
+            {
+                ["requirement_id"] = requirement.Identifier,
+                ["requirement"] = requirement.Text.Replace(
+                    "|",
+                    "\\|",
+                    StringComparison.Ordinal),
+                ["requirement_scope"] = requirement.Scope,
+                ["status"] = "verified",
+                ["evidence_anchors"] = repositoryEvidence,
+                ["maintainer_action"] = "-",
+                ["reviewer_follow_up"] = "-",
+            });
+        }
+
+        File.WriteAllText(
+            legacyProjectionPath,
+            new JsonObject
+            {
+                ["schema_version"] = 1,
+                ["source_ledger_sha256"] = repository.SourceLedgerSha256,
+                ["rows"] = completeLegacyRows,
+            }.ToJsonString(),
+            new UTF8Encoding(false));
+        var trackerPath = Path.Combine(
+            directory.DirectoryPath,
+            "tracker.md");
+        File.WriteAllText(
+            trackerPath,
+            BuildStableTrackerBody(bundle),
+            new UTF8Encoding(false));
+        var trackerError = new StringWriter(CultureInfo.InvariantCulture);
+        var trackerExitCode = TrackerCommand.Run(
+                [
+                    "--skill-dir",
+                    Layout.Root,
+                    "--evidence-bundle",
+                    bundlePath,
+                    "--shared-row-projection",
+                    legacyProjectionPath,
+                    trackerPath,
+                ],
+                TextWriter.Null,
+                trackerError);
+        Assert.True(trackerExitCode == 0, trackerError.ToString());
+    }
+
+    [Fact]
+    public void SharedProjectionRejectsContradictorySchemaDeclarations()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var projectionPath = WriteSharedRowProjectionFromReport(
+            directory.DirectoryPath,
+            reportPath,
+            KnownBundle());
+        var root = JsonNode.Parse(
+            File.ReadAllText(projectionPath, Encoding.UTF8))!.AsObject();
+        root["schema_version"] = 1;
+        root["schema"] = "example-readiness/shared-row-projection/v2";
+        File.WriteAllText(
+            projectionPath,
+            root.ToJsonString(),
+            new UTF8Encoding(false));
+        var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        Assert.Equal(
+            1,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath: null,
+                error,
+                sharedRowProjectionPath: projectionPath));
+        Assert.Contains("PROJ001", error.ToString());
+    }
+
+    [Fact]
+    public void SharedProjectionRejectsDuplicateProperties()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var projectionPath = WriteSharedRowProjectionFromReport(
+            directory.DirectoryPath,
+            reportPath,
+            KnownBundle());
+        var projection = File.ReadAllText(projectionPath, Encoding.UTF8);
+        projection = projection.Replace(
+            "\"schema\":\"example-readiness/shared-row-projection/v1\"",
+            "\"schema\":\"example-readiness/shared-row-projection/v2\"," +
+            "\"schema\":\"example-readiness/shared-row-projection/v1\"",
+            StringComparison.Ordinal);
+        File.WriteAllText(
+            projectionPath,
+            projection,
+            new UTF8Encoding(false));
+        var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        Assert.Equal(
+            1,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath: null,
+                error,
+                sharedRowProjectionPath: projectionPath));
+        Assert.Contains("repeats property 'schema'", error.ToString());
+    }
+
+    [Fact]
+    public void SharedProjectionRejectsMissingRowsWithoutCrashing()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var projectionPath = WriteSharedRowProjectionFromReport(
+            directory.DirectoryPath,
+            reportPath,
+            KnownBundle());
+        var root = JsonNode.Parse(
+            File.ReadAllText(projectionPath, Encoding.UTF8))!.AsObject();
+        root.Remove("rows");
+        File.WriteAllText(
+            projectionPath,
+            root.ToJsonString(),
+            new UTF8Encoding(false));
+        var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        Assert.Equal(
+            1,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath: null,
+                error,
+                sharedRowProjectionPath: projectionPath));
+        Assert.Contains("PROJ001", error.ToString());
     }
 
     [Fact]
@@ -1877,6 +2083,410 @@ public sealed class EvidenceIntegrationTests
     }
 
     [Fact]
+    public void ProvenanceInputsDoNotRecursivelyAuthorizeEmbeddedDigests()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var nestedDigest =
+            "0123456789abcdef0123456789abcdef" +
+            "0123456789abcdef0123456789abcdef";
+        var provenanceInputPath = Path.Combine(
+            directory.DirectoryPath,
+            "target-manifest.json");
+        File.WriteAllText(
+            provenanceInputPath,
+            $"{{\"nested_sha256\":\"{nestedDigest}\"}}\n",
+            new UTF8Encoding(false));
+        var provenanceInputDigest = CanonicalEvidenceJson.ComputeSha256(
+            File.ReadAllBytes(provenanceInputPath));
+        File.AppendAllText(
+            reportPath,
+            $"\nTarget manifest SHA-256: `{provenanceInputDigest}`.\n",
+            new UTF8Encoding(false));
+
+        Assert.Equal(
+            0,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath: null,
+                provenanceInputPaths: [provenanceInputPath]));
+
+        File.WriteAllText(
+            reportPath,
+            File.ReadAllText(reportPath, Encoding.UTF8).Replace(
+                provenanceInputDigest,
+                nestedDigest,
+                StringComparison.Ordinal),
+            new UTF8Encoding(false));
+        var error = new StringWriter(CultureInfo.InvariantCulture);
+        Assert.Equal(
+            1,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath: null,
+                error,
+                provenanceInputPaths: [provenanceInputPath]));
+        Assert.Contains("PROV001", error.ToString());
+    }
+
+    [Fact]
+    public void ProvenanceInputsEnforceSharedResourceLimits()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var paths = Enumerable.Range(
+            0,
+            ValidationProvenance.MaximumProvenanceInputCount + 1)
+            .Select(index =>
+            {
+                var path = Path.Combine(
+                    directory.DirectoryPath,
+                    $"input-{index:D2}.json");
+                File.WriteAllText(path, "{}", new UTF8Encoding(false));
+                return path;
+            })
+            .ToArray();
+        var countError = new StringWriter(CultureInfo.InvariantCulture);
+
+        Assert.Equal(
+            1,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath: null,
+                countError,
+                provenanceInputPaths: paths));
+        Assert.Contains("PROV003", countError.ToString());
+
+        var aggregateError = Assert.Throws<InvalidDataException>(() =>
+            ValidationProvenance.ReadProvenanceInputSnapshots(
+                paths[..2],
+                maximumCount: 2,
+                maximumAggregateBytes: 3));
+        Assert.Contains("PROV003", aggregateError.Message);
+    }
+
+    [Fact]
+    public void ProvenanceInputsBindDigestsAndRoundTripThroughReceipt()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var firstInputPath = Path.Combine(
+            directory.DirectoryPath,
+            "target-manifest.json");
+        var secondInputPath = Path.Combine(
+            directory.DirectoryPath,
+            "probe-receipt.json");
+        File.WriteAllText(
+            firstInputPath,
+            "{\"target\":\"Tree\"}\n",
+            new UTF8Encoding(false));
+        File.WriteAllText(
+            secondInputPath,
+            "{\"result\":\"passed\"}\n",
+            new UTF8Encoding(false));
+        var firstDigest = CanonicalEvidenceJson.ComputeSha256(
+            File.ReadAllBytes(firstInputPath));
+        var secondDigest = CanonicalEvidenceJson.ComputeSha256(
+            File.ReadAllBytes(secondInputPath));
+        File.AppendAllText(
+            reportPath,
+            $"\nTarget manifest SHA-256: `{firstDigest}`.\n" +
+            $"Probe receipt SHA-256: `{secondDigest}`.\n",
+            new UTF8Encoding(false));
+        var receiptPath = Path.Combine(directory.DirectoryPath, "receipt.json");
+        var provenanceInputPaths = new[] { firstInputPath, secondInputPath };
+
+        Assert.Equal(
+            0,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath,
+                provenanceInputPaths: provenanceInputPaths));
+        using (var receipt = JsonDocument.Parse(
+            File.ReadAllText(receiptPath, Encoding.UTF8)))
+        {
+            Assert.Equal(
+                [
+                    "provenance-inputs/0000",
+                    "provenance-inputs/0001",
+                    "references/checklist.md",
+                ],
+                receipt.RootElement
+                    .GetProperty("validation_inputs")
+                    .GetProperty("files")
+                    .EnumerateArray()
+                    .Select(file => file.GetProperty("path").GetString()));
+        }
+
+        Assert.Equal(
+            0,
+            ReceiptCommand.Run(
+                [
+                    "validate",
+                    "--skill-dir",
+                    Layout.Root,
+                    "--evidence-bundle",
+                    bundlePath,
+                    "--provenance-input",
+                    firstInputPath,
+                    "--provenance-input",
+                    secondInputPath,
+                    "--report",
+                    reportPath,
+                    receiptPath,
+                ],
+                TextWriter.Null,
+                TextWriter.Null));
+        var reversedError = new StringWriter(CultureInfo.InvariantCulture);
+        Assert.Equal(
+            1,
+            ReceiptCommand.Run(
+                [
+                    "validate",
+                    "--skill-dir",
+                    Layout.Root,
+                    "--evidence-bundle",
+                    bundlePath,
+                    "--provenance-input",
+                    secondInputPath,
+                    "--provenance-input",
+                    firstInputPath,
+                    "--report",
+                    reportPath,
+                    receiptPath,
+                ],
+                TextWriter.Null,
+                reversedError));
+        Assert.Contains("RECEIPT003", reversedError.ToString());
+
+        var trackerPath = Path.Combine(directory.DirectoryPath, "tracker.md");
+        File.WriteAllText(
+            trackerPath,
+            BuildStableTrackerBody(KnownBundle()) +
+            $"\n\nTarget manifest SHA-256: `{firstDigest}`.",
+            new UTF8Encoding(false));
+        Assert.Equal(
+            0,
+            TrackerCommand.Run(
+                [
+                    "--skill-dir",
+                    Layout.Root,
+                    "--evidence-bundle",
+                    bundlePath,
+                    "--provenance-input",
+                    firstInputPath,
+                    trackerPath,
+                ],
+                TextWriter.Null,
+                TextWriter.Null));
+    }
+
+    [Fact]
+    public void ProvenanceInputsFailClosedWhenOmittedChangedOrAliased()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var provenanceInputPath = Path.Combine(
+            directory.DirectoryPath,
+            "target-manifest.json");
+        File.WriteAllText(
+            provenanceInputPath,
+            "{\"target\":\"Tree\"}\n",
+            new UTF8Encoding(false));
+        var provenanceDigest = CanonicalEvidenceJson.ComputeSha256(
+            File.ReadAllBytes(provenanceInputPath));
+        File.AppendAllText(
+            reportPath,
+            $"\nTarget manifest SHA-256: `{provenanceDigest}`.\n",
+            new UTF8Encoding(false));
+        var receiptPath = Path.Combine(directory.DirectoryPath, "receipt.json");
+        Assert.Equal(
+            0,
+            RunStableScorecard(
+                reportPath,
+                bundlePath,
+                receiptPath,
+                provenanceInputPaths: [provenanceInputPath]));
+
+        var omittedError = new StringWriter(CultureInfo.InvariantCulture);
+        Assert.Equal(
+            1,
+            ReceiptCommand.Run(
+                [
+                    "validate",
+                    "--skill-dir",
+                    Layout.Root,
+                    "--evidence-bundle",
+                    bundlePath,
+                    "--report",
+                    reportPath,
+                    receiptPath,
+                ],
+                TextWriter.Null,
+                omittedError));
+        Assert.Contains("RECEIPT003", omittedError.ToString());
+
+        File.AppendAllText(
+            provenanceInputPath,
+            "{\"changed\":true}\n",
+            new UTF8Encoding(false));
+        var changedError = new StringWriter(CultureInfo.InvariantCulture);
+        Assert.Equal(
+            1,
+            ReceiptCommand.Run(
+                [
+                    "validate",
+                    "--skill-dir",
+                    Layout.Root,
+                    "--evidence-bundle",
+                    bundlePath,
+                    "--provenance-input",
+                    provenanceInputPath,
+                    "--report",
+                    reportPath,
+                    receiptPath,
+                ],
+                TextWriter.Null,
+                changedError));
+        Assert.Contains("RECEIPT003", changedError.ToString());
+
+        var aliasDirectory = Path.Combine(directory.DirectoryPath, "alias");
+        Directory.CreateDirectory(aliasDirectory);
+        var (aliasReportPath, aliasBundlePath) = WriteStableTargetedArtifacts(
+            aliasDirectory);
+        var aliasError = new StringWriter(CultureInfo.InvariantCulture);
+        Assert.Equal(
+            1,
+            RunStableScorecard(
+                aliasReportPath,
+                aliasBundlePath,
+                Path.Combine(aliasDirectory, "receipt.json"),
+                aliasError,
+                provenanceInputPaths: [aliasBundlePath]));
+        Assert.Contains("distinct artifacts", aliasError.ToString());
+    }
+
+    [Fact]
+    public void ProvenanceInputMutationBeforePublishLeavesNoReceipt()
+    {
+        using var directory = new TemporaryDirectory();
+        var (reportPath, bundlePath) = WriteStableTargetedArtifacts(
+            directory.DirectoryPath);
+        var provenanceInputPath = Path.Combine(
+            directory.DirectoryPath,
+            "target-manifest.json");
+        File.WriteAllText(
+            provenanceInputPath,
+            "{\"target\":\"Tree\"}\n",
+            new UTF8Encoding(false));
+        var receiptPath = Path.Combine(directory.DirectoryPath, "receipt.json");
+        var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        var exitCode = RunStableScorecard(
+            reportPath,
+            bundlePath,
+            receiptPath,
+            error,
+            beforeReceiptPublish: () => File.AppendAllText(
+                provenanceInputPath,
+                "{\"changed\":true}\n",
+                new UTF8Encoding(false)),
+            provenanceInputPaths: [provenanceInputPath]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("RECEIPT004", error.ToString());
+        Assert.Contains("target-manifest.json", error.ToString());
+        Assert.False(File.Exists(receiptPath));
+    }
+
+    [Fact]
+    public void LegacyModeRejectsProvenanceInputs()
+    {
+        using var directory = new TemporaryDirectory();
+        var reportPath = WriteLegacyTargetedReport(directory.DirectoryPath);
+        var provenanceInputPath = Path.Combine(
+            directory.DirectoryPath,
+            "target-manifest.json");
+        File.WriteAllText(
+            provenanceInputPath,
+            "{}\n",
+            new UTF8Encoding(false));
+        var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        var scorecardExitCode = ScorecardCommand.Run(
+            [
+                "--skill-dir",
+                Layout.Root,
+                "--ids",
+                "LP-01,LP-02",
+                "--legacy-evidence",
+                "--provenance-input",
+                provenanceInputPath,
+                reportPath,
+            ],
+            TextWriter.Null,
+            error);
+        var receiptExitCode = ReceiptCommand.Run(
+            [
+                "validate",
+                "--skill-dir",
+                Layout.Root,
+                "--legacy-evidence",
+                "--provenance-input",
+                provenanceInputPath,
+                "--report",
+                reportPath,
+                Path.Combine(directory.DirectoryPath, "receipt.json"),
+            ],
+            TextWriter.Null,
+            error);
+
+        Assert.Equal(1, scorecardExitCode);
+        Assert.Equal(1, receiptExitCode);
+        Assert.Equal(
+            2,
+            error.ToString().Split("PROV002", StringSplitOptions.None).Length - 1);
+    }
+
+    [Fact]
+    public void TemplateEmissionRejectsProvenanceInputs()
+    {
+        using var directory = new TemporaryDirectory();
+        var provenanceInputPath = Path.Combine(
+            directory.DirectoryPath,
+            "target-manifest.json");
+        File.WriteAllText(
+            provenanceInputPath,
+            "{}\n",
+            new UTF8Encoding(false));
+        var error = new StringWriter(CultureInfo.InvariantCulture);
+
+        var exitCode = ScorecardCommand.Run(
+            [
+                "--skill-dir",
+                Layout.Root,
+                "--emit-template",
+                "--provenance-input",
+                provenanceInputPath,
+            ],
+            TextWriter.Null,
+            error);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains(
+            "--provenance-input cannot be combined with --emit-template",
+            error.ToString());
+    }
+
+    [Fact]
     public void UnselectedComponentLedgerRecordsRemainValidHistory()
     {
         using var directory = new TemporaryDirectory();
@@ -2007,7 +2617,8 @@ public sealed class EvidenceIntegrationTests
         string? receiptPath,
         StringWriter? error = null,
         Action? beforeReceiptPublish = null,
-        string? sharedRowProjectionPath = null)
+        string? sharedRowProjectionPath = null,
+        IReadOnlyList<string>? provenanceInputPaths = null)
     {
         var args = new List<string>
         {
@@ -2022,6 +2633,12 @@ public sealed class EvidenceIntegrationTests
         {
             args.Add("--shared-row-projection");
             args.Add(sharedRowProjectionPath);
+        }
+
+        foreach (var provenanceInputPath in provenanceInputPaths ?? [])
+        {
+            args.Add("--provenance-input");
+            args.Add(provenanceInputPath);
         }
 
         args.Add(reportPath);
@@ -2160,7 +2777,7 @@ public sealed class EvidenceIntegrationTests
                 row.Requirement,
                 row.Scope,
                 row.Status,
-                row.Evidence,
+                ExtractEvidenceAnchors(row.Evidence),
                 row.MaintainerAction,
                 row.ReviewerFollowUp))
             .ToArray();
@@ -2180,10 +2797,9 @@ public sealed class EvidenceIntegrationTests
                 sources["repository"].SourceLedgerSha256)
             .Select(selection => selection.EvidenceId)
             .ToArray();
-        var evidence =
-            "The bcr-assessment-v1 projection was reviewed. " +
-            "Display order and Evidence ID confirmed. " +
-            string.Join(' ', repositoryIds.Select(id => $"[{id}]"));
+        var evidence = string.Join(
+            ' ',
+            repositoryIds.Select(id => $"[{id}]"));
         var rows = ScorecardValidator.LoadRequirementSet(Layout, [])
             .Where(requirement => requirement.Scope == "repository-wide")
             .Select(requirement => new SharedRowProjectionRow(
@@ -2209,22 +2825,54 @@ public sealed class EvidenceIntegrationTests
         var jsonRows = new JsonArray();
         foreach (var row in rows)
         {
+            var evidenceIds = Regex.Matches(
+                row.EvidenceAnchors,
+                @"\[([^\]]+)\]",
+                RegexOptions.CultureInvariant)
+                .Select(match => match.Groups[1].Value)
+                .ToArray();
             jsonRows.Add(new JsonObject
             {
                 ["requirement_id"] = row.Identifier,
                 ["requirement"] = row.Requirement,
                 ["requirement_scope"] = row.RequirementScope,
                 ["status"] = row.Status,
+                ["evidence"] = new JsonArray(
+                    evidenceIds
+                        .Select(identifier =>
+                            (JsonNode?)JsonValue.Create(identifier))
+                        .ToArray()),
                 ["evidence_anchors"] = row.EvidenceAnchors,
                 ["maintainer_action"] = row.MaintainerAction,
-                ["reviewer_follow_up"] = row.ReviewerFollowUp,
+                ["notes"] = row.ReviewerFollowUp,
             });
         }
 
         var projection = new JsonObject
         {
-            ["schema_version"] = 1,
-            ["source_ledger_sha256"] = repository.SourceLedgerSha256,
+            ["schema"] = "example-readiness/shared-row-projection/v1",
+            ["purpose"] = "Canonical repository-wide projection for a batch.",
+            ["owner"] = "coordinator",
+            ["import_rule"] = "Copy every projected field unchanged.",
+            ["identity"] = new JsonObject
+            {
+                ["repository_uri"] =
+                    bundle.Assessment.Repository.RepositoryUri,
+                ["reviewed_assessment_commit"] =
+                    bundle.Assessment.Repository.Commit,
+            },
+            ["bound_artifacts"] = new JsonObject
+            {
+                ["repository_ledger_path"] = "repository-ledger.json",
+                ["repository_ledger_sha256"] =
+                    repository.SourceLedgerSha256,
+            },
+            ["rubric"] = new JsonObject
+            {
+                ["version"] = "1.3.0",
+                ["scope_schema_version"] = 1,
+                ["row_count"] = rows.Count,
+            },
             ["rows"] = jsonRows,
         };
         var path = Path.Combine(directory, "shared-row-projection.json");
@@ -2233,6 +2881,17 @@ public sealed class EvidenceIntegrationTests
             projection.ToJsonString(),
             new UTF8Encoding(false));
         return path;
+    }
+
+    private static string ExtractEvidenceAnchors(string evidence)
+    {
+        return string.Join(
+            ' ',
+            Regex.Matches(
+                evidence,
+                @"\[EV1-[0-9a-f]{64}\]",
+                RegexOptions.CultureInvariant)
+                .Select(match => match.Value));
     }
 
     private static EvidenceRecordDraft ComponentDraft(

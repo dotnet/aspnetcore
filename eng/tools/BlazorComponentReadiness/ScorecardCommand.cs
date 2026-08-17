@@ -22,6 +22,7 @@ internal static class ScorecardCommand
         string? receiptPath = null;
         string? evidenceBundlePath = null;
         string? sharedRowProjectionPath = null;
+        var provenanceInputPaths = new List<string>();
         var emitTemplate = false;
         var legacyEvidence = false;
         var overlays = new List<string>();
@@ -78,6 +79,17 @@ internal static class ScorecardCommand
                         return MissingValue("--shared-row-projection", error);
                     }
 
+                    break;
+                case "--provenance-input":
+                    if (!TryReadValue(
+                        args,
+                        ref index,
+                        out var provenanceInputPath))
+                    {
+                        return MissingValue("--provenance-input", error);
+                    }
+
+                    provenanceInputPaths.Add(provenanceInputPath);
                     break;
                 case "--legacy-evidence":
                     legacyEvidence = true;
@@ -157,6 +169,13 @@ internal static class ScorecardCommand
                 return 1;
             }
 
+            if (emitTemplate && provenanceInputPaths.Count > 0)
+            {
+                error.WriteLine(
+                    "--provenance-input cannot be combined with --emit-template.");
+                return 1;
+            }
+
             IReadOnlyList<string> targetedOverlayNames = identifiers is null
                 ? []
                 : RequirementSelection.OverlayNames(
@@ -230,11 +249,13 @@ internal static class ScorecardCommand
                 return 1;
             }
 
-            if (legacyEvidence && sharedRowProjectionPath is not null)
+            if (legacyEvidence &&
+                (sharedRowProjectionPath is not null ||
+                 provenanceInputPaths.Count > 0))
             {
                 error.WriteLine(
-                    "ERROR: --shared-row-projection is available only in stable " +
-                    "evidence mode.");
+                    "ERROR: PROV002: --shared-row-projection and " +
+                    "--provenance-input are available only in stable evidence mode.");
                 return 1;
             }
 
@@ -256,6 +277,10 @@ internal static class ScorecardCommand
                 sharedRowProjection = SharedRowProjectionParser.Parse(
                     sharedRowProjectionSnapshot);
             }
+
+            var provenanceInputSnapshots =
+                ValidationProvenance.ReadProvenanceInputSnapshots(
+                    provenanceInputPaths);
 
             if (receiptPath is not null)
             {
@@ -304,7 +329,9 @@ internal static class ScorecardCommand
                         overlaySnapshots.Values.Concat(
                             sharedRowProjectionSnapshot is null
                                 ? []
-                                : [sharedRowProjectionSnapshot.Bytes])))
+                                : [sharedRowProjectionSnapshot.Bytes])
+                            .Concat(provenanceInputSnapshots.Select(
+                                snapshot => snapshot.Bytes))))
                     .ToArray();
             }
 
@@ -335,14 +362,14 @@ internal static class ScorecardCommand
                 else
                 {
                     EnsureReceiptArtifactPaths(
-                        sharedRowProjectionPath is null
-                            ? [reportPath, evidenceBundlePath!, receiptPath]
-                            : [
-                                reportPath,
-                                evidenceBundlePath!,
-                                sharedRowProjectionPath,
-                                receiptPath,
-                            ]);
+                        new[] { reportPath, evidenceBundlePath! }
+                            .Concat(sharedRowProjectionPath is null
+                                ? []
+                                : [sharedRowProjectionPath])
+                            .Concat(provenanceInputSnapshots.Select(
+                                snapshot => snapshot.Path))
+                            .Append(receiptPath)
+                            .ToArray());
                     var selectedOverlays = RequirementSelection.OverlayNames(
                         requirements.Select(requirement => requirement.Identifier),
                         layout);
@@ -350,7 +377,8 @@ internal static class ScorecardCommand
                         rubric,
                         selectedOverlays,
                         overlaySnapshots,
-                        sharedRowProjectionSnapshot);
+                        sharedRowProjectionSnapshot,
+                        provenanceInputSnapshots);
                     receipt = ScorecardValidator.BuildValidationReceiptV3(
                         rubric,
                         report,
@@ -374,31 +402,34 @@ internal static class ScorecardCommand
                             VerifySnapshotUnchanged(report);
                             EnsureReceiptArtifactPaths([reportPath, receiptPath]);
                         }
-                        : () =>
-                        {
-                            beforeReceiptPublish?.Invoke();
-                            VerifySnapshotUnchanged(report);
-                            VerifySnapshotUnchanged(evidenceBundleSnapshot!);
-                            if (sharedRowProjectionSnapshot is not null)
-                            {
-                                VerifySnapshotUnchanged(
-                                    sharedRowProjectionSnapshot);
-                            }
+                : () =>
+                {
+                    beforeReceiptPublish?.Invoke();
+                    VerifySnapshotUnchanged(report);
+                    VerifySnapshotUnchanged(evidenceBundleSnapshot!);
+                    if (sharedRowProjectionSnapshot is not null)
+                    {
+                        VerifySnapshotUnchanged(
+                            sharedRowProjectionSnapshot);
+                    }
 
-                            EnsureReceiptArtifactPaths(
-                                sharedRowProjectionPath is null
-                                    ? [
-                                        reportPath,
-                                        evidenceBundlePath!,
-                                        receiptPath,
-                                    ]
-                                    : [
-                                        reportPath,
-                                        evidenceBundlePath!,
-                                        sharedRowProjectionPath,
-                                        receiptPath,
-                                    ]);
-                        });
+                    foreach (var provenanceInputSnapshot in
+                        provenanceInputSnapshots)
+                    {
+                        VerifySnapshotUnchanged(
+                            provenanceInputSnapshot);
+                    }
+
+                    EnsureReceiptArtifactPaths(
+                        new[] { reportPath, evidenceBundlePath! }
+                            .Concat(sharedRowProjectionPath is null
+                                ? []
+                                : [sharedRowProjectionPath])
+                            .Concat(provenanceInputSnapshots.Select(
+                                snapshot => snapshot.Path))
+                            .Append(receiptPath)
+                            .ToArray());
+                });
             }
 
             output.WriteLine(

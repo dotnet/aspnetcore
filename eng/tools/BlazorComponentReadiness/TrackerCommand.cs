@@ -15,6 +15,7 @@ internal static class TrackerCommand
         string? evidenceBundlePath = null;
         string? sharedRowProjectionPath = null;
         string? sourceReportPath = null;
+        var provenanceInputPaths = new List<string>();
         var legacyEvidence = false;
         var overlays = new List<string>();
 
@@ -61,6 +62,17 @@ internal static class TrackerCommand
                     }
 
                     break;
+                case "--provenance-input":
+                    if (!TryReadValue(
+                        args,
+                        ref index,
+                        out var provenanceInputPath))
+                    {
+                        return MissingValue("--provenance-input", error);
+                    }
+
+                    provenanceInputPaths.Add(provenanceInputPath);
+                    break;
                 case "--legacy-evidence":
                     legacyEvidence = true;
                     break;
@@ -105,11 +117,12 @@ internal static class TrackerCommand
 
         if (legacyEvidence &&
             (sharedRowProjectionPath is not null ||
-             sourceReportPath is not null))
+             sourceReportPath is not null ||
+             provenanceInputPaths.Count > 0))
         {
             error.WriteLine(
-                "ERROR: --shared-row-projection and --source-report are " +
-                "available only in stable evidence mode.");
+                "ERROR: PROV002: --shared-row-projection, --source-report, and " +
+                "--provenance-input are available only in stable evidence mode.");
             return 1;
         }
 
@@ -148,6 +161,9 @@ internal static class TrackerCommand
                 ? null
                 : ScorecardValidator.ReadReportSnapshot(
                     Path.GetFullPath(sourceReportPath));
+            var provenanceInputSnapshots =
+                ValidationProvenance.ReadProvenanceInputSnapshots(
+                    provenanceInputPaths);
             var errors = TrackerValidator.Validate(
                 body,
                 requirements,
@@ -172,7 +188,9 @@ internal static class TrackerCommand
                             overlaySnapshots.Values.Concat(
                                 sharedRowProjectionSnapshot is null
                                     ? []
-                                    : [sharedRowProjectionSnapshot.Bytes]),
+                                    : [sharedRowProjectionSnapshot.Bytes])
+                                .Concat(provenanceInputSnapshots.Select(
+                                    snapshot => snapshot.Bytes)),
                             sourceReport))
                 .ToArray();
             if (errors.Length > 0)

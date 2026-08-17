@@ -16,7 +16,8 @@ internal static class ReceiptCommand
                 "Usage: BlazorComponentReadiness receipt validate " +
                 "--skill-dir <historical-skill> --report <report> " +
                 "(--evidence-bundle <bundle>|--legacy-evidence) " +
-                "[--shared-row-projection <projection>] <receipt>");
+                "[--shared-row-projection <projection>] " +
+                "[--provenance-input <path>]... <receipt>");
             return 1;
         }
 
@@ -45,6 +46,7 @@ internal static class ReceiptCommand
         string? evidenceBundlePath = null;
         string? producerValidatorPath = null;
         string? sharedRowProjectionPath = null;
+        var provenanceInputPaths = new List<string>();
         string? receiptPath = null;
         var legacyEvidence = false;
         for (var index = 1; index < args.Length; index++)
@@ -68,6 +70,10 @@ internal static class ReceiptCommand
                 case "--shared-row-projection":
                     sharedRowProjectionPath =
                         ReadValue(args, ref index, "--shared-row-projection");
+                    break;
+                case "--provenance-input":
+                    provenanceInputPaths.Add(
+                        ReadValue(args, ref index, "--provenance-input"));
                     break;
                 case "--legacy-evidence":
                     legacyEvidence = true;
@@ -111,11 +117,12 @@ internal static class ReceiptCommand
 
         if (legacyEvidence &&
             (producerValidatorPath is not null ||
-             sharedRowProjectionPath is not null))
+             sharedRowProjectionPath is not null ||
+             provenanceInputPaths.Count > 0))
         {
             error.WriteLine(
-                "ERROR: --producer-validator and --shared-row-projection are " +
-                "available only for schema-3 receipts.");
+                "ERROR: PROV002: --producer-validator, --shared-row-projection, and " +
+                "--provenance-input are available only for schema-3 receipts.");
             return 1;
         }
 
@@ -153,20 +160,24 @@ internal static class ReceiptCommand
                     ? null
                     : ScorecardValidator.ReadReportSnapshot(
                         Path.GetFullPath(sharedRowProjectionPath));
+            var provenanceInputSnapshots =
+                ValidationProvenance.ReadProvenanceInputSnapshots(
+                    provenanceInputPaths);
             EnsureArtifactPaths(
-                sharedRowProjectionSnapshot is null
-                    ? [report.Path, evidenceSnapshot.Path, receipt.Path]
-                    : [
-                        report.Path,
-                        evidenceSnapshot.Path,
-                        sharedRowProjectionSnapshot.Path,
-                        receipt.Path,
-                    ]);
+                new[] { report.Path, evidenceSnapshot.Path }
+                    .Concat(sharedRowProjectionSnapshot is null
+                        ? []
+                        : [sharedRowProjectionSnapshot.Path])
+                    .Concat(provenanceInputSnapshots.Select(
+                        snapshot => snapshot.Path))
+                    .Append(receipt.Path)
+                    .ToArray());
             ValidateStable(
                 SkillLayout.Create(skillDirectory!),
                 report,
                 evidenceSnapshot,
                 sharedRowProjectionSnapshot,
+                provenanceInputSnapshots,
                 receipt,
                 document.RootElement);
             output.WriteLine("Valid structural artifact bindings.");
@@ -197,6 +208,7 @@ internal static class ReceiptCommand
         ReportSnapshot report,
         ReportSnapshot evidenceSnapshot,
         ReportSnapshot? sharedRowProjectionSnapshot,
+        IReadOnlyList<ReportSnapshot> provenanceInputSnapshots,
         ReportSnapshot receiptSnapshot,
         JsonElement receipt)
     {
@@ -294,6 +306,9 @@ internal static class ReceiptCommand
             .Concat(sharedRowProjectionSnapshot is null
                 ? []
                 : ["shared-row-projection.json"])
+            .Concat(provenanceInputSnapshots.Select(
+                (_, index) =>
+                    ValidationProvenance.ProvenanceInputRelativePath(index)))
             .Order(StringComparer.Ordinal)
             .ToArray();
         RequireSequenceEqual(
@@ -310,6 +325,23 @@ internal static class ReceiptCommand
                     sharedRowProjectionSnapshot!.Bytes.Span),
                 projectionInput.Sha256.Value,
                 "shared-row projection digest");
+        }
+
+        for (var index = 0;
+            index < provenanceInputSnapshots.Count;
+            index++)
+        {
+            var path =
+                ValidationProvenance.ProvenanceInputRelativePath(index);
+            var input = AssertSingle(
+                manifest.Files,
+                candidate => candidate.Path == path,
+                $"RECEIPT005: missing validation input '{path}'.");
+            RequireEqual(
+                CanonicalEvidenceJson.ComputeSha256(
+                    provenanceInputSnapshots[index].Bytes.Span),
+                input.Sha256.Value,
+                $"provenance input {index} digest");
         }
 
         var (rubric, overlaySnapshots) =
@@ -344,7 +376,9 @@ internal static class ReceiptCommand
                 overlaySnapshots.Values.Concat(
                     sharedRowProjectionSnapshot is null
                         ? []
-                        : [sharedRowProjectionSnapshot.Bytes])))
+                        : [sharedRowProjectionSnapshot.Bytes])
+                    .Concat(provenanceInputSnapshots.Select(
+                        snapshot => snapshot.Bytes))))
             .ToArray();
         ThrowValidationErrors(errors);
         ValidateRowCounts(receipt, requirements, rows);
@@ -465,7 +499,9 @@ internal static class ReceiptCommand
         var overlays = manifest.Files
             .Where(file =>
                 file.Path != "references/checklist.md" &&
-                file.Path != "shared-row-projection.json")
+                file.Path != "shared-row-projection.json" &&
+                !ValidationProvenance.IsProvenanceInputRelativePath(
+                    file.Path))
             .Select(file => ValidationProvenance.OverlayNameFromRelativePath(
                 file.Path))
             .ToArray();

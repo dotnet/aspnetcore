@@ -7,6 +7,10 @@ namespace BlazorComponentReadiness;
 
 internal static class ValidationProvenance
 {
+    internal const int MaximumProvenanceInputCount = 32;
+    internal const long MaximumProvenanceInputBytes =
+        FileSystemUtilities.MaximumSerializedArtifactBytes;
+
     internal static IReadOnlyDictionary<string, ReadOnlyMemory<byte>>
         ReadOverlaySnapshots(
             SkillLayout layout,
@@ -33,7 +37,8 @@ internal static class ValidationProvenance
         RubricSnapshot rubric,
         IEnumerable<string> selectedOverlays,
         IReadOnlyDictionary<string, ReadOnlyMemory<byte>> overlaySnapshots,
-        ReportSnapshot? sharedRowProjectionSnapshot = null)
+        ReportSnapshot? sharedRowProjectionSnapshot = null,
+        IReadOnlyList<ReportSnapshot>? provenanceInputSnapshots = null)
     {
         var files = new List<ValidationInput>
         {
@@ -68,9 +73,57 @@ internal static class ValidationProvenance
                         sharedRowProjectionSnapshot.Bytes.Span))));
         }
 
+        for (var index = 0;
+            index < (provenanceInputSnapshots?.Count ?? 0);
+            index++)
+        {
+            var snapshot = provenanceInputSnapshots![index];
+            files.Add(new ValidationInput(
+                ProvenanceInputRelativePath(index),
+                new Sha256Digest(
+                        "sha256",
+                        CanonicalEvidenceJson.ComputeSha256(snapshot.Bytes.Span))));
+        }
+
         return new ValidationInputManifest(
             CanonicalEvidenceJson.EvidenceSchemaVersion,
             files.OrderBy(file => file.Path, StringComparer.Ordinal).ToArray());
+    }
+
+    internal static IReadOnlyList<ReportSnapshot>
+        ReadProvenanceInputSnapshots(
+            IReadOnlyList<string> paths,
+            int maximumCount = MaximumProvenanceInputCount,
+            long maximumAggregateBytes = MaximumProvenanceInputBytes)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(maximumCount);
+        ArgumentOutOfRangeException.ThrowIfNegative(maximumAggregateBytes);
+        if (paths.Count > maximumCount)
+        {
+            throw new InvalidDataException(
+                $"PROV003: at most {maximumCount} provenance inputs may be supplied.");
+        }
+
+        var snapshots = new List<ReportSnapshot>(paths.Count);
+        var remainingBytes = maximumAggregateBytes;
+        foreach (var path in paths)
+        {
+            var fullPath = Path.GetFullPath(path);
+            if (new FileInfo(fullPath).Length > remainingBytes)
+            {
+                throw new InvalidDataException(
+                    $"PROV003: provenance inputs exceed the aggregate " +
+                    $"{maximumAggregateBytes}-byte limit.");
+            }
+
+            var snapshot = ScorecardValidator.ReadReportSnapshot(
+                fullPath,
+                remainingBytes);
+            snapshots.Add(snapshot);
+            remainingBytes -= snapshot.Bytes.Length;
+        }
+
+        return snapshots;
     }
 
     internal static string ComputeValidatorSha256()
@@ -110,5 +163,17 @@ internal static class ValidationProvenance
             _ => throw new InvalidDataException(
                 $"RECEIPT005: unknown validation input path '{path}'."),
         };
+    }
+
+    internal static string ProvenanceInputRelativePath(int index)
+    {
+        return $"provenance-inputs/{index:D4}";
+    }
+
+    internal static bool IsProvenanceInputRelativePath(string path)
+    {
+        return path.StartsWith(
+            "provenance-inputs/",
+            StringComparison.Ordinal);
     }
 }
