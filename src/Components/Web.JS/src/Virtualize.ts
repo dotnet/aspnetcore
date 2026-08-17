@@ -587,12 +587,20 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   function handleScroll(): void {
-    if (convergence.isConverging() || scrollActivity.consumeIgnoreScroll()) {
+    if (convergence.isConverging()) {
       return;
     }
 
     const selfScrollInProgress = scrollActivity.source === ScrollSource.AlignToItem
       || scrollActivity.source === ScrollSource.RestoreSnapshot;
+    if (scrollActivity.consumeIgnoreScroll()) {
+      if (selfScrollInProgress) {
+        scrollActivity.source = ScrollSource.None;
+        reobserveSpacers();
+      }
+      return;
+    }
+
     if (selfScrollInProgress) {
       return;
     }
