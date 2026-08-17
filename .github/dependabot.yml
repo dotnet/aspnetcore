@@ -163,7 +163,7 @@ updates:
   - dependency-name: "Microsoft.NETCore.BrowserDebugHost.Transport"
   - dependency-name: "Microsoft.NETCore.Platforms"
   - dependency-name: "Microsoft.Web.Xdt"
-  - dependency-name: "Microsoft.WixToolset.Sdk"
+  - dependency-name: "Microsoft.Wix*"
   - dependency-name: "NuGet.Frameworks"
   - dependency-name: "NuGet.Packaging"
   - dependency-name: "NuGet.Versioning"
