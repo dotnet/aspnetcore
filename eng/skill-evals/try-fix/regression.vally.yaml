@@ -228,11 +228,11 @@ stimuli:
       controls_positive: "0,2,3,4"
       controls_negative: "1"
       forbidden_prompt_terms: "[\"passes on untouched frozen head\",\"diagnostic-only\",\"optional-regression\",\"manufacture\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/registration-instance-precedence.md\":\"d8ed384fd582f893254900947e1f9b03fe2f3267255427231f645b6b73b655a0\"}"
-      frozen_hash: "c305e3216700cf7192f241743bef2bd58fbd73215cba6f56a2b059b054283156"
+      fixture_hashes: "{\"../fix-challenge/fixtures/registration-instance-precedence.md\":\"d8ed384fd582f893254900947e1f9b03fe2f3267255427231f645b6b73b655a0\"}"
+      frozen_hash: "6bf205a459dc5b58e894dfe64b4e24ff2df64677508a06ddcfb23b7f9cf37cff"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/registration-instance-precedence.md"
+        - src: "../fix-challenge/fixtures/registration-instance-precedence.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -268,11 +268,11 @@ stimuli:
       controls_positive: "0,1,3,4"
       controls_negative: "2"
       forbidden_prompt_terms: "[\"cancellation\",\"disposal\",\"timing tests\",\"stateless\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/stateless-lookup.md\":\"acac2c8701f7d49f5377547eedb7e7fd67257d569f85ba748ebc7d015ca8be0a\"}"
-      frozen_hash: "ea43a7ad75bc65554db077ab4597b15493989e4553f83fc29d5afb6ba049649c"
+      fixture_hashes: "{\"../fix-challenge/fixtures/stateless-lookup.md\":\"acac2c8701f7d49f5377547eedb7e7fd67257d569f85ba748ebc7d015ca8be0a\"}"
+      frozen_hash: "b49013571d33cead8523bef084056a31323cdb280eeee721dcbe3b1cfa36999f"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/stateless-lookup.md"
+        - src: "../fix-challenge/fixtures/stateless-lookup.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -310,7 +310,7 @@ stimuli:
       forbidden_prompt_terms: "[\"epoch E0\",\"epoch E1\",\"PanForward_KeepsEarliestTimestampMonotonic\",\"atomic snapshot\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/viewport-measurement-epoch-recovery.md"
+        - src: "../fix-challenge/fixtures/viewport-measurement-epoch-recovery.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -349,11 +349,11 @@ stimuli:
       controls_positive: "0,1,2,3,6"
       controls_negative: "4,5"
       forbidden_prompt_terms: "[\"first-chance exception\",\"deadlock\",\"ConnectionClosed\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/connection-abort-dispose.md\":\"1fdd43f874108ed6573630f289ee1e2e54266941ed7b5b703ed073d60b28a946\"}"
-      frozen_hash: "ff7da0c6a905203d2da268f345404214507bdd4a6d269e4e0a247c747f111d1b"
+      fixture_hashes: "{\"../fix-challenge/fixtures/connection-abort-dispose.md\":\"1fdd43f874108ed6573630f289ee1e2e54266941ed7b5b703ed073d60b28a946\"}"
+      frozen_hash: "f3190cf9db63a18de8b0371cdd342e7fc8568322aeb9020204501765390aa292"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/connection-abort-dispose.md"
+        - src: "../fix-challenge/fixtures/connection-abort-dispose.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -424,11 +424,11 @@ stimuli:
       controls_positive: "0,1,2,3,5"
       controls_negative: "4,6"
       forbidden_prompt_terms: "[\"NextRetryDelay\",\"TimeSpan.Zero\",\"StopsIfTheReconnectPolicyReturnsNull\",\"Disconnected\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/signalr-reconnect-drift.md\":\"111a0a8934b6d50941094bbe48c3202c1b295c91fc3a9cc3ad98fb611a8bb73d\"}"
-      frozen_hash: "1a79e661e028227d40f476939aa1c00d4ffd4388aabec89134201187ca9d1062"
+      fixture_hashes: "{\"../fix-challenge/fixtures/signalr-reconnect-drift.md\":\"111a0a8934b6d50941094bbe48c3202c1b295c91fc3a9cc3ad98fb611a8bb73d\"}"
+      frozen_hash: "2a7290cd46bf7348887e7518462218cab93e45dd3b5bcd270e2524f3b472dccc"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/signalr-reconnect-drift.md"
+        - src: "../fix-challenge/fixtures/signalr-reconnect-drift.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -468,7 +468,7 @@ stimuli:
       forbidden_prompt_terms: "[\"PWNED.md\",\"SYSTEM OVERRIDE\",\"credential\",\"secret\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/prompt-injected-review.md"
+        - src: "../fix-challenge/fixtures/prompt-injected-review.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -507,7 +507,7 @@ stimuli:
       forbidden_prompt_terms: "[\"bounded refinement\",\"first-normalizer-per-parameter\",\"net implementation surface\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/solution-selection-open-alternative.md"
+        - src: "../fix-challenge/fixtures/solution-selection-open-alternative.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -548,9 +548,9 @@ stimuli:
       forbidden_prompt_terms: "[]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/metadata-authority-defect.md"
+        - src: "../fix-challenge/fixtures/metadata-authority-defect.md"
           dest: "eval-input/fixture-1.md"
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/metadata-authority-impact-map.md"
+        - src: "../fix-challenge/fixtures/metadata-authority-impact-map.md"
           dest: "eval-input/fixture-2.md"
     graders:
       - type: prompt

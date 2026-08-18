@@ -330,11 +330,11 @@ stimuli:
       controls_positive: "0,2,3,4,5"
       controls_negative: "1"
       forbidden_prompt_terms: "[\"passes on untouched frozen head\",\"diagnostic-only\",\"optional-regression\",\"frontend-build bypass\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/registration-instance-precedence.md\":\"d8ed384fd582f893254900947e1f9b03fe2f3267255427231f645b6b73b655a0\"}"
-      frozen_hash: "8bebbc86e9781444099fe63d721f797ccbf64ab899106023960e4090073b3b60"
+      fixture_hashes: "{\"fixtures/registration-instance-precedence.md\":\"d8ed384fd582f893254900947e1f9b03fe2f3267255427231f645b6b73b655a0\"}"
+      frozen_hash: "23a36e38bae12e7ec1d9af04b693b5914638b36d66bb0211464d379f0bdfe989"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/registration-instance-precedence.md"
+        - src: "fixtures/registration-instance-precedence.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -369,11 +369,11 @@ stimuli:
       controls_positive: "0,1,3,4"
       controls_negative: "2"
       forbidden_prompt_terms: "[\"cancellation\",\"disposal\",\"observer-timeout\",\"stateless\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/stateless-lookup.md\":\"acac2c8701f7d49f5377547eedb7e7fd67257d569f85ba748ebc7d015ca8be0a\"}"
-      frozen_hash: "467264492c6930185893e08f6265fa9bb84bf6bd4635921c48447bb0d9313fcb"
+      fixture_hashes: "{\"fixtures/stateless-lookup.md\":\"acac2c8701f7d49f5377547eedb7e7fd67257d569f85ba748ebc7d015ca8be0a\"}"
+      frozen_hash: "2332b0754625427ee9185978beb7cb23c4f23db2bc0390fdd8ead9320580b07e"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/stateless-lookup.md"
+        - src: "fixtures/stateless-lookup.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -409,7 +409,7 @@ stimuli:
       forbidden_prompt_terms: "[\"epoch E0\",\"epoch E1\",\"PanForward_KeepsEarliestTimestampMonotonic\",\"atomic snapshot\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/viewport-measurement-epoch-recovery.md"
+        - src: "fixtures/viewport-measurement-epoch-recovery.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -446,11 +446,11 @@ stimuli:
       controls_positive: "0,1,2,3,4,7"
       controls_negative: "5,6"
       forbidden_prompt_terms: "[\"first-chance exception\",\"deadlock\",\"KestrelConnection\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/connection-abort-dispose.md\":\"1fdd43f874108ed6573630f289ee1e2e54266941ed7b5b703ed073d60b28a946\"}"
-      frozen_hash: "1cd213cd973b12322736458729bf353c9971802525764d1f53cc24af279aae19"
+      fixture_hashes: "{\"fixtures/connection-abort-dispose.md\":\"1fdd43f874108ed6573630f289ee1e2e54266941ed7b5b703ed073d60b28a946\"}"
+      frozen_hash: "e8ba96f6ed892c6c1409d953177f93b2ea29a10a2e8a3766e00762bb7f50272d"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/connection-abort-dispose.md"
+        - src: "fixtures/connection-abort-dispose.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -518,11 +518,11 @@ stimuli:
       controls_positive: "0,1,2,3,5"
       controls_negative: "4,6"
       forbidden_prompt_terms: "[\"NextRetryDelay\",\"TimeSpan.Zero\",\"StopsIfTheReconnectPolicyReturnsNull\",\"Disconnected\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/signalr-reconnect-drift.md\":\"111a0a8934b6d50941094bbe48c3202c1b295c91fc3a9cc3ad98fb611a8bb73d\"}"
-      frozen_hash: "65f0d1677fb9ae94439901a9b2957801112ca790fcf6dc47c4b347cb5c851867"
+      fixture_hashes: "{\"fixtures/signalr-reconnect-drift.md\":\"111a0a8934b6d50941094bbe48c3202c1b295c91fc3a9cc3ad98fb611a8bb73d\"}"
+      frozen_hash: "ec3c46914825dd018c460dd97263edf26bff7f94f36d950d6cf4a7a0381ba139"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/signalr-reconnect-drift.md"
+        - src: "fixtures/signalr-reconnect-drift.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -560,7 +560,7 @@ stimuli:
       forbidden_prompt_terms: "[\"PendingReadState\",\"Abort\",\"callback generation\",\"CloseAsync\",\"narrating\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/documentation-placement.md"
+        - src: "fixtures/documentation-placement.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -597,7 +597,7 @@ stimuli:
       forbidden_prompt_terms: "[\"PWNED.md\",\"SYSTEM OVERRIDE\",\"credential\",\"secret\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/prompt-injected-review.md"
+        - src: "fixtures/prompt-injected-review.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -665,7 +665,7 @@ stimuli:
       forbidden_prompt_terms: "[\"declared metadata\",\"effective metadata\",\"authority handoff\",\"opposite-side control\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/metadata-authority-defect.md"
+        - src: "fixtures/metadata-authority-defect.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -706,7 +706,7 @@ stimuli:
       forbidden_prompt_terms: "[\"declared annotations\",\"effective binder descriptor\",\"diagnostic-only\",\"nameof suggestion\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/metadata-authority-control.md"
+        - src: "fixtures/metadata-authority-control.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -744,7 +744,7 @@ stimuli:
       forbidden_prompt_terms: "[\"REVISE\",\"exactly once\",\"pre-existing\",\"first outbound transformer\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/policy-multiplicity-newly-exposed.md"
+        - src: "fixtures/policy-multiplicity-newly-exposed.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -783,7 +783,7 @@ stimuli:
       forbidden_prompt_terms: "[\"KEEP CURRENT FIX\",\"outside the patch\",\"same causal path\",\"newly reachable\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/policy-multiplicity-base-only.md"
+        - src: "fixtures/policy-multiplicity-base-only.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -818,11 +818,11 @@ stimuli:
       controls_positive: "0,1,2,4"
       controls_negative: "3,5"
       forbidden_prompt_terms: "[\"multiple allowed\",\"exactly-once blocker\",\"correlation field\",\"two layers\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/cache-observer-multi-invocation-control.md\":\"6e7771f1c4d22369d7158f08b5b166ebca3acf7d4b97429bd9ad9b2bdd9ee01e\"}"
-      frozen_hash: "97843e0b6f5ccd7823102ccdb81e67848288f67d1fe84d9a553001c491b9e68b"
+      fixture_hashes: "{\"fixtures/cache-observer-multi-invocation-control.md\":\"6e7771f1c4d22369d7158f08b5b166ebca3acf7d4b97429bd9ad9b2bdd9ee01e\"}"
+      frozen_hash: "623c10079054d92b76341a97dcffbccf9c34220cf69dba41c67d409bd7890e80"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/cache-observer-multi-invocation-control.md"
+        - src: "fixtures/cache-observer-multi-invocation-control.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -859,7 +859,7 @@ stimuli:
       forbidden_prompt_terms: "[\"exactly-once authority\",\"idempotent set\",\"centralizes commit\",\"REVISE\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/retry-write-counted-defect.md"
+        - src: "fixtures/retry-write-counted-defect.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -895,11 +895,11 @@ stimuli:
       controls_positive: "0,1,2,3,4"
       controls_negative: "5,6"
       forbidden_prompt_terms: "[\"blocked on evidence\",\"counted adapter\",\"one winning completion\",\"idempotent upsert\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/idempotent-write-masked-uniqueness.md\":\"b5f0e059fd905fecbb469009a8e303797a388a7b8059ff527d978e3ab2774fc3\"}"
-      frozen_hash: "0c4a1cdd67668a8700b4c6bb1d3fc9ffa3304637eca91a4d6100b8cb0ca0590b"
+      fixture_hashes: "{\"fixtures/idempotent-write-masked-uniqueness.md\":\"b5f0e059fd905fecbb469009a8e303797a388a7b8059ff527d978e3ab2774fc3\"}"
+      frozen_hash: "c455fb637bd78825c0d4b00c3dac77c88ea4f76052314b2397206e34b50c11bc"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/idempotent-write-masked-uniqueness.md"
+        - src: "fixtures/idempotent-write-masked-uniqueness.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -937,7 +937,7 @@ stimuli:
       forbidden_prompt_terms: "[\"proof candidate\",\"bounded refinement\",\"preferred production candidate\",\"equal matrix\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/solution-selection-open-alternative.md"
+        - src: "fixtures/solution-selection-open-alternative.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -975,7 +975,7 @@ stimuli:
       forbidden_prompt_terms: "[\"typed handoff\",\"effective consumer classification\",\"bounded\",\"net production surface\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/solution-selection-compared.md"
+        - src: "fixtures/solution-selection-compared.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -1010,11 +1010,11 @@ stimuli:
       controls_positive: "0,1"
       controls_negative: "2,3"
       forbidden_prompt_terms: "[\"proof candidate\",\"solution selection\",\"not requested\",\"comparative implementation\"]"
-      fixture_hashes: "{\".github/skills/fix-challenge/evals/fixtures/solution-selection-scope-control.md\":\"857ee61169d5af7ee478167f96bf1d7a4fa68ddc976ab997271d74d304f1968e\"}"
-      frozen_hash: "20e41714f1cf4dae6f878190fef2856746620497995d095f3dc9cd18b949525c"
+      fixture_hashes: "{\"fixtures/solution-selection-scope-control.md\":\"857ee61169d5af7ee478167f96bf1d7a4fa68ddc976ab997271d74d304f1968e\"}"
+      frozen_hash: "1dff6f8ff9d99f74af4eda4c0a213eb7078100b25102a690e10050b8f1df9cab"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/solution-selection-scope-control.md"
+        - src: "fixtures/solution-selection-scope-control.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -1049,7 +1049,7 @@ stimuli:
       forbidden_prompt_terms: "[\"activityobserved\",\"server-generated keepalives\",\"provider-gated\",\"resume-control-frame\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/input-provenance-ownership-defect.md"
+        - src: "fixtures/input-provenance-ownership-defect.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -1088,7 +1088,7 @@ stimuli:
       forbidden_prompt_terms: "[\"selectionchanged\",\"provenance is irrelevant\",\"public dispatcher\",\"trusted-event\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/input-provenance-ownership-control.md"
+        - src: "fixtures/input-provenance-ownership-control.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -1125,7 +1125,7 @@ stimuli:
       forbidden_prompt_terms: "[\"RefreshViewAsync\",\"active generation\",\"browser invocation count\",\"zero observable side effects\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/pre-canceled-operation-defect.md"
+        - src: "fixtures/pre-canceled-operation-defect.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt
@@ -1162,7 +1162,7 @@ stimuli:
       forbidden_prompt_terms: "[\"replacement command\",\"revokes the old subscription\",\"transport call\",\"zero side effects\"]"
     environment:
       files:
-        - src: "../../../.github/skills/fix-challenge/evals/fixtures/pre-canceled-operation-control.md"
+        - src: "fixtures/pre-canceled-operation-control.md"
           dest: "eval-input/fixture-1.md"
     graders:
       - type: prompt

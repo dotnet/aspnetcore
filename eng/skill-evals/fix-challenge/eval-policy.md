@@ -41,7 +41,9 @@ generalization.
 
 ## Provisional model selection
 
-The model policy in `references/model-policy.v1.json` was selected from 30 valid
+The model policy in
+[`model-policy.v1.json`](../../../.github/skills/fix-challenge/references/model-policy.v1.json)
+was selected from 30 valid
 outputs: six models each reviewed five frozen cases at source commit
 `f5835dcaf831ea87c9a2a89f28a4bd2448b34923`. The cases exercise corrected-head
 abstention, compatibility, lifecycle/provenance, test falsification, and input
@@ -114,9 +116,9 @@ families hide poor transfer to other provenance.
 Before accepting eval changes, run:
 
 ```powershell
-pwsh .github/skills/fix-challenge/scripts/Validate-Evals.ps1 `
+pwsh eng/skill-evals/reviewer-suites/scripts/Validate-Evals.ps1 `
   -Path 'eng/skill-evals/fix-challenge/regression.vally.yaml,eng/skill-evals/fix-challenge/model-guardrail.vally.yaml,eng/skill-evals/try-fix/regression.vally.yaml'
-pwsh .github/skills/fix-challenge/scripts/Stage-ReviewerSkills.ps1 `
+pwsh eng/skill-evals/reviewer-suites/scripts/Stage-ReviewerSkills.ps1 `
   /tmp/aspnetcore-review-skills
 ```
 
@@ -132,6 +134,12 @@ The three specs under `eng/skill-evals/` are the only source of truth for
 prompts, rubrics, fixtures, models, and governance metadata. There is no
 generated manifest or synchronization step. `Validate-Evals.ps1` performs the
 cross-stimulus anti-overfit checks that Vally's schema lint does not cover.
+
+These named reviewer specs are specialized capability and regression suites.
+The repository runner auto-discovers only `eval.vally.yaml`; invoke these suites
+explicitly with `-Eval` through the repository runner or with Vally's
+`--eval-spec`/`-e` option. They may use the reviewer-specific staging helper
+below because `fix-challenge` executes together with its sibling `try-fix`.
 
 Official and comparison runs use `@microsoft/vally-cli@0.13.0`. Invoke that
 exact package rather than an unversioned global `vally`; otherwise local results
@@ -263,14 +271,15 @@ npx --yes --package @microsoft/vally-cli@0.13.0 vally eval \
 ```
 
 Vally supplies the score-producing prompt grader, repeated trials, and
-pass@k/pass^k reporting. Run `scripts/Aggregate-EvalScores.ps1` with the three
+pass@k/pass^k reporting. Run
+`eng/skill-evals/reviewer-suites/scripts/Aggregate-EvalScores.ps1` with the three
 canonical Vally specs and one or more
 `-VallyResults <skill-name>=<results.jsonl>` arguments to additionally report
 raw, family-macro, provenance-macro, and train-to-held-out transfer results.
 The reviewer aggregation needs both its GPT and Claude result files:
 
 ```powershell
-pwsh .github/skills/fix-challenge/scripts/Aggregate-EvalScores.ps1 `
+pwsh eng/skill-evals/reviewer-suites/scripts/Aggregate-EvalScores.ps1 `
   -EvalPath 'eng/skill-evals/fix-challenge/regression.vally.yaml,eng/skill-evals/fix-challenge/model-guardrail.vally.yaml,eng/skill-evals/try-fix/regression.vally.yaml' `
   -VallyResults 'fix-challenge=/tmp/fix-challenge-main/results.jsonl,fix-challenge=/tmp/fix-challenge-guardrail/results.jsonl,try-fix=/tmp/try-fix/results.jsonl'
 ```
@@ -289,7 +298,7 @@ jq -c \
   'select(.type != "run-summary" and any(.gradeResult.details[]?; .metadata.error? != null))' \
   <original-results.jsonl> |
   npx --yes --package @microsoft/vally-cli@0.13.0 vally grade \
-    -e <eval.vally.yaml> \
+    -e <specialized.vally.yaml> \
     --judge-model claude-opus-5 \
     --output jsonl >regraded.jsonl
 ```
