@@ -29,6 +29,7 @@ public class ChunkedRequestTests : LoggedTest
     [InlineData("2;a,\r\nxy\r\n0")]
     [InlineData("2;a\n\r\nxy\r\n0")]
     [InlineData("2;a\r\r\nxy\r\n0")]
+    [InlineData("2;hello world\r\nxy\r\n0")]
     public async Task RejectsInvalidChunkExtensions(string invalidChunkLine)
     {
         var testContext = new TestServiceContext(LoggerFactory);
