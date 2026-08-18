@@ -586,13 +586,22 @@ internal static class SkillValidator
             "references/status-boundaries.md",
             "references/targeted-profiles.md",
             "eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj",
-            "evals/regression.vally.yaml",
+            "eng/skill-evals/blazor-component-readiness/regression.vally.yaml",
         })
         {
             if (!skill.Contains(reference, StringComparison.Ordinal))
             {
                 errors.Add($"SKILL.md does not reference {reference}");
             }
+        }
+
+        var evalPolicy = File.ReadAllText(layout.EvalPolicyPath, Encoding.UTF8);
+        if (!evalPolicy.Contains(
+            "eng/skill-evals/blazor-component-readiness/regression.vally.yaml",
+            StringComparison.Ordinal))
+        {
+            errors.Add(
+                "Evaluation policy does not reference the specialized repository eval suite");
         }
 
         foreach (var heading in new[]

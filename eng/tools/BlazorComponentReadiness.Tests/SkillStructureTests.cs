@@ -1111,6 +1111,25 @@ public sealed class SkillStructureTests
     }
 
     [Fact]
+    public void EvalAssetsUseRepositoryEvalLayout()
+    {
+        var expectedRoot = Path.Combine(
+            RepositoryRoot,
+            "eng",
+            "skill-evals",
+            "blazor-component-readiness");
+
+        Assert.Equal(expectedRoot, Layout.EvalRoot);
+        Assert.True(File.Exists(Layout.VallyPath));
+        Assert.True(File.Exists(Layout.EvalPolicyPath));
+        Assert.True(File.Exists(Path.Combine(
+            Layout.EvalRoot,
+            "fixtures",
+            "mixed-evidence-component.md")));
+        Assert.False(Directory.Exists(Path.Combine(Layout.Root, "evals")));
+    }
+
+    [Fact]
     public void VallySuiteIsPinnedAndGoverned()
     {
         var content = File.ReadAllText(Layout.VallyPath, Encoding.UTF8);
@@ -2171,11 +2190,38 @@ public sealed class SkillStructureTests
         ];
     }
 
-    private static TemporaryDirectory CopySkill()
+    private static TemporarySkillCopy CopySkill()
     {
-        var directory = new TemporaryDirectory();
-        CopyDirectory(Layout.Root, directory.DirectoryPath);
-        return directory;
+        return new TemporarySkillCopy();
+    }
+
+    private sealed class TemporarySkillCopy : IDisposable
+    {
+        private readonly TemporaryDirectory _repository = new();
+
+        internal TemporarySkillCopy()
+        {
+            DirectoryPath = Path.Combine(
+                _repository.DirectoryPath,
+                ".github",
+                "skills",
+                "blazor-component-readiness");
+            CopyDirectory(Layout.Root, DirectoryPath);
+            CopyDirectory(
+                Layout.EvalRoot,
+                Path.Combine(
+                    _repository.DirectoryPath,
+                    "eng",
+                    "skill-evals",
+                    "blazor-component-readiness"));
+        }
+
+        internal string DirectoryPath { get; }
+
+        public void Dispose()
+        {
+            _repository.Dispose();
+        }
     }
 
     private static void CopyDirectory(string sourcePath, string destinationPath)

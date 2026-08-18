@@ -7,16 +7,20 @@ internal sealed class SkillLayout
 {
     private SkillLayout(string root)
     {
-        Root = root;
-        ChecklistPath = Path.Combine(root, "references", "checklist.md");
-        AreasIndexPath = Path.Combine(root, "references", "areas", "index.md");
-        SkillPath = Path.Combine(root, "SKILL.md");
-        ReportTemplatePath = Path.Combine(root, "references", "report-template.md");
-        VallyPath = Path.Combine(root, "evals", "regression.vally.yaml");
+        Root = Path.GetFullPath(root);
+        var skillName = Path.GetFileName(Path.TrimEndingDirectorySeparator(Root));
+        var repositoryRoot = Path.GetFullPath(Path.Combine(Root, "..", "..", ".."));
+        EvalRoot = Path.Combine(repositoryRoot, "eng", "skill-evals", skillName);
+        EvalPolicyPath = Path.Combine(EvalRoot, "eval-policy.md");
+        ChecklistPath = Path.Combine(Root, "references", "checklist.md");
+        AreasIndexPath = Path.Combine(Root, "references", "areas", "index.md");
+        SkillPath = Path.Combine(Root, "SKILL.md");
+        ReportTemplatePath = Path.Combine(Root, "references", "report-template.md");
+        VallyPath = Path.Combine(EvalRoot, "regression.vally.yaml");
         OverlayPaths = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["scaffolder"] = Path.Combine(root, "references", "overlays", "scaffolder.md"),
-            ["ai-skill"] = Path.Combine(root, "references", "overlays", "ai-skill.md"),
+            ["scaffolder"] = Path.Combine(Root, "references", "overlays", "scaffolder.md"),
+            ["ai-skill"] = Path.Combine(Root, "references", "overlays", "ai-skill.md"),
         };
         OverlayPrefixes = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -26,6 +30,10 @@ internal sealed class SkillLayout
     }
 
     internal string Root { get; }
+
+    internal string EvalRoot { get; }
+
+    internal string EvalPolicyPath { get; }
 
     internal string ChecklistPath { get; }
 
@@ -45,7 +53,7 @@ internal sealed class SkillLayout
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
 
-        return new SkillLayout(Path.GetFullPath(root));
+        return new SkillLayout(root);
     }
 }
 

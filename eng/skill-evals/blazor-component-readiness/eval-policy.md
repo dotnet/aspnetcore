@@ -1,7 +1,9 @@
 # Evaluation policy
 
-`evals/regression.vally.yaml` is the single eval source of truth. Keep prompts, rubrics, fixtures,
-coverage, provenance, train/held-out tiers, score families, and controls in that Vally file.
+`eng/skill-evals/blazor-component-readiness/regression.vally.yaml` is the specialized regression
+suite's single source of truth. Keep prompts, rubrics, fixtures, coverage, provenance,
+train/held-out tiers, score families, and controls in that Vally file. Invoke it explicitly; it is
+not the auto-discovered `eval.vally.yaml` baseline-versus-skilled lane.
 
 ## Governance
 
@@ -35,7 +37,7 @@ Official runs use the publicly available `@microsoft/vally-cli@0.13.0` package:
 ```bash
 npx --yes --package @microsoft/vally-cli@0.13.0 vally --version
 npx --yes --package @microsoft/vally-cli@0.13.0 vally lint \
-  --eval-spec .github/skills/blazor-component-readiness/evals/regression.vally.yaml --strict
+  --eval-spec eng/skill-evals/blazor-component-readiness/regression.vally.yaml --strict
 ```
 
 ## Diagnostic run
@@ -44,7 +46,7 @@ Run one selected case while developing:
 
 ```bash
 npx --yes --package @microsoft/vally-cli@0.13.0 vally eval \
-  -e .github/skills/blazor-component-readiness/evals/regression.vally.yaml \
+  -e eng/skill-evals/blazor-component-readiness/regression.vally.yaml \
   --skill-dir <skill-parent-directory> \
   --tag eval_id=10 \
   --runs 1 \

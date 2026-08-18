@@ -3614,11 +3614,38 @@ public sealed class EvidenceIntegrationTests
             content.AsSpan(index + oldValue.Length));
     }
 
-    private static TemporaryDirectory CopySkill()
+    private static TemporarySkillCopy CopySkill()
     {
-        var directory = new TemporaryDirectory();
-        CopyDirectory(Layout.Root, directory.DirectoryPath);
-        return directory;
+        return new TemporarySkillCopy();
+    }
+
+    private sealed class TemporarySkillCopy : IDisposable
+    {
+        private readonly TemporaryDirectory _repository = new();
+
+        internal TemporarySkillCopy()
+        {
+            DirectoryPath = Path.Combine(
+                _repository.DirectoryPath,
+                ".github",
+                "skills",
+                "blazor-component-readiness");
+            CopyDirectory(Layout.Root, DirectoryPath);
+            CopyDirectory(
+                Layout.EvalRoot,
+                Path.Combine(
+                    _repository.DirectoryPath,
+                    "eng",
+                    "skill-evals",
+                    "blazor-component-readiness"));
+        }
+
+        internal string DirectoryPath { get; }
+
+        public void Dispose()
+        {
+            _repository.Dispose();
+        }
     }
 
     private static void CopyDirectory(string source, string destination)
