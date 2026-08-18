@@ -75,7 +75,7 @@ public class AgentContext : IDisposable
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        if (Status == ConversationStatus.Streaming)
+        if (Status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput)
         {
             throw new InvalidOperationException("A message is already being processed.");
         }

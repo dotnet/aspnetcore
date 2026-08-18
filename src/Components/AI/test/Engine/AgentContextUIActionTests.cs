@@ -165,6 +165,50 @@ public class AgentContextUIActionTests
     }
 
     [Fact]
+    public async Task UIAction_SendMessageAsyncWhileAwaitingInputThrows()
+    {
+        var clientCallCount = 0;
+        var awaitingInputReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        UIActionBlock? pendingAction = null;
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((messages, options, cancellationToken) =>
+        {
+            clientCallCount++;
+            return clientCallCount == 1
+                ? EmitUIActionCall("call-1", "get_client_value", cancellationToken)
+                : ResponseEmitters.EmitTextResponse("Done", cancellationToken);
+        });
+
+        using var agent = new UIAgent(client, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                () => "client-value",
+                "get_client_value",
+                "Gets a value from the client."));
+        });
+        using var context = new AgentContext(agent);
+        using var subscription = context.RegisterOnStatusChanged(status =>
+        {
+            if (status == ConversationStatus.AwaitingInput)
+            {
+                pendingAction = context.Turns[^1].ResponseBlocks.OfType<UIActionBlock>().Single();
+                awaitingInputReached.TrySetResult();
+            }
+        });
+
+        var firstSendTask = context.SendMessageAsync("First");
+        await awaitingInputReached.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => context.SendMessageAsync("Second"));
+
+        await pendingAction!.InvokeAsync();
+        await firstSendTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Equal(2, clientCallCount);
+        Assert.Single(context.Turns);
+    }
+
+    [Fact]
     public async Task UIAction_IsAdvertisedAsDeclarationOnlyAndPreservesConfiguredTools()
     {
         ChatOptions? capturedOptions = null;
