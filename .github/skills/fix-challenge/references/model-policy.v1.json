@@ -1,0 +1,150 @@
+{
+  "schema_version": "fix-challenge-model-policy/v1",
+  "policy_version": "2026-08-17.1",
+  "status": "provisional",
+  "orchestrator": {
+    "model": "gpt-5.6-sol",
+    "family": "openai",
+    "role": "orchestrator",
+    "invocation_mode": "session",
+    "reasoning_effort": "high",
+    "context_tier": "default"
+  },
+  "roles": [
+    {
+      "id": "A",
+      "focus": "minimal root-cause and contract repair"
+    },
+    {
+      "id": "B",
+      "focus": "compatibility and failure modes"
+    },
+    {
+      "id": "C",
+      "focus": "repository-pattern alternative"
+    },
+    {
+      "id": "D",
+      "focus": "test falsification and unnecessary surface"
+    }
+  ],
+  "matrices": {
+    "bounded": {
+      "voting": [
+        {
+          "id": "candidate-a",
+          "role": "A",
+          "model": "gpt-5.6-luna",
+          "family": "openai",
+          "invocation_mode": "independent-agent",
+          "reasoning_effort": "high",
+          "context_tier": "default",
+          "voting": true
+        },
+        {
+          "id": "candidate-b",
+          "role": "B",
+          "model": "claude-opus-5",
+          "family": "anthropic",
+          "invocation_mode": "independent-agent",
+          "reasoning_effort": "high",
+          "context_tier": "default",
+          "voting": true
+        }
+      ],
+      "shadow": []
+    },
+    "full": {
+      "voting": [
+        {
+          "id": "candidate-a",
+          "role": "A",
+          "model": "gpt-5.6-luna",
+          "family": "openai",
+          "invocation_mode": "independent-agent",
+          "reasoning_effort": "high",
+          "context_tier": "default",
+          "voting": true
+        },
+        {
+          "id": "candidate-b",
+          "role": "B",
+          "model": "claude-opus-5",
+          "family": "anthropic",
+          "invocation_mode": "independent-agent",
+          "reasoning_effort": "high",
+          "context_tier": "default",
+          "voting": true
+        },
+        {
+          "id": "candidate-c",
+          "role": "C",
+          "model": "gpt-5.6-terra",
+          "family": "openai",
+          "invocation_mode": "independent-agent",
+          "reasoning_effort": "high",
+          "context_tier": "default",
+          "voting": true
+        },
+        {
+          "id": "candidate-d",
+          "role": "D",
+          "model": "claude-sonnet-5",
+          "family": "anthropic",
+          "invocation_mode": "independent-agent",
+          "reasoning_effort": "high",
+          "context_tier": "default",
+          "voting": true
+        }
+      ],
+      "shadow": [
+        {
+          "id": "candidate-shadow-mai",
+          "role": "D",
+          "model": "mai-code-1.1-flash",
+          "family": "microsoft",
+          "invocation_mode": "independent-agent",
+          "reasoning_effort": "high",
+          "context_tier": "default",
+          "voting": false
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "configured_model_mismatch": "fail-closed",
+    "runtime_identity_without_authoritative_telemetry": "unverified",
+    "hosted_run_comparable_without_authoritative_telemetry": false
+  },
+  "selection_evidence": {
+    "source_commit": "f5835dcaf831ea87c9a2a89f28a4bd2448b34923",
+    "protocol_version": "fix-challenge-model-bakeoff/v1",
+    "cases": [
+      "corrected-head-abstention",
+      "compatibility-oracle",
+      "lifecycle-failure-modes",
+      "test-falsification",
+      "input-provenance"
+    ],
+    "trials_per_model_case": 1,
+    "evaluated_models": [
+      "gpt-5.5",
+      "gpt-5.6-luna",
+      "gpt-5.6-terra",
+      "claude-sonnet-5",
+      "claude-opus-5",
+      "mai-code-1.1-flash"
+    ],
+    "judges": [
+      "gpt-5.6-sol",
+      "claude-opus-4.8"
+    ],
+    "limitations": [
+      "One trial per model and case does not establish variance.",
+      "The candidate bake-off did not compare orchestrator models; gpt-5.6-sol remains the provisional incumbent.",
+      "Authoritative runtime-model telemetry was unavailable; configured task identity was retained.",
+      "Per-invocation cost telemetry was unavailable.",
+      "Latency was self-reported with inconsistent scopes and was not used for selection."
+    ]
+  }
+}
