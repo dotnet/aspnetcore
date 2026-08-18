@@ -7,9 +7,10 @@ stay here.
 
 ## Layout and discovery
 
-`eng/skill-evals/<skill>/eval.vally.yaml` is the standard, auto-discovered
-one-skill lane. `skills-vs-baseline.experiment.yaml` runs each of those specs
-twice with the same stimuli: once without a skill and once with exactly
+`eng/skill-evals/<skill>/eval.vally.yaml` is the standard one-skill lane,
+auto-discovered by this repository's experiment and runner.
+`skills-vs-baseline.experiment.yaml` runs each of those specs twice with the
+same stimuli: once without a skill and once with exactly
 `.github/skills/<skill>` loaded. The experiment owns `environment.skills`;
 standard specs must not set it themselves.
 
@@ -30,7 +31,7 @@ trial-count policy here remains a documented follow-up.
 Run these commands from any directory:
 
 ```powershell
-# Safe default: deterministic checks only
+# Safe default: deterministic checks with no model or judge calls
 ./eng/skill-evals/run.ps1
 
 # Prove every validator rule and runner isolation with self-tests
@@ -50,7 +51,10 @@ Run these commands from any directory:
 feed proxy. Pass `-Vally <command> -VallyPrefix <arguments>` only to
 intentionally override that invocation. The runner prints the resolved command
 and reported version for provenance. Additional Vally arguments can be appended
-to the command. Run output defaults to `artifacts/skill-evals`.
+to the command. If the package is not already cached, `npx` downloads that
+exact version from the proxy; validation is model-free, not offline. It does not
+install a package into the repository or modify dependency manifests. Run
+output defaults to `artifacts/skill-evals`.
 
 Standard runs use Vally's experiment `--compare` mode. Vally 0.13 removed the
 old per-stimulus `pairwise` grader, so comparison is owned by the experiment
