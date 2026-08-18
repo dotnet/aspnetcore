@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Antiforgery;
@@ -68,6 +69,49 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
             var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
             var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
+            return TypedResults.Content(optionsJson, contentType: "application/json");
+        });
+
+        // Creation options for a visitor who does not have an account yet. This is anonymous by
+        // necessity, so it never touches an existing account.
+        accountGroup.MapPost("/PasskeyRegistrationOptions", [RequireAntiforgeryToken] async (
+            HttpContext context,
+            [FromServices] UserManager<ApplicationUser> userManager,
+            [FromServices] SignInManager<ApplicationUser> signInManager,
+            [FromQuery] string? username) =>
+        {
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is not { IsValid: true })
+            {
+                return Results.BadRequest(antiforgeryValidationFeature?.Error?.Message ?? "Antiforgery validation failed.");
+            }
+
+            if (string.IsNullOrEmpty(username) || !new EmailAddressAttribute().IsValid(username))
+            {
+                return Results.Text("Enter a valid email address.", "text/plain", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            // The account does not exist yet, so the ceremony needs an ID up front. A new ApplicationUser
+            // gets one from its constructor. Never reuse an existing account's ID here.
+            var user = new ApplicationUser { UserName = username, Email = username };
+
+            // Running the same validators that CreateAsync will run keeps the rejection rules from
+            // drifting apart, so the user is not asked for a passkey that cannot be saved.
+            foreach (var validator in userManager.UserValidators)
+            {
+                var result = await validator.ValidateAsync(userManager, user);
+                if (!result.Succeeded)
+                {
+                    return Results.Text(result.Errors.First().Description, "text/plain", statusCode: StatusCodes.Status400BadRequest);
+                }
+            }
+
+            var optionsJson = await signInManager.MakePasskeyCreationOptionsAsync(new()
+            {
+                Id = user.Id,
+                Name = username,
+                DisplayName = username,
+            });
             return TypedResults.Content(optionsJson, contentType: "application/json");
         });
 
