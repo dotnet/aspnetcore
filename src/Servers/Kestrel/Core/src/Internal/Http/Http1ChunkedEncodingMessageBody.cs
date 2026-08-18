@@ -227,7 +227,7 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
         {
             if (_mode == Mode.Prefix)
             {
-                ParseChunkedPrefixIncludingCRLF(readableBuffer, out consumed, out examined);
+                ParseChunkedPrefix(readableBuffer, out consumed, out examined);
 
                 if (_mode == Mode.Prefix)
                 {
@@ -307,7 +307,7 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
         return _mode == Mode.Complete;
     }
 
-    private void ParseChunkedPrefixIncludingCRLF(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+    private void ParseChunkedPrefix(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
     {
         consumed = buffer.Start;
         var reader = new SequenceReader<byte>(buffer);
