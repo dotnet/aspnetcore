@@ -1,14 +1,22 @@
 # Working on Issues in the Components Area
 
-This guide provides step-by-step instructions for working on issues in the ASP.NET Core Components area.
+This guide provides step-by-step instructions for investigating, reviewing, and implementing work in the ASP.NET Core Components area.
 
 ## Working on issues
 
-You MUST follow this workflow when implementing new features or fixing bugs in the Components area.
-* Add the workflow to your `todos` and follow it strictly.
-- Create a sample scenario.
-- If working on a bug, use playwright to reproduce the behavior/problem first.
-- You MUST have reproduced the problem before attempting to fix it.
+You MUST follow this workflow when investigating or reviewing behavioral issues, implementing behavioral fixes, or implementing new features in the Components area.
+* Add the applicable workflow steps to your `todos` and follow them strictly.
+
+For behavioral investigations and reviews:
+- Create or identify a scenario at the smallest faithful validation boundary.
+- Faithful validation includes the component or browser mechanism that owns or produces each disputed precondition and observes the claimed user-visible result.
+- Before making an actionable finding that depends on DOM measurement, browser observers, resize, navigation, browser event ordering, or JS interop, validate the real producer path in a browser with Playwright when feasible.
+- Direct callback or event injection and isolated component tests are useful diagnostics, but do not establish that the real producer can reach that path.
+- An exact faithful non-reproduction requires withdrawing or narrowing the claim unless a materially different trigger is identified and validated.
+- Do not require E2E to validate a finding when its disputed preconditions are fully established at a lower faithful boundary. This does not waive E2E coverage required for shipped implementation work.
+
+For implementation work:
+- For a behavioral fix, reproduce the problem at the faithful boundary before attempting the fix. If faithful validation is impractical, state the observed boundary and limitation and do not call the behavioral claim verified.
 - Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
 - Implement the fix or feature in the sample project first.
 - Test the fix or feature interactively using Playwright.
