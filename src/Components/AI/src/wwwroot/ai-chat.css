@@ -1,0 +1,401 @@
+/* ==========================================================================
+   Microsoft.AspNetCore.Components.AI — Design Tokens & Default Styles
+   ========================================================================== */
+
+/* ---------- Root scope ---------- */
+.sc-ai-root {
+    /* ---- Typography ---- */
+    --sc-ai-font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --sc-ai-font-size: 0.9375rem;
+    --sc-ai-font-size-sm: 0.8125rem;
+    --sc-ai-font-size-lg: 1.125rem;
+    --sc-ai-line-height: 1.5;
+    --sc-ai-font-weight-normal: 400;
+    --sc-ai-font-weight-medium: 500;
+    --sc-ai-font-weight-bold: 600;
+
+    /* ---- Colors — Surface & Background ---- */
+    --sc-ai-color-bg: #ffffff;
+    --sc-ai-color-surface: #ffffff;
+    --sc-ai-color-surface-hover: #f8f9fa;
+    --sc-ai-color-text: #212529;
+    --sc-ai-color-text-secondary: #6c757d;
+    --sc-ai-color-text-on-accent: #ffffff;
+    --sc-ai-color-accent: #0d6efd;
+    --sc-ai-color-accent-hover: #0b5ed7;
+    --sc-ai-color-border: #dee2e6;
+    --sc-ai-color-error: #dc3545;
+    --sc-ai-color-error-bg: #f8d7da;
+
+    /* ---- Colors — Message Bubbles ---- */
+    --sc-ai-color-bubble-user: #e9ecef;
+    --sc-ai-color-bubble-user-text: #212529;
+    --sc-ai-color-bubble-assistant: transparent;
+    --sc-ai-color-bubble-assistant-text: #212529;
+
+    /* ---- Layout & Spacing ---- */
+    --sc-ai-spacing-xs: 0.25rem;
+    --sc-ai-spacing-sm: 0.5rem;
+    --sc-ai-spacing-md: 1rem;
+    --sc-ai-spacing-lg: 1.5rem;
+    --sc-ai-max-width: 48rem;
+    --sc-ai-border-radius-sm: 0.375rem;
+    --sc-ai-border-radius-lg: 1.5rem;
+    --sc-ai-input-height: 3rem;
+
+    /* ---- Transitions ---- */
+    --sc-ai-transition-fast: 120ms ease;
+
+    /* ---- Focus & States ---- */
+    --sc-ai-focus-ring: 0 0 0 2px var(--sc-ai-color-accent);
+    --sc-ai-disabled-opacity: 0.5;
+
+    /* Apply base typography */
+    font-family: var(--sc-ai-font-family);
+    font-size: var(--sc-ai-font-size);
+    line-height: var(--sc-ai-line-height);
+    color: var(--sc-ai-color-text);
+    box-sizing: border-box;
+}
+
+.sc-ai-root *,
+.sc-ai-root *::before,
+.sc-ai-root *::after {
+    box-sizing: inherit;
+}
+
+/* ---------- Buttons ---------- */
+.sc-ai-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sc-ai-spacing-xs);
+    padding: var(--sc-ai-spacing-sm) var(--sc-ai-spacing-md);
+    border: 1px solid transparent;
+    border-radius: var(--sc-ai-border-radius-sm);
+    font-family: inherit;
+    font-size: var(--sc-ai-font-size-sm);
+    font-weight: var(--sc-ai-font-weight-medium);
+    cursor: pointer;
+    transition: background var(--sc-ai-transition-fast),
+                color var(--sc-ai-transition-fast),
+                border-color var(--sc-ai-transition-fast),
+                opacity var(--sc-ai-transition-fast);
+    line-height: 1;
+}
+
+.sc-ai-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--sc-ai-focus-ring);
+}
+
+.sc-ai-btn:disabled {
+    opacity: var(--sc-ai-disabled-opacity);
+    cursor: not-allowed;
+}
+
+.sc-ai-btn--secondary {
+    background: var(--sc-ai-color-surface);
+    color: var(--sc-ai-color-text);
+    border-color: var(--sc-ai-color-border);
+}
+
+.sc-ai-btn--secondary:hover:not(:disabled) {
+    background: var(--sc-ai-color-surface-hover);
+}
+
+/* ---------- Message List ---------- */
+.sc-ai-message-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sc-ai-spacing-md);
+    max-width: var(--sc-ai-max-width);
+    margin: 0 auto;
+    padding: var(--sc-ai-spacing-lg);
+    width: 100%;
+}
+
+.sc-ai-message-list__footer {
+    min-height: var(--sc-ai-spacing-lg);
+}
+
+/* ---------- Turn ---------- */
+.sc-ai-turn {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sc-ai-spacing-sm);
+}
+
+/* ---------- Message Bubbles ---------- */
+.sc-ai-message {
+    display: flex;
+}
+
+.sc-ai-message--user {
+    justify-content: flex-end;
+}
+
+.sc-ai-message--assistant {
+    justify-content: flex-start;
+}
+
+.sc-ai-message__bubble {
+    max-width: 85%;
+    padding: var(--sc-ai-spacing-sm) var(--sc-ai-spacing-md);
+    border-radius: var(--sc-ai-border-radius-lg);
+    word-break: break-word;
+}
+
+.sc-ai-message--user .sc-ai-message__bubble {
+    background: var(--sc-ai-color-bubble-user);
+    color: var(--sc-ai-color-bubble-user-text);
+    border-bottom-right-radius: var(--sc-ai-border-radius-sm);
+}
+
+.sc-ai-message--assistant .sc-ai-message__bubble {
+    background: var(--sc-ai-color-bubble-assistant);
+    color: var(--sc-ai-color-bubble-assistant-text);
+    border-bottom-left-radius: var(--sc-ai-border-radius-sm);
+}
+
+.sc-ai-message__content {
+    white-space: pre-wrap;
+}
+
+.sc-ai-rich-text__paragraph,
+.sc-ai-rich-text__heading,
+.sc-ai-rich-text__quote,
+.sc-ai-rich-text__list,
+.sc-ai-rich-text__code-block,
+.sc-ai-rich-text__table-container {
+    margin-block: 0 0.75em;
+}
+
+.sc-ai-message__content > :last-child {
+    margin-bottom: 0;
+}
+
+.sc-ai-rich-text__heading {
+    line-height: 1.25;
+}
+
+.sc-ai-rich-text__inline-code,
+.sc-ai-rich-text__code-block {
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    background: var(--sc-ai-color-surface-hover);
+    border-radius: var(--sc-ai-border-radius-sm);
+}
+
+.sc-ai-rich-text__inline-code {
+    padding: 0.1em 0.3em;
+}
+
+.sc-ai-rich-text__code-block {
+    overflow-x: auto;
+    padding: var(--sc-ai-spacing-sm);
+}
+
+.sc-ai-rich-text__quote {
+    border-left: 0.25rem solid var(--sc-ai-color-border);
+    padding-left: var(--sc-ai-spacing-md);
+}
+
+.sc-ai-rich-text__list-item > .sc-ai-rich-text__paragraph {
+    display: inline;
+}
+
+.sc-ai-rich-text__table-container {
+    overflow-x: auto;
+}
+
+.sc-ai-rich-text__table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.sc-ai-rich-text__table td {
+    border: 1px solid var(--sc-ai-color-border);
+    padding: var(--sc-ai-spacing-xs) var(--sc-ai-spacing-sm);
+}
+
+.sc-ai-rich-text__table-cell--center {
+    text-align: center;
+}
+
+.sc-ai-rich-text__table-cell--right {
+    text-align: right;
+}
+
+/* Streaming cursor */
+.sc-ai-message__content--streaming::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: currentColor;
+    margin-left: 1px;
+    vertical-align: text-bottom;
+    animation: sc-ai-blink 1s step-end infinite;
+}
+
+@keyframes sc-ai-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* ---------- Typing Indicator ---------- */
+.sc-ai-typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--sc-ai-spacing-sm) var(--sc-ai-spacing-md);
+}
+
+.sc-ai-typing__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sc-ai-color-text-secondary);
+    animation: sc-ai-bounce 1.4s ease-in-out infinite;
+}
+
+.sc-ai-typing__dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.sc-ai-typing__dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes sc-ai-bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+}
+
+/* ---------- Error Banner ---------- */
+.sc-ai-error {
+    display: flex;
+    align-items: center;
+    gap: var(--sc-ai-spacing-sm);
+    padding: var(--sc-ai-spacing-sm) var(--sc-ai-spacing-md);
+    background: var(--sc-ai-color-error-bg);
+    color: var(--sc-ai-color-error);
+    border-radius: var(--sc-ai-border-radius-sm);
+    font-size: var(--sc-ai-font-size-sm);
+}
+
+.sc-ai-error__message {
+    flex: 1;
+}
+
+/* ---------- Message Input ---------- */
+.sc-ai-input {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--sc-ai-spacing-sm);
+    padding: var(--sc-ai-spacing-sm);
+    background: var(--sc-ai-color-surface);
+    border: 1px solid var(--sc-ai-color-border);
+    border-radius: var(--sc-ai-border-radius-lg);
+    transition: border-color var(--sc-ai-transition-fast);
+}
+
+.sc-ai-input:focus-within {
+    border-color: var(--sc-ai-color-accent);
+}
+
+.sc-ai-input__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.sc-ai-input__textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: var(--sc-ai-line-height);
+    color: var(--sc-ai-color-text);
+    background: transparent;
+    min-height: var(--sc-ai-input-height);
+    max-height: 10rem;
+    padding: var(--sc-ai-spacing-sm);
+}
+
+.sc-ai-input__textarea::placeholder {
+    color: var(--sc-ai-color-text-secondary);
+}
+
+.sc-ai-input__textarea:disabled {
+    opacity: var(--sc-ai-disabled-opacity);
+}
+
+.sc-ai-input__send {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--sc-ai-color-accent);
+    color: var(--sc-ai-color-text-on-accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background var(--sc-ai-transition-fast),
+                opacity var(--sc-ai-transition-fast);
+}
+
+.sc-ai-input__send:hover:not(:disabled) {
+    background: var(--sc-ai-color-accent-hover);
+}
+
+.sc-ai-input__send:focus-visible {
+    outline: none;
+    box-shadow: var(--sc-ai-focus-ring);
+}
+
+.sc-ai-input__send:disabled {
+    opacity: var(--sc-ai-disabled-opacity);
+    cursor: not-allowed;
+}
+
+.sc-ai-input__send svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+/* ---------- Chat Page Shell ---------- */
+.sc-ai-chat-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--sc-ai-color-bg);
+}
+
+.sc-ai-chat-page__header {
+    flex-shrink: 0;
+}
+
+.sc-ai-chat-page__body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sc-ai-chat-page__footer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--sc-ai-color-border);
+    background: var(--sc-ai-color-surface);
+    padding: var(--sc-ai-spacing-md);
+}
+
+.sc-ai-chat-page__input-container {
+    max-width: var(--sc-ai-max-width);
+    margin: 0 auto;
+}

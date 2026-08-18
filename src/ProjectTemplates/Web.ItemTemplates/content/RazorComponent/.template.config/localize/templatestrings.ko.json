@@ -1,6 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Razor 구성 요소",
-  "description": "Razor로 구현된 재사용 가능한 UI 구성 요소",
-  "postActions/openInEditor/description": "편집기에서 Component1.razor를 엽니다."
+  "name": "Razor Component",
+  "description": "A reusable UI component implemented with Razor",
+  "symbols/namespace/description": "namespace for the generated code",
+  "symbols/use-code-behind/description": "create component with a code-behind file",
+  "symbols/use-code-behind/displayName": "Use Code Behind",
+  "postActions/openInEditor/description": "Opens Component1.razor in the editor"
 }
