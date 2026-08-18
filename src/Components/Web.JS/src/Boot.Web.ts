@@ -59,7 +59,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     enhancedNavigationStarted: () => {
       jsEventRegistry.dispatchEvent('enhancednavigationstart', {});
     },
-    documentReceived: (source) => {
+    beforeDomUpdate: (source) => {
       updateOptionsFromBrowserConfiguration(options, source);
     },
     documentUpdated: () => {
