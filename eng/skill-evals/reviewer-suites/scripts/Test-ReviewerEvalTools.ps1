@@ -6,7 +6,9 @@ param(
 
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../../..')).Path
 Import-Module (Join-Path $PSScriptRoot 'ReviewerEvalTools.psm1') -Force
+Import-Module (Join-Path $repoRoot '.github/skills/fix-challenge/scripts/ReviewArtifactTools.psm1') -Force -DisableNameChecking
 
 $script:Passed = 0
 $script:Failed = [Collections.Generic.List[string]]::new()
@@ -59,6 +61,40 @@ function Assert-Equal
 }
 
 $configuration = Get-ReviewerEvalConfiguration
+
+Invoke-Test 'Eval assets stay outside runtime skill trees' {
+    foreach ($skill in @('fix-challenge', 'try-fix'))
+    {
+        $skillRoot = Join-Path $repoRoot ".github/skills/$skill"
+        Assert-True (-not (Test-Path -LiteralPath (Join-Path $skillRoot 'evals'))) `
+            "$skill still contains an eval-only directory."
+        Assert-Equal 0 `
+            @(Get-ChildItem -LiteralPath $skillRoot -Recurse -File -Filter '*.vally.yaml').Count `
+            "$skill still contains a Vally spec."
+    }
+
+    Assert-True (Test-Path -LiteralPath (Join-Path $repoRoot 'eng/skill-evals/fix-challenge/eval-policy.md') -PathType Leaf) `
+        'Fix-challenge eval policy is missing from eng/skill-evals.'
+    Assert-True (Test-Path -LiteralPath (Join-Path $repoRoot 'eng/skill-evals/fix-challenge/fixtures') -PathType Container) `
+        'Fix-challenge fixtures are missing from eng/skill-evals.'
+    Assert-True (Test-Path -LiteralPath (Join-Path $repoRoot 'eng/skill-evals/try-fix/eval-policy.md') -PathType Leaf) `
+        'Try-fix eval policy is missing from eng/skill-evals.'
+
+    $runtimeModule = Get-Content -LiteralPath (
+        Join-Path $repoRoot '.github/skills/fix-challenge/scripts/ReviewArtifactTools.psm1'
+    ) -Raw
+    foreach ($evalOnlyFunction in @(
+        'Read-VallyEvalDocument',
+        'Test-EvalSuites',
+        'Copy-SanitizedSkills',
+        'Get-EvalScoreAggregate',
+        'Read-VallyScores'
+    ))
+    {
+        Assert-True (-not $runtimeModule.Contains("function $evalOnlyFunction")) `
+            "Runtime validation module contains eval-only function $evalOnlyFunction."
+    }
+}
 
 if ($Suite -in @('All', 'Reviewer'))
 {
@@ -119,10 +155,29 @@ Invoke-Test 'Runtime staging contains only required skill files' {
             }
         }
 
-        Assert-True (-not (Test-Path -LiteralPath (Join-Path $staged 'fix-challenge/evals'))) `
-            'Fix-challenge eval assets leaked into the staged runtime.'
-        Assert-True (-not (Test-Path -LiteralPath (Join-Path $staged 'try-fix/evals'))) `
-            'Try-fix eval assets leaked into the staged runtime.'
+        $expectedFiles = [Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::OrdinalIgnoreCase)
+        foreach ($skill in $configuration.StagedSkillFiles.Keys)
+        {
+            foreach ($relativePath in $configuration.StagedSkillFiles[$skill])
+            {
+                $expectedFiles.Add("$skill/$relativePath") | Out-Null
+            }
+        }
+        $stagedFiles = @(Get-ChildItem -LiteralPath $staged -Recurse -File)
+        Assert-Equal $expectedFiles.Count $stagedFiles.Count `
+            'Runtime staging copied an unexpected number of files.'
+        foreach ($file in $stagedFiles)
+        {
+            $relativePath = [IO.Path]::GetRelativePath($staged, $file.FullName).Replace('\', '/')
+            Assert-True ($expectedFiles.Contains($relativePath)) `
+                "Runtime staging copied eval-only or unexpected file $relativePath."
+        }
+        Assert-Equal 0 @($stagedFiles | Where-Object {
+            $_.Name -eq 'eval-policy.md' -or
+            $_.Name.EndsWith('.vally.yaml', [StringComparison]::OrdinalIgnoreCase) -or
+            $_.FullName -match '[\\/]fixtures[\\/]'
+        }).Count 'Runtime staging included eval policy, fixture, or canonical spec material.'
     }
     finally
     {

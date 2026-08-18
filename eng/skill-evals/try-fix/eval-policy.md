@@ -1,7 +1,7 @@
 # Try-fix Vally evaluation policy
 
 This suite follows the shared
-[`fix-challenge` evaluation anti-overfit policy](../../fix-challenge/evals/eval-policy.md).
+[`fix-challenge` evaluation anti-overfit policy](../fix-challenge/eval-policy.md).
 
 `try-fix` is an independently executable Vally 0.13.0 capability
 suite. Its canonical cases live in
@@ -10,9 +10,9 @@ suite. Its canonical cases live in
 Before accepting try-fix changes:
 
 ```powershell
-pwsh .github/skills/fix-challenge/scripts/Validate-Evals.ps1 `
+pwsh eng/skill-evals/reviewer-suites/scripts/Validate-Evals.ps1 `
   -Path eng/skill-evals/try-fix/regression.vally.yaml
-pwsh .github/skills/fix-challenge/scripts/Test-ReviewerEvalTools.ps1 `
+pwsh eng/skill-evals/reviewer-suites/scripts/Test-ReviewerEvalTools.ps1 `
   -Suite TryFix
 ```
 

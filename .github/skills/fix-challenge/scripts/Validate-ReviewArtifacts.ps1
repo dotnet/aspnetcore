@@ -123,7 +123,7 @@ if ($usePortableFileSystem)
     }
 }
 
-Import-Module (Join-Path $PSScriptRoot 'ReviewerEvalTools.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot 'ReviewArtifactTools.psm1') -Force -DisableNameChecking
 
 $errors = @(Test-ReviewArtifacts -Root $ArtifactRoot)
 if ($errors.Count -gt 0)
