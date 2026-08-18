@@ -23,6 +23,24 @@
     public bool AppSetsEventArgsPath { get; set; }
 
     [Parameter]
+    [SupplyParameterFromQuery(Name = "auto-pause")]
+    public bool AutoPause { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "auto-pause-delay-ms")]
+    public int AutoPauseDelayMs { get; set; }
+
+    private BrowserOptions AutoPauseConfig
+    {
+        get
+        {
+            var options = new BrowserOptions();
+            options.AddAutoPause(pause => pause.HiddenDelay = TimeSpan.FromMilliseconds(AutoPauseDelayMs > 0 ? AutoPauseDelayMs : 200));
+            return options;
+        }
+    }
+
+    [Parameter]
     [SupplyParameterFromQuery(Name = "useOnNavigateAsync")]
     public bool ShouldDelayOnNavigateAsync { get; set; }
 
@@ -104,6 +122,11 @@
     <HeadOutlet />
 </head>
 <body>
+    @if (AutoPause)
+    {
+        <ConfigureBrowser Options="@AutoPauseConfig" />
+    }
+
     @if(string.Equals(UseCustomRouter, "true", StringComparison.OrdinalIgnoreCase))
     {
         <CustomRouter AppAssembly="@typeof(App).Assembly">
