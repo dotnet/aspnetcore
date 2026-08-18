@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
@@ -16,6 +16,9 @@ public class ParsedPathTests
     [InlineData("foo/bar~1baz", new string[] { "foo", "bar/baz" })]
     [InlineData("foo/bar~0/~0/~1~1/~0~0/baz", new string[] { "foo", "bar~", "~", "//", "~~", "baz" })]
     [InlineData("~0~1foo", new string[] { "~/foo" })]
+    [InlineData("/foo/bar", new string[] { "foo", "bar" })]
+    [InlineData("/foo", new string[] { "foo" })]
+    [InlineData("", new string[] { })]
     public void ParsingValidPathShouldSucceed(string path, string[] expected)
     {
         // Arrange & Act
@@ -33,6 +36,21 @@ public class ParsedPathTests
     public void PathWithInvalidEscapeSequenceShouldFail(string path)
     {
         // Arrange, Act & Assert
+        Assert.Throws<JsonPatchException>(() =>
+        {
+            var parsedPath = new ParsedPath(path);
+        });
+    }
+
+    [Theory]
+    [InlineData("//isSmth")]
+    [InlineData("//")]
+    [InlineData("/foo/")]
+    [InlineData("/foo//bar")]
+    [InlineData("foo//bar")]
+    [InlineData("foo/")]
+    public void PathWithEmptyReferenceTokenShouldFail(string path)
+    {
         Assert.Throws<JsonPatchException>(() =>
         {
             var parsedPath = new ParsedPath(path);
