@@ -46,7 +46,12 @@ public class UIAgentOptions
     /// Registers a function that a matching model tool call executes in the UI.
     /// The function is sent to the chat client as a declaration, not as an executable server tool.
     /// </summary>
-    /// <param name="function">The function to execute in the UI.</param>
+    /// <param name="function">
+    /// The function to execute in the UI. Its name must be unique among the registered UI actions.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// An action with the same name is already registered.
+    /// </exception>
     public void RegisterUIAction(AIFunction function)
     {
         ArgumentNullException.ThrowIfNull(function);
