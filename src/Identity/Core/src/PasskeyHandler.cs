@@ -666,6 +666,9 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             });
         }
 
+        // Default (no IdentityPasskeyOptions.ValidateOrigin override): reject cross-origin requests outright,
+        // then require the client data's origin to exactly match the actual request's Origin header. This is
+        // the same-origin allow-list behavior; there is no separate opt-in allow-list to configure.
         if (string.IsNullOrEmpty(clientData.Origin) ||
             clientData.CrossOrigin == true ||
             !Uri.TryCreate(clientData.Origin, UriKind.Absolute, out var originUri))
