@@ -350,9 +350,9 @@ public class SniOptionsSelectorTests
     }
 
     // Malformed server names (RFC 6066 §3 / RFC 5890: embedded nulls, empty labels, trailing dot) must not be
-    // matched against exact-name or wildcard-suffix entries, since EndsWith-based suffix matching doesn't
-    // understand DNS label boundaries and can be fooled by a crafted prefix. They should fall through to the
-    // "*" catch-all, same as any other unrecognized name.
+    // matched against wildcard-suffix entries, since EndsWith-based suffix matching doesn't understand DNS
+    // label boundaries and can be fooled by a crafted prefix. They should fall through to the "*" catch-all,
+    // same as any other unrecognized name.
     [Theory]
     [InlineData("evil\0.example.org")]
     [InlineData(".example.org")]
@@ -437,6 +437,99 @@ public class SniOptionsSelectorTests
         // Without validation this would incorrectly match "*.example.org" via a naive EndsWith(".example.org") scan.
         var authEx = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), "evil\0.example.org"));
         Assert.Equal(CoreStrings.FormatSniNotConfiguredForServerName("evil\0.example.org", "TestEndpointName"), authEx.Message);
+    }
+
+    // RFC 6066 §3 forbids IP literals in the SNI server_name. Uri.CheckHostName classifies these as
+    // IPv4/IPv6 rather than Dns, so they don't reach the wildcard-suffix scan either.
+    [Theory]
+    [InlineData("192.168.1.1")]
+    [InlineData("[::1]")]
+    public void IPLiteralServerNameFallsThroughToWildcardOnly(string serverName)
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    "*.1",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "WildcardPrefix"
+                        }
+                    }
+                },
+                {
+                    "*",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "WildcardOnly"
+                        }
+                    }
+                }
+            };
+
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), serverName);
+        Assert.Equal("WildcardOnly", pathDictionary[options.ServerCertificate]);
+    }
+
+    // The validation must not over-reject. Underscores and unicode IDN labels are unusual but still
+    // valid as far as Uri.CheckHostName is concerned, so these keep matching their wildcard prefix
+    // rather than being pushed onto the "*" catch-all.
+    [Theory]
+    [InlineData("my_host.example.org")]
+    [InlineData("münchen.example.org")]
+    public void UnusualButValidServerNameStillMatchesWildcardPrefix(string serverName)
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    "*.example.org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "WildcardPrefix"
+                        }
+                    }
+                },
+                {
+                    "*",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "WildcardOnly"
+                        }
+                    }
+                }
+            };
+
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), serverName);
+        Assert.Equal("WildcardPrefix", pathDictionary[options.ServerCertificate]);
     }
 
     [Fact]
