@@ -24,7 +24,8 @@ public sealed class PersistentStateAttribute : CascadingParameterAttributeBase
 
     /// <summary>
     /// Gets or sets a value whether the component wants to receive updates to the parameter
-    /// beyond the initial value provided during initialization.
+    /// beyond the initial value provided during initialization when supplied during enhanced 
+    /// navigation.
     /// </summary>
     public bool AllowUpdates { get; set; }
 }
