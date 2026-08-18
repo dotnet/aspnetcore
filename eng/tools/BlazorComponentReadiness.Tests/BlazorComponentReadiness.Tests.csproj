@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BlazorComponentReadiness.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorComponentReadiness\BlazorComponentReadiness.csproj" />
+  </ItemGroup>
+
+</Project>
