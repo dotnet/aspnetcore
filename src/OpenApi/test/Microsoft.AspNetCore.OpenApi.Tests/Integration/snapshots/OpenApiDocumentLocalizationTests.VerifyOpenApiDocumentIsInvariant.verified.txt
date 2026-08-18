@@ -1747,6 +1747,23 @@
             "description": "OK"
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplexHierarchyModel"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/schemas-by-ref/nullable-array-elements": {
@@ -1767,6 +1784,71 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-and-non-nullable-array-elements": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "nullableValues",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TestEnum"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "values",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TestEnum"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/response-array-with-nullable-element": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TestEnum"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -3893,38 +3975,52 @@
         "type": "object",
         "properties": {
           "booleanType": {
-            "type": "boolean",
-            "example": true
+            "examples": [
+              true
+            ],
+            "type": "boolean"
           },
           "integerType": {
+            "examples": [
+              42
+            ],
             "type": "integer",
-            "format": "int32",
-            "example": 42
+            "format": "int32"
           },
           "longType": {
+            "examples": [
+              1234567890123456789
+            ],
             "type": "integer",
-            "format": "int64",
-            "example": 1234567890123456789
+            "format": "int64"
           },
           "doubleType": {
+            "examples": [
+              3.14
+            ],
             "type": "number",
-            "format": "double",
-            "example": 3.14
+            "format": "double"
           },
           "floatType": {
+            "examples": [
+              3.14
+            ],
             "type": "number",
-            "format": "float",
-            "example": 3.14
+            "format": "float"
           },
           "dateTimeType": {
+            "examples": [
+              "2022-01-01T00:00:00Z"
+            ],
             "type": "string",
-            "format": "date-time",
-            "example": "2022-01-01T00:00:00Z"
+            "format": "date-time"
           },
           "dateOnlyType": {
+            "examples": [
+              "2022-01-01"
+            ],
             "type": "string",
-            "format": "date",
-            "example": "2022-01-01"
+            "format": "date"
           }
         }
       },

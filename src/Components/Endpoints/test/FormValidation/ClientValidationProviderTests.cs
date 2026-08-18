@@ -173,12 +173,9 @@ public class ClientValidationProviderTests
         var translations = new Dictionary<string, string>
         {
             ["Custom Label"] = "Étiquette",
-            ["req-key"] = "{0} est requis.",
+            ["LocalizedFieldModel_Field_RequiredAttribute_Error"] = "{0} est requis.",
         };
         var options = CreateMevOptions(typeof(LocalizedFieldModel));
-#pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
-        options.MessageKeyProvider = _ => "req-key";
-#pragma warning restore ASP0029
         var factory = new TestStringLocalizerFactory(translations);
 
         var rule = SingleRule(
@@ -198,11 +195,9 @@ public class ClientValidationProviderTests
         var translations = new Dictionary<string, string>
         {
             ["Custom Label"] = "Étiquette",
-            ["req-key"] = "{0} est requis.",
+            ["LocalizedFieldModel_Field_RequiredAttribute_Error"] = "{0} est requis.",
         };
-#pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
-        var options = new ValidationOptions { MessageKeyProvider = _ => "req-key" };
-#pragma warning restore ASP0029
+        var options = new ValidationOptions();
         var factory = new TestStringLocalizerFactory(translations);
 
         var rule = SingleRule(GetData<LocalizedFieldModel>(options, factory, nameof(LocalizedFieldModel.Field))!, nameof(LocalizedFieldModel.Field));
@@ -218,14 +213,15 @@ public class ClientValidationProviderTests
         // The validated property is declared on the base type but the form model is the derived type.
         // Server-side validation resolves the localizer, message key, and display name from the
         // *declaring* type, so the client payload must do the same rather than use the derived
-        // (runtime container) type. The factory only knows translations for the base type, so a
-        // localized result proves the declaring type flowed through.
+        // (runtime container) type. The factory only knows translations for the base type, and the
+        // conventional key itself is built from the base type name, so a localized result proves the
+        // declaring type flowed through both the localizer lookup and the key convention.
         var byType = new Dictionary<Type, IDictionary<string, string>>
         {
             [typeof(InheritedFieldBaseModel)] = new Dictionary<string, string>
             {
                 ["Base Label"] = "Étiquette",
-                ["req-key"] = "{0} est requis.",
+                ["InheritedFieldBaseModel_Field_RequiredAttribute_Error"] = "{0} est requis.",
             },
             // The derived type has no translations; if it were (incorrectly) used, both the display
             // name and the message template would fall back to their non-localized values.
@@ -233,23 +229,13 @@ public class ClientValidationProviderTests
         };
         var factory = new TypeAwareStringLocalizerFactory(byType);
 
-        Type? messageKeyDeclaringType = null;
         var options = CreateMevOptions(typeof(DerivedFieldModel));
-#pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
-        options.MessageKeyProvider = context =>
-        {
-            messageKeyDeclaringType = context.DeclaringType;
-            return "req-key";
-        };
-#pragma warning restore ASP0029
 
         var rule = SingleRule(
             GetMevData<DerivedFieldModel>(options, factory, (nameof(DerivedFieldModel.Field), "Model." + nameof(DerivedFieldModel.Field)))!,
             "Model." + nameof(DerivedFieldModel.Field));
 
-        // The declaring (base) type is used for the message key context...
-        Assert.Equal(typeof(InheritedFieldBaseModel), messageKeyDeclaringType);
-        // ...and for both the display-name and error-message localizer lookups.
+        // The declaring (base) type is used for both the display-name and error-message lookups.
         Assert.Equal("Étiquette est requis.", rule.Message);
     }
 
@@ -465,7 +451,6 @@ public class ClientValidationProviderTests
         [property: JsonPropertyName("message")] string Message,
         [property: JsonPropertyName("params")] Dictionary<string, string>? Params);
 
-#pragma warning disable ASP0029 // Microsoft.Extensions.Validation evaluation APIs.
     private static ValidationOptions CreateMevOptions(params Type[] validatableTypes)
     {
         var services = new ServiceCollection();
@@ -492,7 +477,6 @@ public class ClientValidationProviderTests
         typeInfo!.Validate(model, validateContext);
         return validateContext.ValidationErrors?.Keys.ToArray() ?? Array.Empty<string>();
     }
-#pragma warning restore ASP0029
 
     private sealed class TestStringLocalizerFactory(IDictionary<string, string> translations) : IStringLocalizerFactory
     {
