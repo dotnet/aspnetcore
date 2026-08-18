@@ -19,6 +19,7 @@ internal sealed class UIActionHandler : ContentBlockHandler<UIActionHandler.Stat
         foreach (var content in context.UnhandledContents)
         {
             if (content is FunctionCallContent call &&
+                !call.InformationalOnly &&
                 _actions.TryGetValue(call.Name, out var function))
             {
                 context.MarkHandled(call);

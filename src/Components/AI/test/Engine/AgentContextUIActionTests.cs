@@ -141,6 +141,32 @@ public class AgentContextUIActionTests
     }
 
     [Fact]
+    public async Task UIAction_InformationalCallIsIgnored()
+    {
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((messages, options, cancellationToken) =>
+            EmitUIActionCall(
+                new FunctionCallContent("call-1", "change_background")
+                {
+                    InformationalOnly = true
+                },
+                cancellationToken));
+
+        using var agent = new UIAgent(client, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                () => "changed",
+                "change_background",
+                "Changes the background."));
+        });
+        using var context = new AgentContext(agent);
+
+        await context.SendMessageAsync("Change it");
+
+        Assert.Empty(Assert.Single(context.Turns).ResponseBlocks.OfType<UIActionBlock>());
+    }
+
+    [Fact]
     public async Task UIAction_InvokeAsyncExecutesOnlyOnce()
     {
         var invocationCount = 0;
@@ -172,9 +198,14 @@ public class AgentContextUIActionTests
         Assert.Equal("call-1", block.Result?.CallId);
     }
 
-    private static async IAsyncEnumerable<ChatResponseUpdate> EmitUIActionCall(
+    private static IAsyncEnumerable<ChatResponseUpdate> EmitUIActionCall(
         string callId,
         string name,
+        CancellationToken cancellationToken)
+        => EmitUIActionCall(new FunctionCallContent(callId, name), cancellationToken);
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> EmitUIActionCall(
+        FunctionCallContent call,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -182,7 +213,7 @@ public class AgentContextUIActionTests
         {
             Role = ChatRole.Assistant,
             MessageId = Guid.NewGuid().ToString("N"),
-            Contents = [new FunctionCallContent(callId, name)],
+            Contents = [call],
             FinishReason = ChatFinishReason.ToolCalls,
         };
         await Task.CompletedTask;
