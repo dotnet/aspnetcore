@@ -182,9 +182,9 @@ export class BrowserRenderer {
             const newText = frameReader.textContent(frame);
             textNode.textContent = newText;
             const parentElement = textNode.parentElement;
-            if (parentElement instanceof HTMLTextAreaElement && document.activeElement !== parentElement) {
+            if (parentElement instanceof HTMLTextAreaElement) {
               let fullContent = '';
-              for (const node of parentElement.childNodes) {
+              for (const node of Array.from(parentElement.childNodes)) {
                 if (node instanceof Text) {
                   fullContent += node.textContent || '';
                 }

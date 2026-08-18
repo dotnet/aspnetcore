@@ -1,65 +1,71 @@
 import { expect, test, describe, beforeEach, afterEach } from '@jest/globals';
-import { BrowserRenderer } from '../src/Rendering/BrowserRenderer';
-import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from '../src/Rendering/RenderBatch/RenderBatch';
+import { EditType, FrameType } from '../src/Rendering/RenderBatch/RenderBatch';
 
 describe('BrowserRenderer.updateText with textarea containing multiple text frames', () => {
   let container: HTMLDivElement;
-  let renderer: BrowserRenderer;
 
   beforeEach(() => {
-    // Create a container for test content
     container = document.createElement('div');
     document.body.appendChild(container);
-    renderer = new BrowserRenderer(0);
   });
 
   afterEach(() => {
     document.body.removeChild(container);
   });
 
-  test('should reconstruct textarea value from all text nodes, handling multiple frames, focus state, and edge cases', () => {
-    // Test 1: Multiple text frames scenario
-    const textareaWithMultipleFrames = document.createElement('textarea');
-    container.appendChild(textareaWithMultipleFrames);
+  test('should reconstruct textarea value from all text nodes, handling multiple frames and edge cases', () => {
+    // Scenario 1: Single text node update
+    const singleNodeTextarea = document.createElement('textarea');
+    container.appendChild(singleNodeTextarea);
 
-    const firstTextNode = document.createTextNode('Hello ');
-    const middleTextNode = document.createTextNode('...');
-    const lastTextNode = document.createTextNode('!');
-    textareaWithMultipleFrames.appendChild(firstTextNode);
-    textareaWithMultipleFrames.appendChild(middleTextNode);
-    textareaWithMultipleFrames.appendChild(lastTextNode);
+    const initialTextNode = document.createTextNode('Hello');
+    singleNodeTextarea.appendChild(initialTextNode);
 
-    expect(textareaWithMultipleFrames.value).toEqual('Hello ...!');
-    expect(document.activeElement).not.toBe(textareaWithMultipleFrames);
+    expect(singleNodeTextarea.value).toEqual('Hello');
 
-    // Simulate updating middle text frame: reconstruct from all nodes
-    middleTextNode.textContent = '***';
-    let reconstructedContent = '';
-    for (const node of textareaWithMultipleFrames.childNodes) {
+    // Simulate textarea value sync when text node is updated
+    initialTextNode.textContent = 'Updated';
+    let singleNodeContent = '';
+    for (const node of Array.from(singleNodeTextarea.childNodes)) {
       if (node instanceof Text) {
-        reconstructedContent += node.textContent || '';
+        singleNodeContent += node.textContent || '';
       }
     }
-    textareaWithMultipleFrames.value = reconstructedContent || '';
+    if (singleNodeTextarea.value !== singleNodeContent) {
+      singleNodeTextarea.value = singleNodeContent;
+    }
 
-    expect(textareaWithMultipleFrames.value).toEqual('Hello ***!');
+    expect(singleNodeTextarea.value).toEqual('Updated');
 
-    // Test 2: Focus check prevents update
-    textareaWithMultipleFrames.focus();
-    expect(document.activeElement).toBe(textareaWithMultipleFrames);
-    textareaWithMultipleFrames.setSelectionRange(3, 3);
-    const caretPositionBefore = textareaWithMultipleFrames.selectionStart;
+    // Scenario 2: Multiple text nodes in textarea
+    const multiNodeTextarea = document.createElement('textarea');
+    container.appendChild(multiNodeTextarea);
 
-    const shouldUpdateWhileFocused = document.activeElement !== textareaWithMultipleFrames;
-    expect(shouldUpdateWhileFocused).toBe(false);
-    expect(textareaWithMultipleFrames.selectionStart).toBe(caretPositionBefore);
+    const firstTextNode = document.createTextNode('Hello ');
+    const secondTextNode = document.createTextNode('World');
+    multiNodeTextarea.appendChild(firstTextNode);
+    multiNodeTextarea.appendChild(secondTextNode);
 
-    // Test 3: Empty and non-text nodes handled correctly
-    textareaWithMultipleFrames.blur();
-    container.removeChild(textareaWithMultipleFrames);
+    expect(multiNodeTextarea.value).toEqual('Hello World');
 
-    const textareaWithMixedNodes = document.createElement('textarea');
-    container.appendChild(textareaWithMixedNodes);
+    // Update the second text node
+    secondTextNode.textContent = 'Blazor';
+
+    let multiNodeContent = '';
+    for (const node of Array.from(multiNodeTextarea.childNodes)) {
+      if (node instanceof Text) {
+        multiNodeContent += node.textContent || '';
+      }
+    }
+    if (multiNodeTextarea.value !== multiNodeContent) {
+      multiNodeTextarea.value = multiNodeContent;
+    }
+
+    expect(multiNodeTextarea.value).toEqual('Hello Blazor');
+
+    // Scenario 3: Mixed text and non-text nodes
+    const mixedContentTextarea = document.createElement('textarea');
+    container.appendChild(mixedContentTextarea);
 
     const firstCharNode = document.createTextNode('A');
     const emptyTextNode = document.createTextNode('');
@@ -67,20 +73,22 @@ describe('BrowserRenderer.updateText with textarea containing multiple text fram
     nonTextSpanElement.textContent = 'Ignored';
     const secondCharNode = document.createTextNode('B');
 
-    textareaWithMixedNodes.appendChild(firstCharNode);
-    textareaWithMixedNodes.appendChild(emptyTextNode);
-    textareaWithMixedNodes.appendChild(nonTextSpanElement);
-    textareaWithMixedNodes.appendChild(secondCharNode);
+    mixedContentTextarea.appendChild(firstCharNode);
+    mixedContentTextarea.appendChild(emptyTextNode);
+    mixedContentTextarea.appendChild(nonTextSpanElement);
+    mixedContentTextarea.appendChild(secondCharNode);
 
-    reconstructedContent = '';
-    for (const node of textareaWithMixedNodes.childNodes) {
+    let mixedNodeContent = '';
+    for (const node of Array.from(mixedContentTextarea.childNodes)) {
       if (node instanceof Text) {
-        reconstructedContent += node.textContent || '';
+        mixedNodeContent += node.textContent || '';
       }
     }
-    textareaWithMixedNodes.value = reconstructedContent || '';
+    if (mixedContentTextarea.value !== mixedNodeContent) {
+      mixedContentTextarea.value = mixedNodeContent;
+    }
 
-    expect(textareaWithMixedNodes.value).toEqual('AB');
-    expect(textareaWithMixedNodes.value).not.toContain('Ignored');
+    expect(mixedContentTextarea.value).toEqual('AB');
+    expect(mixedContentTextarea.value).not.toContain('Ignored');
   });
 });
