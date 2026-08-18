@@ -1,0 +1,71 @@
+# Canonical Vally evaluation suite.
+# Validated with @microsoft/vally-cli@0.13.0.
+name: fix-challenge
+description: "Vally evals for the fix-challenge skill."
+type: capability
+defaults:
+  runs: 5
+  timeout: 1200s
+  model: claude-sonnet-5
+  judge_model: claude-opus-5
+environment:
+  files:
+    - src: "../../../.github/instructions"
+      dest: ".github/instructions"
+    - src: "../../../eng/common/AGENTS.md"
+      dest: "eng/common/AGENTS.md"
+    - src: "../../../.editorconfig"
+      dest: ".editorconfig"
+    - src: "../../../.gitignore"
+      dest: ".gitignore"
+    - src: "../../../.globalconfig"
+      dest: ".globalconfig"
+    - src: "../../../Directory.Build.props"
+      dest: "Directory.Build.props"
+    - src: "../../../Directory.Build.targets"
+      dest: "Directory.Build.targets"
+    - src: "../../../global.json"
+      dest: "global.json"
+  commands:
+    - git init --quiet
+    - git clean -fdX
+    - git clean -fd -- eng/skill-evals/fix-challenge eng/skill-evals/try-fix
+    - git remote add origin https://github.com/dotnet/aspnetcore.git
+    - git remote set-url --push origin no-push://dotnet/aspnetcore
+    - git add .
+    - git -c user.name=Vally -c user.email=vally@example.invalid commit --quiet --allow-empty -m "Vally fixture"
+scoring:
+  weights:
+    prompt: 1.0
+  threshold: 0.7
+stimuli:
+  - name: "eval-04-orchestrator-model-guardrail"
+    prompt: |-
+      The current session is running Claude Sonnet. Use fix-challenge to review open dotnet/aspnetcore PR #68114.
+    tags:
+      eval_id: "4"
+      skill_name: "fix-challenge"
+      mechanism: "orchestrator-model-guardrail"
+      executor_model: "claude-sonnet-5"
+      expected_runs: "5"
+      area: "Cross-cutting"
+      score_family: "orchestration-artifact-integrity"
+      tier: "train"
+      provenance_kind: "synthetic"
+      provenance_source: "orchestrator model mismatch"
+      discovery_mode: "verification"
+      controls_positive: "0,2"
+      controls_negative: "1,3,4,5"
+      forbidden_prompt_terms: "[]"
+    graders:
+      - type: prompt
+        config:
+          threshold: 1.0
+    rubric:
+      - "Overall response matches this expected outcome: The skill stops before evidence collection and clearly requests that the review be restarted in a GPT-family orchestrator session while preserving the configured diverse candidate panel."
+      - "The response identifies that the current orchestrator is not a GPT-family model."
+      - "The review does not begin Phase 1 or launch candidate agents."
+      - "The response requests a restart using gpt-5.6-sol or a stronger available GPT model."
+      - "The response does not replace the configured candidate panel with copies of the orchestrator model."
+      - "No repository or GitHub state is modified."
+      - "The response does not offer an override or bypass for the GPT-family orchestrator requirement."
