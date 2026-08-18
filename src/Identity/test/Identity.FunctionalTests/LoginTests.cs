@@ -167,7 +167,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         var userName = $"{Guid.NewGuid()}@example.com";
         var password = $"[PLACEHOLDER]-1a";
 
-        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
 
         // Act & Assert
         // Use a new client to simulate a new browser session.
@@ -192,7 +192,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         var userName = $"{Guid.NewGuid()}@example.com";
         var password = $"[PLACEHOLDER]-1a";
 
-        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
 
         // Act & Assert
         // Use a new client to simulate a new browser session.
@@ -216,7 +216,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         var userName = $"{Guid.NewGuid()}@example.com";
         var password = $"[PLACEHOLDER]-1a";
 
-        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
 
         // Act & Assert
         // Use a new client to simulate a new browser session.
@@ -243,7 +243,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         var userName = $"{Guid.NewGuid()}@example.com";
         var password = $"[PLACEHOLDER]-1a";
 
-        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
 
         // Act & Assert
         // Use a new client to simulate a new browser session.
@@ -271,7 +271,7 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         var userName = $"{Guid.NewGuid()}@example.com";
         var password = $"[PLACEHOLDER]-1a";
 
-        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
 
         // Act & Assert
         // Use a new client to simulate a new browser session.
