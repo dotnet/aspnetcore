@@ -9,6 +9,91 @@ namespace Microsoft.AspNetCore.Components.AI.Tests.Engine;
 
 public class AgentContextUIActionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UIAction_MultipleCallsContinueAcrossUpdateBoundaries(bool splitAcrossUpdates)
+    {
+        var firstActionInvocations = 0;
+        var secondActionInvocations = 0;
+        var clientCallCount = 0;
+        List<ChatMessage>? continuationMessages = null;
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((messages, options, cancellationToken) =>
+        {
+            clientCallCount++;
+            if (clientCallCount == 1)
+            {
+                return EmitTwoUIActionCalls(splitAcrossUpdates, cancellationToken);
+            }
+
+            continuationMessages = messages.ToList();
+            return ResponseEmitters.EmitTextResponse("Both values received.", cancellationToken);
+        });
+
+        using var agent = new UIAgent(client, options =>
+        {
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                () =>
+                {
+                    firstActionInvocations++;
+                    return "client-value-1";
+                },
+                "get_client_value_1",
+                "Gets the first value from the client."));
+            options.RegisterUIAction(AIFunctionFactory.Create(
+                () =>
+                {
+                    secondActionInvocations++;
+                    return "client-value-2";
+                },
+                "get_client_value_2",
+                "Gets the second value from the client."));
+        });
+        using var context = new AgentContext(agent);
+        using var subscription = context.RegisterOnStatusChanged(status =>
+        {
+            if (status == ConversationStatus.AwaitingInput)
+            {
+                foreach (var action in context.Turns[^1].ResponseBlocks.OfType<UIActionBlock>())
+                {
+                    _ = action.InvokeAsync();
+                }
+            }
+        });
+
+        await context.SendMessageAsync("Get both values");
+
+        Assert.Equal(1, firstActionInvocations);
+        Assert.Equal(1, secondActionInvocations);
+        Assert.Equal(2, clientCallCount);
+
+        var toolMessage = Assert.IsType<ChatMessage>(
+            continuationMessages?.LastOrDefault(message => message.Role == ChatRole.Tool));
+        var results = toolMessage.Contents.OfType<FunctionResultContent>().ToArray();
+        Assert.Collection(
+            results,
+            result =>
+            {
+                Assert.Equal("call-1", result.CallId);
+                Assert.Equal("client-value-1", result.Result?.ToString());
+            },
+            result =>
+            {
+                Assert.Equal("call-2", result.CallId);
+                Assert.Equal("client-value-2", result.Result?.ToString());
+            });
+
+        var turn = Assert.Single(context.Turns);
+        Assert.Collection(
+            turn.ResponseBlocks.OfType<UIActionBlock>(),
+            block => Assert.Equal("call-1", block.Call.CallId),
+            block => Assert.Equal("call-2", block.Call.CallId));
+        Assert.Equal(
+            "Both values received.",
+            Assert.Single(turn.ResponseBlocks.OfType<RichContentBlock>()).RawText);
+    }
+
     [Fact]
     public async Task UIAction_ContinuesWithOneToolResult()
     {
@@ -214,6 +299,48 @@ public class AgentContextUIActionTests
             Role = ChatRole.Assistant,
             MessageId = Guid.NewGuid().ToString("N"),
             Contents = [call],
+            FinishReason = ChatFinishReason.ToolCalls,
+        };
+        await Task.CompletedTask;
+    }
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> EmitTwoUIActionCalls(
+        bool splitAcrossUpdates,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var messageId = Guid.NewGuid().ToString("N");
+        if (splitAcrossUpdates)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents = [new FunctionCallContent("call-1", "get_client_value_1")],
+            };
+
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents = [new FunctionCallContent("call-2", "get_client_value_2")],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            await Task.CompletedTask;
+            yield break;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        yield return new ChatResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            MessageId = messageId,
+            Contents =
+            [
+                new FunctionCallContent("call-1", "get_client_value_1"),
+                new FunctionCallContent("call-2", "get_client_value_2"),
+            ],
             FinishReason = ChatFinishReason.ToolCalls,
         };
         await Task.CompletedTask;
