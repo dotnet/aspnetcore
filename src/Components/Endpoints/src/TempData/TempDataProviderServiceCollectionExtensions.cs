@@ -16,11 +16,11 @@ internal static class TempDataProviderServiceCollectionExtensions
 
     internal static IServiceCollection AddTempData(this IServiceCollection services)
     {
-        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
+        services.TryAddSingleton<IStoredDataSerializer, JsonStoredDataSerializer>();
         services.TryAddSingleton<ITempDataProvider>(serviceProvider =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
-            var serializer = serviceProvider.GetRequiredService<ITempDataSerializer>();
+            var serializer = serviceProvider.GetRequiredService<IStoredDataSerializer>();
             var dataProtectionProvider = serviceProvider.GetRequiredService<IDataProtectionProvider>();
             var logger = serviceProvider.GetRequiredService<ILogger<CookieTempDataProvider>>();
             return options.Value.TempDataProviderType switch
@@ -57,11 +57,12 @@ internal static class TempDataProviderServiceCollectionExtensions
         var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
         var tempDataInstance = tempDataService.CreateEmpty(httpContext);
         httpContext.Items[HttpContextItemKey] = tempDataInstance;
-        httpContext.Response.OnStarting(() =>
+
+        // Ensure that session cookie is issued to allow for persistence from streaming context
+        if (httpContext.RequestServices.GetService<ITempDataProvider>() is SessionStorageTempDataProvider)
         {
-            tempDataService.Save(httpContext, tempDataInstance);
-            return Task.CompletedTask;
-        });
+            SessionEstablishmentHelper.TryRegisterSessionEstablishment(httpContext);
+        }
 
         return tempDataInstance;
     }

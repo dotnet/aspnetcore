@@ -56,8 +56,14 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
 
         var traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
-        var traceIdKeyName = _serializerOptions.PropertyNamingPolicy?.ConvertName("traceId") ?? "traceId";
-        context.ProblemDetails.Extensions[traceIdKeyName] = traceId;
+
+        // We shouldn't attempt to change the casing here.
+        // STJ doesn't respect the naming policy for JsonExtensionData as it won't round-trip otherwise.
+        // In addition, trying to special case traceId specifically can cause inconsistencies.
+        // See:
+        // https://github.com/dotnet/aspnetcore/issues/65543
+        // https://github.com/dotnet/aspnetcore/issues/66603
+        context.ProblemDetails.Extensions["traceId"] = traceId;
 
         _options.CustomizeProblemDetails?.Invoke(context);
 
@@ -66,7 +72,6 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         return new ValueTask(httpContext.Response.WriteAsJsonAsync(
                         context.ProblemDetails,
                          _serializerOptions.GetTypeInfo(problemDetailsType),
-                        contentType: "application/problem+json",
-                        cancellationToken: httpContext.RequestAborted));
+                        contentType: "application/problem+json"));
     }
 }

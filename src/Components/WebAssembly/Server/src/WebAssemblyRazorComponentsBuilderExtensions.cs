@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -26,6 +29,23 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
         builder.Services.TryAddScoped<LazyAssemblyLoader>();
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<WebAssemblyComponentsServiceOptions>, WebAssemblyComponentsServiceOptionsConfiguration>());
+
+        builder.Services.TryAddScoped(static sp =>
+        {
+            var provider = new CultureStateProvider();
+
+            if (sp.GetRequiredService<IOptions<WebAssemblyComponentsServiceOptions>>().Value.UseCultureFromServer)
+            {
+                provider.CaptureCurrentCulture();
+            }
+
+            return provider;
+        });
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(
+            builder.Services,
+            RenderMode.InteractiveWebAssembly);
 
         return builder;
     }

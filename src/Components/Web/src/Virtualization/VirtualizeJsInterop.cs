@@ -31,15 +31,15 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
     }
 
     [JSInvokable]
-    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize)
+    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize, int reason)
     {
-        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize);
+        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason);
     }
 
     [JSInvokable]
-    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize)
+    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize, int reason)
     {
-        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize);
+        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason);
     }
 
     public ValueTask ScrollToBottomAsync()
@@ -47,9 +47,9 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.scrollToBottom", _selfReference);
     }
 
-    public ValueTask RefreshObserversAsync()
+    public ValueTask RefreshObserversAsync(bool isLoading)
     {
-        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.refreshObservers", _selfReference);
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.refreshObservers", _selfReference, isLoading);
     }
 
     public ValueTask SetAnchorModeAsync(int anchorMode)
@@ -60,6 +60,21 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
     public ValueTask RestoreAnchorAsync()
     {
         return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference);
+    }
+
+    public ValueTask AlignToItemAsync(int localIndex, CancellationToken cancellationToken = default)
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.alignToItem", cancellationToken, _selfReference, localIndex);
+    }
+
+    public ValueTask BeginProgrammaticScrollAsync()
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.beginProgrammaticScroll", _selfReference);
+    }
+
+    public ValueTask<bool> IsFollowingBottomAsync()
+    {
+        return _jsRuntime.InvokeAsync<bool>($"{JsFunctionsPrefix}.isFollowingBottom", _selfReference);
     }
 
     public async ValueTask DisposeAsync()

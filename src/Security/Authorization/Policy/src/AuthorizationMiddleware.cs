@@ -113,30 +113,11 @@ public class AuthorizationMiddleware
 
         if (policy == null)
         {
+            // The middleware evaluates all the authorization metadata associated with the endpoint at once.
             // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
-            var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
+            var metadata = (IEnumerable<object>?)endpoint?.Metadata ?? Array.Empty<object>();
 
-            var policies = endpoint?.Metadata.GetOrderedMetadata<AuthorizationPolicy>() ?? Array.Empty<AuthorizationPolicy>();
-
-            policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData, policies);
-
-            var requirementData = endpoint?.Metadata?.GetOrderedMetadata<IAuthorizationRequirementData>() ?? Array.Empty<IAuthorizationRequirementData>();
-            if (requirementData.Count > 0)
-            {
-                var reqPolicy = new AuthorizationPolicyBuilder();
-                foreach (var rd in requirementData)
-                {
-                    foreach (var r in rd.GetRequirements())
-                    {
-                        reqPolicy.AddRequirements(r);
-                    }
-                }
-
-                // Combine policy with requirements or just use requirements if no policy
-                policy = (policy is null)
-                    ? reqPolicy.Build()
-                    : AuthorizationPolicy.Combine(policy, reqPolicy.Build());
-            }
+            policy = await AuthorizationPolicy.CombineAsync(_policyProvider, metadata);
 
             // Cache the computed policy
             if (policy != null && canCachePolicy)

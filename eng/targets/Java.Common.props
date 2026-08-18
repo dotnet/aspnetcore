@@ -2,6 +2,13 @@
   <PropertyGroup>
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do -->
     <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
+    <!--
+      On CI, make gradle failures debuggable: print full stacktraces on exceptions and use the plain console renderer
+      so output stays line-oriented (no ANSI escape codes, no overwritten progress lines). Without these flags a
+      compileJava failure ends with only "FAILURE: Build failed with an exception." in the captured output and the
+      actual cause is lost, leaving MSB3073 as the only signal.
+    -->
+    <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) --stacktrace --console=plain</GradleOptions>
     <PackOnBuild>false</PackOnBuild>
   </PropertyGroup>
 </Project>

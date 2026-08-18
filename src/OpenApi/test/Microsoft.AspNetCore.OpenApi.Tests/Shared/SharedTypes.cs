@@ -20,6 +20,12 @@ using Microsoft.AspNetCore.Http;
 internal record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
 
 /// <summary>
+/// Represents a model with a string value constrained by a maximum length.
+/// </summary>
+/// <param name="Value">The string value, limited to 100 characters.</param>
+internal record ModelWithStringAndStringLength([property: StringLength(100)] string Value);
+
+/// <summary>
 /// Represents a to-do item with a due date.
 /// </summary>
 /// <param name="Id">The unique identifier of the to-do item.</param>

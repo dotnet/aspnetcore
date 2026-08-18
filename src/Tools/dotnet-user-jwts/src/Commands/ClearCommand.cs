@@ -28,7 +28,12 @@ internal sealed class ClearCommand
 
             cmd.OnExecute(() =>
             {
-                if (!DevJwtCliHelpers.GetProjectAndSecretsId(cmd.ProjectOption.Value(), cmd.Reporter, out var project, out var userSecretsId))
+                if (!cmd.TryGetProjectOrFilePath(out var projectPath, out var isFileBasedApp))
+                {
+                    return 1;
+                }
+
+                if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, isFileBasedApp, cmd.Reporter, out var project, out var userSecretsId))
                 {
                     return 1;
                 }
