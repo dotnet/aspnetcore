@@ -811,9 +811,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private void RecalibrateItemSize(float spacerSeparation)
     {
-        if (_lastRenderedItemCount > 0 && _lastRenderedPlaceholderCount == 0)
+        if (_lastRenderedItemCount > 0)
         {
-            _itemSize = spacerSeparation / _lastRenderedItemCount;
+            _itemSize = (spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize)) / _lastRenderedItemCount;
         }
 
         if (_itemSize <= 0)
