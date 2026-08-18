@@ -596,13 +596,34 @@ public partial class Startup
     private async Task WaitForAppToStartShuttingDown(HttpContext ctx)
     {
         await ctx.Response.WriteAsync("test1");
-#if FORWARDCOMPAT
-        var lifetime = ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
-#else
-        var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
-#endif
-        lifetime.ApplicationStopping.WaitHandle.WaitOne();
+        GetApplicationStopping(ctx).WaitHandle.WaitOne();
         await ctx.Response.WriteAsync("test2");
+    }
+
+    private async Task CompleteAfterAppStartsShuttingDown(HttpContext ctx)
+    {
+        await ctx.Response.WriteAsync("Started");
+        await ctx.Response.Body.FlushAsync();
+        await WaitForCancellationAsync(GetApplicationStopping(ctx));
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        await ctx.Response.WriteAsync("Completed");
+    }
+
+    private static async Task WaitForCancellationAsync(CancellationToken token)
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var registration = token.Register(static state => ((TaskCompletionSource)state).TrySetResult(), tcs);
+        await tcs.Task;
+    }
+
+    private static CancellationToken GetApplicationStopping(HttpContext ctx)
+    {
+#if FORWARDCOMPAT
+        var lifetime = ctx.RequestServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
+#else
+        var lifetime = ctx.RequestServices.GetRequiredService<IHostApplicationLifetime>();
+#endif
+        return lifetime.ApplicationStopping;
     }
 
     private async Task ReadFullBody(HttpContext ctx)
@@ -1183,6 +1204,36 @@ public partial class Startup
 #endif
             Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
             Assert.Equal("gzip, chunked", ctx.Request.Headers["Transfer-Encoding"]);
+            Assert.False(ctx.Request.Headers.ContainsKey("Content-Length"));
+            Assert.True(ctx.Request.Headers.ContainsKey("X-Content-Length"));
+            Assert.Equal("5", ctx.Request.Headers["X-Content-Length"]);
+            return;
+        }
+        catch (Exception exception)
+        {
+            ctx.Response.StatusCode = 500;
+            await ctx.Response.WriteAsync(exception.ToString());
+        }
+    }
+
+    public async Task GetHostLifetime(HttpContext context)
+    {
+        var name = context.RequestServices.GetService<IHostLifetime>()?.GetType().Name;
+        await context.Response.WriteAsync(name);
+    }
+
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/66720.
+    // RFC 7230 §7 allows trailing empty list elements; http.sys treats
+    // "chunked," as chunked, and the managed layer must agree.
+    private async Task TransferEncodingWithTrailingCommaAndContentLengthShouldBeRemove(HttpContext ctx)
+    {
+        try
+        {
+#if !FORWARDCOMPAT
+            Assert.True(ctx.Request.CanHaveBody());
+#endif
+            Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
+            Assert.Equal("chunked,", ctx.Request.Headers["Transfer-Encoding"]);
             Assert.False(ctx.Request.Headers.ContainsKey("Content-Length"));
             Assert.True(ctx.Request.Headers.ContainsKey("X-Content-Length"));
             Assert.Equal("5", ctx.Request.Headers["X-Content-Length"]);

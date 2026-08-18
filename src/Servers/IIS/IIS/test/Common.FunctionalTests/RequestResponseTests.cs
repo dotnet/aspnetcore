@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(IISTestSiteCollectionInProc.Name)]
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68271")]
 public class RequestResponseTests
 {
     private readonly IISTestSiteFixture _fixture;
@@ -776,6 +777,28 @@ public class RequestResponseTests
             await connection.Send(
                 "POST /TransferEncodingAndContentLengthShouldBeRemove HTTP/1.1",
                 "Transfer-Encoding: gzip, chunked",
+                "Content-Length: 5",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+        }
+    }
+
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task SendTransferEncodingWithTrailingCommaAndContentLength_ContentLengthShouldBeRemoved()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/66720.
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            await connection.Send(
+                "POST /TransferEncodingWithTrailingCommaAndContentLengthShouldBeRemove HTTP/1.1",
+                "Transfer-Encoding: chunked,",
                 "Content-Length: 5",
                 "Host: localhost",
                 "Connection: close",

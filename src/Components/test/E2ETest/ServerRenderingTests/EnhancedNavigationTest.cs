@@ -928,23 +928,30 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var h1Elem = Browser.Exists(By.Id("interactive-layout-home"));
         Browser.Equal("Hello from interactive layout", () => h1Elem.Text);
 
-        // Use a layout element for staleness checks since it persists across pages
-        var layoutCounter = Browser.Exists(By.Id("layout-counter"));
+        // Use the <html> element for staleness checks. We cannot use elements inside the
+        // InteractiveAuto component (e.g., layout-counter) because the SSR-to-interactive
+        // transition clears and re-renders the component's DOM, making SSR element references
+        // stale regardless of whether enhanced navigation was used.
+        var elementForStalenessCheck = Browser.Exists(By.TagName("html"));
 
         // Navigate to the other page and verify enhanced navigation was used (DOM preserved)
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (interactive layout)")).Click();
         Browser.Equal("Other page with interactive layout", () => Browser.Exists(By.Id("interactive-layout-other")).Text);
-        Assert.False(layoutCounter.IsStale(), "Enhanced navigation should have been used for first navigation");
+        Assert.False(elementForStalenessCheck.IsStale(), "Enhanced navigation should have been used for first navigation");
+
+        // Wait for interactivity to be established (InteractiveAuto may start as SSR/Server
+        // and become interactive only after the circuit or WebAssembly runtime has connected).
+        Browser.Equal("True", () => Browser.Exists(By.Id("layout-counter-interactive")).Text);
+
+        // Now that the component is interactive, grab a reference inside it. Enhanced navigation
+        // should preserve interactive component DOM, so this element must survive the next navigation.
+        var layoutCounter = Browser.Exists(By.Id("layout-counter"));
 
         // Navigate back to home - this is the step that triggered the crash
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Home (interactive layout)")).Click();
         Browser.Equal("Hello from interactive layout", () => Browser.Exists(By.Id("interactive-layout-home")).Text);
-        Assert.False(layoutCounter.IsStale(), "Enhanced navigation should have been used for second navigation");
-
-        // Verify the interactive layout component is still functional by clicking the counter.
-        // Wait for interactivity to be established first (InteractiveAuto may start as SSR/Server
-        // and become interactive only after the circuit or WebAssembly runtime has connected).
-        Browser.Equal("True", () => Browser.Exists(By.Id("layout-counter-interactive")).Text);
+        Assert.False(elementForStalenessCheck.IsStale(), "Enhanced navigation should have been used for second navigation");
+        Assert.False(layoutCounter.IsStale(), "Interactive component DOM should be preserved during enhanced navigation");
         Browser.Equal("0", () => Browser.Exists(By.Id("layout-counter-value")).Text);
         Browser.Exists(By.Id("layout-counter-button")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("layout-counter-value")).Text);

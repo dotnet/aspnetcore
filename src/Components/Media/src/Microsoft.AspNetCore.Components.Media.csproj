@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="PreReleaseVersionLabel;PreReleaseVersionIteration">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Media components for Blazor applications, including Image, Video, and FileDownload.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <!--
+      This package does not ship a stable version as part of .NET 11.0. Keep producing dated prerelease versions even
+      when the repo builds RC or RTM versions. The label/iteration overrides are required so the version reads
+      sensibly (and so Arcade's version suffix logic keeps running) once the branch moves to 'rc' or 'rtm'; they are
+      listed in TreatAsLocalProperty above so they win even if the label is passed in as a global property.
+    -->
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionLabel>$(PreviewOnlyPackagePreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>$(PreviewOnlyPackagePreReleaseVersionIteration)</PreReleaseVersionIteration>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Media.Tests" />
+  </ItemGroup>
+
+</Project>

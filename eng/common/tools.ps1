@@ -15,7 +15,7 @@
 
 # Set to true to use the pipelines logger which will enable Azure logging output.
 # https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
-# This flag is meant as a temporary opt-opt for the feature while validate it across
+# This flag is meant as a temporary opt-in for the feature while validating it across
 # our consumers. It will be deleted in the future.
 [bool]$pipelinesLog = if (Test-Path variable:pipelinesLog) { $pipelinesLog } else { $ci }
 
@@ -70,6 +70,8 @@ $ErrorActionPreference = 'Stop'
 
 # True when the build is running within the VMR.
 [bool]$fromVMR = if (Test-Path variable:fromVMR) { $fromVMR } else { $false }
+
+[bool]$disablePipelineSetResult = if (Test-Path variable:disablePipelineSetResult) { $disablePipelineSetResult } else { $false }
 
 function Create-Directory ([string[]] $path) {
     New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
@@ -168,12 +170,6 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
     $env:DOTNET_CLI_TELEMETRY_OPTOUT=1
   }
 
-  # Keep repo builds isolated from machine-installed SDK state and workload advertising.
-  # This avoids preview SDK builds picking up mismatched workloads on CI images.
-  $env:DOTNET_MULTILEVEL_LOOKUP = '0'
-  $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
-  $env:DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE = '1'
-
   # Find the first path on %PATH% that contains the dotnet.exe
   if ($useInstalledDotNetCli -and (-not $globalJsonHasRuntimes) -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
     $dotnetExecutable = GetExecutableFileName 'dotnet'
@@ -236,9 +232,6 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   Write-PipelinePrependPath -Path $dotnetRoot
 
   Write-PipelineSetVariable -Name 'DOTNET_NOLOGO' -Value '1'
-  Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
-  Write-PipelineSetVariable -Name 'DOTNET_SKIP_FIRST_TIME_EXPERIENCE' -Value '1'
-  Write-PipelineSetVariable -Name 'DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE' -Value '1'
 
   return $global:_DotNetInstallDir = $dotnetRoot
 }
@@ -447,11 +440,31 @@ function InitializeVisualStudioMSBuild([object]$vsRequirements = $null) {
   $msbuildVersionDir = if ([int]$vsMajorVersion -lt 16) { "$vsMajorVersion.0" } else { "Current" }
 
   $local:BinFolder = Join-Path $vsInstallDir "MSBuild\$msbuildVersionDir\Bin"
-  $local:Prefer64bit = if (Get-Member -InputObject $vsRequirements -Name 'Prefer64bit') { $vsRequirements.Prefer64bit } else { $false }
-  if ($local:Prefer64bit -and (Test-Path(Join-Path $local:BinFolder "amd64"))) {
-    $global:_MSBuildExe = Join-Path $local:BinFolder "amd64\msbuild.exe"
-  } else {
-    $global:_MSBuildExe = Join-Path $local:BinFolder "msbuild.exe"
+
+  # Use the MSBuild matching the host's process architecture (e.g. amd64 or arm64),
+  # falling back to the 32-bit MSBuild in the root Bin folder when no matching subfolder exists.
+
+  # Determine the architecture of the current process, accounting for a 32-bit process
+  # running on a 64-bit OS (PROCESSOR_ARCHITEW6432 holds the real machine architecture).
+  $local:ProcessArchitecture = $env:PROCESSOR_ARCHITECTURE
+  if (($local:ProcessArchitecture -eq 'x86') -and ($env:PROCESSOR_ARCHITEW6432)) {
+    $local:ProcessArchitecture = $env:PROCESSOR_ARCHITEW6432
+  }
+
+  # Map the architecture to the corresponding MSBuild subfolder. The 32-bit MSBuild lives in the
+  # root Bin folder, so x86 maps to an empty subfolder.
+  $local:MSBuildArchSubFolder = switch ($local:ProcessArchitecture) {
+    'AMD64' { 'amd64' }
+    'ARM64' { 'arm64' }
+    default { '' }
+  }
+
+  $global:_MSBuildExe = Join-Path $local:BinFolder "msbuild.exe"
+  if ($local:MSBuildArchSubFolder) {
+    $local:ArchMSBuildExe = Join-Path $local:BinFolder (Join-Path $local:MSBuildArchSubFolder "msbuild.exe")
+    if (Test-Path $local:ArchMSBuildExe) {
+      $global:_MSBuildExe = $local:ArchMSBuildExe
+    }
   }
 
   return $global:_MSBuildExe
@@ -546,6 +559,16 @@ function LocateVisualStudio([object]$vsRequirements = $null){
 }
 
 function InitializeBuildTool() {
+  # Allow a caller (e.g. a bootstrap script running out-of-proc) to inject the build tool via
+  # environment variables instead of the in-proc $global:_BuildTool variable. Only Path and
+  # Command are consumed by the MSBuild function below, so those are all that's needed.
+  if ($env:_BuildToolPath) {
+    return $global:_BuildTool = @{
+      Path    = $env:_BuildToolPath
+      Command = $env:_BuildToolCommand
+    }
+  }
+
   if (Test-Path variable:global:_BuildTool) {
     # If the requested msbuild parameters do not match, clear the cached variables.
     if($global:_BuildTool.Contains('ExcludePrereleaseVS') -and $global:_BuildTool.ExcludePrereleaseVS -ne $excludePrereleaseVS) {
@@ -573,7 +596,7 @@ function InitializeBuildTool() {
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
 
-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net' }
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild' }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild
@@ -582,7 +605,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
 
-    $buildTool = @{ Path = $msbuildPath; Command = ""; Tool = "vs"; Framework = "netframework"; ExcludePrereleaseVS = $excludePrereleaseVS }
+    $buildTool = @{ Path = $msbuildPath; Command = ""; ExcludePrereleaseVS = $excludePrereleaseVS }
   } else {
     Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Unexpected value of -msbuildEngine: '$msbuildEngine'."
     ExitWithExitCode 1
@@ -605,16 +628,16 @@ function GetDefaultMSBuildEngine() {
   ExitWithExitCode 1
 }
 
-function GetNuGetPackageCachePath() {
+function InitializeNuGetPackageCachePath() {
   if ($env:NUGET_PACKAGES -eq $null) {
     # Use local cache on CI to ensure deterministic build.
-    # Avoid using the http cache as workaround for https://github.com/NuGet/Home/issues/3116
     # use global cache in dev builds to avoid cost of downloading packages.
     # For directory normalization, see also: https://github.com/NuGet/Home/issues/7968
     if ($useGlobalNuGetCache) {
-      $env:NUGET_PACKAGES = Join-Path $env:UserProfile '.nuget\packages\'
+      $userProfile = if (IsWindowsPlatform) { $env:UserProfile } else { $env:HOME }
+      $env:NUGET_PACKAGES = [IO.Path]::Combine($userProfile, '.nuget', 'packages') + [IO.Path]::DirectorySeparatorChar
     } else {
-      $env:NUGET_PACKAGES = Join-Path $RepoRoot '.packages\'
+      $env:NUGET_PACKAGES = [IO.Path]::Combine($RepoRoot, '.packages') + [IO.Path]::DirectorySeparatorChar
     }
   }
 
@@ -663,8 +686,6 @@ function InitializeToolset() {
     return $global:_InitializeToolset
   }
 
-  $nugetCache = GetNuGetPackageCachePath
-
   $toolsetVersion = Read-ArcadeSdkVersion
   $toolsetToolsDir = Join-Path $ToolsetDir $toolsetVersion
 
@@ -685,7 +706,7 @@ function InitializeToolset() {
     ExitWithExitCode 1
   }
 
-  $downloadArgs = @("package", "download", "Microsoft.DotNet.Arcade.Sdk@$toolsetVersion", "--verbosity", "minimal", "--prerelease", "--output", "$nugetCache")
+  $downloadArgs = @("package", "download", "Microsoft.DotNet.Arcade.Sdk@$toolsetVersion", "--verbosity", "minimal", "--prerelease", "--output", "$nugetPackageCachePath")
   $nugetConfig = $env:NUGET_CONFIG
   if (-not $nugetConfig) {
     # Search for any variation of nuget.config in the RepoRoot
@@ -700,9 +721,19 @@ function InitializeToolset() {
     $downloadArgs += "--configfile"
     $downloadArgs += $nugetConfig
   }
-  DotNet @downloadArgs
 
-  $packageDir = Join-Path $nugetCache (Join-Path 'microsoft.dotnet.arcade.sdk' $toolsetVersion)
+  # 'dotnet package download' fails outright if any source in the repo's NuGet.config is
+  # unavailable (for example a transport feed that was decommissioned after a release). The
+  # Arcade SDK is always published to the public dotnet-eng feed, so if the config-driven
+  # download fails, retry once against that feed directly (which ignores the other sources)
+  # before giving up, so a single dead source doesn't block the build.
+  $downloadExitCode = DotNet -ignoreFailure @downloadArgs
+  if ($downloadExitCode) {
+    Write-Host "Restoring the Arcade SDK from the configured sources failed; retrying from the public dotnet-eng feed."
+    DotNet @downloadArgs --source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"
+  }
+
+  $packageDir = Join-Path $nugetPackageCachePath (Join-Path 'microsoft.dotnet.arcade.sdk' $toolsetVersion)
   $packageToolsetDir = Join-Path $packageDir 'toolset'
 
   if (!(Test-Path $packageToolsetDir)) {
@@ -723,7 +754,7 @@ function InitializeToolset() {
 }
 
 function ExitWithExitCode([int] $exitCode) {
-  if ($ci -and $prepareMachine) {
+  if ($prepareMachine) {
     Stop-Processes
   }
   exit $exitCode
@@ -753,94 +784,29 @@ function Stop-Processes() {
 # Terminates the script if the build fails.
 #
 function MSBuild() {
-  if ($pipelinesLog) {
-    $buildTool = InitializeBuildTool
-
-    if ($ci -and $buildTool.Tool -eq 'dotnet') {
-      $env:NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS = 20
-      $env:NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS = 20
-      Write-PipelineSetVariable -Name 'NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS' -Value '20'
-      Write-PipelineSetVariable -Name 'NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS' -Value '20'
-    }
-
-    Enable-Nuget-EnhancedRetry
-
-    $toolsetBuildProject = InitializeToolset
-    $basePath = Split-Path -parent $toolsetBuildProject
-    $selectedPath = Join-Path $basePath (Join-Path $buildTool.Framework 'Microsoft.DotNet.ArcadeLogging.dll')
-
-    if (-not $selectedPath) {
-      Write-PipelineTelemetryError -Category 'Build' -Message "Unable to find arcade sdk logger assembly: $selectedPath"
-      ExitWithExitCode 1
-    }
-
-    $args += "/logger:$selectedPath"
-  }
-
-  MSBuild-Core @args
-}
-
-#
-# Executes a dotnet command with arguments passed to the function.
-# Terminates the script if the command fails.
-#
-function DotNet() {
-  $dotnetRoot = InitializeDotNetCli -install:$restore
-  $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
-
-  $cmdArgs = ""
-  foreach ($arg in $args) {
-    if ($null -ne $arg -and $arg.Trim() -ne "") {
-      if ($arg.EndsWith('\')) {
-        $arg = $arg + "\"
-      }
-      $cmdArgs += " `"$arg`""
-    }
-  }
-
-  $env:ARCADE_BUILD_TOOL_COMMAND = "`"$dotnetPath`" $cmdArgs"
-
-  $exitCode = Exec-Process $dotnetPath $cmdArgs
-
-  if ($exitCode -ne 0) {
-    Write-Host "dotnet command failed with exit code $exitCode. Check errors above." -ForegroundColor Red
-
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR) {
-      Write-PipelineSetResult -Result "Failed" -Message "dotnet command execution failed."
-      ExitWithExitCode 0
-    } else {
-      ExitWithExitCode $exitCode
-    }
-  }
-}
-
-#
-# Executes msbuild (or 'dotnet msbuild') with arguments passed to the function.
-# The arguments are automatically quoted.
-# Terminates the script if the build fails.
-#
-function MSBuild-Core() {
   if ($ci) {
     if (!$binaryLog -and !$excludeCIBinarylog) {
       Write-PipelineTelemetryError -Category 'Build' -Message 'Binary log must be enabled in CI build, or explicitly opted-out from with the -excludeCIBinarylog switch.'
       ExitWithExitCode 1
     }
-
-    if ($nodeReuse) {
-      Write-PipelineTelemetryError -Category 'Build' -Message 'Node reuse must be disabled in CI build.'
-      ExitWithExitCode 1
-    }
   }
-
-  Enable-Nuget-EnhancedRetry
 
   $buildTool = InitializeBuildTool
 
-  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
+  if ($pipelinesLog) {
+    $toolsetBuildProject = InitializeToolset
+    $basePath = Split-Path -parent $toolsetBuildProject
+    $selectedPath = Join-Path $basePath (Join-Path 'net' 'Microsoft.DotNet.ArcadeLogging.dll')
 
-  if ($ci -and $buildTool.Tool -eq 'dotnet') {
-    $cmdArgs += ' /p:MSBuildEnableWorkloadResolver=false'
+    # Only inject the logger when it's present. A last-known-good Arcade used to bootstrap
+    # the build may not ship the logger yet, so its absence must not be a hard error.
+    # Specify the logger type explicitly so loading is deterministic.
+    if (Test-Path $selectedPath) {
+      $args += "/logger:Microsoft.DotNet.ArcadeLogging.PipelinesLogger,$selectedPath"
+    }
   }
+
+  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
   # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
   if ($env:MSBUILD_MT_ENABLED -eq "1") {
@@ -855,7 +821,8 @@ function MSBuild-Core() {
   }
 
   if ($warnAsError -and $warnNotAsError) {
-    $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$warnNotAsError"
+    $escapedWarnNotAsError = $warnNotAsError -replace ';', '%3B'
+    $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$escapedWarnNotAsError"
   }
 
   foreach ($arg in $args) {
@@ -877,14 +844,9 @@ function MSBuild-Core() {
     # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
     Write-Host "Build failed with exit code $exitCode. Check errors above." -ForegroundColor Red
 
-    $buildLog = GetMSBuildBinaryLogCommandLineArgument $args
-    if ($null -ne $buildLog) {
-      Write-Host "See log: $buildLog" -ForegroundColor DarkGray
-    }
-
     # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-    # Skip this when the build is a child of the VMR build.
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR) {
+    # Skip this when the build is a child of the VMR build, or when -disablePipelineSetResult is set so the real exit code propagates.
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR -and !$disablePipelineSetResult) {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
@@ -895,21 +857,44 @@ function MSBuild-Core() {
   }
 }
 
-function GetMSBuildBinaryLogCommandLineArgument($arguments) {
-  foreach ($argument in $arguments) {
-    if ($argument -ne $null) {
-      $arg = $argument.Trim()
-      if ($arg.StartsWith('/bl:', "OrdinalIgnoreCase")) {
-        return $arg.Substring('/bl:'.Length)
-      }
+#
+# Executes a dotnet command with arguments passed to the function.
+# Terminates the script if the command fails.
+#
+function DotNet([switch]$ignoreFailure) {
+  $dotnetRoot = InitializeDotNetCli -install:$restore
+  $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
 
-      if ($arg.StartsWith('/binaryLogger:', 'OrdinalIgnoreCase')) {
-        return $arg.Substring('/binaryLogger:'.Length)
+  $cmdArgs = ""
+  foreach ($arg in $args) {
+    if ($null -ne $arg -and $arg.Trim() -ne "") {
+      if ($arg.EndsWith('\')) {
+        $arg = $arg + "\"
       }
+      $cmdArgs += " `"$arg`""
     }
   }
 
-  return $null
+  $env:ARCADE_BUILD_TOOL_COMMAND = "`"$dotnetPath`" $cmdArgs"
+
+  $exitCode = Exec-Process $dotnetPath $cmdArgs
+
+  if ($exitCode -ne 0) {
+    # When -ignoreFailure is set, return the exit code to the caller so it can implement
+    # its own fallback logic instead of terminating the script.
+    if ($ignoreFailure) {
+      return $exitCode
+    }
+
+    Write-Host "dotnet command failed with exit code $exitCode. Check errors above." -ForegroundColor Red
+
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR -and !$disablePipelineSetResult) {
+      Write-PipelineSetResult -Result "Failed" -Message "dotnet command execution failed."
+      ExitWithExitCode 0
+    } else {
+      ExitWithExitCode $exitCode
+    }
+  }
 }
 
 function GetExecutableFileName($baseName) {
@@ -979,19 +964,5 @@ if (!$disableConfigureToolsetImport) {
   }
 }
 
-#
-# If $ci flag is set, turn on (and log that we did) special environment variables for improved Nuget client retry logic.
-#
-function Enable-Nuget-EnhancedRetry() {
-    if ($ci) {
-      Write-Host "Setting NUGET enhanced retry environment variables"
-      $env:NUGET_ENABLE_ENHANCED_HTTP_RETRY = 'true'
-      $env:NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT = 6
-      $env:NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS = 1000
-      $env:NUGET_RETRY_HTTP_429 = 'true'
-      Write-PipelineSetVariable -Name 'NUGET_ENABLE_ENHANCED_HTTP_RETRY' -Value 'true'
-      Write-PipelineSetVariable -Name 'NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT' -Value '6'
-      Write-PipelineSetVariable -Name 'NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS' -Value '1000'
-      Write-PipelineSetVariable -Name 'NUGET_RETRY_HTTP_429' -Value 'true'
-    }
-}
+# Initialize the nuget package cache vars
+$nugetPackageCachePath = InitializeNuGetPackageCachePath

@@ -45,11 +45,11 @@ steps:
   workingDirectory: ${{ parameters.vmrPath }}
 
 - script: |
-    ./eng/common/vmr-sync.sh                         \
-      --vmr ${{ parameters.vmrPath }}         \
-      --tmp $(Agent.TempDirectory)            \
-      --azdev-pat '$(dn-bot-all-orgs-code-r)' \
-      --ci                                    \
+    ./eng/common/vmr-sync.sh          \
+      --vmr ${{ parameters.vmrPath }} \
+      --tmp $(Agent.TempDirectory)    \
+      --azdev-pat '$(AzdoToken)'      \
+      --ci                            \
       --debug
 
     if [ "$?" -ne 0 ]; then
@@ -67,11 +67,11 @@ steps:
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
 - powershell: |
-    ./eng/common/vmr-sync.ps1                      `
-      -vmr ${{ parameters.vmrPath }}        `
-      -tmp $(Agent.TempDirectory)           `
-      -azdevPat '$(dn-bot-all-orgs-code-r)' `
-      -ci                                   `
+    ./eng/common/vmr-sync.ps1        `
+      -vmr ${{ parameters.vmrPath }} `
+      -tmp $(Agent.TempDirectory)    `
+      -azdevPat '$(AzdoToken)'       `
+      -ci                            `
       -debugOutput
 
     if ($LASTEXITCODE -ne 0) {

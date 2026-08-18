@@ -1,0 +1,1 @@
+curl -v -k https://localhost:5001/

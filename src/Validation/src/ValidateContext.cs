@@ -1,39 +1,28 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Extensions.Validation;
 
 /// <summary>
 /// Represents the context for validating a validatable object.
 /// </summary>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private Dictionary<string, List<ValidationError>>? _validationErrors;
+
     /// <summary>
-    /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
-    /// This context provides access to service provider and other validation metadata.
+    /// Initializes a new instance of <see cref="ValidateContext"/>.
     /// </summary>
-    /// <remarks>
-    /// This property should be set by the consumer of the <see cref="IValidatableInfo"/>
-    /// interface to provide the necessary context for validation. The object should be initialized
-    /// with the current object being validated, the display name, and the service provider to support
-    /// the complete set of validation scenarios.
-    /// </remarks>
-    /// <example>
-    /// <code language="csharp">
-    /// var validationContext = new ValidationContext(objectToValidate, serviceProvider, items);
-    /// var validationOptions = serviceProvider.GetService&lt;IOptions&lt;ValidationOptions&gt;&gt;()?.Value;
-    /// var validateContext = new ValidateContext
-    /// {
-    ///     ValidationContext = validationContext,
-    ///     ValidationOptions = validationOptions
-    /// };
-    /// </code>
-    /// </example>
-    public required ValidationContext ValidationContext { get; set; }
+    public ValidateContext()
+    {
+    }
+
+    /// <summary>
+    /// Gets or sets the service provider. This will also be made available on the <see cref="System.ComponentModel.DataAnnotations.ValidationContext"/> instances.
+    /// </summary>
+    public IServiceProvider? ServiceProvider { get; init; }
 
     /// <summary>
     /// Gets or sets the prefix used to identify the current object being validated in a complex object graph.
@@ -47,16 +36,17 @@ public sealed class ValidateContext
     /// Gets or sets the validation options that control validation behavior,
     /// including validation depth limits and resolver registration.
     /// </summary>
-    public required ValidationOptions ValidationOptions { get; set; }
+    public required ValidationOptions ValidationOptions { get; init; }
 
     /// <summary>
-    /// Gets or sets the dictionary of validation errors collected during validation.
+    /// Gets the dictionary of validation errors collected during validation.
     /// </summary>
     /// <remarks>
-    /// Keys are property names or paths, and values are arrays of error messages.
-    /// In the default implementation, this dictionary is initialized when the first error is added.
+    /// Keys are property names or paths, and values are the collection of validation errors reported for that path.
+    /// There are no guarantees whether or not this dictionary is lazy. Usages should treat null and empty dictionary the same.
     /// </remarks>
-    public Dictionary<string, string[]>? ValidationErrors { get; set; }
+    public IReadOnlyDictionary<string, IReadOnlyList<ValidationError>>? ValidationErrors
+        => _validationErrors?.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<ValidationError>)kvp.Value.AsReadOnly()).AsReadOnly();
 
     /// <summary>
     /// Gets or sets the current depth in the validation hierarchy.
@@ -67,91 +57,20 @@ public sealed class ValidateContext
     public int CurrentDepth { get; set; }
 
     /// <summary>
-    /// Optional event raised when a validation error is reported.
+    /// Adds a validation error to <see cref="ValidationErrors"/>.
     /// </summary>
-    public event Action<ValidationErrorContext>? OnValidationError;
-
-    internal void AddValidationError(string propertyName, string key, string[] error, object? container)
+    /// <param name="validationError">The validation error to add.</param>
+    public void AddValidationError(ValidationError validationError)
     {
-        ValidationErrors ??= [];
+        _validationErrors ??= new Dictionary<string, List<ValidationError>>();
 
-        ValidationErrors[key] = error;
-        OnValidationError?.Invoke(new ValidationErrorContext
+        if (!_validationErrors.TryGetValue(validationError.Path, out var existingErrors))
         {
-            Name = propertyName,
-            Path = key,
-            Errors = error,
-            Container = container
-        });
-    }
-
-    internal void AddOrExtendValidationErrors(string propertyName, string key, string[] errors, object? container)
-    {
-        ValidationErrors ??= [];
-
-        if (ValidationErrors.TryGetValue(key, out var existingErrors))
-        {
-            var newErrors = new string[existingErrors.Length + errors.Length];
-            existingErrors.CopyTo(newErrors, 0);
-            errors.CopyTo(newErrors, existingErrors.Length);
-            ValidationErrors[key] = newErrors;
+            _validationErrors.Add(validationError.Path, new List<ValidationError> { validationError });
         }
         else
         {
-            ValidationErrors[key] = errors;
+            existingErrors.Add(validationError);
         }
-
-        OnValidationError?.Invoke(new ValidationErrorContext
-        {
-            Name = propertyName,
-            Path = key,
-            Errors = errors,
-            Container = container
-        });
-    }
-
-    internal void AddOrExtendValidationError(string name, string key, string error, object? container)
-    {
-        ValidationErrors ??= [];
-
-        if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
-        {
-            ValidationErrors[key] = [.. existingErrors, error];
-        }
-        else
-        {
-            ValidationErrors[key] = [error];
-        }
-
-        OnValidationError?.Invoke(new ValidationErrorContext
-        {
-            Name = name,
-            Path = key,
-            Errors = [error],
-            Container = container
-        });
-    }
-
-    internal string? ResolveAttributeErrorMessage(
-        string memberName,
-        string displayName,
-        Type? declaringType,
-        ValidationAttribute attribute,
-        ValidationResult result)
-    {
-        if (ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
-        {
-            return result.ErrorMessage;
-        }
-
-        var context = new ErrorMessageLocalizationContext
-        {
-            MemberName = memberName,
-            DisplayName = displayName,
-            DeclaringType = declaringType,
-            Attribute = attribute,
-        };
-
-        return ValidationOptions.Localizer.ResolveErrorMessage(context) ?? result.ErrorMessage;
     }
 }

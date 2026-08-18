@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -85,6 +86,20 @@ public static class HubConnectionBuilderExtensions
     public static IHubConnectionBuilder WithKeepAliveInterval(this IHubConnectionBuilder hubConnectionBuilder, TimeSpan interval)
     {
         hubConnectionBuilder.Services.Configure<HubConnectionOptions>(o => o.KeepAliveInterval = interval);
+        return hubConnectionBuilder;
+    }
+
+    /// <summary>
+    /// Configures automatic authentication token refresh for the <see cref="HubConnection" />.
+    /// </summary>
+    /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
+    /// <param name="configure">A delegate that configures the <see cref="AuthenticationRefreshOptions"/>.</param>
+    /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
+    public static IHubConnectionBuilder WithAuthenticationRefresh(this IHubConnectionBuilder hubConnectionBuilder, Action<AuthenticationRefreshOptions> configure)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(configure);
+
+        hubConnectionBuilder.Services.Configure(configure);
         return hubConnectionBuilder;
     }
 }

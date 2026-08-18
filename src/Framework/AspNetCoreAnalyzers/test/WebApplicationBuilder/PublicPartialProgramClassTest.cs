@@ -141,6 +141,7 @@ public class Program
         app.Run();
     }
 }
+
 """;
 
         await VerifyCS.VerifyCodeFixAsync(source, source);
@@ -186,6 +187,27 @@ public partial class Program
 {
     {{contents}}
 }
+""";
+
+        await VerifyCS.VerifyCodeFixAsync(source, source);
+    }
+
+    [Fact]
+    public async Task DoesNotFix_ExplicitPublicPartialProgramClass_WithAttribute()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+
+var app = WebApplication.Create();
+
+app.MapGet("/", () => "Hello, World!");
+
+app.Run();
+
+[MyAttribute]
+public partial class Program { }
+
+public class MyAttribute : System.Attribute { }
 """;
 
         await VerifyCS.VerifyCodeFixAsync(source, source);
@@ -260,4 +282,3 @@ internal {{type}} Program
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 }
-

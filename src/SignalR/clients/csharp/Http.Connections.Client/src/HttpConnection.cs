@@ -7,7 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.WebSockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -18,14 +20,13 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client;
 
 /// <summary>
 /// Used to make a connection to an ASP.NET Core ConnectionHandler using an HTTP-based transport.
 /// </summary>
-public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
+public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature, IAuthenticationRefreshFeature
 {
     // Not configurable on purpose, high enough that if we reach here, it's likely
     // a buggy server
@@ -47,10 +48,14 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     private ITransport? _transport;
     private readonly ITransportFactory _transportFactory;
     private string? _connectionId;
+    private string? _connectionToken;
+    private TimeSpan? _initialTokenLifetime;
     private readonly ConnectionLogScope _logScope;
     private readonly ILoggerFactory _loggerFactory;
     private readonly Uri _url;
     private Func<Task<string?>>? _accessTokenProvider;
+    private readonly Func<Task<string?>>? _appAccessTokenProvider;
+    private AccessTokenHttpMessageHandler? _accessTokenHandler;
 
     /// <inheritdoc />
     public override IDuplexPipe Transport
@@ -91,6 +96,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     /// <inheritdoc />
     bool IConnectionInherentKeepAliveFeature.HasInherentKeepAlive => _hasInherentKeepAlive;
+
+    /// <inheritdoc />
+    TimeSpan? IAuthenticationRefreshFeature.InitialTokenLifetime => _initialTokenLifetime;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnection"/> class.
@@ -145,6 +153,8 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _logger = _loggerFactory.CreateLogger(typeof(HttpConnection));
         _httpConnectionOptions = httpConnectionOptions;
+        // Capture the app's access token provider now before any transport overwrites
+        _appAccessTokenProvider = httpConnectionOptions.AccessTokenProvider;
 
         _url = _httpConnectionOptions.Url;
 
@@ -159,6 +169,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         _logScope = new ConnectionLogScope();
 
         Features.Set<IConnectionInherentKeepAliveFeature>(this);
+        Features.Set<IAuthenticationRefreshFeature>(this);
     }
 
     // Used by unit tests
@@ -452,7 +463,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             }
             urlBuilder.Path += "negotiate";
             Uri uri;
-            if (urlBuilder.Query.Contains("negotiateVersion"))
+            if (Utils.HasQueryStringParameter(urlBuilder.Query, "negotiateVersion"))
             {
                 uri = urlBuilder.Uri;
             }
@@ -510,6 +521,18 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         }
 
         return Utils.AppendQueryString(url, $"id={connectionId}");
+    }
+
+    private static Uri CreateRefreshUrl(Uri url, string connectionToken)
+    {
+        var urlBuilder = new UriBuilder(url);
+        if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
+        {
+            urlBuilder.Path += "/";
+        }
+
+        urlBuilder.Path += "refresh";
+        return Utils.AppendQueryString(urlBuilder.Uri, $"id={connectionToken}");
     }
 
     private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat,
@@ -616,7 +639,8 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             }
 
             // Apply the authorization header in a handler instead of a default header because it can change with each request
-            httpMessageHandler = new AccessTokenHttpMessageHandler(httpMessageHandler, this);
+            _accessTokenHandler = new AccessTokenHttpMessageHandler(httpMessageHandler, this);
+            httpMessageHandler = _accessTokenHandler;
         }
 
         // Wrap message handler after HttpMessageHandlerFactory to ensure not overridden
@@ -686,6 +710,16 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return _accessTokenProvider();
     }
 
+    // Get the original app token used to authenticate the /refresh request.
+    internal Task<string?> GetRefreshRequestTokenAsync()
+    {
+        if (_appAccessTokenProvider == null)
+        {
+            return _noAccessToken;
+        }
+        return _appAccessTokenProvider();
+    }
+
     private void CheckDisposed()
     {
         ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
@@ -713,15 +747,123 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     {
         var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken).ConfigureAwait(false);
         // If the negotiationVersion is greater than zero then we know that the negotiation response contains a
-        // connectionToken that will be required to conenct. Otherwise we just set the connectionId and the
+        // connectionToken that will be required to connect. Otherwise we just set the connectionId and the
         // connectionToken on the client to the same value.
         _connectionId = negotiationResponse.ConnectionId!;
         if (negotiationResponse.Version == 0)
         {
             negotiationResponse.ConnectionToken = _connectionId;
         }
+        _connectionToken = negotiationResponse.ConnectionToken;
+        // Preserve a token lifetime reported by an earlier negotiate in the redirect chain.
+        if (negotiationResponse.TokenLifetime is not null)
+        {
+            _initialTokenLifetime = negotiationResponse.TokenLifetime;
+        }
 
         _logScope.ConnectionId = _connectionId;
         return negotiationResponse;
+    }
+
+    /// <inheritdoc />
+    async Task<TimeSpan?> IAuthenticationRefreshFeature.RefreshAuthenticationAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(_connectionToken))
+        {
+            throw new InvalidOperationException("Cannot refresh authentication before the connection is started.");
+        }
+
+        var refreshUri = CreateRefreshUrl(_url, _connectionToken);
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, refreshUri);
+
+        // Mark this as a refresh request so the AccessTokenHttpMessageHandler fetches a fresh access token
+        // (and updates its cache) rather than reusing the token captured when the connection started. Setting
+        // the Authorization header directly here is not sufficient because that handler overwrites it.
+#if NET5_0_OR_GREATER
+        request.Options.Set(new HttpRequestOptionsKey<bool>("IsRefresh"), true);
+#else
+        request.Properties.Add("IsRefresh", true);
+#endif
+
+        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
+        var responseBuffer = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#pragma warning restore CA2016
+        // Parse the /refresh response: { "tokenLifetimeSeconds"?: ..., "accessToken"?: ... }
+        var (tokenLifetime, accessToken) = ParseRefreshResponse(responseBuffer);
+
+        // Azure SignalR returns a refreshed service access token in the /refresh response body.
+        // Adopt it as the new transport credential, mirroring how the negotiate redirect captures the initial token,
+        // so Long Polling / SSE / reconnect use the refreshed token.
+        // Self-hosted SignalR omits accessToken and keeps the token the client already sent.
+        if (!string.IsNullOrEmpty(accessToken))
+        {
+            _accessTokenProvider = () => Task.FromResult<string?>(accessToken);
+            _accessTokenHandler?.UpdateCachedToken(accessToken);
+        }
+        else
+        {
+#if NET5_0_OR_GREATER
+            request.Options.TryGetValue(new HttpRequestOptionsKey<string?>("RefreshRequestToken"), out var refreshRequestToken);
+#else
+            var refreshRequestToken = request.Properties.TryGetValue("RefreshRequestToken", out var stashedToken) ? stashedToken as string : null;
+#endif
+            if (!string.IsNullOrEmpty(refreshRequestToken))
+            {
+                _accessTokenHandler?.UpdateCachedToken(refreshRequestToken);
+            }
+        }
+
+        return tokenLifetime;
+    }
+
+    // Manually reads "tokenLifetimeSeconds" and the optional "accessToken" from the /refresh response with a
+    // Utf8JsonReader, consistent with NegotiateProtocol.ParseResponse rather than materializing a JsonDocument.
+    private static (TimeSpan? TokenLifetime, string? AccessToken) ParseRefreshResponse(ReadOnlySpan<byte> content)
+    {
+        var reader = new Utf8JsonReader(content, isFinalBlock: true, state: default);
+
+        if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new System.IO.InvalidDataException("Invalid refresh response JSON: expected an object.");
+        }
+
+        TimeSpan? tokenLifetime = null;
+        string? accessToken = null;
+        while (reader.Read())
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.PropertyName:
+                    if (reader.ValueTextEquals("tokenLifetimeSeconds"u8))
+                    {
+                        reader.Read();
+                        if (reader.TokenType == JsonTokenType.Number)
+                        {
+                            tokenLifetime = TimeSpan.FromSeconds(reader.GetInt32());
+                        }
+                    }
+                    else if (reader.ValueTextEquals("accessToken"u8))
+                    {
+                        reader.Read();
+                        if (reader.TokenType == JsonTokenType.String)
+                        {
+                            accessToken = reader.GetString();
+                        }
+                    }
+                    else
+                    {
+                        reader.Skip();
+                    }
+                    break;
+                case JsonTokenType.EndObject:
+                    return (tokenLifetime, accessToken);
+            }
+        }
+
+        return (tokenLifetime, accessToken);
     }
 }
