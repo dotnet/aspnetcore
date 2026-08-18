@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -52,8 +53,6 @@ internal sealed class ChunkedExtensionParser
     private const byte ByteDQuote = (byte)'"';
     private const byte ByteBackslash = (byte)'\\';
 
-    private static ReadOnlySpan<byte> s_tchar => "!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8;
-
     private State _state = State.StartOfExtension;
 
     public bool Consume(ref SequenceReader<byte> reader, out SequencePosition consumed, out SequencePosition examined)
@@ -82,7 +81,7 @@ internal sealed class ChunkedExtensionParser
                         continue;
                     }
 
-                    if (s_tchar.Contains(b))
+                    if (HttpCharacters.IsValidTokenByte(b))
                     {
                         _state = State.InExtensionName;
                         continue;
@@ -91,7 +90,7 @@ internal sealed class ChunkedExtensionParser
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkExtension);
                     break;
                 case State.InExtensionName:
-                    if (s_tchar.Contains(b))
+                    if (HttpCharacters.IsValidTokenByte(b))
                     {
                         _state = State.InExtensionName;
                         continue;
@@ -149,7 +148,7 @@ internal sealed class ChunkedExtensionParser
                         continue;
                     }
 
-                    if (s_tchar.Contains(b))
+                    if (HttpCharacters.IsValidTokenByte(b))
                     {
                         _state = State.ExtensionValueToken;
                         continue;
@@ -164,7 +163,7 @@ internal sealed class ChunkedExtensionParser
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkExtension);
                     break;
                 case State.ExtensionValueToken:
-                    if (s_tchar.Contains(b))
+                    if (HttpCharacters.IsValidTokenByte(b))
                     {
                         _state = State.ExtensionValueToken;
                         continue;
