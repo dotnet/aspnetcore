@@ -209,6 +209,9 @@ param(
     [switch]$fromVMR,
 
     # Passed through to tools.ps1 MSBuild function
+    [bool]$warnAsError = $true,
+
+    # Passed through to tools.ps1 MSBuild function
     [string]$warnNotAsError = '',
 
     # Passed through to tools.ps1 MSBuild function
