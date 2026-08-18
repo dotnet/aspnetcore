@@ -99,6 +99,9 @@ reference-specific fixture/path validation, trial-count policy, standard eval
 skill-selection ownership, model/judge policy, and answer-material staging
 rules. Do not approximate those checks with prose matching.
 
+Specialized suites own case promotion, consolidation, retirement, and held-out
+refresh to keep coverage representative and bounded.
+
 Validation does not judge prompt or rubric quality, run a model, validate
 runtime skill behavior, or decide whether a specialized suite is statistically
 persuasive. Those concerns belong in skill-specific review and runtime
