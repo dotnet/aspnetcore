@@ -57,7 +57,10 @@ public class UIActionBlock : ContentBlock
     /// <summary>
     /// Executes the registered function once using the arguments supplied by the model.
     /// </summary>
-    /// <param name="cancellationToken">A token that cancels the action.</param>
+    /// <param name="cancellationToken">
+    /// A token that cancels the action when this call starts it. Subsequent calls return the
+    /// existing invocation task and do not replace its cancellation token.
+    /// </param>
     /// <returns>A task that completes when the action has finished.</returns>
     public Task InvokeAsync(CancellationToken cancellationToken = default)
     {
