@@ -16,6 +16,11 @@ internal sealed class UIActionHandler : ContentBlockHandler<UIActionHandler.Stat
 
     public override BlockMappingResult<State> Handle(BlockMappingContext context, State state)
     {
+        if (state.HasEmitted)
+        {
+            return BlockMappingResult<State>.Pass();
+        }
+
         foreach (var content in context.UnhandledContents)
         {
             if (content is FunctionCallContent call &&
@@ -23,6 +28,7 @@ internal sealed class UIActionHandler : ContentBlockHandler<UIActionHandler.Stat
                 _actions.TryGetValue(call.Name, out var function))
             {
                 context.MarkHandled(call);
+                state.HasEmitted = true;
                 return BlockMappingResult<State>.Emit(
                     new UIActionBlock(function, call)
                     {
@@ -37,5 +43,6 @@ internal sealed class UIActionHandler : ContentBlockHandler<UIActionHandler.Stat
 
     internal sealed class State
     {
+        public bool HasEmitted { get; set; }
     }
 }
