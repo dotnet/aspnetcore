@@ -20,10 +20,10 @@ not place eval specs, `evals` directories, or eval runners in runtime skill
 directories. A runtime skill may use a `fixtures` directory for non-eval assets.
 
 The experiment deliberately does not override `runs`. A standard spec owns its
-trial count through `defaults.runs`, and the deterministic validator requires
-at least five trials (`stimuli × runs`). Five is only the minimum at which a
-clean sweep can support a one-sided sign test at 5%; larger and more varied
-suites are normally more useful.
+trial count through `defaults.runs`. The existing specs retain five runs and 25
+trials each. The dotnet/skills quality gate uses five trials as the minimum at
+which a clean sweep can support a one-sided sign test at 5%; enforcing a
+trial-count policy here remains a documented follow-up.
 
 ## Local entry point
 
