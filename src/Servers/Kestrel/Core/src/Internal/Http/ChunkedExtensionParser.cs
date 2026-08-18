@@ -56,7 +56,7 @@ internal sealed class ChunkedExtensionParser
 
     private State _state = State.StartOfExtension;
 
-    public bool Consume(SequenceReader<byte> reader, out SequencePosition consumed, out SequencePosition examined)
+    public bool Consume(ref SequenceReader<byte> reader, out SequencePosition consumed, out SequencePosition examined)
     {
         while (reader.TryRead(out var b))
         {
@@ -158,6 +158,7 @@ internal sealed class ChunkedExtensionParser
                     if (b == ByteDQuote)
                     {
                         _state = State.ExtensionValueQuotedString;
+                        continue;
                     }
 
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkExtension);

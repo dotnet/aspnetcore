@@ -396,7 +396,7 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
     {
         _chunkedExtensionParser ??= new ChunkedExtensionParser();
         var reader = new SequenceReader<byte>(buffer);
-        if (_chunkedExtensionParser.Consume(reader, out consumed, out examined))
+        if (_chunkedExtensionParser.Consume(ref reader, out consumed, out examined))
         {
             _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;
 
