@@ -41,7 +41,7 @@ internal class UrlMatchingTree
 
     internal void AddEntry(InboundRouteEntry entry)
     {
-        // The url matching tree represents all the routes asociated with a given
+        // The url matching tree represents all the routes associated with a given
         // order. Each node in the tree represents all the different categories
         // a segment can have for which there is a defined inbound route entry.
         // Each node contains a set of Matches that indicate all the routes for which
@@ -68,7 +68,7 @@ internal class UrlMatchingTree
         // in ascending order. For each tree it traverses each node starting from the root in the
         // following order: Literals, constrained parameters, parameters, constrained catch all routes, catch alls.
         // When it gets to a node of the same length as the route its trying to match, it simply looks at the list of
-        // candidates (which is in precence order) and tries to match the url against it.
+        // candidates (which is in presence order) and tries to match the url against it.
         //
 
         var current = Root;

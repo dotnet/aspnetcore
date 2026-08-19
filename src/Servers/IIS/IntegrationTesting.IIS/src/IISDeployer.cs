@@ -30,6 +30,8 @@ public class IISDeployer : IISDeployerBase
     private string _debugLogFile;
     private string _appPoolName;
     private bool _disposed;
+    // Start at 2 since 1 is used by the our default site in Http.config
+    private int _siteId = 2;
 
     public Process HostProcess { get; set; }
 
@@ -243,13 +245,14 @@ public class IISDeployer : IISDeployerBase
         RetryServerManagerAction(serverManager =>
         {
             var site = FindSite(serverManager, contentRoot);
-            IISDeploymentParameters.SiteName = site.Name;
 
             if (site == null)
             {
                 PreserveConfigFiles("nositetostart");
                 throw new InvalidOperationException($"Can't find site for: {contentRoot} to start.");
             }
+
+            IISDeploymentParameters.SiteName = site.Name;
 
             var appPool = serverManager.ApplicationPools.Single();
             _appPoolName = appPool.Name;
@@ -305,14 +308,30 @@ public class IISDeployer : IISDeployerBase
 
     private void AddTemporaryAppHostConfig(string contentRoot, int port)
     {
-        _configPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("D"));
-        _applicationHostConfig = Path.Combine(_configPath, "applicationHost.config");
-        Directory.CreateDirectory(_configPath);
-        var config = XDocument.Parse(DeploymentParameters.ServerConfigTemplateContent ?? File.ReadAllText("IIS.config"));
+        var multiSite = _applicationHostConfig is not null;
+        XDocument config;
+        if (_applicationHostConfig is not null)
+        {
+            config = XDocument.Parse(File.ReadAllText(_applicationHostConfig));
+        }
+        else
+        {
+            _configPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("D"));
+            _applicationHostConfig = Path.Combine(_configPath, "applicationHost.config");
+            Directory.CreateDirectory(_configPath);
+            config = XDocument.Parse(DeploymentParameters.ServerConfigTemplateContent ?? File.ReadAllText("IIS.config"));
+        }
 
-        ConfigureAppHostConfig(config.Root, contentRoot, port);
+        ConfigureAppHostConfig(config.Root, contentRoot, port, _siteId);
+        _siteId++;
 
         config.Save(_applicationHostConfig);
+
+        // Don't need to setup the config redirection since the first site configured already did it for this config file
+        if (multiSite)
+        {
+            return;
+        }
 
         RetryServerManagerAction(serverManager =>
         {
@@ -342,9 +361,9 @@ public class IISDeployer : IISDeployerBase
         });
     }
 
-    private void ConfigureAppHostConfig(XElement config, string contentRoot, int port)
+    private void ConfigureAppHostConfig(XElement config, string contentRoot, int port, int siteId)
     {
-        ConfigureModuleAndBinding(config, contentRoot, port);
+        ConfigureModuleAndBinding(config, contentRoot, port, siteId);
 
         // In IISExpress system.webServer/modules in under location element
         config

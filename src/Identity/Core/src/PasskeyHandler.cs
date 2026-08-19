@@ -342,14 +342,17 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         var credentialRecord = new UserPasskeyInfo(
             credentialId,
             publicKey: attestedCredentialData.CredentialPublicKey.ToArray(),
-            createdAt: DateTime.UtcNow,
+            createdAt: GetUtcNow(),
             signCount: authenticatorData.SignCount,
             transports: response.Transports,
             isUserVerified: authenticatorData.IsUserVerified,
             isBackupEligible: authenticatorData.IsBackupEligible,
             isBackedUp: authenticatorData.IsBackedUp,
             attestationObject: response.AttestationObject.ToArray(),
-            clientDataJson: response.ClientDataJSON.ToArray());
+            clientDataJson: response.ClientDataJSON.ToArray())
+        {
+            Aaguid = attestedCredentialData.Aaguid.ToArray(),
+        };
 
         // 28. Process the client extension outputs in clientExtensionResults and the authenticator extension
         //     outputs in the extensions in authData as required by the Relying Party.
@@ -676,4 +679,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
     private string GetServerDomain(HttpContext httpContext)
         => _options.ServerDomain ?? httpContext.Request.Host.Host;
+
+    private DateTime GetUtcNow()
+        => (_options.TimeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime;
 }

@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -71,6 +73,15 @@ internal sealed partial class ComponentHub : Hub
     /// </summary>
     public static PathString DefaultPath { get; } = "/_blazor";
 
+    public override Task OnConnectedAsync()
+    {
+        // ComponentHub owns authentication state at the circuit layer and does not use SignalR
+        // groups or user routing, so it can accept an identity change without rekeying those.
+        Context.Features.Get<IConnectionUserRefreshFeature>()?.OnUserRefreshing = static _ => true;
+
+        return Task.CompletedTask;
+    }
+
     public override Task OnDisconnectedAsync(Exception exception)
     {
         // If the CircuitHost is gone now this isn't an error. This could happen if the disconnect
@@ -82,6 +93,14 @@ internal sealed partial class ComponentHub : Hub
         }
 
         return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+    }
+
+    public override Task OnAuthenticationRefreshedAsync()
+    {
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        circuitHost?.SetCircuitUser(Context.User);
+
+        return Task.CompletedTask;
     }
 
     public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
@@ -160,7 +179,7 @@ internal sealed partial class ComponentHub : Hub
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
-            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize. See the server logs for more information.");
             Context.Abort();
             return null;
         }
@@ -181,8 +200,18 @@ internal sealed partial class ComponentHub : Hub
         {
             operations = CircuitPersistenceManager.ToRootComponentOperationBatch(
                 _serverComponentSerializer,
-                persistedState.RootComponents,
+                persistedState.RootComponentDescriptors,
                 serializedComponentOperations);
+
+            if (operations == null)
+            {
+                // There was an error, so kill the circuit.
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+                await NotifyClientError(Clients.Caller, "The persisted circuit state is invalid.");
+                Context.Abort();
+
+                return;
+            }
 
             store = new ProtectedPrerenderComponentApplicationStore(persistedState.ApplicationState, _dataProtectionProvider);
         }
@@ -316,9 +345,10 @@ internal sealed partial class ComponentHub : Hub
             persistedCircuitState = await _circuitPersistenceManager.ResumeCircuitAsync(circuitId, Context.ConnectionAborted);
             if (persistedCircuitState == null)
             {
+                // The circuit state cannot be retrieved. It might have been deleted or expired.
+                // We do not send an error to the client as this is a valid scenario
+                // that will be handled by the client reconnection logic.
                 Log.InvalidInputData(_logger);
-                await NotifyClientError(Clients.Caller, "The circuit state could not be retrieved. It may have been deleted or expired.");
-                Context.Abort();
                 return null;
             }
         }
@@ -347,6 +377,24 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
+        // Deserialize the root component descriptors to check whether they are valid and not expired.
+        // If successful, the data will be attached to the CircuitHost instance and used later in UpdateRootComponents.
+        // If not, return null and not send an error to allow the client to handle the rejection.
+        if (!CircuitPersistenceManager.TryDeserializeWebRootComponentDescriptors(
+            _serverComponentSerializer,
+            persistedCircuitState.RootComponents,
+            out var rootComponentDescriptors))
+        {
+            Log.InvalidInputData(_logger);
+            return null;
+        }
+
+        var resumedPersistedCircuitState = new ResumedPersistedCircuitState
+        {
+            ApplicationState = persistedCircuitState.ApplicationState,
+            RootComponentDescriptors = rootComponentDescriptors
+        };
+
         try
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
@@ -368,7 +416,7 @@ internal sealed partial class ComponentHub : Hub
             // take care of its own errors anyway.
             _ = circuitHost.InitializeAsync(store: null, httpActivityContext, Context.ConnectionAborted);
 
-            circuitHost.AttachPersistedState(persistedCircuitState);
+            circuitHost.AttachPersistedState(resumedPersistedCircuitState);
 
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.
@@ -387,7 +435,7 @@ internal sealed partial class ComponentHub : Hub
             // If the circuit fails to initialize synchronously we can notify the client immediately
             // and shut down the connection.
             Log.CircuitInitializationFailed(_logger, ex);
-            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize. See the server logs for more information.");
             Context.Abort();
             return null;
         }
@@ -397,7 +445,7 @@ internal sealed partial class ComponentHub : Hub
     }
 
     // Client initiated pauses work as follows:
-    // * The client calls PauseCircuit, we dissasociate the circuit from the connection.
+    // * The client calls PauseCircuit, we disassociate the circuit from the connection.
     // * We trigger the circuit pause to collect the current root components and dispose the current circuit.
     // * We push the current root components and application state to the client.
     //   * If that succeeds, the client receives the state and we are done.
@@ -405,7 +453,7 @@ internal sealed partial class ComponentHub : Hub
     // * The client will disconnect after receiving the state or after a 30s timeout.
     //   * From that point on, it can choose to resume the circuit by calling ResumeCircuit with or without the state
     //     depending on whether the transfer was successful.
-    // * Most of the time we expect the state push to succeed, if that fails, the possibilites are:
+    // * Most of the time we expect the state push to succeed, if that fails, the possibilities are:
     //   * Client tries to resume before the state has been saved to the server-side cache storage.
     //     * Resumption fails as the state is not there.
     //     * The state eventually makes it to the server-side cache storage, but the client will have already given up and
@@ -429,7 +477,7 @@ internal sealed partial class ComponentHub : Hub
         return true;
     }
 
-    public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+    public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)

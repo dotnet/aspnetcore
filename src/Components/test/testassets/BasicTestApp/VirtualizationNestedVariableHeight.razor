@@ -1,0 +1,57 @@
+<p>
+    Nested Virtualize with variable heights at both levels:<br />
+    <span id="nested-vh-outer-count">Outer: @outerItems.Count</span>
+    <span id="nested-vh-inner-count">Inner per group: 30</span>
+    <div id="nested-vh-outer-container" style="background-color: #eee; height: 400px; overflow-y: auto">
+        <Virtualize Items="@outerItems" ItemSize="150">
+            <div @key="context.Index" id="nested-vh-outer-@context.Index" class="nested-vh-outer"
+                 style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 70%, 90%); padding: 4px; box-sizing: border-box;">
+                <span class="outer-index">Category @context.Index (H:@context.Height)</span>
+                <div id="nested-vh-inner-container-@context.Index" class="nested-vh-inner-container"
+                     style="height: @(context.Height - 30)px; overflow-y: auto; background-color: hsl(@(context.Hue), 50%, 80%);">
+                    <Virtualize Items="@context.Children" ItemSize="25" Context="innerCtx">
+                        <div @key="innerCtx.Index" class="nested-vh-inner"
+                             style="height: @(innerCtx.Height)px; background-color: hsl(@(innerCtx.Hue), 70%, 70%); box-sizing: border-box;">
+                            Inner @innerCtx.Index (H:@innerCtx.Height)
+                        </div>
+                    </Virtualize>
+                </div>
+            </div>
+        </Virtualize>
+    </div>
+</p>
+
+@code {
+    List<OuterItem> outerItems;
+
+    protected override void OnInitialized()
+    {
+        outerItems = Enumerable.Range(0, 40).Select(i => new OuterItem
+        {
+            Index = i,
+            Height = 100 + (i * 47 % 201), // 100-300px
+            Hue = i * 30 % 360,
+            Children = Enumerable.Range(0, 30).Select(j => new InnerItem
+            {
+                Index = j,
+                Height = 15 + (j * 11 % 31), // 15-45px
+                Hue = j * 12 % 360
+            }).ToList()
+        }).ToList();
+    }
+
+    class OuterItem
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+        public int Hue { get; set; }
+        public List<InnerItem> Children { get; set; }
+    }
+
+    class InnerItem
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+        public int Hue { get; set; }
+    }
+}

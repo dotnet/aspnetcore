@@ -1,1 +1,91 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Endpoints.BasePath
+Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewSizeLimit.get -> long
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewSizeLimit.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.DisableClientValidation.get -> bool
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.DisableClientValidation.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewHybridCache.get -> Microsoft.Extensions.Caching.Hybrid.HybridCache?
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheViewHybridCache.set -> void
+Microsoft.AspNetCore.Components.CacheView
+Microsoft.AspNetCore.Components.CacheView.CacheView() -> void
+Microsoft.AspNetCore.Components.CacheView.CacheKey.get -> string?
+Microsoft.AspNetCore.Components.CacheView.CacheKey.set -> void
+Microsoft.AspNetCore.Components.CacheView.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.CacheView.ChildContent.set -> void
+Microsoft.AspNetCore.Components.CacheView.Enabled.get -> bool
+Microsoft.AspNetCore.Components.CacheView.Enabled.set -> void
+Microsoft.AspNetCore.Components.CacheView.ExpiresAfter.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.CacheView.ExpiresAfter.set -> void
+Microsoft.AspNetCore.Components.CacheView.ExpiresOn.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.Components.CacheView.ExpiresOn.set -> void
+Microsoft.AspNetCore.Components.CacheView.ExpiresSliding.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.CacheView.ExpiresSliding.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryBy.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryBy.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByCookie.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryByCookie.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByCulture.get -> bool
+Microsoft.AspNetCore.Components.CacheView.VaryByCulture.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByHeader.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryByHeader.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByQuery.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryByQuery.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByRoute.get -> string?
+Microsoft.AspNetCore.Components.CacheView.VaryByRoute.set -> void
+Microsoft.AspNetCore.Components.CacheView.VaryByUser.get -> bool
+Microsoft.AspNetCore.Components.CacheView.VaryByUser.set -> void
+Microsoft.AspNetCore.Components.CacheView.Dispose() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.set -> void
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.Cookie = 0 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.SessionStorage = 1 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.ITempData
+Microsoft.AspNetCore.Components.ITempData.Get(string! key) -> object?
+Microsoft.AspNetCore.Components.ITempData.Keep() -> void
+Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
+Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
+Microsoft.AspNetCore.Components.ConfigureBrowser
+Microsoft.AspNetCore.Components.ConfigureBrowser.ConfigureBrowser() -> void
+Microsoft.AspNetCore.Components.ConfigureBrowser.Options.get -> Microsoft.AspNetCore.Components.BrowserOptions!
+Microsoft.AspNetCore.Components.ConfigureBrowser.Options.set -> void
+static Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions.WithBrowserOptions(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.BrowserOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+Microsoft.AspNetCore.Components.BrowserOptions
+Microsoft.AspNetCore.Components.BrowserOptions.BrowserOptions() -> void
+Microsoft.AspNetCore.Components.BrowserOptions.LogLevel.get -> Microsoft.Extensions.Logging.LogLevel?
+Microsoft.AspNetCore.Components.BrowserOptions.LogLevel.set -> void
+Microsoft.AspNetCore.Components.BrowserOptions.InteractiveServer.get -> Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions!
+Microsoft.AspNetCore.Components.BrowserOptions.StaticServer.get -> Microsoft.AspNetCore.Components.StaticServerBrowserOptions!
+Microsoft.AspNetCore.Components.BrowserOptions.InteractiveWebAssembly.get -> Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions!
+static Microsoft.AspNetCore.Components.BrowserOptions.GetBrowserOptions(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Components.BrowserOptions!
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.InteractiveServerBrowserOptions() -> void
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionDialogId.get -> string?
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionDialogId.set -> void
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionMaxRetries.get -> int?
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionMaxRetries.set -> void
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionRetryInterval.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionRetryInterval.set -> void
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.Extensions.get -> System.Collections.Generic.IDictionary<string!, System.Text.Json.JsonElement>!
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.StaticServerBrowserOptions() -> void
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.CircuitInactivityTimeout.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.CircuitInactivityTimeout.set -> void
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.PreserveDom.get -> bool?
+Microsoft.AspNetCore.Components.StaticServerBrowserOptions.PreserveDom.set -> void
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.InteractiveWebAssemblyBrowserOptions() -> void
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.ApplicationCulture.get -> string?
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.ApplicationCulture.set -> void
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.EnvironmentName.get -> string?
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.EnvironmentName.set -> void
+Microsoft.AspNetCore.Components.InteractiveWebAssemblyBrowserOptions.EnvironmentVariables.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.AspNetCore.Components.Forms.ClientValidationRule
+Microsoft.AspNetCore.Components.Forms.ClientValidationRule.Name.get -> string!
+Microsoft.AspNetCore.Components.Forms.ClientValidationRule.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.AspNetCore.Components.Forms.ClientValidationRule.ClientValidationRule(string! name, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? parameters = null) -> void
+Microsoft.AspNetCore.Components.Forms.IClientValidationRuleProvider
+Microsoft.AspNetCore.Components.Forms.IClientValidationRuleProvider.GetClientValidationRules() -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Forms.ClientValidationRule!>!

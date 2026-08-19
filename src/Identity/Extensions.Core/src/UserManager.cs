@@ -2100,7 +2100,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             return false;
         }
         var lockoutTime = await store.GetLockoutEndDateAsync(user, CancellationToken).ConfigureAwait(false);
-        return lockoutTime >= DateTimeOffset.UtcNow;
+        return lockoutTime >= UtcNow();
     }
 
     /// <summary>
@@ -2222,7 +2222,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
                 return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
             }
             Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
-            await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
+            await store.SetLockoutEndDateAsync(user, UtcNow().Add(Options.Lockout.DefaultLockoutTimeSpan),
                 CancellationToken).ConfigureAwait(false);
             await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
             return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
@@ -2478,7 +2478,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns></returns>
     protected virtual string CreateTwoFactorRecoveryCode()
     {
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
+        return string.Create(11, 0, static (buffer, _) =>
+        {
+            RandomNumberGenerator.GetItems(AllowedChars, buffer);
+            buffer[5] = '-';
+        });
+#elif NET6_0_OR_GREATER
         return string.Create(11, 0, static (buffer, _) =>
         {
             buffer[10] = GetRandomRecoveryCodeChar();
@@ -2510,6 +2516,15 @@ public class UserManager<TUser> : IDisposable where TUser : class
 #endif
     }
 
+#if NET8_0_OR_GREATER
+    // We don't want to use any confusing characters like 0/O 1/I/L/l
+    // Taken from windows valid product key source
+    private static ReadOnlySpan<char> AllowedChars =>
+    [
+        '2', '3', '4', '5', '6', '7', '8', '9',
+        'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y'
+    ];
+#else
     // We don't want to use any confusing characters like 0/O 1/I/L/l
     // Taken from windows valid product key source
     private static readonly char[] AllowedChars = "23456789BCDFGHJKMNPQRTVWXY".ToCharArray();
@@ -2547,6 +2562,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         return AllowedChars[(int)result];
     }
+#endif
 
     /// <summary>
     /// Returns whether a recovery code is valid for a user. Note: recovery codes are only valid
@@ -2730,6 +2746,19 @@ public class UserManager<TUser> : IDisposable where TUser : class
             _disposed = true;
         }
     }
+
+#if NET8_0_OR_GREATER
+    private DateTimeOffset UtcNow()
+    {
+        var timeProvider = ServiceProvider.GetService<TimeProvider>();
+        return timeProvider?.GetUtcNow() ?? DateTimeOffset.UtcNow;
+    }
+#else
+    private static DateTimeOffset UtcNow()
+    {
+        return DateTimeOffset.UtcNow;
+    }
+#endif
 
     private IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
     {

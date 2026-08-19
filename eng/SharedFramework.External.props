@@ -7,9 +7,7 @@
 <Project>
   <ItemGroup>
     <!-- Dependencies from dotnet/runtime -->
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Abstractions"              Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Binder"                    Version="$(MicrosoftExtensionsConfigurationBinderVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.CommandLine"               Version="$(MicrosoftExtensionsConfigurationCommandLineVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"      Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesVersion)" />
@@ -19,18 +17,13 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.UserSecrets"               Version="$(MicrosoftExtensionsConfigurationUserSecretsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Xml"                       Version="$(MicrosoftExtensionsConfigurationXmlVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration"                           Version="$(MicrosoftExtensionsConfigurationVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection"                     Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Diagnostics.Abstractions"                Version="$(MicrosoftExtensionsDiagnosticsAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Diagnostics"                             Version="$(MicrosoftExtensionsDiagnosticsVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Abstractions"              Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Composite"                 Version="$(MicrosoftExtensionsFileProvidersCompositeVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Physical"                  Version="$(MicrosoftExtensionsFileProvidersPhysicalVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileSystemGlobbing"                      Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Hosting.Abstractions"                    Version="$(MicrosoftExtensionsHostingAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Hosting"                                 Version="$(MicrosoftExtensionsHostingVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Http"                                    Version="$(MicrosoftExtensionsHttpVersion)"  />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Abstractions"                    Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Configuration"                   Version="$(MicrosoftExtensionsLoggingConfigurationVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Console"                         Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Debug"                           Version="$(MicrosoftExtensionsLoggingDebugVersion)" />
@@ -40,8 +33,6 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging"                                 Version="$(MicrosoftExtensionsLoggingVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"         Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.DataAnnotations"                 Version="$(MicrosoftExtensionsOptionsDataAnnotationsVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Formats.Cbor"                                          Version="$(SystemFormatsCborVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Threading.RateLimiting"                                Version="$(SystemThreadingRateLimitingVersion)" />
@@ -91,5 +82,17 @@
     <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
     <_CompilationOnlyReference Include="System.Runtime.CompilerServices.Unsafe" />
     <_CompilationOnlyReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <_CompilationOnlyReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <_CompilationOnlyReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <_CompilationOnlyReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <_CompilationOnlyReference Include="Microsoft.Extensions.Diagnostics.Abstractions" />
+    <_CompilationOnlyReference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <_CompilationOnlyReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <_CompilationOnlyReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <_CompilationOnlyReference Include="Microsoft.Extensions.Options" />
+    <_CompilationOnlyReference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 </Project>

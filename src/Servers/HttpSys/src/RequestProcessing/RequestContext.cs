@@ -192,7 +192,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     }
 
     // The request is being aborted, but large writes may be in progress. Cancel them.
-    internal void ForceCancelRequest()
+    internal unsafe void ForceCancelRequest()
     {
         try
         {
@@ -202,8 +202,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 return;
             }
 
-            var statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle,
-                _requestId.Value, default);
+            var statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle, _requestId.Value, default);
 
             // Either the connection has already dropped, or the last write is in progress.
             // The requestId becomes invalid as soon as the last Content-Length write starts.
@@ -241,7 +240,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         var statusCode = HttpApi.HttpGetRequestProperty(
             requestQueueHandle: Server.RequestQueue.Handle,
             requestId,
-            propertyId: (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            propertyId: HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo,
             qualifier: null,
             qualifierSize: 0,
             output: &cipherInfo,
@@ -287,7 +286,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             statusCode = HttpApi.HttpGetRequestProperty(
                 requestQueueHandle: Server.RequestQueue.Handle,
                 requestId,
-                propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                propertyId: HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello,
                 qualifier: null,
                 qualifierSize: 0,
                 output: pBuffer,
@@ -310,6 +309,62 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
 
         Log.TlsClientHelloRetrieveError(Logger, requestId, statusCode);
+        throw new HttpSysException((int)statusCode);
+    }
+
+    /// <summary>
+    /// Generic synchronous wrapper around <c>HttpQueryRequestProperty</c>.
+    /// Returns true on success, false if <paramref name="output"/> is too small (with the required size in <paramref name="bytesReturned"/>),
+    /// and throws for any other failure.
+    /// </summary>
+    internal unsafe bool TryGetRequestPropertyCore(
+        HTTP_REQUEST_PROPERTY propertyId,
+        ReadOnlySpan<byte> qualifier,
+        Span<byte> output,
+        out int bytesReturned)
+    {
+        bytesReturned = default;
+        if (!HttpApi.HttpGetRequestPropertySupported)
+        {
+            throw new InvalidOperationException("Windows HTTP Server API does not support HttpQueryRequestProperty.");
+        }
+
+        uint statusCode;
+        var requestId = PinsReleased ? Request.RequestId : RequestId;
+
+        uint bytesReturnedValue = 0;
+        uint* bytesReturnedPointer = &bytesReturnedValue;
+
+        // `fixed` on an empty span yields a null pointer, which is what HttpQueryRequestProperty
+        // requires for unused qualifier/output parameters.
+        fixed (byte* pQualifier = qualifier)
+        fixed (byte* pOutput = output)
+        {
+            statusCode = HttpApi.HttpGetRequestProperty(
+                requestQueueHandle: Server.RequestQueue.Handle,
+                requestId,
+                propertyId: propertyId,
+                qualifier: pQualifier,
+                qualifierSize: (uint)qualifier.Length,
+                output: pOutput,
+                outputSize: (uint)output.Length,
+                bytesReturned: (IntPtr)bytesReturnedPointer,
+                overlapped: IntPtr.Zero);
+
+            bytesReturned = checked((int)bytesReturnedValue);
+
+            if (statusCode is ErrorCodes.ERROR_SUCCESS)
+            {
+                return true;
+            }
+
+            if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
+            {
+                return false;
+            }
+        }
+
+        Log.QueryRequestPropertyError(Logger, requestId, statusCode);
         throw new HttpSysException((int)statusCode);
     }
 

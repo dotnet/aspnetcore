@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization;
 /// Provides functionality for rendering a virtualized list of items.
 /// </summary>
 /// <typeparam name="TItem">The <c>context</c> type for the items being rendered.</typeparam>
+[CacheBehavior(CacheBehavior.Throw)]
 public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, IAsyncDisposable
 {
     private VirtualizeJsInterop? _jsInterop;
@@ -21,7 +22,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private ElementReference _spacerAfter;
 
-    private int _itemsBefore;
+    internal int _itemsBefore;
 
     private int _visibleItemCapacity;
 
@@ -37,15 +38,29 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _loadedItemsStartIndex;
 
-    private int _lastRenderedItemCount;
+    internal int _lastRenderedItemCount;
 
-    private int _lastRenderedPlaceholderCount;
+    internal int _lastRenderedPlaceholderCount;
 
     private float _itemSize;
 
+    private float _lastSetItemSize;
+
     private IEnumerable<TItem>? _loadedItems;
 
+    private TItem? _previousFirstLoadedItem;
+
+    private bool CanDetectPrepend => _previousFirstLoadedItem is not null;
+
     private CancellationTokenSource? _refreshCts;
+
+    private CancellationTokenSource? _currentScrollCts;
+
+    private TaskCompletionSource? _nextRenderTcs;
+
+    private readonly InitialIndexState _initialIndex = new();
+
+    private bool _skipNextDistributionRefresh;
 
     private Exception? _refreshException;
 
@@ -59,11 +74,25 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool _loading;
 
+    internal float _totalMeasuredHeight;
+
+    internal int _measuredItemCount;
+
+    internal bool _pendingScrollToBottom;
+
+    private VirtualizeAnchorMode _lastRenderedAnchorMode;
+
+    // When true, OnAfterRenderAsync tells JS to restore the anchor snapshot
+    // so the viewport stays stable after a prepend or append.
+    private bool _pendingAnchorRestore;
+
+    private bool _deferPrependAnchorClear;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the item template for the list.
+    /// Gets or sets the item template for the list. See <see cref="ItemContent"/>.
     /// </summary>
     [Parameter]
     public RenderFragment<TItem>? ChildContent { get; set; }
@@ -112,7 +141,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// in the page.
     /// </summary>
     [Parameter]
-    public int OverscanCount { get; set; } = 3;
+    public int OverscanCount { get; set; } = 15;
 
     /// <summary>
     /// Gets or sets the tag name of the HTML element that will be used as the virtualization spacer.
@@ -138,6 +167,49 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public int MaxItemCount { get; set; } = 100;
 
     /// <summary>
+    /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
+    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Start"/>.
+    /// </summary>
+    [Parameter]
+    public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
+
+    /// <summary>
+    /// Gets or sets a comparer used to detect whether items were prepended or appended
+    /// when using <see cref="ItemsProvider"/>. The comparer determines if the first loaded
+    /// item changed between provider calls, which indicates items were inserted above.
+    ///
+    /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
+    /// <see cref="IEquatable{T}"/>, the default works automatically (value equality). For classes
+    /// without value-equality semantics, provide a comparer that compares by a unique identifier
+    /// (e.g., <c>Id</c>); otherwise reference-equality fallback would produce false-positive
+    /// prepend detection when the provider returns fresh instances.
+    ///
+    /// The <c>BL0011</c> analyzer warns when <see cref="ItemsProvider"/> is used without an
+    /// explicit <see cref="ItemComparer"/> assignment, because the default comparer falls back to
+    /// reference equality for classes without value-equality semantics.
+    ///
+    /// For in-memory <see cref="Items"/>, this parameter is not needed because the component
+    /// can detect prepends using object identity.
+    /// </summary>
+    [Parameter]
+    public IEqualityComparer<TItem> ItemComparer
+    {
+        get => _itemComparer;
+        set => _itemComparer = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the zero-based index of the item to scroll to on first interactive render.
+    /// Applied once when the component first knows its item count and ignored on subsequent re-renders;
+    /// to scroll programmatically at any later point, call <see cref="ScrollToItemAsync(int, CancellationToken)"/>.
+    /// Out-of-range values are clamped. The default value, <c>0</c>, means no initial scroll.
+    /// </summary>
+    [Parameter]
+    public int InitialItemIndex { get; set; }
+
+    private IEqualityComparer<TItem> _itemComparer = EqualityComparer<TItem>.Default;
+
+    /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
     /// This is useful if external data may have changed. There is no need to call this
     /// when using <see cref="Items"/>.
@@ -148,7 +220,164 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // We don't auto-render after this operation because in the typical use case, the
         // host component calls this from one of its lifecycle methods, and will naturally
         // re-render afterwards anyway. It's not desirable to re-render twice.
+        _totalMeasuredHeight = 0;
+        _measuredItemCount = 0;
         await RefreshDataCoreAsync(renderOnSuccess: false);
+    }
+
+    /// <summary>
+    /// Scrolls the viewport so the item at <paramref name="itemIndex"/> is aligned to the start of the visible area.
+    /// </summary>
+    /// <remarks>
+    /// Each call cancels any previously-running <see cref="ScrollToItemAsync(int, CancellationToken)"/> (last call wins).
+    /// Must be called on the renderer's synchronization context; background-thread callers should wrap with
+    /// <see cref="ComponentBase.InvokeAsync(Func{Task})"/> to await completion.
+    /// </remarks>
+    /// <param name="itemIndex">The zero-based index of the item to scroll to.</param>
+    /// <param name="cancellationToken">A token that lets the caller request cancellation.</param>
+    /// <returns>A <see cref="Task"/> that completes when the target is aligned or superseded by another call,
+    /// or faults with <see cref="OperationCanceledException"/> if <paramref name="cancellationToken"/> is cancelled.</returns>
+    public Task ScrollToItemAsync(int itemIndex, CancellationToken cancellationToken = default)
+    {
+        if (_jsInterop is null)
+        {
+            // Throw synchronously so misuse is reported on the call site, not on the Task.
+            throw new InvalidOperationException(
+                $"{nameof(ScrollToItemAsync)} cannot be called before the {nameof(Virtualize<TItem>)} has been initialized for interactive rendering. " +
+                $"Use the {nameof(InitialItemIndex)} parameter to set the initial scroll position.");
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled(cancellationToken);
+        }
+
+        _initialIndex.Abort();
+        return ScrollToItemAsyncCore(itemIndex, cancellationToken);
+    }
+
+    private async Task ScrollToItemAsyncCore(int itemIndex, CancellationToken cancellationToken)
+    {
+        // Cancel-and-switch (last call wins); finally block guards cleanup by ref-equality.
+        _currentScrollCts?.Cancel();
+
+        var ourCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _currentScrollCts = ourCts;
+        var token = ourCts.Token;
+
+        if (_jsInterop is not null)
+        {
+            try
+            {
+                await _jsInterop.BeginProgrammaticScrollAsync();
+            }
+            catch (OperationCanceledException) { }
+            catch (JSDisconnectedException) { }
+        }
+
+        try
+        {
+            token.ThrowIfCancellationRequested();
+            var refetchRequired = MoveWindowToContain(itemIndex);
+            await EnsureRenderCommittedAsync(refetchRequired, token);
+            await AlignToTargetAsync(itemIndex, token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // Ignore exceptions caused by cancellations.
+        }
+        finally
+        {
+            // Only the current owner clears shared state; orphaned operations leave it alone.
+            if (ReferenceEquals(_currentScrollCts, ourCts))
+            {
+                _currentScrollCts = null;
+            }
+            ourCts.Dispose();
+        }
+    }
+
+    private bool MoveWindowToContain(int itemIndex)
+    {
+        var clamped = ClampToItemRange(itemIndex);
+        var capacity = _visibleItemCapacity > 0 ? _visibleItemCapacity : OverscanCount * 2 + 1;
+        var desiredItemsBefore = Math.Max(0, clamped - OverscanCount);
+        if (_itemCount > 0 && desiredItemsBefore + capacity > _itemCount)
+        {
+            desiredItemsBefore = Math.Max(0, _itemCount - capacity);
+        }
+
+        var windowChanged = desiredItemsBefore != _itemsBefore;
+        if (_visibleItemCapacity <= 0)
+        {
+            // Seed capacity when called before any spacer-observer feedback so RefreshDataCoreAsync asks for a meaningful slice.
+            _visibleItemCapacity = capacity;
+        }
+        if (windowChanged)
+        {
+            _itemsBefore = desiredItemsBefore;
+            _skipNextDistributionRefresh = false;
+        }
+
+        var alreadyLoadedForWindow = _loadedItems is not null && _loadedItemsStartIndex == _itemsBefore;
+        return windowChanged || !alreadyLoadedForWindow;
+    }
+
+    private async Task EnsureRenderCommittedAsync(bool refetchRequired, CancellationToken token)
+    {
+        // Set up the signal BEFORE any render: on WASM, OnAfterRenderAsync runs synchronously inside RefreshDataCoreAsync.
+        var renderCommitTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _nextRenderTcs = renderCommitTcs;
+        using var renderReg = token.Register(static state => ((TaskCompletionSource)state!).TrySetCanceled(), renderCommitTcs);
+
+        if (refetchRequired)
+        {
+            await RefreshDataCoreAsync(renderOnSuccess: true, token);
+            token.ThrowIfCancellationRequested();
+        }
+        else
+        {
+            // Window already loaded — trigger one render so we can wait for the DOM to reflect it.
+            StateHasChanged();
+        }
+
+        // OnAfterRenderAsync signals once the rendered slice matches our window, so one await is enough.
+        await renderCommitTcs.Task;
+        token.ThrowIfCancellationRequested();
+    }
+
+    private async ValueTask AlignToTargetAsync(int itemIndex, CancellationToken token)
+    {
+        // Re-clamp in case _itemCount shifted during the fetch.
+        var localIndex = ClampToItemRange(itemIndex) - _itemsBefore;
+        if (localIndex < 0 || localIndex >= _visibleItemCapacity || _lastRenderedItemCount == 0)
+        {
+            // Window doesn't contain the target (e.g., empty provider result) — bail cleanly.
+            return;
+        }
+
+        // Pixel-exact one-shot scroll: JS reads getBoundingClientRect() and sets scrollTop.
+        if (_jsInterop is not null)
+        {
+            await _jsInterop.AlignToItemAsync(localIndex, token);
+        }
+    }
+
+    private int ClampToItemRange(int requested)
+    {
+        if (_itemCount <= 0)
+        {
+            return Math.Max(0, requested);
+        }
+        if (requested < 0)
+        {
+            return 0;
+        }
+        if (requested >= _itemCount)
+        {
+            return _itemCount - 1;
+        }
+        return requested;
     }
 
     /// <inheritdoc />
@@ -163,6 +392,20 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (_itemSize <= 0)
         {
             _itemSize = ItemSize;
+        }
+
+        // Without this reset, visibleItemCapacity is under/over-estimated after a size change,
+        // causing extra provider calls that may never complete (e.g., async providers).
+        if (_lastSetItemSize != ItemSize)
+        {
+            _lastSetItemSize = ItemSize;
+            _totalMeasuredHeight = 0;
+            _measuredItemCount = 0;
+        }
+
+        if (_initialIndex.Phase == InitialIndexPhase.None && InitialItemIndex > 0)
+        {
+            MoveWindowToContain(InitialItemIndex);
         }
 
         if (ItemsProvider != null)
@@ -203,10 +446,79 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Wait until the loaded slice matches the window; earlier renders measure stale DOM.
+        var pendingRenderTcs = _nextRenderTcs;
+        if (pendingRenderTcs is not null && _loadedItemsStartIndex == _itemsBefore && (_lastRenderedItemCount > 0 || _itemCount == 0))
+        {
+            _nextRenderTcs = null;
+            pendingRenderTcs.TrySetResult();
+        }
+
         if (firstRender)
         {
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
-            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter);
+            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
+            _lastRenderedAnchorMode = AnchorMode;
+        }
+
+        if (_pendingScrollToBottom && _jsInterop is not null)
+        {
+            _pendingScrollToBottom = false;
+            await _jsInterop.ScrollToBottomAsync();
+        }
+
+        // After render the set of items could change. Tell JS to refresh ResizeObserver.
+        if (!firstRender && _jsInterop is not null)
+        {
+            if (_lastRenderedAnchorMode != AnchorMode)
+            {
+                _lastRenderedAnchorMode = AnchorMode;
+                await _jsInterop.SetAnchorModeAsync((int)AnchorMode);
+            }
+
+            // If a mutation captured an anchor snapshot, restore it to keep the same row at the
+            // same viewport offset. Skip while a ScrollToItemAsync is in flight — we are
+            // intentionally moving the viewport.
+            var shouldRestore = _pendingAnchorRestore && !_pendingScrollToBottom && _currentScrollCts is null;
+
+            var deferAnchorRestoreClear = shouldRestore
+                && (AnchorMode == VirtualizeAnchorMode.None
+                    || AnchorMode == VirtualizeAnchorMode.End
+                    || ((AnchorMode & VirtualizeAnchorMode.Start) != 0 && _deferPrependAnchorClear));
+            if (!deferAnchorRestoreClear)
+            {
+                _pendingAnchorRestore = false;
+            }
+
+            if (shouldRestore)
+            {
+                await _jsInterop.RestoreAnchorAsync();
+            }
+
+            _pendingAnchorRestore = false;
+            _deferPrependAnchorClear = false;
+
+            await _jsInterop.RefreshObserversAsync(_loading);
+        }
+
+        // Apply InitialItemIndex once: drive the first fetch via ScrollToItemAsync rather than
+        // letting the spacer-IO callback fire at scrollTop=0 and reset the window to index 0.
+        if (_initialIndex.Phase == InitialIndexPhase.None && _jsInterop is not null)
+        {
+            if (InitialItemIndex > 0)
+            {
+                _initialIndex.BeginPending(_itemSize);
+                await ScrollToItemAsyncCore(InitialItemIndex, CancellationToken.None);
+            }
+            else if (_itemCount > 0)
+            {
+                _initialIndex.Complete();
+            }
+        }
+
+        if (_jsInterop is not null && _lastRenderedItemCount > 0 && _initialIndex.ShouldRealign(_itemSize))
+        {
+            await AlignToTargetAsync(InitialItemIndex, CancellationToken.None);
         }
     }
 
@@ -222,7 +534,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         builder.OpenElement(0, SpacerElement);
-        builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
+        builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
         builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
@@ -257,11 +569,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
-            // Render the loaded items.
+            var isFirstRenderedItem = true;
             foreach (var item in itemsToShow)
             {
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
+
+                if (isFirstRenderedItem && _itemsProvider != DefaultItemsProvider)
+                {
+                    _previousFirstLoadedItem = item;
+                    isFirstRenderedItem = false;
+                }
             }
 
             renderIndex += _lastRenderedItemCount;
@@ -285,29 +603,89 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         builder.OpenElement(7, SpacerElement);
         builder.AddAttribute(8, "aria-hidden", "true");
-        builder.AddAttribute(9, "style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
-        builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
+        builder.AddAttribute(9, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(itemsAfter));
+        if (_unusedItemCapacity != 0)
+        {
+            builder.AddAttribute(10, "data-blazor-virtualize-loop-breaker-transform", GetSpacerHeightPx(_unusedItemCapacity));
+        }
+        builder.AddElementReferenceCapture(11, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
     }
 
-    private string GetSpacerStyle(int itemsInSpacer, int numItemsGapAbove)
-        => numItemsGapAbove == 0
-        ? GetSpacerStyle(itemsInSpacer)
-        : $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0; transform: translateY({(numItemsGapAbove * _itemSize).ToString(CultureInfo.InvariantCulture)}px);";
+    private string GetSpacerHeightPx(int itemCount)
+        => (itemCount * GetItemHeight()).ToString(CultureInfo.InvariantCulture);
 
-    private string GetSpacerStyle(int itemsInSpacer)
-        => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
+    private float GetItemHeight()
+        => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
-    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
+    private void UpdateItemSizeFromRenderedContent(float spacerSize, float spacerSeparation, float containerSize)
     {
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
+        if (_initialIndex.Phase != InitialIndexPhase.Pending)
+        {
+            return;
+        }
 
-        // Since we know the before spacer is now visible, we absolutely have to slide the window up
-        // by at least one element. If we're not doing that, the previous item size info we had must
-        // have been wrong, so just move along by one in that case to trigger an update and apply the
-        // new size info.
-        if (itemsBefore == _itemsBefore && itemsBefore > 0)
+        var previousItemSize = _itemSize;
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out _, out _, out _);
+        RerenderSpacersIfItemSizeChanged(previousItemSize);
+    }
+
+    private void RerenderSpacersIfItemSizeChanged(float previousItemSize)
+    {
+        if (_itemSize != previousItemSize)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private void CancelInFlightScrollForUserInteraction()
+    {
+        _initialIndex.Abort();
+        if (_currentScrollCts is not null)
+        {
+            _currentScrollCts.Cancel();
+            _currentScrollCts = null;
+            _refreshCts?.Cancel();
+        }
+    }
+
+    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason)
+    {
+        if (reason == SpacerVisibilityReason.RenderedContentMeasurement)
+        {
+            UpdateItemSizeFromRenderedContent(spacerSize, spacerSeparation, containerSize);
+            return;
+        }
+        if (_pendingAnchorRestore)
+        {
+            return;
+        }
+        if (_initialIndex.Phase == InitialIndexPhase.None && InitialItemIndex > 0)
+        {
+            return;
+        }
+        switch (reason)
+        {
+            case SpacerVisibilityReason.ProgrammaticScroll:
+                return;
+            case SpacerVisibilityReason.UserScroll:
+                CancelInFlightScrollForUserInteraction();
+                break;
+            case SpacerVisibilityReason.ViewportFill:
+                // A fill callback while our own scroll is in flight, or while the initial target is pinned,
+                // is a side effect of that scroll — acting on it would move the target.
+                if (_currentScrollCts is not null || _initialIndex.Phase == InitialIndexPhase.Pending)
+                {
+                    return;
+                }
+                break;
+        }
+
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
+
+        // Slide window up by at least one if spacer is visible but position unchanged.
+        if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore > 0)
         {
             itemsBefore--;
         }
@@ -315,31 +693,85 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
+    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, SpacerVisibilityReason reason)
     {
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
+        if (reason == SpacerVisibilityReason.RenderedContentMeasurement)
+        {
+            UpdateItemSizeFromRenderedContent(spacerSize, spacerSeparation, containerSize);
+            return;
+        }
+        if (_pendingAnchorRestore || reason == SpacerVisibilityReason.ProgrammaticScroll)
+        {
+            return;
+        }
+        if (reason == SpacerVisibilityReason.UserScroll)
+        {
+            CancelInFlightScrollForUserInteraction();
+        }
+        else if (reason == SpacerVisibilityReason.ViewportFill && _currentScrollCts is not null)
+        {
+            // Bottom-spacer fill while our own scroll is in flight: the window moved but scrollTop hasn't
+            // landed, so acting on it would undo the target. The real fill runs once the scroll completes.
+            return;
+        }
+
+        var hadNewMeasurements = CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
+
+        if (_initialIndex.Phase == InitialIndexPhase.Pending)
+        {
+            return;
+        }
 
         var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
-        // Since we know the after spacer is now visible, we absolutely have to slide the window down
-        // by at least one element. If we're not doing that, the previous item size info we had must
-        // have been wrong, so just move along by one in that case to trigger an update and apply the
-        // new size info.
-        if (itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
+        // Slide window down by at least one if spacer is visible but position unchanged.
+        if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
         {
             itemsBefore++;
+        }
+
+        // Track whether the viewport is at the bottom of the list.
+        // In End mode, keep scrolling to bottom while measurements converge.
+        if (itemsAfter == 0 && hadNewMeasurements)
+        {
+            if ((AnchorMode & VirtualizeAnchorMode.End) != 0)
+            {
+                _pendingScrollToBottom = true;
+                _pendingAnchorRestore = false;
+            }
         }
 
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    private void CalcualteItemDistribution(
-        float spacerSize,
-        float spacerSeparation,
-        float containerSize,
-        out int itemsInSpacer,
-        out int visibleItemCapacity,
-        out int unusedItemCapacity)
+    private float GetEffectiveItemSizeForStaleSpacer()
+    {
+        var effectiveItemSize = GetItemHeight();
+        if (effectiveItemSize <= 0 || float.IsNaN(effectiveItemSize) || float.IsInfinity(effectiveItemSize))
+        {
+            effectiveItemSize = _itemSize > 0 ? _itemSize : ItemSize;
+        }
+        return effectiveItemSize;
+    }
+
+    private bool AccumulateMeasurement(float spacerSeparation)
+    {
+        // Accumulate item height measurements only when no placeholders are rendered,
+        // so spacerSeparation directly represents real item heights. This avoids a
+        // feedback loop: subtracting (placeholderCount * _itemSize) makes the accumulated
+        // measurements depend on _itemSize, which itself depends on those measurements.
+        // Under CSS zoom, rounding errors in that loop compound and diverge from reality.
+        if (_lastRenderedItemCount <= 0 || _lastRenderedPlaceholderCount > 0 || spacerSeparation <= 0)
+        {
+            return false;
+        }
+
+        _totalMeasuredHeight += spacerSeparation;
+        _measuredItemCount += _lastRenderedItemCount;
+        return true;
+    }
+
+    private void RecalibrateItemSize(float spacerSeparation)
     {
         if (_lastRenderedItemCount > 0)
         {
@@ -352,6 +784,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // Reset the calculated item size to the user-provided item size.
             _itemSize = ItemSize;
         }
+    }
+
+    private bool CalculateItemDistribution(
+        float spacerSize,
+        float spacerSeparation,
+        float containerSize,
+        out int itemsInSpacer,
+        out int visibleItemCapacity,
+        out int unusedItemCapacity)
+    {
+        var hadNewMeasurements = AccumulateMeasurement(spacerSeparation);
+        RecalibrateItemSize(spacerSeparation);
+        var effectiveItemSize = GetEffectiveItemSizeForStaleSpacer();
 
         // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch
         // where we couldn't add new public API. For backcompat we still support the AppContext setting, but
@@ -366,10 +811,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
         maxItemCount += OverscanCount * 2;
 
-        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
-        visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
+        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+        visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
         unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
         visibleItemCapacity -= unusedItemCapacity;
+
+        return hadNewMeasurements;
     }
 
     private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
@@ -387,18 +834,40 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _itemsBefore = itemsBefore;
             _visibleItemCapacity = visibleItemCapacity;
             _unusedItemCapacity = unusedItemCapacity;
-            var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
 
-            if (!refreshTask.IsCompleted)
+            // After a successful data load, the ResizeObserver→IntersectionObserver cycle
+            // re-triggers with refined measurements. This one-shot flag skips the single
+            // redundant provider call that follows. At end-of-list, don't skip: refined
+            // capacity may reveal that more items are needed to fill the viewport.
+            var skipRefresh = _skipNextDistributionRefresh
+                && _loadedItems != null
+                && _loadedItemsStartIndex == _itemsBefore
+                && _itemsBefore + visibleItemCapacity < _itemCount;
+            _skipNextDistributionRefresh = false;
+
+            if (skipRefresh)
             {
                 StateHasChanged();
+            }
+            else
+            {
+                var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
+
+                if (!refreshTask.IsCompleted)
+                {
+                    StateHasChanged();
+                }
             }
         }
     }
 
-    private async ValueTask RefreshDataCoreAsync(bool renderOnSuccess)
+    private ValueTask RefreshDataCoreAsync(bool renderOnSuccess)
+        => RefreshDataCoreAsync(renderOnSuccess, CancellationToken.None);
+
+    private async ValueTask RefreshDataCoreAsync(bool renderOnSuccess, CancellationToken ownerCancellationToken)
     {
         _refreshCts?.Cancel();
+        CancellationTokenSource? refreshCts = null;
         CancellationToken cancellationToken;
 
         if (_itemsProvider == DefaultItemsProvider)
@@ -407,12 +876,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // Items collection) we know it will complete synchronously, and there's no point
             // instantiating a new CancellationTokenSource
             _refreshCts = null;
-            cancellationToken = CancellationToken.None;
+            cancellationToken = ownerCancellationToken;
         }
         else
         {
-            _refreshCts = new CancellationTokenSource();
-            cancellationToken = _refreshCts.Token;
+            refreshCts = ownerCancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(ownerCancellationToken)
+                : new CancellationTokenSource();
+            _refreshCts = refreshCts;
+            cancellationToken = refreshCts.Token;
             _loading = true;
         }
 
@@ -422,18 +894,96 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             var result = await _itemsProvider(request);
 
-            // Only apply result if the task was not canceled.
-            if (!cancellationToken.IsCancellationRequested)
+            // InitialItemIndex out-of-range or TotalItemCount shrank between fetches: re-clamp
+            if (!cancellationToken.IsCancellationRequested
+                && result.TotalItemCount > 0
+                && _itemsBefore >= result.TotalItemCount)
             {
                 _itemCount = result.TotalItemCount;
-                _loadedItems = result.Items;
-                _loadedItemsStartIndex = request.StartIndex;
-                _loading = false;
+                MoveWindowToContain(_itemsBefore);
+                request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+                result = await _itemsProvider(request);
+            }
 
-                if (renderOnSuccess)
+            // Only apply the result if the task was not canceled.
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            var previousItemCount = _itemCount;
+            var countDelta = result.TotalItemCount - previousItemCount;
+            var itemsAdded = countDelta > 0 && previousItemCount > 0;
+            var isDefaultProvider = _itemsProvider == DefaultItemsProvider;
+
+            if (itemsAdded && isDefaultProvider && CanDetectPrepend)
+            {
+                var newFirstItem = Items!.ElementAtOrDefault(_itemsBefore);
+                // Use EqualityComparer<TItem>.Default so this works for value-type TItem;
+                // ReferenceEquals would always return false due to boxing.
+                if (newFirstItem != null && !EqualityComparer<TItem>.Default.Equals(_previousFirstLoadedItem, newFirstItem))
                 {
-                    StateHasChanged();
+                    result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
                 }
+                else if (ShouldAnchorForAppend(countDelta, previousItemCount))
+                {
+                    _pendingAnchorRestore = true;
+                }
+                else if (ShouldScrollToBottomForAppend(countDelta, previousItemCount))
+                {
+                    _pendingScrollToBottom = true;
+                }
+            }
+            else if (itemsAdded && !isDefaultProvider && CanDetectPrepend)
+            {
+                using var enumerator = result.Items.GetEnumerator();
+                if (enumerator.MoveNext())
+                {
+                    var itemsShifted = !ItemComparer.Equals(_previousFirstLoadedItem, enumerator.Current);
+
+                    if (itemsShifted)
+                    {
+                        result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
+                    }
+                    else if (ShouldAnchorForAppend(countDelta, previousItemCount))
+                    {
+                        _pendingAnchorRestore = true;
+                    }
+                    else if (await ShouldFollowAppendedTailAsync(previousItemCount))
+                    {
+                        (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
+                    }
+                }
+            }
+            else if (itemsAdded
+                && !isDefaultProvider
+                && await ShouldFollowAppendedTailAsync(previousItemCount))
+            {
+                (result, request) = await AdvanceWindowToAppendedTailAsync(result, request, cancellationToken);
+            }
+
+            _itemCount = result.TotalItemCount;
+            _loadedItems = result.Items;
+            _loadedItemsStartIndex = _itemsBefore;
+
+            // For DefaultItemsProvider, capture the first loaded item so we can detect
+            // prepends via EqualityComparer<TItem>.Default (works for both reference and
+            // value types — see comment on the comparison above).
+            // For custom providers, _previousFirstLoadedItem is set during BuildRenderTree
+            // (using the actual rendered item for ItemComparer).
+            if (_itemsProvider == DefaultItemsProvider)
+            {
+                _previousFirstLoadedItem = Items != null && _itemsBefore < Items.Count
+                    ? Items.ElementAtOrDefault(_itemsBefore)
+                    : default;
+            }
+
+            _loading = false;
+            _skipNextDistributionRefresh = request.Count > 0;
+
+            if (renderOnSuccess)
+            {
+                StateHasChanged();
             }
         }
         catch (Exception e)
@@ -447,9 +997,24 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 // Cache this exception so the renderer can throw it.
                 _refreshException = e;
 
+                // Surface the exception to any waiting ScrollToItemAsync caller.
+                _nextRenderTcs?.TrySetException(e);
+
                 // Re-render the component to throw the exception.
                 StateHasChanged();
             }
+        }
+        finally
+        {
+            if (refreshCts is not null && ReferenceEquals(_refreshCts, refreshCts))
+            {
+                _refreshCts = null;
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _loading = false;
+                }
+            }
+            refreshCts?.Dispose();
         }
     }
 
@@ -463,18 +1028,125 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;");
+        builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(1));
         builder.CloseElement();
     };
+
+    private async ValueTask<ItemsProviderResult<TItem>> AdjustForPrependAsync(
+        int countDelta, int newTotalCount, CancellationToken cancellationToken)
+    {
+        var wasAtTop = _itemsBefore == 0;
+        _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
+        _pendingAnchorRestore = true;
+        _deferPrependAnchorClear = !wasAtTop;
+
+        var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+        return await _itemsProvider(adjustedRequest);
+    }
+
+    // Items appended at the bottom while viewport is near the end.
+    // In non-End modes, restore the anchor so the viewport doesn't
+    // chase the new items via spacer redistribution.
+    private bool ShouldAnchorForAppend(int countDelta, int previousItemCount)
+        => countDelta > 0
+            && countDelta < previousItemCount
+            && (AnchorMode & VirtualizeAnchorMode.End) == 0
+            && _itemsBefore + _visibleItemCapacity >= previousItemCount;
+
+    private bool ShouldScrollToBottomForAppend(int countDelta, int previousItemCount)
+        => countDelta > 0
+            && (AnchorMode & VirtualizeAnchorMode.End) != 0
+            && previousItemCount <= _visibleItemCapacity;
+
+    private async ValueTask<bool> ShouldFollowAppendedTailAsync(int previousItemCount)
+    {
+        if ((AnchorMode & VirtualizeAnchorMode.End) == 0
+            || _visibleItemCapacity <= 0
+            || _itemsBefore + _visibleItemCapacity < previousItemCount
+            || _jsInterop is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return await _jsInterop.IsFollowingBottomAsync();
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
+    // Advances the window to the appended tail and refetches it in the current refresh pass, so the
+    // applied result already holds the real tail rows. Otherwise the window advances later via the
+    // async spacer round-trip, which first flashes with placeholder rows.
+    private async ValueTask<(ItemsProviderResult<TItem> Result, ItemsProviderRequest Request)> AdvanceWindowToAppendedTailAsync(
+        ItemsProviderResult<TItem> result, ItemsProviderRequest request, CancellationToken cancellationToken)
+    {
+        var tailItemsBefore = Math.Max(0, result.TotalItemCount - _visibleItemCapacity);
+        if (tailItemsBefore != _itemsBefore)
+        {
+            _itemsBefore = tailItemsBefore;
+            request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+            result = await _itemsProvider(request);
+        }
+
+        _pendingScrollToBottom = true;
+        return (result, request);
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         _refreshCts?.Cancel();
 
+        _currentScrollCts?.Cancel();
+        _nextRenderTcs?.TrySetCanceled(CancellationToken.None);
+
         if (_jsInterop != null)
         {
             await _jsInterop.DisposeAsync();
+        }
+    }
+
+    private enum InitialIndexPhase
+    {
+        None,
+        Pending,
+        Completed,
+    }
+
+    private sealed class InitialIndexState
+    {
+        public InitialIndexPhase Phase { get; private set; }
+
+        private float _alignItemSize;
+
+        public void Complete() => Phase = InitialIndexPhase.Completed;
+
+        public void BeginPending(float itemSize)
+        {
+            Phase = InitialIndexPhase.Pending;
+            _alignItemSize = itemSize;
+        }
+
+        public bool ShouldRealign(float itemSize)
+        {
+            if (Phase != InitialIndexPhase.Pending || itemSize == _alignItemSize)
+            {
+                return false;
+            }
+            _alignItemSize = itemSize;
+            return true;
+        }
+
+        public void Abort()
+        {
+            if (Phase == InitialIndexPhase.Pending)
+            {
+                Phase = InitialIndexPhase.Completed;
+            }
         }
     }
 }

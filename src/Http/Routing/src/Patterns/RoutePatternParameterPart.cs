@@ -99,10 +99,23 @@ internal sealed class RoutePatternParameterPart : RoutePatternPart
         foreach (var constraint in ParameterPolicies)
         {
             builder.Append(':');
-            builder.Append(constraint.ParameterPolicy);
+            if (constraint.Content is not null)
+            {
+                builder.Append(constraint.Content);
+            }
+            else if (constraint.ParameterPolicy is Constraints.RegexRouteConstraint regexConstraint)
+            {
+                builder.Append("regex(");
+                builder.Append(regexConstraint.Constraint);
+                builder.Append(')');
+            }
+            else if (constraint.ParameterPolicy is not null)
+            {
+                builder.Append(constraint.ParameterPolicy);
+            }
         }
 
-        if (Default != null)
+        if (Default is not null)
         {
             builder.Append('=');
             builder.Append(Default);

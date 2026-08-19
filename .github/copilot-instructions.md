@@ -6,6 +6,11 @@
 * Never change package.json or package-lock.json files unless explicitly asked to.
 * Never change NuGet.config files unless explicitly asked to.
 
+## Framework assembly boundaries
+
+* In shipping framework code, do not add `InternalsVisibleTo` or use `[UnsafeAccessor]` to access non-public members in another framework assembly. Existing uses of these mechanisms are not precedent for new uses.
+* Redesign the assembly boundary instead. If that requires a public API, follow the repository API-review and baseline process.
+
 ## Formatting
 
 * Apply code-formatting style defined in `.editorconfig`.
@@ -32,6 +37,8 @@
 ## Running tests
 
 * To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder. For example, to run the build with tests in the `src/Http` directory, run `./src/Http/build.sh -test`.
+* Before claiming a bug fix is verified, confirm that the relevant test or check fails for the expected reason without the fix and passes with it. Reading the source or seeing a test pass on its own is not proof that the bug is fixed.
+* If that red/green verification isn't practical, explain why, state what you did verify, and don't describe the fix as verified.
 
 ## .NET Environment
 
@@ -40,3 +47,6 @@
   * On Linux/Mac: `source activate.sh` (from repository root)
 * If not in the repository root, navigate there first or use the full path to the activation script.
 * This ensures that the correct version of .NET SDK is used for the repository.
+
+## ASP.NET Core Components Area
+* When working on issues under the src/Components area, follow the instructions in [./instructions/components.instructions.md](./instructions/components.instructions.md).

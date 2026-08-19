@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <!--#if (SelfContained || NativeAot)-->
+    <RuntimeIdentifiers>win-x64;win-arm64;osx-arm64;linux-x64;linux-arm64;linux-musl-x64</RuntimeIdentifiers>
+    <!--#else-->
+    <RollForward>Major</RollForward>
+    <!--#endif -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aaaaaaaa-bbbb-cccc-dddd-eeeeeeffffff</UserSecretsId>
+
+    <!--#if (SelfContained || NativeAot)-->
+
+    <!-- Set up the MCP server to be a self-contained application that does not rely on a shared framework -->
+    <SelfContained>true</SelfContained>
+    <PublishSelfContained>true</PublishSelfContained>
+
+    <!-- Set up the MCP server to be a single file executable -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <!--#endif -->
+    <!--#if (NativeAot)-->
+
+    <!-- Configure the MCP server to be a native AOT application with invariant globalization -->
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!--#endif -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="${ModelContextProtocolAspNetCoreVersion}" />
+  </ItemGroup>
+
+</Project>

@@ -24,22 +24,57 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         _jsRuntime = jsRuntime;
     }
 
-    public async ValueTask InitializeAsync(ElementReference spacerBefore, ElementReference spacerAfter)
+    public async ValueTask InitializeAsync(ElementReference spacerBefore, ElementReference spacerAfter, int anchorMode)
     {
         _selfReference = DotNetObjectReference.Create(this);
-        await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.init", _selfReference, spacerBefore, spacerAfter);
+        await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.init", _selfReference, spacerBefore, spacerAfter, anchorMode);
     }
 
     [JSInvokable]
-    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize)
+    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize, int reason)
     {
-        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize);
+        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason);
     }
 
     [JSInvokable]
-    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize)
+    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize, int reason)
     {
-        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize);
+        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason);
+    }
+
+    public ValueTask ScrollToBottomAsync()
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.scrollToBottom", _selfReference);
+    }
+
+    public ValueTask RefreshObserversAsync(bool isLoading)
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.refreshObservers", _selfReference, isLoading);
+    }
+
+    public ValueTask SetAnchorModeAsync(int anchorMode)
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setAnchorMode", _selfReference, anchorMode);
+    }
+
+    public ValueTask RestoreAnchorAsync()
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference);
+    }
+
+    public ValueTask AlignToItemAsync(int localIndex, CancellationToken cancellationToken = default)
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.alignToItem", cancellationToken, _selfReference, localIndex);
+    }
+
+    public ValueTask BeginProgrammaticScrollAsync()
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.beginProgrammaticScroll", _selfReference);
+    }
+
+    public ValueTask<bool> IsFollowingBottomAsync()
+    {
+        return _jsRuntime.InvokeAsync<bool>($"{JsFunctionsPrefix}.isFollowingBottom", _selfReference);
     }
 
     public async ValueTask DisposeAsync()

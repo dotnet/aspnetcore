@@ -26,6 +26,9 @@ public class SignInManager<TUser> where TUser : class
     private const string PasskeyOperationKey = "PasskeyOperation";
     private const string PasskeyStateKey = "PasskeyState";
 
+    private static readonly bool AlwaysResetLockoutOnSuccess =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
+
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IAuthenticationSchemeProvider _schemes;
     private readonly IUserConfirmation<TUser> _confirmation;
@@ -165,10 +168,14 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Signs in the specified <paramref name="user"/>, whilst preserving the existing
+    /// Refreshes the sign-in for the specified <paramref name="user"/>, whilst preserving the existing
     /// AuthenticationProperties of the current signed-in user like rememberMe, as an asynchronous operation.
     /// </summary>
-    /// <param name="user">The user to sign-in.</param>
+    /// <remarks>
+    /// The user must already be signed in, and the user ID must match the currently authenticated user.
+    /// If the user is not signed in, use <see cref="SignInAsync(TUser, bool, string?)"/> instead.
+    /// </remarks>
+    /// <param name="user">The user to refresh the sign-in for.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
@@ -204,8 +211,8 @@ public class SignInManager<TUser> where TUser : class
         }
 
         IList<Claim> claims = Array.Empty<Claim>();
-        var authenticationMethod = auth.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
-        var amr = auth.Principal?.FindFirst("amr");
+        var authenticationMethod = auth.Principal.FindFirst(ClaimTypes.AuthenticationMethod);
+        var amr = auth.Principal.FindFirst("amr");
 
         if (authenticationMethod != null || amr != null)
         {
@@ -221,7 +228,7 @@ public class SignInManager<TUser> where TUser : class
         }
 
         await SignInWithClaimsAsync(user, auth.Properties, claims);
-        return (true, auth.Properties?.IsPersistent ?? false);
+        return (true, auth.Properties?.IsPersistent);
     }
 
     /// <summary>
@@ -475,7 +482,7 @@ public class SignInManager<TUser> where TUser : class
 
         if (await UserManager.CheckPasswordAsync(user, password))
         {
-            var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
+            var alwaysLockout = AlwaysResetLockoutOnSuccess;
             // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
             if (alwaysLockout || !await IsTwoFactorEnabledAsync(user) || await IsTwoFactorClientRememberedAsync(user))
             {
@@ -552,7 +559,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAttestationResult"/>.
     /// </returns>
-    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync(string credentialJson)
+    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
@@ -596,7 +603,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAssertionResult{TUser}"/>.
     /// </returns>
-    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync(string credentialJson)
+    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
@@ -639,7 +646,7 @@ public class SignInManager<TUser> where TUser : class
     /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.
     /// </returns>
-    public virtual async Task<SignInResult> PasskeySignInAsync(string credentialJson)
+    public virtual async Task<SignInResult> PasskeySignInAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         var startTimestamp = Stopwatch.GetTimestamp();
         try
@@ -664,6 +671,12 @@ public class SignInManager<TUser> where TUser : class
         if (!assertionResult.Succeeded)
         {
             return SignInResult.Failed;
+        }
+
+        var error = await PreSignInCheck(assertionResult.User);
+        if (error != null)
+        {
+            return error;
         }
 
         // After a successful assertion, we need to update the passkey so that it has the latest

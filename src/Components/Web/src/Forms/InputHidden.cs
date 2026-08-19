@@ -25,12 +25,13 @@ public class InputHidden : InputBase<string?>
         builder.OpenElement(0, "input");
         builder.AddAttribute(1, "type", "hidden");
         builder.AddMultipleAttributes(2, AdditionalAttributes);
-        builder.AddAttributeIfNotNullOrEmpty(3, "name", NameAttributeValue);
-        builder.AddAttributeIfNotNullOrEmpty(4, "class", CssClass);
-        builder.AddAttribute(5, "value", CurrentValueAsString);
-        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.AddAttributeIfNotNullOrEmpty(3, "id", IdAttributeValue);
+        builder.AddAttributeIfNotNullOrEmpty(4, "name", NameAttributeValue);
+        builder.AddAttributeIfNotNullOrEmpty(5, "class", CssClass);
+        builder.AddAttribute(6, "value", CurrentValueAsString);
+        builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
         builder.SetUpdatesAttributeName("value");
-        builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
+        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 

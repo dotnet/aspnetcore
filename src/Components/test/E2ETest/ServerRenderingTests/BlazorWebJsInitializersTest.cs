@@ -5,6 +5,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -78,6 +79,38 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
             Browser.Click(By.Id("remove-server-component"));
             Browser.Exists(By.Id("classic-and-modern-circuit-closed"));
         }
+    }
+
+    [Fact]
+    public void ServerInitializerActivatedAfterEnhancedNavigationFromStaticPage()
+    {
+        Navigate($"{ServerPathBase}/initializers?streaming=false&wasm=false&server=false&auto-pause=true&auto-pause-delay-ms=10");
+
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return typeof Blazor.pauseCircuit === 'undefined'"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "Blazor.navigateTo('persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms=10')");
+
+        Browser.Exists(By.Id("render-mode-interactive"));
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return typeof Blazor.pauseCircuit === 'function'"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            """
+            window.autoPauseCallCount = 0;
+            const pauseCircuit = Blazor.pauseCircuit;
+            Blazor.pauseCircuit = (...args) => {
+                window.autoPauseCallCount++;
+                return pauseCircuit(...args);
+            };
+            Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+            Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+            document.dispatchEvent(new Event('visibilitychange'));
+            """);
+
+        Browser.Equal(1L, () => (long)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return window.autoPauseCallCount"));
     }
 
     private void EnableClassicInitializers(IWebDriver browser)
