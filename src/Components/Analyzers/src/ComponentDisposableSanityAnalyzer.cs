@@ -58,7 +58,15 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
 
                 foreach (var member in type.GetMembers())
                 {
-                    if (member is not IMethodSymbol { MethodKind: MethodKind.Ordinary, DeclaredAccessibility: Accessibility.Public, IsStatic: false } method
+                    if (member is not IMethodSymbol
+                        {
+                            MethodKind: MethodKind.Ordinary,
+                            DeclaredAccessibility: Accessibility.Public,
+                            IsStatic: false,
+                            IsGenericMethod: false,
+                            ReturnsByRef: false,
+                            ReturnsByRefReadonly: false
+                        } method
                         || !method.Parameters.IsEmpty)
                     {
                         continue;

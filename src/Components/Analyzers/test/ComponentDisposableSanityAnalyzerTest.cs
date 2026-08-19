@@ -211,4 +211,102 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
                 }
             });
     }
+
+    // -------------------------------------------------------------------------
+    // Method shapes that cannot implement IDisposable/IAsyncDisposable
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ComponentWithRefReturningDispose_NoBL0017()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            private int _value;
+
+            public ref int Dispose() => ref _value;
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void ComponentWithGenericDispose_NoBL0017()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            public void Dispose<T>() { }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void ComponentWithRefReturningDisposeAsync_NoBL0018()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            private ValueTask _value;
+
+            public ref ValueTask DisposeAsync() => ref _value;
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void ComponentWithRefReadonlyReturningDisposeAsync_NoBL0018()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            private ValueTask _value;
+
+            public ref readonly ValueTask DisposeAsync() => ref _value;
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void ComponentWithGenericDisposeAsync_NoBL0018()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            public ValueTask DisposeAsync<T>() => ValueTask.CompletedTask;
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
 }
