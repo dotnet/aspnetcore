@@ -1,0 +1,17 @@
+@page "/persistent-state/auto-pause-enhanced-navigation-landing"
+
+<p id="execution-mode">@(RendererInfo.IsInteractive ? "interactive" : "static")</p>
+
+<p>
+    <a id="navigate-to-auto-pause"
+       href="persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms=200">
+        Go to interactive server page
+    </a>
+</p>
+
+<p>
+    <a id="navigate-to-streaming-auto-pause"
+       href="persistent-state/auto-pause-enhanced-navigation-streaming?auto-pause=true&auto-pause-delay-ms=200">
+        Go to streaming interactive server page
+    </a>
+</p>

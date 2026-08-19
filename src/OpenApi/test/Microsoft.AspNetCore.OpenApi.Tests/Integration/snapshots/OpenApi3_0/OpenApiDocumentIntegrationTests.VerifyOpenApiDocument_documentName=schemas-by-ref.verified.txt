@@ -693,7 +693,8 @@
                     {
                       "enum": [
                         null
-                      ]
+                      ],
+                      "nullable": true
                     },
                     {
                       "$ref": "#/components/schemas/NullableResponseModel"
@@ -719,7 +720,8 @@
                   {
                     "enum": [
                       null
-                    ]
+                    ],
+                    "nullable": true
                   },
                   {
                     "$ref": "#/components/schemas/NullableRequestModel"
@@ -756,6 +758,23 @@
             "description": "OK"
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplexHierarchyModel"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/schemas-by-ref/nullable-array-elements": {
@@ -776,6 +795,74 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-and-non-nullable-array-elements": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "nullableValues",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "enum": [
+                      null
+                    ],
+                    "nullable": true
+                  },
+                  {
+                    "$ref": "#/components/schemas/TestEnum"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "values",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TestEnum"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/response-array-with-nullable-element": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TestEnum"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -925,7 +1012,8 @@
               {
                 "enum": [
                   null
-                ]
+                ],
+                "nullable": true
               },
               {
                 "$ref": "#/components/schemas/NestedModel"
@@ -1052,7 +1140,8 @@
               {
                 "enum": [
                   null
-                ]
+                ],
+                "nullable": true
               },
               {
                 "$ref": "#/components/schemas/TestEnum"
@@ -1215,7 +1304,8 @@
               {
                 "enum": [
                   null
-                ]
+                ],
+                "nullable": true
               },
               {
                 "$ref": "#/components/schemas/ComplexType"
@@ -1296,7 +1386,8 @@
               {
                 "enum": [
                   null
-                ]
+                ],
+                "nullable": true
               },
               {
                 "$ref": "#/components/schemas/ComplexType"
@@ -1621,7 +1712,8 @@
               {
                 "enum": [
                   null
-                ]
+                ],
+                "nullable": true
               },
               {
                 "$ref": "#/components/schemas/RefProfile"
