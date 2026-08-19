@@ -55,7 +55,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password);
 
         // Since we aren't confirmed yet, login should fail until we confirm
-        await UserStories.LoginFailsWithWrongPasswordAsync(client, userName, password);
+        await UserStories.LoginFailsAsync(client, userName, password);
         await register.ClickConfirmLinkAsync();
         await UserStories.LoginExistingUserAsync(client, userName, password);
     }
@@ -74,7 +74,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
 
         var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password);
 
-        await UserStories.LoginFailsWithWrongPasswordAsync(client, userName, password);
+        await UserStories.LoginFailsAsync(client, userName, password);
         await register.ClickConfirmLinkAsync();
         await UserStories.LoginExistingUserAsync(client, userName, password);
     }
@@ -107,7 +107,7 @@ public abstract class RegistrationTests<TStartup, TContext> : IClassFixture<Serv
         var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
 
         // Since we aren't confirmed yet, login should fail until we confirm
-        await UserStories.LoginFailsWithWrongPasswordAsync(client, userName, password);
+        await UserStories.LoginFailsAsync(client, userName, password);
     }
 
     [Fact]

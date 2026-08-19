@@ -406,6 +406,6 @@ public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFacto
         await UserStories.ConfirmEmailAsync(registrationEmail, client);
 
         // Act & Assert
-        await UserStories.LoginFailsWithWrongPasswordAsync(newClient, userName, wrongPassword);
+        await UserStories.LoginFailsAsync(newClient, userName, wrongPassword);
     }
 }
