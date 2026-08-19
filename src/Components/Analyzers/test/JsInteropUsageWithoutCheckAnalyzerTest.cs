@@ -34,9 +34,60 @@ namespace Microsoft.AspNetCore.Components
     {
     }
     
-    public sealed class RendererInfo()
+    public sealed class RendererInfo
     {
         public bool IsInteractive { get; } = false;
+    }
+
+    public readonly struct EventCallback
+    {
+        public static EventCallbackFactory Factory { get; } = new();
+    }
+
+    public readonly struct EventCallback<T>
+    {
+    }
+
+    public class ChangeEventArgs : EventArgs
+    {
+        public object Value { get; set; }
+    }
+
+    public class EventCallbackFactory
+    {
+        public EventCallback<T> Create<T>(object receiver, Action callback) => default;
+        public EventCallback<T> Create<T>(object receiver, Action<T> callback) => default;
+        public EventCallback<T> Create<T>(object receiver, Func<Task> callback) => default;
+        public EventCallback<ChangeEventArgs> CreateBinder<T>(object receiver, Action<T> setter, T value) => default;
+    }
+
+    namespace CompilerServices
+    {
+        public static class RuntimeHelpers
+        {
+            public static T TypeCheck<T>(T value) => value;
+        }
+    }
+
+    namespace Rendering
+    {
+        public class RenderTreeBuilder
+        {
+            public void OpenElement(int sequence, string elementName) { }
+            public void CloseElement() { }
+            public void AddAttribute<T>(int sequence, string name, T value) { }
+            public void AddMarkupContent(int sequence, string markupContent) { }
+            public void SetUpdatesAttributeName(string name) { }
+            public void AddContent(int sequence, object textContent) { }
+            public void OpenComponent<T>(int sequence) where T : IComponent { }
+            public void AddComponentParameter(int sequence, string name, object value) { }
+            public void CloseComponent() { }
+        }
+    }
+
+    namespace Web
+    {
+        public class MouseEventArgs { }
     }
 }
 
@@ -149,7 +200,7 @@ namespace ConsoleApplication1
         private IJSInProcessRuntime JSInProcess = default!;
         private IJSInProcessObjectReference JSInProcessObj = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             // IJSRuntime interface overloads
             await JS.InvokeAsync<double>(""scrollElementIntoView"", Array.Empty<object>());
@@ -201,7 +252,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             var someFlag = true;
             if (someFlag)
@@ -232,7 +283,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             var someFlag = true;
             if (someFlag)
@@ -267,7 +318,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (RendererInfo.IsInteractive)
             {
@@ -295,7 +346,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             var bCheck = true;
             var result = bCheck ? await JS.InvokeAsync<double>(""scrollElementIntoView"") : null;
@@ -323,7 +374,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             var result = RendererInfo.IsInteractive ? await JS.InvokeAsync<double>(""scrollElementIntoView"") : null;
         }
@@ -348,7 +399,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             var isInteractive = RendererInfo.IsInteractive;
             if (isInteractive)
@@ -377,7 +428,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             var isInteractive = true || RendererInfo.IsInteractive;
             if (isInteractive)
@@ -406,7 +457,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             var test = true;
 
@@ -440,7 +491,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             var result = RendererInfo.IsInteractive ? GetValue() : 0;
             if (result)
@@ -476,7 +527,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (RendererInfo.IsInteractive)
             {
@@ -510,7 +561,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (!RendererInfo.IsInteractive)
             {
@@ -542,7 +593,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (false)
             {
@@ -574,7 +625,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (RandomTrueCheck() && (RandomFalseCheck() || RendererInfo.IsInteractive))
             {
@@ -612,7 +663,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (RandomTrueCheck() && (RandomFalseCheck() || RendererInfo.IsInteractive))
             {
@@ -656,7 +707,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (!RendererInfo.IsInteractive)
             {
@@ -687,7 +738,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (RendererInfo.IsInteractive)
             {
@@ -721,7 +772,7 @@ namespace ConsoleApplication1
     {
         private IJSRuntime JS = default!;
 
-        protected async Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             if (false)
             {
@@ -739,6 +790,327 @@ namespace ConsoleApplication1
 
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 24, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInIfCheckShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            if (true && await JS.InvokeAsync<bool>(""isElementIntoView""))
+            {
+                // Do stuff
+            }
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 15, 31) }, Id = id, Message = messageInvokeAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData(@"RendererInfo.IsInteractive && await JS.InvokeAsync<bool>(""isElementIntoView"")")]
+    [InlineData(@"RendererInfo.IsInteractive || await JS.InvokeAsync<bool>(""isElementIntoView"")")]
+    [InlineData(@"!RendererInfo.IsInteractive && await JS.InvokeAsync<bool>(""isElementIntoView"")")]
+    [InlineData(@"!RendererInfo.IsInteractive || await JS.InvokeAsync<bool>(""isElementIntoView"")")]
+    public void JSInvokeInIfCheckWithIsInteractiveShouldNotThrowWarning(string condition)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            if (" + condition + @")
+            {
+                // Do stuff
+            }
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        // We cannot determine outcome of conditionals that involve IsInteractive check, so if present we don't throw a warning.
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void JSInvokeInMethodCallUsedInOnInitializedShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            await SomeOtherMethod();
+        }
+
+        protected async Task SomeOtherMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 20, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInMethodCallNotUsedInOnInitializedShouldNotThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            Console.WriteLine(""This should not fail!"");
+        }
+
+        protected async Task SomeOtherMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void JSInvokeInMethodInDeeperLevelShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            await SomeFirstMethod();
+        }
+
+        protected async Task SomeFirstMethod()
+        {
+            await SomeOtherMethod();
+        }
+
+        protected async Task SomeOtherMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 25, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Fact]
+    public void JSInvokeInMethodBeyondMaxDeepthShouldNotThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override async Task OnInitializedAsync()
+        {
+            await SomeFirstMethod();
+        }
+
+        protected async Task SomeFirstMethod()
+        {
+            await SomeSecondMethod();
+        }
+
+        protected async Task SomeSecondMethod()
+        {
+            await SomeInvokeMethod();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void JSInvokeInMethodFromDifferentComponentShouldThrowWarning()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class OtherComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        public async Task SomeOtherMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+
+    class TestComponent : ComponentBase
+    {
+        protected override async Task OnInitializedAsync()
+        {
+            var otherComponent = new OtherComponent();
+            await otherComponent.SomeOtherMethod();
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 15, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData("SomeInvokeMethod")]
+    [InlineData("() => SomeInvokeMethod()")]
+    public void JSInvokeInEventHandlerMethodShouldThrowWarning(string handler)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.AspNetCore.Components.Web;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            //  <button @onclick=""SomeInvokeMethod"">Button</button>
+            __builder.OpenElement(14, ""button"");
+            __builder.AddAttribute(12, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                " + handler + @"
+            ));
+            __builder.AddContent(16, ""Button"");
+            __builder.CloseElement();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 28, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
+        );
+    }
+
+    [Theory]
+    [InlineData("SomeInvokeMethod")]
+    [InlineData("() => SomeInvokeMethod()")]
+    public void JSInvokeInComponentEventHandlerMethodShouldThrowWarning(string handler)
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+    using Microsoft.AspNetCore.Components.Rendering;
+    using Microsoft.AspNetCore.Components.Web;
+
+    class TestComponent : ComponentBase
+    {
+        private IJSRuntime JS = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder __builder)
+        {
+            //  <MyComponent OnClick=""@(() => SomeInvokeMethod())""></MyComponent>
+            __builder.OpenComponent<ConsoleApplication1.Pages.MyComponent>(14);
+            __builder.AddComponentParameter(78, ""OnClick"", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs>>(Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                " + handler + @"
+            )));
+            __builder.CloseComponent();
+        }
+
+        protected async Task SomeInvokeMethod()
+        {
+            await JS.InvokeVoidAsync(""console.log"", ""This should fail!"");
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult { Locations = new[] { new DiagnosticResultLocation("Test0.cs", 27, 19) }, Id = id, Message = messageInvokeVoidAsync, Severity = DiagnosticSeverity.Warning, }
         );
     }
 }

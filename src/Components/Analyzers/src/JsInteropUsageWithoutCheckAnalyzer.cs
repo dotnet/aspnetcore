@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
 {
+    private const int MaxNestedMethodDepth = 2;
     private static readonly string[] JSInteropParts = new[] { "JSInterop", "Microsoft", };
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.JsInteropUsageWithoutIsInteractiveCheck);
@@ -43,8 +45,17 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
                 {
                     ComponentsApi.RendererInfo.MetadataName,
                     context.Compilation.GetTypeByMetadataName(ComponentsApi.RendererInfo.MetadataName)
+                },
+                {
+                    ComponentsApi.RenderTreeBuilder.MetadataName,
+                    context.Compilation.GetTypeByMetadataName(ComponentsApi.RenderTreeBuilder.MetadataName)
+                },
+                {
+                    ComponentsApi.EventCallbackFactory.MetadataName,
+                    context.Compilation.GetTypeByMetadataName(ComponentsApi.EventCallbackFactory.FullTypeName)
                 }
             };
+
             if (availableTypes[ComponentsApi.ComponentBase.MetadataName] is null
                 || availableTypes[ComponentsApi.JSInteropRuntime.MetadataName] is null
                 || availableTypes[ComponentsApi.JSObjectReference.MetadataName] is null
@@ -55,13 +66,24 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
 
             context.RegisterOperationBlockAction(context =>
             {
-                if (context.OwningSymbol is IMethodSymbol owningMethod
-                    && IsImplementationOfNotSafeMethod(owningMethod, availableTypes))
+                if (context.OwningSymbol is IMethodSymbol owningMethod)
                 {
-                    foreach (var childBlock in context.OperationBlocks)
+                    if (IsImplementationOfNotSafeMethod(owningMethod, availableTypes))
                     {
-                        // Should be one but could be more than one if there are multiple partial class definitions.
-                        AnalyzeOperationsTree(childBlock, new JSInteropAnalyzerState(context, availableTypes));
+                        foreach (var childBlock in context.OperationBlocks)
+                        {
+                            // Should be one but could be more than one if there are multiple partial class definitions.
+                            AnalyzeOperationsTree(childBlock, new JSInteropAnalyzerState(context, availableTypes));
+                        }
+                    }
+                    else if (ComponentFacts.IsBuildRenderTree(owningMethod, availableTypes[ComponentsApi.ComponentBase.MetadataName]))
+                    {
+                        
+                        foreach (var childBlock in context.OperationBlocks)
+                        {
+                            // Should be one but could be more than one if there are multiple partial class definitions.
+                            AnalyzeRendererForHandlers(childBlock, new JSInteropAnalyzerState(context, availableTypes));
+                        }
                     }
                 }
             });
@@ -311,10 +333,138 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
                 }
             }
         }
+        else if (state.CurrentDepth < MaxNestedMethodDepth
+            && state.BlockContext.OwningSymbol is IMethodSymbol methodSymbol
+            && ComponentFacts.IsComponentBase(methodSymbol.ContainingType, state.AvailableTypes[ComponentsApi.ComponentBase.MetadataName]))
+        {
+            AnalyzeMethodReference(invocation.TargetMethod, state);
+        }
+    }
+
+    private static void AnalyzeMethodReference(IMethodSymbol methodSymbol, JSInteropAnalyzerState state)
+    {
+        foreach (var syntaxRef in methodSymbol.DeclaringSyntaxReferences)
+        {
+            var syntaxNode = syntaxRef.GetSyntax();
+            if (syntaxNode is MethodDeclarationSyntax methodDecl)
+            {
+                var methodOperation = state.BlockContext.Compilation.GetSemanticModel(methodDecl.SyntaxTree).GetOperation(methodDecl);
+                if (methodOperation is null)
+                {
+                    continue;
+                }
+                var clonedState = state.Clone();
+                clonedState.CurrentDepth++;
+                AnalyzeOperationsTree(methodOperation, clonedState);
+            }
+        }
+    }
+
+    private static void AnalyzeRendererForHandlers(IOperation operation, JSInteropAnalyzerState state)
+    {
+        if (operation is IInvocationOperation invocation)
+        {
+            // Analyze if we have event handler, so we can check it for JSInterop calls.
+            AnalyzeInvocationForHandler(invocation, state);
+        }
+        else
+        {
+            // Expression statements, blocks, switch, cases etc. that have children.
+#pragma warning disable CS0618
+            foreach (var childOperation in operation.Children)
+#pragma warning restore CS0618
+            {
+                AnalyzeRendererForHandlers(childOperation, state);
+            }
+        }
+    }
+
+    private static void AnalyzeInvocationForHandler(IInvocationOperation invocation, JSInteropAnalyzerState state)
+    {
+        if (invocation.Instance?.Type is not null
+            && invocation.Arguments.Length >= 3)
+        {
+            var targetMethod = invocation.TargetMethod;
+            if (targetMethod.Name != "AddAttribute" && targetMethod.Name != "AddComponentParameter")
+            {
+                return;
+            }
+
+            // Get the third argument, which is the value of the attribute/parameter. If it's a delegate, we need to analyze it for JSInterop calls.
+            IOperation? suspectOperation = null;
+            var valueArgument = invocation.Arguments[2].Value;
+            if (valueArgument is IInvocationOperation invocationOperation)
+            {
+                if (SymbolEqualityComparer.Default.Equals(invocationOperation.TargetMethod.ContainingType, state.AvailableTypes[ComponentsApi.EventCallbackFactory.MetadataName])
+                    && invocationOperation.TargetMethod.Name != "CreateBinder"
+                    && invocationOperation.Arguments.Length >= 2
+                    && invocationOperation.Arguments[1].Value is IDelegateCreationOperation delegateCreation)
+                {
+                    suspectOperation = delegateCreation.Target;
+                }
+            }
+            else if (valueArgument is IDelegateCreationOperation delegateCreation
+                && (delegateCreation.Target is IAnonymousFunctionOperation || delegateCreation.Target is IMethodReferenceOperation))
+            {
+                suspectOperation = delegateCreation.Target;
+            }
+            else if (valueArgument is IConversionOperation conversionOperation
+                && conversionOperation.Operand.Type is not null && conversionOperation.Operand.Type.ContainingNamespace is not null
+                && conversionOperation.Operand.Type.ContainingNamespace.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal))
+            {
+                // If the value is a conversion operation, search if a delegate is created like RenderFragment or an EventCallback.
+                // Multiple delegates at once shouldn't be possible.
+                var delegateResult = FindFirstDelegateChild(conversionOperation.Operand);
+                if (delegateResult is not null
+                    && (delegateResult.Target is IAnonymousFunctionOperation || delegateResult.Target is IMethodReferenceOperation))
+                {
+                    suspectOperation = delegateResult.Target;
+                }
+            }
+
+            if (suspectOperation is IAnonymousFunctionOperation anonymousFunction)
+            {
+                AnalyzeOperationsTree(anonymousFunction.Body, state);
+            }
+            else if (suspectOperation is IMethodReferenceOperation methodReference)
+            {
+                AnalyzeMethodReference(methodReference.Method, state);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Probe an operation for delegate creation. If found, return the first occurrence. Otherwise search only inside Conversion or Invocation operations.
+    /// Should be more efficient than calling Descendants() and filtering for IDelegateCreationOperation, since we don't need to search inside all operations.
+    /// </summary>
+    private static IDelegateCreationOperation? FindFirstDelegateChild(IOperation currentOperation)
+    {
+        if (currentOperation is IDelegateCreationOperation delegateCreation)
+        {
+            return delegateCreation;
+        }
+
+        if (currentOperation is IArgumentOperation
+            || currentOperation is IConversionOperation
+            || currentOperation is IInvocationOperation)
+        {
+#pragma warning disable CS0618
+            foreach (var child in currentOperation.Children)
+#pragma warning restore CS0618
+            {
+                var result = FindFirstDelegateChild(child);
+                if (result is not null)
+                {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 
     private class JSInteropAnalyzerState
     {
+        public int CurrentDepth { get; set; }
         public bool IsInteractiveChecked { get; set; }
         public Dictionary<string, INamedTypeSymbol?> AvailableTypes { get; }
         public OperationBlockAnalysisContext BlockContext { get; }
@@ -331,6 +481,7 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
         {
             return new JSInteropAnalyzerState(this.BlockContext, this.AvailableTypes)
             {
+                CurrentDepth = this.CurrentDepth,
                 IsInteractiveChecked = this.IsInteractiveChecked,
                 SymbolChecks = new (this.SymbolChecks)
             };

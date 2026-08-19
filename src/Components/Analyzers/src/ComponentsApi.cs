@@ -80,6 +80,12 @@ internal static class ComponentsApi
         public const string IsInteractive = "IsInteractive";
     }
 
+    public static class RenderModeAttribute
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.RenderModeAttribute";
+        public const string MetadataName = FullTypeName;
+    }
+
     public static class JSInteropRuntime
     {
         public const string FullTypeName = "Microsoft.JSInterop.IJSRuntime";
@@ -89,6 +95,18 @@ internal static class ComponentsApi
     public static class JSObjectReference
     {
         public const string FullTypeName = "Microsoft.JSInterop.IJSObjectReference";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class WebAssembly
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.WebAssembly";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class WebAssemblyServer
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.WebAssembly.Server";
         public const string MetadataName = FullTypeName;
     }
 }
