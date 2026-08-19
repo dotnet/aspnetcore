@@ -23,4 +23,9 @@ public class DataProtectionTokenProviderOptions
     /// The amount of time a generated token remains valid.
     /// </value>
     public TimeSpan TokenLifespan { get; set; } = TimeSpan.FromDays(1);
+
+    /// <summary>
+    /// Gives control over the timestamps for testing purposes.
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
 }
