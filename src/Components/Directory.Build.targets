@@ -11,6 +11,23 @@
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
+  <!-- E2E app publishes use app-specific global properties while their framework dependencies
+       share the repository's normal build outputs. Do not create property-distinct dependency
+       builds that can concurrently rewrite those shared outputs. -->
+  <ItemDefinitionGroup Condition="'$(IsTestAssetProject)' == 'true'">
+    <ProjectReference>
+      <UndefineProperties>%(UndefineProperties);E2ECompileTestHarness;E2EAppMode;PublishDir;_E2EIsPublishing</UndefineProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
+  <!-- PrepareE2EApps supplies these properties to the app itself. Preserve them on that edge,
+       then remove them when the app traverses its own project references. -->
+  <ItemGroup Condition="'$(IsTestAssetProject)' == 'true'">
+    <ProjectReference Update="@(ProjectReference->WithMetadataValue('E2EApp', 'true'))">
+      <UndefineProperties />
+    </ProjectReference>
+  </ItemGroup>
+
   <!-- After ResolveReferences.targets (imported above) converts Reference to ProjectReference
        at evaluation time (which drops all custom metadata), re-apply metadata at evaluation
        time so it is always in effect for every build phase (Build, Publish, Razor, etc.):
