@@ -151,7 +151,7 @@ public partial class FormFileModelBinder : IModelBinder
                 }
 
                 if (file.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase) ||
-                    (file.Name.Length >= modelName.Length + 2 &&
+                    (file.Name.Length - 2 >= modelName.Length &&
                      file.Name.StartsWith(modelName, StringComparison.OrdinalIgnoreCase) &&
                      file.Name[modelName.Length] == '[' &&
                      file.Name[file.Name.Length - 1] == ']'))
