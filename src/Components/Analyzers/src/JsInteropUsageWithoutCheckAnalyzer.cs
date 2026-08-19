@@ -56,7 +56,7 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
             context.RegisterOperationBlockAction(context =>
             {
                 if (context.OwningSymbol is IMethodSymbol owningMethod
-                    && !IsImplementationOfOnAfterRender(owningMethod, availableTypes))
+                    && IsImplementationOfNotSafeMethod(owningMethod, availableTypes))
                 {
                     foreach (var childBlock in context.OperationBlocks)
                     {
@@ -68,22 +68,13 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private static bool IsImplementationOfOnAfterRender(IMethodSymbol methodSymbol, Dictionary<string, INamedTypeSymbol?> availableTypes)
+    private static bool IsImplementationOfNotSafeMethod(IMethodSymbol methodSymbol, Dictionary<string, INamedTypeSymbol?> availableTypes)
     {
-        if ((methodSymbol.Name != "OnAfterRender"
-            && methodSymbol.Name != "OnAfterRenderAsync")
-            || !methodSymbol.IsOverride)
+        if ((methodSymbol.Name == "OnInitialized" || methodSymbol.Name == "OnInitializedAsync"
+            || methodSymbol.Name == "OnParametersSet" || methodSymbol.Name == "OnParametersSetAsync")
+            && methodSymbol.IsOverride)
         {
-            return false;
-        }
-        var containingType = methodSymbol.ContainingType;
-        while (containingType is not null)
-        {
-            if (SymbolEqualityComparer.Default.Equals(containingType, availableTypes[ComponentsApi.ComponentBase.MetadataName]))
-            {
-                return true;
-            }
-            containingType = containingType.BaseType;
+            return ComponentFacts.IsComponentBase(methodSymbol.ContainingType, availableTypes[ComponentsApi.ComponentBase.MetadataName]!);
         }
         return false;
     }

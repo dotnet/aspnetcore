@@ -158,6 +158,27 @@ internal static class ComponentFacts
         return false;
     }
 
+    public static bool IsComponentBase(INamedTypeSymbol type, INamedTypeSymbol componentBaseType)
+    {
+        if (componentBaseType is null)
+        {
+            return false;
+        }
+
+        // Check if the type inherits from ComponentBase
+        var current = type.BaseType;
+        while (current != null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, componentBaseType))
+            {
+                return true;
+            }
+            current = current.BaseType;
+        }
+
+        return false;
+    }
+
     public static bool IsComponent(ComponentSymbols symbols, Compilation compilation, INamedTypeSymbol type)
     {
         if (symbols is null)
@@ -177,5 +198,14 @@ internal static class ComponentFacts
         }
 
         return true;
+    }
+
+    public static bool IsBuildRenderTree(IMethodSymbol methodSymbol, INamedTypeSymbol componentBaseTypedSymbol)
+    {
+        if (componentBaseTypedSymbol is null || methodSymbol.Name != "BuildRenderTree" || !methodSymbol.IsOverride)
+        {
+            return false;
+        }
+        return IsComponentBase(methodSymbol.ContainingType, componentBaseTypedSymbol);
     }
 }
