@@ -115,7 +115,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
 
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest)]
-    [InlineData(StatusCodes.Status404NotFound)]
+    [InlineData(StatusCodes.Status404NotFound)] // Does not require AllowStatusCode404Response.
     [InlineData(StatusCodes.Status418ImATeapot)]
     public async Task Invoke_BadHttpRequestException_PreservesStatusCode(int statusCode)
     {
@@ -161,22 +161,21 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     }
 
     [Fact]
-    public async Task Invoke_BadHttpRequestException_IExceptionHandlerCanOverrideStatusCode()
+    public async Task Invoke_BadHttpRequestException_Non404StatusDoesNotBypass404ResponseGuard()
     {
         var httpContext = CreateHttpContext();
-        var optionsAccessor = CreateOptionsAccessor();
-        var exceptionHandlers = new[]
+        var optionsAccessor = CreateOptionsAccessor(exceptionHandler: context =>
         {
-            new TestExceptionHandler(true, "handler", StatusCodes.Status422UnprocessableEntity),
-        };
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return Task.CompletedTask;
+        });
         var middleware = CreateMiddleware(
-            _ => throw new BadHttpRequestException("Bad request.", StatusCodes.Status418ImATeapot),
-            optionsAccessor,
-            exceptionHandlers);
+            _ => throw new BadHttpRequestException("Bad request.", StatusCodes.Status400BadRequest),
+            optionsAccessor);
 
-        await middleware.Invoke(httpContext);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
 
-        Assert.Equal(StatusCodes.Status422UnprocessableEntity, httpContext.Response.StatusCode);
+        Assert.IsType<BadHttpRequestException>(exception.InnerException);
     }
 
     [Theory]
@@ -703,23 +702,16 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     {
         private readonly bool _handle;
         private readonly string _name;
-        private readonly int? _statusCode;
 
-        public TestExceptionHandler(bool handle, string name, int? statusCode = null)
+        public TestExceptionHandler(bool handle, string name)
         {
             _handle = handle;
             _name = name;
-            _statusCode = statusCode;
         }
 
         public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
             httpContext.Items[_name] = true;
-            if (_statusCode is { } statusCode)
-            {
-                httpContext.Response.StatusCode = statusCode;
-            }
-
             return ValueTask.FromResult(_handle);
         }
     }
