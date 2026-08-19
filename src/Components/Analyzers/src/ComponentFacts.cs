@@ -139,23 +139,7 @@ internal static class ComponentFacts
             throw new ArgumentNullException(nameof(type));
         }
 
-        if (symbols.ComponentBaseType == null)
-        {
-            return false;
-        }
-
-        // Check if the type inherits from ComponentBase
-        var current = type.BaseType;
-        while (current != null)
-        {
-            if (SymbolEqualityComparer.Default.Equals(current, symbols.ComponentBaseType))
-            {
-                return true;
-            }
-            current = current.BaseType;
-        }
-
-        return false;
+        return IsComponentBase(type, symbols.ComponentBaseType);
     }
 
     public static bool IsComponentBase(INamedTypeSymbol type, INamedTypeSymbol componentBaseType)
