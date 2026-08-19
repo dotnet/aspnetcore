@@ -142,7 +142,7 @@ public class HttpConnectionDispatcherOptions
     /// principal, or <c>false</c> to reject the refresh. When rejected, the endpoint responds with
     /// HTTP 403 and the connection's current user remains in place.
     /// </summary>
-    public Func<AuthenticationRefreshContext, ValueTask<bool>>? OnAuthenticationRefresh { get; set; }
+    public Func<AuthenticationRefreshContext, Task<bool>>? OnAuthenticationRefresh { get; set; }
 
     internal bool TransportSendTimeoutEnabled => TransportSendTimeout != Timeout.InfiniteTimeSpan;
 

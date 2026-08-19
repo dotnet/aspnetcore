@@ -1,0 +1,66 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Text.Json;
+
+namespace DojoClient.E2E.Tests.ServiceOverrides;
+
+// A recorded model response, replayed by AGUIDojoApi so browser tests are deterministic.
+//
+// A call is selected by the text of the last user message, so a test can pick its own script
+// and give every run a unique lock namespace by appending a run id to the message it types.
+internal sealed class RecordedScript
+{
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+
+    public required List<RecordedCall> Calls { get; init; }
+
+    public static RecordedScript Load(string recordingFileName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(recordingFileName);
+
+        var assemblyDirectory = Path.GetDirectoryName(typeof(RecordedScript).Assembly.Location)
+            ?? throw new InvalidOperationException("Could not locate the E2E test assembly.");
+        var path = Path.Combine(assemblyDirectory, "Baselines", recordingFileName);
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException($"Recording not found: {path}", path);
+        }
+
+        return JsonSerializer.Deserialize<RecordedScript>(File.ReadAllText(path), SerializerOptions)
+            ?? throw new InvalidOperationException($"Recording decoded to null: {recordingFileName}");
+    }
+
+    public RecordedCall GetCall(string lastUserMessage)
+    {
+        foreach (var call in Calls)
+        {
+            if (lastUserMessage.StartsWith(call.Prompt, StringComparison.Ordinal))
+            {
+                return call;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"No recorded call matches the last user message '{lastUserMessage}'. " +
+            $"Recorded prompts: {string.Join(", ", Calls.Select(call => call.Prompt))}.");
+    }
+}
+
+internal sealed class RecordedCall
+{
+    /// <summary>The prefix of the last user message this call answers.</summary>
+    public required string Prompt { get; init; }
+
+    /// <summary>The response, split into the checkpoints a test can stop at.</summary>
+    public required List<RecordedFrame> Frames { get; init; }
+}
+
+internal sealed class RecordedFrame
+{
+    /// <summary>Name of the checkpoint, used to build the lock key that gates it.</summary>
+    public required string Name { get; init; }
+
+    /// <summary>The text chunks streamed for this checkpoint.</summary>
+    public required List<string> Chunks { get; init; }
+}

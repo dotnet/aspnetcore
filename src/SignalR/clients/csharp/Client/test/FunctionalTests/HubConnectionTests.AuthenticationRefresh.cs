@@ -325,7 +325,20 @@ public partial class HubConnectionTests
     [MemberData(nameof(TransportTypes))]
     public async Task RefreshChangingUserIdentifierClosesConnection(HttpTransportType transportType)
     {
-        await using (var server = await StartServer<Startup>())
+        // Changing the user identifier on refresh aborts the connection on the server. With Long Polling the
+        // client sends a best-effort DELETE to clean up the connection when it's disposed. That DELETE carries
+        // the refreshed token (which now maps to a different user) and races the server's teardown: if the
+        // connection hasn't been removed from the manager yet, the server rejects the DELETE with 403 and the
+        // transport logs ErrorSendingDeleteRequest. Once the connection has been removed the DELETE gets a 404
+        // and is treated as benign, so whether the error is logged depends purely on timing. The connection is
+        // already closed either way (the test asserts that below), so this teardown error is expected.
+        bool ExpectedErrors(WriteContext writeContext)
+        {
+            return writeContext.LoggerName == LongPollingTransportLoggerName &&
+                   writeContext.EventId.Name == "ErrorSendingDeleteRequest";
+        }
+
+        await using (var server = await StartServer<Startup>(ExpectedErrors))
         {
             // The SignalR UserIdentifier is derived from the JWT NameIdentifier claim, so changing
             // the user name on refresh changes the connection's UserIdentifier and should close it.

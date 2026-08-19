@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 internal static class ExpressionMemberAccessor
 {
     private static readonly ConcurrentDictionary<Expression, MemberInfo> _memberInfoCache = new();
-    private static readonly ConcurrentDictionary<MemberInfo, string> _displayNameCache = new();
+    private static readonly ConcurrentDictionary<(MemberInfo Member, string CultureName), string> _displayNameCache = new();
 
     static ExpressionMemberAccessor()
     {
@@ -54,9 +55,9 @@ internal static class ExpressionMemberAccessor
     {
         ArgumentNullException.ThrowIfNull(member);
 
-        return _displayNameCache.GetOrAdd(member, static m =>
+        return _displayNameCache.GetOrAdd((member, CultureInfo.CurrentUICulture.Name), static key =>
         {
-            var displayAttribute = m.GetCustomAttribute<DisplayAttribute>();
+            var displayAttribute = key.Member.GetCustomAttribute<DisplayAttribute>();
             if (displayAttribute is not null)
             {
                 var name = displayAttribute.GetName();
@@ -66,13 +67,13 @@ internal static class ExpressionMemberAccessor
                 }
             }
 
-            var displayNameAttribute = m.GetCustomAttribute<DisplayNameAttribute>();
+            var displayNameAttribute = key.Member.GetCustomAttribute<DisplayNameAttribute>();
             if (displayNameAttribute?.DisplayName is not null)
             {
                 return displayNameAttribute.DisplayName;
             }
 
-            return m.Name;
+            return key.Member.Name;
         });
     }
 
