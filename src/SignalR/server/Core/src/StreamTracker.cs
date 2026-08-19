@@ -17,10 +17,16 @@ internal sealed class StreamTracker
     private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals(nameof(BuildStream)));
     private readonly object[] _streamConverterArgs;
     private readonly ConcurrentDictionary<string, StreamRegistration> _lookup = new ConcurrentDictionary<string, StreamRegistration>();
+    private long _nextStreamOwner;
 
     public StreamTracker(int streamBufferCapacity)
     {
         _streamConverterArgs = new object[] { streamBufferCapacity };
+    }
+
+    public long GetNextStreamOwner()
+    {
+        return Interlocked.Increment(ref _nextStreamOwner);
     }
 
     /// <summary>
@@ -30,7 +36,7 @@ internal sealed class StreamTracker
         Justification = "BuildStream doesn't have trimming annotations.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
         Justification = "HubMethodDescriptor checks for ValueType streaming item types when PublishAot=true. Developers will get an exception in this situation before publishing.")]
-    public object AddStream(string streamId, Type itemType, Type targetType, object streamOwner)
+    public object AddStream(string streamId, Type itemType, Type targetType, long streamOwner)
     {
         Debug.Assert(RuntimeFeature.IsDynamicCodeSupported || !itemType.IsValueType, "HubMethodDescriptor ensures itemType is not a ValueType when PublishAot=true.");
 
@@ -44,7 +50,7 @@ internal sealed class StreamTracker
         return reader;
     }
 
-    private bool TryGetRegistration(string streamId, [NotNullWhen(true)] out StreamRegistration? registration)
+    private bool TryGetRegistration(string streamId, out StreamRegistration registration)
     {
         if (_lookup.TryGetValue(streamId, out registration))
         {
@@ -78,8 +84,7 @@ internal sealed class StreamTracker
 
     public bool TryComplete(CompletionMessage message)
     {
-        _lookup.TryRemove(message.InvocationId!, out var registration);
-        if (registration is null)
+        if (!_lookup.TryRemove(message.InvocationId!, out var registration))
         {
             return false;
         }
@@ -87,10 +92,10 @@ internal sealed class StreamTracker
         return true;
     }
 
-    public bool TryComplete(string streamId, object streamOwner)
+    public bool TryComplete(string streamId, long streamOwner)
     {
         if (_lookup.TryGetValue(streamId, out var registration) &&
-            ReferenceEquals(registration.Owner, streamOwner) &&
+            registration.Owner == streamOwner &&
             ((ICollection<KeyValuePair<string, StreamRegistration>>)_lookup).Remove(new KeyValuePair<string, StreamRegistration>(streamId, registration)))
         {
             registration.Converter.TryComplete(null);
@@ -113,15 +118,15 @@ internal sealed class StreamTracker
         return new ChannelConverter<T>(streamBufferCapacity);
     }
 
-    private sealed class StreamRegistration
+    private readonly struct StreamRegistration
     {
-        public StreamRegistration(object owner, IStreamConverter converter)
+        public StreamRegistration(long owner, IStreamConverter converter)
         {
             Owner = owner;
             Converter = converter;
         }
 
-        public object Owner { get; }
+        public long Owner { get; }
 
         public IStreamConverter Converter { get; }
     }

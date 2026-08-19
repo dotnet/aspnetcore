@@ -370,7 +370,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         var scope = _serviceScopeFactory.CreateAsyncScope();
         IHubActivator<THub>? hubActivator = null;
         THub? hub = null;
-        object? streamOwner = null;
+        long? streamOwner = null;
         try
         {
             hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
@@ -441,7 +441,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                                                         HubMethodInvocationMessage hubMethodInvocationMessage,
                                                         bool isStreamCall,
                                                         CancellationTokenSource? cts,
-                                                        object? streamOwner)
+                                                        long? streamOwner)
                     {
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
@@ -566,14 +566,14 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return !wasSemaphoreReleased;
     }
 
-    private static ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, object? streamOwner, IHubActivator<THub>? hubActivator,
+    private static ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, long? streamOwner, IHubActivator<THub>? hubActivator,
         THub? hub, AsyncServiceScope scope)
     {
         if (streamOwner is not null)
         {
             foreach (var streamId in hubMessage.StreamIds!)
             {
-                connection.StreamTracker.TryComplete(streamId, streamOwner);
+                connection.StreamTracker.TryComplete(streamId, streamOwner.Value);
             }
         }
 
@@ -587,7 +587,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
     private async Task StreamAsync(string invocationId, HubConnectionContext connection, HubCallerContext hubCallerContext, object?[] arguments, AsyncServiceScope scope,
         IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource? streamCts, HubMethodInvocationMessage hubMethodInvocationMessage,
-        HubMethodDescriptor descriptor, object? streamOwner)
+        HubMethodDescriptor descriptor, long? streamOwner)
     {
         string? error = null;
 
@@ -821,7 +821,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
     private void ReplaceArguments(HubMethodDescriptor descriptor, HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamCall,
         HubConnectionContext connection, AsyncServiceScope scope, ref object?[] arguments,
-        ref object? streamOwner, out CancellationTokenSource? cts)
+        ref long? streamOwner, out CancellationTokenSource? cts)
     {
         cts = null;
         // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
@@ -846,7 +846,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds![streamPointer]);
                 var itemType = descriptor.StreamingParameters![streamPointer];
                 arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
-                    itemType, descriptor.OriginalParameterTypes[parameterPointer], streamOwner ??= new object());
+                    itemType, descriptor.OriginalParameterTypes[parameterPointer], streamOwner ??= connection.StreamTracker.GetNextStreamOwner());
 
                 streamPointer++;
             }
