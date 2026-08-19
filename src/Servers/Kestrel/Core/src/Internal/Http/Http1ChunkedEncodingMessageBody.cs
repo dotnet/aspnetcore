@@ -344,6 +344,12 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                 AddAndCheckObservedBytes(reader.Consumed);
                 _inputLength = chunkSize;
                 _mode = Mode.Extension;
+
+                if (!_context.ServiceContext.ServerOptions.EnableChunkedExtensions)
+                {
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.ChunkedExtensionNotAllowed);
+                }
+
                 return;
             }
 
