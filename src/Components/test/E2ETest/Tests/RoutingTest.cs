@@ -923,6 +923,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/68642")]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_PushState()
     {
         SetUrlViaPushState("/");
