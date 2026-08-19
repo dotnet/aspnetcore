@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
+public sealed class JsInteropInteractiveRenderAnalyzer : DiagnosticAnalyzer
 {
     private const int MaxNestedMethodDepth = 2;
     private static readonly string[] JSInteropParts = new[] { "JSInterop", "Microsoft", };

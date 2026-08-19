@@ -14,7 +14,7 @@ public class JsInteropUsageAnalyzersIntegrationTest : DiagnosticVerifier
     {
         new InvokeAsyncOfObjectAnalyzer(),
         new JSInteropAnalyzer(),
-        new JsInteropUsageWithoutCheckAnalyzer()
+        new JsInteropInteractiveRenderAnalyzer()
     };
     private static readonly string BaseComponentDeclarations = @"
 namespace Microsoft.AspNetCore.Components

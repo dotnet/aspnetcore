@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test;
 
 public class JsInteropUsageWithoutCheckAnalyzerTest : DiagnosticVerifier
 {
-    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new JsInteropUsageWithoutCheckAnalyzer();
+    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new JsInteropInteractiveRenderAnalyzer();
     private static readonly string id = DiagnosticDescriptors.JsInteropUsageWithoutIsInteractiveCheck.Id;
     private static readonly string messageInvoke = "JS interop call 'Invoke' is used outside of OnAfterRender/OnAfterRenderAsync without checking RendererInfo.IsInteractive.";
     private static readonly string messageInvokeAsync = "JS interop call 'InvokeAsync' is used outside of OnAfterRender/OnAfterRenderAsync without checking RendererInfo.IsInteractive.";
