@@ -16,7 +16,7 @@ internal sealed class StreamTracker
 {
     private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals(nameof(BuildStream)));
     private readonly object[] _streamConverterArgs;
-    private readonly ConcurrentDictionary<string, IStreamConverter> _lookup = new ConcurrentDictionary<string, IStreamConverter>();
+    private readonly ConcurrentDictionary<string, StreamRegistration> _lookup = new ConcurrentDictionary<string, StreamRegistration>();
 
     public StreamTracker(int streamBufferCapacity)
     {
@@ -24,30 +24,29 @@ internal sealed class StreamTracker
     }
 
     /// <summary>
-    /// Creates a new stream and returns the ChannelReader for it as an object and a registration used for cleanup.
+    /// Creates a new stream and returns the ChannelReader for it as an object.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
         Justification = "BuildStream doesn't have trimming annotations.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
         Justification = "HubMethodDescriptor checks for ValueType streaming item types when PublishAot=true. Developers will get an exception in this situation before publishing.")]
-    public object AddStream(string streamId, Type itemType, Type targetType, out StreamRegistration streamRegistration)
+    public object AddStream(string streamId, Type itemType, Type targetType, object streamOwner)
     {
         Debug.Assert(RuntimeFeature.IsDynamicCodeSupported || !itemType.IsValueType, "HubMethodDescriptor ensures itemType is not a ValueType when PublishAot=true.");
 
         var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs)!;
         var reader = newConverter.GetReaderAsObject(targetType);
-        if (!_lookup.TryAdd(streamId, newConverter))
+        if (!_lookup.TryAdd(streamId, new StreamRegistration(streamOwner, newConverter)))
         {
             throw new HubException($"Stream ID '{streamId}' is already in use.");
         }
 
-        streamRegistration = new StreamRegistration(streamId, newConverter);
         return reader;
     }
 
-    private bool TryGetConverter(string streamId, [NotNullWhen(true)] out IStreamConverter? converter)
+    private bool TryGetRegistration(string streamId, [NotNullWhen(true)] out StreamRegistration? registration)
     {
-        if (_lookup.TryGetValue(streamId, out converter))
+        if (_lookup.TryGetValue(streamId, out registration))
         {
             return true;
         }
@@ -57,9 +56,9 @@ internal sealed class StreamTracker
 
     public bool TryProcessItem(StreamItemMessage message, [NotNullWhen(true)] out Task? task)
     {
-        if (TryGetConverter(message.InvocationId!, out var converter))
+        if (TryGetRegistration(message.InvocationId!, out var registration))
         {
-            task = converter.WriteToStream(message.Item);
+            task = registration.Converter.WriteToStream(message.Item);
             return true;
         }
 
@@ -69,9 +68,9 @@ internal sealed class StreamTracker
 
     public Type GetStreamItemType(string streamId)
     {
-        if (TryGetConverter(streamId, out var converter))
+        if (TryGetRegistration(streamId, out var registration))
         {
-            return converter.GetItemType();
+            return registration.Converter.GetItemType();
         }
 
         throw new KeyNotFoundException($"No stream with id '{streamId}' could be found.");
@@ -79,21 +78,22 @@ internal sealed class StreamTracker
 
     public bool TryComplete(CompletionMessage message)
     {
-        _lookup.TryRemove(message.InvocationId!, out var converter);
-        if (converter is null)
+        _lookup.TryRemove(message.InvocationId!, out var registration);
+        if (registration is null)
         {
             return false;
         }
-        converter.TryComplete(message.HasResult || message.Error == null ? null : new HubException(message.Error));
+        registration.Converter.TryComplete(message.HasResult || message.Error == null ? null : new HubException(message.Error));
         return true;
     }
 
-    public bool TryComplete(StreamRegistration streamRegistration)
+    public bool TryComplete(string streamId, object streamOwner)
     {
-        var stream = new KeyValuePair<string, IStreamConverter>(streamRegistration.StreamId, streamRegistration.Converter);
-        if (((ICollection<KeyValuePair<string, IStreamConverter>>)_lookup).Remove(stream))
+        if (_lookup.TryGetValue(streamId, out var registration) &&
+            ReferenceEquals(registration.Owner, streamOwner) &&
+            ((ICollection<KeyValuePair<string, StreamRegistration>>)_lookup).Remove(new KeyValuePair<string, StreamRegistration>(streamId, registration)))
         {
-            streamRegistration.Converter.TryComplete(null);
+            registration.Converter.TryComplete(null);
             return true;
         }
 
@@ -104,7 +104,7 @@ internal sealed class StreamTracker
     {
         foreach (var converter in _lookup)
         {
-            converter.Value.TryComplete(ex);
+            converter.Value.Converter.TryComplete(ex);
         }
     }
 
@@ -113,20 +113,20 @@ internal sealed class StreamTracker
         return new ChannelConverter<T>(streamBufferCapacity);
     }
 
-    public readonly struct StreamRegistration
+    private sealed class StreamRegistration
     {
-        internal StreamRegistration(string streamId, IStreamConverter converter)
+        public StreamRegistration(object owner, IStreamConverter converter)
         {
-            StreamId = streamId;
+            Owner = owner;
             Converter = converter;
         }
 
-        internal string StreamId { get; }
+        public object Owner { get; }
 
-        internal IStreamConverter Converter { get; }
+        public IStreamConverter Converter { get; }
     }
 
-    internal interface IStreamConverter
+    private interface IStreamConverter
     {
         Type GetItemType();
         object GetReaderAsObject(Type type);
