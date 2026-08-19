@@ -53,10 +53,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
         services.AddValidation(options =>
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
-#pragma warning restore ASP0029
 
         // Increase 10 MB hub message limit (default 32 KB)
         if (Configuration.GetValue<bool>("AllowLargeHubMessages"))

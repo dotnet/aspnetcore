@@ -61,7 +61,7 @@ public class AuthenticationStartupBase
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-                endpoints.MapBlazorHub(options => options.EnableAuthenticationRefresh = true)
+                endpoints.MapBlazorHub()
                     .AddEndpointFilter(async (context, next) =>
                     {
                         if (context.HttpContext.WebSockets.IsWebSocketRequest)
