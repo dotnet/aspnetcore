@@ -223,6 +223,25 @@ public class MethodHub : TestHub
         return sb.ToString();
     }
 
+    public async Task<string> StreamingConcatTwoStreams(ChannelReader<string> first, ChannelReader<string> second)
+    {
+        return await ReadStream(first) + await ReadStream(second);
+
+        static async Task<string> ReadStream(ChannelReader<string> source)
+        {
+            var result = new StringBuilder();
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    result.Append(item);
+                }
+            }
+
+            return result.ToString();
+        }
+    }
+
     public async Task StreamDontRead(ChannelReader<string> source)
     {
         while (await source.WaitToReadAsync())

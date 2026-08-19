@@ -370,6 +370,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         var scope = _serviceScopeFactory.CreateAsyncScope();
         IHubActivator<THub>? hubActivator = null;
         THub? hub = null;
+        List<StreamTracker.StreamRegistration>? streamRegistrations = null;
         try
         {
             hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
@@ -409,7 +410,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 CancellationTokenSource? cts = null;
                 if (descriptor.HasSyntheticArguments)
                 {
-                    ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, scope, ref arguments, out cts);
+                    ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, scope, ref arguments, ref streamRegistrations, out cts);
                 }
 
                 if (isStreamCall || isStreamResponse)
@@ -424,7 +425,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 if (isStreamResponse)
                 {
                     _ = StreamAsync(hubMethodInvocationMessage.InvocationId!, connection, hubCallerContext,
-                        arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor);
+                        arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor, streamRegistrations);
                 }
                 else
                 {
@@ -439,7 +440,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                                                         HubCallerContext hubCallerContext,
                                                         HubMethodInvocationMessage hubMethodInvocationMessage,
                                                         bool isStreamCall,
-                                                        CancellationTokenSource? cts)
+                                                        CancellationTokenSource? cts,
+                                                        List<StreamTracker.StreamRegistration>? streamRegistrations)
                     {
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
@@ -509,7 +511,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                             // And normal invocations handle cleanup below in the finally
                             if (isStreamCall)
                             {
-                                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                                await CleanupInvocation(connection, streamRegistrations, hubActivator, hub, scope);
                             }
                         }
 
@@ -521,7 +523,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         }
                     }
 
-                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall, cts);
+                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall, cts, streamRegistrations);
                 }
 
                 if (isStreamCall || isStreamResponse)
@@ -557,21 +559,21 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 {
                     wasSemaphoreReleased = !hubCallerClients.TrySetSemaphoreReleased();
                 }
-                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                await CleanupInvocation(connection, streamRegistrations, hubActivator, hub, scope);
             }
         }
 
         return !wasSemaphoreReleased;
     }
 
-    private static ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub>? hubActivator,
+    private static ValueTask CleanupInvocation(HubConnectionContext connection, List<StreamTracker.StreamRegistration>? streamRegistrations, IHubActivator<THub>? hubActivator,
         THub? hub, AsyncServiceScope scope)
     {
-        if (hubMessage.StreamIds != null)
+        if (streamRegistrations is not null)
         {
-            foreach (var stream in hubMessage.StreamIds)
+            foreach (var streamRegistration in streamRegistrations)
             {
-                connection.StreamTracker.TryComplete(CompletionMessage.Empty(stream));
+                connection.StreamTracker.TryComplete(streamRegistration);
             }
         }
 
@@ -584,7 +586,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     }
 
     private async Task StreamAsync(string invocationId, HubConnectionContext connection, HubCallerContext hubCallerContext, object?[] arguments, AsyncServiceScope scope,
-        IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource? streamCts, HubMethodInvocationMessage hubMethodInvocationMessage, HubMethodDescriptor descriptor)
+        IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource? streamCts, HubMethodInvocationMessage hubMethodInvocationMessage,
+        HubMethodDescriptor descriptor, List<StreamTracker.StreamRegistration>? streamRegistrations)
     {
         string? error = null;
 
@@ -671,7 +674,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 Activity.Current = previousActivity;
             }
 
-            await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+            await CleanupInvocation(connection, streamRegistrations, hubActivator, hub, scope);
 
             // Only remove/dispose the CTS if we successfully registered it, otherwise we'd evict
             // another invocation's CTS on ID collision.
@@ -817,7 +820,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     }
 
     private void ReplaceArguments(HubMethodDescriptor descriptor, HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamCall,
-        HubConnectionContext connection, AsyncServiceScope scope, ref object?[] arguments, out CancellationTokenSource? cts)
+        HubConnectionContext connection, AsyncServiceScope scope, ref object?[] arguments,
+        ref List<StreamTracker.StreamRegistration>? streamRegistrations, out CancellationTokenSource? cts)
     {
         cts = null;
         // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
@@ -842,7 +846,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds![streamPointer]);
                 var itemType = descriptor.StreamingParameters![streamPointer];
                 arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
-                    itemType, descriptor.OriginalParameterTypes[parameterPointer]);
+                    itemType, descriptor.OriginalParameterTypes[parameterPointer], out var streamRegistration);
+                (streamRegistrations ??= []).Add(streamRegistration);
 
                 streamPointer++;
             }
