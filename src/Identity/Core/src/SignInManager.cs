@@ -666,6 +666,7 @@ public class SignInManager<TUser> where TUser : class
     private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson)
     {
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+        ThrowIfNoPasskeyHandler();
 
         var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync();
         if (passkeyInfo is null)
