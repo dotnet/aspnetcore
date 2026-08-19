@@ -665,14 +665,15 @@ public class SignInManager<TUser> where TUser : class
 
     private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson)
     {
-        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
         ThrowIfNoPasskeyHandler();
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
 
         var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync();
         if (passkeyInfo is null)
         {
             return SignInResult.Failed;
         }
+
         if (!string.Equals(PasskeyOperations.Assertion, passkeyInfo.Operation, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
