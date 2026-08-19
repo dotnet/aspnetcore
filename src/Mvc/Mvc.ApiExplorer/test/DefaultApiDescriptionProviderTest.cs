@@ -1642,7 +1642,7 @@ public class DefaultApiDescriptionProviderTest
         var description = Assert.Single(descriptions);
         Assert.Equal(2, description.ParameterDescriptions.Count);
 
-        var header = Assert.Single(description.ParameterDescriptions, p => p.Name == "employee.X-MyCustomHeader");
+        var header = Assert.Single(description.ParameterDescriptions, p => p.Name == "X-MyCustomHeader");
         Assert.Same(BindingSource.Header, header.Source);
         Assert.Equal(typeof(string), header.Type);
 

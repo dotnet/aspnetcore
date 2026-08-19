@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -637,7 +638,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             var newContainerName = containerName;
             if (modelMetadata.ContainerType != null || !string.IsNullOrEmpty(bindingContext.BinderModelName))
             {
-                newContainerName = GetName(containerName, bindingContext);
+                newContainerName = GetName(containerName, bindingContext, source);
             }
 
             var metadataProperties = modelMetadata.Properties;
@@ -674,7 +675,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             return new ApiParameterDescription()
             {
                 ModelMetadata = bindingContext.ModelMetadata,
-                Name = GetName(containerName, bindingContext),
+                Name = GetName(containerName, bindingContext, source),
                 Source = source,
                 Type = GetModelType(bindingContext.ModelMetadata),
                 ParameterDescriptor = Parameter,
@@ -693,10 +694,14 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             return metadata.ModelType;
         }
 
-        private static string GetName(string containerName, ApiParameterDescriptionContext metadata)
+        private static string GetName(string containerName, ApiParameterDescriptionContext metadata, BindingSource? source)
         {
             var propertyName = !string.IsNullOrEmpty(metadata.BinderModelName) ? metadata.BinderModelName : metadata.PropertyName;
-            return ModelNames.CreatePropertyModelName(containerName, propertyName);
+            Debug.Assert(propertyName is not null);
+
+            return source == BindingSource.Header
+                ? propertyName
+                : ModelNames.CreatePropertyModelName(containerName, propertyName);
         }
 
         private readonly struct PropertyKey
