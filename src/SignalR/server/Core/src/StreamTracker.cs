@@ -41,13 +41,12 @@ internal sealed class StreamTracker
         Debug.Assert(RuntimeFeature.IsDynamicCodeSupported || !itemType.IsValueType, "HubMethodDescriptor ensures itemType is not a ValueType when PublishAot=true.");
 
         var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs)!;
-        var reader = newConverter.GetReaderAsObject(targetType);
         if (!_lookup.TryAdd(streamId, (streamOwner, newConverter)))
         {
             throw new HubException($"Stream ID '{streamId}' is already in use.");
         }
 
-        return reader;
+        return newConverter.GetReaderAsObject(targetType);
     }
 
     private bool TryGetRegistration(string streamId, out (long Owner, IStreamConverter Converter) registration)
