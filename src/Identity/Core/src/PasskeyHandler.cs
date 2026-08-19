@@ -35,7 +35,7 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     }
 
     /// <inheritdoc />
-    public bool SupportsKnownPasskeysSignalOptions => _userManager.SupportsUserPasskey;
+    public bool SupportsPasskeySignalOptions => _userManager.SupportsUserPasskey;
 
     /// <inheritdoc />
     public async Task<PasskeyCreationOptionsResult> MakeCreationOptionsAsync(PasskeyUserEntity userEntity, HttpContext httpContext)
@@ -161,7 +161,29 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     }
 
     /// <inheritdoc />
-    public async Task<KnownPasskeysSignalOptionsResult> MakeKnownPasskeysSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
+    public async Task<AllAcceptedCredentialsSignalOptionsResult> MakeAllAcceptedCredentialsSignalOptionsAsync(TUser user, HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        var userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
+        var passkeys = await _userManager.GetPasskeysAsync(user).ConfigureAwait(false);
+        var options = new AllAcceptedCredentialsSignalOptions
+        {
+            RpId = GetServerDomain(httpContext),
+            UserId = BufferSource.FromString(userId),
+            AllAcceptedCredentialIds = [.. passkeys.Select(p => BufferSource.FromBytes(p.CredentialId))],
+        };
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.AllAcceptedCredentialsSignalOptions);
+
+        return new AllAcceptedCredentialsSignalOptionsResult
+        {
+            SignalOptionsJson = optionsJson,
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<CurrentUserDetailsSignalOptionsResult> MakeCurrentUserDetailsSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(userEntity);
@@ -170,29 +192,28 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         var userId = await _userManager.GetUserIdAsync(user).ConfigureAwait(false);
         if (!string.Equals(userId, userEntity.Id, StringComparison.Ordinal))
         {
-            throw new InvalidOperationException(
-                $"The user entity ID '{userEntity.Id}' does not match the ID '{userId}' of the specified user.");
+            throw new ArgumentException(
+                $"The user entity ID '{userEntity.Id}' does not match the ID '{userId}' of the specified user.",
+                nameof(userEntity));
         }
 
-        var passkeys = await _userManager.GetPasskeysAsync(user).ConfigureAwait(false);
-        var options = new KnownPasskeysSignalOptions
+        var options = new CurrentUserDetailsSignalOptions
         {
             RpId = GetServerDomain(httpContext),
             UserId = BufferSource.FromString(userEntity.Id),
-            AllAcceptedCredentialIds = [.. passkeys.Select(p => BufferSource.FromBytes(p.CredentialId))],
             Name = userEntity.Name,
             DisplayName = userEntity.DisplayName,
         };
-        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.KnownPasskeysSignalOptions);
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.CurrentUserDetailsSignalOptions);
 
-        return new KnownPasskeysSignalOptionsResult
+        return new CurrentUserDetailsSignalOptionsResult
         {
             SignalOptionsJson = optionsJson,
         };
     }
 
     /// <inheritdoc />
-    public async Task<UnknownPasskeySignalOptionsResult?> MakeUnknownPasskeySignalOptionsAsync(string credentialJson, HttpContext httpContext)
+    public async Task<UnknownCredentialSignalOptionsResult?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson, HttpContext httpContext)
     {
         if (!_userManager.SupportsUserPasskey)
         {
@@ -220,14 +241,14 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             return null;
         }
 
-        var options = new UnknownPasskeySignalOptions
+        var options = new UnknownCredentialSignalOptions
         {
             RpId = GetServerDomain(httpContext),
             CredentialId = credential.Id,
         };
-        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.UnknownPasskeySignalOptions);
+        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.UnknownCredentialSignalOptions);
 
-        return new UnknownPasskeySignalOptionsResult
+        return new UnknownCredentialSignalOptionsResult
         {
             SignalOptionsJson = optionsJson,
         };

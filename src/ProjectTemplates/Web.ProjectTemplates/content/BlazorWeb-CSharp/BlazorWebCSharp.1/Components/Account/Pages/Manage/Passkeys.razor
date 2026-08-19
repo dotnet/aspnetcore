@@ -50,7 +50,7 @@ else
 
 @if (user is not null)
 {
-    <PasskeySignals User="user" />
+    <AcceptedCredentialsSignal User="user" />
 }
 
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">

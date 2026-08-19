@@ -243,11 +243,18 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             if (authenticationFeatures.HasFlag(AuthenticationFeatures.Passkeys))
             {
                 // Navigate to the passkey management page
+                await ClearPasskeySignalsAsync(page);
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("a[href=\"Account/Manage\"]"));
 
                 await page.WaitForSelectorAsync("text=Manage your account");
+
+                // The profile page signals the browser's passkey provider with the user's current details
+                var userDetails = await GetPasskeySignalAsync(page, "signalCurrentUserDetails");
+                Assert.Equal(new Uri(page.Url).Host, userDetails.GetProperty("rpId").GetString());
+                Assert.Equal(userName, userDetails.GetProperty("name").GetString());
+                Assert.Equal(userName, userDetails.GetProperty("displayName").GetString());
 
                 // Check that an error is displayed if passkey creation fails
                 await Task.WhenAll(
@@ -281,6 +288,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 // Now register a passkey with a valid name
                 await page.FillAsync("[name=\"Input.Name\"]", "My passkey");
+                await ClearPasskeySignalsAsync(page);
                 await page.ClickAsync("text=Continue");
 
                 await page.WaitForSelectorAsync("text=Passkey updated successfully");
@@ -292,11 +300,6 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 Assert.Single(storedCredentials);
                 Assert.Equal(storedCredentials, acceptedCredentials);
                 var passkeyCredentialId = storedCredentials[0];
-
-                var userDetails = await GetPasskeySignalAsync(page, "signalCurrentUserDetails");
-                Assert.Equal(new Uri(page.Url).Host, userDetails.GetProperty("rpId").GetString());
-                Assert.Equal(userName, userDetails.GetProperty("name").GetString());
-                Assert.Equal(userName, userDetails.GetProperty("displayName").GetString());
 
                 // Logout so that we can test the passkey login flow
                 await Task.WhenAll(
@@ -349,6 +352,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                     page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
 
+                await ClearPasskeySignalsAsync(page);
                 await page.ClickAsync("button[value=\"delete\"]");
                 await page.WaitForSelectorAsync("text=Passkey deleted successfully");
 
@@ -373,6 +377,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                     """);
 
                 await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await ClearPasskeySignalsAsync(page);
                 await page.ClickAsync("text=Log in with a passkey");
                 await page.WaitForSelectorAsync("text=Error: Invalid login attempt.");
                 var unknownCredential = await GetPasskeySignalAsync(page, "signalUnknownCredential");
@@ -423,10 +428,19 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             Assert.Fail($"The counter did not increment after {MaxIncrementAttempts} attempts");
         }
 
+        static Task ClearPasskeySignalsAsync(IPage page)
+        {
+            // Discards signals recorded so far so that GetPasskeySignalAsync can only see the ones
+            // that follow. AddInitScriptAsync only resets the array on a new document, and enhanced
+            // navigation does not start one.
+            return page.EvaluateAsync("() => { window.__passkeySignals = []; }");
+        }
+
         static async Task<JsonElement> GetPasskeySignalAsync(IPage page, string name)
         {
             await page.WaitForFunctionAsync($"() => window.__passkeySignals.some(s => s.name === '{name}')");
-            return await page.EvaluateAsync<JsonElement>($"() => window.__passkeySignals.find(s => s.name === '{name}').options");
+            // Read the most recent signal, since a single navigation can record more than one.
+            return await page.EvaluateAsync<JsonElement>($"() => window.__passkeySignals.findLast(s => s.name === '{name}').options");
         }
 
         static async Task<string[]> GetSignalledCredentialIdsAsync(IPage page)

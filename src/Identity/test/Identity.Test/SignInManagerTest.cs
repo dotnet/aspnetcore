@@ -649,15 +649,14 @@ public class SignInManagerTest
     }
 
     [Fact]
-    public async Task CanMakeKnownPasskeysSignalOptions()
+    public async Task CanMakeAllAcceptedCredentialsSignalOptions()
     {
         var user = new PocoUser { UserName = "Foo" };
-        var userEntity = new PasskeyUserEntity { Id = user.Id, Name = "Foo", DisplayName = "Foo Bar" };
         var expectedOptionsJson = "<some-options-json>";
         var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
         passkeyHandler
-            .Setup(h => h.MakeKnownPasskeysSignalOptionsAsync(user, userEntity, It.IsAny<HttpContext>()))
-            .Returns(Task.FromResult(new KnownPasskeysSignalOptionsResult
+            .Setup(h => h.MakeAllAcceptedCredentialsSignalOptionsAsync(user, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new AllAcceptedCredentialsSignalOptionsResult
             {
                 SignalOptionsJson = expectedOptionsJson,
             }))
@@ -666,7 +665,31 @@ public class SignInManagerTest
         var context = new DefaultHttpContext();
         var helper = SetupSignInManager(manager.Object, context);
 
-        var optionsJson = await helper.MakeKnownPasskeysSignalOptionsAsync(user, userEntity);
+        var optionsJson = await helper.MakeAllAcceptedCredentialsSignalOptionsAsync(user);
+
+        Assert.Equal(expectedOptionsJson, optionsJson);
+        passkeyHandler.Verify();
+    }
+
+    [Fact]
+    public async Task CanMakeCurrentUserDetailsSignalOptions()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var userEntity = new PasskeyUserEntity { Id = user.Id, Name = "Foo", DisplayName = "Foo Bar" };
+        var expectedOptionsJson = "<some-options-json>";
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeCurrentUserDetailsSignalOptionsAsync(user, userEntity, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new CurrentUserDetailsSignalOptionsResult
+            {
+                SignalOptionsJson = expectedOptionsJson,
+            }))
+            .Verifiable();
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        var context = new DefaultHttpContext();
+        var helper = SetupSignInManager(manager.Object, context);
+
+        var optionsJson = await helper.MakeCurrentUserDetailsSignalOptionsAsync(user, userEntity);
 
         Assert.Equal(expectedOptionsJson, optionsJson);
         passkeyHandler.Verify();
@@ -675,31 +698,31 @@ public class SignInManagerTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void SupportsKnownPasskeysSignalOptionsMatchesPasskeyHandler(bool supportsKnownPasskeysSignalOptions)
+    public void SupportsPasskeySignalOptionsMatchesPasskeyHandler(bool supportsPasskeySignalOptions)
     {
         var user = new PocoUser { UserName = "Foo" };
         var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
-        passkeyHandler.Setup(h => h.SupportsKnownPasskeysSignalOptions).Returns(supportsKnownPasskeysSignalOptions);
+        passkeyHandler.Setup(h => h.SupportsPasskeySignalOptions).Returns(supportsPasskeySignalOptions);
         var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
         var context = new DefaultHttpContext();
         var helper = SetupSignInManager(manager.Object, context);
 
-        Assert.Equal(supportsKnownPasskeysSignalOptions, helper.SupportsKnownPasskeysSignalOptions);
+        Assert.Equal(supportsPasskeySignalOptions, helper.SupportsPasskeySignalOptions);
     }
 
     [Fact]
-    public void SupportsKnownPasskeysSignalOptionsIsFalseWithoutPasskeyHandler()
+    public void SupportsPasskeySignalOptionsIsFalseWithoutPasskeyHandler()
     {
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user);
         var context = new DefaultHttpContext();
         var helper = SetupSignInManager(manager.Object, context);
 
-        Assert.False(helper.SupportsKnownPasskeysSignalOptions);
+        Assert.False(helper.SupportsPasskeySignalOptions);
     }
 
     [Fact]
-    public async Task MakeKnownPasskeysSignalOptionsThrowsWithoutPasskeyHandler()
+    public async Task MakeAllAcceptedCredentialsSignalOptionsThrowsWithoutPasskeyHandler()
     {
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user);
@@ -707,7 +730,21 @@ public class SignInManagerTest
         var helper = SetupSignInManager(manager.Object, context);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => helper.MakeKnownPasskeysSignalOptionsAsync(user, new()
+            () => helper.MakeAllAcceptedCredentialsSignalOptionsAsync(user));
+
+        Assert.Equal("This operation requires an IPasskeyHandler service to be registered.", ex.Message);
+    }
+
+    [Fact]
+    public async Task MakeCurrentUserDetailsSignalOptionsThrowsWithoutPasskeyHandler()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var manager = SetupUserManager(user);
+        var context = new DefaultHttpContext();
+        var helper = SetupSignInManager(manager.Object, context);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => helper.MakeCurrentUserDetailsSignalOptionsAsync(user, new()
             {
                 Id = user.Id,
                 Name = "Foo",
@@ -718,14 +755,14 @@ public class SignInManagerTest
     }
 
     [Fact]
-    public async Task CanMakeUnknownPasskeySignalOptions()
+    public async Task CanMakeUnknownCredentialSignalOptions()
     {
         var user = new PocoUser { UserName = "Foo" };
         var expectedOptionsJson = "<some-options-json>";
         var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
         passkeyHandler
-            .Setup(h => h.MakeUnknownPasskeySignalOptionsAsync("<some-passkey>", It.IsAny<HttpContext>()))
-            .Returns(Task.FromResult(new UnknownPasskeySignalOptionsResult
+            .Setup(h => h.MakeUnknownCredentialSignalOptionsAsync("<some-passkey>", It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new UnknownCredentialSignalOptionsResult
             {
                 SignalOptionsJson = expectedOptionsJson,
             }))
@@ -734,33 +771,33 @@ public class SignInManagerTest
         var context = new DefaultHttpContext();
         var helper = SetupSignInManager(manager.Object, context);
 
-        var optionsJson = await helper.MakeUnknownPasskeySignalOptionsAsync("<some-passkey>");
+        var optionsJson = await helper.MakeUnknownCredentialSignalOptionsAsync("<some-passkey>");
 
         Assert.Equal(expectedOptionsJson, optionsJson);
         passkeyHandler.Verify();
     }
 
     [Fact]
-    public async Task MakeUnknownPasskeySignalOptionsReturnsNullWhenHandlerReturnsNull()
+    public async Task MakeUnknownCredentialSignalOptionsReturnsNullWhenHandlerReturnsNull()
     {
         var user = new PocoUser { UserName = "Foo" };
         var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
         passkeyHandler
-            .Setup(h => h.MakeUnknownPasskeySignalOptionsAsync("<some-passkey>", It.IsAny<HttpContext>()))
-            .Returns(Task.FromResult<UnknownPasskeySignalOptionsResult>(null))
+            .Setup(h => h.MakeUnknownCredentialSignalOptionsAsync("<some-passkey>", It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult<UnknownCredentialSignalOptionsResult>(null))
             .Verifiable();
         var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
         var context = new DefaultHttpContext();
         var helper = SetupSignInManager(manager.Object, context);
 
-        var optionsJson = await helper.MakeUnknownPasskeySignalOptionsAsync("<some-passkey>");
+        var optionsJson = await helper.MakeUnknownCredentialSignalOptionsAsync("<some-passkey>");
 
         Assert.Null(optionsJson);
         passkeyHandler.Verify();
     }
 
     [Fact]
-    public async Task MakeUnknownPasskeySignalOptionsThrowsWithoutPasskeyHandler()
+    public async Task MakeUnknownCredentialSignalOptionsThrowsWithoutPasskeyHandler()
     {
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user);
@@ -768,7 +805,7 @@ public class SignInManagerTest
         var helper = SetupSignInManager(manager.Object, context);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => helper.MakeUnknownPasskeySignalOptionsAsync("<some-passkey>"));
+            () => helper.MakeUnknownCredentialSignalOptionsAsync("<some-passkey>"));
 
         Assert.Equal("This operation requires an IPasskeyHandler service to be registered.", ex.Message);
     }

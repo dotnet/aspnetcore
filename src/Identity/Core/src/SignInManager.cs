@@ -545,25 +545,64 @@ public class SignInManager<TUser> where TUser : class
 
     /// <summary>
     /// Gets a value indicating whether the registered <see cref="IPasskeyHandler{TUser}"/> supports
-    /// generating known passkeys signal options.
+    /// generating passkey signal options.
     /// </summary>
     /// <remarks>
-    /// Check this before calling <see cref="MakeKnownPasskeysSignalOptionsAsync(TUser, PasskeyUserEntity)"/>,
-    /// which throws when the handler does not support known passkeys signal options.
+    /// Check this before calling <see cref="MakeAllAcceptedCredentialsSignalOptionsAsync(TUser)"/> or
+    /// <see cref="MakeCurrentUserDetailsSignalOptionsAsync(TUser, PasskeyUserEntity)"/>, which throw
+    /// when the handler does not support passkey signal options.
     /// </remarks>
-    public virtual bool SupportsKnownPasskeysSignalOptions => _passkeyHandler?.SupportsKnownPasskeysSignalOptions ?? false;
+    public virtual bool SupportsPasskeySignalOptions => _passkeyHandler?.SupportsPasskeySignalOptions ?? false;
 
     /// <summary>
-    /// Generates the options used to signal the current state of a user's known passkeys to authenticators.
+    /// Generates the options used to signal the credentials that are currently registered for a user.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The returned JSON contains the arguments for both the <c>PublicKeyCredential.signalAllAcceptedCredentials()</c>
-    /// and <c>PublicKeyCredential.signalCurrentUserDetails()</c> JavaScript APIs, which let an authenticator
-    /// stop offering passkeys that were removed from the server and keep the user's details up to date.
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalAllAcceptedCredentials()</c>
+    /// JavaScript API, which lets an authenticator stop offering passkeys that were removed from the server.
     /// </para>
     /// <para>
-    /// Because these APIs reveal how many passkeys a user has, only call them when the user is authenticated.
+    /// Because the options reveal how many passkeys a user has, only call this when the user is authenticated.
+    /// </para>
+    /// <para>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose passkeys should be signaled.</param>
+    /// <returns>A JSON string representing the all accepted credentials signal options.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support passkey signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
+    /// </exception>
+    /// <example>
+    /// The following example shows how the result is used from JavaScript.
+    /// <code language="javascript">
+    /// await PublicKeyCredential.signalAllAcceptedCredentials?.(JSON.parse(signalOptionsJson));
+    /// </code>
+    /// </example>
+    public virtual async Task<string> MakeAllAcceptedCredentialsSignalOptionsAsync(TUser user)
+    {
+        ThrowIfNoPasskeyHandler();
+        ArgumentNullException.ThrowIfNull(user);
+
+        var result = await _passkeyHandler.MakeAllAcceptedCredentialsSignalOptionsAsync(user, Context);
+        return result.SignalOptionsJson;
+    }
+
+    /// <summary>
+    /// Generates the options used to signal the current details of a user.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalCurrentUserDetails()</c>
+    /// JavaScript API, which keeps the user's details up to date on the authenticator.
+    /// </para>
+    /// <para>
+    /// Because the options reveal the user's details, only call this when the user is authenticated.
     /// The <paramref name="userEntity"/> must have the same <see cref="PasskeyUserEntity.Id"/> that was passed to
     /// <see cref="MakePasskeyCreationOptionsAsync(PasskeyUserEntity)"/> when the passkeys were created,
     /// otherwise the authenticator will not recognize the user and the signal will have no effect.
@@ -572,31 +611,29 @@ public class SignInManager<TUser> where TUser : class
     /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
     /// </para>
     /// </remarks>
-    /// <param name="user">The user whose passkeys should be signaled.</param>
+    /// <param name="user">The user whose details should be signaled.</param>
     /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
-    /// <returns>A JSON string representing the known passkeys signal options.</returns>
+    /// <returns>A JSON string representing the current user details signal options.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
     /// </exception>
     /// <exception cref="NotSupportedException">
-    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support known passkeys signal options.
-    /// See <see cref="SupportsKnownPasskeysSignalOptions"/>.
+    /// Thrown when the registered <see cref="IPasskeyHandler{TUser}"/> does not support passkey signal options.
+    /// See <see cref="SupportsPasskeySignalOptions"/>.
     /// </exception>
     /// <example>
     /// The following example shows how the result is used from JavaScript.
     /// <code language="javascript">
-    /// const { rpId, userId, allAcceptedCredentialIds, name, displayName } = JSON.parse(signalOptionsJson);
-    /// await PublicKeyCredential.signalAllAcceptedCredentials?.({ rpId, userId, allAcceptedCredentialIds });
-    /// await PublicKeyCredential.signalCurrentUserDetails?.({ rpId, userId, name, displayName });
+    /// await PublicKeyCredential.signalCurrentUserDetails?.(JSON.parse(signalOptionsJson));
     /// </code>
     /// </example>
-    public virtual async Task<string> MakeKnownPasskeysSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
+    public virtual async Task<string> MakeCurrentUserDetailsSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(userEntity);
 
-        var result = await _passkeyHandler.MakeKnownPasskeysSignalOptionsAsync(user, userEntity, Context);
+        var result = await _passkeyHandler.MakeCurrentUserDetailsSignalOptionsAsync(user, userEntity, Context);
         return result.SignalOptionsJson;
     }
 
@@ -604,13 +641,13 @@ public class SignInManager<TUser> where TUser : class
     /// Generates options used to signal that a passkey credential is unknown to the server.
     /// </summary>
     /// <remarks>
-    /// The returned JSON is accepted by the <c>PublicKeyCredential.signalUnknownCredential()</c> JavaScript API.
-    /// Calling that API permanently deletes the passkey from the browser's passkey provider. This method only
-    /// returns options when no user on the server has the credential.
+    /// The returned JSON is passed unchanged to the <c>PublicKeyCredential.signalUnknownCredential()</c>
+    /// JavaScript API. Calling that API permanently deletes the passkey from the browser's passkey provider.
+    /// This method only returns options when no user on the server has the credential.
     /// </remarks>
     /// <param name="credentialJson">The JSON representation of the passkey credential.</param>
     /// <returns>
-    /// A JSON string representing the unknown passkey signal options when the credential is unknown to the server,
+    /// A JSON string representing the unknown credential signal options when the credential is unknown to the server,
     /// otherwise <see langword="null"/>.
     /// </returns>
     /// <exception cref="InvalidOperationException">
@@ -620,15 +657,15 @@ public class SignInManager<TUser> where TUser : class
     /// <example>
     /// The following example shows how the result is used from JavaScript.
     /// <code language="javascript">
-    /// await PublicKeyCredential.signalUnknownCredential?.(signalOptions);
+    /// await PublicKeyCredential.signalUnknownCredential?.(JSON.parse(signalOptionsJson));
     /// </code>
     /// </example>
-    public virtual async Task<string?> MakeUnknownPasskeySignalOptionsAsync(string credentialJson)
+    public virtual async Task<string?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
 
-        var result = await _passkeyHandler.MakeUnknownPasskeySignalOptionsAsync(credentialJson, Context);
+        var result = await _passkeyHandler.MakeUnknownCredentialSignalOptionsAsync(credentialJson, Context);
         return result?.SignalOptionsJson;
     }
 

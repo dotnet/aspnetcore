@@ -13,9 +13,10 @@ namespace Microsoft.AspNetCore.Identity;
 [JsonSerializable(typeof(PublicKeyCredential<AuthenticatorAttestationResponse>))]
 [JsonSerializable(typeof(PasskeyAttestationState))]
 [JsonSerializable(typeof(PasskeyAssertionState))]
-[JsonSerializable(typeof(KnownPasskeysSignalOptions))]
+[JsonSerializable(typeof(AllAcceptedCredentialsSignalOptions))]
+[JsonSerializable(typeof(CurrentUserDetailsSignalOptions))]
 [JsonSerializable(typeof(PublicKeyCredentialId))]
-[JsonSerializable(typeof(UnknownPasskeySignalOptions))]
+[JsonSerializable(typeof(UnknownCredentialSignalOptions))]
 [JsonSourceGenerationOptions(
     JsonSerializerDefaults.Web,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

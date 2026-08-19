@@ -4,13 +4,13 @@
 namespace Microsoft.AspNetCore.Identity;
 
 /// <summary>
-/// Represents the information needed to signal that a passkey is unknown to the server.
+/// Represents the information needed to signal that a credential is unknown to the server.
 /// </summary>
 /// <remarks>
 /// These options are accepted by the WebAuthn <c>signalUnknownCredential</c> method.
 /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
 /// </remarks>
-internal sealed class UnknownPasskeySignalOptions
+internal sealed class UnknownCredentialSignalOptions
 {
     /// <summary>
     /// Gets the relying party identifier.

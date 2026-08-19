@@ -15,73 +15,135 @@ namespace Microsoft.AspNetCore.Identity.Test;
 public class PasskeyHandlerSignalTest
 {
     [Fact]
-    public async Task CanMakeKnownPasskeysSignalOptions()
+    public async Task CanMakeAllAcceptedCredentialsSignalOptions()
     {
         var user = new PocoUser { UserName = "Foo" };
         var userManager = SetupUserManager(user, CreatePasskey([1, 2, 3]), CreatePasskey([4, 5, 6]));
         var handler = CreateHandler(userManager);
         var httpContext = CreateHttpContext("contoso.com", port: 5001);
 
-        var result = await handler.MakeKnownPasskeysSignalOptionsAsync(user, CreateUserEntity(user, "Foo", "Foo Bar"), httpContext);
+        var result = await handler.MakeAllAcceptedCredentialsSignalOptionsAsync(user, httpContext);
 
         var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
         Assert.Equal("contoso.com", options.GetProperty("rpId").GetString());
         Assert.Equal(Base64Url.EncodeToString(Encoding.UTF8.GetBytes(user.Id)), options.GetProperty("userId").GetString());
-        Assert.Equal("Foo", options.GetProperty("name").GetString());
-        Assert.Equal("Foo Bar", options.GetProperty("displayName").GetString());
         Assert.Collection(options.GetProperty("allAcceptedCredentialIds").EnumerateArray(),
             id => Assert.Equal(Base64Url.EncodeToString([1, 2, 3]), id.GetString()),
             id => Assert.Equal(Base64Url.EncodeToString([4, 5, 6]), id.GetString()));
     }
 
     [Fact]
-    public void SupportsKnownPasskeysSignalOptionsIsTrue()
+    public async Task MakeAllAcceptedCredentialsSignalOptionsOnlyIncludesSpecifiedMembers()
     {
         var user = new PocoUser { UserName = "Foo" };
         var handler = CreateHandler(SetupUserManager(user));
 
-        Assert.True(handler.SupportsKnownPasskeysSignalOptions);
+        var result = await handler.MakeAllAcceptedCredentialsSignalOptionsAsync(user, CreateHttpContext());
+
+        AssertMemberNames(result.SignalOptionsJson, "rpId", "userId", "allAcceptedCredentialIds");
     }
 
     [Fact]
-    public void SupportsKnownPasskeysSignalOptionsIsFalseWhenStoreDoesNotSupportPasskeys()
+    public void SupportsPasskeySignalOptionsIsTrue()
     {
         var user = new PocoUser { UserName = "Foo" };
+        var handler = CreateHandler(SetupUserManager(user));
+
+        Assert.True(handler.SupportsPasskeySignalOptions);
+    }
+
+    [Fact]
+    public void SupportsPasskeySignalOptionsIsFalseWhenStoreDoesNotSupportPasskeys()
+    {
         var userManager = MockHelpers.MockUserManager<PocoUser>();
         userManager.Setup(m => m.SupportsUserPasskey).Returns(false);
         var handler = CreateHandler(userManager.Object);
 
-        Assert.False(handler.SupportsKnownPasskeysSignalOptions);
+        Assert.False(handler.SupportsPasskeySignalOptions);
     }
 
     [Fact]
-    public async Task MakeKnownPasskeysSignalOptionsUsesConfiguredServerDomain()
+    public async Task MakeAllAcceptedCredentialsSignalOptionsUsesConfiguredServerDomain()
     {
         var user = new PocoUser { UserName = "Foo" };
         var userManager = SetupUserManager(user);
         var handler = CreateHandler(userManager, new() { ServerDomain = "fabrikam.com" });
         var httpContext = CreateHttpContext("contoso.com");
 
-        var result = await handler.MakeKnownPasskeysSignalOptionsAsync(user, CreateUserEntity(user), httpContext);
+        var result = await handler.MakeAllAcceptedCredentialsSignalOptionsAsync(user, httpContext);
 
         var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
         Assert.Equal("fabrikam.com", options.GetProperty("rpId").GetString());
     }
 
     [Fact]
-    public async Task MakeKnownPasskeysSignalOptionsWithoutPasskeysReturnsEmptyCredentialList()
+    public async Task MakeAllAcceptedCredentialsSignalOptionsWithoutPasskeysReturnsEmptyCredentialList()
     {
         var user = new PocoUser { UserName = "Foo" };
         var handler = CreateHandler(SetupUserManager(user));
 
-        var result = await handler.MakeKnownPasskeysSignalOptionsAsync(user, CreateUserEntity(user), CreateHttpContext());
+        var result = await handler.MakeAllAcceptedCredentialsSignalOptionsAsync(user, CreateHttpContext());
 
         var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
         Assert.Empty(options.GetProperty("allAcceptedCredentialIds").EnumerateArray());
     }
 
     [Fact]
-    public async Task MakeKnownPasskeysSignalOptionsThrowsWhenUserEntityIdDoesNotMatchUser()
+    public async Task CanMakeCurrentUserDetailsSignalOptions()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var userManager = SetupUserManager(user, CreatePasskey([1, 2, 3]));
+        var handler = CreateHandler(userManager);
+        var httpContext = CreateHttpContext("contoso.com", port: 5001);
+
+        var result = await handler.MakeCurrentUserDetailsSignalOptionsAsync(user, CreateUserEntity(user, "Foo", "Foo Bar"), httpContext);
+
+        var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
+        Assert.Equal("contoso.com", options.GetProperty("rpId").GetString());
+        Assert.Equal(Base64Url.EncodeToString(Encoding.UTF8.GetBytes(user.Id)), options.GetProperty("userId").GetString());
+        Assert.Equal("Foo", options.GetProperty("name").GetString());
+        Assert.Equal("Foo Bar", options.GetProperty("displayName").GetString());
+    }
+
+    [Fact]
+    public async Task MakeCurrentUserDetailsSignalOptionsOnlyIncludesSpecifiedMembers()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var handler = CreateHandler(SetupUserManager(user, CreatePasskey([1, 2, 3])));
+
+        var result = await handler.MakeCurrentUserDetailsSignalOptionsAsync(user, CreateUserEntity(user), CreateHttpContext());
+
+        AssertMemberNames(result.SignalOptionsJson, "rpId", "userId", "name", "displayName");
+    }
+
+    [Fact]
+    public async Task MakeCurrentUserDetailsSignalOptionsDoesNotRetrievePasskeys()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var userManager = SetupUserManagerMock(user);
+        var handler = CreateHandler(userManager.Object);
+
+        await handler.MakeCurrentUserDetailsSignalOptionsAsync(user, CreateUserEntity(user), CreateHttpContext());
+
+        userManager.Verify(m => m.GetPasskeysAsync(It.IsAny<PocoUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task MakeCurrentUserDetailsSignalOptionsUsesConfiguredServerDomain()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var userManager = SetupUserManager(user);
+        var handler = CreateHandler(userManager, new() { ServerDomain = "fabrikam.com" });
+        var httpContext = CreateHttpContext("contoso.com");
+
+        var result = await handler.MakeCurrentUserDetailsSignalOptionsAsync(user, CreateUserEntity(user), httpContext);
+
+        var options = JsonSerializer.Deserialize<JsonElement>(result.SignalOptionsJson);
+        Assert.Equal("fabrikam.com", options.GetProperty("rpId").GetString());
+    }
+
+    [Fact]
+    public async Task MakeCurrentUserDetailsSignalOptionsThrowsWhenUserEntityIdDoesNotMatchUser()
     {
         var user = new PocoUser { UserName = "Foo" };
         var handler = CreateHandler(SetupUserManager(user));
@@ -92,21 +154,22 @@ public class PasskeyHandlerSignalTest
             DisplayName = "Foo",
         };
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => handler.MakeKnownPasskeysSignalOptionsAsync(user, userEntity, CreateHttpContext()));
+        var ex = await Assert.ThrowsAsync<ArgumentException>(
+            () => handler.MakeCurrentUserDetailsSignalOptionsAsync(user, userEntity, CreateHttpContext()));
 
-        Assert.Equal($"The user entity ID 'some-other-id' does not match the ID '{user.Id}' of the specified user.", ex.Message);
+        Assert.Equal("userEntity", ex.ParamName);
+        Assert.StartsWith($"The user entity ID 'some-other-id' does not match the ID '{user.Id}' of the specified user.", ex.Message);
     }
 
     [Fact]
-    public async Task CanMakeUnknownPasskeySignalOptions()
+    public async Task CanMakeUnknownCredentialSignalOptions()
     {
         var user = new PocoUser { UserName = "Foo" };
         var credentialId = (byte[])[1, 2, 3];
         var userManager = SetupUserManager(user);
         var handler = CreateHandler(userManager);
 
-        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync(
             CreateAssertionCredentialJson(credentialId),
             CreateHttpContext());
 
@@ -120,7 +183,21 @@ public class PasskeyHandlerSignalTest
     }
 
     [Fact]
-    public async Task MakeUnknownPasskeySignalOptionsReturnsNullWhenCredentialBelongsToAUser()
+    public async Task MakeUnknownCredentialSignalOptionsOnlyIncludesSpecifiedMembers()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var handler = CreateHandler(SetupUserManager(user));
+
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync(
+            CreateAssertionCredentialJson([1, 2, 3]),
+            CreateHttpContext());
+
+        Assert.NotNull(result);
+        AssertMemberNames(result.SignalOptionsJson, "rpId", "credentialId");
+    }
+
+    [Fact]
+    public async Task MakeUnknownCredentialSignalOptionsReturnsNullWhenCredentialBelongsToAUser()
     {
         var user = new PocoUser { UserName = "Foo" };
         var credentialId = (byte[])[1, 2, 3];
@@ -130,7 +207,7 @@ public class PasskeyHandlerSignalTest
             .ReturnsAsync(user);
         var handler = CreateHandler(userManager.Object);
 
-        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync(
             CreateAssertionCredentialJson(credentialId),
             CreateHttpContext());
 
@@ -138,22 +215,22 @@ public class PasskeyHandlerSignalTest
     }
 
     [Fact]
-    public async Task MakeUnknownPasskeySignalOptionsReturnsNullForMalformedJson()
+    public async Task MakeUnknownCredentialSignalOptionsReturnsNullForMalformedJson()
     {
         var user = new PocoUser { UserName = "Foo" };
         var handler = CreateHandler(SetupUserManager(user));
 
-        var result = await handler.MakeUnknownPasskeySignalOptionsAsync("{", CreateHttpContext());
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync("{", CreateHttpContext());
 
         Assert.Null(result);
     }
 
     [Fact]
-    public async Task MakeUnknownPasskeySignalOptionsReturnsNullWhenStoreDoesNotSupportPasskeys()
+    public async Task MakeUnknownCredentialSignalOptionsReturnsNullWhenStoreDoesNotSupportPasskeys()
     {
         var handler = CreateHandler(MockHelpers.TestUserManager<PocoUser>());
 
-        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync(
             CreateAssertionCredentialJson([1, 2, 3]),
             CreateHttpContext());
 
@@ -161,13 +238,13 @@ public class PasskeyHandlerSignalTest
     }
 
     [Fact]
-    public async Task CanMakeUnknownPasskeySignalOptionsFromAttestationCredential()
+    public async Task CanMakeUnknownCredentialSignalOptionsFromAttestationCredential()
     {
         var user = new PocoUser { UserName = "Foo" };
         var credentialId = (byte[])[1, 2, 3];
         var handler = CreateHandler(SetupUserManager(user));
 
-        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync(
             CreateAttestationCredentialJson(credentialId),
             CreateHttpContext());
 
@@ -177,12 +254,12 @@ public class PasskeyHandlerSignalTest
     }
 
     [Fact]
-    public async Task MakeUnknownPasskeySignalOptionsUsesConfiguredServerDomain()
+    public async Task MakeUnknownCredentialSignalOptionsUsesConfiguredServerDomain()
     {
         var user = new PocoUser { UserName = "Foo" };
         var handler = CreateHandler(SetupUserManager(user), new() { ServerDomain = "fabrikam.com" });
 
-        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync(
             CreateAssertionCredentialJson([1, 2, 3]),
             CreateHttpContext("contoso.com"));
 
@@ -192,13 +269,13 @@ public class PasskeyHandlerSignalTest
     }
 
     [Fact]
-    public async Task MakeUnknownPasskeySignalOptionsUsesUnpaddedBase64UrlCredentialId()
+    public async Task MakeUnknownCredentialSignalOptionsUsesUnpaddedBase64UrlCredentialId()
     {
         var user = new PocoUser { UserName = "Foo" };
         var credentialId = (byte[])[251, 255];
         var handler = CreateHandler(SetupUserManager(user));
 
-        var result = await handler.MakeUnknownPasskeySignalOptionsAsync(
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync(
             CreateAssertionCredentialJson(credentialId),
             CreateHttpContext());
 
@@ -208,6 +285,13 @@ public class PasskeyHandlerSignalTest
         Assert.Equal("-_8", encodedCredentialId);
         Assert.NotNull(encodedCredentialId);
         Assert.DoesNotContain('=', encodedCredentialId);
+    }
+
+    private static void AssertMemberNames(string optionsJson, params string[] expectedNames)
+    {
+        var options = JsonSerializer.Deserialize<JsonElement>(optionsJson);
+        var actualNames = options.EnumerateObject().Select(p => p.Name);
+        Assert.Equal(expectedNames, actualNames);
     }
 
     private static PasskeyHandler<PocoUser> CreateHandler(UserManager<PocoUser> userManager, IdentityPasskeyOptions? options = null)

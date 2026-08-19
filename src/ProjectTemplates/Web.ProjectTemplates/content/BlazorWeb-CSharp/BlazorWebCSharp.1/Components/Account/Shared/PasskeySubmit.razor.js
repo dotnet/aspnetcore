@@ -39,6 +39,7 @@ async function requestCredential(email, mediation, signal) {
 
 customElements.define('passkey-submit', class extends HTMLElement {
     static formAssociated = true;
+    static observedAttributes = ['unknown-credential-signal-options'];
 
     async connectedCallback() {
         this.internals = this.attachInternals();
@@ -46,7 +47,6 @@ customElements.define('passkey-submit', class extends HTMLElement {
             operation: this.getAttribute('operation'),
             name: this.getAttribute('name'),
             emailName: this.getAttribute('email-name'),
-            unknownCredentialSignalOptions: this.getAttribute('unknown-credential-signal-options'),
         };
 
         this.internals.form.addEventListener('submit', (event) => {
@@ -57,13 +57,27 @@ customElements.define('passkey-submit', class extends HTMLElement {
         });
 
         try {
-            if (this.attrs.unknownCredentialSignalOptions) {
-                const options = JSON.parse(this.attrs.unknownCredentialSignalOptions);
-                await PublicKeyCredential.signalUnknownCredential?.(options);
-            }
+            await this.signalUnknownCredential();
         } finally {
             this.tryAutofillPasskey();
         }
+    }
+
+    attributeChangedCallback() {
+        // Enhanced navigation updates the attribute in place without reconnecting the element,
+        // so connectedCallback does not run again. It also runs before connectedCallback when the
+        // element is upgraded, which is why the initial signal is left to connectedCallback.
+        if (this.isConnected && this.internals) {
+            this.signalUnknownCredential();
+        }
+    }
+
+    async signalUnknownCredential() {
+        const options = this.getAttribute('unknown-credential-signal-options');
+        if (!options) {
+            return;
+        }
+        await PublicKeyCredential.signalUnknownCredential?.(JSON.parse(options));
     }
 
     disconnectedCallback() {

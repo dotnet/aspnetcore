@@ -6,7 +6,7 @@
 
 @if (signalOptionsJson is not null)
 {
-    <passkey-signals options="@signalOptionsJson"></passkey-signals>
+    <current-user-details-signal options="@signalOptionsJson"></current-user-details-signal>
 }
 
 @code {
@@ -18,17 +18,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!SignInManager.SupportsKnownPasskeysSignalOptions)
+        if (!SignInManager.SupportsPasskeySignalOptions)
         {
             return;
         }
 
-        // These must match the user entity passed to MakePasskeyCreationOptionsAsync when the
-        // passkey was created, otherwise the authenticator won't recognize the user.
+        // The ID must match the user entity passed to MakePasskeyCreationOptionsAsync when the
+        // passkey was created, otherwise the authenticator won't recognize the user. The name and
+        // display name are the values being updated.
         var userId = await UserManager.GetUserIdAsync(User);
         var userName = await UserManager.GetUserNameAsync(User) ?? "User";
 
-        signalOptionsJson = await SignInManager.MakeKnownPasskeysSignalOptionsAsync(User, new()
+        signalOptionsJson = await SignInManager.MakeCurrentUserDetailsSignalOptionsAsync(User, new()
         {
             Id = userId,
             Name = userName,

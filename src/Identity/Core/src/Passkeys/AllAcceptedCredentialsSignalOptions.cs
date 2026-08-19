@@ -4,14 +4,13 @@
 namespace Microsoft.AspNetCore.Identity;
 
 /// <summary>
-/// Represents the information needed to signal the current state of a user's known passkeys to authenticators.
+/// Represents the information needed to signal the credentials that are currently registered for a user.
 /// </summary>
 /// <remarks>
-/// This is a superset of the options accepted by the WebAuthn <c>signalAllAcceptedCredentials</c>
-/// and <c>signalCurrentUserDetails</c> methods.
+/// These options are accepted by the WebAuthn <c>signalAllAcceptedCredentials</c> method.
 /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
 /// </remarks>
-internal sealed class KnownPasskeysSignalOptions
+internal sealed class AllAcceptedCredentialsSignalOptions
 {
     /// <summary>
     /// Gets the relying party identifier.
@@ -27,14 +26,4 @@ internal sealed class KnownPasskeysSignalOptions
     /// Gets the credential IDs that are currently registered for the user.
     /// </summary>
     public required IReadOnlyList<BufferSource> AllAcceptedCredentialIds { get; init; }
-
-    /// <summary>
-    /// Gets the name of the user.
-    /// </summary>
-    public required string Name { get; init; }
-
-    /// <summary>
-    /// Gets the display name of the user.
-    /// </summary>
-    public required string DisplayName { get; init; }
 }

@@ -13,14 +13,15 @@ public interface IPasskeyHandler<TUser>
     where TUser : class
 {
     /// <summary>
-    /// Gets a value indicating whether this handler supports generating known passkeys signal options.
+    /// Gets a value indicating whether this handler supports generating passkey signal options.
     /// </summary>
     /// <remarks>
     /// Returns <see langword="false"/> unless the handler implements
-    /// <see cref="MakeKnownPasskeysSignalOptionsAsync(TUser, PasskeyUserEntity, HttpContext)"/> and can retrieve
-    /// the user's passkeys.
+    /// <see cref="MakeAllAcceptedCredentialsSignalOptionsAsync(TUser, HttpContext)"/> and
+    /// <see cref="MakeCurrentUserDetailsSignalOptionsAsync(TUser, PasskeyUserEntity, HttpContext)"/>
+    /// and can retrieve the user's passkeys.
     /// </remarks>
-    bool SupportsKnownPasskeysSignalOptions => false;
+    bool SupportsPasskeySignalOptions => false;
 
     /// <summary>
     /// Generates passkey creation options for the specified user entity and HTTP context.
@@ -39,19 +40,49 @@ public interface IPasskeyHandler<TUser>
     Task<PasskeyRequestOptionsResult> MakeRequestOptionsAsync(TUser? user, HttpContext httpContext);
 
     /// <summary>
-    /// Generates the options used to signal the current state of a user's known passkeys to authenticators.
+    /// Generates the options used to signal the credentials that are currently registered for a user.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Handlers that implement this method should also return <see langword="true"/> from
-    /// <see cref="SupportsKnownPasskeysSignalOptions"/>. See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// <see cref="SupportsPasskeySignalOptions"/>. See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// <para>
+    /// The generated options reveal the user's credential IDs, so only generate them for the
+    /// currently authenticated user.
+    /// </para>
     /// </remarks>
     /// <param name="user">The user whose passkeys should be signaled.</param>
-    /// <param name="userEntity">The passkey user entity associated with the user's passkeys.</param>
     /// <param name="httpContext">The HTTP context associated with the request.</param>
-    /// <returns>A <see cref="KnownPasskeysSignalOptionsResult"/> representing the result.</returns>
-    /// <exception cref="NotSupportedException">Thrown when the handler does not support generating known passkeys signal options.</exception>
-    Task<KnownPasskeysSignalOptionsResult> MakeKnownPasskeysSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
-        => throw new NotSupportedException($"'{GetType()}' does not support generating known passkeys signal options.");
+    /// <returns>An <see cref="AllAcceptedCredentialsSignalOptionsResult"/> representing the result.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the handler does not support generating passkey signal options.</exception>
+    Task<AllAcceptedCredentialsSignalOptionsResult> MakeAllAcceptedCredentialsSignalOptionsAsync(TUser user, HttpContext httpContext)
+        => throw new NotSupportedException($"'{GetType()}' does not support generating passkey signal options.");
+
+    /// <summary>
+    /// Generates the options used to signal the current details of a user.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Handlers that implement this method should also return <see langword="true"/> from
+    /// <see cref="SupportsPasskeySignalOptions"/>. See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// <para>
+    /// The generated options reveal the user's details, so only generate them for the
+    /// currently authenticated user.
+    /// </para>
+    /// </remarks>
+    /// <param name="user">The user whose details should be signaled.</param>
+    /// <param name="userEntity">
+    /// The passkey user entity associated with the user's passkeys. Its <see cref="PasskeyUserEntity.Id"/>
+    /// must match the ID of <paramref name="user"/>. The <see cref="PasskeyUserEntity.Name"/> and
+    /// <see cref="PasskeyUserEntity.DisplayName"/> are the values being signaled.
+    /// </param>
+    /// <param name="httpContext">The HTTP context associated with the request.</param>
+    /// <returns>A <see cref="CurrentUserDetailsSignalOptionsResult"/> representing the result.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the handler does not support generating passkey signal options.</exception>
+    Task<CurrentUserDetailsSignalOptionsResult> MakeCurrentUserDetailsSignalOptionsAsync(TUser user, PasskeyUserEntity userEntity, HttpContext httpContext)
+        => throw new NotSupportedException($"'{GetType()}' does not support generating passkey signal options.");
 
     /// <summary>
     /// Generates options used to signal that a passkey credential is unknown to the server.
@@ -64,11 +95,11 @@ public interface IPasskeyHandler<TUser>
     /// <param name="credentialJson">The JSON representation of the passkey credential.</param>
     /// <param name="httpContext">The HTTP context associated with the request.</param>
     /// <returns>
-    /// An <see cref="UnknownPasskeySignalOptionsResult"/> when the credential is unknown to the server,
+    /// An <see cref="UnknownCredentialSignalOptionsResult"/> when the credential is unknown to the server,
     /// otherwise <see langword="null"/>.
     /// </returns>
-    Task<UnknownPasskeySignalOptionsResult?> MakeUnknownPasskeySignalOptionsAsync(string credentialJson, HttpContext httpContext)
-        => Task.FromResult<UnknownPasskeySignalOptionsResult?>(null);
+    Task<UnknownCredentialSignalOptionsResult?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson, HttpContext httpContext)
+        => Task.FromResult<UnknownCredentialSignalOptionsResult?>(null);
 
     /// <summary>
     /// Performs passkey attestation using the provided <see cref="PasskeyAttestationContext"/>.
