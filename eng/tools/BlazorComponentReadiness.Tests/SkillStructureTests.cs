@@ -1120,6 +1120,7 @@ public sealed class SkillStructureTests
             "blazor-component-readiness");
 
         Assert.Equal(expectedRoot, Layout.EvalRoot);
+        Assert.True(File.Exists(Layout.StandardVallyPath));
         Assert.True(File.Exists(Layout.VallyPath));
         Assert.True(File.Exists(Layout.EvalPolicyPath));
         Assert.True(File.Exists(Path.Combine(
@@ -1127,6 +1128,173 @@ public sealed class SkillStructureTests
             "fixtures",
             "mixed-evidence-component.md")));
         Assert.False(Directory.Exists(Path.Combine(Layout.Root, "evals")));
+    }
+
+    [Fact]
+    public void StandardVallySuiteIsBoundedAndMatchesRegression()
+    {
+        var expectedNames = new[]
+        {
+            "eval-01-artifact-provenance",
+            "eval-02-accessibility-layers",
+            "eval-10-cross-area-adjudication",
+            "eval-11-bounded-no-defect",
+            "eval-18-targeting-and-status-boundaries",
+        };
+        var standard = SkillValidator.ParseVallyStimuli(Layout.StandardVallyPath);
+        var regression = SkillValidator.ParseVallyStimuli(Layout.VallyPath)
+            .ToDictionary(stimulus => stimulus.Name, StringComparer.Ordinal);
+
+        Assert.Equal(expectedNames, standard.Select(stimulus => stimulus.Name));
+        Assert.All(standard, stimulus =>
+        {
+            var source = regression[stimulus.Name];
+            Assert.Equal(source.Prompt, stimulus.Prompt);
+            Assert.Equal(source.Tags, stimulus.Tags);
+            Assert.Equal(source.Fixtures, stimulus.Fixtures);
+            Assert.Equal(source.RubricItems, stimulus.RubricItems);
+        });
+        Assert.DoesNotContain(
+            "skills:",
+            File.ReadAllText(Layout.StandardVallyPath, Encoding.UTF8));
+    }
+
+    [Fact]
+    public void StandardVallyPromptDriftIsRejected()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.DirectoryPath);
+        var content = File.ReadAllText(layout.StandardVallyPath, Encoding.UTF8)
+            .Replace(
+                "Timebox one published Blazor grid-component review",
+                "Review every component in a generated catalog",
+                StringComparison.Ordinal);
+        File.WriteAllText(
+            layout.StandardVallyPath,
+            content,
+            new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "standard prompt, tags, fixtures, or rubric drifted",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void StandardVallyFixtureDestinationDriftIsRejected()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.DirectoryPath);
+        var content = File.ReadAllText(layout.StandardVallyPath, Encoding.UTF8)
+            .Replace(
+                "dest: \"eval-input/evidence.md\"",
+                "dest: \"eval-input/other-evidence.md\"",
+                StringComparison.Ordinal);
+        File.WriteAllText(
+            layout.StandardVallyPath,
+            content,
+            new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "standard prompt, tags, fixtures, or rubric drifted",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SpecializedVallyMustLoadRuntimeSkill()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.DirectoryPath);
+        var content = File.ReadAllText(layout.VallyPath, Encoding.UTF8)
+            .Replace(
+                "    - \"../../../.github/skills/blazor-component-readiness\"",
+                "    - \"../../../.github/skills/other-skill\"",
+                StringComparison.Ordinal);
+        File.WriteAllText(
+            layout.VallyPath,
+            content,
+            new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "must load only the component-readiness runtime skill",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SpecializedVallyCannotLoadAdditionalSkill()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.DirectoryPath);
+        var content = File.ReadAllText(layout.VallyPath, Encoding.UTF8)
+            .Replace(
+                "    - \"../../../.github/skills/blazor-component-readiness\"",
+                "    - \"../../../.github/skills/blazor-component-readiness\"\n" +
+                "    - \"../../../.github/skills/other-skill\"",
+                StringComparison.Ordinal);
+        File.WriteAllText(
+            layout.VallyPath,
+            content,
+            new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "must load only the component-readiness runtime skill",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SpecializedVallyCannotLoadStimulusSkill()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.DirectoryPath);
+        var content = ReplaceFirst(
+            File.ReadAllText(layout.VallyPath, Encoding.UTF8),
+            "    graders:\n",
+            "    environment:\n" +
+            "      skills:\n" +
+            "        - \"../../../.github/skills/other-skill\"\n" +
+            "    graders:\n");
+        File.WriteAllText(
+            layout.VallyPath,
+            content,
+            new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "must load only the component-readiness runtime skill",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void StandardVallyCannotSelectItsOwnSkill()
+    {
+        using var skill = CopySkill();
+        var layout = SkillLayout.Create(skill.DirectoryPath);
+        var content = File.ReadAllText(layout.StandardVallyPath, Encoding.UTF8);
+        content = ReplaceFirst(
+            content,
+            "    graders:\n",
+            "    environment:\n" +
+            "      skills:\n" +
+            "        - ../../../.github/skills/blazor-component-readiness\n" +
+            "    graders:\n");
+        File.WriteAllText(
+            layout.StandardVallyPath,
+            content,
+            new UTF8Encoding(false));
+
+        Assert.Contains(
+            SkillValidator.Validate(layout),
+            error => error.Contains(
+                "experiment owns it",
+                StringComparison.Ordinal));
     }
 
     [Fact]

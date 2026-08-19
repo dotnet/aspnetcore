@@ -39,9 +39,11 @@ Keep tentative ideas in run observations until they meet that bar.
 
 ## Add or update an eval
 
-Store specialized regressions only in
-`eng/skill-evals/blazor-component-readiness/regression.vally.yaml`. Retain scope-control and
-no-defect canaries so new guidance does not manufacture findings or expand into catalog audits.
+Use `eng/skill-evals/blazor-component-readiness/eval-policy.md` to select the owning suite. Keep the
+five-case `eval.vally.yaml` lane bounded to representative baseline-versus-skilled signal. Add
+exhaustive governance cases to `regression.vally.yaml`; when a representative case is duplicated,
+update both copies together. Retain scope-control and no-defect canaries so new guidance does not
+manufacture findings or expand into catalog audits.
 
 Validate skill maintenance changes with:
 
@@ -51,8 +53,7 @@ dotnet run --project eng/tools/BlazorComponentReadiness/BlazorComponentReadiness
   validate-skill --skill-dir .github/skills/blazor-component-readiness
 dotnet test \
   eng/tools/BlazorComponentReadiness.Tests/BlazorComponentReadiness.Tests.csproj
-npx --yes --package @microsoft/vally-cli@0.13.0 vally lint \
-  --eval-spec eng/skill-evals/blazor-component-readiness/regression.vally.yaml --strict
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Validate
 ```
 
 ## Review for overfitting

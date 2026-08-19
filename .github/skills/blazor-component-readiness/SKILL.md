@@ -442,6 +442,7 @@ different risk profile, and never imply one component proves catalog-wide readin
 ## Improving the skill
 
 When asked to improve the workflow after a run, follow `references/learning-loop.md`. Generalize
-only repeated evidence-backed lessons, add a regression to
-`eng/skill-evals/blazor-component-readiness/regression.vally.yaml`, preserve component-specific
-facts outside the public core, and keep a no-defect canary.
+only repeated evidence-backed lessons. Keep the auto-discovered standard lane and explicitly
+invoked regression suite under `eng/skill-evals/blazor-component-readiness`; follow
+`eng/skill-evals/blazor-component-readiness/eval-policy.md` for ownership. Preserve
+component-specific facts outside the public core, and keep a no-defect canary.

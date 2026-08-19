@@ -35,6 +35,14 @@ internal static class SkillValidator
             "negative_controls",
         ],
         StringComparer.Ordinal);
+    private static readonly string[] StandardEvalNames =
+        [
+            "eval-01-artifact-provenance",
+            "eval-02-accessibility-layers",
+            "eval-10-cross-area-adjudication",
+            "eval-11-bounded-no-defect",
+            "eval-18-targeting-and-status-boundaries",
+        ];
     private static readonly Regex StimulusPattern = new(
         "^  - name: \"([^\"]+)\"[ \\t]*(?:#.*)?$",
         RegexOptions.Multiline | RegexOptions.CultureInvariant);
@@ -57,7 +65,17 @@ internal static class SkillValidator
         "^      - \"(.+)\"\\s*$",
         RegexOptions.Multiline | RegexOptions.CultureInvariant);
     private static readonly Regex FixturePattern = new(
-        "^        - src: \"([^\"]+)\"\\s*$",
+        "^        - src: \"([^\"]+)\"[ \\t]*\\n" +
+        "          dest: \"([^\"]+)\"[ \\t]*$",
+        RegexOptions.Multiline | RegexOptions.CultureInvariant);
+    private static readonly Regex RegressionSkillEnvironmentPattern = new(
+        "^environment:[ \\t]*\\n" +
+        "  skills:[ \\t]*\\n" +
+        "    - \"../../../\\.github/skills/blazor-component-readiness\"[ \\t]*\\n" +
+        "stimuli:[ \\t]*(?:#.*)?$",
+        RegexOptions.Multiline | RegexOptions.CultureInvariant);
+    private static readonly Regex SkillMappingPattern = new(
+        "^[ \\t]*skills:[ \\t]*$",
         RegexOptions.Multiline | RegexOptions.CultureInvariant);
     private static readonly Regex AreaReferencePattern = new(
         "`([^`]+\\.md)`",
@@ -133,7 +151,9 @@ internal static class SkillValidator
                 : [];
             var fixtures = FixturePattern
                 .Matches(block)
-                .Select(fixture => fixture.Groups[1].Value)
+                .Select(fixture => new VallyFixture(
+                    fixture.Groups[1].Value,
+                    fixture.Groups[2].Value))
                 .ToArray();
             stimuli.Add(new VallyStimulus(
                 match.Groups[1].Value,
@@ -228,6 +248,7 @@ internal static class SkillValidator
             var prefixes = ValidateRequirementSequences(layout, errors);
             ValidateAreaMapping(layout, prefixes, errors);
             ValidateVally(layout, prefixes, errors);
+            ValidateStandardVally(layout, errors);
             ValidateWiring(layout, errors);
         }
         catch (Exception exception) when (
@@ -424,7 +445,7 @@ internal static class SkillValidator
         IReadOnlySet<string> prefixes,
         ICollection<string> errors)
     {
-        var content = File.ReadAllText(layout.VallyPath, Encoding.UTF8);
+        var content = NormalizeLineEndings(File.ReadAllText(layout.VallyPath, Encoding.UTF8));
         foreach (var marker in new[]
         {
             $"# Validated with {VallyPackage}.",
@@ -437,6 +458,13 @@ internal static class SkillValidator
             {
                 errors.Add($"Vally suite is missing pinned marker: {marker}");
             }
+        }
+
+        if (RegressionSkillEnvironmentPattern.Matches(content).Count != 1 ||
+            SkillMappingPattern.Matches(content).Count != 1)
+        {
+            errors.Add(
+                "Specialized Vally suite must load only the component-readiness runtime skill");
         }
 
         var stimuli = ParseVallyStimuli(layout.VallyPath);
@@ -528,12 +556,12 @@ internal static class SkillValidator
             }
 
             var fixtureDirectory = Path.GetDirectoryName(layout.VallyPath)!;
-            foreach (var fixtureSource in stimulus.FixtureSources)
+            foreach (var fixture in stimulus.Fixtures)
             {
-                if (!File.Exists(Path.Combine(fixtureDirectory, fixtureSource)))
+                if (!File.Exists(Path.Combine(fixtureDirectory, fixture.Source)))
                 {
                     errors.Add(
-                        $"{stimulus.Name}: missing fixture source {fixtureSource}");
+                        $"{stimulus.Name}: missing fixture source {fixture.Source}");
                 }
             }
         }
@@ -586,7 +614,7 @@ internal static class SkillValidator
             "references/status-boundaries.md",
             "references/targeted-profiles.md",
             "eng/tools/BlazorComponentReadiness/BlazorComponentReadiness.csproj",
-            "eng/skill-evals/blazor-component-readiness/regression.vally.yaml",
+            "eng/skill-evals/blazor-component-readiness/eval-policy.md",
         })
         {
             if (!skill.Contains(reference, StringComparison.Ordinal))
@@ -596,12 +624,16 @@ internal static class SkillValidator
         }
 
         var evalPolicy = File.ReadAllText(layout.EvalPolicyPath, Encoding.UTF8);
-        if (!evalPolicy.Contains(
-            "eng/skill-evals/blazor-component-readiness/regression.vally.yaml",
-            StringComparison.Ordinal))
+        foreach (var evalPath in new[]
         {
-            errors.Add(
-                "Evaluation policy does not reference the specialized repository eval suite");
+            "eval.vally.yaml",
+            "regression.vally.yaml",
+        })
+        {
+            if (!evalPolicy.Contains(evalPath, StringComparison.Ordinal))
+            {
+                errors.Add($"Evaluation policy does not reference {evalPath}");
+            }
         }
 
         foreach (var heading in new[]
@@ -650,6 +682,90 @@ internal static class SkillValidator
                 "Vally suite is missing shared projection and provenance regression");
         }
 
+    }
+
+    private static void ValidateStandardVally(
+        SkillLayout layout,
+        ICollection<string> errors)
+    {
+        var content = File.ReadAllText(layout.StandardVallyPath, Encoding.UTF8);
+        foreach (var marker in new[]
+        {
+            $"# Validated with {VallyPackage}.",
+            "  runs: 5",
+            "  model: gpt-5.6-sol",
+            "  judge_model: claude-opus-5",
+        })
+        {
+            if (!content.Contains(marker, StringComparison.Ordinal))
+            {
+                errors.Add($"Standard Vally suite is missing pinned marker: {marker}");
+            }
+        }
+
+        if (Regex.IsMatch(
+            content,
+            "^\\s+skills:",
+            RegexOptions.Multiline | RegexOptions.CultureInvariant))
+        {
+            errors.Add(
+                "Standard Vally suite must not set environment.skills; the experiment owns it");
+        }
+
+        var standardStimuli = ParseVallyStimuli(layout.StandardVallyPath);
+        if (!standardStimuli.Select(stimulus => stimulus.Name).SequenceEqual(StandardEvalNames))
+        {
+            errors.Add(
+                "Standard Vally suite must contain exactly these representative cases in order: " +
+                string.Join(", ", StandardEvalNames));
+            return;
+        }
+
+        var regressionStimuli = ParseVallyStimuli(layout.VallyPath)
+            .ToLookup(stimulus => stimulus.Name, StringComparer.Ordinal);
+        foreach (var standard in standardStimuli)
+        {
+            var matches = regressionStimuli[standard.Name].ToArray();
+            if (matches.Length == 0)
+            {
+                errors.Add(
+                    $"{standard.Name}: standard case is missing from the regression suite");
+                continue;
+            }
+
+            if (matches.Length > 1)
+            {
+                errors.Add(
+                    $"{standard.Name}: standard case has multiple regression definitions");
+                continue;
+            }
+
+            var regression = matches[0];
+            if (!string.Equals(standard.Prompt, regression.Prompt, StringComparison.Ordinal) ||
+                !standard.RubricItems.SequenceEqual(
+                    regression.RubricItems,
+                    StringComparer.Ordinal) ||
+                !standard.Fixtures.SequenceEqual(regression.Fixtures) ||
+                standard.Tags.Count != regression.Tags.Count ||
+                standard.Tags.Any(tag =>
+                    !regression.Tags.TryGetValue(tag.Key, out var value) ||
+                    !string.Equals(tag.Value, value, StringComparison.Ordinal)))
+            {
+                errors.Add(
+                    $"{standard.Name}: standard prompt, tags, fixtures, or rubric drifted " +
+                    "from regression.vally.yaml");
+            }
+
+            var fixtureDirectory = Path.GetDirectoryName(layout.StandardVallyPath)!;
+            foreach (var fixture in standard.Fixtures)
+            {
+                if (!File.Exists(Path.Combine(fixtureDirectory, fixture.Source)))
+                {
+                    errors.Add(
+                        $"{standard.Name}: missing standard fixture source {fixture.Source}");
+                }
+            }
+        }
     }
 
     private static void ValidateArchitecturePortability(

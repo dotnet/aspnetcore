@@ -12,6 +12,7 @@ internal sealed class SkillLayout
         var repositoryRoot = Path.GetFullPath(Path.Combine(Root, "..", "..", ".."));
         EvalRoot = Path.Combine(repositoryRoot, "eng", "skill-evals", skillName);
         EvalPolicyPath = Path.Combine(EvalRoot, "eval-policy.md");
+        StandardVallyPath = Path.Combine(EvalRoot, "eval.vally.yaml");
         ChecklistPath = Path.Combine(Root, "references", "checklist.md");
         AreasIndexPath = Path.Combine(Root, "references", "areas", "index.md");
         SkillPath = Path.Combine(Root, "SKILL.md");
@@ -34,6 +35,8 @@ internal sealed class SkillLayout
     internal string EvalRoot { get; }
 
     internal string EvalPolicyPath { get; }
+
+    internal string StandardVallyPath { get; }
 
     internal string ChecklistPath { get; }
 
@@ -94,6 +97,10 @@ internal sealed record VallyStimulus(
     string Name,
     IReadOnlyDictionary<string, string> Tags,
     int RubricCount,
-    IReadOnlyList<string> FixtureSources,
+    IReadOnlyList<VallyFixture> Fixtures,
     string Prompt,
     IReadOnlyList<string> RubricItems);
+
+internal sealed record VallyFixture(
+    string Source,
+    string Destination);

@@ -1,0 +1,158 @@
+# This Vally specification is the auto-discovered baseline-versus-skilled lane.
+# Validated with @microsoft/vally-cli@0.13.0.
+# Duplicated cases must remain identical to regression.vally.yaml.
+name: blazor-component-readiness
+description: "Representative A/B evals for the public Blazor component-readiness skill."
+type: capability
+defaults:
+  runs: 5
+  timeout: 1200s
+  model: gpt-5.6-sol
+  judge_model: claude-opus-5
+scoring:
+  weights:
+    prompt: 1.0
+  threshold: 0.7
+stimuli:
+  - name: "eval-01-artifact-provenance"
+    prompt: |-
+      Timebox one published Blazor grid-component review against the bundled public rubric. The release workflow says it signs packages and a separate workflow creates an SBOM. Produce the readiness scorecard and maintainer handoff without modifying GitHub. Stop when the timebox expires.
+    tags:
+      eval_id: "1"
+      area: "licensing-and-provenance"
+      score_family: "artifact-truth"
+      tier: "train"
+      requirement_prefixes: "LP,PI"
+      provenance_kind: "synthetic-transfer"
+      provenance_source: "published-package provenance case"
+      positive_controls: "1,2,3"
+      negative_controls: "0,4,5"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A one-component, read-only scorecard that verifies the released artifact, distinguishes signing layers, and requires SBOM and provenance evidence to bind to the published package."
+      - "The review remains scoped to the single grid component rather than expanding to the generated component catalog."
+      - "The released package is inspected independently of workflow configuration."
+      - "Strong-name, Authenticode, NuGet author, and repository signatures are scored separately."
+      - "SBOM acceptance requires binding to the exact final signed NuGet package digest."
+      - "Missing private legal or retention evidence is not mislabeled as a product defect."
+      - "No repository or GitHub write operation is performed."
+      - "When the timebox expires, remaining applicable rows are not tested with bounded reviewer follow-ups rather than silently extending the review."
+  - name: "eval-02-accessibility-layers"
+    prompt: |-
+      Review a Blazor tree control. Source shows keyboard handlers and aria-expanded, but the maintainer has not provided an automated accessibility scan, full assessment, screen-reader, forced-colors, or WCAG report. Tell me whether it meets the accessibility quality bar and what evidence is missing.
+    tags:
+      eval_id: "2"
+      area: "accessibility"
+      score_family: "evidence-layering"
+      tier: "train"
+      requirement_prefixes: "A11Y"
+      provenance_kind: "synthetic-transfer"
+      provenance_source: "tree accessibility layering case"
+      positive_controls: "0,2,4"
+      negative_controls: "1,3"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A layered accessibility assessment that records positive source evidence, identifies any deterministic behavior failures separately, and does not infer formal conformance."
+      - "ARIA and keyboard implementation are classified as source evidence only."
+      - "The output does not claim WCAG conformance."
+      - "Automated scan, full assessment, screen-reader, and forced-colors evidence are requested separately without requiring a specific branded tool."
+      - "Missing maintainer evidence is scored maintainer evidence required rather than defect unless concrete behavior fails."
+      - "Browser and assistive-technology evidence are not treated as interchangeable."
+  - name: "eval-10-cross-area-adjudication"
+    prompt: |-
+      Review the one control described by the supplied evidence fixture. Use only that bounded evidence, distinguish artifact snapshots from current source, and do not invent attestations or test results.
+
+      Read eval-input/evidence.md. Produce a concise cross-area adjudication containing one explicitly identified representative requirement row from every core requirement prefix. Then explain the deterministic core-completeness gate and why the scaffolder and AI-skill overlays are omitted for this fixture.
+    tags:
+      eval_id: "10"
+      area: "all-areas"
+      score_family: "completeness"
+      tier: "held-out"
+      requirement_prefixes: "LP,PI,SEC,A11Y,BEQ,TA,PERF,CI,SUP,SCF,AI"
+      provenance_kind: "synthetic-control"
+      provenance_source: "mixed-evidence final report"
+      positive_controls: "0,2,3,4,5"
+      negative_controls: "1,6"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    environment:
+      files:
+        - src: "fixtures/mixed-evidence-component.md"
+          dest: "eval-input/evidence.md"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A concise, evidence-backed cross-area adjudication plus an accurate explanation of the 110-row core structural-completeness gate."
+      - "Exactly one representative canonical requirement is explicitly identified for each core prefix: LP, PI, SEC, A11Y, BEQ, TA, PERF, CI, and SUP."
+      - "Only the exact case-sensitive tokens verified, defect, maintainer evidence required, not tested, and not applicable are used; N/A and status aliases are rejected."
+      - "Published-package evidence is distinguished from current source and separately rebuilt artifacts."
+      - "Concrete defects, maintainer-owned evidence gaps, and unperformed reviewer probes are classified separately."
+      - "SCF and AI rows are omitted because neither optional overlay was selected for the bounded deliverable."
+      - "The response states that the final core report must retain all 110 core IDs exactly once in canonical order and pass the repository C# scorecard validator."
+      - "The response explains that structural validation does not prove factual truth."
+      - "No attestation, test result, or catalog-wide conclusion is invented."
+  - name: "eval-11-bounded-no-defect"
+    prompt: |-
+      A simple input component has awaited callbacks, deterministic disposal tests, documented Server and WebAssembly support, successful browser probes, correct computed accessibility semantics, and no observed lifecycle failures. Formal WCAG and servicing records are still private. Produce the readiness result without manufacturing defects.
+    tags:
+      eval_id: "11"
+      area: "blazor-and-accessibility"
+      score_family: "no-defect-control"
+      tier: "held-out"
+      requirement_prefixes: "BEQ,A11Y"
+      provenance_kind: "synthetic-control"
+      provenance_source: "bounded stateless input"
+      positive_controls: "0,1,3"
+      negative_controls: "2,4"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: Verified component behavior remains verified, private attestations remain evidence requests, and the review does not invent lifecycle or accessibility defects merely to produce findings."
+      - "Awaited callbacks and demonstrated disposal behavior are recorded as positives."
+      - "Successful render-mode browser probes are recorded as direct behavior evidence."
+      - "Correct accessibility behavior is not converted into formal WCAG conformance."
+      - "Private WCAG and servicing records remain maintainer evidence required."
+      - "No unsupported product defect is invented."
+  - name: "eval-18-targeting-and-status-boundaries"
+    prompt: |-
+      Prepare a targeted review for a publicly listed text input whose exact package bytes remain unavailable after both NuGet paths. The exact nuspec cannot be inspected; a private servicing attestation is unavailable; a browser probe was blocked by a missing local prerequisite; source contains plausible aria attributes; and Auto mode is explicitly unsupported and unclaimed. Select a starter scope and classify these evidence states without claiming complete readiness.
+    tags:
+      eval_id: "18"
+      area: "targeted-review"
+      score_family: "classification-consistency"
+      tier: "held-out"
+      requirement_prefixes: "LP,PI,A11Y,BEQ,SUP"
+      provenance_kind: "multi-run-generalization"
+      provenance_source: "seven-control status and targeted-selection divergence"
+      positive_controls: "0,1,2,3,5"
+      negative_controls: "4"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: A clearly targeted text-input review uses a documented starter profile, records ID additions/removals, and makes no complete-readiness claim."
+      - "The distributed-package supplement is considered because the package is listed but exact bytes are unavailable."
+      - "Blocked direct package and browser checks are not tested, not not applicable or defects."
+      - "The inaccessible private servicing attestation is maintainer evidence required."
+      - "Plausible source ARIA may verify only an exact source-structure property; computed browser semantics and conformance remain unverified."
+      - "Explicitly unsupported, unclaimed, safe Auto behavior can be not applicable."
+      - "The report records the prerequisite blocker and a bounded next probe."

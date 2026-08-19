@@ -1,4 +1,4 @@
-# This Vally specification is the eval source of truth.
+# This Vally specification is the exhaustive governance regression source of truth.
 # Validated with @microsoft/vally-cli@0.13.0.
 # Run vally lint --strict and the repository C# validate-skill command after changes.
 name: blazor-component-readiness
@@ -13,6 +13,9 @@ scoring:
   weights:
     prompt: 1.0
   threshold: 0.7
+environment:
+  skills:
+    - "../../../.github/skills/blazor-component-readiness"
 stimuli:
   - name: "eval-01-artifact-provenance"
     prompt: |-

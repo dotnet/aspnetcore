@@ -1,13 +1,21 @@
 # Evaluation policy
 
-`eng/skill-evals/blazor-component-readiness/regression.vally.yaml` is the specialized regression
-suite's single source of truth. Keep prompts, rubrics, fixtures, coverage, provenance,
-train/held-out tiers, score families, and controls in that Vally file. Invoke it explicitly; it is
-not the auto-discovered `eval.vally.yaml` baseline-versus-skilled lane.
+The two suites have distinct ownership:
+
+- `eval.vally.yaml` is the auto-discovered baseline-versus-skilled lane. Its five duplicated cases
+  provide bounded, high-discrimination signal for artifact truth, accessibility layering,
+  cross-area completeness, a no-defect control, and targeted status boundaries.
+- `regression.vally.yaml` is the explicitly invoked exhaustive governance suite. It owns all 23
+  cases, requirement-prefix coverage, train/held-out tiers, score families, controls, provenance,
+  architecture portability, and held-out refresh.
+
+The five standard cases intentionally duplicate regression cases 01, 02, 10, 11, and 18. The C#
+skill validator requires their names, prompts, tags, fixture bindings, and rubrics to remain
+identical so the fast lane cannot silently diverge from the governed corpus.
 
 ## Governance
 
-- Every canonical requirement prefix must be covered by at least one eval.
+- The specialized regression suite must cover every canonical requirement prefix.
 - Every eval records provenance, train/held-out tier, score family, and positive/negative controls.
 - Retain scope-control and no-defect canaries.
 - Treat the core rubric as the owner of requirement scope; eval outputs must not reclassify core IDs.
@@ -32,29 +40,25 @@ dotnet test \
   eng/tools/BlazorComponentReadiness.Tests/BlazorComponentReadiness.Tests.csproj
 ```
 
-Official runs use the publicly available `@microsoft/vally-cli@0.13.0` package:
+The repository runner pins the exact `@microsoft/vally-cli@0.13.0` package:
 
-```bash
-npx --yes --package @microsoft/vally-cli@0.13.0 vally --version
-npx --yes --package @microsoft/vally-cli@0.13.0 vally lint \
-  --eval-spec eng/skill-evals/blazor-component-readiness/regression.vally.yaml --strict
+```powershell
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Test
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Validate
 ```
 
-## Diagnostic run
+## Explicit regression run
 
-Run one selected case while developing:
+Run the complete specialized suite:
 
-```bash
-npx --yes --package @microsoft/vally-cli@0.13.0 vally eval \
-  -e eng/skill-evals/blazor-component-readiness/regression.vally.yaml \
-  --skill-dir <skill-parent-directory> \
-  --tag eval_id=10 \
-  --runs 1 \
-  --timeout 1200s \
-  --model gpt-5.6-sol \
-  --judge-model claude-opus-5 \
-  --output jsonl
+```powershell
+pwsh -NoLogo -NoProfile -File eng/skill-evals/run.ps1 Run `
+  -Eval eng/skill-evals/blazor-component-readiness/regression.vally.yaml
 ```
+
+The specialized spec declares exactly the component-readiness runtime skill so this direct Vally
+run exercises the skill. The standard spec does not declare a skill because the repository
+experiment owns its baseline-versus-skilled variants.
 
 ## Retained comparison
 
