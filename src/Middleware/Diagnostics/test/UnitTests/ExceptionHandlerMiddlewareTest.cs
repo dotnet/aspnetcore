@@ -114,6 +114,72 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     }
 
     [Theory]
+    [InlineData(StatusCodes.Status400BadRequest)]
+    [InlineData(StatusCodes.Status404NotFound)]
+    [InlineData(StatusCodes.Status418ImATeapot)]
+    public async Task Invoke_BadHttpRequestException_PreservesStatusCode(int statusCode)
+    {
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor();
+        var middleware = CreateMiddleware(_ => throw new BadHttpRequestException("Bad request.", statusCode), optionsAccessor);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Equal(statusCode, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Invoke_BadHttpRequestException_StatusCodeSelectorTakesPrecedence()
+    {
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor(statusCodeSelector: _ => StatusCodes.Status409Conflict);
+        var middleware = CreateMiddleware(
+            _ => throw new BadHttpRequestException("Bad request.", StatusCodes.Status418ImATeapot),
+            optionsAccessor);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Equal(StatusCodes.Status409Conflict, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Invoke_BadHttpRequestException_ExceptionHandlerDelegateCanOverrideStatusCode()
+    {
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor(exceptionHandler: context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
+            return Task.CompletedTask;
+        });
+        var middleware = CreateMiddleware(
+            _ => throw new BadHttpRequestException("Bad request.", StatusCodes.Status418ImATeapot),
+            optionsAccessor);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Invoke_BadHttpRequestException_IExceptionHandlerCanOverrideStatusCode()
+    {
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor();
+        var exceptionHandlers = new[]
+        {
+            new TestExceptionHandler(true, "handler", StatusCodes.Status422UnprocessableEntity),
+        };
+        var middleware = CreateMiddleware(
+            _ => throw new BadHttpRequestException("Bad request.", StatusCodes.Status418ImATeapot),
+            optionsAccessor,
+            exceptionHandlers);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, httpContext.Response.StatusCode);
+    }
+
+    [Theory]
     [InlineData(ExceptionHandledType.ExceptionHandlerDelegate, false)]
     [InlineData(ExceptionHandledType.ProblemDetailsService, true)]
     public async Task Invoke_HasExceptionHandler_SuppressDiagnostics_CallbackRun(ExceptionHandledType suppressResult, bool logged)
@@ -637,16 +703,23 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     {
         private readonly bool _handle;
         private readonly string _name;
+        private readonly int? _statusCode;
 
-        public TestExceptionHandler(bool handle, string name)
+        public TestExceptionHandler(bool handle, string name, int? statusCode = null)
         {
             _handle = handle;
             _name = name;
+            _statusCode = statusCode;
         }
 
         public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
             httpContext.Items[_name] = true;
+            if (_statusCode is { } statusCode)
+            {
+                httpContext.Response.StatusCode = statusCode;
+            }
+
             return ValueTask.FromResult(_handle);
         }
     }
@@ -664,13 +737,15 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     private IOptions<ExceptionHandlerOptions> CreateOptionsAccessor(
         RequestDelegate exceptionHandler = null,
         string exceptionHandlingPath = null,
-        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressDiagnosticsCallback = null)
+        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressDiagnosticsCallback = null,
+        Func<Exception, int> statusCodeSelector = null)
     {
         exceptionHandler ??= c => Task.CompletedTask;
         var options = new ExceptionHandlerOptions()
         {
             ExceptionHandler = exceptionHandler,
             ExceptionHandlingPath = exceptionHandlingPath,
+            StatusCodeSelector = statusCodeSelector,
         };
         if (suppressDiagnosticsCallback != null)
         {
