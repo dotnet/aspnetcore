@@ -184,6 +184,12 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
                 // If the condition check resolved to just `!RendererInfo.IsInteractive`, `WhenTrue` case should return to avoid JSInterop usage.
                 return ConditionBlockReturnsOnIsInteractive(condition.WhenTrue, state);
             }
+
+            if (!isInteractiveWhenTrue && !isInteractiveWhenFalse)
+            {
+                // Analyze the condition for JSInterop usage. Ignore use of `RendererInfo.IsInteractive` in the condition since it is not a direct check for it.
+                AnalyzeOperationsTree(condition.Condition, state);
+            }
         }
         return false;
     }
