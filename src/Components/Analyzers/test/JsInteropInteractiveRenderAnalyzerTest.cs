@@ -8,7 +8,7 @@ using TestHelper;
 
 namespace Microsoft.AspNetCore.Components.Analyzers.Test;
 
-public class JsInteropUsageWithoutCheckAnalyzerTest : DiagnosticVerifier
+public class JsInteropInteractiveRenderAnalyzerTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new JsInteropInteractiveRenderAnalyzer();
     private static readonly string id = DiagnosticDescriptors.JsInteropUsageWithoutIsInteractiveCheck.Id;

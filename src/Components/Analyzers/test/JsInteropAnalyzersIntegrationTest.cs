@@ -8,7 +8,7 @@ using TestHelper;
 
 namespace Microsoft.AspNetCore.Components.Analyzers.Test;
 
-public class JsInteropUsageAnalyzersIntegrationTest : DiagnosticVerifier
+public class JsInteropAnalyzersIntegrationTest : DiagnosticVerifier
 {
     protected override DiagnosticAnalyzer[] GetMultipleCSharpDiagnosticAnalyzers() => new DiagnosticAnalyzer[]
     {
