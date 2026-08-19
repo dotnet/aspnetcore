@@ -12,19 +12,32 @@ async function fetchWithErrorHandling(url, options = {}) {
     if (!response.ok) {
         const text = await response.text();
         console.error(text);
-        throw new Error(`The server responded with status ${response.status}.`);
+        const contentType = response.headers.get('content-type') ?? '';
+        throw new Error(contentType.startsWith('text/plain') && text
+            ? text
+            : `The server responded with status ${response.status}.`);
     }
     return response;
 }
 
 async function createCredential(signal) {
-    const optionsResponse = await fetchWithErrorHandling('/Account/PasskeyCreationOptions', {
+    const optionsResponse = await fetchWithErrorHandling('/Account/Manage/PasskeyCreationOptions', {
         method: 'POST',
         signal,
     });
     const optionsJson = await optionsResponse.json();
     const options = PublicKeyCredential.parseCreationOptionsFromJSON(optionsJson);
     return await navigator.credentials.create({ publicKey: options, signal });
+}
+
+async function reauthenticateCredential(signal) {
+    const optionsResponse = await fetchWithErrorHandling('/Account/Manage/PasskeyReauthenticationOptions', {
+        method: 'POST',
+        signal,
+    });
+    const optionsJson = await optionsResponse.json();
+    const options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJson);
+    return await navigator.credentials.get({ publicKey: options, signal });
 }
 
 async function requestCredential(email, mediation, signal) {
@@ -35,6 +48,16 @@ async function requestCredential(email, mediation, signal) {
     const optionsJson = await optionsResponse.json();
     const options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJson);
     return await navigator.credentials.get({ publicKey: options, mediation, signal });
+}
+
+async function registerCredential(email, signal) {
+    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRegistrationOptions?username=${encodeURIComponent(email)}`, {
+        method: 'POST',
+        signal,
+    });
+    const optionsJson = await optionsResponse.json();
+    const options = PublicKeyCredential.parseCreationOptionsFromJSON(optionsJson);
+    return await navigator.credentials.create({ publicKey: options, signal });
 }
 
 customElements.define('passkey-submit', class extends HTMLElement {
@@ -69,10 +92,15 @@ customElements.define('passkey-submit', class extends HTMLElement {
 
         if (this.attrs.operation === 'Create') {
             return await createCredential(signal);
+        } else if (this.attrs.operation === 'Reauthenticate') {
+            return await reauthenticateCredential(signal);
         } else if (this.attrs.operation === 'Request') {
             const email = new FormData(this.internals.form).get(this.attrs.emailName);
             const mediation = useConditionalMediation ? 'conditional' : undefined;
             return await requestCredential(email, mediation, signal);
+        } else if (this.attrs.operation === 'Register') {
+            const email = new FormData(this.internals.form).get(this.attrs.emailName);
+            return await registerCredential(email, signal);
         } else {
             throw new Error(`Unknown passkey operation '${this.attrs.operation}'.`);
         }

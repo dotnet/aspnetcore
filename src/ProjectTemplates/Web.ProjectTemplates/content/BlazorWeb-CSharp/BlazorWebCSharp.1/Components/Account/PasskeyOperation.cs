@@ -4,4 +4,6 @@ public enum PasskeyOperation
 {
     Create = 0,
     Request = 1,
+    Reauthenticate = 2,
+    Register = 3,
 }
