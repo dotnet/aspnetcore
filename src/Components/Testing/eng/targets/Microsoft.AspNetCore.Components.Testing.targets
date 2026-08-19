@@ -103,6 +103,10 @@
       <_E2EAppProjects Condition="'%(_E2EAppProjects.E2EAppMode)' == ''">
         <E2EAppMode>$(E2EAppMode)</E2EAppMode>
       </_E2EAppProjects>
+      <!-- These properties control test-host packaging and must not distinguish the app build. -->
+      <_E2EAppProjects>
+        <UndefineProperties>%(_E2EAppProjects.UndefineProperties);_E2EIsPublishing;E2EAppMode</UndefineProperties>
+      </_E2EAppProjects>
       <_E2ESourceAppProjects Include="@(_E2EAppProjects)" Condition="'%(_E2EAppProjects.E2EAppMode)' == 'build' or '%(_E2EAppProjects.E2EAppMode)' == 'all'" />
       <_E2EPublishPrimaryAppProjects Include="@(_E2EAppProjects)" Condition="'%(_E2EAppProjects.E2EAppMode)' == 'publish'" />
       <_E2EPublishSecondaryAppProjects Include="@(_E2EAppProjects)" Condition="'%(_E2EAppProjects.E2EAppMode)' == 'all' and '%(_E2EAppProjects.E2ENativeAot)' != 'true'" />
