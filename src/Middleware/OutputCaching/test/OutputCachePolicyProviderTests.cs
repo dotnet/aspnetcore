@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 
@@ -87,6 +88,65 @@ public class OutputCachePolicyProviderTests
 
         Assert.False(context.AllowCacheStorage);
         Assert.False(context.AllowCacheLookup);
+    }
+
+    [Fact]
+    public async Task AttemptOutputCaching_AuthenticatedUser_NotAllowed()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        context.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(authenticationType: "custom"));
+
+        var policy = new OutputCachePolicyBuilder().Build();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.False(context.AllowCacheStorage);
+        Assert.False(context.AllowCacheLookup);
+    }
+
+    [Fact]
+    public async Task AttemptOutputCaching_AuthenticatedByNonPrimaryIdentity_NotAllowed()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        // The primary identity is unauthenticated, but a later identity is authenticated. Authorization
+        // treats this principal as authenticated, so output caching must classify it the same way.
+        context.HttpContext.User = new ClaimsPrincipal(new[]
+        {
+            new ClaimsIdentity(),
+            new ClaimsIdentity(authenticationType: "custom"),
+        });
+
+        Assert.False(context.HttpContext.User.Identity?.IsAuthenticated);
+
+        var policy = new OutputCachePolicyBuilder().Build();
+
+        await policy.CacheRequestAsync(context, default);
+
+        Assert.False(context.AllowCacheStorage);
+        Assert.False(context.AllowCacheLookup);
+    }
+
+    [Fact]
+    public async Task IsResponseCacheable_AuthenticatedByNonPrimaryIdentity_NotAllowed()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.User = new ClaimsPrincipal(new[]
+        {
+            new ClaimsIdentity(),
+            new ClaimsIdentity(authenticationType: "custom"),
+        });
+
+        Assert.False(context.HttpContext.User.Identity?.IsAuthenticated);
+
+        var policy = new OutputCachePolicyBuilder().Build();
+        await policy.ServeResponseAsync(context, default);
+
+        Assert.False(context.AllowCacheStorage);
     }
 
     [Fact]
