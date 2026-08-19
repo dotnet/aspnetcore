@@ -52,38 +52,53 @@ public class ServerAuthTest : AuthTest
     [Fact]
     public void UpdatesAuthenticationStateWhenAuthenticationRefreshed()
     {
-        SignInAs("user-a", "TestRole", includeNameIdentifier: true);
+        SignInAs(null, null);
         var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases, "?captureAuthenticationRefresh");
-        Browser.Equal("Welcome, user-a!", () =>
-            appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
+        AssertState(null);
 
         var javascript = (IJavaScriptExecutor)Browser;
         var connectionId = Assert.IsType<string>(
             javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;"));
 
-        SignInAs("user-b", "TestRole", useSeparateTab: true, includeNameIdentifier: true);
-        Assert.Null(RefreshAuthentication());
-        Browser.Equal("Welcome, user-b!", () =>
-            appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
-        Assert.Equal(
-            connectionId,
-            Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
+        SignInAs("user-a", "TestRole", useSeparateTab: true, includeNameIdentifier: true);
+        NotifyDocumentBecameVisible();
+        AssertState("user-a");
+        AssertConnectionId();
 
         SignInAs(null, null, useSeparateTab: true);
-        Assert.Null(RefreshAuthentication());
-        Browser.Equal("You're not authorized, anonymous", () =>
-            appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
-        Assert.Equal(
-            connectionId,
-            Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
+        NotifyDocumentBecameVisible();
+        AssertState(null);
+        AssertConnectionId();
 
-        object RefreshAuthentication() =>
-            javascript.ExecuteAsyncScript("""
-                const callback = arguments[arguments.length - 1];
-                authenticationRefreshConnection.refreshAuthentication().then(
-                    () => callback(),
-                    error => callback(String(error)));
+        SignInAs("user-b", "TestRole", useSeparateTab: true, includeNameIdentifier: true);
+        NotifyDocumentBecameVisible();
+        AssertState("user-b");
+        AssertConnectionId();
+
+        void NotifyDocumentBecameVisible() =>
+            javascript.ExecuteScript("""
+                Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+                document.dispatchEvent(new Event('visibilitychange'));
                 """);
+
+        void AssertConnectionId() =>
+            Assert.Equal(
+                connectionId,
+                Assert.IsType<string>(javascript.ExecuteScript("return authenticationRefreshConnection.connectionId;")));
+
+        void AssertState(string username)
+        {
+            if (username is null)
+            {
+                Browser.Equal("You're not authorized, anonymous", () =>
+                    appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
+            }
+            else
+            {
+                Browser.Equal($"Welcome, {username}!", () =>
+                    appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
+            }
+        }
     }
 
     private void SignInAs(

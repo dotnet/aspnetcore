@@ -66,6 +66,42 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _activePauseDeferral?: AbortController;
 
+  private _authenticationRefreshPromise?: Promise<unknown>;
+
+  private _authenticationRefreshPending = false;
+
+  private readonly _refreshAuthentication = () => {
+    if (this._authenticationRefreshPromise) {
+      this._authenticationRefreshPending = true;
+      return;
+    }
+
+    if (this.isDisposedOrDisposing() || this._connection?.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    const refreshPromise = this._connection.refreshAuthentication()
+      .catch(error => {
+        this._logger.log(LogLevel.Error, `Authentication refresh failed: ${error}`);
+      })
+      .finally(() => {
+        if (this._authenticationRefreshPromise === refreshPromise) {
+          this._authenticationRefreshPromise = undefined;
+          if (this._authenticationRefreshPending) {
+            this._authenticationRefreshPending = false;
+            this._refreshAuthentication();
+          }
+        }
+      });
+    this._authenticationRefreshPromise = refreshPromise;
+  };
+
+  private readonly _refreshAuthenticationWhenDocumentBecomesVisible = () => {
+    if (document.visibilityState === 'visible') {
+      this._refreshAuthentication();
+    }
+  };
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -81,6 +117,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._eventRegistry = eventRegistry;
     this._renderQueue = new RenderQueue(this._logger);
     this._dispatcher = DotNet.attachDispatcher(this);
+    this._eventRegistry.addEventListener('enhancedload', this._refreshAuthentication);
+    document.addEventListener('visibilitychange', this._refreshAuthenticationWhenDocumentBecomesVisible);
   }
 
   public start(): Promise<boolean> {
@@ -635,6 +673,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async disposeCore(): Promise<void> {
+    this._eventRegistry.removeEventListener('enhancedload', this._refreshAuthentication);
+    document.removeEventListener('visibilitychange', this._refreshAuthenticationWhenDocumentBecomesVisible);
+
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
