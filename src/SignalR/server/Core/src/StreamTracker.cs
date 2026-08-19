@@ -16,7 +16,7 @@ internal sealed class StreamTracker
 {
     private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals(nameof(BuildStream)));
     private readonly object[] _streamConverterArgs;
-    private readonly ConcurrentDictionary<string, StreamRegistration> _lookup = new ConcurrentDictionary<string, StreamRegistration>();
+    private readonly ConcurrentDictionary<string, (long Owner, IStreamConverter Converter)> _lookup = new();
     private long _nextStreamOwner;
 
     public StreamTracker(int streamBufferCapacity)
@@ -42,7 +42,7 @@ internal sealed class StreamTracker
 
         var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs)!;
         var reader = newConverter.GetReaderAsObject(targetType);
-        if (!_lookup.TryAdd(streamId, new StreamRegistration(streamOwner, newConverter)))
+        if (!_lookup.TryAdd(streamId, (streamOwner, newConverter)))
         {
             throw new HubException($"Stream ID '{streamId}' is already in use.");
         }
@@ -50,7 +50,7 @@ internal sealed class StreamTracker
         return reader;
     }
 
-    private bool TryGetRegistration(string streamId, out StreamRegistration registration)
+    private bool TryGetRegistration(string streamId, out (long Owner, IStreamConverter Converter) registration)
     {
         if (_lookup.TryGetValue(streamId, out registration))
         {
@@ -94,15 +94,18 @@ internal sealed class StreamTracker
 
     public bool TryComplete(string streamId, long streamOwner)
     {
-        if (_lookup.TryGetValue(streamId, out var registration) &&
-            registration.Owner == streamOwner &&
-            ((ICollection<KeyValuePair<string, StreamRegistration>>)_lookup).Remove(new KeyValuePair<string, StreamRegistration>(streamId, registration)))
+        if (!_lookup.TryGetValue(streamId, out var registration) || registration.Owner != streamOwner)
         {
-            registration.Converter.TryComplete(null);
-            return true;
+            return false;
         }
 
-        return false;
+        if (!_lookup.TryRemove(KeyValuePair.Create(streamId, registration)))
+        {
+            return false;
+        }
+
+        registration.Converter.TryComplete(null);
+        return true;
     }
 
     public void CompleteAll(Exception ex)
@@ -116,19 +119,6 @@ internal sealed class StreamTracker
     private static IStreamConverter BuildStream<T>(int streamBufferCapacity)
     {
         return new ChannelConverter<T>(streamBufferCapacity);
-    }
-
-    private readonly struct StreamRegistration
-    {
-        public StreamRegistration(long owner, IStreamConverter converter)
-        {
-            Owner = owner;
-            Converter = converter;
-        }
-
-        public long Owner { get; }
-
-        public IStreamConverter Converter { get; }
     }
 
     private interface IStreamConverter
