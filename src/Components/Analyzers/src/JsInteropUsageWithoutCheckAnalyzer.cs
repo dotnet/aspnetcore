@@ -109,7 +109,12 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
         else
         {
             // Expression statements, blocks, switch, cases etc. that have children.
+            // During source-build, we use newer version of Microsoft.CodeAnalysis which obsoletes Children and provide an alternative.
+            // However, for normal builds, we use MS.CA 3.3.1 which doesn't obsolete Children and doesn't have an alternative.
+            // We suppress the warning for source-builds for now.
+#pragma warning disable CS0618
             foreach (var childOperation in operation.Children)
+#pragma warning restore CS0618
             {
                 if (childOperation is IBlockOperation)
                 {
@@ -206,7 +211,9 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
         else if (operation is IBinaryOperation binaryOperation)
         {
             bool childConditionChecksInteractive = false;
+#pragma warning disable CS0618
             foreach (var childCondition in binaryOperation.Children)
+#pragma warning restore CS0618
             {
                 childConditionChecksInteractive = childConditionChecksInteractive || OperationChecksIsInteractive(childCondition, state, negated);
             }
@@ -224,8 +231,9 @@ public sealed class JsInteropUsageWithoutCheckAnalyzer : DiagnosticAnalyzer
         {
             return true;
         }
-
+#pragma warning disable CS0618
         foreach (var childOperation in operation.Children)
+#pragma warning restore CS0618
         {
             if (ConditionBlockReturnsOnIsInteractive(childOperation, state))
             {
