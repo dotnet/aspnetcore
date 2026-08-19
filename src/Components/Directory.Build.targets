@@ -20,6 +20,14 @@
     </ProjectReference>
   </ItemDefinitionGroup>
 
+  <!-- PrepareE2EApps supplies these properties to the app itself. Preserve them on that edge,
+       then remove them when the app traverses its own project references. -->
+  <ItemGroup Condition="'$(IsTestAssetProject)' == 'true'">
+    <ProjectReference Update="@(ProjectReference->WithMetadataValue('E2EApp', 'true'))">
+      <UndefineProperties />
+    </ProjectReference>
+  </ItemGroup>
+
   <!-- After ResolveReferences.targets (imported above) converts Reference to ProjectReference
        at evaluation time (which drops all custom metadata), re-apply metadata at evaluation
        time so it is always in effect for every build phase (Build, Publish, Razor, etc.):
