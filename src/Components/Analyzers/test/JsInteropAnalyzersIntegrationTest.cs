@@ -94,7 +94,6 @@ namespace Microsoft.JSInterop
 }
 ";
 
-
     [Fact]
     public void JSInvokeOnInitializedShouldThrowAllMultipleTypesOfWarning()
     {
