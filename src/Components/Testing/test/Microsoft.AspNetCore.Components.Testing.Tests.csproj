@@ -11,6 +11,15 @@
     <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
     <!-- CA1310: String comparisons in test assertions don't need StringComparison -->
     <NoWarn>$(NoWarn);NU1605;NU1903;CA1310</NoWarn>
+    <!-- The transitively-referenced Microsoft.AspNetCore.Components.Testing pulls in MSTest.TestFramework
+         which injects a Reference to MSTest.TestFramework.Extensions via buildTransitive. The HintPath
+         check in ResolveReferences.targets now handles these gracefully, so this flag is kept only
+         because it may be needed for any future explicit PackageReference additions. -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <!-- MSTest.TestFramework auto-adds `<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />`
+         when ImplicitUsings is enabled, which collides with this project's xUnit `using Xunit;`
+         (`Assert`, `TestContext`). Disable implicit usings; an explicit GlobalUsings.cs covers what we need. -->
+    <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
   <!-- Remove auto-added test infra references from CSharp.Common.props that conflict with xUnit v3 -->
@@ -30,8 +39,105 @@
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.Core" />
     <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj" />
+    <ProjectReference Include="..\nativeaot\Microsoft.AspNetCore.Components.Testing.NativeAot.csproj" />
     <ProjectReference Include="..\tasks\Microsoft.AspNetCore.Components.Testing.Tasks.csproj" />
   </ItemGroup>
+
+  <!--
+    Package integration tests inspect a real nupkg and prebuilt consumer outputs. Build those
+    prerequisites here rather than restoring/building consumer projects while tests are executing.
+  -->
+  <PropertyGroup>
+    <_PackageConsumerRoot>$(MSBuildThisFileDirectory)..\testassets\PackageConsumer\</_PackageConsumerRoot>
+    <_PackageConsumerProject>$(_PackageConsumerRoot)Tests\PackageConsumer.Tests.csproj</_PackageConsumerProject>
+    <_PackageConsumerVersion>0.0.0-package-integration</_PackageConsumerVersion>
+    <_PackageConsumerFeed>$(ArtifactsTmpDir)ComponentsTestingPackageConsumer\$(Configuration)\feed\</_PackageConsumerFeed>
+    <_PackageConsumerPackagesRoot>$(ArtifactsTmpDir)ComponentsTestingPackageConsumer\packages\</_PackageConsumerPackagesRoot>
+    <_PackageConsumerNativeAotEnabled Condition="'$(EnableNativeAotPackageIntegrationTests)' == 'true' and '$(PackageConsumerRuntimeIdentifier)' != ''">true</_PackageConsumerNativeAotEnabled>
+    <_PackageConsumerNativeAotEnabled Condition="'$(_PackageConsumerNativeAotEnabled)' == ''">false</_PackageConsumerNativeAotEnabled>
+    <_PackageConsumerNativeAotPublishOutput>$(ArtifactsTmpDir)ComponentsTestingPackageConsumer\$(Configuration)\nativeaot-publish\</_PackageConsumerNativeAotPublishOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ComponentsTestingPackagePath</_Parameter1>
+      <_Parameter2>$(_PackageConsumerFeed)Microsoft.AspNetCore.Components.Testing.$(_PackageConsumerVersion).nupkg</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ComponentsTestingNativeAotPackagePath</_Parameter1>
+      <_Parameter2>$(_PackageConsumerFeed)Microsoft.AspNetCore.Components.Testing.NativeAot.$(_PackageConsumerVersion).nupkg</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PackageConsumerRoot</_Parameter1>
+      <_Parameter2>$(_PackageConsumerRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PackageConsumerTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PackageConsumerConfiguration</_Parameter1>
+      <_Parameter2>$(Configuration)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PackageConsumerNativeAotEnabled</_Parameter1>
+      <_Parameter2>$(_PackageConsumerNativeAotEnabled)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PackageConsumerNativeAotPublishOutput</_Parameter1>
+      <_Parameter2>$(_PackageConsumerNativeAotPublishOutput)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <Target Name="_PrepareComponentsTestingPackageConsumer"
+          AfterTargets="Build"
+          BeforeTargets="RunTests"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(IsCrossTargetingBuild)' != 'true' and '$(ExcludeFromBuild)' != 'true' and ('$(DotNetBuildSourceOnly)' != 'true' or '$(ExcludeFromSourceOnlyBuild)' != 'true')">
+    <PropertyGroup>
+      <!-- A unique package root prevents a previously loaded MSBuild task DLL from pinning stale package contents. -->
+      <_PackageConsumerPackagesPath>$(_PackageConsumerPackagesRoot)$([System.Guid]::NewGuid())\</_PackageConsumerPackagesPath>
+      <_PackageConsumerProperties>Configuration=$(Configuration);PackageConsumerVersion=$(_PackageConsumerVersion);PackageConsumerTargetFramework=$(DefaultNetCoreTargetFramework);PackageConsumerMSTestVersion=$(MSTestVersion);RestoreAdditionalProjectSources=$(_PackageConsumerFeed);RestoreFallbackFolders=$(NuGetPackageRoot);RestorePackagesPath=$(_PackageConsumerPackagesPath)</_PackageConsumerProperties>
+      <_PackageBuildProperties>BuildProjectReferences=false;Configuration=$(Configuration);_ForcePackageBuild=$([System.Guid]::NewGuid())</_PackageBuildProperties>
+    </PropertyGroup>
+    <RemoveDir Directories="$(_PackageConsumerFeed)" />
+    <MakeDir Directories="$(_PackageConsumerFeed);$(_PackageConsumerPackagesPath)" />
+    <MSBuild Projects="..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj;..\tasks\Microsoft.AspNetCore.Components.Testing.Tasks.csproj"
+             Targets="Build"
+             BuildInParallel="true"
+             Properties="$(_PackageBuildProperties)"
+             RemoveProperties="NoBuild" />
+    <MSBuild Projects="..\src\Microsoft.AspNetCore.Components.Testing.csproj"
+             Targets="Pack"
+             Properties="$(_PackageBuildProperties);PackageOutputPath=$(_PackageConsumerFeed);PackageVersion=$(_PackageConsumerVersion)"
+             RemoveProperties="IsPackable;NoBuild;TargetFramework" />
+    <MSBuild Projects="..\nativeaot\Microsoft.AspNetCore.Components.Testing.NativeAot.csproj"
+             Targets="Pack"
+             Properties="$(_PackageBuildProperties);PackageOutputPath=$(_PackageConsumerFeed);PackageVersion=$(_PackageConsumerVersion)"
+             RemoveProperties="IsPackable;NoBuild;TargetFramework" />
+    <RemoveDir Directories="$(_PackageConsumerRoot)App\bin;$(_PackageConsumerRoot)App\obj;$(_PackageConsumerRoot)Tests\bin;$(_PackageConsumerRoot)Tests\obj" />
+    <MSBuild Projects="$(_PackageConsumerProject)"
+             Targets="Restore"
+             Properties="$(_PackageConsumerProperties);RestoreForce=true;RestoreNoCache=true"
+             RemoveProperties="BuildProjectReferences;NoBuild" />
+    <MSBuild Projects="$(_PackageConsumerProject)"
+             Targets="Build"
+             Properties="$(_PackageConsumerProperties)"
+             RemoveProperties="BuildProjectReferences;NoBuild" />
+    <MSBuild Projects="$(_PackageConsumerProject)"
+             Targets="Publish"
+             Properties="$(_PackageConsumerProperties);PackageConsumerAppMode=publish;NoBuild=true"
+             RemoveProperties="BuildProjectReferences" />
+    <MSBuild Projects="$(_PackageConsumerRoot)App\PackageConsumer.App.csproj"
+             Targets="Restore"
+             Properties="$(_PackageConsumerProperties);E2ECompileTestHarness=true;PackageConsumerRuntimeIdentifiers=$(PackageConsumerRuntimeIdentifier);RuntimeIdentifier=$(PackageConsumerRuntimeIdentifier);RestoreForce=true;RestoreNoCache=true"
+             RemoveProperties="BuildProjectReferences;NoBuild"
+             Condition="'$(_PackageConsumerNativeAotEnabled)' == 'true'" />
+    <MSBuild Projects="$(_PackageConsumerProject)"
+             Targets="Publish"
+             Properties="$(_PackageConsumerProperties);PackageConsumerAppMode=publish;PackageConsumerEnableNativeAot=true;PackageConsumerRuntimeIdentifiers=$(PackageConsumerRuntimeIdentifier);PackageConsumerRuntimeIdentifier=$(PackageConsumerRuntimeIdentifier);PublishDir=$(_PackageConsumerNativeAotPublishOutput);NoBuild=true"
+             RemoveProperties="BuildProjectReferences"
+             Condition="'$(_PackageConsumerNativeAotEnabled)' == 'true'" />
+  </Target>
 
   <!--
     xUnit v3 projects are self-executing test runners (OutputType=Exe).
