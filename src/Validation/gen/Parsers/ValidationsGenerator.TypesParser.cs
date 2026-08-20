@@ -359,7 +359,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     /// <c>Dictionary&lt;string, T&gt;</c> — all of which would produce invalid
     /// <c>typeof(...)</c> expressions in the emitted code.
     /// </summary>
-    private static bool ContainsTypeParameter(ITypeSymbol type)
+    internal static bool ContainsTypeParameter(ITypeSymbol type)
     {
         // Bare type parameter: T, TSelf, TSelf?
         if (type is ITypeParameterSymbol)

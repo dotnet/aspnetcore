@@ -66,6 +66,16 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         helpLinkUri: GetHelpLinkUri("ASP0036"),
         WellKnownDiagnosticTags.CompilationEnd);
 
+    internal static readonly DiagnosticDescriptor ValidatableTypeIsOpenGeneric = new(
+        "ASP0039",
+        "[ValidatableType] is applied to an open generic type",
+        "The type '{0}' is marked with [ValidatableType] but declares type parameters that cannot be resolved statically. The generated validation code can only reference closed types, so its validation is silently skipped. Validation still applies to closed constructions of this type used as endpoint parameters.",
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: null,
+        helpLinkUri: GetHelpLinkUri("ASP0039"));
+
     internal static readonly DiagnosticDescriptor ValidatableTypeIsUsedWithoutAddValidation = new(
         "ASP0038",
         "[ValidatableType] should not be used without a call to 'AddValidation'",
@@ -83,6 +93,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
         EndpointParameterTypeIsNotAccessible,
         ValidatablePropertyIsNotAccessible,
         ValidatablePropertyIsNotAccessibleCompilationEnd,
+        ValidatableTypeIsOpenGeneric,
         ValidatableTypeIsUsedWithoutAddValidation,
     ];
 
@@ -197,6 +208,16 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
                     if (attributedType.IsInaccessibleFromGeneratedCode())
                     {
                         context.ReportDiagnostic(Diagnostic.Create(ValidatableTypeIsNotAccessible, attributedType.Locations.FirstOrDefault(), attributedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
+                        return;
+                    }
+
+                    // Mirrors the generator's emit-time guard: a [ValidatableType] whose type tree
+                    // still contains a type parameter (its own, or an enclosing type's) can never be
+                    // referenced from the non-generic generated resolver, so the generator skips it.
+                    // Surface that skip to the author at the declaration instead of staying silent.
+                    if (ValidationsGenerator.ContainsTypeParameter(attributedType))
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(ValidatableTypeIsOpenGeneric, attributedType.Locations.FirstOrDefault(), attributedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
                         return;
                     }
 
