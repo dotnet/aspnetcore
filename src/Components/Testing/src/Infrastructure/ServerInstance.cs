@@ -217,6 +217,7 @@ public class ServerInstance : IAsyncDisposable
         var environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["ASPNETCORE_URLS"] = appUrl,
+            ["E2E_TEST_APP_URL"] = appUrl,
             ["TEST_PARENT_PID"] = Environment.ProcessId.ToString(CultureInfo.InvariantCulture),
             ["ASPNETCORE_ENVIRONMENT"] = "Development",
             ["E2E_READY_URL"] = readyUrl,
