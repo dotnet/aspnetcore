@@ -20,6 +20,8 @@ public class MessageList : IComponent, IDisposable
     private readonly List<ConversationTurnRenderer> _turnRenderers = new();
     private IDisposable? _turnAddedSub;
     private IDisposable? _statusChangedSub;
+    private ConversationStatus _previousStatus;
+    private string? _announcement;
 
     /// <summary>
     /// Gets or sets the conversation rendered by this list.
@@ -47,6 +49,12 @@ public class MessageList : IComponent, IDisposable
     [Parameter]
     public RenderFragment<AgentContext>? Footer { get; set; }
 
+    /// <summary>
+    /// Gets or sets the accessible label for the conversation transcript.
+    /// </summary>
+    [Parameter]
+    public string Label { get; set; } = "Conversation";
+
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _renderHandle = renderHandle;
@@ -66,7 +74,8 @@ public class MessageList : IComponent, IDisposable
             _listContext.OnRegistrationsChanged = Render;
 
             _turnAddedSub = _agentContext.RegisterOnTurnAdded(OnTurnAdded);
-            _statusChangedSub = _agentContext.RegisterOnStatusChanged(_ => Render());
+            _previousStatus = _agentContext.Status;
+            _statusChangedSub = _agentContext.RegisterOnStatusChanged(OnStatusChanged);
 
             foreach (var turn in _agentContext.Turns)
             {
@@ -103,14 +112,22 @@ public class MessageList : IComponent, IDisposable
                 {
                     inner.OpenElement(3, "div");
                     inner.AddAttribute(3, "class", "sc-ai-message-list");
+                    inner.AddAttribute(4, "role", "log");
+                    inner.AddAttribute(5, "aria-label", Label);
+                    inner.AddAttribute(6, "aria-live", "off");
+                    inner.AddAttribute(7, "aria-relevant", "additions");
+                    inner.AddAttribute(
+                        8,
+                        "aria-busy",
+                        _agentContext.Status == ConversationStatus.Streaming ? "true" : "false");
                     if (_childContent is not null)
                     {
-                        inner.AddContent(4, _childContent);
+                        inner.AddContent(10, _childContent);
                     }
 
                     if (_turnRenderers.Count == 0 && EmptyContent is not null)
                     {
-                        inner.AddContent(5, EmptyContent);
+                        inner.AddContent(11, EmptyContent);
                     }
 
                     var seq = 100;
@@ -132,6 +149,14 @@ public class MessageList : IComponent, IDisposable
                     }
                     inner.CloseElement(); // footer div
 
+                    inner.OpenElement(seq + 20, "div");
+                    inner.AddAttribute(seq + 21, "class", "sc-ai-sr-only");
+                    inner.AddAttribute(seq + 22, "role", "status");
+                    inner.AddAttribute(seq + 23, "aria-live", "polite");
+                    inner.AddAttribute(seq + 24, "aria-atomic", "true");
+                    inner.AddContent(seq + 25, _announcement);
+                    inner.CloseElement();
+
                     inner.CloseElement(); // sc-ai-message-list div
                 }));
             builder.CloseComponent();
@@ -145,8 +170,7 @@ public class MessageList : IComponent, IDisposable
             case ConversationStatus.Streaming:
                 builder.OpenElement(seq, "div");
                 builder.AddAttribute(seq + 1, "class", "sc-ai-typing");
-                builder.AddAttribute(seq + 2, "role", "status");
-                builder.AddAttribute(seq + 3, "aria-label", "Agent is typing");
+                builder.AddAttribute(seq + 2, "aria-hidden", "true");
                 for (var i = 0; i < 3; i++)
                 {
                     builder.OpenElement(seq + 4 + i, "span");
@@ -175,6 +199,22 @@ public class MessageList : IComponent, IDisposable
                 builder.CloseElement(); // div
                 break;
         }
+    }
+
+    private void OnStatusChanged(ConversationStatus status)
+    {
+        _announcement = status switch
+        {
+            ConversationStatus.Streaming => "Assistant is responding.",
+            ConversationStatus.AwaitingInput => "Assistant is waiting for your input.",
+            ConversationStatus.Error => "The response failed.",
+            ConversationStatus.Idle when _previousStatus is
+                ConversationStatus.Streaming or ConversationStatus.AwaitingInput =>
+                "Response complete.",
+            _ => _announcement,
+        };
+        _previousStatus = status;
+        Render();
     }
 
     private void ResetRegistrations()

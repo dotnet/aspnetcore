@@ -172,6 +172,33 @@
     white-space: pre-wrap;
 }
 
+.sc-ai-message__bubble--media {
+    display: grid;
+    gap: var(--sc-ai-spacing-xs);
+    overflow: hidden;
+}
+
+.sc-ai-message__bubble--media img,
+.sc-ai-message__bubble--media video {
+    display: block;
+    width: min(100%, 30rem);
+    max-height: 24rem;
+    border-radius: var(--sc-ai-border-radius-sm);
+    object-fit: contain;
+}
+
+.sc-ai-message__bubble--media audio {
+    width: min(100%, 24rem);
+}
+
+.sc-ai-message__media-name {
+    overflow: hidden;
+    color: var(--sc-ai-color-text-secondary);
+    font-size: var(--sc-ai-font-size-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .sc-ai-rich-text__paragraph,
 .sc-ai-rich-text__heading,
 .sc-ai-rich-text__quote,
@@ -345,6 +372,12 @@
 }
 
 /* ---------- Message Input ---------- */
+.sc-ai-input-container {
+    display: grid;
+    gap: var(--sc-ai-spacing-sm);
+    width: 100%;
+}
+
 .sc-ai-input {
     display: flex;
     align-items: flex-end;
@@ -360,10 +393,23 @@
     border-color: var(--sc-ai-color-accent);
 }
 
+.sc-ai-drop-zone--active {
+    outline: 0.125rem dashed var(--sc-ai-color-accent);
+    outline-offset: -0.25rem;
+}
+
 .sc-ai-input__body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-width: 0;
+}
+
+.sc-ai-input__leading-actions,
+.sc-ai-input__trailing-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sc-ai-spacing-xs);
 }
 
 .sc-ai-input__textarea {
@@ -425,6 +471,145 @@
     height: 1.125rem;
 }
 
+.sc-ai-input__stop,
+.sc-ai-input__attach,
+.sc-ai-input__audio,
+.sc-ai-input__live-speech {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.25rem;
+    padding: var(--sc-ai-spacing-sm);
+    border: 1px solid var(--sc-ai-color-border);
+    border-radius: var(--sc-ai-border-radius-sm);
+    color: var(--sc-ai-color-text);
+    background: var(--sc-ai-color-surface);
+    font: inherit;
+    font-size: var(--sc-ai-font-size-sm);
+    cursor: pointer;
+}
+
+.sc-ai-input__attach {
+    position: relative;
+    overflow: hidden;
+}
+
+.sc-ai-input__attach input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.sc-ai-input__stop:hover,
+.sc-ai-input__attach:hover,
+.sc-ai-input__audio:hover,
+.sc-ai-input__live-speech:hover {
+    background: var(--sc-ai-color-surface-hover);
+}
+
+.sc-ai-input__stop:focus-visible,
+.sc-ai-input__attach:focus-within,
+.sc-ai-input__audio:focus-visible,
+.sc-ai-input__live-speech:focus-visible,
+.sc-ai-attachment__remove:focus-visible {
+    outline: none;
+    box-shadow: var(--sc-ai-focus-ring);
+}
+
+.sc-ai-input__audio--recording {
+    border-color: var(--sc-ai-color-error);
+    color: var(--sc-ai-color-error);
+}
+
+.sc-ai-input__live-speech--active {
+    border-color: var(--sc-ai-color-accent);
+    color: var(--sc-ai-color-accent);
+}
+
+.sc-ai-input__live-speech--waiting {
+    opacity: 0.75;
+}
+
+.sc-ai-input__status,
+.sc-ai-input__error {
+    min-height: 1.25rem;
+    font-size: var(--sc-ai-font-size-sm);
+}
+
+.sc-ai-input__status {
+    color: var(--sc-ai-color-text-secondary);
+}
+
+.sc-ai-input__error {
+    color: var(--sc-ai-color-error);
+}
+
+.sc-ai-attachments {
+    display: flex;
+    gap: var(--sc-ai-spacing-sm);
+    padding: 0;
+    margin: 0;
+    overflow-x: auto;
+    list-style: none;
+}
+
+.sc-ai-attachments li {
+    display: grid;
+    flex: 0 0 min(18rem, 80%);
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--sc-ai-spacing-sm);
+    padding: var(--sc-ai-spacing-xs);
+    border: 1px solid var(--sc-ai-color-border);
+    border-radius: var(--sc-ai-border-radius-sm);
+    background: var(--sc-ai-color-surface);
+}
+
+.sc-ai-attachments img,
+.sc-ai-attachments video,
+.sc-ai-attachments audio {
+    width: 3rem;
+    height: 2.5rem;
+    border-radius: var(--sc-ai-border-radius-sm);
+    object-fit: cover;
+}
+
+.sc-ai-attachment__name {
+    overflow: hidden;
+    font-size: var(--sc-ai-font-size-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sc-ai-attachment__remove {
+    min-height: 2rem;
+    padding: var(--sc-ai-spacing-xs) var(--sc-ai-spacing-sm);
+    border: 0;
+    border-radius: var(--sc-ai-border-radius-sm);
+    color: var(--sc-ai-color-error);
+    background: transparent;
+    cursor: pointer;
+}
+
+.sc-ai-attachment__remove:hover {
+    background: var(--sc-ai-color-error-bg);
+}
+
+.sc-ai-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* ---------- Chat Page Shell ---------- */
 .sc-ai-chat-page {
     display: flex;
@@ -454,4 +639,61 @@
 .sc-ai-chat-page__input-container {
     max-width: var(--sc-ai-max-width);
     margin: 0 auto;
+}
+
+@media (prefers-color-scheme: dark) {
+    .sc-ai-root {
+        --sc-ai-color-bg: #15171a;
+        --sc-ai-color-surface: #1f2226;
+        --sc-ai-color-surface-hover: #292d32;
+        --sc-ai-color-text: #f1f3f5;
+        --sc-ai-color-text-secondary: #adb5bd;
+        --sc-ai-color-text-on-accent: #ffffff;
+        --sc-ai-color-accent: #6ea8fe;
+        --sc-ai-color-accent-hover: #8bb9fe;
+        --sc-ai-color-border: #495057;
+        --sc-ai-color-success: #75b798;
+        --sc-ai-color-error: #ea868f;
+        --sc-ai-color-error-bg: #3d1f24;
+        --sc-ai-color-bubble-user: #263c59;
+        --sc-ai-color-bubble-user-text: #f1f3f5;
+        --sc-ai-color-bubble-assistant: transparent;
+        --sc-ai-color-bubble-assistant-text: #f1f3f5;
+        color-scheme: dark;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sc-ai-root *,
+    .sc-ai-root *::before,
+    .sc-ai-root *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+@media (forced-colors: active) {
+    .sc-ai-root {
+        --sc-ai-color-bg: Canvas;
+        --sc-ai-color-surface: Canvas;
+        --sc-ai-color-surface-hover: Canvas;
+        --sc-ai-color-text: CanvasText;
+        --sc-ai-color-text-secondary: CanvasText;
+        --sc-ai-color-text-on-accent: HighlightText;
+        --sc-ai-color-accent: Highlight;
+        --sc-ai-color-accent-hover: Highlight;
+        --sc-ai-color-border: CanvasText;
+        --sc-ai-color-success: CanvasText;
+        --sc-ai-color-error: Mark;
+        --sc-ai-color-error-bg: Canvas;
+        --sc-ai-focus-ring: 0 0 0 2px Highlight;
+    }
+
+    .sc-ai-input,
+    .sc-ai-attachments li,
+    .sc-ai-approval {
+        border-color: CanvasText;
+    }
 }
