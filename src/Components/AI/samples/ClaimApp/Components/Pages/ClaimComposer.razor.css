@@ -1,0 +1,335 @@
+.claim-composer {
+    position: relative;
+    display: grid;
+    gap: 0.55rem;
+    width: 100%;
+}
+
+.claim-composer__suggestions {
+    display: flex;
+    gap: 0.4rem;
+    padding-bottom: 0.05rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.claim-composer__suggestions::-webkit-scrollbar {
+    display: none;
+}
+
+.claim-composer__suggestions button {
+    flex: 0 0 auto;
+    min-height: 2rem;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--claim-border);
+    border-radius: 999px;
+    color: var(--claim-text);
+    background: var(--claim-surface);
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 650;
+    transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.claim-composer__suggestions button:hover:not(:disabled) {
+    border-color: var(--claim-accent);
+    color: var(--claim-accent);
+    background: var(--claim-accent-soft);
+}
+
+.claim-composer ::deep .sc-ai-input {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    overflow: hidden;
+    border: 1px solid var(--claim-border-strong);
+    border-radius: 1.35rem;
+    background: var(--claim-surface);
+    box-shadow: 0 0.5rem 1.5rem var(--claim-shadow);
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.claim-composer ::deep .sc-ai-input__body {
+    grid-column: 1 / -1;
+    grid-row: 1;
+}
+
+.claim-composer ::deep .sc-ai-input__leading-actions {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.claim-composer ::deep .sc-ai-input__send,
+.claim-composer ::deep .sc-ai-input__stop {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.claim-composer.sc-ai-drop-zone--active ::deep .sc-ai-input {
+    border-color: var(--claim-accent);
+    background: var(--claim-accent-soft);
+    box-shadow:
+        0 0 0 0.2rem color-mix(in oklab, var(--claim-accent) 18%, transparent),
+        0 0.5rem 1.5rem var(--claim-shadow);
+}
+
+.claim-composer ::deep .sc-ai-input:focus-within {
+    border-color: var(--claim-accent);
+    box-shadow:
+        0 0 0 0.18rem color-mix(in oklab, var(--claim-accent) 15%, transparent),
+        0 0.5rem 1.5rem var(--claim-shadow);
+}
+
+.claim-composer__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.claim-composer ::deep .claim-composer__textarea {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-height: 4rem;
+    max-height: 10rem;
+    padding: 0.9rem 0.95rem 0.45rem;
+    border: 0;
+    outline: 0;
+    color: var(--claim-text);
+    background: transparent;
+    line-height: 1.4;
+    text-align: left;
+    resize: none;
+}
+
+.claim-composer ::deep .claim-composer__textarea::placeholder {
+    color: var(--claim-muted);
+}
+
+.claim-composer ::deep .sc-ai-input__leading-actions {
+    display: flex;
+    align-items: center;
+}
+
+.claim-composer ::deep .sc-ai-input__leading-actions {
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.claim-composer ::deep .claim-composer__media-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2rem;
+    padding: 0.35rem 0.5rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0.55rem;
+    color: var(--claim-muted);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 650;
+    transition: color 120ms ease, background 120ms ease;
+}
+
+.claim-composer ::deep .claim-composer__media-button:hover:not(:disabled) {
+    color: var(--claim-text);
+    background: var(--claim-surface-muted);
+}
+
+.claim-composer ::deep .claim-composer__media-button svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+.claim-composer ::deep .sc-ai-input__audio--recording {
+    color: var(--claim-danger);
+    background: var(--claim-danger-bg);
+}
+
+.claim-composer ::deep .sc-ai-input__live-speech--active {
+    color: var(--claim-accent);
+    background: var(--claim-accent-soft);
+}
+
+.claim-composer__recording-dot,
+.claim-composer__live-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: currentColor;
+    animation: claim-recording-pulse 1.2s ease-in-out infinite;
+}
+
+.claim-composer ::deep .claim-composer__file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.claim-composer ::deep .sc-ai-input__send {
+    display: grid;
+    flex: 0 0 auto;
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    color: var(--claim-accent-contrast);
+    background: var(--claim-accent);
+    cursor: pointer;
+    transition: background 120ms ease, transform 120ms ease, opacity 120ms ease;
+}
+
+.claim-composer ::deep .sc-ai-input__send:hover:not(:disabled) {
+    background: var(--claim-accent-hover);
+    transform: translateY(-1px);
+}
+
+.claim-composer ::deep .sc-ai-input__send svg {
+    width: 1.15rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+.claim-composer ::deep button:disabled,
+.claim-composer ::deep .claim-composer__file-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.claim-composer ::deep .claim-composer__attachments {
+    display: flex;
+    gap: 0.45rem;
+    padding: 0;
+    margin: 0;
+    overflow-x: auto;
+    list-style: none;
+}
+
+.claim-composer ::deep .claim-composer__attachments li {
+    display: grid;
+    flex: 0 0 min(18rem, 80%);
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem;
+    border: 1px solid var(--claim-border);
+    border-radius: 0.75rem;
+    background: var(--claim-surface);
+}
+
+.claim-composer ::deep .claim-composer__attachments img,
+.claim-composer ::deep .claim-composer__attachments audio {
+    width: 3rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    object-fit: cover;
+}
+
+.claim-composer ::deep .claim-composer__attachments span {
+    overflow: hidden;
+    font-size: 0.72rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.claim-composer ::deep .claim-composer__attachments button {
+    min-height: 1.8rem;
+    padding: 0.25rem 0.4rem;
+    border: 0;
+    border-radius: 0.45rem;
+    color: var(--claim-danger);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.claim-composer ::deep .claim-composer__attachments button:hover {
+    background: var(--claim-danger-bg);
+}
+
+.claim-composer__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 1rem;
+    padding: 0 0.15rem;
+    color: var(--claim-muted);
+    font-size: 0.62rem;
+}
+
+.claim-composer ::deep .sc-ai-input__status {
+    overflow: hidden;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.claim-composer ::deep .sc-ai-input__error {
+    color: var(--claim-danger);
+    font-size: 0.7rem;
+}
+
+@keyframes claim-recording-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.35;
+    }
+}
+
+@media (max-width: 640.98px) {
+    .claim-composer ::deep .claim-composer__media-button span {
+        display: none;
+    }
+
+    .claim-composer ::deep .claim-composer__media-button {
+        width: 2rem;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .claim-composer ::deep .sc-ai-input__audio--recording {
+        width: auto;
+        padding: 0.35rem 0.5rem;
+    }
+
+    .claim-composer ::deep .sc-ai-input__audio--recording span {
+        display: block;
+    }
+
+    .claim-composer__meta > span:first-child {
+        display: none;
+    }
+
+    .claim-composer ::deep .sc-ai-input__status {
+        width: 100%;
+        text-align: left;
+    }
+}

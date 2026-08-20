@@ -1,0 +1,201 @@
+@using ComponentsAIClaimApp.Data
+@using Microsoft.AspNetCore.Components.AI
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.AI
+@inject IClaimAssistantBackend ClaimAssistant
+
+<div class="claim-composer">
+    <MessageInput Label="Claim description"
+                  TextAreaClass="claim-composer__textarea"
+                  Placeholder="Include the year, make, model, location, and what happened..."
+                  AttachmentOnlyText="Review the attached claim evidence."
+                  SendLabel="Send"
+                  ShowDefaultStopButton="false"
+                  OnSubmitted="SubmittedAsync"
+                  OnCanceled="OnCanceled">
+        <TopContent Context="input">
+            @if (Suggestions.Count > 0)
+            {
+                <div class="claim-composer__suggestions"
+                     aria-label="Suggested claim descriptions">
+                    @foreach (var suggestion in Suggestions)
+                    {
+                        <button type="button"
+                                disabled="@(input.IsConversationBusy || input.IsComposing)"
+                                @onclick="() => UseSuggestion(input, suggestion)">
+                            @suggestion.Label
+                        </button>
+                    }
+                </div>
+            }
+        </TopContent>
+
+        <AttachmentContent Context="input">
+            <MessageAttachmentList class="claim-composer__attachments"
+                                   Label="Attached claim evidence" />
+        </AttachmentContent>
+
+        <LeadingActions>
+            <MessageAttachButton class="claim-composer__media-button"
+                                 InputClass="claim-composer__file-input"
+                                 Accept="image/*"
+                                 Multiple
+                                 DropZoneSelector=".claim-composer"
+                                 MaximumFileCount="@RemainingPhotoCount"
+                                 MaximumFileSize="@ClaimLimits.MaximumPhotoBytes"
+                                 MaximumTotalSize="@RemainingPhotoBytes"
+                                 AttachmentFactory="CreateImageAttachmentAsync">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z" />
+                    <path d="m6.5 16 3.4-3.8 2.5 2.5 1.8-2 3.3 3.3" />
+                    <circle cx="15.8" cy="9.2" r="1.2" />
+                </svg>
+                <span>Add photo</span>
+            </MessageAttachButton>
+
+            <AudioCaptureButton class="claim-composer__media-button"
+                                AttachRecording="false"
+                                MaximumBytes="@MaxAudioBytes"
+                                ShowInterimTranscript
+                                StartLabel="Record voice"
+                                StopLabel="Stop recording"
+                                Transcribe="TranscribeRecordingAsync">
+                <ChildContent Context="isRecording">
+                    @if (isRecording)
+                    {
+                        <span class="claim-composer__recording-dot" aria-hidden="true"></span>
+                        <span>Stop recording</span>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="9" y="3" width="6" height="11" rx="3" />
+                            <path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v4M9 21h6" />
+                        </svg>
+                        <span>Record voice</span>
+                    }
+                </ChildContent>
+            </AudioCaptureButton>
+
+            <LiveSpeechButton class="claim-composer__media-button"
+                              ShowInterimInComposer="false"
+                              StartLabel="Start live voice"
+                              StopLabel="Stop live voice"
+                              OnInterimTranscript="OnLiveTranscriptChanged">
+                <ChildContent Context="isActive">
+                    @if (isActive)
+                    {
+                        <span class="claim-composer__live-dot" aria-hidden="true"></span>
+                        <span>Stop live voice</span>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h-2" />
+                        </svg>
+                        <span>Live voice</span>
+                    }
+                </ChildContent>
+            </LiveSpeechButton>
+
+            <MessageStopButton class="claim-cancel"
+                               Label="Cancel claim assessment">
+                Cancel
+            </MessageStopButton>
+        </LeadingActions>
+
+        <BottomContent Context="input">
+            <div class="claim-composer__meta">
+                <span>Drop photos here · recorded and live voice supported</span>
+                <span>
+                    Model · @ModelName
+                    @if (input.Attachments.Count > 0)
+                    {
+                        @($" · {input.Attachments.Count} attachment{(input.Attachments.Count == 1 ? string.Empty : "s")} ready")
+                    }
+                </span>
+            </div>
+        </BottomContent>
+    </MessageInput>
+</div>
+
+@code {
+    private const long MaxAudioBytes = 8 * 1024 * 1024;
+
+    [Parameter]
+    public IReadOnlyList<ClaimPromptSuggestion> Suggestions { get; set; } = [];
+
+    [Parameter]
+    public string ModelName { get; set; } = "Foundry not configured";
+
+    [Parameter]
+    public EventCallback OnCanceled { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnLiveTranscriptChanged { get; set; }
+
+    [Parameter]
+    public int ExistingPhotoCount { get; set; }
+
+    [Parameter]
+    public long ExistingPhotoBytes { get; set; }
+
+    [Parameter]
+    public EventCallback<ClaimPhotoPreview> OnPhotoAdded { get; set; }
+
+    private int RemainingPhotoCount =>
+        Math.Max(0, ClaimLimits.MaximumPhotoCount - ExistingPhotoCount);
+
+    private long RemainingPhotoBytes =>
+        Math.Max(0, ClaimLimits.MaximumEvidenceBytes - ExistingPhotoBytes);
+
+    private static void UseSuggestion(
+        MessageInputContext input,
+        ClaimPromptSuggestion suggestion)
+    {
+        input.Text = suggestion.Prompt;
+        input.SetStatusMessage($"{suggestion.Label} description selected.");
+    }
+
+    private static async ValueTask<DataContent> CreateImageAttachmentAsync(
+        IBrowserFile file,
+        CancellationToken cancellationToken)
+    {
+        if (file.ContentType is not (
+            "image/jpeg" or
+            "image/png" or
+            "image/webp" or
+            "image/gif"))
+        {
+            throw new InvalidOperationException(
+                "Choose a JPEG, PNG, WebP, or GIF image.");
+        }
+
+        await using var stream = file.OpenReadStream(
+            ClaimLimits.MaximumPhotoBytes,
+            cancellationToken);
+        var content = await DataContent.LoadFromAsync(
+            stream,
+            file.ContentType,
+            cancellationToken);
+        content.Name = Path.GetFileName(file.Name);
+        return content;
+    }
+
+    private async ValueTask<string?> TranscribeRecordingAsync(
+        DataContent recording,
+        CancellationToken cancellationToken)
+    {
+        return await ClaimAssistant.TranscribeAsync(recording, cancellationToken);
+    }
+
+    private async Task SubmittedAsync(ChatMessage message)
+    {
+        foreach (var content in message.Contents
+            .OfType<DataContent>()
+            .Where(content => content.HasTopLevelMediaType("image")))
+        {
+            await OnPhotoAdded.InvokeAsync(new ClaimPhotoPreview(content));
+        }
+    }
+}

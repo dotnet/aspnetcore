@@ -1,0 +1,537 @@
+@page "/"
+@page "/ai-chat"
+@using AGUI.Abstractions
+@using System.Text.Json
+@using ComponentsAIClaimApp.Data
+@using Microsoft.AspNetCore.Components.AI
+@using Microsoft.Extensions.AI
+@implements IDisposable
+@inject IClaimAssistantBackend ClaimAssistant
+@inject IChatClient ChatClient
+@inject ILogger<AIChat> Logger
+@inject ILoggerFactory LoggerFactory
+
+<PageTitle>AutoSure claim assistant</PageTitle>
+
+<div class="claim-app" data-theme="@_theme">
+    <a class="claim-skip-link" href="#claim-chat-heading">Skip to claim assistant</a>
+    <header class="claim-topbar">
+        <div class="claim-brand">
+            <div class="claim-brand__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2.8 20 6v5.6c0 4.5-3.1 8.6-8 9.8-4.9-1.2-8-5.3-8-9.8V6l8-3.2Z" />
+                    <path d="m8.4 12.1 2.2 2.2 5-5" />
+                </svg>
+            </div>
+            <div>
+                <span class="claim-eyebrow">AutoSure claims</span>
+                <h1>Vehicle damage assessment</h1>
+            </div>
+        </div>
+        <div class="claim-topbar__actions">
+            <ClaimThemePicker Theme="@_theme" ThemeChanged="SetTheme" />
+        </div>
+    </header>
+
+    <div class="claim-workspace">
+        <aside class="claim-summary" aria-labelledby="claim-summary-heading">
+            <div class="claim-summary__heading">
+                <div>
+                    <span class="claim-eyebrow">Claim overview</span>
+                    <h2 id="claim-summary-heading">@ClaimState.ClaimNumber</h2>
+                </div>
+                <span class="claim-status claim-status--@ClaimState.Decision.ToLowerInvariant()"
+                      role="status"
+                      aria-live="polite">
+                    @ClaimState.Status
+                </span>
+            </div>
+
+            @if (_claimPhotos.Count > 0)
+            {
+                <section class="claim-photo-gallery" aria-labelledby="claim-photos-heading">
+                    <div class="claim-photo-gallery__heading">
+                        <span id="claim-photos-heading" class="claim-eyebrow">Vehicle photos</span>
+                        <span>@_claimPhotos.Count / 6</span>
+                    </div>
+                    <div class="claim-photo-gallery__grid">
+                        @foreach (var photo in _claimPhotos)
+                        {
+                            var findingCount = FindingCountFor(photo.Name);
+                            <figure class="@(findingCount > 0 ? "claim-photo--flagged" : null)">
+                                <MediaContent Content="photo.Content"
+                                              AlternativeText="@($"Vehicle evidence {photo.Name}")" />
+                                @if (findingCount > 0)
+                                {
+                                    <span class="claim-photo__badge">
+                                        @findingCount finding@(findingCount == 1 ? string.Empty : "s")
+                                    </span>
+                                }
+                                <figcaption>@photo.Name</figcaption>
+                            </figure>
+                        }
+                    </div>
+                </section>
+            }
+            else
+            {
+                <div class="claim-photo-empty">
+                    <span class="claim-photo-empty__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z" />
+                            <path d="m6.5 16 3.4-3.8 2.5 2.5 1.8-2 3.3 3.3" />
+                            <circle cx="15.8" cy="9.2" r="1.2" />
+                        </svg>
+                    </span>
+                    <strong>Add vehicle photos</strong>
+                    <span>Wide, close-up, and alternate angles work best.</span>
+                </div>
+            }
+
+            <details class="claim-damage-map">
+                <summary>Damage map</summary>
+                <ClaimVehicleDiagram State="ClaimState" />
+            </details>
+
+            <dl class="claim-details">
+                <div>
+                    <dt>Accident</dt>
+                    <dd>@ClaimState.AccidentSummary</dd>
+                </div>
+                <div>
+                    <dt>Assessment</dt>
+                    <dd>@ClaimState.AssessmentSummary</dd>
+                </div>
+                <div>
+                    <dt>Evidence</dt>
+                    <dd>@ClaimState.EvidenceSummary</dd>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(ClaimState.VoiceTranscript))
+                {
+                    <div>
+                        <dt>Voice transcript</dt>
+                        <dd>@ClaimState.VoiceTranscript</dd>
+                    </div>
+                }
+                <div>
+                    <dt>Confidence</dt>
+                    <dd>@(ClaimState.Confidence == 0 ? "Waiting" : $"{ClaimState.Confidence}%")</dd>
+                </div>
+                <div>
+                    <dt>Decision</dt>
+                    <dd>@ClaimState.Decision</dd>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(ClaimState.RejectionReason))
+                {
+                    <div>
+                        <dt>Rejection reason</dt>
+                        <dd>@ClaimState.RejectionReason</dd>
+                    </div>
+                }
+            </dl>
+
+            @if (ClaimState.DamageFindings.Count > 0)
+            {
+                <section class="claim-findings" aria-labelledby="claim-findings-heading">
+                    <div class="claim-findings__heading">
+                        <span id="claim-findings-heading" class="claim-eyebrow">Damage findings</span>
+                        <span>@ClaimState.DamageFindings.Count flagged</span>
+                    </div>
+                    <ul>
+                        @foreach (var finding in ClaimState.DamageFindings)
+                        {
+                            <li>
+                                <div>
+                                    <strong>@finding.Area.Replace('-', ' ')</strong>
+                                    <span>@finding.DamageType</span>
+                                </div>
+                                <span class="claim-finding-severity">@finding.Severity</span>
+                                <p>@finding.Evidence</p>
+                            </li>
+                        }
+                    </ul>
+                    @if (!string.IsNullOrWhiteSpace(ClaimState.NextPhotoSuggestion))
+                    {
+                        <p class="claim-findings__next">
+                            <strong>Next best photo</strong>
+                            @ClaimState.NextPhotoSuggestion
+                        </p>
+                    }
+                </section>
+            }
+
+            @if (ClaimState.RepairEstimate is not null ||
+                ClaimState.ReplacementParts.Count > 0 ||
+                !string.IsNullOrWhiteSpace(ClaimState.ResearchWarning))
+            {
+                <section class="claim-market" aria-labelledby="claim-market-heading">
+                    <div class="claim-market__heading">
+                        <span id="claim-market-heading" class="claim-eyebrow">Repair intelligence</span>
+                        <span>Live market research</span>
+                    </div>
+                    @if (ClaimState.RepairEstimate is { High: > 0 } estimate)
+                    {
+                        <div class="claim-estimate">
+                            <span>Estimated repair range</span>
+                            <strong>@FormatMoney(estimate.Low, estimate.Currency)–@FormatMoney(estimate.High, estimate.Currency)</strong>
+                            <p>@estimate.Basis</p>
+                        </div>
+                    }
+                    @if (ClaimState.ReplacementParts.Count > 0)
+                    {
+                        <ul class="claim-parts">
+                            @foreach (var part in ClaimState.ReplacementParts)
+                            {
+                                <li>
+                                    <div>
+                                        <strong>@part.Name</strong>
+                                        @if (part.PriceHigh > 0)
+                                        {
+                                            <span>@FormatMoney(part.PriceLow, part.Currency)–@FormatMoney(part.PriceHigh, part.Currency)</span>
+                                        }
+                                    </div>
+                                    <p>@part.Fitment</p>
+                                    @if (ClaimResearchLink.Normalize(part.SourceUrl) is { } partSourceUrl)
+                                    {
+                                        <a href="@partSourceUrl"
+                                           target="_blank"
+                                           rel="noopener noreferrer">
+                                            @(!string.IsNullOrWhiteSpace(part.SourceTitle) ? part.SourceTitle : "View source")
+                                            <span class="visually-hidden"> opens in a new tab</span>
+                                        </a>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(ClaimState.ResearchWarning))
+                    {
+                        <p class="claim-market__warning">@ClaimState.ResearchWarning</p>
+                    }
+                    @if (ClaimState.ResearchSources.Count > 0)
+                    {
+                        <details class="claim-sources">
+                            <summary>@ClaimState.ResearchSources.Count source@(ClaimState.ResearchSources.Count == 1 ? string.Empty : "s")</summary>
+                            <ul>
+                                @foreach (var source in ClaimState.ResearchSources)
+                                {
+                                    @if (ClaimResearchLink.Normalize(source.Url) is { } sourceUrl)
+                                    {
+                                        <li>
+                                            <a href="@sourceUrl"
+                                               target="_blank"
+                                               rel="noopener noreferrer">
+                                                @source.Title
+                                                <span class="visually-hidden"> opens in a new tab</span>
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </details>
+                    }
+                    <p class="claim-market__disclaimer">
+                        Intake estimate only. A repair facility must verify fitment, labor,
+                        calibration, hidden damage, taxes, and final scope.
+                    </p>
+                </section>
+            }
+
+            <section class="claim-progress" aria-labelledby="claim-progress-heading">
+                <span id="claim-progress-heading" class="claim-eyebrow">Claim progress</span>
+                <ol>
+                    <li class="@ProgressClass(ClaimState.Confidence > 0, ClaimState.Confidence == 0)">
+                        <span aria-hidden="true">1</span>
+                        Evidence
+                    </li>
+                    <li class="@ProgressClass(ClaimState.Decision != "Pending", ClaimState.Confidence > 0 && ClaimState.Decision == "Pending")">
+                        <span aria-hidden="true">2</span>
+                        Assessment
+                    </li>
+                    <li class="@ProgressClass(ClaimState.Decision != "Pending", false)">
+                        <span aria-hidden="true">3</span>
+                        Decision
+                    </li>
+                </ol>
+            </section>
+
+        </aside>
+
+        <section class="claim-chat" aria-labelledby="claim-chat-heading">
+            <div class="sc-ai-root sc-ai-chat-page claim-chat-page">
+                <div class="sc-ai-chat-page__header">
+                    <div class="claim-chat-header">
+                        <div class="claim-avatar" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 3a7 7 0 0 0-7 7v4a3 3 0 0 0 3 3h1v-6H6v-1a6 6 0 0 1 12 0v1h-3v6h1a3 3 0 0 0 3-3v-4a7 7 0 0 0-7-7Z" />
+                                <path d="M9.5 19h5" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 id="claim-chat-heading">Damage assessment agent</h2>
+                            <span role="status" aria-live="polite">
+                                <span class="claim-chat-header__status-dot" aria-hidden="true"></span>
+                                @ClaimState.Status
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <AgentBoundary Agent="_conversation.Agent">
+                    <div class="sc-ai-chat-page__body">
+                        <MessageList>
+                            <ChildContent>
+                                <BlockRenderer TBlock="FunctionInvocationContentBlock"
+                                    When="block => block.ToolName == IdentifyVehicleAreasTool"
+                                    Context="block">
+                                    <VehicleDamageBlock Block="block" />
+                                </BlockRenderer>
+                                <BlockRenderer TBlock="UIActionBlock"
+                                    When="block => block.ToolName == DisplayVehicleDamageTool"
+                                    Context="block">
+                                    <VehicleDiagramAction Block="block" />
+                                </BlockRenderer>
+                                <BlockRenderer TBlock="FunctionApprovalBlock" Context="block">
+                                    <ClaimApprovalBlock Block="block"
+                                                        OnApproved="RecordApproval"
+                                                        OnAdditionalEvidence="RecordAdditionalEvidence"
+                                                        OnRejected="RecordRejection" />
+                                </BlockRenderer>
+                            </ChildContent>
+                            <EmptyContent>
+                                <div class="claim-welcome">
+                                    <span class="claim-eyebrow">Claim assistant</span>
+                                    <h3>Start with what happened.</h3>
+                                    <p>
+                                        Describe the damage, add vehicle photos, or record a voice
+                                        note. You can also use one of the starters below.
+                                    </p>
+                                </div>
+                            </EmptyContent>
+                        </MessageList>
+                        @if (!string.IsNullOrWhiteSpace(_liveVoiceTranscript))
+                        {
+                            <div class="claim-live-transcript"
+                                 aria-label="Live voice transcript">
+                                <span>Listening</span>
+                                <p>@_liveVoiceTranscript</p>
+                            </div>
+                        }
+                    </div>
+                    <div class="sc-ai-chat-page__footer">
+                        <div class="sc-ai-chat-page__input-container">
+                            <ClaimComposer Suggestions="_suggestions"
+                                           ModelName="@ClaimAssistant.ModelName"
+                                           OnCanceled="RecordCancellation"
+                                           OnLiveTranscriptChanged="SetLiveVoiceTranscript"
+                                           ExistingPhotoCount="_claimPhotos.Count"
+                                           ExistingPhotoBytes="@_claimPhotos.Sum(photo => (long)photo.Content.Data.Length)"
+                                           OnPhotoAdded="AddClaimPhoto" />
+                        </div>
+                    </div>
+                </AgentBoundary>
+            </div>
+        </section>
+    </div>
+</div>
+
+@code {
+    private const string IdentifyVehicleAreasTool = "identify_vehicle_areas";
+    private const string DisplayVehicleDamageTool = "display_vehicle_damage";
+
+    private readonly IReadOnlyList<ClaimPromptSuggestion> _suggestions =
+    [
+        new(
+            "Front impact",
+            "My 2022 Toyota Camry SE was hit in Seattle, Washington. The front bumper is cracked, the hood looks bent, and the left headlight is broken."),
+        new(
+            "Side impact",
+            "A vehicle hit the driver's side at low speed. The front door and left fender are dented."),
+        new(
+            "Windshield damage",
+            "Road debris struck the windshield and also chipped the hood."),
+    ];
+
+    private ClaimConversation _conversation = default!;
+    private readonly List<ClaimPhotoPreview> _claimPhotos = [];
+    private string? _liveVoiceTranscript;
+    private string _theme = "light";
+    private ClaimState ClaimState => _conversation.Agent.State.Value;
+
+    protected override void OnInitialized()
+    {
+        _conversation = CreateConversation("CLM-1042");
+    }
+
+    private ClaimConversation CreateConversation(string claimNumber)
+    {
+        var state = new ClaimState
+        {
+            ClaimNumber = claimNumber,
+        };
+        var conversation = new ClaimConversation();
+        UIAgent<ClaimState>? agent = null;
+
+        var displayVehicleDamage = AIFunctionFactory.Create(
+            (string[] areas) => DisplayVehicleDamage(agent!, areas),
+            DisplayVehicleDamageTool,
+            "Highlights affected areas on the vehicle diagram.");
+
+        var chatOptions = new ChatOptions
+        {
+            RawRepresentationFactory = _ => new RunAgentInput
+            {
+                State = JsonSerializer.SerializeToElement(
+                    agent!.State.Value,
+                    ClaimStateJson.Options),
+            },
+        };
+
+        agent = new UIAgent<ClaimState>(
+            ChatClient,
+            options =>
+            {
+                options.ChatOptions = chatOptions;
+                options.RegisterUIAction(displayVehicleDamage);
+                options.AddBlockHandler(new ClaimErrorContentHandler(Logger));
+                options.StateMapper = context => MapClaimState(agent!, context);
+            },
+            LoggerFactory,
+            state);
+        conversation.Agent = agent;
+
+        conversation.StateChangedSubscription = agent.State.OnChanged(() =>
+        {
+            _ = InvokeAsync(StateHasChanged);
+        });
+
+        return conversation;
+    }
+
+    private static bool MapClaimState(
+        UIAgent<ClaimState> agent,
+        StateMapperContext context)
+    {
+        var currentState = agent.State.Value;
+        ClaimState? mappedState = context.Update.RawRepresentation switch
+        {
+            StateSnapshotEvent snapshot =>
+                snapshot.Snapshot.Deserialize<ClaimState>(ClaimStateJson.Options),
+            StateDeltaEvent delta => ClaimStateJson.ApplyDelta(currentState, delta.Delta),
+            _ => null,
+        };
+
+        if (mappedState is null)
+        {
+            return false;
+        }
+
+        context.SetState(mappedState);
+        return true;
+    }
+
+    private static string DisplayVehicleDamage(
+        UIAgent<ClaimState> agent,
+        string[] areas)
+    {
+        var updatedState = ClaimStateJson.Clone(agent.State.Value);
+        updatedState.AffectedAreas = areas
+            .Where(area => !string.IsNullOrWhiteSpace(area))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        updatedState.Status = "Vehicle diagram updated";
+        agent.State.Value = updatedState;
+
+        return JsonSerializer.Serialize(new
+        {
+            displayedAreas = updatedState.AffectedAreas,
+        }, ClaimStateJson.Options);
+    }
+
+    private Task RecordApproval()
+    {
+        var updatedState = ClaimStateJson.Clone(ClaimState);
+        updatedState.RejectionReason = null;
+        _conversation.Agent.State.Value = updatedState;
+
+        return Task.CompletedTask;
+    }
+
+    private Task RecordRejection(string reason)
+    {
+        var updatedState = ClaimStateJson.Clone(ClaimState);
+        updatedState.RejectionReason = reason;
+        _conversation.Agent.State.Value = updatedState;
+
+        return Task.CompletedTask;
+    }
+
+    private Task RecordAdditionalEvidence()
+    {
+        var updatedState = ClaimStateJson.Clone(ClaimState);
+        updatedState.Status = "Add more evidence";
+        updatedState.Decision = "Pending";
+        updatedState.RejectionReason = null;
+        _conversation.Agent.State.Value = updatedState;
+
+        return Task.CompletedTask;
+    }
+
+    private Task RecordCancellation()
+    {
+        var updatedState = ClaimStateJson.Clone(ClaimState);
+        updatedState.Status = "Ready";
+        updatedState.AssessmentSummary = updatedState.Confidence == 0
+            ? "Assessment canceled. Add or update evidence when you are ready."
+            : updatedState.AssessmentSummary;
+        _conversation.Agent.State.Value = updatedState;
+
+        return Task.CompletedTask;
+    }
+
+    private Task SetLiveVoiceTranscript(string transcript)
+    {
+        _liveVoiceTranscript = string.IsNullOrWhiteSpace(transcript)
+            ? null
+            : transcript;
+        return Task.CompletedTask;
+    }
+
+    private void AddClaimPhoto(ClaimPhotoPreview photo)
+    {
+        _claimPhotos.RemoveAll(existing =>
+            string.Equals(existing.Name, photo.Name, StringComparison.Ordinal));
+        _claimPhotos.Add(photo);
+    }
+
+    private int FindingCountFor(string photoName)
+        => ClaimState.DamageFindings.Count(finding =>
+            finding.PhotoNames.Any(name =>
+                string.Equals(name, photoName, StringComparison.OrdinalIgnoreCase)));
+
+    private Task SetTheme(string theme)
+    {
+        _theme = theme;
+        return Task.CompletedTask;
+    }
+
+    private static string ProgressClass(bool complete, bool active)
+        => complete ? "claim-progress__step--complete" :
+            active ? "claim-progress__step--active" :
+            string.Empty;
+
+    private static string FormatMoney(decimal value, string currency)
+        => $"{currency} {value:N0}";
+
+    public void Dispose()
+    {
+        _conversation.StateChangedSubscription?.Dispose();
+        _conversation.Agent.Dispose();
+    }
+
+    private sealed class ClaimConversation
+    {
+        public UIAgent<ClaimState> Agent { get; set; } = default!;
+
+        public IDisposable? StateChangedSubscription { get; set; }
+    }
+}
