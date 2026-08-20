@@ -14,12 +14,6 @@
     <PackageTags>blazor;ai;chat;components</PackageTags>
     <!-- RS0026: New package with no prior shipped API; optional parameter backcompat is N/A -->
     <NoWarn>$(NoWarn);RS0026</NoWarn>
-    <!--
-      Components.AI follows the .NET release cadence but versions independently from the shared framework. Increment
-      PreReleaseVersionIteration for each public preview, including previews released after .NET GA. After publishing
-      a stable version, increment VersionPrefix before starting the next preview series. These properties are listed
-      in TreatAsLocalProperty above so they override repository-wide version properties.
-    -->
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
