@@ -53,9 +53,16 @@
 
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
+        const query = new URLSearchParams(location.search);
+        if (query.has('accelerateAuthenticationRefresh')) {
+            const setTimeout = window.setTimeout;
+            window.setTimeout = (handler, timeout, ...args) =>
+                setTimeout(handler, timeout === 30 * 60 * 1000 ? 1000 : timeout, ...args);
+        }
+
         Blazor.start({
             configureSignalR: builder => {
-                if (new URLSearchParams(location.search).has('captureAuthenticationRefresh')) {
+                if (query.has('captureAuthenticationRefresh')) {
                     const build = builder.build.bind(builder);
                     builder.build = () => {
                         const connection = build();

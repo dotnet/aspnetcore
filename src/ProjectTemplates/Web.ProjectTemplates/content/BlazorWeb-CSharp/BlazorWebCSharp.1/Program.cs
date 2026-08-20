@@ -1,7 +1,4 @@
 #if (IndividualLocalAuth)
-#if (UseServer)
-using Microsoft.AspNetCore.Components.Authorization;
-#endif
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
@@ -41,9 +38,6 @@ builder.Services.AddRazorComponents()
 #if (IndividualLocalAuth)
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
-#if (UseServer)
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-#endif
 
 builder.Services.AddAuthentication(options =>
     {
