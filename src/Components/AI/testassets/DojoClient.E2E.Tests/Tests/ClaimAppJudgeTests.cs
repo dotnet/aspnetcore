@@ -120,7 +120,7 @@ public partial class ClaimAppJudgeTests : BrowserTest
     public async Task ConversationalPrompt_UsesConfiguredModel()
     {
         if (string.IsNullOrWhiteSpace(
-            Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT")))
+            Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")))
         {
             Assert.Inconclusive("The Foundry claim endpoint is not configured.");
         }
@@ -984,7 +984,7 @@ public partial class ClaimAppJudgeTests : BrowserTest
     {
         var audioPath = Environment.GetEnvironmentVariable("CLAIM_TEST_AUDIO_PATH");
         if (string.IsNullOrWhiteSpace(
-                Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT")) ||
+                Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")) ||
             string.IsNullOrWhiteSpace(audioPath) ||
             !File.Exists(audioPath))
         {
@@ -1253,7 +1253,7 @@ public partial class ClaimAppJudgeTests : BrowserTest
     public async Task FoundryWorkflow_ReturnsGroundedRepairIntelligence()
     {
         if (string.IsNullOrWhiteSpace(
-            Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT")))
+            Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")))
         {
             Assert.Inconclusive("The Foundry claim endpoint is not configured.");
         }

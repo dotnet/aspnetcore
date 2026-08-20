@@ -9,9 +9,7 @@ internal sealed class ClaimFoundryOptions
 
     public string? ApiKey { get; set; }
 
-    public string VisionModel { get; set; } = "gpt-5-mini";
+    public string ChatDeployment { get; set; } = "gpt-5-mini";
 
-    public string TranscriptionModel { get; set; } = "gpt-4o-mini-transcribe";
-
-    public string ResearchCountry { get; set; } = "US";
+    public string TranscriptionDeployment { get; set; } = "gpt-4o-mini-transcribe";
 }
