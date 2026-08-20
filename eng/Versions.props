@@ -64,8 +64,6 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Arcade settings">
-    <!-- Opt-in to using the Microsoft.Net.Compiler tool for building projects. -->
-    <UsingToolMicrosoftNetCompilers>true</UsingToolMicrosoftNetCompilers>
     <!-- Opt-in to Arcade tools for building VSIX projects. -->
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <!-- Disable XLIFF tasks -->
@@ -122,11 +120,6 @@
     <MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>
     <MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>
     <MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>
-    <!--
-      Pin the Roslyn compiler to a version which can host analyzers built against Roslyn 5.10.
-      This should be removed once the global.json pins an SDK with the necessary version of Roslyn.
-    -->
-    <MicrosoftNetCompilersToolsetVersion>5.10.0-1.26357.6</MicrosoftNetCompilersToolsetVersion>
     <!-- Specifies the version of Roslyn that should be referenced by source generators.
          This gets overriden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
     <MicrosoftCodeAnalysisSourceGeneratorVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisSourceGeneratorVersion>
