@@ -44,6 +44,8 @@ internal class BlockMappingPipeline
         // Structured snapshots take precedence over the plain-text fallback.
         _handlers.Add(new HandlerEntry<RichContentBlock>(new RichTextContentHandler()));
 
+        _handlers.Add(new HandlerEntry<DataContentBlock>(new DataContentHandler()));
+
         // Built-in plain-text handler is always last (fallback).
         _handlers.Add(new HandlerEntry<RichContentBlock>(new TextBlockHandler()));
     }

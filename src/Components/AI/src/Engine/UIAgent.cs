@@ -129,104 +129,116 @@ public class UIAgent : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        var thread = _options.Thread;
-        foreach (var message in messages)
+        var historyCheckpoint = _history.Count;
+        var completed = false;
+        try
         {
-            ArgumentNullException.ThrowIfNull(message);
-            _history.Add(message);
-        }
-
-        var pipeline = new BlockMappingPipeline(_options, _logger);
-
-        // Process user messages through pipeline
-        foreach (var message in messages)
-        {
-            var userUpdate = new ChatResponseUpdate
+            var thread = _options.Thread;
+            foreach (var message in messages)
             {
-                Role = message.Role,
-                Contents = [.. message.Contents]
-            };
-            await foreach (var block in pipeline.Process(userUpdate, cancellationToken).ConfigureAwait(false))
-            {
-                yield return block;
-            }
-        }
-
-        foreach (var block in pipeline.Finalize())
-        {
-            yield return block;
-        }
-
-        // Stream assistant response
-        UIAgentLog.StreamingAssistantResponse(_logger);
-        var responseUpdates = new List<ChatResponseUpdate>();
-        var assistantUpdates = new List<ChatResponseUpdate>();
-        var updateIndex = 0;
-        var chatOptions = BuildChatOptions();
-        IEnumerable<ChatMessage> requestMessages = _history;
-        if (thread is { IsStateful: true, ConversationId: not null })
-        {
-            chatOptions = chatOptions?.Clone() ?? new ChatOptions();
-            chatOptions.ConversationId = thread.ConversationId;
-            requestMessages = messages;
-        }
-
-        await foreach (var update in _chatClient.GetStreamingResponseAsync(
-            requestMessages, chatOptions, cancellationToken).ConfigureAwait(false))
-        {
-            var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
-            UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
-
-            responseUpdates.Add(update);
-            var processUpdate = ApplyStateMapper(update);
-            assistantUpdates.Add(processUpdate);
-
-            if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
-            {
-                continue;
+                ArgumentNullException.ThrowIfNull(message);
+                _history.Add(message);
             }
 
-            await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
+            var pipeline = new BlockMappingPipeline(_options, _logger);
+
+            foreach (var message in messages)
             {
-                yield return block;
-            }
-        }
-
-        UIAgentLog.StreamComplete(_logger, assistantUpdates.Count);
-
-        foreach (var block in pipeline.Finalize())
-        {
-            yield return block;
-        }
-
-        // Add assistant response to history
-        var response = assistantUpdates.ToChatResponse();
-        foreach (var msg in response.Messages)
-        {
-            _history.Add(msg);
-        }
-
-        if (thread is not null && messages.Count > 0)
-        {
-            thread.AppendUserMessage(messages[0]);
-            foreach (var message in messages.Skip(1))
-            {
-                thread.AppendUpdate(new ChatResponseUpdate
+                var userUpdate = new ChatResponseUpdate
                 {
                     Role = message.Role,
-                    Contents = [.. message.Contents],
-                });
+                    Contents = [.. message.Contents]
+                };
+                await foreach (var block in pipeline.Process(userUpdate, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return block;
+                }
             }
 
-            foreach (var update in responseUpdates)
+            foreach (var block in pipeline.Finalize())
             {
-                thread.AppendUpdate(update);
+                yield return block;
             }
 
-            thread.CompleteTurn();
-        }
+            UIAgentLog.StreamingAssistantResponse(_logger);
+            var assistantUpdates = new List<ChatResponseUpdate>();
+            var responseUpdates = new List<ChatResponseUpdate>();
+            var updateIndex = 0;
+            var chatOptions = BuildChatOptions();
+            IEnumerable<ChatMessage> requestMessages = _history;
+            if (thread is { IsStateful: true, ConversationId: not null })
+            {
+                chatOptions = chatOptions?.Clone() ?? new ChatOptions();
+                chatOptions.ConversationId = thread.ConversationId;
+                requestMessages = messages;
+            }
 
-        UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
+            await foreach (var update in _chatClient.GetStreamingResponseAsync(
+                requestMessages, chatOptions, cancellationToken).ConfigureAwait(false))
+            {
+                var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
+                UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
+
+                responseUpdates.Add(update);
+                var processUpdate = ApplyStateMapper(update);
+                assistantUpdates.Add(processUpdate);
+                if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
+                {
+                    continue;
+                }
+
+                await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return block;
+                }
+            }
+
+            UIAgentLog.StreamComplete(_logger, assistantUpdates.Count);
+
+            foreach (var block in pipeline.Finalize())
+            {
+                yield return block;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            var response = assistantUpdates.ToChatResponse();
+            foreach (var msg in response.Messages)
+            {
+                _history.Add(msg);
+            }
+
+            if (thread is not null && messages.Count > 0)
+            {
+                thread.AppendUserMessage(messages[0]);
+                foreach (var message in messages.Skip(1))
+                {
+                    thread.AppendUpdate(new ChatResponseUpdate
+                    {
+                        Role = message.Role,
+                        Contents = [.. message.Contents],
+                    });
+                }
+
+                foreach (var update in responseUpdates)
+                {
+                    thread.AppendUpdate(update);
+                }
+
+                thread.CompleteTurn();
+            }
+
+            completed = true;
+            UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
+        }
+        finally
+        {
+            if (!completed && _history.Count > historyCheckpoint)
+            {
+                _history.RemoveRange(
+                    historyCheckpoint,
+                    _history.Count - historyCheckpoint);
+            }
+        }
     }
 
     /// <summary>

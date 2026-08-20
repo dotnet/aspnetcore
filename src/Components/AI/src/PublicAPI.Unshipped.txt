@@ -231,6 +231,7 @@ Microsoft.AspNetCore.Components.AI.MessageInput
 Microsoft.AspNetCore.Components.AI.MessageInput.AgentContext.get -> Microsoft.AspNetCore.Components.AI.AgentContext!
 Microsoft.AspNetCore.Components.AI.MessageInput.AgentContext.set -> void
 Microsoft.AspNetCore.Components.AI.MessageInput.Dispose() -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.AI.MessageInput.LeadingActions.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.AI.MessageInput.LeadingActions.set -> void
 Microsoft.AspNetCore.Components.AI.MessageInput.MessageInput() -> void
@@ -346,6 +347,174 @@ Microsoft.AspNetCore.Components.AI.UIActionBlock.InvokeAsync(System.Threading.Ca
 Microsoft.AspNetCore.Components.AI.UIActionBlock.IsComplete.get -> bool
 Microsoft.AspNetCore.Components.AI.UIActionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
 Microsoft.AspNetCore.Components.AI.UIActionBlock.ToolName.get -> string!
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AttachRecording.get -> bool
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AttachRecording.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.AudioCaptureButton() -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<bool>?
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ChildContent.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Context.get -> Microsoft.AspNetCore.Components.AI.MessageInputContext!
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Context.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.MaximumBytes.get -> long
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.MaximumBytes.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnRecorded.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.Extensions.AI.DataContent!>
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnRecorded.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnTranscribed.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.OnTranscribed.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ReplaceExistingAudio.get -> bool
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ReplaceExistingAudio.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ShowInterimTranscript.get -> bool
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.ShowInterimTranscript.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.SpeechRecognitionLanguage.get -> string?
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.SpeechRecognitionLanguage.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StartLabel.get -> string!
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StartLabel.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StopLabel.get -> string!
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.StopLabel.set -> void
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Transcribe.get -> System.Func<Microsoft.Extensions.AI.DataContent!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string?>>?
+Microsoft.AspNetCore.Components.AI.AudioCaptureButton.Transcribe.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.AutoSubmit.get -> bool
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.AutoSubmit.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<bool>?
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.ChildContent.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.Context.get -> Microsoft.AspNetCore.Components.AI.MessageInputContext!
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.Context.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.Language.get -> string?
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.Language.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.LiveSpeechButton() -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.OnInterimTranscript.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.OnInterimTranscript.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.OnTranscript.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.OnTranscript.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.ShowInterimInComposer.get -> bool
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.ShowInterimInComposer.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.StartLabel.get -> string!
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.StartLabel.set -> void
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.StopLabel.get -> string!
+Microsoft.AspNetCore.Components.AI.LiveSpeechButton.StopLabel.set -> void
+Microsoft.AspNetCore.Components.AI.DataContentBlock
+Microsoft.AspNetCore.Components.AI.DataContentBlock.Content.get -> Microsoft.Extensions.AI.DataContent!
+Microsoft.AspNetCore.Components.AI.DataContentBlock.Content.set -> void
+Microsoft.AspNetCore.Components.AI.DataContentBlock.DataContentBlock() -> void
+Microsoft.AspNetCore.Components.AI.MediaContent
+Microsoft.AspNetCore.Components.AI.MediaContent.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.AI.MediaContent.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.AI.MediaContent.AlternativeText.get -> string?
+Microsoft.AspNetCore.Components.AI.MediaContent.AlternativeText.set -> void
+Microsoft.AspNetCore.Components.AI.MediaContent.Content.get -> Microsoft.Extensions.AI.DataContent!
+Microsoft.AspNetCore.Components.AI.MediaContent.Content.set -> void
+Microsoft.AspNetCore.Components.AI.MediaContent.MediaContent() -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.Accept.get -> string?
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.Accept.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.AttachmentFactory.get -> System.Func<Microsoft.AspNetCore.Components.Forms.IBrowserFile!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.DataContent!>>?
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.AttachmentFactory.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.ChildContent.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.Context.get -> Microsoft.AspNetCore.Components.AI.MessageInputContext!
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.Context.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.Dispose() -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.DropZoneSelector.get -> string?
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.DropZoneSelector.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.InputClass.get -> string?
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.InputClass.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.MaximumFileCount.get -> int
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.MaximumFileCount.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.MaximumFileSize.get -> long
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.MaximumFileSize.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.MaximumTotalSize.get -> long
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.MaximumTotalSize.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.MessageAttachButton() -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.Multiple.get -> bool
+Microsoft.AspNetCore.Components.AI.MessageAttachButton.Multiple.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList.Context.get -> Microsoft.AspNetCore.Components.AI.MessageInputContext!
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList.Context.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList.Dispose() -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList.Label.set -> void
+Microsoft.AspNetCore.Components.AI.MessageAttachmentList.MessageAttachmentList() -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.AI.MessageInput.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.AttachmentContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AI.MessageInputContext!>?
+Microsoft.AspNetCore.Components.AI.MessageInput.AttachmentContent.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.AttachmentOnlyText.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageInput.AttachmentOnlyText.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.BottomContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AI.MessageInputContext!>?
+Microsoft.AspNetCore.Components.AI.MessageInput.BottomContent.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.Label.get -> string?
+Microsoft.AspNetCore.Components.AI.MessageInput.Label.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.OnCanceled.get -> Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.AI.MessageInput.OnCanceled.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.OnSubmitted.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.Extensions.AI.ChatMessage!>
+Microsoft.AspNetCore.Components.AI.MessageInput.OnSubmitted.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.SendLabel.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageInput.SendLabel.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.ShowDefaultSendButton.get -> bool
+Microsoft.AspNetCore.Components.AI.MessageInput.ShowDefaultSendButton.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.ShowDefaultStopButton.get -> bool
+Microsoft.AspNetCore.Components.AI.MessageInput.ShowDefaultStopButton.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.StopLabel.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageInput.StopLabel.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.TextAreaClass.get -> string?
+Microsoft.AspNetCore.Components.AI.MessageInput.TextAreaClass.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInput.TopContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AI.MessageInputContext!>?
+Microsoft.AspNetCore.Components.AI.MessageInput.TopContent.set -> void
+Microsoft.AspNetCore.Components.AI.MessageInputContext
+Microsoft.AspNetCore.Components.AI.MessageInputContext.AddAttachmentAsync(Microsoft.Extensions.AI.DataContent! content) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.MessageInputContext.Attachments.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DataContent!>!
+Microsoft.AspNetCore.Components.AI.MessageInputContext.CanCancel.get -> bool
+Microsoft.AspNetCore.Components.AI.MessageInputContext.CanSubmit.get -> bool
+Microsoft.AspNetCore.Components.AI.MessageInputContext.CancelAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.AI.MessageInputContext.ErrorMessage.get -> string?
+Microsoft.AspNetCore.Components.AI.MessageInputContext.FocusAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.MessageInputContext.IsComposing.get -> bool
+Microsoft.AspNetCore.Components.AI.MessageInputContext.IsConversationBusy.get -> bool
+Microsoft.AspNetCore.Components.AI.MessageInputContext.RegisterOnChanged(System.Action! callback) -> System.IDisposable!
+Microsoft.AspNetCore.Components.AI.MessageInputContext.RemoveAttachmentAsync(Microsoft.Extensions.AI.DataContent! content) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.AI.MessageInputContext.SetErrorMessage(string? message) -> void
+Microsoft.AspNetCore.Components.AI.MessageInputContext.SetStatusMessage(string? message) -> void
+Microsoft.AspNetCore.Components.AI.MessageInputContext.Status.get -> Microsoft.AspNetCore.Components.AI.ConversationStatus
+Microsoft.AspNetCore.Components.AI.MessageInputContext.StatusMessage.get -> string?
+Microsoft.AspNetCore.Components.AI.MessageInputContext.SubmitAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.AI.MessageInputContext.Text.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageInputContext.Text.set -> void
+Microsoft.AspNetCore.Components.AI.MessageList.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageList.Label.set -> void
+Microsoft.AspNetCore.Components.AI.MessageSendButton
+Microsoft.AspNetCore.Components.AI.MessageSendButton.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.AI.MessageSendButton.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.AI.MessageSendButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.AI.MessageSendButton.ChildContent.set -> void
+Microsoft.AspNetCore.Components.AI.MessageSendButton.Context.get -> Microsoft.AspNetCore.Components.AI.MessageInputContext!
+Microsoft.AspNetCore.Components.AI.MessageSendButton.Context.set -> void
+Microsoft.AspNetCore.Components.AI.MessageSendButton.Dispose() -> void
+Microsoft.AspNetCore.Components.AI.MessageSendButton.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageSendButton.Label.set -> void
+Microsoft.AspNetCore.Components.AI.MessageSendButton.MessageSendButton() -> void
+Microsoft.AspNetCore.Components.AI.MessageStopButton
+Microsoft.AspNetCore.Components.AI.MessageStopButton.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.AI.MessageStopButton.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.AI.MessageStopButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.AI.MessageStopButton.ChildContent.set -> void
+Microsoft.AspNetCore.Components.AI.MessageStopButton.Context.get -> Microsoft.AspNetCore.Components.AI.MessageInputContext!
+Microsoft.AspNetCore.Components.AI.MessageStopButton.Context.set -> void
+Microsoft.AspNetCore.Components.AI.MessageStopButton.Dispose() -> void
+Microsoft.AspNetCore.Components.AI.MessageStopButton.Label.get -> string!
+Microsoft.AspNetCore.Components.AI.MessageStopButton.Label.set -> void
+Microsoft.AspNetCore.Components.AI.MessageStopButton.MessageStopButton() -> void
 abstract Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>.Handle(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TState state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
 abstract Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.TryCreateBlock(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TBlock! state) -> bool
 abstract Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.TryUpdateBlock(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TBlock! state, out bool isCompleted) -> bool
@@ -353,6 +522,9 @@ override sealed Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.Handl
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.OnParametersSet() -> void
+override Microsoft.AspNetCore.Components.AI.MessageInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.AI.MessageInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.AI.MessageInput.OnParametersSet() -> void
 virtual Microsoft.AspNetCore.Components.AI.ActivityHandler<TBlock>.OnContentUpdated(TBlock! state) -> void
 static Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>.Complete() -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
 static Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>.Emit(Microsoft.AspNetCore.Components.AI.ContentBlock! block, TState state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>

@@ -23,6 +23,7 @@ internal class ConversationTurnRenderer : IDisposable
         _turn = turn;
         _listContext = listContext;
         _requestRender = requestRender;
+        _turn.ResponseBlocksTruncated += OnResponseBlocksTruncated;
 
         _blockAddedSub = agentContext.RegisterOnBlockAdded((t, block) =>
         {
@@ -48,12 +49,28 @@ internal class ConversationTurnRenderer : IDisposable
         _requestRender();
     }
 
+    private void OnResponseBlocksTruncated(int count)
+    {
+        var retainedContainerCount = _turn.RequestBlocks.Count + count;
+        for (var index = _blockContainers.Count - 1;
+            index >= retainedContainerCount;
+            index--)
+        {
+            _blockContainers[index].Dispose();
+            _blockContainers.RemoveAt(index);
+        }
+
+        _requestRender();
+    }
+
     internal void RenderTo(RenderTreeBuilder builder, int baseSeq)
     {
         // Determine role from request blocks (user turn) or response blocks
         var role = _turn.RequestBlocks.Count > 0 ? "user" : "assistant";
         builder.OpenElement(baseSeq, "div");
         builder.AddAttribute(baseSeq + 1, "class", $"sc-ai-turn sc-ai-turn--{role}");
+        builder.AddAttribute(baseSeq + 2, "role", "group");
+        builder.AddAttribute(baseSeq + 3, "aria-label", "Conversation turn");
         var seq = baseSeq + 10;
         foreach (var container in _blockContainers)
         {
@@ -65,6 +82,7 @@ internal class ConversationTurnRenderer : IDisposable
 
     public void Dispose()
     {
+        _turn.ResponseBlocksTruncated -= OnResponseBlocksTruncated;
         _blockAddedSub?.Dispose();
         foreach (var container in _blockContainers)
         {

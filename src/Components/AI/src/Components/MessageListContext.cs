@@ -47,6 +47,7 @@ public class MessageListContext
                 var role = block.Role == ChatRole.User ? "user" : "assistant";
                 builder.OpenElement(0, "div");
                 builder.AddAttribute(1, "class", $"sc-ai-message sc-ai-message--{role}");
+                builder.AddAttribute(2, "aria-label", role == "user" ? "You" : "Assistant");
                 builder.OpenElement(2, "div");
                 builder.AddAttribute(3, "class", "sc-ai-message__bubble");
                 builder.OpenElement(4, "div");
@@ -65,6 +66,10 @@ public class MessageListContext
                 builder.CloseElement(); // content div
                 builder.CloseElement(); // bubble div
                 builder.CloseElement(); // message div
+            }
+            else if (block is DataContentBlock data)
+            {
+                RenderDataContentBlock(builder, data);
             }
             else if (block is FunctionApprovalBlock approval)
             {
@@ -92,6 +97,34 @@ public class MessageListContext
     {
         _registrations.Remove(registration);
         OnRegistrationsChanged?.Invoke();
+    }
+
+    private static void RenderDataContentBlock(
+        RenderTreeBuilder builder,
+        DataContentBlock block)
+    {
+        var role = block.Role == ChatRole.User ? "user" : "assistant";
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", $"sc-ai-message sc-ai-message--{role}");
+        builder.AddAttribute(2, "aria-label", role == "user" ? "You" : "Assistant");
+
+        builder.OpenElement(3, "div");
+        builder.AddAttribute(4, "class", "sc-ai-message__bubble sc-ai-message__bubble--media");
+
+        builder.OpenComponent<MediaContent>(5);
+        builder.AddComponentParameter(6, nameof(MediaContent.Content), block.Content);
+        builder.CloseComponent();
+
+        if (!string.IsNullOrWhiteSpace(block.Content.Name))
+        {
+            builder.OpenElement(7, "span");
+            builder.AddAttribute(8, "class", "sc-ai-message__media-name");
+            builder.AddContent(9, block.Content.Name);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+        builder.CloseElement();
     }
 
     private static void RenderRichTextNodes(
