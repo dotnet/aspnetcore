@@ -21,6 +21,12 @@ export function tryApplySpecialProperty(element: Element, name: string, value: s
   }
 }
 
+export function hasDeferredValue(element: Element): boolean {
+  // Indicates a 'value' frame was applied to this element (e.g. <textarea value="...">),
+  // in which case the value must not be overwritten by the element's child text content.
+  return deferredValuePropname in element;
+}
+
 export function applyAnyDeferredValue(element: Element) {
   // We handle setting 'value' on a <select> in three different ways:
   // [1] When inserting a corresponding <option>, in case you're dynamically adding options.
@@ -81,7 +87,12 @@ function tryApplyValueProperty(element: Element, value: string | null): boolean 
       }
 
       setDeferredElementValue(element, value);
-      element[deferredValuePropname] = value;
+      if (value === null) {
+        // The 'value' frame was removed, so there's no explicit value to track anymore.
+        delete element[deferredValuePropname];
+      } else {
+        element[deferredValuePropname] = value;
+      }
 
       return true;
     }

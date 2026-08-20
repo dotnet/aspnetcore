@@ -6,7 +6,7 @@ import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, isMathMLElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
+import { applyAnyDeferredValue, hasDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const sharedMathMLElemForParsing = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
@@ -182,7 +182,9 @@ export class BrowserRenderer {
             const newText = frameReader.textContent(frame);
             textNode.textContent = newText;
             const parentElement = textNode.parentElement;
-            if (parentElement instanceof HTMLTextAreaElement) {
+            // Only synchronize the textarea's value from its child content when there's no explicit
+            // 'value' frame. Otherwise the value frame takes precedence, matching the static renderer.
+            if (parentElement instanceof HTMLTextAreaElement && !hasDeferredValue(parentElement)) {
               let fullContent = '';
               for (const node of Array.from(parentElement.childNodes)) {
                 if (node instanceof Text) {

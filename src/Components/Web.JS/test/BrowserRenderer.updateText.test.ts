@@ -1,94 +1,121 @@
 import { expect, test, describe, beforeEach, afterEach } from '@jest/globals';
+import { BrowserRenderer } from '../src/Rendering/BrowserRenderer';
+import { toLogicalElement } from '../src/Rendering/LogicalElements';
 import { EditType, FrameType } from '../src/Rendering/RenderBatch/RenderBatch';
 
-describe('BrowserRenderer.updateText with textarea containing multiple text frames', () => {
+// Minimal in-memory RenderBatch whose readers simply read plain-object properties,
+// so tests can drive the real BrowserRenderer edit-application code path.
+function createMockBatch(): any {
+  return {
+    arrayBuilderSegmentReader: {
+      values: (seg: any) => seg.values,
+      offset: (seg: any) => seg.offset,
+      count: (seg: any) => seg.count,
+    },
+    diffReader: {
+      editsEntry: (values: any, index: number) => values[index],
+    },
+    editReader: {
+      editType: (e: any) => e.editType,
+      siblingIndex: (e: any) => e.siblingIndex ?? 0,
+      newTreeIndex: (e: any) => e.newTreeIndex ?? 0,
+      moveToSiblingIndex: (e: any) => e.moveToSiblingIndex ?? 0,
+      removedAttributeName: (e: any) => e.removedAttributeName ?? null,
+    },
+    frameReader: {
+      frameType: (f: any) => f.frameType,
+      subtreeLength: (f: any) => f.subtreeLength ?? 0,
+      elementName: (f: any) => f.elementName ?? null,
+      textContent: (f: any) => f.textContent ?? null,
+      attributeName: (f: any) => f.attributeName ?? null,
+      attributeValue: (f: any) => f.attributeValue ?? null,
+      attributeEventHandlerId: (f: any) => f.attributeEventHandlerId ?? 0,
+      componentId: (f: any) => f.componentId ?? 0,
+      markupContent: (f: any) => f.markupContent ?? '',
+      elementReferenceCaptureId: (f: any) => f.elementReferenceCaptureId ?? null,
+    },
+    referenceFramesEntry: (frames: any, index: number) => frames[index],
+  };
+}
+
+function applyBatch(renderer: BrowserRenderer, componentId: number, edits: any[], frames: any[]) {
+  const batch = createMockBatch();
+  const editsSegment = { values: edits, offset: 0, count: edits.length };
+  renderer.updateComponent(batch, componentId, editsSegment as any, frames as any);
+}
+
+describe('BrowserRenderer.updateText textarea rendering', () => {
   let container: HTMLDivElement;
+  let renderer: BrowserRenderer;
+  let rootComponentId: number;
 
   beforeEach(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
+
+    renderer = new BrowserRenderer(0);
+    rootComponentId = 1;
+    const rootElement = toLogicalElement(container);
+    renderer.attachRootComponentToLogicalElement(rootComponentId, rootElement, false);
   });
 
   afterEach(() => {
+    renderer.disposeComponent(rootComponentId);
     document.body.removeChild(container);
   });
 
-  test('should reconstruct textarea value from all text nodes, handling multiple frames and edge cases', () => {
-    // Scenario 1: Single text node update
-    const singleNodeTextarea = document.createElement('textarea');
-    container.appendChild(singleNodeTextarea);
+  test('should sync textarea value from child content when there is no value frame', () => {
+    // Render <textarea>Hello</textarea>.
+    applyBatch(renderer, rootComponentId,
+      [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
+      [
+        { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 2 },
+        { frameType: FrameType.text, textContent: 'Hello' },
+      ]);
 
-    const initialTextNode = document.createTextNode('Hello');
-    singleNodeTextarea.appendChild(initialTextNode);
+    const textarea = container.querySelector('textarea')!;
+    expect(textarea.value).toEqual('Hello');
 
-    expect(singleNodeTextarea.value).toEqual('Hello');
+    // Simulate a user edit, which sets the textarea's dirty-value flag so that
+    // later child-content changes no longer auto-reflect into .value. This forces
+    // the renderer's explicit sync to run, otherwise .value would stay 'user typed'.
+    textarea.value = 'user typed';
 
-    // Simulate textarea value sync when text node is updated
-    initialTextNode.textContent = 'Updated';
-    let singleNodeContent = '';
-    for (const node of Array.from(singleNodeTextarea.childNodes)) {
-      if (node instanceof Text) {
-        singleNodeContent += node.textContent || '';
-      }
-    }
-    if (singleNodeTextarea.value !== singleNodeContent) {
-      singleNodeTextarea.value = singleNodeContent;
-    }
+    // Change the child text: the renderer must resync .value from the child content.
+    applyBatch(renderer, rootComponentId,
+      [
+        { editType: EditType.stepIn, siblingIndex: 0 },
+        { editType: EditType.updateText, siblingIndex: 0, newTreeIndex: 0 },
+        { editType: EditType.stepOut },
+      ],
+      [{ frameType: FrameType.text, textContent: 'Updated' }]);
 
-    expect(singleNodeTextarea.value).toEqual('Updated');
+    expect(textarea.value).toEqual('Updated');
+  });
 
-    // Scenario 2: Multiple text nodes in textarea
-    const multiNodeTextarea = document.createElement('textarea');
-    container.appendChild(multiNodeTextarea);
+  test('should not override an explicit value frame with textarea child content', () => {
+    // Render <textarea value="currentValue">defaultValue</textarea>.
+    applyBatch(renderer, rootComponentId,
+      [{ editType: EditType.prependFrame, siblingIndex: 0, newTreeIndex: 0 }],
+      [
+        { frameType: FrameType.element, elementName: 'textarea', subtreeLength: 3 },
+        { frameType: FrameType.attribute, attributeName: 'value', attributeValue: 'currentValue' },
+        { frameType: FrameType.text, textContent: 'defaultValue' },
+      ]);
 
-    const firstTextNode = document.createTextNode('Hello ');
-    const secondTextNode = document.createTextNode('World');
-    multiNodeTextarea.appendChild(firstTextNode);
-    multiNodeTextarea.appendChild(secondTextNode);
+    const textarea = container.querySelector('textarea')!;
+    // The value frame wins over the child content.
+    expect(textarea.value).toEqual('currentValue');
 
-    expect(multiNodeTextarea.value).toEqual('Hello World');
+    // Changing only the child content must not clobber the value frame.
+    applyBatch(renderer, rootComponentId,
+      [
+        { editType: EditType.stepIn, siblingIndex: 0 },
+        { editType: EditType.updateText, siblingIndex: 0, newTreeIndex: 0 },
+        { editType: EditType.stepOut },
+      ],
+      [{ frameType: FrameType.text, textContent: 'newDefault' }]);
 
-    // Update the second text node
-    secondTextNode.textContent = 'Blazor';
-
-    let multiNodeContent = '';
-    for (const node of Array.from(multiNodeTextarea.childNodes)) {
-      if (node instanceof Text) {
-        multiNodeContent += node.textContent || '';
-      }
-    }
-    if (multiNodeTextarea.value !== multiNodeContent) {
-      multiNodeTextarea.value = multiNodeContent;
-    }
-
-    expect(multiNodeTextarea.value).toEqual('Hello Blazor');
-
-    // Scenario 3: Mixed text and non-text nodes
-    const mixedContentTextarea = document.createElement('textarea');
-    container.appendChild(mixedContentTextarea);
-
-    const firstCharNode = document.createTextNode('A');
-    const emptyTextNode = document.createTextNode('');
-    const nonTextSpanElement = document.createElement('span');
-    nonTextSpanElement.textContent = 'Ignored';
-    const secondCharNode = document.createTextNode('B');
-
-    mixedContentTextarea.appendChild(firstCharNode);
-    mixedContentTextarea.appendChild(emptyTextNode);
-    mixedContentTextarea.appendChild(nonTextSpanElement);
-    mixedContentTextarea.appendChild(secondCharNode);
-
-    let mixedNodeContent = '';
-    for (const node of Array.from(mixedContentTextarea.childNodes)) {
-      if (node instanceof Text) {
-        mixedNodeContent += node.textContent || '';
-      }
-    }
-    if (mixedContentTextarea.value !== mixedNodeContent) {
-      mixedContentTextarea.value = mixedNodeContent;
-    }
-
-    expect(mixedContentTextarea.value).toEqual('AB');
-    expect(mixedContentTextarea.value).not.toContain('Ignored');
+    expect(textarea.value).toEqual('currentValue');
   });
 });
