@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// <see cref="DisconnectedCircuits"/> should ensure we no longer have to concern ourselves with entry expiration.
 ///
 /// Knowing when a client disconnected is not an exact science. There's a fair possibility that a client may reconnect before the server realizes.
-/// Consequently, we have to account for reconnects and disconnects occuring simultaneously as well as appearing out of order.
+/// Consequently, we have to account for reconnects and disconnects occurring simultaneously as well as appearing out of order.
 /// To manage this, we use a critical section to manage all state transitions.
 /// </remarks>
 #pragma warning disable CA1852 // Seal internal types
@@ -194,7 +194,7 @@ internal partial class CircuitRegistry
             }
 
             // CircuitHandler events do not need to be executed inside the critical section, however we
-            // a) do not want concurrent execution of handler events i.e. a  OnConnectionDownAsync occuring in tandem with a OnConnectionUpAsync for a single circuit.
+            // a) do not want concurrent execution of handler events i.e. a  OnConnectionDownAsync occurring in tandem with a OnConnectionUpAsync for a single circuit.
             // b) out of order connection-up \ connection-down events e.g. a client that disconnects as soon it finishes reconnecting.
 
             // Dispatch the circuit handlers inside the sync context to ensure the order of execution. CircuitHost executes circuit handlers inside of

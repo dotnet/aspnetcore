@@ -98,7 +98,13 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
         }
 
-        if (!Utf8Parser.TryParse(value, out long parsed, out var consumed) ||
+        // Per RFC 9110 §8.6, Content-Length is 1*DIGIT: only ASCII digits are allowed.
+        // https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6
+        // Utf8Parser.TryParse accepts a leading '+' or '-' sign, so ensure the first byte is a digit.
+        long parsed = 0;
+        if (value.IsEmpty ||
+            value[0] is < (byte)'0' or > (byte)'9' ||
+            !Utf8Parser.TryParse(value, out parsed, out var consumed) ||
             parsed < 0 ||
             consumed != value.Length)
         {
@@ -122,8 +128,11 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         var numChars = customEncoding.GetChars(value, decodedChars);
         long parsed = -1;
 
+        // Per RFC 9110 §8.6, Content-Length is 1*DIGIT. NumberStyles.None
+        // https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6
+        // disallows leading signs and whitespace that NumberStyles.Integer would accept.
         if (numChars > 19 ||
-            !long.TryParse(decodedChars.Slice(0, numChars), NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed) ||
+            !long.TryParse(decodedChars.Slice(0, numChars), NumberStyles.None, CultureInfo.InvariantCulture, out parsed) ||
             parsed < 0)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector, checkForNewlineChars: false));

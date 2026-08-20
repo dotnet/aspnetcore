@@ -11,7 +11,7 @@ ASP.NET Core Servers contains all servers that can be used in ASP.NET Core by de
 This folder contains all servers implementations related abstractions for ASP.NET Core.
 
 - [Kestrel/](Kestrel/): Contains the implementation of the Kestrel Web Server.
-- [IIS/](IIS/): Cotnains all code for the IIS Web Server and ASP.NET Core Module.
+- [IIS/](IIS/): Contains all code for the IIS Web Server and ASP.NET Core Module.
 - [HttpSys/](HttpSys/): Contains all code for the HTTP.sys Web Server.
 - [Connections.Abstractions/](Connections.Abstractions/): A set of abstractions for creating and using Connections; used in the server implementations and SignalR.
 

@@ -6,6 +6,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -481,6 +482,46 @@ public class RenderFragmentSerializerTest
         Assert.Equal(42, frames.Array[1].AttributeValue);
         Assert.IsType<double>(frames.Array[2].AttributeValue);
         Assert.Equal(3.14, frames.Array[2].AttributeValue);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Roundtrip_ComponentRenderMode_PreservesPrerenderFlag(bool prerender)
+    {
+        RenderFragment original = builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddComponentRenderMode(new InteractiveWebAssemblyRenderMode(prerender));
+            builder.CloseComponent();
+        };
+
+        var serialized = SerializeFragment(original);
+
+        var node = Assert.Single(serialized);
+        Assert.Equal("InteractiveWebAssembly", node.RenderModeName);
+        Assert.Equal(prerender, node.Prerender);
+
+        var json = JsonSerializer.Serialize(serialized, _jsonOptions);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, _jsonOptions)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized, _jsonOptions, _typeCache);
+
+        using var builder2 = new RenderTreeBuilder();
+        fragment(builder2);
+        var frames = builder2.GetFrames();
+
+        IComponentRenderMode? capturedMode = null;
+        for (var i = 0; i < frames.Count; i++)
+        {
+            if (frames.Array[i].FrameType == RenderTreeFrameType.ComponentRenderMode)
+            {
+                capturedMode = frames.Array[i].ComponentRenderMode;
+                break;
+            }
+        }
+
+        var mode = Assert.IsType<InteractiveWebAssemblyRenderMode>(capturedMode);
+        Assert.Equal(prerender, mode.Prerender);
     }
 
     [Fact]

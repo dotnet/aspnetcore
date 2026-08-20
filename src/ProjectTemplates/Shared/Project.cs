@@ -239,22 +239,26 @@ public class Project : IDisposable
 
     internal (ProcessEx process, string listeningUri) ServePublishedStandaloneApp(ITestOutputHelper output)
     {
-        var publishDir = Path.Combine(TemplatePublishDir, "wwwroot");
+        output.WriteLine("Running blazor-gateway on published output...");
 
-        output.WriteLine("Running dotnet serve on published output...");
-        var command = DotNetMuxer.MuxerPathOrDefault();
-        string args;
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
-        {
-            args = "serve";
-        }
-        else
-        {
-            command = "dotnet-serve";
-            args = "--roll-forward LatestMajor";
-        }
+        var gatewayAssemblyPath = ResolveGatewayAssemblyPath();
+        var runtimeManifestPath = Path.Combine(TemplatePublishDir, $"{ProjectName}.staticwebassets.runtime.json");
+        var endpointsManifestPath = Path.Combine(TemplatePublishDir, $"{ProjectName}.staticwebassets.endpoints.json");
+        Assert.True(File.Exists(gatewayAssemblyPath), $"Expected the gateway assembly to exist at '{gatewayAssemblyPath}'.");
+        Assert.True(File.Exists(runtimeManifestPath), $"Expected the static web assets runtime manifest to exist at '{runtimeManifestPath}'.");
+        Assert.True(File.Exists(endpointsManifestPath), $"Expected the static web assets endpoints manifest to exist at '{endpointsManifestPath}'.");
 
-        var serveProcess = ProcessEx.Run(output, publishDir, command, args);
+        var args = string.Join(
+            " ",
+            $"\"{gatewayAssemblyPath}\"",
+            "--urls http://127.0.0.1:0",
+            "--environment Development",
+            $"--contentRoot \"{TemplatePublishDir}\"",
+            $"--staticWebAssets \"{runtimeManifestPath}\"",
+            $"--ClientApps:app:EndpointsManifest \"{endpointsManifestPath}\"",
+            "--ClientApps:app:PathPrefix \"\"");
+
+        var serveProcess = ProcessEx.Run(output, TemplatePublishDir, DotNetMuxer.MuxerPathOrDefault(), args);
         var listeningUri = ResolveListeningUrl(serveProcess);
         return (serveProcess, listeningUri);
 
@@ -283,6 +287,36 @@ public class Project : IDisposable
             throw new InvalidOperationException(
                 $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
         }
+    }
+
+    private static string ResolveGatewayAssemblyPath()
+    {
+        var packageRoot = Environment.GetEnvironmentVariable("NUGET_PACKAGES")
+            ?? typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(attribute => attribute.Key == "TestPackageRestorePath")?.Value
+            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
+
+        if (!string.IsNullOrEmpty(packageRoot))
+        {
+            var gatewayPackageRoot = Path.Combine(packageRoot, "microsoft.aspnetcore.components.gateway");
+            if (Directory.Exists(gatewayPackageRoot))
+            {
+                var matchingVersion = Directory.EnumerateDirectories(gatewayPackageRoot)
+                    .OrderByDescending(Path.GetFileName)
+                    .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(matchingVersion))
+                {
+                    var candidate = Path.Combine(matchingVersion, "tools", "blazor-gateway.dll");
+                    if (File.Exists(candidate))
+                    {
+                        return candidate;
+                    }
+                }
+            }
+        }
+
+        throw new FileNotFoundException("Could not locate the built Blazor gateway assembly. Ensure the package has been restored and the gateway package exists in the NuGet cache.");
     }
 
     internal async Task RunDotNetEfCreateMigrationAsync(string migrationName)

@@ -114,6 +114,71 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     }
 
     [Theory]
+    [InlineData(StatusCodes.Status400BadRequest)]
+    [InlineData(StatusCodes.Status404NotFound)] // Does not require AllowStatusCode404Response.
+    [InlineData(StatusCodes.Status418ImATeapot)]
+    public async Task Invoke_BadHttpRequestException_PreservesStatusCode(int statusCode)
+    {
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor();
+        var middleware = CreateMiddleware(_ => throw new BadHttpRequestException("Bad request.", statusCode), optionsAccessor);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Equal(statusCode, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Invoke_BadHttpRequestException_StatusCodeSelectorTakesPrecedence()
+    {
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor(statusCodeSelector: _ => StatusCodes.Status409Conflict);
+        var middleware = CreateMiddleware(
+            _ => throw new BadHttpRequestException("Bad request.", StatusCodes.Status418ImATeapot),
+            optionsAccessor);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Equal(StatusCodes.Status409Conflict, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Invoke_BadHttpRequestException_ExceptionHandlerDelegateCanOverrideStatusCode()
+    {
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor(exceptionHandler: context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
+            return Task.CompletedTask;
+        });
+        var middleware = CreateMiddleware(
+            _ => throw new BadHttpRequestException("Bad request.", StatusCodes.Status418ImATeapot),
+            optionsAccessor);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Invoke_BadHttpRequestException_Non404StatusDoesNotBypass404ResponseGuard()
+    {
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor(exceptionHandler: context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return Task.CompletedTask;
+        });
+        var middleware = CreateMiddleware(
+            _ => throw new BadHttpRequestException("Bad request.", StatusCodes.Status400BadRequest),
+            optionsAccessor);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
+
+        Assert.IsType<BadHttpRequestException>(exception.InnerException);
+    }
+
+    [Theory]
     [InlineData(ExceptionHandledType.ExceptionHandlerDelegate, false)]
     [InlineData(ExceptionHandledType.ProblemDetailsService, true)]
     public async Task Invoke_HasExceptionHandler_SuppressDiagnostics_CallbackRun(ExceptionHandledType suppressResult, bool logged)
@@ -664,13 +729,15 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     private IOptions<ExceptionHandlerOptions> CreateOptionsAccessor(
         RequestDelegate exceptionHandler = null,
         string exceptionHandlingPath = null,
-        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressDiagnosticsCallback = null)
+        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressDiagnosticsCallback = null,
+        Func<Exception, int> statusCodeSelector = null)
     {
         exceptionHandler ??= c => Task.CompletedTask;
         var options = new ExceptionHandlerOptions()
         {
             ExceptionHandler = exceptionHandler,
             ExceptionHandlingPath = exceptionHandlingPath,
+            StatusCodeSelector = statusCodeSelector,
         };
         if (suppressDiagnosticsCallback != null)
         {

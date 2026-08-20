@@ -8,9 +8,15 @@ namespace Microsoft.Extensions.Validation;
 /// <summary>
 /// Represents an interface for validating a value of a type.
 /// </summary>
-[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public interface IValidatableTypeInfo
 {
+    /// <summary>
+    /// Validates the specified <paramref name="value"/>.
+    /// </summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="context">The validation context.</param>
+    void Validate(object? value, ValidateContext context);
+
     /// <summary>
     /// Validates the specified <paramref name="value"/>.
     /// </summary>
@@ -25,6 +31,7 @@ public interface IValidatableTypeInfo
     /// </summary>
     /// <param name="propertyName">The name of the property to find its validatable property info.</param>
     /// <param name="validationOptions">The validation options.</param>
-    /// <returns>The validatable property info, or null if not found.</returns>
-    IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions);
+    /// <param name="validatablePropertyInfo">The validatable property info, or null if not found.</param>
+    /// <returns>True if the property is found. Otherwise, false.</returns>
+    bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo);
 }

@@ -8,7 +8,7 @@
     <label>Anchor Mode:
         <select id="anchor-mode-select" @onchange="OnAnchorModeChanged">
             <option value="0" selected="@(anchorMode == VirtualizeAnchorMode.None)">None</option>
-            <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Beginning)">Beginning</option>
+            <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Start)">Start</option>
             <option value="2" selected="@(anchorMode == VirtualizeAnchorMode.End)">End</option>
         </select>
     </label>
@@ -19,7 +19,7 @@
     {
         @if (useItemsProvider)
         {
-            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialIndex="@initialIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" @attributes="ComparerSplat" InitialItemIndex="@initialItemIndex" Context="item">
                 <ItemContent>
                     <div class="item"
                          data-index="@item.Index"
@@ -38,7 +38,7 @@
         }
         else
         {
-            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialIndex="@initialIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
                 <div class="item"
                      data-index="@item.Index"
                      data-anchor-mode="@((int)anchorMode)"
@@ -84,8 +84,12 @@
     <button id="delete-below" @onclick="DeleteBelow">Delete 10 Below</button>
     <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
     <button id="set-small-count" @onclick="SetSmallCount">Set 5 Items</button>
+    <button id="set-console-scenario" @onclick="SetConsoleScenario">Console scenario (40 items, overscan 100)</button>
     <button id="toggle-provider" @onclick="ToggleProvider">
         Source: @(useItemsProvider ? "ItemsProvider" : "Items")
+    </button>
+    <button id="toggle-comparer" @onclick="ToggleComparer">
+        Comparer: @(omitItemComparer ? "Default (none)" : "Custom")
     </button>
     <button id="toggle-height" @onclick="ToggleVariableHeight">
         Heights: @(useVariableHeight ? "Variable (10-200px)" : "Fixed (50px)")
@@ -107,23 +111,36 @@
 @code {
     private List<DynamicItem> items = new();
     private string statusMessage = "Ready";
-    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning;
+    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
+    private bool omitItemComparer = false;
+    private int overscanCount = 15;
     private bool useProviderDelay = false;
     private bool useProviderGate = false;
     private TaskCompletionSource providerGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int providerCallIndex;
     private List<string> providerEvents = new();
     private Virtualize<DynamicItem> virtualizeRef;
-    private int initialIndex;
     private int manualInitialIndex;
+    private int initialItemIndex;
     private bool listLoaded = true;
     private int scrollTargetIndex = 200;
     private string scrollStatus = "Idle";
     private CancellationTokenSource _userScrollCts;
     private static readonly IEqualityComparer<DynamicItem> _itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
+
+    [Parameter]
+    public int InitialItemIndex { get; set; }
+
+    private static readonly IReadOnlyDictionary<string, object> _emptyComparerSplat =
+        new Dictionary<string, object>();
+
+    private IReadOnlyDictionary<string, object> ComparerSplat =>
+        omitItemComparer
+            ? _emptyComparerSplat
+            : new Dictionary<string, object> { ["ItemComparer"] = _itemComparer };
 
     // Pending mutations applied inside the provider (simulates DB-backed data).
     private List<DynamicItem> _pendingPrepend;
@@ -133,6 +150,7 @@
 
     protected override void OnInitialized()
     {
+        initialItemIndex = InitialItemIndex;
         items = Enumerable.Range(0, 1000)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
@@ -269,6 +287,20 @@
         if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
     }
 
+    // Reproduces the Aspire dashboard "Console logs": a large OverscanCount and a dataset that is
+    // taller than the viewport but still has fewer total items than the Virtualize visible capacity
+    private async Task SetConsoleScenario()
+    {
+        overscanCount = 100;
+        items = Enumerable.Range(0, 40)
+            .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
+            .ToList();
+        nextPrependIndex = -1;
+        nextAppendIndex = 40;
+        statusMessage = "Console scenario: 40 items, overscan 100";
+        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+    }
+
     private void ExpandVisibleItem()
     {
         var target = items.FirstOrDefault(i => i.Index == 3);
@@ -320,12 +352,18 @@
         statusMessage = useItemsProvider ? "Switched to ItemsProvider" : "Switched to Items";
     }
 
+    private void ToggleComparer()
+    {
+        omitItemComparer = !omitItemComparer;
+        statusMessage = omitItemComparer ? "Using default ItemComparer" : "Using custom ItemComparer";
+    }
+
     private async ValueTask<ItemsProviderResult<DynamicItem>> GetItemsAsync(ItemsProviderRequest request)
     {
         await Task.Yield();
         if (useProviderDelay)
         {
-            await Task.Delay(500);
+            await Task.Delay(500, request.CancellationToken);
         }
         if (useProviderGate)
         {
@@ -373,13 +411,19 @@
 
         var result = items.Skip(request.StartIndex).Take(request.Count)
             .Select(i => new DynamicItem { Index = i.Index, Height = i.Height });
+        // With the default comparer we must hand back stable references so reference equality
+        // can correctly detect prepend/append; copies would look like an all-new (prepended) window.
+        if (omitItemComparer)
+        {
+            result = items.Skip(request.StartIndex).Take(request.Count).ToList();
+        }
         return new ItemsProviderResult<DynamicItem>(result, items.Count);
     }
 
     private void ToggleDelay()
     {
         useProviderDelay = !useProviderDelay;
-        statusMessage = useProviderDelay ? "Provider delay: 500ms" : "Provider delay: None";
+        statusMessage = useProviderDelay ? "Provider delay for Virtualize: 500ms" : "Provider delay for Virtualize: None";
     }
 
     private void ToggleProviderGate()
@@ -400,7 +444,7 @@
         listLoaded = false;
         StateHasChanged();
         await Task.Yield();
-        initialIndex = manualInitialIndex;
+        initialItemIndex = manualInitialIndex;
         listLoaded = true;
     }
 
@@ -416,7 +460,7 @@
         scrollStatus = $"Scrolling to {scrollTargetIndex}...";
         try
         {
-            await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex);
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex);
             scrollStatus = $"Completed: {scrollTargetIndex}";
             lock (providerEvents) providerEvents.Add("scroll-complete");
         }
@@ -439,11 +483,11 @@
         // Superseded tasks complete normally — only the final target lands in the viewport.
         var tasks = new[]
         {
-            virtualizeRef.ScrollToIndexAsync(50),
-            virtualizeRef.ScrollToIndexAsync(400),
-            virtualizeRef.ScrollToIndexAsync(100),
-            virtualizeRef.ScrollToIndexAsync(350),
-            virtualizeRef.ScrollToIndexAsync(250),
+            virtualizeRef.ScrollToItemAsync(50),
+            virtualizeRef.ScrollToItemAsync(400),
+            virtualizeRef.ScrollToItemAsync(100),
+            virtualizeRef.ScrollToItemAsync(350),
+            virtualizeRef.ScrollToItemAsync(250),
         };
         foreach (var t in tasks) { await SafeAwait(t); }
         var canceled = tasks.Count(t => t.IsCanceled);
@@ -465,7 +509,7 @@
         scrollStatus = $"Scrolling to {scrollTargetIndex} (cancellable)...";
         try
         {
-            await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex, _userScrollCts.Token);
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex, _userScrollCts.Token);
             scrollStatus = $"Completed: {scrollTargetIndex}";
         }
         catch (OperationCanceledException)

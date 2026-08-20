@@ -30,9 +30,6 @@ steps:
       -TokensFilePath '$(System.DefaultWorkingDirectory)/eng/BinlogSecretsRedactionFile.txt'
       -runtimeSourceFeed https://ci.dot.net/internal 
       -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
-      '$(publishing-dnceng-devdiv-code-r-build-re)'
-      '$(dn-bot-all-orgs-artifact-feeds-rw)'
-      '$(akams-client-id)'
       '$(System.AccessToken)'
       ${{parameters.CustomSensitiveDataList}}
   continueOnError: true
@@ -57,4 +54,3 @@ steps:
       condition: always()
       retryCountOnTaskFailure: 10 # for any files being locked
       isProduction: false # logs are non-production artifacts
-

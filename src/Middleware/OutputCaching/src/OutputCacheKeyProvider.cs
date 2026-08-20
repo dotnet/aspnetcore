@@ -30,7 +30,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
     }
 
     // <VaryByKeyPrefix><delimiter>
-    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>
+    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE<delimiter>/PATH<delimiter>
     // H<delimiter>HeaderName=HeaderValue1<subdelimiter>HeaderValue2<delimiter>
     // Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2<delimiter>
     // R<delimiter>RouteName1=RouteValue1<delimiter>RouteName2=RouteValue2
@@ -68,7 +68,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
     public static bool ContainsDelimiters(string? value)
     {
-        return !string.IsNullOrEmpty(value) && value.AsSpan().IndexOfAny(KeyDelimiter, KeySubDelimiter) >= 0;
+        return !string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter);
     }
 
     public static bool TryAppendKeyPrefix(OutputCacheContext context, StringBuilder builder)
@@ -90,7 +90,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         return true;
     }
 
-    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH
+    // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE<delimiter>/PATH
     public bool TryAppendBaseKey(OutputCacheContext context, StringBuilder builder)
     {
         var request = context.HttpContext.Request;
@@ -121,12 +121,14 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         {
             builder
                 .Append(request.PathBase.Value)
+                .Append(KeyDelimiter)
                 .Append(request.Path.Value);
         }
         else
         {
             builder
                 .AppendUpperInvariant(request.PathBase.Value)
+                .Append(KeyDelimiter)
                 .AppendUpperInvariant(request.Path.Value);
         }
 
