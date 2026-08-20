@@ -215,6 +215,9 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     /// <inheritdoc />
     public async Task<UnknownCredentialSignalOptionsResult?> MakeUnknownCredentialSignalOptionsAsync(string credentialJson, HttpContext httpContext)
     {
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         if (!_userManager.SupportsUserPasskey)
         {
             return null;
@@ -230,7 +233,8 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             return null;
         }
 
-        if (credential?.Id is not { Length: > 0 })
+        // Credential IDs are at most 1023 bytes: https://w3c.github.io/webauthn/#credential-id
+        if (credential?.Id is not { Length: > 0 and <= 1023 })
         {
             return null;
         }

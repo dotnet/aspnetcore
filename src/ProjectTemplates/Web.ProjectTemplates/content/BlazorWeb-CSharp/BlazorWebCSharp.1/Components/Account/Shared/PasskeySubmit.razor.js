@@ -77,7 +77,12 @@ customElements.define('passkey-submit', class extends HTMLElement {
         if (!options) {
             return;
         }
-        await PublicKeyCredential.signalUnknownCredential?.(JSON.parse(options));
+        try {
+            // Not all browsers support this, and it is best-effort, so failures are not surfaced.
+            await window.PublicKeyCredential?.signalUnknownCredential?.(JSON.parse(options));
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     disconnectedCallback() {
