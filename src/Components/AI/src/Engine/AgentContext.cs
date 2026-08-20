@@ -25,7 +25,9 @@ public class AgentContext : IDisposable
     private readonly List<Action<ConversationStatus>> _statusChangedCallbacks = new();
     private readonly List<Action<ConversationTurn, ContentBlock>> _blockAddedCallbacks = new();
     private CancellationTokenSource? _streamingCts;
-    private ChatMessage? _lastMessage;
+    private Task? _streamingTask;
+    private ChatMessage? _retryMessage;
+    private bool _suppressRetryInputBlocks;
     private bool _disposed;
 
     /// <summary>
@@ -80,8 +82,6 @@ public class AgentContext : IDisposable
             throw new InvalidOperationException("A message is already being processed.");
         }
 
-        _lastMessage = message;
-
         var turn = new ConversationTurn();
         _turns.Add(turn);
         NotifyTurnAdded(turn);
@@ -89,7 +89,25 @@ public class AgentContext : IDisposable
         _streamingCts?.Dispose();
         _streamingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        await StreamIntoTurnAsync(message, turn, _streamingCts.Token, cancellationToken);
+        var streamingTask = StreamIntoTurnAsync(
+            message,
+            turn,
+            renderRequestBlocks: true,
+            suppressInputBlocks: false,
+            _streamingCts.Token,
+            cancellationToken);
+        _streamingTask = streamingTask;
+        try
+        {
+            await streamingTask;
+        }
+        finally
+        {
+            if (ReferenceEquals(_streamingTask, streamingTask))
+            {
+                _streamingTask = null;
+            }
+        }
     }
 
     /// <summary>
@@ -130,7 +148,7 @@ public class AgentContext : IDisposable
     }
 
     /// <summary>
-    /// Replays the last message after a failed turn.
+    /// Retries the protocol round that failed during the last turn.
     /// </summary>
     /// <param name="cancellationToken">A token that cancels the response.</param>
     /// <returns>A task that completes when the turn finishes.</returns>
@@ -143,27 +161,51 @@ public class AgentContext : IDisposable
         }
 
         var turn = _turns[^1];
-        turn.ClearResponseBlocks();
+        var retryMessage = _retryMessage
+            ?? throw new InvalidOperationException(
+                "The failed protocol round is not available for retry.");
 
         _streamingCts?.Dispose();
         _streamingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        await StreamIntoTurnAsync(_lastMessage!, turn, _streamingCts.Token, cancellationToken);
+        var streamingTask = StreamIntoTurnAsync(
+            retryMessage,
+            turn,
+            renderRequestBlocks: false,
+            suppressInputBlocks: _suppressRetryInputBlocks,
+            _streamingCts.Token,
+            cancellationToken);
+        _streamingTask = streamingTask;
+        try
+        {
+            await streamingTask;
+        }
+        finally
+        {
+            if (ReferenceEquals(_streamingTask, streamingTask))
+            {
+                _streamingTask = null;
+            }
+        }
     }
 
     /// <summary>
     /// Stops the response that is currently streaming, if any.
     /// </summary>
-    /// <returns>A task that completes once cancellation has been requested.</returns>
-    public Task CancelAsync()
+    /// <returns>A task that completes when the active response has stopped.</returns>
+    public async Task CancelAsync()
     {
         if (Status is ConversationStatus.Idle or ConversationStatus.Error)
         {
-            return Task.CompletedTask;
+            return;
         }
 
+        var streamingTask = _streamingTask;
         _streamingCts?.Cancel();
-        return Task.CompletedTask;
+        if (streamingTask is not null)
+        {
+            await streamingTask;
+        }
     }
 
     /// <summary>
@@ -225,6 +267,8 @@ public class AgentContext : IDisposable
     private async Task StreamIntoTurnAsync(
         ChatMessage message,
         ConversationTurn turn,
+        bool renderRequestBlocks,
+        bool suppressInputBlocks,
         CancellationToken cancellationToken,
         CancellationToken callerToken)
     {
@@ -238,25 +282,49 @@ public class AgentContext : IDisposable
             while (currentMessage is not null)
             {
                 var interactiveBlocks = new List<IInteractiveBlock>();
+                var responseBlockCheckpoint = turn.ResponseBlocks.Count;
+                _retryMessage = currentMessage;
+                _suppressRetryInputBlocks =
+                    renderRequestBlocks || suppressInputBlocks;
 
-                await foreach (var block in _agent.SendMessageAsync(currentMessage, cancellationToken)
-                    .WithCancellation(cancellationToken))
+                try
                 {
-                    if (block.Role == message.Role)
+                    await foreach (var block in _agent.SendMessageAsync(currentMessage, cancellationToken)
+                        .WithCancellation(cancellationToken))
                     {
-                        turn.AddRequestBlock(block);
-                    }
-                    else
-                    {
-                        turn.AddResponseBlock(block);
-                    }
+                        var isInputBlock = block.Role == currentMessage.Role;
+                        if (isInputBlock && renderRequestBlocks)
+                        {
+                            turn.AddRequestBlock(block);
+                        }
+                        else if (!isInputBlock || !suppressInputBlocks)
+                        {
+                            turn.AddResponseBlock(block);
+                        }
 
-                    if (block is IInteractiveBlock interactiveBlock)
-                    {
-                        interactiveBlocks.Add(interactiveBlock);
-                    }
+                        if (block is IInteractiveBlock interactiveBlock)
+                        {
+                            interactiveBlocks.Add(interactiveBlock);
+                        }
 
-                    NotifyBlockAdded(turn, block);
+                        if (!isInputBlock ||
+                            renderRequestBlocks ||
+                            !suppressInputBlocks)
+                        {
+                            NotifyBlockAdded(turn, block);
+                        }
+                    }
+                }
+                catch
+                {
+                    turn.TruncateResponseBlocks(responseBlockCheckpoint);
+                    throw;
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    turn.TruncateResponseBlocks(responseBlockCheckpoint);
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
 
                 if (interactiveBlocks.Count == 0)
@@ -275,21 +343,20 @@ public class AgentContext : IDisposable
                     ? ChatRole.User
                     : ChatRole.Tool;
                 currentMessage = new ChatMessage(role, [.. results]);
+                renderRequestBlocks = false;
+                suppressInputBlocks = false;
                 Status = ConversationStatus.Streaming;
                 NotifyStatusChanged();
             }
 
             _agent.RejectPendingPredictiveState();
+            _retryMessage = null;
+            _suppressRetryInputBlocks = false;
             Status = ConversationStatus.Idle;
-            if (cancellationToken.IsCancellationRequested)
-            {
-                turn.ClearResponseBlocks();
-            }
             NotifyStatusChanged();
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            turn.ClearResponseBlocks();
             _agent.RejectPendingPredictiveState();
             Status = ConversationStatus.Idle;
             NotifyStatusChanged();
@@ -297,7 +364,7 @@ public class AgentContext : IDisposable
         catch (Exception ex)
         {
             // A failing turn is surfaced as conversation state (Status/Error) rather than a
-            // faulted Task: the UI renders the error and RetryAsync replays the last message.
+            // faulted Task: the UI renders the error and RetryAsync replays the failed round.
             // This is the engine's error contract, not a swallowed exception.
             _agent.RejectPendingPredictiveState();
             Error = ex;

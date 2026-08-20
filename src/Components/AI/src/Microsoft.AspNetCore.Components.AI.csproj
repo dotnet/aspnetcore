@@ -36,9 +36,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+    <Reference Include="Microsoft.AspNetCore.Components.Media" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.AI.Abstractions" />
+    <Reference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
   <ItemGroup>
