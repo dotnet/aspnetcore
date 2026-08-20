@@ -31,6 +31,9 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     private readonly TlsEventPumpPool _pumpPool;
     private readonly Action<ConnectionContext, ReadOnlySequence<byte>>? _clientHelloCallback;
 
+    // Decides whether the listener will try to select a server certificate for incoming connections.
+    private readonly bool _serverCertificateSelectorConfigured;
+
     // Native OpenSSL server credentials (bootstrap + per-SNI contexts) owned by this listener. Disposed once,
     // at the end of DisposeAsync, after the pump threads are joined. Null only in tests that don't wire them.
     private readonly IDisposable? _ownedServerContexts;
@@ -62,7 +65,8 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         MemoryPool<byte> memoryPool,
         IHostApplicationLifetime applicationLifetime,
         Action<ConnectionContext, ReadOnlySequence<byte>>? clientHelloCallback = null,
-        IDisposable? ownedServerContexts = null)
+        IDisposable? ownedServerContexts = null,
+        bool serverCertificateSelectorConfigured = true)
     {
         ArgumentNullException.ThrowIfNull(tlsContext);
         ArgumentNullException.ThrowIfNull(applicationLifetime);
@@ -75,6 +79,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         _tlsContext = tlsContext;
         _contextResolver = contextResolver;
         _clientHelloCallback = clientHelloCallback;
+        _serverCertificateSelectorConfigured = serverCertificateSelectorConfigured;
         _ownedServerContexts = ownedServerContexts;
         _appLifetime = applicationLifetime;
         EndPoint = endpoint;
@@ -133,7 +138,8 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             _options.MaxWriteBufferSize ?? 0,
             OnPumpFatalError,
             _clientHelloCallback,
-            _connectionTracker);
+            _connectionTracker,
+            _serverCertificateSelectorConfigured);
 
         _logger.LogInformation("DirectTls listener started with EPOLLEXCLUSIVE worker accept");
     }

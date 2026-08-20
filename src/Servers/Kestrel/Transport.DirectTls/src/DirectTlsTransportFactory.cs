@@ -163,7 +163,8 @@ internal sealed class DirectTlsTransportFactory : IConnectionListenerFactory, IC
             memoryPool,
             _applicationLifetime,
             clientHelloCallback,
-            ownedServerContexts);
+            ownedServerContexts,
+            serverCertificateSelectorConfigured: endpointOptions.ServerCertificateSelector is not null);
 
         _logger.LogInformation("DirectTls listener bound for endpoint {Endpoint}.", endpoint);
 
