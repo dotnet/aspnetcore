@@ -3,14 +3,11 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <VersionPrefix>0.1.0</VersionPrefix>
+    <!-- Shipping package assemblies use the ASP.NET Core major and minor assembly version. -->
+    <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!--
-      Components.AI builds out of band and is not part of the .NET platform release. IsShippingPackage=false keeps
-      the package out of the shipping asset set that the release publishes to nuget.org, while the official build
-      still packs, signs, and publishes it to the transport feed.
-    -->
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Description>Blazor component library for building AI conversational UIs on top of Microsoft.Extensions.AI.</Description>
@@ -18,9 +15,10 @@
     <!-- RS0026: New package with no prior shipped API; optional parameter backcompat is N/A -->
     <NoWarn>$(NoWarn);RS0026</NoWarn>
     <!--
-      Components.AI versions independently from the shared framework. Keep producing dated 0.1.0-preview.1 packages
-      when the repo moves to RC or RTM. These properties are listed in TreatAsLocalProperty above so they override
-      repository-wide version properties.
+      Components.AI follows the .NET release cadence but versions independently from the shared framework. Increment
+      PreReleaseVersionIteration for each public preview, including previews released after .NET GA. After publishing
+      a stable version, increment VersionPrefix before starting the next preview series. These properties are listed
+      in TreatAsLocalProperty above so they override repository-wide version properties.
     -->
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
