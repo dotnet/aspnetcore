@@ -11,11 +11,9 @@ using PlatformTestApp.E2E.Tests.Fixtures;
 namespace PlatformTestApp.E2E.Tests.Tests;
 
 [UITest]
-public partial class BrowserPlatformTests : BrowserTest
+public partial class StorageTests : BrowserTest
 {
     private static readonly string[] StoragePaths = ["/storage-server", "/storage-wasm"];
-    private static readonly string[] UrlPaths = ["/url-server", "/url-wasm"];
-    private static readonly string[] FetchPaths = ["/fetch-server", "/fetch-wasm"];
 
     private ServerInstance _server = null!;
     private IPage _page = null!;
@@ -47,38 +45,6 @@ public partial class BrowserPlatformTests : BrowserTest
             await _page.Locator("#remove-storage").ClickAsync();
             await _page.Locator("#load-storage").ClickAsync();
             await Expect(_page.Locator("#storage-result")).ToHaveTextAsync("Value is missing.");
-        }
-    }
-
-    [TestMethod]
-    public async Task Url_WorksInBothRenderModes()
-    {
-        foreach (var path in UrlPaths)
-        {
-            await NavigateAsync(path, "#create-url");
-
-            await _page.Locator("#create-url").ClickAsync();
-            await Expect(_page.Locator("#url-result")).ToHaveTextAsync(
-                "https://example.test/products?page=2&tag=one#featured");
-
-            await _page.Locator("#use-disposed-url").ClickAsync();
-            await Expect(_page.Locator("#url-result")).ToHaveTextAsync("Disposed URL rejected.");
-        }
-    }
-
-    [TestMethod]
-    public async Task Fetch_WorksInBothRenderModes()
-    {
-        foreach (var path in FetchPaths)
-        {
-            await NavigateAsync(path, "#fetch-echo");
-
-            await _page.Locator("#fetch-echo").ClickAsync();
-            await Expect(_page.Locator("#fetch-result")).ToHaveTextAsync(
-                "200:browser:request-body");
-
-            await _page.Locator("#fetch-missing").ClickAsync();
-            await Expect(_page.Locator("#fetch-result")).ToHaveTextAsync("404:False");
         }
     }
 

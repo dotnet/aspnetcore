@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Platform;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.JSInterop;
 
@@ -14,7 +15,9 @@ namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 public abstract class ProtectedBrowserStorage
 {
     private readonly string _storeName;
-    private readonly IJSRuntime _jsRuntime;
+    // The IJSRuntime path preserves the existing public constructors. Framework DI uses Storage.
+    private readonly IJSRuntime? _jsRuntime;
+    private readonly Storage? _storage;
     private readonly IDataProtectionProvider _dataProtectionProvider;
     private readonly JsonSerializerOptions _serializerOptions;
     private readonly ConcurrentDictionary<string, IDataProtector> _cachedDataProtectorsByPurpose
@@ -36,6 +39,25 @@ public abstract class ProtectedBrowserStorage
         IJSRuntime jsRuntime,
         IDataProtectionProvider dataProtectionProvider,
         JsonSerializerOptions serializerOptions)
+        : this(storeName, jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime)), storage: null, dataProtectionProvider, serializerOptions)
+    {
+    }
+
+    internal ProtectedBrowserStorage(
+        string storeName,
+        Storage storage,
+        IDataProtectionProvider dataProtectionProvider,
+        JsonSerializerOptions serializerOptions)
+        : this(storeName, jsRuntime: null, storage ?? throw new ArgumentNullException(nameof(storage)), dataProtectionProvider, serializerOptions)
+    {
+    }
+
+    private ProtectedBrowserStorage(
+        string storeName,
+        IJSRuntime? jsRuntime,
+        Storage? storage,
+        IDataProtectionProvider dataProtectionProvider,
+        JsonSerializerOptions serializerOptions)
     {
         // Performing data protection on the client would give users a false sense of security, so we'll prevent this.
         if (OperatingSystem.IsBrowser())
@@ -46,7 +68,8 @@ public abstract class ProtectedBrowserStorage
         ArgumentException.ThrowIfNullOrEmpty(storeName);
 
         _storeName = storeName;
-        _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+        _jsRuntime = jsRuntime;
+        _storage = storage;
         _dataProtectionProvider = dataProtectionProvider ?? throw new ArgumentNullException(nameof(dataProtectionProvider));
         _serializerOptions = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
     }
@@ -129,7 +152,9 @@ public abstract class ProtectedBrowserStorage
     /// </param>
     /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
     public ValueTask DeleteAsync(string key)
-        => _jsRuntime.InvokeVoidAsync($"{_storeName}.removeItem", key);
+        => _storage is null
+            ? _jsRuntime!.InvokeVoidAsync($"{_storeName}.removeItem", key)
+            : _storage.RemoveItemAsync(key);
 
     private string Protect(string purpose, object value)
     {
@@ -150,10 +175,14 @@ public abstract class ProtectedBrowserStorage
     }
 
     private ValueTask SetProtectedJsonAsync(string key, string protectedJson)
-       => _jsRuntime.InvokeVoidAsync($"{_storeName}.setItem", key, protectedJson);
+        => _storage is null
+            ? _jsRuntime!.InvokeVoidAsync($"{_storeName}.setItem", key, protectedJson)
+            : _storage.SetItemAsync(key, protectedJson);
 
     private ValueTask<string?> GetProtectedJsonAsync(string key)
-        => _jsRuntime.InvokeAsync<string?>($"{_storeName}.getItem", key);
+        => _storage is null
+            ? _jsRuntime!.InvokeAsync<string?>($"{_storeName}.getItem", key)
+            : _storage.GetItemAsync(key);
 
     // IDataProtect isn't disposable, so we're fine holding these indefinitely.
     // Only a bounded number of them will be created, as the 'key' values should

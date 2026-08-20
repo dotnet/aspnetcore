@@ -12,19 +12,4 @@ public interface IBrowserPlatform
     /// Gets the active browser window.
     /// </summary>
     Window Window { get; }
-
-    /// <summary>
-    /// Gets the browser URL constructor.
-    /// </summary>
-    UrlConstructor Url { get; }
-
-    /// <summary>
-    /// Fetches a resource in the active browser context.
-    /// </summary>
-    /// <param name="resource">The resource URL.</param>
-    /// <param name="options">Options for the request.</param>
-    /// <returns>The browser response.</returns>
-    ValueTask<Response> FetchAsync(
-        string resource,
-        RequestInit? options = null);
 }

@@ -27,11 +27,7 @@ public class PublicApiTest
     {
         Type[] liveBrowserObjectTypes =
         [
-            typeof(Headers),
-            typeof(Response),
             typeof(Storage),
-            typeof(Url),
-            typeof(UrlSearchParams),
         ];
 
         var synchronousMethods = liveBrowserObjectTypes

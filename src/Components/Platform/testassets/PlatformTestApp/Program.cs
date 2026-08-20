@@ -15,15 +15,6 @@ var app = builder.Build();
 
 app.UseAntiforgery();
 app.MapStaticAssets();
-app.MapPost("/platform-api/echo", async context =>
-{
-    using var reader = new StreamReader(context.Request.Body);
-    var body = await reader.ReadToEndAsync(context.RequestAborted);
-
-    context.Response.ContentType = "text/plain";
-    context.Response.Headers["x-components-platform"] = "browser";
-    await context.Response.WriteAsync(body, context.RequestAborted);
-});
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

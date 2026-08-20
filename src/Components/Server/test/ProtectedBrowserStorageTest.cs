@@ -5,8 +5,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Moq;
@@ -279,6 +282,46 @@ public class ProtectedBrowserStorageTest
         Assert.Collection(invocation.Args, arg => Assert.Equal("testKey", arg));
     }
 
+    [Theory]
+    [InlineData(false, "localStorage")]
+    [InlineData(true, "sessionStorage")]
+    public async Task RegisteredProtectedStorage_UsesBrowserPlatformStorage(bool useSessionStorage, string propertyName)
+    {
+        var storageReference = new TestStorageReference();
+        var jsRuntime = new TestJSRuntime
+        {
+            NextInvocationResult = new ValueTask<IJSObjectReference>(storageReference),
+        };
+        var dataProtectionProvider = new TestDataProtectionProvider();
+        var services = new ServiceCollection();
+        services.AddServerSideBlazor();
+        services.AddSingleton<IJSRuntime>(jsRuntime);
+        services.AddSingleton<IDataProtectionProvider>(dataProtectionProvider);
+        services.AddSingleton(Options.Create(new CircuitOptions()));
+        await using var serviceProvider = services.BuildServiceProvider();
+        await using var scope = serviceProvider.CreateAsyncScope();
+        ProtectedBrowserStorage storage = useSessionStorage
+            ? scope.ServiceProvider.GetRequiredService<ProtectedSessionStorage>()
+            : scope.ServiceProvider.GetRequiredService<ProtectedLocalStorage>();
+
+        await storage.SetAsync("testKey", new TestModel { StringProperty = "Hello", IntProperty = 123 });
+
+        var propertyInvocation = jsRuntime.Invocations.Single();
+        Assert.Equal(propertyName, propertyInvocation.Identifier);
+        Assert.Equal(JSCallType.GetValue, propertyInvocation.CallType);
+
+        var storageInvocation = storageReference.Invocations.Single();
+        Assert.Equal("setItem", storageInvocation.Identifier);
+        Assert.Collection(
+            storageInvocation.Args,
+            arg => Assert.Equal("testKey", arg),
+            arg => Assert.Equal(
+                "{\"stringProperty\":\"Hello\",\"intProperty\":123}",
+                TestDataProtectionProvider.Unprotect(
+                    $"{storage.GetType().FullName}:{propertyName}:testKey",
+                    (string)arg)));
+    }
+
     [Fact]
     public async Task ReusesCachedProtectorsByPurpose()
     {
@@ -426,6 +469,23 @@ public class ProtectedBrowserStorageTest
             Invocations.Add((identifier, [value], JSCallType.SetValue));
             return ValueTask.CompletedTask;
         }
+    }
+
+    class TestStorageReference : IJSObjectReference
+    {
+        public List<(string Identifier, object[] Args)> Invocations { get; } = [];
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+            => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        {
+            Invocations.Add((identifier, args));
+            return ValueTask.FromResult(default(TValue)!);
+        }
+
+        public ValueTask DisposeAsync()
+            => ValueTask.CompletedTask;
     }
 
     class TestProtectedBrowserStorage : ProtectedBrowserStorage

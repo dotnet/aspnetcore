@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Platform;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.JSInterop;
 
@@ -33,6 +34,14 @@ public sealed class ProtectedLocalStorage : ProtectedBrowserStorage
         IDataProtectionProvider dataProtectionProvider,
         JsonSerializerOptions serializerOptions)
         : base("localStorage", jsRuntime, dataProtectionProvider, serializerOptions)
+    {
+    }
+
+    internal ProtectedLocalStorage(
+        Storage storage,
+        IDataProtectionProvider dataProtectionProvider,
+        JsonSerializerOptions serializerOptions)
+        : base("localStorage", storage, dataProtectionProvider, serializerOptions)
     {
     }
 }
