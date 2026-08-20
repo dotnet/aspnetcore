@@ -128,9 +128,10 @@ public class UIAgent : IDisposable
         UIAgentLog.StreamingAssistantResponse(_logger);
         var assistantUpdates = new List<ChatResponseUpdate>();
         var updateIndex = 0;
+        var chatOptions = BuildChatOptions();
 
         await foreach (var update in _chatClient.GetStreamingResponseAsync(
-            _history, _options.ChatOptions, cancellationToken).ConfigureAwait(false))
+            _history, chatOptions, cancellationToken).ConfigureAwait(false))
         {
             var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
@@ -158,6 +159,27 @@ public class UIAgent : IDisposable
         }
 
         UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
+    }
+
+    private ChatOptions? BuildChatOptions()
+    {
+        if (_options.UIActions.Count == 0)
+        {
+            return _options.ChatOptions;
+        }
+
+        var chatOptions = _options.ChatOptions?.Clone() ?? new ChatOptions();
+        var tools = chatOptions.Tools is null
+            ? new List<AITool>()
+            : [.. chatOptions.Tools];
+
+        foreach (var action in _options.UIActions.Values)
+        {
+            tools.Add(action.AsDeclarationOnly());
+        }
+
+        chatOptions.Tools = tools;
+        return chatOptions;
     }
 
     /// <summary>

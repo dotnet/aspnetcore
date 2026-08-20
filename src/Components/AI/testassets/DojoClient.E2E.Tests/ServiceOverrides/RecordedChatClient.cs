@@ -33,13 +33,33 @@ internal sealed class RecordedChatClient : IChatClient
     {
         ArgumentNullException.ThrowIfNull(messages);
 
-        var lastUserMessage = messages.LastOrDefault(message => message.Role == ChatRole.User)?.Text ?? "";
-        var call = _script.GetCall(lastUserMessage);
+        var messageList = messages.ToList();
+        var lastUserMessage =
+            messageList.LastOrDefault(message => message.Role == ChatRole.User)?.Text ?? "";
+        var call = _script.GetCall(lastUserMessage, messageList.Count);
+        AssertRequest(call, messageList, options);
         var messageId = Guid.NewGuid().ToString("N");
 
         for (var frameIndex = 0; frameIndex < call.Frames.Count; frameIndex++)
         {
             var frame = call.Frames[frameIndex];
+            if (frame.FunctionCall is not null)
+            {
+                yield return new ChatResponseUpdate
+                {
+                    Role = ChatRole.Assistant,
+                    MessageId = messageId,
+                    Contents =
+                    [
+                        new FunctionCallContent(
+                            frame.FunctionCall.CallId,
+                            frame.FunctionCall.Name,
+                            frame.FunctionCall.Arguments)
+                    ],
+                    FinishReason = ChatFinishReason.ToolCalls,
+                };
+            }
+
             foreach (var chunk in frame.Chunks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -60,6 +80,42 @@ internal sealed class RecordedChatClient : IChatClient
 
     internal static string GetLockKey(string lastUserMessage, string frameName)
         => $"replay:{lastUserMessage}:{frameName}";
+
+    private static void AssertRequest(
+        RecordedCall call,
+        IReadOnlyList<ChatMessage> messages,
+        ChatOptions? options)
+    {
+        if (call.ToolNames is not null)
+        {
+            var actualToolNames = options?.Tools?
+                .OfType<AIFunctionDeclaration>()
+                .Select(tool => tool.Name)
+                .ToList() ?? [];
+            if (!actualToolNames.SequenceEqual(call.ToolNames))
+            {
+                throw new InvalidOperationException(
+                    $"Expected tools [{string.Join(", ", call.ToolNames)}], " +
+                    $"received [{string.Join(", ", actualToolNames)}].");
+            }
+        }
+
+        if (call.ToolResultCallIds is not null)
+        {
+            var actualCallIds = messages
+                .Where(message => message.Role == ChatRole.Tool)
+                .SelectMany(message => message.Contents)
+                .OfType<FunctionResultContent>()
+                .Select(result => result.CallId)
+                .ToList();
+            if (!actualCallIds.SequenceEqual(call.ToolResultCallIds))
+            {
+                throw new InvalidOperationException(
+                    $"Expected tool results [{string.Join(", ", call.ToolResultCallIds)}], " +
+                    $"received [{string.Join(", ", actualCallIds)}].");
+            }
+        }
+    }
 
     public Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,

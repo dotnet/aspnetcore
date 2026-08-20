@@ -255,7 +255,14 @@ Microsoft.AspNetCore.Components.AI.UIAgentOptions
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.AddBlockHandler<TState>(Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>! handler) -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.get -> Microsoft.Extensions.AI.ChatOptions?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.set -> void
+Microsoft.AspNetCore.Components.AI.UIAgentOptions.RegisterUIAction(Microsoft.Extensions.AI.AIFunction! function) -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.UIAgentOptions() -> void
+Microsoft.AspNetCore.Components.AI.UIActionBlock
+Microsoft.AspNetCore.Components.AI.UIActionBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent!
+Microsoft.AspNetCore.Components.AI.UIActionBlock.InvokeAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.AI.UIActionBlock.IsComplete.get -> bool
+Microsoft.AspNetCore.Components.AI.UIActionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
+Microsoft.AspNetCore.Components.AI.UIActionBlock.ToolName.get -> string!
 abstract Microsoft.AspNetCore.Components.AI.ContentBlockHandler<TState>.Handle(Microsoft.AspNetCore.Components.AI.BlockMappingContext! context, TState state) -> Microsoft.AspNetCore.Components.AI.BlockMappingResult<TState>
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.AI.AgentBoundary.OnInitialized() -> void
