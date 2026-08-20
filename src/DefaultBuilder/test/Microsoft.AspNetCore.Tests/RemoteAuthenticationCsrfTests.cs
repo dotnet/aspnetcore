@@ -27,7 +27,7 @@ public class RemoteAuthenticationCsrfTests
     [Fact]
     public async Task RemoteCallback_CrossSiteFormPost_CanReadCallbackForm()
     {
-        using var app = await CreateApp();
+        using var app = await CreateAppWithTokenAntiforgery();
 
         var response = await app.GetTestClient().SendAsync(CreateCallbackRequest());
 
@@ -36,9 +36,20 @@ public class RemoteAuthenticationCsrfTests
     }
 
     [Fact]
-    public async Task RemoteCallback_WhenHandlerSkipsRequest_RestoresAntiforgeryVerdict()
+    public async Task RemoteCallback_WhenHandlerSkipsRequest_WithTokenAntiforgery_ProtectsDownstreamEndpoint()
     {
-        using var app = await CreateApp(skipRequest: true);
+        using var app = await CreateAppWithTokenAntiforgery(skipRequest: true);
+
+        var response = await app.GetTestClient().SendAsync(CreateCallbackRequest());
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("protected", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task RemoteCallback_WhenHandlerSkipsRequest_RestoresAutoCsrfVerdict()
+    {
+        using var app = await CreateAppWithAutoCsrfOnly(skipRequest: true);
 
         var response = await app.GetTestClient().SendAsync(CreateCallbackRequest());
 
@@ -60,7 +71,13 @@ public class RemoteAuthenticationCsrfTests
         return request;
     }
 
-    private static async Task<WebApplication> CreateApp(bool skipRequest = false)
+    private static Task<WebApplication> CreateAppWithTokenAntiforgery(bool skipRequest = false)
+        => CreateApp(skipRequest, useTokenAntiforgery: true);
+
+    private static Task<WebApplication> CreateAppWithAutoCsrfOnly(bool skipRequest = false)
+        => CreateApp(skipRequest, useTokenAntiforgery: false);
+
+    private static async Task<WebApplication> CreateApp(bool skipRequest, bool useTokenAntiforgery)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
@@ -73,12 +90,18 @@ public class RemoteAuthenticationCsrfTests
                 o.SkipRequest = skipRequest;
             });
         builder.Services.AddAuthorization();
-        builder.Services.AddAntiforgery();
+        if (useTokenAntiforgery)
+        {
+            builder.Services.AddAntiforgery();
+        }
 
         var app = builder.Build();
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseAntiforgery();
+        if (useTokenAntiforgery)
+        {
+            app.UseAntiforgery();
+        }
 
         // Stands in for a catch-all server-rendered page: it makes routing match the remote callback path,
         // which is what causes the CSRF middleware to record a verdict for the callback request.
