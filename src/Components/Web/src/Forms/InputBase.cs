@@ -60,6 +60,25 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public string? DisplayName { get; set; }
 
+    internal string GetDisplayName()
+    {
+        if (DisplayName is not null)
+        {
+            return DisplayName;
+        }
+
+        var accessorBody = ValueExpression!.Body;
+        if (accessorBody is UnaryExpression { NodeType: ExpressionType.Convert, Type: var type } unaryExpression &&
+            type == typeof(object))
+        {
+            accessorBody = unaryExpression.Operand;
+        }
+
+        return accessorBody is MemberExpression memberExpression
+            ? ExpressionMemberAccessor.GetDisplayName(memberExpression.Member)
+            : FieldIdentifier.FieldName;
+    }
+
     /// <summary>
     /// Gets the associated <see cref="Forms.EditContext"/>.
     /// This property is uninitialized if the input does not have a parent <see cref="EditForm"/>.
