@@ -1,0 +1,80 @@
+#nullable enable
+Microsoft.AspNetCore.Components.Platform.Headers
+Microsoft.AspNetCore.Components.Platform.Headers.AppendAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Headers.DeleteAsync(string! name) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Headers.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Headers.GetAsync(string! name) -> System.Threading.Tasks.ValueTask<string?>
+Microsoft.AspNetCore.Components.Platform.Headers.HasAsync(string! name) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.Headers.SetAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.IBrowserPlatform
+Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.FetchAsync(string! resource, Microsoft.AspNetCore.Components.Platform.RequestInit? options = null) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.Response!>
+Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Url.get -> Microsoft.AspNetCore.Components.Platform.UrlConstructor!
+Microsoft.AspNetCore.Components.Platform.IBrowserPlatform.Window.get -> Microsoft.AspNetCore.Components.Platform.Window!
+Microsoft.AspNetCore.Components.Platform.RequestInit
+Microsoft.AspNetCore.Components.Platform.RequestInit.Body.get -> string?
+Microsoft.AspNetCore.Components.Platform.RequestInit.Body.init -> void
+Microsoft.AspNetCore.Components.Platform.RequestInit.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Microsoft.AspNetCore.Components.Platform.RequestInit.Headers.init -> void
+Microsoft.AspNetCore.Components.Platform.RequestInit.Method.get -> string?
+Microsoft.AspNetCore.Components.Platform.RequestInit.Method.init -> void
+Microsoft.AspNetCore.Components.Platform.RequestInit.RequestInit() -> void
+Microsoft.AspNetCore.Components.Platform.Response
+Microsoft.AspNetCore.Components.Platform.Response.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Response.GetHeadersAsync() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.Headers!>
+Microsoft.AspNetCore.Components.Platform.Response.GetOkAsync() -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.Response.GetStatusAsync() -> System.Threading.Tasks.ValueTask<ushort>
+Microsoft.AspNetCore.Components.Platform.Response.GetStatusTextAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Response.GetUrlAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Response.TextAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Storage
+Microsoft.AspNetCore.Components.Platform.Storage.ClearAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Storage.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Storage.GetItemAsync(string! key) -> System.Threading.Tasks.ValueTask<string?>
+Microsoft.AspNetCore.Components.Platform.Storage.GetLengthAsync() -> System.Threading.Tasks.ValueTask<uint>
+Microsoft.AspNetCore.Components.Platform.Storage.KeyAsync(uint index) -> System.Threading.Tasks.ValueTask<string?>
+Microsoft.AspNetCore.Components.Platform.Storage.RemoveItemAsync(string! key) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Storage.SetItemAsync(string! key, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url
+Microsoft.AspNetCore.Components.Platform.Url.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.GetHashAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetHostAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetHostnameAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetHrefAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetOriginAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetPasswordAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetPathnameAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetPortAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetProtocolAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetSearchAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.GetSearchParamsAsync() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.UrlSearchParams!>
+Microsoft.AspNetCore.Components.Platform.Url.GetUsernameAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Url.SetHashAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetHostAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetHostnameAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetHrefAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetPasswordAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetPathnameAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetPortAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetProtocolAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetSearchAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.SetUsernameAsync(string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Url.ToStringAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.UrlConstructor
+Microsoft.AspNetCore.Components.Platform.UrlConstructor.CreateAsync(string! url, string? baseUrl = null) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Platform.Url!>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.AppendAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.DeleteAsync(string! name, string? value = null) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.GetAllAsync(string! name) -> System.Threading.Tasks.ValueTask<string![]!>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.GetAsync(string! name) -> System.Threading.Tasks.ValueTask<string?>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.GetSizeAsync() -> System.Threading.Tasks.ValueTask<uint>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.HasAsync(string! name, string? value = null) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.SetAsync(string! name, string! value) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.SortAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.UrlSearchParams.ToStringAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Platform.Window
+Microsoft.AspNetCore.Components.Platform.Window.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Platform.Window.LocalStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
+Microsoft.AspNetCore.Components.Platform.Window.SessionStorage.get -> Microsoft.AspNetCore.Components.Platform.Storage!
+Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.BrowserPlatformServiceCollectionExtensions.AddBrowserPlatform(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
