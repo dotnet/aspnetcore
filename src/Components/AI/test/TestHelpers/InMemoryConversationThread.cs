@@ -9,6 +9,7 @@ internal sealed class InMemoryConversationThread : IConversationThread
 {
     private readonly List<ChatResponseUpdate> _updates = [];
     private List<ChatResponseUpdate>? _currentTurn;
+    private string? _currentConversationId;
 
     internal InMemoryConversationThread(string threadId)
     {
@@ -23,6 +24,7 @@ internal sealed class InMemoryConversationThread : IConversationThread
 
     public void AppendUserMessage(ChatMessage message)
     {
+        _currentConversationId = null;
         _currentTurn =
         [
             new ChatResponseUpdate
@@ -38,8 +40,7 @@ internal sealed class InMemoryConversationThread : IConversationThread
         _currentTurn?.Add(update);
         if (update.ConversationId is not null)
         {
-            IsStateful = true;
-            ConversationId = update.ConversationId;
+            _currentConversationId = update.ConversationId;
         }
     }
 
@@ -49,6 +50,12 @@ internal sealed class InMemoryConversationThread : IConversationThread
         {
             _updates.AddRange(_currentTurn);
             _currentTurn = null;
+            if (_currentConversationId is not null)
+            {
+                IsStateful = true;
+                ConversationId = _currentConversationId;
+                _currentConversationId = null;
+            }
         }
     }
 
