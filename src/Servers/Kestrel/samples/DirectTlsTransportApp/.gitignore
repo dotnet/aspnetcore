@@ -1,0 +1,6 @@
+# Test certificates are generated locally, never committed.
+# Run scripts/generate-certs.sh to (re)create them.
+*.crt
+*.key
+*.pfx
+*.pem

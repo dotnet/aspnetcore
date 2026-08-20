@@ -1,0 +1,71 @@
+@page "/interop"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<NativeAotStatus />
+<h1>JS interop and custom events</h1>
+
+<div id="interop-target" @ref="_target" @onsplitprobe="HandleSplit">Interop target</div>
+<button id="interop-run" @onclick="RunAsync">Run interop</button>
+
+<p id="interop-poco">@_poco</p>
+<p id="interop-dotnet">@_dotNet</p>
+<p id="interop-element">@_element</p>
+<p id="interop-wire">@_wire</p>
+<p id="interop-event">@_customEvent</p>
+
+@code {
+    private DotNetObjectReference<Interop>? _self;
+    private ElementReference _target;
+    private string _poco = "";
+    private string _dotNet = "";
+    private string _element = "";
+    private string _wire = "";
+    private string _customEvent = "";
+
+    private async Task RunAsync()
+    {
+        _self ??= DotNetObjectReference.Create(this);
+
+        await JS.InvokeVoidAsync("eval", """
+            window.__nativeAotRoundTrip = p => ({ message: p.name + ':' + p.count, doubled: p.count * 2 });
+            window.__nativeAotDotNet = r => r.invokeMethodAsync('EchoFromJs', 'dashboard');
+            window.__nativeAotElement = e => e.id;
+            window.__nativeAotWire = p => JSON.stringify(p);
+            Blazor.registerCustomEventType('splitprobe', { createEventArgs: e => e.detail });
+            """);
+
+        var response = await JS.InvokeAsync<InteropResponse>(
+            "__nativeAotRoundTrip",
+            new InteropRequest("counter", 21));
+        _poco = $"{response.Message}|{response.Doubled}";
+        _dotNet = await JS.InvokeAsync<string>("__nativeAotDotNet", _self);
+        _element = await JS.InvokeAsync<string>("__nativeAotElement", _target);
+        _wire = await JS.InvokeAsync<string>(
+            "__nativeAotWire",
+            new ResolverOrderPayload { SomeValue = "first" });
+
+        await JS.InvokeVoidAsync("eval", """
+            document.querySelector('#interop-target').dispatchEvent(new CustomEvent('splitprobe', {
+                bubbles: true,
+                detail: { orientation: 'horizontal', ratio: 0.4 }
+            }));
+            """);
+    }
+
+    [JSInvokable]
+    public string EchoFromJs(string value) => $"echo:{value}";
+
+    private void HandleSplit(SplitEventArgs args)
+    {
+        _customEvent = $"{args.Orientation}|{args.Ratio.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _self?.Dispose();
+
+        return ValueTask.CompletedTask;
+    }
+}
