@@ -75,6 +75,46 @@ public class RouterTest
     }
 
     [Fact]
+    public async Task ExplicitAppAssemblyDoesNotIncludeConfiguredRootAssembly()
+    {
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(
+            new Dictionary<string, byte[]>
+            {
+                [RazorComponentApplicationAssemblyProvider.PersistenceKey] = JsonSerializer.SerializeToUtf8Bytes(
+                    new[]
+                    {
+                        typeof(RouterTest).Assembly.GetName().Name!,
+                    }),
+            },
+            RestoreContext.InitialValue);
+
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(_navigationManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        services.AddSingleton(state);
+        services.AddSingleton<RazorComponentApplicationAssemblyProvider>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        var router = (Router)renderer.InstantiateComponent<Router>();
+        router.Found = routeData => builder => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+        renderer.AssignRootComponentId(router);
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            router.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(Router.AppAssembly)] = typeof(ComponentBase).Assembly,
+                [nameof(Router.NotFound)] = (RenderFragment)(builder => builder.AddContent(0, "Custom content")),
+            })));
+
+        var renderedFrame = renderer.Batches.Single().ReferenceFrames.Single();
+        Assert.Equal("Custom content", renderedFrame.TextContent);
+    }
+
+    [Fact]
     public async Task CanRunOnNavigateAsync()
     {
         // Arrange

@@ -224,7 +224,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
 
         var additionalAssemblies = new List<Assembly>(_configuredAssemblies.Count - 1);
-        for (var i = 0; i < _configuredAssemblies.Count; i++)
+        for (var i = 1; i < _configuredAssemblies.Count; i++)
         {
             var assembly = _configuredAssemblies[i];
             if (assembly != appAssembly)
