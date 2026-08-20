@@ -113,7 +113,25 @@ internal class BlockMappingPipeline
                     emitBlock.AuthorName = update.AuthorName;
                     emitBlock.LifecycleState = BlockLifecycleState.Active;
                     ThrowIfIdMissing(emitBlock);
-                    _activeStack.Add(activeEntry);
+
+                    var keepActive = true;
+                    if (emitBlock is FunctionInvocationContentBlock)
+                    {
+                        var catchUpResult = activeEntry.Invoke(context);
+
+                        BlockMappingPipelineLog.ActiveHandlerResult(_logger, emitBlock.GetType().Name, catchUpResult.Kind.ToString(), emitBlock.Id);
+
+                        if (catchUpResult.Kind == HandleResult.ResultKind.Complete)
+                        {
+                            emitBlock.LifecycleState = BlockLifecycleState.Inactive;
+                            keepActive = false;
+                        }
+                    }
+
+                    if (keepActive)
+                    {
+                        _activeStack.Add(activeEntry);
+                    }
 
                     BlockMappingPipelineLog.EmittingBlock(_logger, emitBlock.GetType().Name, emitBlock.Id, emitBlock.Role?.Value);
 

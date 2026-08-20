@@ -61,6 +61,27 @@ public class FunctionInvocationHandlerTests
         Assert.Equal(1, changeCount);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CallAndResultInSameUpdate_CompletesInvocationBlock(bool resultFirst)
+    {
+        var pipeline = CreatePipeline();
+        var call = CreateCall("call-1", "get_weather");
+        var result = new FunctionResultContent("call-1", "sunny");
+        var update = resultFirst
+            ? CreateUpdate(result, call)
+            : CreateUpdate(call, result);
+
+        var blocks = await ProcessAsync(pipeline, update);
+
+        var block = Assert.IsType<FunctionInvocationContentBlock>(Assert.Single(blocks));
+        Assert.Same(call, block.Call);
+        Assert.Same(result, block.Result);
+        Assert.True(block.HasResult);
+        Assert.Equal(BlockLifecycleState.Inactive, block.LifecycleState);
+    }
+
     [Fact]
     public async Task MultipleCallsInOneUpdate_EmitSeparateActiveBlocks()
     {
