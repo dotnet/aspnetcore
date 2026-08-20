@@ -13,7 +13,7 @@ namespace ComponentsAIClaimApp.Data;
 
 internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
 {
-    private const string VisionApiVersion = "2025-01-01-preview";
+    private const string ChatApiVersion = "2025-01-01-preview";
     private const string TranscriptionApiVersion = "2025-03-01-preview";
 
     private static readonly HttpClient s_httpClient = new()
@@ -34,7 +34,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
         !string.IsNullOrWhiteSpace(_options.ApiKey);
 
     public string ModelName => IsConfigured
-        ? _options.VisionModel
+        ? _options.ChatDeployment
         : "Foundry not configured";
 
     public async Task<bool> ShouldAnalyzeEvidenceAsync(
@@ -131,8 +131,8 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
             CreateFoundryEndpoint(
-                $"openai/deployments/{Uri.EscapeDataString(_options.VisionModel)}/chat/completions" +
-                $"?api-version={VisionApiVersion}"));
+                $"openai/deployments/{Uri.EscapeDataString(_options.ChatDeployment)}/chat/completions" +
+                $"?api-version={ChatApiVersion}"));
         ApplyAuthentication(request);
 
         var userContent = new List<object>
@@ -170,7 +170,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
 
         request.Content = JsonContent.Create(new
         {
-            model = _options.VisionModel,
+            model = _options.ChatDeployment,
             response_format = new
             {
                 type = "json_object",
@@ -293,19 +293,8 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
         ApplyAuthentication(request);
         request.Content = JsonContent.Create(new
         {
-            model = _options.VisionModel,
-            tools = new object[]
-            {
-                new
-                {
-                    type = "web_search",
-                    user_location = new
-                    {
-                        type = "approximate",
-                        country = _options.ResearchCountry,
-                    },
-                },
-            },
+            model = _options.ChatDeployment,
+            tools = new[] { new { type = "web_search" } },
             input = $$"""
                 Research current public repair-cost and replacement-part sources for this
                 vehicle claim. Use web search. Do not invent prices, fitment, or URLs.
@@ -419,7 +408,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
             using var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 CreateFoundryEndpoint(
-                    $"openai/deployments/{Uri.EscapeDataString(_options.TranscriptionModel)}" +
+                    $"openai/deployments/{Uri.EscapeDataString(_options.TranscriptionDeployment)}" +
                     $"/audio/transcriptions?api-version={TranscriptionApiVersion}"));
             ApplyAuthentication(request);
             using var form = new MultipartFormDataContent();
@@ -499,7 +488,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
             !string.IsNullOrEmpty(endpoint.Fragment))
         {
             throw new InvalidOperationException(
-                "AZURE_AI_FOUNDRY_ENDPOINT must be an absolute resource URI without a path, query, or fragment.");
+                "AZURE_OPENAI_ENDPOINT must be an absolute resource URI without a path, query, or fragment.");
         }
 
         return new Uri(
@@ -518,8 +507,8 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
             CreateFoundryEndpoint(
-                $"openai/deployments/{Uri.EscapeDataString(_options.VisionModel)}/chat/completions" +
-                $"?api-version={VisionApiVersion}"));
+                $"openai/deployments/{Uri.EscapeDataString(_options.ChatDeployment)}/chat/completions" +
+                $"?api-version={ChatApiVersion}"));
         ApplyAuthentication(request);
 
         var foundryMessages = new List<object>
@@ -547,7 +536,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
 
         var payload = new Dictionary<string, object?>
         {
-            ["model"] = _options.VisionModel,
+            ["model"] = _options.ChatDeployment,
             ["max_completion_tokens"] = useJsonResponse ? 800 : 1_200,
             ["reasoning_effort"] = "minimal",
             ["messages"] = foundryMessages,
@@ -618,7 +607,7 @@ internal sealed class ClaimDamageAnalyzer : IClaimAssistantBackend
         if (!IsConfigured)
         {
             throw new InvalidOperationException(
-                "Configure AZURE_AI_FOUNDRY_ENDPOINT and CLAIM_VISION_API_KEY before using the claim assistant.");
+                "Configure AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY before using the claim assistant.");
         }
     }
 

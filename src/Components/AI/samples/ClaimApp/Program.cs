@@ -22,15 +22,13 @@ const string ClaimAgentHttpClient = "claim-agent";
 var builder = WebApplication.CreateBuilder(args);
 
 var foundryOptions = new ClaimFoundryOptions();
-builder.Configuration.GetSection("AzureAI:Foundry").Bind(foundryOptions);
-foundryOptions.Endpoint ??= builder.Configuration["AZURE_AI_FOUNDRY_ENDPOINT"];
-foundryOptions.ApiKey ??= builder.Configuration["CLAIM_VISION_API_KEY"];
-foundryOptions.VisionModel =
-    builder.Configuration["CLAIM_VISION_MODEL"] ?? foundryOptions.VisionModel;
-foundryOptions.TranscriptionModel =
-    builder.Configuration["CLAIM_TRANSCRIPTION_MODEL"] ?? foundryOptions.TranscriptionModel;
-foundryOptions.ResearchCountry =
-    builder.Configuration["CLAIM_RESEARCH_COUNTRY"] ?? foundryOptions.ResearchCountry;
+builder.Configuration.GetSection("AzureOpenAI").Bind(foundryOptions);
+foundryOptions.Endpoint ??= builder.Configuration["AZURE_OPENAI_ENDPOINT"];
+foundryOptions.ApiKey ??= builder.Configuration["AZURE_OPENAI_API_KEY"];
+foundryOptions.ChatDeployment =
+    builder.Configuration["AZURE_OPENAI_CHAT_DEPLOYMENT"] ?? foundryOptions.ChatDeployment;
+foundryOptions.TranscriptionDeployment =
+    builder.Configuration["AZURE_OPENAI_TRANSCRIPTION_DEPLOYMENT"] ?? foundryOptions.TranscriptionDeployment;
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
