@@ -82,6 +82,7 @@ public class InputTextTest
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
         Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
     }
+
     private async Task<int> RenderAndGetInputTextComponentIdAsync(TestInputHostComponent<string, InputText> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
