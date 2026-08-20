@@ -170,6 +170,24 @@ public partial class HubConnection : IAsyncDisposable
     /// </example>
     public event Func<string?, Task>? Reconnected;
 
+    /// <summary>
+    /// Occurs after the <see cref="HubConnection"/> successfully refreshes its authentication, either
+    /// automatically or via an explicit call to <see cref="RefreshAuthenticationAsync"/>.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Task"/> result does not block <see cref="HubConnection"/> operations.
+    /// </remarks>
+    public event Func<AuthenticationRefreshedContext, Task>? AuthenticationRefreshed;
+
+    /// <summary>
+    /// Occurs when an authentication refresh attempt fails, either automatically or via an explicit
+    /// call to <see cref="RefreshAuthenticationAsync"/>.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Task"/> result does not block <see cref="HubConnection"/> operations.
+    /// </remarks>
+    public event Func<AuthenticationRefreshFailedContext, Task>? AuthenticationRefreshFailed;
+
     // internal for testing purposes
     internal TimeSpan TickRate { get; set; } = TimeSpan.FromSeconds(1);
 
@@ -609,7 +627,7 @@ public partial class HubConnection : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            var failedCallback = _authenticationRefreshOptions.OnAuthenticationRefreshFailed;
+            var failedCallback = AuthenticationRefreshFailed;
             if (failedCallback is not null)
             {
                 try
@@ -633,7 +651,7 @@ public partial class HubConnection : IAsyncDisposable
             }
         }
 
-        var refreshedCallback = _authenticationRefreshOptions.OnAuthenticationRefreshed;
+        var refreshedCallback = AuthenticationRefreshed;
         if (refreshedCallback is not null)
         {
             try

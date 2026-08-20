@@ -156,16 +156,13 @@ public partial class HubConnectionTests
                 AuthenticationRefreshedContext capturedContext = null;
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.EnableAutoRefresh = false;
-                        o.OnAuthenticationRefreshed = ctx =>
-                        {
-                            capturedContext = ctx;
-                            return Task.CompletedTask;
-                        };
-                    });
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
+                hubConnection.AuthenticationRefreshed += ctx =>
+                {
+                    capturedContext = ctx;
+                    return Task.CompletedTask;
+                };
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
@@ -196,16 +193,13 @@ public partial class HubConnectionTests
                 AuthenticationRefreshFailedContext capturedContext = null;
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.EnableAutoRefresh = false;
-                        o.OnAuthenticationRefreshFailed = ctx =>
-                        {
-                            capturedContext = ctx;
-                            return Task.CompletedTask;
-                        };
-                    });
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
+                hubConnection.AuthenticationRefreshFailed += ctx =>
+                {
+                    capturedContext = ctx;
+                    return Task.CompletedTask;
+                };
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
@@ -241,12 +235,9 @@ public partial class HubConnectionTests
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.EnableAutoRefresh = false;
-                        o.OnAuthenticationRefreshed = _ => throw new InvalidOperationException("callback boom");
-                    });
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
+                hubConnection.AuthenticationRefreshed += _ => throw new InvalidOperationException("callback boom");
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
@@ -279,12 +270,9 @@ public partial class HubConnectionTests
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.EnableAutoRefresh = false;
-                        o.OnAuthenticationRefreshFailed = _ => throw new InvalidOperationException("failed-callback boom");
-                    });
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
+                hubConnection.AuthenticationRefreshFailed += _ => throw new InvalidOperationException("failed-callback boom");
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
@@ -683,17 +671,12 @@ public partial class HubConnectionTests
                 connection.Features.Set<IAuthenticationRefreshFeature>(feature);
                 var refreshCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                var hubConnection = BuildHubConnection(connection, builder =>
+                var hubConnection = BuildHubConnection(connection);
+                hubConnection.AuthenticationRefreshed += _ =>
                 {
-                    builder.WithAuthenticationRefresh(o =>
-                    {
-                        o.OnAuthenticationRefreshed = _ =>
-                        {
-                            refreshCompleted.TrySetResult();
-                            return Task.CompletedTask;
-                        };
-                    });
-                });
+                    refreshCompleted.TrySetResult();
+                    return Task.CompletedTask;
+                };
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();

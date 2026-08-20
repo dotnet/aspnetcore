@@ -212,12 +212,12 @@ describe("HubConnection", () => {
                 let refreshedAt: Date | undefined;
                 const hubConnection = createHubConnection(connection, logger, undefined, {
                     enableAutoRefresh: false,
-                    onAuthenticationRefreshed: (context) => {
-                        refreshedContextConnection = context.connection;
-                        refreshedTokenLifetimeInSeconds = context.newTokenLifetimeInSeconds;
-                        refreshedAt = context.refreshedAt;
-                    },
                 });
+                hubConnection.onAuthenticationRefreshed = (context) => {
+                    refreshedContextConnection = context.connection;
+                    refreshedTokenLifetimeInSeconds = context.newTokenLifetimeInSeconds;
+                    refreshedAt = context.refreshedAt;
+                };
 
                 try {
                     await hubConnection.start();
@@ -246,11 +246,11 @@ describe("HubConnection", () => {
                 let failedError: Error | undefined;
                 const hubConnection = createHubConnection(connection, logger, undefined, {
                     enableAutoRefresh: false,
-                    onAuthenticationRefreshFailed: (context) => {
-                        failedContextConnection = context.connection;
-                        failedError = context.error;
-                    },
                 });
+                hubConnection.onAuthenticationRefreshFailed = (context) => {
+                    failedContextConnection = context.connection;
+                    failedError = context.error;
+                };
 
                 try {
                     await hubConnection.start();
@@ -404,9 +404,8 @@ describe("HubConnection", () => {
                     },
                 };
 
-                const hubConnection = createHubConnection(connection, logger, undefined, {
-                    onAuthenticationRefreshed: () => refreshed.resolve(),
-                });
+                const hubConnection = createHubConnection(connection, logger, undefined, {});
+                hubConnection.onAuthenticationRefreshed = () => refreshed.resolve();
 
                 await hubConnection.start();
                 jest.advanceTimersByTime(30_000);
@@ -472,11 +471,10 @@ describe("HubConnection", () => {
                     refreshAuthentication: () => Promise.reject(refreshError),
                 };
 
-                const hubConnection = createHubConnection(connection, logger, undefined, {
-                    onAuthenticationRefreshFailed: (context) => {
-                        failedError = context.error;
-                    },
-                });
+                const hubConnection = createHubConnection(connection, logger, undefined, {});
+                hubConnection.onAuthenticationRefreshFailed = (context) => {
+                    failedError = context.error;
+                };
 
                 try {
                     await hubConnection.start();

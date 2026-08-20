@@ -101,6 +101,12 @@ export class HubConnection {
      */
     public keepAliveIntervalInMilliseconds: number;
 
+    /** A callback invoked after authentication refresh completes successfully. */
+    public onAuthenticationRefreshed?: (context: AuthenticationRefreshedContext) => void;
+
+    /** A callback invoked when an authentication refresh attempt fails. */
+    public onAuthenticationRefreshFailed?: (context: AuthenticationRefreshFailedContext) => void;
+
     /** @internal */
     // Using a public static factory method means we can have a private constructor and an _internal_
     // create method that can be used by HubConnectionBuilder. An "internal" constructor would just
@@ -1100,7 +1106,7 @@ export class HubConnection {
     }
 
     private async _invokeAuthenticationRefreshed(newTokenLifetimeInSeconds: number | undefined): Promise<void> {
-        const callback = this._authenticationRefreshOptions?.onAuthenticationRefreshed;
+        const callback = this.onAuthenticationRefreshed;
         if (!callback) {
             return;
         }
@@ -1119,7 +1125,7 @@ export class HubConnection {
     }
 
     private async _invokeAuthenticationRefreshFailed(error: any): Promise<void> {
-        const callback = this._authenticationRefreshOptions?.onAuthenticationRefreshFailed;
+        const callback = this.onAuthenticationRefreshFailed;
         if (!callback) {
             return;
         }

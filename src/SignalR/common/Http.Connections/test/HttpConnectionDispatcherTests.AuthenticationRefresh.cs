@@ -214,10 +214,14 @@ public partial class HttpConnectionDispatcherTests
                     new Claim("stable-id", "stable-user"),
                 }, "Test"));
 
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
-            feature.OnUserRefreshing =
-                static user => user.FindFirst("stable-id")?.Value == "stable-user";
+            var callbackCount = 0;
+            feature.OnAuthenticationRefresh = ctx =>
+            {
+                callbackCount++;
+                return Task.FromResult(ctx.NewUser.FindFirst("stable-id")?.Value == "stable-user");
+            };
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(
                 new[]
@@ -240,6 +244,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             Assert.Same(newUser, connection.User);
+            Assert.Equal(1, callbackCount);
         }
     }
 
@@ -291,6 +296,7 @@ public partial class HttpConnectionDispatcherTests
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            connection.User = newUser;
             // No ExpiresUtc on AuthenticationProperties => server should fall back to MaxValue and omit TTL
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
 
@@ -594,9 +600,9 @@ public partial class HttpConnectionDispatcherTests
                 new[] { new Claim(ClaimTypes.NameIdentifier, "user-a") }, "Test"));
             connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
 
-            var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
-            Assert.NotNull(userRefreshFeature);
-            userRefreshFeature.OnUserRefreshing = static _ => true;
+            var authenticationRefreshFeature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
+            Assert.NotNull(authenticationRefreshFeature);
+            authenticationRefreshFeature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
 
             var context = new DefaultHttpContext();
             context.Request.Path = "/foo/refresh";
@@ -818,21 +824,21 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void HttpConnectionContextExposesUserRefreshFeature()
+    public void HttpConnectionContextExposesAuthenticationRefreshFeature()
     {
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
 
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
 
             Assert.NotNull(feature);
         }
     }
 
     [Fact]
-    public void UpdateUserInvokesUserRefreshedCallbackWithNewPrincipal()
+    public void UpdateUserInvokesAuthenticationRefreshedCallbackWithNewPrincipal()
     {
         using (StartVerifiableLog())
         {
@@ -852,11 +858,11 @@ public partial class HttpConnectionDispatcherTests
                 new Claim("n", "new"),
             ], "Test"));
             ClaimsPrincipal capturedCurrent = null;
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
-            feature.OnUserRefreshed((current, state) =>
+            feature.OnAuthenticationRefreshed((context, state) =>
             {
-                capturedCurrent = current;
+                capturedCurrent = context.NewUser;
             }, state: null);
 
             var expiration = DateTimeOffset.UtcNow.AddMinutes(15);
@@ -867,7 +873,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void UpdateUserInvokesUserRefreshingCallbackBeforePrincipalSwap()
+    public void UpdateUserInvokesAuthenticationRefreshCallbackBeforePrincipalSwap()
     {
         using (StartVerifiableLog())
         {
@@ -881,13 +887,13 @@ public partial class HttpConnectionDispatcherTests
                 new[] { new Claim(ClaimTypes.NameIdentifier, "user-b") }, "Test"));
             ClaimsPrincipal observedCurrentUser = null;
             ClaimsPrincipal observedCandidateUser = null;
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
-            feature.OnUserRefreshing = candidate =>
+            feature.OnAuthenticationRefresh = ctx =>
             {
                 observedCurrentUser = connection.User;
-                observedCandidateUser = candidate;
-                return true;
+                observedCandidateUser = ctx.NewUser;
+                return Task.FromResult(true);
             };
 
             var result = connection.UpdateUser(newUser, DateTimeOffset.UtcNow.AddMinutes(15));
@@ -895,6 +901,29 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(HttpConnectionContext.UserUpdateResult.Updated, result);
             Assert.Same(originalUser, observedCurrentUser);
             Assert.Same(newUser, observedCandidateUser);
+            Assert.Same(newUser, connection.User);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateUserSupportsAnUninitializedConnectionUser()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
+            Assert.NotNull(feature);
+            feature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, "user")], "Test"));
+
+            var result = await connection.UpdateUserAsync(
+                newUser,
+                DateTimeOffset.UtcNow.AddMinutes(15),
+                new DefaultHttpContext());
+
+            Assert.Equal(HttpConnectionContext.UserUpdateResult.Updated, result);
             Assert.Same(newUser, connection.User);
         }
     }
@@ -922,7 +951,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void SettingUserRefreshingToNullRestoresDefaultIdentityValidation()
+    public void RestoringAuthenticationRefreshCallbackRestoresDefaultIdentityValidation()
     {
         using (StartVerifiableLog())
         {
@@ -932,10 +961,11 @@ public partial class HttpConnectionDispatcherTests
                 new[] { new Claim(ClaimTypes.NameIdentifier, "user-a") }, "Test"));
             connection.User = originalUser;
 
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
-            feature.OnUserRefreshing = static _ => true;
-            feature.OnUserRefreshing = null;
+            var defaultOnAuthenticationRefresh = feature.OnAuthenticationRefresh;
+            feature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
+            feature.OnAuthenticationRefresh = defaultOnAuthenticationRefresh;
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(
                 new[] { new Claim(ClaimTypes.NameIdentifier, "user-b") }, "Test"));
@@ -947,7 +977,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void SettingUserRefreshingReplacesPreviouslyConfiguredCallback()
+    public void SettingAuthenticationRefreshCallbackReplacesPreviouslyConfiguredCallback()
     {
         using (StartVerifiableLog())
         {
@@ -957,10 +987,10 @@ public partial class HttpConnectionDispatcherTests
                 new[] { new Claim(ClaimTypes.NameIdentifier, "user-a") }, "Test"));
             connection.User = originalUser;
 
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
-            feature.OnUserRefreshing = static _ => false;
-            feature.OnUserRefreshing = static _ => true;
+            feature.OnAuthenticationRefresh = static _ => Task.FromResult(false);
+            feature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(
                 new[] { new Claim(ClaimTypes.NameIdentifier, "user-b") }, "Test"));
@@ -972,7 +1002,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void UpdateUserRejectsExceptionFromUserRefreshingCallback()
+    public void UpdateUserRejectsExceptionFromAuthenticationRefreshCallback()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "UserRefreshingCallbackFailed"))
         {
@@ -982,9 +1012,9 @@ public partial class HttpConnectionDispatcherTests
                 new[] { new Claim(ClaimTypes.NameIdentifier, "user-a") }, "Test"));
             connection.User = originalUser;
 
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
-            feature.OnUserRefreshing =
+            feature.OnAuthenticationRefresh =
                 static _ => throw new InvalidOperationException("boom");
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(
@@ -997,18 +1027,18 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void DisposedUserRefreshedRegistrationIsNotInvoked()
+    public void DisposedAuthenticationRefreshedRegistrationIsNotInvoked()
     {
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
 
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
 
             var invoked = false;
-            var registration = feature.OnUserRefreshed((_, state) => invoked = true, state: null);
+            var registration = feature.OnAuthenticationRefreshed((_, state) => invoked = true, state: null);
             registration.Dispose();
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "new") }, "Test"));
@@ -1019,16 +1049,16 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void UpdateUserSwallowsExceptionFromUserRefreshedCallback()
+    public void UpdateUserSwallowsExceptionFromAuthenticationRefreshedCallback()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "UserRefreshedCallbackFailed"))
         {
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
 
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             Assert.NotNull(feature);
-            feature.OnUserRefreshed((_, state) => throw new InvalidOperationException("boom"), state: null);
+            feature.OnAuthenticationRefreshed((_, state) => throw new InvalidOperationException("boom"), state: null);
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
             var expiration = DateTimeOffset.UtcNow.AddMinutes(15);
@@ -1088,7 +1118,8 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(connection.ConnectionId, captured.ConnectionId);
             Assert.Same(originalUser, captured.PreviousUser);
             Assert.Same(newUser, captured.NewUser);
-            Assert.Equal(newExpires, captured.NewExpiration, TimeSpan.FromSeconds(1));
+            Assert.NotNull(captured.NewExpiration);
+            Assert.Equal(newExpires, captured.NewExpiration.Value, TimeSpan.FromSeconds(1));
         }
     }
 
@@ -1226,7 +1257,7 @@ public partial class HttpConnectionDispatcherTests
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
 
-            // No callback registered with IConnectionUserRefreshFeature.OnUserRefreshed.
+            // No callback registered with IConnectionAuthenticationRefreshFeature.OnAuthenticationRefreshed.
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
             connection.UpdateUser(newUser, DateTimeOffset.UtcNow.AddMinutes(15));
 
@@ -1272,13 +1303,15 @@ public partial class HttpConnectionDispatcherTests
 
             var app = BuildTestConnectionHandlerApp(out var sp);
 
-            // First poll establishes the original principal on the connection.
+            // Seed the connection with the original principal; the first poll carries the same token.
             var userA = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, "userA"),
                 new Claim(ClaimTypes.Name, "old"),
             }, "Test"));
             var expA = DateTimeOffset.UtcNow.AddMinutes(5);
+            connection.User = userA;
+            connection.AuthenticationExpiration = expA;
             var context1 = BuildAuthPollContext(connection, sp, userA, expA);
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
@@ -1302,7 +1335,8 @@ public partial class HttpConnectionDispatcherTests
             Assert.NotNull(captured);
             Assert.Same(userA, captured.PreviousUser);
             Assert.Same(userB, captured.NewUser);
-            Assert.Equal(expB, captured.NewExpiration, TimeSpan.FromSeconds(1));
+            Assert.NotNull(captured.NewExpiration);
+            Assert.Equal(expB, captured.NewExpiration.Value, TimeSpan.FromSeconds(1));
             Assert.Same(userB, connection.User);
             Assert.Equal(expB, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
         }
@@ -1331,7 +1365,10 @@ public partial class HttpConnectionDispatcherTests
 
             var originalUser = new ClaimsPrincipal(new ClaimsIdentity(
                 new[] { new Claim(ClaimTypes.NameIdentifier, "user-a") }, "Test"));
-            var context1 = BuildAuthPollContext(connection, sp, originalUser, DateTimeOffset.UtcNow.AddMinutes(5));
+            var originalExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
+            connection.User = originalUser;
+            connection.AuthenticationExpiration = originalExpiration;
+            var context1 = BuildAuthPollContext(connection, sp, originalUser, originalExpiration);
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
 
@@ -1375,6 +1412,8 @@ public partial class HttpConnectionDispatcherTests
                 new Claim(ClaimTypes.Name, "old"),
             }, "Test"));
             var expA = DateTimeOffset.UtcNow.AddMinutes(5);
+            connection.User = userA;
+            connection.AuthenticationExpiration = expA;
             var context1 = BuildAuthPollContext(connection, sp, userA, expA);
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
@@ -1428,7 +1467,9 @@ public partial class HttpConnectionDispatcherTests
             var app = BuildTestConnectionHandlerApp(out var sp);
 
             var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
-            var exp = DateTimeOffset.UtcNow.AddMinutes(5);
+            var exp = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds());
+            connection.User = user;
+            connection.AuthenticationExpiration = exp;
             var context1 = BuildAuthPollContext(connection, sp, user, exp);
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
@@ -1480,7 +1521,9 @@ public partial class HttpConnectionDispatcherTests
                 new Claim(ClaimTypes.NameIdentifier, "userA"),
                 new Claim(ClaimTypes.Role, "reader"),
             }, "Test"));
-            var exp = DateTimeOffset.UtcNow.AddMinutes(5);
+            var exp = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds());
+            connection.User = user;
+            connection.AuthenticationExpiration = exp;
             var context1 = BuildAuthPollContext(connection, sp, user, exp);
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
@@ -1498,7 +1541,6 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
             Assert.Equal(1, refreshCount);
-            Assert.NotNull(captured);
             Assert.Same(user, captured.PreviousUser);
             Assert.Same(changedClaimsUser, captured.NewUser);
             Assert.Same(changedClaimsUser, connection.User);
@@ -1514,7 +1556,7 @@ public partial class HttpConnectionDispatcherTests
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
-            connection.Features.Get<IConnectionUserRefreshFeature>().OnUserRefreshing = _ => true;
+            connection.Features.Get<IConnectionAuthenticationRefreshFeature>().OnAuthenticationRefresh = _ => Task.FromResult(true);
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             var refreshCount = 0;
@@ -1574,13 +1616,15 @@ public partial class HttpConnectionDispatcherTests
 
             var app = BuildTestConnectionHandlerApp(out var sp);
 
-            // First poll establishes the principal with a later expiration (mimics a token applied by /refresh).
+            // Seed the connection with the principal and later expiration (mimics a token applied by /refresh).
             var userA = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, "userA"),
                 new Claim(ClaimTypes.Name, "newer"),
             }, "Test"));
             var laterExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+            connection.User = userA;
+            connection.AuthenticationExpiration = laterExpiration;
             var context1 = BuildAuthPollContext(connection, sp, userA, laterExpiration);
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
@@ -1623,6 +1667,8 @@ public partial class HttpConnectionDispatcherTests
             // First poll establishes the principal.
             var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
             var initialExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
+            connection.User = userA;
+            connection.AuthenticationExpiration = initialExpiration;
             var context1 = BuildAuthPollContext(connection, sp, userA, initialExpiration);
 
             var options = new HttpConnectionDispatcherOptions
@@ -1695,6 +1741,8 @@ public partial class HttpConnectionDispatcherTests
 
             var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
             var expA = DateTimeOffset.UtcNow.AddMinutes(5);
+            connection.User = userA;
+            connection.AuthenticationExpiration = expA;
             var context1 = BuildAuthReconnectContext(connection, services, userA, expA);
             var initialWebSocketTask = dispatcher.ExecuteAsync(context1, options, app);
             var websocketFeature = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketFeature>();
@@ -1719,7 +1767,8 @@ public partial class HttpConnectionDispatcherTests
             Assert.NotNull(captured);
             Assert.Same(userA, captured.PreviousUser);
             Assert.Same(userB, captured.NewUser);
-            Assert.Equal(expB, captured.NewExpiration, TimeSpan.FromSeconds(1));
+            Assert.NotNull(captured.NewExpiration);
+            Assert.Equal(expB, captured.NewExpiration.Value, TimeSpan.FromSeconds(1));
             Assert.Same(userB, connection.User);
             Assert.Equal(expB, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
 
@@ -1756,6 +1805,8 @@ public partial class HttpConnectionDispatcherTests
 
             var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
             var exp = DateTimeOffset.UtcNow.AddMinutes(5);
+            connection.User = user;
+            connection.AuthenticationExpiration = exp;
             var context1 = BuildAuthReconnectContext(connection, services, user, exp);
             var initialWebSocketTask = dispatcher.ExecuteAsync(context1, options, app);
             var websocketFeature = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketFeature>();
@@ -1796,9 +1847,9 @@ public partial class HttpConnectionDispatcherTests
             var laterExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
             connection.UpdateUser(userA, laterExpiration);
 
-            var feature = connection.Features.Get<IConnectionUserRefreshFeature>();
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
             var notified = 0;
-            feature.OnUserRefreshed((_, state) => notified++, state: null);
+            feature.OnAuthenticationRefreshed((_, state) => notified++, state: null);
 
             // An older token must be skipped (no swap, no notification).
             var userB = new ClaimsPrincipal(new ClaimsIdentity(
@@ -1972,6 +2023,37 @@ public partial class HttpConnectionDispatcherTests
             catch (OperationCanceledException)
             {
             }
+        }
+    }
+}
+
+internal static class HttpConnectionContextAuthenticationRefreshTestExtensions
+{
+    public static HttpConnectionContext.UserUpdateResult UpdateUser(this HttpConnectionContext connection, ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+    {
+        var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
+        var onAuthenticationRefresh = feature.OnAuthenticationRefresh;
+
+        if (connection.User is null)
+        {
+            var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
+            connection.User = anonymousUser;
+
+            if (connection.HttpContext is { } httpContext)
+            {
+                httpContext.User = anonymousUser;
+            }
+
+            feature.OnAuthenticationRefresh = static _ => Task.FromResult(true);
+        }
+
+        try
+        {
+            return connection.UpdateUserAsync(user, authenticationExpiration, connection.HttpContext ?? new DefaultHttpContext()).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            feature.OnAuthenticationRefresh = onAuthenticationRefresh;
         }
     }
 }
