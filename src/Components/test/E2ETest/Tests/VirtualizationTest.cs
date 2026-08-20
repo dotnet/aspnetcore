@@ -151,12 +151,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var firstBatchCallCount = GetFirstBatchSpacerCallbackCount();
             var firstBatchCall = GetFirstBatchSpacerCallback();
             var args = (ReadOnlyCollection<object>)firstBatchCall["args"];
+            var reason = Convert.ToInt32(args[3], CultureInfo.InvariantCulture);
 
             Assert.Equal(1, firstBatchCallCount);
             Assert.Equal("OnSpacerBeforeVisible", firstBatchCall["methodName"]);
             Assert.Equal(0, Convert.ToDouble(args[0], CultureInfo.InvariantCulture));
             Assert.Equal(400, Convert.ToDouble(args[2], CultureInfo.InvariantCulture));
-            Assert.Equal(viewportFillReason, Convert.ToInt32(args[3], CultureInfo.InvariantCulture));
+            Assert.Equal(viewportFillReason, reason);
         }
         finally
         {
@@ -5547,6 +5548,72 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ", edge);
     }
 
+    [Fact]
+    public void InitialIndex_PendingGrowth_DoesNotExceedMaxItemCount()
+    {
+        const int maxItemCount = 20;
+        const int overscanCount = 3;
+        const int maximumRenderedItemCount = maxItemCount + 2 * overscanCount;
+
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        Browser.SetWindowSize(1024, 2900);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        js.ExecuteScript("document.getElementById('scroll-container').style.height = '2500px';");
+        Browser.Exists(By.Id("set-low-max-item-count")).Click();
+        Browser.Contains("MaxItemCount 20, overscan 3", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("toggle-provider")).Click();
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        SetManualInitialIndex(100);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        WaitForRenderToSettle(container, js);
+        var renderedItemCount = GetElementCount(container, ".item");
+
+        Assert.True(renderedItemCount <= maximumRenderedItemCount,
+            $"Expected at most {maximumRenderedItemCount} rendered items " +
+            $"(MaxItemCount={maxItemCount} + 2*OverscanCount={2 * overscanCount}), but found {renderedItemCount}.");
+    }
+
+    [Fact]
+    public void InitialIndex_PendingGrowth_TallItemsBeforeTarget_KeepsTargetAligned()
+    {
+        const int initialItemIndex = 100;
+
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        Browser.SetWindowSize(1024, 2400);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
+        Browser.Exists(By.Id("set-average-height-trap")).Click();
+        Browser.Contains("Tall rows before index 100", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("toggle-provider")).Click();
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        SetManualInitialIndex(initialItemIndex);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        WaitForRenderToSettle(container, js);
+
+        Assert.True(ViewportEdgeCoveredByRealItem(js, "bottom"),
+            $"Viewport bottom should be covered by a real item, but a gap was found " +
+            $"(top={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
+
+        Browser.Exists(By.CssSelector($".item[data-index='{initialItemIndex}']"));
+        var targetTopOffset = Convert.ToDouble(js.ExecuteScript($@"
+            var container = document.getElementById('scroll-container');
+            var target = container.querySelector('.item[data-index=""{initialItemIndex}""]');
+            return target.getBoundingClientRect().top - container.getBoundingClientRect().top;
+        "), CultureInfo.InvariantCulture);
+
+        Assert.True(Math.Abs(targetTopOffset) <= 2,
+            $"Item {initialItemIndex} should remain aligned with the viewport top, " +
+            $"but its offset was {targetTopOffset}px (scrollTop={GetScrollTop(js, container)}).");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -5643,6 +5710,33 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"(top={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
     }
 
+    [Fact]
+    public void InitialIndex_TallContainer_ClampedNearEnd_FillsViewportWithoutUserScroll()
+    {
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        Browser.SetWindowSize(1024, 5400);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        js.ExecuteScript("document.getElementById('scroll-container').style.height = '5000px';");
+        Browser.Exists(By.Id("set-double-size")).Click();
+        Browser.Contains("Item size 100", () => Browser.Exists(By.Id("status")).Text);
+        Browser.Exists(By.Id("toggle-provider")).Click();
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        SetManualInitialIndex(990);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        WaitForRenderToSettle(container, js);
+
+        Assert.True(ViewportEdgeCoveredByRealItem(js, "top"),
+            $"Viewport top should be covered by a real item, but a gap was found " +
+            $"(bottom={GetBottomRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
+        Assert.True(ViewportEdgeCoveredByRealItem(js, "bottom"),
+            $"Viewport bottom should be covered by a real item, but a gap was found " +
+            $"(top={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -5728,6 +5822,79 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() => GetTopRenderedIndex(js) == 200,
             $"Variable-height: top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_TallItemsBeforeTarget_FillsViewportAndKeepsTargetAligned(bool useProvider)
+    {
+        const int targetIndex = 100;
+
+        MountAnchorModeForScrollToItem(useProvider, delay: useProvider);
+        Browser.SetWindowSize(1024, 2400);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
+        Browser.Exists(By.Id("set-average-height-trap")).Click();
+        Browser.Contains("Tall rows before index 100", () => Browser.Exists(By.Id("status")).Text);
+
+        SetScrollTargetIndex(targetIndex);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus($"Completed: {targetIndex}");
+        WaitForRenderToSettle(container, js);
+
+        Assert.True(ViewportEdgeCoveredByRealItem(js, "bottom"),
+            $"Viewport bottom should be covered by a real item, but a gap was found " +
+            $"(top={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
+
+        var targetTopOffset = Convert.ToDouble(js.ExecuteScript($@"
+            var container = document.getElementById('scroll-container');
+            var target = container.querySelector('.item[data-index=""{targetIndex}""]');
+            return target.getBoundingClientRect().top - container.getBoundingClientRect().top;
+        "), CultureInfo.InvariantCulture);
+
+        Assert.True(Math.Abs(targetTopOffset) <= 2,
+            $"Item {targetIndex} should remain aligned with the viewport top, " +
+            $"but its offset was {targetTopOffset}px (scrollTop={GetScrollTop(js, container)}).");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScrollToItem_TallContainer_ClampedNearEnd_FillsViewport(bool useProvider)
+    {
+        const int targetIndex = 990;
+
+        MountAnchorModeForScrollToItem(useProvider, delay: useProvider);
+        Browser.SetWindowSize(1024, 5400);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        js.ExecuteScript("document.getElementById('scroll-container').style.height = '5000px';");
+        Browser.Exists(By.Id("set-double-size")).Click();
+        Browser.Contains("Item size 100", () => Browser.Exists(By.Id("status")).Text);
+
+        SetScrollTargetIndex(targetIndex);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus($"Completed: {targetIndex}");
+        WaitForRenderToSettle(container, js);
+
+        Assert.True(ViewportEdgeCoveredByRealItem(js, "top"),
+            $"Viewport top should be covered by a real item, but a gap was found " +
+            $"(bottom={GetBottomRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
+        Assert.True(ViewportEdgeCoveredByRealItem(js, "bottom"),
+            $"Viewport bottom should be covered by a real item, but a gap was found " +
+            $"(top={GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}).");
+        Assert.True((bool)js.ExecuteScript($@"
+            var container = document.getElementById('scroll-container');
+            var viewport = container.getBoundingClientRect();
+            var target = container.querySelector('.item[data-index=""{targetIndex}""]');
+            if (!target) return false;
+            var targetRect = target.getBoundingClientRect();
+            return targetRect.bottom > viewport.top && targetRect.top < viewport.bottom;
+        "), $"Item {targetIndex} should remain visible after the viewport fills.");
     }
 
     [Theory]
