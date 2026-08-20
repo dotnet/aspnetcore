@@ -20,8 +20,21 @@ internal sealed class ScriptedChatClient : IChatClient
     {
         ArgumentNullException.ThrowIfNull(messages);
 
+        var messageList = messages.ToList();
+        if (messageList.LastOrDefault()?.Role == ChatRole.Tool)
+        {
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = Guid.NewGuid().ToString("N"),
+                Contents = [new TextContent("Background changed to a sunset gradient.")],
+                FinishReason = ChatFinishReason.Stop,
+            };
+            yield break;
+        }
+
         var prompt = string.Empty;
-        foreach (var message in messages)
+        foreach (var message in messageList)
         {
             if (message.Role == ChatRole.User)
             {
@@ -30,6 +43,29 @@ internal sealed class ScriptedChatClient : IChatClient
         }
 
         var messageId = Guid.NewGuid().ToString("N");
+        if (prompt.Contains("background", StringComparison.OrdinalIgnoreCase) &&
+            options?.Tools?.OfType<AIFunctionDeclaration>()
+                .Any(tool => tool.Name == "change_background") == true)
+        {
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                MessageId = messageId,
+                Contents =
+                [
+                    new FunctionCallContent(
+                        "agentic-chat-background-1",
+                        "change_background",
+                        new Dictionary<string, object?>
+                        {
+                            ["background"] = "linear-gradient(135deg, #ff9a9e, #fad0c4)"
+                        })
+                ],
+                FinishReason = ChatFinishReason.ToolCalls,
+            };
+            yield break;
+        }
+
         var answer = $"""
             ## Agentic response
 
