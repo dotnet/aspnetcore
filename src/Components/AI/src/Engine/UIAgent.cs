@@ -156,14 +156,13 @@ public class UIAgent : IDisposable
             var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
 
-            assistantUpdates.Add(update);
-
             var processUpdate = ApplyStateMapper(update);
             if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
             {
                 continue;
             }
 
+            assistantUpdates.Add(processUpdate);
             await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
             {
                 yield return block;

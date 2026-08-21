@@ -110,10 +110,28 @@ public class ActivityHandlerTests
         Assert.Equal(0, block.Content.GetProperty("progress").GetInt32());
     }
 
-    private static BlockMappingPipeline CreatePipeline()
+    [Fact]
+    public async Task Snapshot_HandlerDoesNotAssignId_AssignsFallbackId()
+    {
+        var pipeline = CreatePipeline(assignId: false);
+
+        var block = Assert.IsType<ActivityContentBlock>(Assert.Single(
+            await CollectBlocksAsync(
+                pipeline,
+                new ActivitySnapshot
+                {
+                    Id = "activity-1",
+                    ActivityType = "PLAN",
+                    Content = JsonSerializer.SerializeToElement(new { progress = 0 }),
+                })));
+
+        Assert.NotEmpty(block.Id);
+    }
+
+    private static BlockMappingPipeline CreatePipeline(bool assignId = true)
     {
         var options = new UIAgentOptions();
-        options.AddBlockHandler(new TestActivityHandler());
+        options.AddBlockHandler(new TestActivityHandler(assignId));
         return new BlockMappingPipeline(options);
     }
 
@@ -136,6 +154,13 @@ public class ActivityHandlerTests
 
     private sealed class TestActivityHandler : ActivityHandler<ActivityContentBlock>
     {
+        private readonly bool _assignId;
+
+        public TestActivityHandler(bool assignId)
+        {
+            _assignId = assignId;
+        }
+
         protected override bool TryCreateBlock(
             BlockMappingContext context,
             ActivityContentBlock state)
@@ -145,7 +170,11 @@ public class ActivityHandlerTests
                 return false;
             }
 
-            state.Id = snapshot.Id;
+            if (_assignId)
+            {
+                state.Id = snapshot.Id;
+            }
+
             state.ActivityType = snapshot.ActivityType;
             state.Content = snapshot.Content;
             context.MarkUpdateHandled();

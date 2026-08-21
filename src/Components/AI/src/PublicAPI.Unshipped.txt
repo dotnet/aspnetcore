@@ -318,7 +318,7 @@ Microsoft.AspNetCore.Components.AI.UIAgentOptions.AddBlockHandler<TState>(Micros
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.get -> Microsoft.Extensions.AI.ChatOptions?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.set -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.RegisterUIAction(Microsoft.Extensions.AI.AIFunction! function) -> void
-Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.get -> System.Func<Microsoft.AspNetCore.Components.AI.StateMapperContext!, bool>?
+Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.get -> System.Action<Microsoft.AspNetCore.Components.AI.StateMapperContext!>?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.set -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.UIAgentOptions() -> void
 Microsoft.AspNetCore.Components.AI.UIActionBlock

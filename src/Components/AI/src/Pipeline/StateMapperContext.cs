@@ -104,6 +104,7 @@ public class StateMapperContext
             MessageId = Update.MessageId,
             ResponseId = Update.ResponseId,
             FinishReason = Update.FinishReason,
+            RawRepresentation = Update.RawRepresentation,
             Contents = filtered,
         };
     }
