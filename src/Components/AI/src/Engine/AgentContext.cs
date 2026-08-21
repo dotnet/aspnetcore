@@ -196,12 +196,12 @@ public class AgentContext : IDisposable
 
         try
         {
-            ChatMessage? currentMessage = message;
-            while (currentMessage is not null)
+            IReadOnlyList<ChatMessage>? currentMessages = [message];
+            while (currentMessages is not null)
             {
                 var interactiveBlocks = new List<IInteractiveBlock>();
 
-                await foreach (var block in _agent.SendMessageAsync(currentMessage, cancellationToken)
+                await foreach (var block in _agent.SendMessagesAsync(currentMessages, cancellationToken)
                     .WithCancellation(cancellationToken))
                 {
                     if (block.Role == message.Role)
@@ -223,7 +223,7 @@ public class AgentContext : IDisposable
 
                 if (interactiveBlocks.Count == 0)
                 {
-                    currentMessage = null;
+                    currentMessages = null;
                     continue;
                 }
 
@@ -233,10 +233,7 @@ public class AgentContext : IDisposable
                 var results = await Task.WhenAll(
                     interactiveBlocks.Select(block => block.GetResultAsync(cancellationToken)));
 
-                var role = results.Any(result => result is not FunctionResultContent)
-                    ? ChatRole.User
-                    : ChatRole.Tool;
-                currentMessage = new ChatMessage(role, [.. results]);
+                currentMessages = CreateContinuationMessages(results);
                 Status = ConversationStatus.Streaming;
                 NotifyStatusChanged();
             }
@@ -269,6 +266,26 @@ public class AgentContext : IDisposable
         // completes as canceled. Cancellation driven by CancelAsync() (the internal token only)
         // is a graceful stop and completes normally.
         callerToken.ThrowIfCancellationRequested();
+    }
+
+    private static IReadOnlyList<ChatMessage> CreateContinuationMessages(
+        IReadOnlyList<AIContent> results)
+    {
+        var messages = new List<ChatMessage>();
+        foreach (var result in results)
+        {
+            var role = result is FunctionResultContent ? ChatRole.Tool : ChatRole.User;
+            if (messages.Count > 0 && messages[^1].Role == role)
+            {
+                messages[^1].Contents.Add(result);
+            }
+            else
+            {
+                messages.Add(new ChatMessage(role, [result]));
+            }
+        }
+
+        return messages;
     }
 
     private void NotifyStatusChanged()

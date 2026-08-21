@@ -187,8 +187,8 @@ Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.HasResult.get -> bool
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InnerBlock.get -> Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock!
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InteractiveFunctionBlock(Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock! innerBlock) -> void
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InnerBlock.get -> Microsoft.AspNetCore.Components.AI.ContentBlock!
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InteractiveFunctionBlock(Microsoft.AspNetCore.Components.AI.ContentBlock! innerBlock) -> void
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.ToolName.get -> string?
 Microsoft.AspNetCore.Components.AI.LineBreakNode

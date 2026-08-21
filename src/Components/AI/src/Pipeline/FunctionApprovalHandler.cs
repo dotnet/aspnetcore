@@ -25,14 +25,15 @@ internal sealed class FunctionApprovalHandler :
             context.MarkHandled(approvalRequest);
 
             var innerBlock = context.CreateInnerBlock(approvalRequest.ToolCall)
-                as FunctionInvocationContentBlock
                 ?? CreateFallbackInnerBlock(approvalRequest.ToolCall);
 
             state.Emitted = true;
             return BlockMappingResult<State>.Emit(
                 new FunctionApprovalBlock(innerBlock, approvalRequest)
                 {
-                    Id = innerBlock.Call?.CallId ?? approvalRequest.RequestId
+                    Id = approvalRequest.ToolCall is FunctionCallContent functionCall
+                        ? functionCall.CallId ?? approvalRequest.RequestId
+                        : approvalRequest.RequestId
                 },
                 state);
         }
