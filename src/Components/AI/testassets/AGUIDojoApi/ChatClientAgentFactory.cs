@@ -28,6 +28,13 @@ internal static class ChatClientAgentFactory
         If the user rejected every step, acknowledge that no steps will be performed.
         """;
 
+    internal const string ToolBasedGenerativeUISystemPrompt = """
+        You are a Japanese haiku assistant.
+        For every haiku request, call generate_haiku with exactly three Japanese lines, exactly
+        three English translation lines, a relevant image_name, and an attractive CSS gradient.
+        Do not print the haiku as ordinary chat text before calling the tool.
+        """;
+
     internal static IChatClient CreateAgenticChat(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);

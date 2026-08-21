@@ -1,0 +1,16 @@
+<span class="haiku-action-status" role="status">
+    @(Block.IsComplete ? "Haiku ready" : "Generating haiku...")
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public UIActionBlock Block { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Block.IsComplete)
+        {
+            await Block.InvokeAsync();
+        }
+    }
+}
