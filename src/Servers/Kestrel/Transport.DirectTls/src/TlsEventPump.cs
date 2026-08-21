@@ -13,6 +13,7 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Connection;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Interop;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.UserCallbacks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 

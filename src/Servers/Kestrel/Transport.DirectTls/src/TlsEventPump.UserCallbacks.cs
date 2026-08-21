@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Interop;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.UserCallbacks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls;
