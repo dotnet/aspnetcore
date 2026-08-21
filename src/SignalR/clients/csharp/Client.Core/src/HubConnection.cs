@@ -175,7 +175,7 @@ public partial class HubConnection : IAsyncDisposable
     /// automatically or via an explicit call to <see cref="RefreshAuthenticationAsync"/>.
     /// </summary>
     /// <remarks>
-    /// The authentication refresh operation waits for the returned <see cref="Task"/> to complete.
+    /// The authentication refresh operation waits for each handler's returned <see cref="Task"/> to complete.
     /// </remarks>
     public event Func<AuthenticationRefreshedContext, Task>? AuthenticationRefreshed;
 
@@ -184,7 +184,7 @@ public partial class HubConnection : IAsyncDisposable
     /// call to <see cref="RefreshAuthenticationAsync"/>.
     /// </summary>
     /// <remarks>
-    /// The authentication refresh operation waits for the returned <see cref="Task"/> to complete.
+    /// The authentication refresh operation waits for each handler's returned <see cref="Task"/> to complete.
     /// </remarks>
     public event Func<AuthenticationRefreshFailedContext, Task>? AuthenticationRefreshFailed;
 
@@ -627,17 +627,14 @@ public partial class HubConnection : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            var failedCallback = AuthenticationRefreshFailed;
-            if (failedCallback is not null)
+            var failedCallbacks = AuthenticationRefreshFailed;
+            if (failedCallbacks is not null)
             {
-                try
-                {
-                    await failedCallback(new AuthenticationRefreshFailedContext(this, ex)).ConfigureAwait(false);
-                }
-                catch (Exception callbackEx)
-                {
-                    Log.AuthenticationRefreshCallbackFailed(_logger, callbackEx);
-                }
+                await InvokeEventHandlersAsync(
+                    failedCallbacks,
+                    new AuthenticationRefreshFailedContext(this, ex),
+                    _logger,
+                    Log.AuthenticationRefreshCallbackFailed).ConfigureAwait(false);
             }
             throw;
         }
@@ -651,20 +648,36 @@ public partial class HubConnection : IAsyncDisposable
             }
         }
 
-        var refreshedCallback = AuthenticationRefreshed;
-        if (refreshedCallback is not null)
+        var refreshedCallbacks = AuthenticationRefreshed;
+        if (refreshedCallbacks is not null)
         {
-            try
-            {
-                await refreshedCallback(new AuthenticationRefreshedContext(this, newTtl)).ConfigureAwait(false);
-            }
-            catch (Exception callbackEx)
-            {
-                Log.AuthenticationRefreshCallbackFailed(_logger, callbackEx);
-            }
+            await InvokeEventHandlersAsync(
+                refreshedCallbacks,
+                new AuthenticationRefreshedContext(this, newTtl),
+                _logger,
+                Log.AuthenticationRefreshCallbackFailed).ConfigureAwait(false);
         }
 
         return newTtl;
+    }
+
+    private static async Task InvokeEventHandlersAsync<T>(
+        Func<T, Task> handlers,
+        T argument,
+        ILogger logger,
+        Action<ILogger, Exception> logError)
+    {
+        foreach (Func<T, Task> handler in handlers.GetInvocationList())
+        {
+            try
+            {
+                await handler(argument).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logError(logger, ex);
+            }
+        }
     }
 
     /// <summary>
@@ -2085,15 +2098,8 @@ public partial class HubConnection : IAsyncDisposable
             // Dispatch to the thread pool before we invoke the user callback
             await AwaitableThreadPool.Yield();
 
-            try
-            {
-                Log.InvokingClosedEventHandler(_logger);
-                await closed.Invoke(closeException).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorDuringClosedEvent(_logger, ex);
-            }
+            Log.InvokingClosedEventHandler(_logger);
+            await InvokeEventHandlersAsync(closed, closeException, _logger, Log.ErrorDuringClosedEvent).ConfigureAwait(false);
         }
 
         // There is no need to start a new task if there is no Closed event registered
@@ -2263,14 +2269,7 @@ public partial class HubConnection : IAsyncDisposable
             // Dispatch to the thread pool before we invoke the user callback
             await AwaitableThreadPool.Yield();
 
-            try
-            {
-                await reconnecting.Invoke(closeException).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorDuringReconnectingEvent(_logger, ex);
-            }
+            await InvokeEventHandlersAsync(reconnecting, closeException, _logger, Log.ErrorDuringReconnectingEvent).ConfigureAwait(false);
         }
 
         // There is no need to start a new task if there is no Reconnecting event registered
@@ -2290,14 +2289,7 @@ public partial class HubConnection : IAsyncDisposable
             // Dispatch to the thread pool before we invoke the user callback
             await AwaitableThreadPool.Yield();
 
-            try
-            {
-                await reconnected.Invoke(ConnectionId).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorDuringReconnectedEvent(_logger, ex);
-            }
+            await InvokeEventHandlersAsync(reconnected, ConnectionId, _logger, Log.ErrorDuringReconnectedEvent).ConfigureAwait(false);
         }
 
         // There is no need to start a new task if there is no Reconnected event registered

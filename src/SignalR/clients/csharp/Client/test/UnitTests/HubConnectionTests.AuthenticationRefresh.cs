@@ -181,6 +181,52 @@ public partial class HubConnectionTests
         }
 
         [Fact]
+        public async Task RefreshAuthenticationAsyncInvokesAuthenticationRefreshedCallbacksSerially()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthenticationRefreshFeature { NextTtl = TimeSpan.FromSeconds(1800) };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+                var firstCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var secondCallbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var secondCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
+                });
+                hubConnection.AuthenticationRefreshed += _ => firstCallback.Task;
+                hubConnection.AuthenticationRefreshed += _ =>
+                {
+                    secondCallbackStarted.SetResult();
+                    return secondCallback.Task;
+                };
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    var refreshTask = hubConnection.RefreshAuthenticationAsync();
+
+                    Assert.False(secondCallbackStarted.Task.IsCompleted);
+                    Assert.False(refreshTask.IsCompleted);
+
+                    firstCallback.SetResult();
+                    await secondCallbackStarted.Task.DefaultTimeout();
+                    Assert.False(refreshTask.IsCompleted);
+
+                    secondCallback.SetResult();
+                    Assert.Equal(TimeSpan.FromSeconds(1800), await refreshTask.DefaultTimeout());
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
         public async Task RefreshAuthenticationAsyncInvokesOnAuthenticationRefreshFailedCallbackAndRethrows()
         {
             using (StartVerifiableLog())
@@ -211,6 +257,54 @@ public partial class HubConnectionTests
                     Assert.NotNull(capturedContext);
                     Assert.Same(thrown, capturedContext.Exception);
                     Assert.Same(hubConnection, capturedContext.HubConnection);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RefreshAuthenticationAsyncInvokesAuthenticationRefreshFailedCallbacksSerially()
+        {
+            using (StartVerifiableLog())
+            {
+                var thrown = new InvalidOperationException("refresh boom");
+                var feature = new FakeAuthenticationRefreshFeature { ExceptionToThrow = thrown };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
+                var firstCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var secondCallbackStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var secondCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
+                });
+                hubConnection.AuthenticationRefreshFailed += _ => firstCallback.Task;
+                hubConnection.AuthenticationRefreshFailed += _ =>
+                {
+                    secondCallbackStarted.SetResult();
+                    return secondCallback.Task;
+                };
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    var refreshTask = hubConnection.RefreshAuthenticationAsync();
+
+                    Assert.False(secondCallbackStarted.Task.IsCompleted);
+                    Assert.False(refreshTask.IsCompleted);
+
+                    firstCallback.SetResult();
+                    await secondCallbackStarted.Task.DefaultTimeout();
+                    Assert.False(refreshTask.IsCompleted);
+
+                    secondCallback.SetResult();
+                    var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => refreshTask).DefaultTimeout();
+                    Assert.Same(thrown, exception);
                 }
                 finally
                 {

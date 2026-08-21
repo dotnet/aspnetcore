@@ -160,6 +160,7 @@ public class HttpConnectionDispatcherOptions
     /// Gets or sets the maximum amount of time, relative to now, that a refreshed authentication
     /// expiration is allowed to advance to, regardless of the expiration reported by the authentication
     /// ticket. Set to <see langword="null"/> to leave the ticket's own expiration (or lack of one) unmodified.
+    /// When set, the value must be greater than <see cref="TimeSpan.Zero"/>.
     /// </summary>
     /// <remarks>
     /// This applies whenever <see cref="EnableAuthenticationRefresh"/> is <c>true</c>, including when the
@@ -171,9 +172,9 @@ public class HttpConnectionDispatcherOptions
         get;
         set
         {
-            if (value is { } timeSpan && timeSpan < TimeSpan.Zero)
+            if (value is { } timeSpan && timeSpan <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be zero or greater.");
+                throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater than zero.");
             }
 
             field = value;

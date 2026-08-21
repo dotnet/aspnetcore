@@ -58,6 +58,8 @@ export class HubConnection {
     private _closedCallbacks: ((error?: Error) => void)[];
     private _reconnectingCallbacks: ((error?: Error) => void)[];
     private _reconnectedCallbacks: ((connectionId?: string) => void)[];
+    private _authenticationRefreshedCallbacks: ((context: AuthenticationRefreshedContext) => void)[];
+    private _authenticationRefreshFailedCallbacks: ((context: AuthenticationRefreshFailedContext) => void)[];
 
     private _receivedHandshakeResponse: boolean;
     private _handshakeResolver!: (value?: PromiseLike<{}>) => void;
@@ -100,12 +102,6 @@ export class HubConnection {
      * If the server pings every 5 seconds, a value lower than 5 will ping every 5 seconds.
      */
     public keepAliveIntervalInMilliseconds: number;
-
-    /** A callback invoked after authentication refresh completes successfully. */
-    public onAuthenticationRefreshed?: (context: AuthenticationRefreshedContext) => void;
-
-    /** A callback invoked when an authentication refresh attempt fails. */
-    public onAuthenticationRefreshFailed?: (context: AuthenticationRefreshFailedContext) => void;
 
     /** @internal */
     // Using a public static factory method means we can have a private constructor and an _internal_
@@ -159,6 +155,8 @@ export class HubConnection {
         this._closedCallbacks = [];
         this._reconnectingCallbacks = [];
         this._reconnectedCallbacks = [];
+        this._authenticationRefreshedCallbacks = [];
+        this._authenticationRefreshFailedCallbacks = [];
         this._invocationId = 0;
         this._receivedHandshakeResponse = false;
         this._connectionState = HubConnectionState.Disconnected;
@@ -614,6 +612,26 @@ export class HubConnection {
     public onreconnected(callback: (connectionId?: string) => void): void {
         if (callback) {
             this._reconnectedCallbacks.push(callback);
+        }
+    }
+
+    /** Registers a handler that will be invoked after authentication refresh completes successfully.
+     *
+     * @param {Function} callback The handler that will be invoked after authentication refresh completes successfully.
+     */
+    public onAuthenticationRefreshed(callback: (context: AuthenticationRefreshedContext) => void): void {
+        if (callback) {
+            this._authenticationRefreshedCallbacks.push(callback);
+        }
+    }
+
+    /** Registers a handler that will be invoked when an authentication refresh attempt fails.
+     *
+     * @param {Function} callback The handler that will be invoked when an authentication refresh attempt fails.
+     */
+    public onAuthenticationRefreshFailed(callback: (context: AuthenticationRefreshFailedContext) => void): void {
+        if (callback) {
+            this._authenticationRefreshFailedCallbacks.push(callback);
         }
     }
 
@@ -1106,8 +1124,7 @@ export class HubConnection {
     }
 
     private _invokeAuthenticationRefreshed(newTokenLifetimeInSeconds: number | undefined): void {
-        const callback = this.onAuthenticationRefreshed;
-        if (!callback) {
+        if (this._authenticationRefreshedCallbacks.length === 0) {
             return;
         }
 
@@ -1118,15 +1135,14 @@ export class HubConnection {
         };
 
         try {
-            callback(context);
+            this._authenticationRefreshedCallbacks.forEach((c) => c.apply(this, [context]));
         } catch (e) {
             this._logger.log(LogLevel.Error, `An onAuthenticationRefreshed callback threw error '${getErrorString(e)}'.`);
         }
     }
 
     private _invokeAuthenticationRefreshFailed(error: any): void {
-        const callback = this.onAuthenticationRefreshFailed;
-        if (!callback) {
+        if (this._authenticationRefreshFailedCallbacks.length === 0) {
             return;
         }
 
@@ -1136,7 +1152,7 @@ export class HubConnection {
         };
 
         try {
-            callback(context);
+            this._authenticationRefreshFailedCallbacks.forEach((c) => c.apply(this, [context]));
         } catch (e) {
             this._logger.log(LogLevel.Error, `An onAuthenticationRefreshFailed callback threw error '${getErrorString(e)}'.`);
         }
