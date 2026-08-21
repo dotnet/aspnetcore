@@ -563,6 +563,12 @@ public class SignInManager<TUser> where TUser : class
     /// JavaScript API, which lets an authenticator stop offering passkeys that were removed from the server.
     /// </para>
     /// <para>
+    /// The authenticator treats the signaled list as authoritative: any passkey it holds for this user that is
+    /// not in the list may be hidden or permanently removed. Only call this when the list returned by
+    /// <see cref="UserManager{TUser}.GetPasskeysAsync(TUser)"/> is known to be complete. If a valid credential is
+    /// omitted, signaling a complete list as soon as possible may restore it if the authenticator supports recovery.
+    /// </para>
+    /// <para>
     /// Because the options reveal how many passkeys a user has, only call this when the user is authenticated.
     /// </para>
     /// <para>
@@ -571,6 +577,7 @@ public class SignInManager<TUser> where TUser : class
     /// </remarks>
     /// <param name="user">The user whose passkeys should be signaled.</param>
     /// <returns>A JSON string representing the all accepted credentials signal options.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="user"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
     /// </exception>
@@ -614,6 +621,9 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="user">The user whose details should be signaled.</param>
     /// <param name="userEntity">The user entity associated with the user's passkeys.</param>
     /// <returns>A JSON string representing the current user details signal options.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="user"/> or <paramref name="userEntity"/> is <see langword="null"/>.
+    /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when no <see cref="IPasskeyHandler{TUser}"/> is registered.
     /// </exception>

@@ -225,6 +225,53 @@ public class PasskeyHandlerSignalTest
         Assert.Null(result);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task MakeUnknownCredentialSignalOptionsThrowsForNullOrEmptyCredentialJson(string? credentialJson)
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var handler = CreateHandler(SetupUserManager(user));
+
+        var exception = await Assert.ThrowsAnyAsync<ArgumentException>(
+            () => handler.MakeUnknownCredentialSignalOptionsAsync(credentialJson!, CreateHttpContext()));
+
+        Assert.Equal("credentialJson", exception.ParamName);
+    }
+
+    [Fact]
+    public async Task MakeUnknownCredentialSignalOptionsThrowsForNullHttpContextBeforeStoreLookup()
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var userManager = SetupUserManagerMock(user);
+        var handler = CreateHandler(userManager.Object);
+
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+            () => handler.MakeUnknownCredentialSignalOptionsAsync(CreateAssertionCredentialJson([1, 2, 3]), null!));
+
+        Assert.Equal("httpContext", exception.ParamName);
+        userManager.Verify(m => m.FindByPasskeyIdAsync(It.IsAny<byte[]>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(1023, true)]
+    [InlineData(1024, false)]
+    public async Task MakeUnknownCredentialSignalOptionsEnforcesCredentialIdLengthLimit(int credentialIdLength, bool returnsOptions)
+    {
+        var user = new PocoUser { UserName = "Foo" };
+        var userManager = SetupUserManagerMock(user);
+        var handler = CreateHandler(userManager.Object);
+
+        var result = await handler.MakeUnknownCredentialSignalOptionsAsync(
+            CreateAssertionCredentialJson(new byte[credentialIdLength]),
+            CreateHttpContext());
+
+        Assert.Equal(returnsOptions, result is not null);
+        userManager.Verify(
+            m => m.FindByPasskeyIdAsync(It.IsAny<byte[]>()),
+            returnsOptions ? Times.Once : Times.Never);
+    }
+
     [Fact]
     public async Task MakeUnknownCredentialSignalOptionsReturnsNullWhenStoreDoesNotSupportPasskeys()
     {

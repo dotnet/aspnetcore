@@ -88,9 +88,16 @@ public interface IPasskeyHandler<TUser>
     /// Generates options used to signal that a passkey credential is unknown to the server.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The signal permanently deletes the passkey from the browser's passkey provider. A handler must only return
     /// options when the credential is not registered to any user on the server.
     /// See <see href="https://www.w3.org/TR/webauthn-3/#sctn-signal-methods"/>.
+    /// </para>
+    /// <para>
+    /// Unlike <see cref="MakeAllAcceptedCredentialsSignalOptionsAsync(TUser, HttpContext)"/>, an incorrect signal
+    /// may permanently delete a working passkey. A handler must only return options after conclusively determining
+    /// that the credential is not registered to any user. An inconclusive lookup must not produce signal options.
+    /// </para>
     /// </remarks>
     /// <param name="credentialJson">The JSON representation of the passkey credential.</param>
     /// <param name="httpContext">The HTTP context associated with the request.</param>

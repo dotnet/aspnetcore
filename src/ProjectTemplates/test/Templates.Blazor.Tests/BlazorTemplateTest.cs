@@ -255,11 +255,19 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 Assert.Equal(new Uri(page.Url).Host, userDetails.GetProperty("rpId").GetString());
                 Assert.Equal(userName, userDetails.GetProperty("name").GetString());
                 Assert.Equal(userName, userDetails.GetProperty("displayName").GetString());
+                await AssertSignalRetriesAfterFailureAsync(
+                    page,
+                    "current-user-details-signal",
+                    "signalCurrentUserDetails");
 
                 // Check that an error is displayed if passkey creation fails
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
+                await AssertSignalRetriesAfterFailureAsync(
+                    page,
+                    "all-accepted-credentials-signal",
+                    "signalAllAcceptedCredentials");
 
                 await page.EvaluateAsync("""
                     () => {
@@ -447,6 +455,44 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         {
             var options = await GetPasskeySignalAsync(page, "signalAllAcceptedCredentials");
             return [.. options.GetProperty("allAcceptedCredentialIds").EnumerateArray().Select(id => id.GetString())];
+        }
+
+        static async Task AssertSignalRetriesAfterFailureAsync(IPage page, string selector, string method)
+        {
+            await page.WaitForSelectorAsync(selector, new() { State = WaitForSelectorState.Attached });
+            var attempts = await page.EvaluateAsync<int>(
+                """
+                async ({ selector, method }) => {
+                    const element = document.querySelector(selector);
+                    const originalSignal = window.PublicKeyCredential[method];
+                    let attempts = 0;
+                    window.PublicKeyCredential[method] = function (options) {
+                        attempts++;
+                        return attempts === 1
+                            ? Promise.reject(new Error('Simulated signal failure'))
+                            : originalSignal.call(window.PublicKeyCredential, options);
+                    };
+
+                    try {
+                        const options = ` ${element.getAttribute('options')}`;
+                        element.setAttribute('options', options);
+                        await new Promise(resolve => setTimeout(resolve));
+                        element.removeAttribute('options');
+                        element.setAttribute('options', options);
+
+                        for (let i = 0; i < 10 && attempts < 2; i++) {
+                            await new Promise(resolve => setTimeout(resolve, 10));
+                        }
+
+                        return attempts;
+                    } finally {
+                        window.PublicKeyCredential[method] = originalSignal;
+                    }
+                }
+                """,
+                new { selector, method });
+
+            Assert.Equal(2, attempts);
         }
 
         static async Task<string[]> GetAuthenticatorCredentialsAsync(ICDPSession cdpSession, string authenticatorId)

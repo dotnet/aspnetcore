@@ -1,4 +1,4 @@
-﻿customElements.define('accepted-credentials-signal', class extends HTMLElement {
+﻿customElements.define('all-accepted-credentials-signal', class extends HTMLElement {
     static observedAttributes = ['options'];
 
     connectedCallback() {
@@ -25,6 +25,9 @@
             // Not all browsers support this, and it is best-effort, so failures are not surfaced.
             await window.PublicKeyCredential?.signalAllAcceptedCredentials?.(JSON.parse(options));
         } catch (error) {
+            if (this.signaledOptions === options) {
+                this.signaledOptions = undefined;
+            }
             console.error(error);
         }
     }
