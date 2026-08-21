@@ -18,6 +18,7 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
 
     [DynamicDependency(nameof(OnSpacerBeforeVisible))]
     [DynamicDependency(nameof(OnSpacerAfterVisible))]
+    [DynamicDependency(nameof(OnAlignmentCompleted))]
     public VirtualizeJsInterop(IVirtualizeJsCallbacks owner, IJSRuntime jsRuntime)
     {
         _owner = owner;
@@ -31,15 +32,21 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
     }
 
     [JSInvokable]
-    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize, int reason)
+    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize, int reason, long renderedWindowVersion)
     {
-        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason);
+        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason, renderedWindowVersion);
     }
 
     [JSInvokable]
-    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize, int reason)
+    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize, int reason, long renderedWindowVersion)
     {
-        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason);
+        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize, (SpacerVisibilityReason)reason, renderedWindowVersion);
+    }
+
+    [JSInvokable]
+    public void OnAlignmentCompleted(VirtualizeAlignmentResult result)
+    {
+        _owner.OnAlignmentCompleted(result);
     }
 
     public ValueTask ScrollToBottomAsync()
@@ -62,9 +69,9 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference);
     }
 
-    public ValueTask<ViewportFillDirection?> AlignToItemAsync(int localIndex, CancellationToken cancellationToken = default)
+    public ValueTask<VirtualizeAlignmentResult?> AlignToItemAsync(int localIndex, CancellationToken cancellationToken = default)
     {
-        return _jsRuntime.InvokeAsync<ViewportFillDirection?>($"{JsFunctionsPrefix}.alignToItem", cancellationToken, _selfReference, localIndex);
+        return _jsRuntime.InvokeAsync<VirtualizeAlignmentResult?>($"{JsFunctionsPrefix}.alignToItem", cancellationToken, _selfReference, localIndex);
     }
 
     public ValueTask BeginProgrammaticScrollAsync()
