@@ -132,7 +132,7 @@ describe('Virtualize intersection measurements', () => {
     intersectionCallback([{
       target: spacerBefore,
       isIntersecting: true,
-    } as IntersectionObserverEntry], {} as IntersectionObserver);
+    } as unknown as IntersectionObserverEntry], {} as IntersectionObserver);
 
     expect(invokeMethodAsync).toHaveBeenCalledWith(
       'OnSpacerBeforeVisible',
