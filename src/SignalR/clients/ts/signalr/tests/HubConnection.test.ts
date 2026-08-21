@@ -213,8 +213,7 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger, undefined, {
                     enableAutoRefresh: false,
                 });
-                hubConnection.onAuthenticationRefreshed = async (context) => {
-                    await Promise.resolve();
+                hubConnection.onAuthenticationRefreshed = (context) => {
                     refreshedContextConnection = context.connection;
                     refreshedTokenLifetimeInSeconds = context.newTokenLifetimeInSeconds;
                     refreshedAt = context.refreshedAt;

@@ -102,10 +102,10 @@ export class HubConnection {
     public keepAliveIntervalInMilliseconds: number;
 
     /** A callback invoked after authentication refresh completes successfully. */
-    public onAuthenticationRefreshed?: (context: AuthenticationRefreshedContext) => void | Promise<void>;
+    public onAuthenticationRefreshed?: (context: AuthenticationRefreshedContext) => void;
 
     /** A callback invoked when an authentication refresh attempt fails. */
-    public onAuthenticationRefreshFailed?: (context: AuthenticationRefreshFailedContext) => void | Promise<void>;
+    public onAuthenticationRefreshFailed?: (context: AuthenticationRefreshFailedContext) => void;
 
     /** @internal */
     // Using a public static factory method means we can have a private constructor and an _internal_
@@ -635,7 +635,7 @@ export class HubConnection {
         try {
             newTokenLifetimeInSeconds = await authenticationRefreshFeature.refreshAuthentication();
         } catch (e) {
-            await this._invokeAuthenticationRefreshFailed(e);
+            this._invokeAuthenticationRefreshFailed(e);
             throw e;
         }
 
@@ -646,7 +646,7 @@ export class HubConnection {
             this._scheduleAuthenticationRefresh(newTokenLifetimeInSeconds);
         }
 
-        await this._invokeAuthenticationRefreshed(newTokenLifetimeInSeconds);
+        this._invokeAuthenticationRefreshed(newTokenLifetimeInSeconds);
         return newTokenLifetimeInSeconds;
     }
 
@@ -1105,7 +1105,7 @@ export class HubConnection {
         }
     }
 
-    private async _invokeAuthenticationRefreshed(newTokenLifetimeInSeconds: number | undefined): Promise<void> {
+    private _invokeAuthenticationRefreshed(newTokenLifetimeInSeconds: number | undefined): void {
         const callback = this.onAuthenticationRefreshed;
         if (!callback) {
             return;
@@ -1118,13 +1118,13 @@ export class HubConnection {
         };
 
         try {
-            await callback(context);
+            callback(context);
         } catch (e) {
             this._logger.log(LogLevel.Error, `An onAuthenticationRefreshed callback threw error '${getErrorString(e)}'.`);
         }
     }
 
-    private async _invokeAuthenticationRefreshFailed(error: any): Promise<void> {
+    private _invokeAuthenticationRefreshFailed(error: any): void {
         const callback = this.onAuthenticationRefreshFailed;
         if (!callback) {
             return;
@@ -1136,7 +1136,7 @@ export class HubConnection {
         };
 
         try {
-            await callback(context);
+            callback(context);
         } catch (e) {
             this._logger.log(LogLevel.Error, `An onAuthenticationRefreshFailed callback threw error '${getErrorString(e)}'.`);
         }
