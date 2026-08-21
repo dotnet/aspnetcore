@@ -213,6 +213,7 @@ internal static class ChatClientAgentFactory
         ArgumentNullException.ThrowIfNull(options);
 
         string? lastEmittedDocument = null;
+        var hasEmittedConfirmation = false;
         var streamOptions = new AGUIStreamOptions();
         streamOptions.MapContent(content => content is DataContent data &&
             data.MediaType == PredictiveStateMediaType
@@ -256,19 +257,23 @@ internal static class ChatClientAgentFactory
                 Role = "tool",
             });
 
-            var confirmationCallId = Guid.NewGuid().ToString("N");
-            events.Add(new ToolCallStartEvent
+            if (!hasEmittedConfirmation)
             {
-                ToolCallId = confirmationCallId,
-                ToolCallName = "confirm_changes",
-                ParentMessageId = Guid.NewGuid().ToString("N"),
-            });
-            events.Add(new ToolCallArgsEvent
-            {
-                ToolCallId = confirmationCallId,
-                Delta = "{}",
-            });
-            events.Add(new ToolCallEndEvent { ToolCallId = confirmationCallId });
+                hasEmittedConfirmation = true;
+                var confirmationCallId = Guid.NewGuid().ToString("N");
+                events.Add(new ToolCallStartEvent
+                {
+                    ToolCallId = confirmationCallId,
+                    ToolCallName = "confirm_changes",
+                    ParentMessageId = Guid.NewGuid().ToString("N"),
+                });
+                events.Add(new ToolCallArgsEvent
+                {
+                    ToolCallId = confirmationCallId,
+                    Delta = "{}",
+                });
+                events.Add(new ToolCallEndEvent { ToolCallId = confirmationCallId });
+            }
 
             lastEmittedDocument = document;
             return events;

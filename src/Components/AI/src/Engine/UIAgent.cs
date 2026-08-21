@@ -298,6 +298,7 @@ public class UIAgent : IDisposable
         }
 
         blocks.AddRange(pipeline.Finalize());
+        RejectPendingPredictiveState();
 
         return blocks;
     }
