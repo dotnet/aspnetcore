@@ -473,6 +473,16 @@ internal partial class TlsEventPump : IDisposable
                         SweepExpiredHandshakes(Environment.TickCount64);
                     }
                 }
+                catch (UnreachableException ex)
+                {
+                    _logger.LogCritical(ex, "Pump {Id} reached an unreachable state in PumpLoop", _id);
+
+                    if (_running)
+                    {
+                        _onFatalError.Invoke(ex);
+                    }
+                    break;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Pump {Id} encountered an exception in PumpLoop", _id);
@@ -792,13 +802,7 @@ internal partial class TlsEventPump : IDisposable
             // HttpsConnectionAdapterOptions.ClientCertificateMode (Allow/Require), which makes
             // CreateStreamTransportOptions set ClientCertificateRequired and install a
             // RemoteCertificateValidationCallback; conn.ClientCertificateValidation carries that callback
-            // (null for server-auth-only endpoints, which skip this block entirely). The Linux fd fast
-            // handshake path reports Complete directly - it does not surface NeedsCertificateValidation like
-            // the buffered PALs do, OpenSSL only enforces SSL_VERIFY_PEER (not FAIL_IF_NO_PEER_CERT), and the
-            // fd read/write fast paths bypass the runtime's pending-validation fault. So the runtime cannot
-            // enforce the accept/reject decision on this path. The transport runs the endpoint's validation
-            // callback itself, records the verdict on the session, and tears down rejected connections before
-            // they are ever surfaced to Kestrel.
+            // (null for server-auth-only endpoints, which skip this block entirely).
             //
             // The certificates are read from the session here (pump thread only), but the chain build and the
             // endpoint's callback are user-controlled work, so they are suspended onto the thread pool and the
@@ -841,27 +845,10 @@ internal partial class TlsEventPump : IDisposable
 
         if (status == TlsOperationStatus.NeedsCertificateValidation)
         {
-            // Buffered / non-fd PALs surface this suspension so the caller runs client-certificate
-            // validation mid-handshake. (The Linux fd fast path our transport uses does not: it reports
-            // Complete directly and we validate + surface the certificate in the Complete branch above.)
-            // Resolve validation here so the re-driven handshake can finish (accept) or fail (reject); the
-            // Complete branch then observes it as already-validated. AcceptWithDefaultValidation runs the
-            // default chain build plus the RemoteCertificateValidationCallback configured in
-            // HttpsConnectionMiddleware.CreateStreamTransportOptions.
-            try
-            {
-                conn.Session.AcceptWithDefaultValidation();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "Client certificate validation failed for fd={Fd}", fd);
-                DropHandshake(fd, conn);
-                return;
-            }
-
-            // Re-drive so the handshake completes (accept) or fails (reject).
-            TryAdvanceHandshake(fd, conn);
-            return;
+            // The Linux fd fast handshake path reports Complete directly - it does not surface NeedsCertificateValidation like
+            // the buffered PALs do, OpenSSL only enforces SSL_VERIFY_PEER (not FAIL_IF_NO_PEER_CERT), and the
+            // fd read/write fast paths bypass the runtime's pending-validation fault.
+            throw new UnreachableException($"The DirectTls handshake path reported {nameof(TlsOperationStatus.NeedsCertificateValidation)} for fd={fd}.");
         }
 
         if (status == TlsOperationStatus.NeedsTlsContext)
