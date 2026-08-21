@@ -60,6 +60,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     // Guards User swaps in UpdateUserAsync so concurrent /refresh requests (or long-polling polls racing
     // explicit /refresh requests) can't roll the connection back to an older identity.
     private readonly object _userLock = new object();
+    private Func<AuthenticationRefreshContext, Task<bool>> _onAuthenticationRefresh = DefaultOnAuthenticationRefreshAsync;
     // True only for the WindowsIdentity user clone created by the first long-polling request.
     private bool _ownsUserIdentities;
     private readonly object _userRefreshCallbackLock = new object();
@@ -264,7 +265,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         {
             lock (_userLock)
             {
-                return field;
+                return _onAuthenticationRefresh;
             }
         }
         set
@@ -273,10 +274,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
             lock (_userLock)
             {
-                field = value;
+                _onAuthenticationRefresh = value;
             }
         }
-    } = DefaultOnAuthenticationRefreshAsync;
+    }
 
     public IDisposable OnAuthenticationRefreshed(Action<AuthenticationRefreshContext, object?> callback, object? state)
     {
@@ -306,6 +307,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// <param name="user">The refreshed principal to apply to the connection.</param>
     /// <param name="authenticationExpiration">The expiration of the refreshed authentication.</param>
     /// <param name="userRefreshHttpContext">The request context exposed to <see cref="OnAuthenticationRefresh"/> while validating the refreshed principal.</param>
+    /// <param name="additionalAuthenticationRefresh">An optional additional policy invoked after <see cref="OnAuthenticationRefresh"/> accepts the refresh.</param>
+    /// <param name="replacementHttpContext">The request context to associate with the connection when publishing the refreshed principal.</param>
     /// <remarks>
     /// This uses a two-phase validate-then-publish strategy: <see cref="OnAuthenticationRefresh"/> is awaited
     /// without holding <see cref="_userLock"/> (it may run arbitrary, possibly slow, application code), and the
@@ -319,7 +322,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     internal async Task<UserUpdateResult> UpdateUserAsync(
         ClaimsPrincipal user,
         DateTimeOffset authenticationExpiration,
-        HttpContext? userRefreshHttpContext = null)
+        HttpContext? userRefreshHttpContext = null,
+        Func<AuthenticationRefreshContext, Task<bool>>? additionalAuthenticationRefresh = null,
+        HttpContext? replacementHttpContext = null)
     {
         ClaimsPrincipal? previousUserReference;
         ClaimsPrincipal previousUserSnapshot;
@@ -335,7 +340,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
             previousUserReference = User;
             previousUserSnapshot = previousUserReference ?? new ClaimsPrincipal(new ClaimsIdentity());
-            callback = OnAuthenticationRefresh;
+            callback = _onAuthenticationRefresh;
         }
 
         // Phase 1: validate without holding _userLock. The callback is application code and may be async/slow;
@@ -351,7 +356,21 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         if (!await InvokeOnAuthenticationRefreshAsync(callback, refreshContext).ConfigureAwait(false))
         {
-            return UserUpdateResult.Rejected;
+            return GetRejectionResult(
+                authenticationExpiration,
+                previousUserReference,
+                callback,
+                UserUpdateResult.Rejected);
+        }
+
+        if (additionalAuthenticationRefresh is not null
+            && !await additionalAuthenticationRefresh(refreshContext).ConfigureAwait(false))
+        {
+            return GetRejectionResult(
+                authenticationExpiration,
+                previousUserReference,
+                callback,
+                UserUpdateResult.AdditionalPolicyRejected);
         }
 
         // Phase 2: revalidate and publish atomically under the lock. The acceptance decision above was made
@@ -360,7 +379,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         lock (_userLock)
         {
-            if (IsStale(authenticationExpiration) || !ReferenceEquals(User, previousUserReference))
+            if (HasValidationStateChanged(authenticationExpiration, previousUserReference, callback))
             {
                 return UserUpdateResult.Stale;
             }
@@ -374,8 +393,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             User = user;
             AuthenticationExpiration = authenticationExpiration;
 
-            // Also update the HttpContext's user if available
-            if (HttpContext is { } httpContext)
+            if (replacementHttpContext is not null)
+            {
+                replacementHttpContext.User = user;
+                HttpContext = replacementHttpContext;
+            }
+            else if (HttpContext is { } httpContext)
             {
                 httpContext.User = user;
             }
@@ -422,34 +445,27 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             && authenticationExpiration < AuthenticationExpiration;
     }
 
-    /// <summary>
-    /// Determines whether <paramref name="user"/> would be accepted as a refresh of the connection's current
-    /// user, without applying any update. Used to gate requests (for example Send/Delete or reconnects) before
-    /// any connection state is mutated.
-    /// </summary>
-    internal Task<bool> IsAuthenticationRefreshAcceptedAsync(ClaimsPrincipal user, HttpContext httpContext)
+    private UserUpdateResult GetRejectionResult(
+        DateTimeOffset authenticationExpiration,
+        ClaimsPrincipal? previousUser,
+        Func<AuthenticationRefreshContext, Task<bool>> callback,
+        UserUpdateResult rejectionResult)
     {
-        Func<AuthenticationRefreshContext, Task<bool>> callback;
-        ClaimsPrincipal previousUser;
-        DateTimeOffset expiration;
         lock (_userLock)
         {
-            callback = OnAuthenticationRefresh;
-            previousUser = User ?? new ClaimsPrincipal(new ClaimsIdentity());
-            expiration = AuthenticationExpiration;
+            return HasValidationStateChanged(authenticationExpiration, previousUser, callback)
+                ? UserUpdateResult.Stale
+                : rejectionResult;
         }
-
-        var refreshContext = new AuthenticationRefreshContext
-        {
-            HttpContext = httpContext,
-            ConnectionId = ConnectionId,
-            PreviousUser = previousUser,
-            NewUser = user,
-            NewExpiration = expiration == DateTimeOffset.MaxValue ? null : expiration,
-        };
-
-        return InvokeOnAuthenticationRefreshAsync(callback, refreshContext);
     }
+
+    private bool HasValidationStateChanged(
+        DateTimeOffset authenticationExpiration,
+        ClaimsPrincipal? previousUser,
+        Func<AuthenticationRefreshContext, Task<bool>> callback)
+        => IsStale(authenticationExpiration)
+            || !ReferenceEquals(User, previousUser)
+            || !ReferenceEquals(_onAuthenticationRefresh, callback);
 
     private async Task<bool> InvokeOnAuthenticationRefreshAsync(Func<AuthenticationRefreshContext, Task<bool>> callback, AuthenticationRefreshContext context)
     {
@@ -1142,6 +1158,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Updated,
         Stale,
         Rejected,
+        AdditionalPolicyRejected,
     }
 
     private static partial class Log

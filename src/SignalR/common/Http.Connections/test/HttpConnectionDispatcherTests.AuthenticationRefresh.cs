@@ -322,6 +322,41 @@ public partial class HttpConnectionDispatcherTests
         }
     }
 
+    [Fact]
+    public async Task RefreshWithMaximumAuthenticationExpirationThatExceedsDateRangeDoesNotOverflow()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthenticationRefresh = true,
+                MaximumAuthenticationExpiration = TimeSpan.MaxValue,
+            };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            var user = CreateAuthenticatedUserWithStableIdentity("user");
+            connection.User = user;
+            var ticket = new AuthenticationTicket(user, new AuthenticationProperties(), "Test");
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+            context.Features.Set<IAuthenticateResultFeature>(
+                new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal(DateTimeOffset.MaxValue, connection.AuthenticationExpiration);
+            Assert.Empty(ReadJson(context.Response.Body).Properties());
+        }
+    }
+
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public async Task RefreshRejectsWindowsIdentityPrincipal()
@@ -1281,6 +1316,48 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
+    public async Task LongPollingInitialAuthenticatedRequestDoesNotRunAuthenticationRefreshPolicies()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var featureCallbackCount = 0;
+            var optionsCallbackCount = 0;
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
+            Assert.NotNull(feature);
+            feature.OnAuthenticationRefresh = _ =>
+            {
+                featureCallbackCount++;
+                return Task.FromResult(true);
+            };
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthenticationRefresh = true,
+                OnAuthenticationRefresh = _ =>
+                {
+                    optionsCallbackCount++;
+                    return Task.FromResult(true);
+                },
+            };
+            var app = BuildTestConnectionHandlerApp(out var sp);
+            var user = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var expiration = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context = BuildAuthPollContext(connection, sp, user, expiration);
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Same(user, connection.User);
+            Assert.Equal(0, featureCallbackCount);
+            Assert.Equal(0, optionsCallbackCount);
+        }
+    }
+
+    [Fact]
     public async Task LongPollingRefreshedPrincipalInvokesOnAuthenticationRefreshAndUpdatesUser()
     {
         using (StartVerifiableLog())
@@ -1291,14 +1368,23 @@ public partial class HttpConnectionDispatcherTests
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             AuthenticationRefreshContext captured = null;
+            var callbacks = new List<string>();
             var options = new HttpConnectionDispatcherOptions
             {
                 EnableAuthenticationRefresh = true,
                 OnAuthenticationRefresh = ctx =>
                 {
+                    callbacks.Add("options");
                     captured = ctx;
                     return Task.FromResult(true);
                 },
+            };
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
+            Assert.NotNull(feature);
+            feature.OnAuthenticationRefresh = _ =>
+            {
+                callbacks.Add("connection");
+                return Task.FromResult(true);
             };
 
             var app = BuildTestConnectionHandlerApp(out var sp);
@@ -1339,6 +1425,7 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(expB, captured.NewExpiration.Value, TimeSpan.FromSeconds(1));
             Assert.Same(userB, connection.User);
             Assert.Equal(expB, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+            Assert.Equal(new[] { "connection", "options" }, callbacks);
         }
     }
 
@@ -1730,9 +1817,18 @@ public partial class HttpConnectionDispatcherTests
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
 
             AuthenticationRefreshContext captured = null;
+            var callbacks = new List<string>();
             options.OnAuthenticationRefresh = ctx =>
             {
+                callbacks.Add("options");
                 captured = ctx;
+                return Task.FromResult(true);
+            };
+            var feature = connection.Features.Get<IConnectionAuthenticationRefreshFeature>();
+            Assert.NotNull(feature);
+            feature.OnAuthenticationRefresh = _ =>
+            {
+                callbacks.Add("connection");
                 return Task.FromResult(true);
             };
 
@@ -1771,6 +1867,7 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(expB, captured.NewExpiration.Value, TimeSpan.FromSeconds(1));
             Assert.Same(userB, connection.User);
             Assert.Equal(expB, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+            Assert.Equal(new[] { "connection", "options" }, callbacks);
 
             connection.Abort();
             await reconnectWebSocketTask.DefaultTimeout();

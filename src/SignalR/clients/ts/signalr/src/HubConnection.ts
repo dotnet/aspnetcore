@@ -102,10 +102,10 @@ export class HubConnection {
     public keepAliveIntervalInMilliseconds: number;
 
     /** A callback invoked after authentication refresh completes successfully. */
-    public onAuthenticationRefreshed?: (context: AuthenticationRefreshedContext) => void;
+    public onAuthenticationRefreshed?: (context: AuthenticationRefreshedContext) => void | Promise<void>;
 
     /** A callback invoked when an authentication refresh attempt fails. */
-    public onAuthenticationRefreshFailed?: (context: AuthenticationRefreshFailedContext) => void;
+    public onAuthenticationRefreshFailed?: (context: AuthenticationRefreshFailedContext) => void | Promise<void>;
 
     /** @internal */
     // Using a public static factory method means we can have a private constructor and an _internal_

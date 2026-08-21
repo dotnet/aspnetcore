@@ -175,7 +175,7 @@ public partial class HubConnection : IAsyncDisposable
     /// automatically or via an explicit call to <see cref="RefreshAuthenticationAsync"/>.
     /// </summary>
     /// <remarks>
-    /// The <see cref="Task"/> result does not block <see cref="HubConnection"/> operations.
+    /// The authentication refresh operation waits for the returned <see cref="Task"/> to complete.
     /// </remarks>
     public event Func<AuthenticationRefreshedContext, Task>? AuthenticationRefreshed;
 
@@ -184,7 +184,7 @@ public partial class HubConnection : IAsyncDisposable
     /// call to <see cref="RefreshAuthenticationAsync"/>.
     /// </summary>
     /// <remarks>
-    /// The <see cref="Task"/> result does not block <see cref="HubConnection"/> operations.
+    /// The authentication refresh operation waits for the returned <see cref="Task"/> to complete.
     /// </remarks>
     public event Func<AuthenticationRefreshFailedContext, Task>? AuthenticationRefreshFailed;
 
