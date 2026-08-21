@@ -135,6 +135,10 @@ public class HttpConnectionDispatcherOptions
     /// authentication token without disconnecting. The server will re-authenticate the request and update
     /// the connection's <see cref="System.Security.Claims.ClaimsPrincipal"/>.
     /// </summary>
+    /// <remarks>
+    /// It is recommended to also enable <see cref="CloseOnAuthenticationExpiration"/> so that the connection
+    /// is closed if authentication is not refreshed before it expires.
+    /// </remarks>
     public bool EnableAuthenticationRefresh { get; set; }
 
     /// <summary>
