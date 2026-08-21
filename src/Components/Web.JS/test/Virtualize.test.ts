@@ -110,6 +110,38 @@ describe('Virtualize intersection measurements', () => {
       2,
       2);
   });
+
+  test('uses viewport height when the document is the scroll root', () => {
+    const spacerBefore = document.createElement('div');
+    const item = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+    spacerBefore.style.overflowY = 'visible';
+    document.body.append(spacerBefore, item, spacerAfter);
+
+    setElementMetrics(spacerBefore, rect(-100, 120), 120);
+    setElementMetrics(item, rect(20, 50), 50);
+    setElementMetrics(spacerAfter, rect(1000, 100), 100);
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '1');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '1');
+    jest.spyOn(document.documentElement, 'getBoundingClientRect').mockReturnValue(rect(0, 31000));
+    jest.spyOn(document.documentElement, 'clientHeight', 'get').mockReturnValue(900);
+
+    invokeMethodAsync.mockClear();
+    Virtualize.init(dotNetHelper, spacerBefore, spacerAfter);
+
+    intersectionCallback([{
+      target: spacerBefore,
+      isIntersecting: true,
+    } as IntersectionObserverEntry], {} as IntersectionObserver);
+
+    expect(invokeMethodAsync).toHaveBeenCalledWith(
+      'OnSpacerBeforeVisible',
+      50,
+      600,
+      900,
+      2,
+      1);
+  });
 });
 
 function rect(top: number, height: number): DOMRect {

@@ -676,13 +676,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   function measureIntersectionTargets(targets: Element[]): IntersectionMeasurement[] {
-    const measurement = measureRenderedWindow();
+    const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
+    const viewport = getViewportBounds(scaleFactor);
+    const measurement = measureRenderedWindow(viewport.bottom - viewport.top);
     if (!measurement) {
       return [];
     }
 
-    const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
-    const viewport = getViewportBounds(scaleFactor);
     const margin = rootMargin * scaleFactor;
     const intersectionTop = viewport.top - margin;
     const intersectionBottom = viewport.bottom + margin;
