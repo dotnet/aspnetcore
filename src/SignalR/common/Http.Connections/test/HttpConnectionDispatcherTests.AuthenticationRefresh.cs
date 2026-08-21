@@ -155,6 +155,51 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
+    public async Task RefreshCapsConnectionAndReportedExpiration()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthenticationRefresh = true,
+                MaximumAuthenticationExpiration = TimeSpan.FromMinutes(30),
+            };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            var user = CreateAuthenticatedUserWithStableIdentity("user");
+            connection.User = user;
+            connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(1);
+
+            var ticket = new AuthenticationTicket(
+                user,
+                new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1) },
+                "Test");
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+            context.Features.Set<IAuthenticateResultFeature>(
+                new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            var ttl = ReadJson(context.Response.Body).Value<int?>("tokenLifetimeSeconds");
+            Assert.NotNull(ttl);
+            Assert.InRange(ttl.Value, (30 * 60) - 2, 30 * 60);
+            Assert.Equal(
+                DateTimeOffset.UtcNow.AddMinutes(30),
+                connection.AuthenticationExpiration,
+                TimeSpan.FromSeconds(2));
+        }
+    }
+
+    [Fact]
     public async Task RefreshRejectsDifferentStandardIdentityWhenNoCallbackIsConfigured()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "UserNameChangedRejected"))
@@ -741,6 +786,38 @@ public partial class HttpConnectionDispatcherTests
             var ttl = response.Value<int?>("tokenLifetimeSeconds");
             Assert.NotNull(ttl);
             Assert.InRange(ttl.Value, 1, 1801);
+        }
+    }
+
+    [Theory]
+    [InlineData(60, 35, 35)]
+    [InlineData(20, 35, 20)]
+    public async Task NegotiateTokenLifetimeUsesEarlierTicketOrMaximumExpiration(
+        int ticketExpirationMinutes,
+        int maximumExpirationMinutes,
+        int expectedLifetimeMinutes)
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = BuildNegotiateContext(out var body);
+            SetAuthenticateResultFeature(context, DateTimeOffset.UtcNow.AddMinutes(ticketExpirationMinutes));
+
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions
+            {
+                EnableAuthenticationRefresh = true,
+                MaximumAuthenticationExpiration = TimeSpan.FromMinutes(maximumExpirationMinutes),
+            });
+
+            var response = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(body.ToArray()));
+            var ttl = response.Value<int?>("tokenLifetimeSeconds");
+
+            Assert.NotNull(ttl);
+            Assert.InRange(
+                ttl.Value,
+                (expectedLifetimeMinutes * 60) - 2,
+                expectedLifetimeMinutes * 60);
         }
     }
 

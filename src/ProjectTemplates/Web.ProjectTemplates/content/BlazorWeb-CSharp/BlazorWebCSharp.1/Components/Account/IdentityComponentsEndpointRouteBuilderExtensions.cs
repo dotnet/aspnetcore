@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,21 @@ namespace Microsoft.AspNetCore.Routing;
 
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {
+    private static readonly TimeSpan s_securityStampRevalidationInterval = TimeSpan.FromMinutes(30);
+
+    public static void ConfigureIdentityAuthenticationRefresh(this ServerComponentsEndpointOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var configureConnection = options.ConfigureConnection;
+        options.ConfigureConnection = connectionOptions =>
+        {
+            connectionOptions.MaximumAuthenticationExpiration = s_securityStampRevalidationInterval;
+            connectionOptions.CloseOnAuthenticationExpiration = true;
+            configureConnection?.Invoke(connectionOptions);
+        };
+    }
+
     // These endpoints are required by the Identity Razor components defined in the /Components/Account/Pages directory of this project.
     public static IEndpointConventionBuilder MapAdditionalIdentityEndpoints(this IEndpointRouteBuilder endpoints)
     {

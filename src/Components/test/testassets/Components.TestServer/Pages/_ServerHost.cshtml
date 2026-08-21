@@ -57,7 +57,7 @@
         if (query.has('accelerateAuthenticationRefresh')) {
             const setTimeout = window.setTimeout;
             window.setTimeout = (handler, timeout, ...args) =>
-                setTimeout(handler, timeout === 30 * 60 * 1000 ? 1000 : timeout, ...args);
+                setTimeout(handler, timeout === 25 * 60 * 1000 ? 1000 : timeout, ...args);
         }
 
         Blazor.start({
