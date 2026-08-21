@@ -29,10 +29,10 @@ public interface IConversationThread
     string? ConversationId { get; }
 
     /// <summary>
-    /// Begins a turn by appending the message sent to the chat client.
+    /// Begins a turn by appending the messages sent to the chat client.
     /// </summary>
-    /// <param name="message">The message that begins the turn.</param>
-    void AppendUserMessage(ChatMessage message);
+    /// <param name="messages">The messages that begin the turn.</param>
+    void AppendMessages(IEnumerable<ChatMessage> messages);
 
     /// <summary>
     /// Appends an update received from the chat client to the current turn.

@@ -56,6 +56,27 @@ public class AgentContextThreadTests
         Assert.Equal(ConversationStatus.Idle, context.Status);
     }
 
+    [Fact]
+    public async Task RestoreAsync_AfterFailedTurn_ResetsContext()
+    {
+        var thread = new InMemoryConversationThread("thread-1");
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((_, _, _) =>
+            ResponseEmitters.EmitErrorAfterTokens(
+                ["partial"],
+                new InvalidOperationException("Failed turn.")));
+        var context = new AgentContext(CreateAgent(client, thread));
+        await context.SendMessageAsync("Fail");
+        Assert.Equal(ConversationStatus.Error, context.Status);
+        Assert.NotNull(context.Error);
+
+        await context.RestoreAsync();
+
+        Assert.Empty(context.Turns);
+        Assert.Equal(ConversationStatus.Idle, context.Status);
+        Assert.Null(context.Error);
+    }
+
     private static UIAgent CreateAgent(
         IChatClient client,
         IConversationThread thread)

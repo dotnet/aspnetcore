@@ -164,7 +164,7 @@ Microsoft.AspNetCore.Components.AI.IInteractiveBlock
 Microsoft.AspNetCore.Components.AI.IInteractiveBlock.GetResultAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.AIContent!>!
 Microsoft.AspNetCore.Components.AI.IConversationThread
 Microsoft.AspNetCore.Components.AI.IConversationThread.AppendUpdate(Microsoft.Extensions.AI.ChatResponseUpdate! update) -> void
-Microsoft.AspNetCore.Components.AI.IConversationThread.AppendUserMessage(Microsoft.Extensions.AI.ChatMessage! message) -> void
+Microsoft.AspNetCore.Components.AI.IConversationThread.AppendMessages(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages) -> void
 Microsoft.AspNetCore.Components.AI.IConversationThread.CompleteTurn() -> void
 Microsoft.AspNetCore.Components.AI.IConversationThread.ConversationId.get -> string?
 Microsoft.AspNetCore.Components.AI.IConversationThread.GetUpdates() -> System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatResponseUpdate!>!

@@ -200,6 +200,7 @@ public class AgentContextUIActionTests
         await awaitingInputReached.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => context.SendMessageAsync("Second"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => context.RestoreAsync());
 
         await pendingAction!.InvokeAsync();
         await firstSendTask.WaitAsync(TimeSpan.FromSeconds(5));

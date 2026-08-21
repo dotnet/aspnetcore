@@ -112,6 +112,195 @@ public class UIAgentThreadTests
             observedMessages?.Select(message => message.Text));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RestoreAsync_FailureOrCancellation_DoesNotChangeHistoryOrState(
+        bool cancel)
+    {
+        var thread = new InMemoryConversationThread("thread-1");
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((_, _, cancellationToken) =>
+            ResponseEmitters.EmitTextResponse("Current response", cancellationToken));
+        CancellationTokenSource? restoreCts = null;
+        var agent = new UIAgent<TestState>(client, options =>
+        {
+            options.Thread = thread;
+            options.StateMapper = context =>
+            {
+                var state = context.UnhandledContents.OfType<TestStateContent>().SingleOrDefault();
+                if (state is null)
+                {
+                    return;
+                }
+
+                context.MarkHandled(state);
+                context.SetState(state.Value);
+                if (state.Value.Name == "Cancel")
+                {
+                    restoreCts!.Cancel();
+                }
+                else if (state.Value.Name == "Throw")
+                {
+                    throw new InvalidOperationException("Restore failed.");
+                }
+            };
+        });
+        await CollectAsync(agent, "Current request");
+        agent.State.Value = new TestState { Name = "Current" };
+
+        thread.Clear();
+        CommitTurn(
+            thread,
+            new ChatMessage(ChatRole.User, "Restored request"),
+            CreateStateUpdate(cancel ? "Cancel" : "Restored"),
+            CreateStateUpdate(cancel ? "Unused" : "Throw"));
+
+        if (cancel)
+        {
+            using var cancellationSource = new CancellationTokenSource();
+            restoreCts = cancellationSource;
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => agent.RestoreAsync(cancellationSource.Token));
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => agent.RestoreAsync());
+        }
+
+        Assert.Equal("Current", agent.State.Value.Name);
+
+        List<ChatMessage>? observedMessages = null;
+        client.SetHandler((messages, _, cancellationToken) =>
+        {
+            observedMessages = messages.ToList();
+            return ResponseEmitters.EmitTextResponse("After response", cancellationToken);
+        });
+
+        await CollectAsync(agent, "After failure");
+
+        Assert.Equal(
+            ["Current request", "Current response", "After failure"],
+            observedMessages?.Select(message => message.Text));
+    }
+
+    [Fact]
+    public async Task RestoreAsync_EmptyThread_ClearsHistoryAndState()
+    {
+        var thread = new InMemoryConversationThread("thread-1");
+        var client = new DelegatingStreamingChatClient();
+        client.SetHandler((_, _, cancellationToken) =>
+            ResponseEmitters.EmitTextResponse("Current response", cancellationToken));
+        var agent = CreateStateAgent(client, thread);
+        await CollectAsync(agent, "Current request");
+        agent.State.Value = new TestState { Name = "Current" };
+        thread.Clear();
+
+        await agent.RestoreAsync();
+
+        Assert.Equal("", agent.State.Value.Name);
+
+        List<ChatMessage>? observedMessages = null;
+        client.SetHandler((messages, _, cancellationToken) =>
+        {
+            observedMessages = messages.ToList();
+            return ResponseEmitters.EmitTextResponse("New response", cancellationToken);
+        });
+
+        await CollectAsync(agent, "New request");
+
+        var message = Assert.Single(observedMessages!);
+        Assert.Equal(ChatRole.User, message.Role);
+        Assert.Equal("New request", message.Text);
+    }
+
+    [Fact]
+    public async Task RestoreAsync_ToolMessage_PreservesRoleInHistory()
+    {
+        var thread = new InMemoryConversationThread("thread-1");
+        CommitTurn(
+            thread,
+            new ChatMessage(ChatRole.User, "Initial request"),
+            new ChatResponseUpdate(ChatRole.Assistant, "Tool requested"));
+        CommitTurn(
+            thread,
+            new ChatMessage(ChatRole.Tool, "Tool result"),
+            new ChatResponseUpdate(ChatRole.Assistant, "Final response"));
+        var client = new DelegatingStreamingChatClient();
+        List<ChatMessage>? observedMessages = null;
+        client.SetHandler((messages, _, cancellationToken) =>
+        {
+            observedMessages = messages.ToList();
+            return ResponseEmitters.EmitTextResponse("Next response", cancellationToken);
+        });
+        var agent = CreateAgent(client, thread);
+
+        var restoredBlocks = await agent.RestoreAsync();
+        await CollectAsync(agent, "Next request");
+
+        Assert.Equal(
+            [
+                ChatRole.User,
+                ChatRole.Assistant,
+                ChatRole.Tool,
+                ChatRole.Assistant,
+            ],
+            restoredBlocks.OfType<RichContentBlock>().Select(block => block.Role));
+        Assert.Equal(
+            ["Initial request", "Tool requested", "Tool result", "Final response"],
+            restoredBlocks.OfType<RichContentBlock>().Select(block => block.RawText));
+        Assert.Equal(
+            [
+                ChatRole.User,
+                ChatRole.Assistant,
+                ChatRole.Tool,
+                ChatRole.Assistant,
+                ChatRole.User,
+            ],
+            observedMessages?.Select(message => message.Role));
+    }
+
+    [Fact]
+    public async Task RestoreAsync_ResetsTypedStateBeforeReplayingUpdates()
+    {
+        var thread = new InMemoryConversationThread("thread-1");
+        CommitTurn(
+            thread,
+            new ChatMessage(ChatRole.User, "Restore"),
+            new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new TestStateDeltaContent { Suffix = "Restored" }],
+            });
+        var client = new DelegatingStreamingChatClient();
+        UIAgent<TestState> agent = null!;
+        agent = new UIAgent<TestState>(client, options =>
+        {
+            options.Thread = thread;
+            options.StateMapper = context =>
+            {
+                var delta = context.UnhandledContents
+                    .OfType<TestStateDeltaContent>()
+                    .SingleOrDefault();
+                if (delta is null)
+                {
+                    return;
+                }
+
+                context.MarkHandled(delta);
+                context.SetState(new TestState
+                {
+                    Name = agent.State.Value.Name + delta.Suffix,
+                });
+            };
+        });
+        agent.State.Value = new TestState { Name = "Stale" };
+
+        await agent.RestoreAsync();
+
+        Assert.Equal("Restored", agent.State.Value.Name);
+    }
+
     private static UIAgent CreateAgent(
         IChatClient client,
         IConversationThread thread)
@@ -146,6 +335,32 @@ public class UIAgentThreadTests
 
         return blocks;
     }
+
+    private static void CommitTurn(
+        InMemoryConversationThread thread,
+        ChatMessage message,
+        params ChatResponseUpdate[] updates)
+    {
+        thread.AppendMessages([message]);
+        foreach (var update in updates)
+        {
+            thread.AppendUpdate(update);
+        }
+        thread.CompleteTurn();
+    }
+
+    private static ChatResponseUpdate CreateStateUpdate(string name)
+        => new()
+        {
+            Role = ChatRole.Assistant,
+            Contents =
+            [
+                new TestStateContent
+                {
+                    Value = new TestState { Name = name },
+                },
+            ],
+        };
 
     private static async IAsyncEnumerable<ChatResponseUpdate> EmitConversationId(
         string conversationId,
@@ -188,5 +403,10 @@ public class UIAgentThreadTests
     private sealed class TestStateContent : AIContent
     {
         public required TestState Value { get; init; }
+    }
+
+    private sealed class TestStateDeltaContent : AIContent
+    {
+        public required string Suffix { get; init; }
     }
 }

@@ -21,16 +21,17 @@ internal sealed class InMemoryConversationThread : IConversationThread
 
     public string? ConversationId { get; private set; }
 
-    public void AppendUserMessage(ChatMessage message)
+    public void AppendMessages(IEnumerable<ChatMessage> messages)
     {
-        _currentTurn =
-        [
-            new ChatResponseUpdate
+        _currentTurn = [];
+        foreach (var message in messages)
+        {
+            _currentTurn.Add(new ChatResponseUpdate
             {
                 Role = message.Role,
                 Contents = [.. message.Contents],
-            },
-        ];
+            });
+        }
     }
 
     public void AppendUpdate(ChatResponseUpdate update)
@@ -53,4 +54,6 @@ internal sealed class InMemoryConversationThread : IConversationThread
     }
 
     public IReadOnlyList<ChatResponseUpdate> GetUpdates() => _updates;
+
+    internal void Clear() => _updates.Clear();
 }

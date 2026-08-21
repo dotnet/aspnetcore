@@ -11,6 +11,8 @@ public class AgentState<T> where T : class, new()
 {
     private readonly List<Action> _callbacks = new();
     private T _value;
+    private T? _valueBeforeRestore;
+    private bool _isRestoring;
 
     internal AgentState(T? initialValue = null)
     {
@@ -27,7 +29,10 @@ public class AgentState<T> where T : class, new()
         {
             ArgumentNullException.ThrowIfNull(value);
             _value = value;
-            NotifyChanged();
+            if (!_isRestoring)
+            {
+                NotifyChanged();
+            }
         }
     }
 
@@ -41,6 +46,49 @@ public class AgentState<T> where T : class, new()
         ArgumentNullException.ThrowIfNull(callback);
         _callbacks.Add(callback);
         return new CallbackRegistration(_callbacks, callback);
+    }
+
+    internal void BeginRestore()
+    {
+        if (_isRestoring)
+        {
+            throw new InvalidOperationException("A state restore is already in progress.");
+        }
+
+        _valueBeforeRestore = _value;
+        _value = new T();
+        _isRestoring = true;
+    }
+
+    internal void CompleteRestore()
+    {
+        var valueBeforeRestore = _valueBeforeRestore;
+        _valueBeforeRestore = null;
+        _isRestoring = false;
+        var completed = false;
+        try
+        {
+            NotifyChanged();
+            completed = true;
+        }
+        finally
+        {
+            if (!completed)
+            {
+                _valueBeforeRestore = valueBeforeRestore;
+            }
+        }
+    }
+
+    internal void CancelRestore()
+    {
+        if (_valueBeforeRestore is not null)
+        {
+            _value = _valueBeforeRestore;
+            _valueBeforeRestore = null;
+        }
+
+        _isRestoring = false;
     }
 
     private void NotifyChanged()
