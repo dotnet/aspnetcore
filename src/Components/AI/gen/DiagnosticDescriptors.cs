@@ -58,8 +58,8 @@ internal static class DiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor PropertyNoSetter = new(
         id: "BAIC007",
-        title: "ToolParameter property has no setter",
-        messageFormat: "Property '{0}' has no setter — it will not be populated from the tool call",
+        title: "Tool property must have an accessible setter",
+        messageFormat: "Property '{0}' must have an accessible non-init setter and will not be populated",
         category: "BlazorAIComponents",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
@@ -80,6 +80,14 @@ internal static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    public static readonly DiagnosticDescriptor DuplicateResultKey = new(
+        id: "BAIC010",
+        title: "Duplicate result key on ToolBlock",
+        messageFormat: "A property mapping to result key '{0}' is already declared on this ToolBlock; the duplicate is ignored",
+        category: "BlazorAIComponents",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     private static readonly Dictionary<string, DiagnosticDescriptor> s_byId = new()
     {
         [NotPartial.Id] = NotPartial,
@@ -91,6 +99,7 @@ internal static class DiagnosticDescriptors
         [PropertyNoSetter.Id] = PropertyNoSetter,
         [DuplicateToolName.Id] = DuplicateToolName,
         [NestedType.Id] = NestedType,
+        [DuplicateResultKey.Id] = DuplicateResultKey,
     };
 
     public static DiagnosticDescriptor ById(string id) => s_byId[id];

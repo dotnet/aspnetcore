@@ -35,6 +35,14 @@ internal static class ToolBlockEmitter
         sb.AppendLine($"        global::Microsoft.AspNetCore.Components.AI.BlockMappingContext context,");
         sb.AppendLine($"        {blockType} state)");
         sb.AppendLine("    {");
+        sb.AppendLine("        if (state.Result is not null)");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            return global::Microsoft.AspNetCore.Components.AI");
+        sb.AppendLine($"                .BlockMappingResult<{blockType}>.Complete();");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        var shouldEmit = false;");
+        sb.AppendLine();
 
         // Phase 1: Match FunctionCallContent by tool name
         sb.AppendLine("        if (state.Call is null)");
@@ -54,6 +62,7 @@ internal static class ToolBlockEmitter
         sb.AppendLine("            {");
         sb.AppendLine("                context.MarkHandled(callContent);");
         sb.AppendLine("                state.Call = callContent;");
+        sb.AppendLine("                shouldEmit = true;");
 
         // Deserialize arguments
         if (candidate.Parameters.Count > 0)
@@ -78,9 +87,6 @@ internal static class ToolBlockEmitter
             sb.AppendLine("                }");
         }
 
-        sb.AppendLine();
-        sb.AppendLine($"                return global::Microsoft.AspNetCore.Components.AI");
-        sb.AppendLine($"                    .BlockMappingResult<{blockType}>.Emit(state, state);");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine();
@@ -125,8 +131,14 @@ internal static class ToolBlockEmitter
             else
             {
                 // Multiple result properties: treat Result as a JSON object
-                sb.AppendLine("                if (resultContent.Result is global::System.Text.Json.JsonElement __resultObj");
-                sb.AppendLine("                    && __resultObj.ValueKind == global::System.Text.Json.JsonValueKind.Object)");
+                sb.AppendLine("                var __resultObj = resultContent.Result switch");
+                sb.AppendLine("                {");
+                sb.AppendLine("                    global::System.Text.Json.JsonElement __element => __element,");
+                sb.AppendLine("                    string __json => global::System.Text.Json.JsonSerializer.Deserialize<global::System.Text.Json.JsonElement>(__json),");
+                sb.AppendLine("                    _ => global::System.Text.Json.JsonSerializer.SerializeToElement(resultContent.Result),");
+                sb.AppendLine("                };");
+                sb.AppendLine();
+                sb.AppendLine("                if (__resultObj.ValueKind == global::System.Text.Json.JsonValueKind.Object)");
                 sb.AppendLine("                {");
 
                 foreach (var rp in candidate.ResultProperties)
@@ -148,12 +160,14 @@ internal static class ToolBlockEmitter
             sb.AppendLine("            }");
         }
 
-        sb.AppendLine($"            return global::Microsoft.AspNetCore.Components.AI");
-        sb.AppendLine($"                .BlockMappingResult<{blockType}>.Complete();");
+        sb.AppendLine("            return shouldEmit");
+        sb.AppendLine($"                ? global::Microsoft.AspNetCore.Components.AI.BlockMappingResult<{blockType}>.Emit(state, state)");
+        sb.AppendLine($"                : global::Microsoft.AspNetCore.Components.AI.BlockMappingResult<{blockType}>.Complete();");
         sb.AppendLine("        }");
         sb.AppendLine();
-        sb.AppendLine($"        return global::Microsoft.AspNetCore.Components.AI");
-        sb.AppendLine($"            .BlockMappingResult<{blockType}>.Pass();");
+        sb.AppendLine("        return shouldEmit");
+        sb.AppendLine($"            ? global::Microsoft.AspNetCore.Components.AI.BlockMappingResult<{blockType}>.Emit(state, state)");
+        sb.AppendLine($"            : global::Microsoft.AspNetCore.Components.AI.BlockMappingResult<{blockType}>.Pass();");
         sb.AppendLine("    }");
         sb.AppendLine("}");
 

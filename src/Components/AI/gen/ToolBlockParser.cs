@@ -92,7 +92,7 @@ internal static class ToolBlockParser
         }
 
         var parameters = ParseParameters(classSymbol, diagnostics, ct);
-        var resultProperties = ParseResultProperties(classSymbol, ct);
+        var resultProperties = ParseResultProperties(classSymbol, diagnostics, ct);
 
         var ns = classSymbol.ContainingNamespace.IsGlobalNamespace
             ? string.Empty
@@ -124,7 +124,7 @@ internal static class ToolBlockParser
                 continue;
             }
 
-            if (prop.SetMethod is null)
+            if (!HasUsableSetter(prop))
             {
                 diagnostics.Add(new DiagnosticInfo(
                     DiagnosticDescriptors.PropertyNoSetter.Id, LocationInfo.From(prop.Locations.FirstOrDefault() ?? Location.None), prop.Name));
@@ -153,7 +153,8 @@ internal static class ToolBlockParser
         return parameters;
     }
 
-    private static List<ToolResultPropertyInfo> ParseResultProperties(INamedTypeSymbol classSymbol, CancellationToken ct)
+    private static List<ToolResultPropertyInfo> ParseResultProperties(
+        INamedTypeSymbol classSymbol, List<DiagnosticInfo> diagnostics, CancellationToken ct)
     {
         var resultProperties = new List<ToolResultPropertyInfo>();
         var seenResultKeys = new Dictionary<string, string>();
@@ -167,8 +168,10 @@ internal static class ToolBlockParser
                 continue;
             }
 
-            if (prop.SetMethod is null)
+            if (!HasUsableSetter(prop))
             {
+                diagnostics.Add(new DiagnosticInfo(
+                    DiagnosticDescriptors.PropertyNoSetter.Id, LocationInfo.From(prop.Locations.FirstOrDefault() ?? Location.None), prop.Name));
                 continue;
             }
 
@@ -176,6 +179,8 @@ internal static class ToolBlockParser
 
             if (seenResultKeys.ContainsKey(resultKey))
             {
+                diagnostics.Add(new DiagnosticInfo(
+                    DiagnosticDescriptors.DuplicateResultKey.Id, LocationInfo.From(prop.Locations.FirstOrDefault() ?? Location.None), resultKey));
                 continue;
             }
 
@@ -191,6 +196,16 @@ internal static class ToolBlockParser
 
         return resultProperties;
     }
+
+    private static bool HasUsableSetter(IPropertySymbol property)
+        => property.SetMethod is
+            {
+                IsInitOnly: false,
+                DeclaredAccessibility:
+                    Accessibility.Public or
+                    Accessibility.Internal or
+                    Accessibility.ProtectedOrInternal,
+            };
 
     private static bool HasAttribute(IPropertySymbol prop, string attributeFullName, out AttributeData? attribute)
     {

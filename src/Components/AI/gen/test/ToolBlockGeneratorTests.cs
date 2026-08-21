@@ -42,6 +42,8 @@ public class ToolBlockGeneratorTests
         Assert.Contains("fc.Name == \"get_weather\"", handler);
         Assert.Contains("args.TryGetValue(\"location\"", handler);
         Assert.Contains("JsonSerializer.Deserialize<global::TestApp.WeatherInfo>(__json)", handler);
+        Assert.Contains("var shouldEmit = false;", handler);
+        Assert.Contains("return shouldEmit", handler);
         var registration = GetGeneratedSource(
             run.Result,
             "GeneratedToolBlockRegistrations.g.cs");
@@ -111,7 +113,7 @@ public class ToolBlockGeneratorTests
     }
 
     [Fact]
-    public void DuplicateParameterAndReadOnlyProperty_ReportDiagnostics()
+    public void InvalidPropertyMappings_ReportDiagnostics()
     {
         var source = """
             using Microsoft.AspNetCore.Components.AI;
@@ -127,15 +129,32 @@ public class ToolBlockGeneratorTests
 
                 [ToolParameter]
                 public string? ReadOnly { get; }
+
+                [ToolParameter]
+                public string? PrivateParameter { get; private set; }
+
+                [ToolParameter]
+                public string? InitParameter { get; init; }
+
+                [ToolResult(Name = "value")]
+                public string? PrivateResult { get; private set; }
+
+                [ToolResult(Name = "duplicate")]
+                public string? FirstResult { get; set; }
+
+                [ToolResult(Name = "duplicate")]
+                public string? DuplicateResult { get; set; }
             }
             """;
 
         var run = RunGenerator(source);
 
-        Assert.Collection(
-            run.GeneratorDiagnostics.OrderBy(diagnostic => diagnostic.Id),
-            diagnostic => Assert.Equal("BAIC006", diagnostic.Id),
-            diagnostic => Assert.Equal("BAIC007", diagnostic.Id));
+        Assert.Equal(
+            ["BAIC006", "BAIC007", "BAIC007", "BAIC007", "BAIC007", "BAIC010"],
+            run.GeneratorDiagnostics
+                .Select(diagnostic => diagnostic.Id)
+                .Order()
+                .ToArray());
         AssertNoCompilationErrors(run.OutputCompilation);
     }
 
@@ -185,6 +204,34 @@ public class ToolBlockGeneratorTests
         Assert.Contains("GetInt32()", handler);
         Assert.Contains("GetBoolean()", handler);
         Assert.Contains("GetDouble()", handler);
+    }
+
+    [Fact]
+    public void MultipleResultProperties_HandleJsonStringsAndClrObjects()
+    {
+        var source = """
+            using Microsoft.AspNetCore.Components.AI;
+
+            [ToolBlock("get_weather")]
+            public partial class WeatherBlock : FunctionInvocationContentBlock
+            {
+                [ToolResult]
+                public int Temperature { get; set; }
+
+                [ToolResult]
+                public string? Conditions { get; set; }
+            }
+            """;
+
+        var run = RunGenerator(source);
+
+        Assert.Empty(run.GeneratorDiagnostics);
+        AssertNoCompilationErrors(run.OutputCompilation);
+        var handler = GetGeneratedSource(run.Result, "WeatherBlockHandler.g.cs");
+        Assert.Contains(
+            "JsonSerializer.Deserialize<global::System.Text.Json.JsonElement>(__json)",
+            handler);
+        Assert.Contains("JsonSerializer.SerializeToElement(resultContent.Result)", handler);
     }
 
     [Fact]

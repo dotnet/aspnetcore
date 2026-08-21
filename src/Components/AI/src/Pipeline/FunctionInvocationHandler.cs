@@ -11,15 +11,22 @@ internal sealed class FunctionInvocationHandler : ContentBlockHandler<FunctionIn
         BlockMappingContext context,
         FunctionInvocationContentBlock state)
     {
+        if (state.Result is not null)
+        {
+            return BlockMappingResult<FunctionInvocationContentBlock>.Complete();
+        }
+
+        var shouldEmit = false;
         if (state.Call is null)
         {
             foreach (var content in context.UnhandledContents)
             {
-                if (content is FunctionCallContent call)
+                if (content is FunctionCallContent { InformationalOnly: false } call)
                 {
                     context.MarkHandled(call);
                     state.Call = call;
-                    return BlockMappingResult<FunctionInvocationContentBlock>.Emit(state, state);
+                    shouldEmit = true;
+                    break;
                 }
             }
         }
@@ -33,11 +40,15 @@ internal sealed class FunctionInvocationHandler : ContentBlockHandler<FunctionIn
                 {
                     context.MarkHandled(result);
                     state.Result = result;
-                    return BlockMappingResult<FunctionInvocationContentBlock>.Complete();
+                    return shouldEmit
+                        ? BlockMappingResult<FunctionInvocationContentBlock>.Emit(state, state)
+                        : BlockMappingResult<FunctionInvocationContentBlock>.Complete();
                 }
             }
         }
 
-        return BlockMappingResult<FunctionInvocationContentBlock>.Pass();
+        return shouldEmit
+            ? BlockMappingResult<FunctionInvocationContentBlock>.Emit(state, state)
+            : BlockMappingResult<FunctionInvocationContentBlock>.Pass();
     }
 }

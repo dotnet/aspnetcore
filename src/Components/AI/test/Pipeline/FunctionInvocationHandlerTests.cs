@@ -23,6 +23,25 @@ public class FunctionInvocationHandlerTests
     }
 
     [Fact]
+    public async Task InformationalOnlyCallBeforeNormalCall_MapsOnlyNormalCallAndResult()
+    {
+        var pipeline = CreatePipeline();
+        var informationalCall = CreateCall("call-informational", "get_weather");
+        informationalCall.InformationalOnly = true;
+        var informationalResult = new FunctionResultContent("call-informational", "ignored");
+        var call = CreateCall("call-1", "get_weather");
+        var result = new FunctionResultContent("call-1", "sunny");
+
+        var blocks = await ProcessAsync(
+            pipeline,
+            CreateUpdate(informationalCall, informationalResult, call, result));
+
+        var block = Assert.IsType<FunctionInvocationContentBlock>(Assert.Single(blocks));
+        Assert.Same(call, block.Call);
+        Assert.Same(result, block.Result);
+    }
+
+    [Fact]
     public async Task MatchingResult_CompletesAndNotifiesInvocationBlock()
     {
         var pipeline = CreatePipeline();
