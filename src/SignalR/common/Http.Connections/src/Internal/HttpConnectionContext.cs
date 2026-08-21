@@ -472,7 +472,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
-    private Task<bool> DefaultOnAuthenticationRefreshAsync(AuthenticationRefreshContext context)
+    private static Task<bool> DefaultOnAuthenticationRefreshAsync(AuthenticationRefreshContext context)
         => IsUserRefreshAcceptedByDefault(context.PreviousUser, context.NewUser) ? TaskCache.True : TaskCache.False;
 
     private static bool IsUserRefreshAcceptedByDefault(ClaimsPrincipal? currentUser, ClaimsPrincipal user)
