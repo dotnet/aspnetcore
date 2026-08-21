@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @implements IDisposable
 @inject ILoggerFactory LoggerFactory
+@using System.Text.RegularExpressions
 
 <PageTitle>Tool-Based Generative UI</PageTitle>
 
@@ -34,6 +35,11 @@
 </div>
 
 @code {
+    private const string DefaultGradient = "linear-gradient(135deg, #667eea, #764ba2)";
+    private static readonly Regex s_safeGradientPattern = new(
+        @"\Alinear-gradient\(\s*\d{1,3}deg\s*,\s*#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\s*,\s*#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\s*\)\z",
+        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
+
     private UIAgent _agent = default!;
     private List<HaikuData> _haikus = [];
     private int _currentIndex;
@@ -64,7 +70,7 @@
             Japanese = japanese,
             English = english,
             ImageName = image_name,
-            Gradient = gradient,
+            Gradient = GetSafeGradient(gradient),
         });
         _currentIndex = _haikus.Count - 1;
         _ = InvokeAsync(StateHasChanged);
@@ -88,11 +94,14 @@
             {
                 Japanese = ["\u3053\u3053\u306b\u4e00\u53e5", "\u4eee\u306e\u3046\u305f\u7f6e\u304f", "\u6625\u3092\u5f85\u3064"],
                 English = ["A placeholder verse\u2014", "Resting here for now,", "Awaiting your words."],
-                Gradient = "linear-gradient(135deg, #667eea, #764ba2)",
+                Gradient = DefaultGradient,
             }
         ];
         _currentIndex = 0;
     }
+
+    internal static string GetSafeGradient(string gradient)
+        => s_safeGradientPattern.IsMatch(gradient) ? gradient : DefaultGradient;
 
     public void Dispose() => _agent?.Dispose();
 }
