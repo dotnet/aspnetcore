@@ -12,6 +12,7 @@ public class AgentContextApprovalTests
     [Fact]
     public async Task ApprovalAndUIAction_ContinueWithSeparateRoleMessages()
     {
+        var thread = new InMemoryConversationThread("thread-1");
         List<ChatMessage>? continuationMessages = null;
         var callCount = 0;
         var client = new DelegatingStreamingChatClient();
@@ -28,6 +29,7 @@ public class AgentContextApprovalTests
         });
         using var agent = new UIAgent(client, options =>
         {
+            options.Thread = thread;
             options.RegisterUIAction(AIFunctionFactory.Create(
                 () => "client-result",
                 "client_action",
@@ -57,6 +59,7 @@ public class AgentContextApprovalTests
             message => message.Contents.OfType<ToolApprovalResponseContent>().Any());
         Assert.Equal(ChatRole.User, approvalMessage.Role);
         Assert.Single(approvalMessage.Contents);
+        Assert.Contains(thread.GetUpdates(), update => update.Role == ChatRole.Tool);
     }
 
     [Theory]

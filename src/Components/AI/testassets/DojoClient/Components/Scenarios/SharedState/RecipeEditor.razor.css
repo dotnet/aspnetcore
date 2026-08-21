@@ -1,0 +1,136 @@
+.recipe-editor {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+    max-width: 600px;
+    padding: 24px;
+}
+
+.recipe-editor__section {
+    border-radius: 8px;
+    margin-bottom: 20px;
+    position: relative;
+    transition: background 0.2s ease;
+}
+
+.recipe-editor__section--changed {
+    background: rgb(232 121 90 / 4%);
+}
+
+.recipe-editor__section--changed::after {
+    background: #e8795a;
+    border-radius: 50%;
+    content: "";
+    height: 8px;
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    width: 8px;
+}
+
+.recipe-editor__section > label:first-child,
+.recipe-editor__field > label:first-child {
+    color: #1a1a1a;
+    display: block;
+    font-size: 1em;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.recipe-editor__row {
+    display: flex;
+    gap: 16px;
+}
+
+.recipe-editor__field {
+    flex: 1;
+}
+
+.recipe-editor input[type="text"],
+.recipe-editor select {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    box-sizing: border-box;
+    color: #333;
+    font-size: 0.9em;
+    padding: 8px 12px;
+    width: 100%;
+}
+
+.recipe-editor__checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.recipe-editor__checkbox {
+    align-items: center;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    font-size: 0.9em;
+    gap: 6px;
+}
+
+.recipe-editor__instruction {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.recipe-editor__step-num {
+    align-items: center;
+    background: #e8795a;
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 0.75em;
+    font-weight: 600;
+    height: 24px;
+    justify-content: center;
+    width: 24px;
+}
+
+.recipe-editor__add-btn,
+.recipe-editor__improve-btn {
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.recipe-editor__add-btn {
+    background: transparent;
+    border: 1px solid #e8795a;
+    color: #e8795a;
+    margin-top: 4px;
+    padding: 6px 14px;
+}
+
+.recipe-editor__remove-btn {
+    background: transparent;
+    border: 0;
+    color: #9ca3af;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 0.8em;
+    height: 24px;
+    width: 24px;
+}
+
+.recipe-editor__improve-btn {
+    background: #e8795a;
+    border: 0;
+    color: #fff;
+    display: block;
+    margin-top: 16px;
+    padding: 12px;
+    width: 100%;
+}
+
+.recipe-editor__improve-btn:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}

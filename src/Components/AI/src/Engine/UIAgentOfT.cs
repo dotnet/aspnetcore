@@ -72,6 +72,12 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
     /// </summary>
     public AgentState<TState> State { get; }
 
+    internal override void BeginStateRestore() => State.BeginRestore();
+
+    internal override void CompleteStateRestore() => State.CompleteRestore();
+
+    internal override void CancelStateRestore() => State.CancelRestore();
+
     internal override ChatResponseUpdate ApplyStateMapper(ChatResponseUpdate update)
     {
         if (Options.StateMapper is null)

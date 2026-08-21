@@ -93,6 +93,62 @@ public class AgentContext : IDisposable
     }
 
     /// <summary>
+    /// Restores the committed turns from the agent's configured conversation thread.
+    /// </summary>
+    /// <param name="cancellationToken">A token that cancels restoration.</param>
+    /// <returns>A task that completes when the turns have been restored.</returns>
+    public async Task RestoreAsync(CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (Status is ConversationStatus.Streaming or ConversationStatus.AwaitingInput)
+        {
+            throw new InvalidOperationException("A message is already being processed.");
+        }
+
+        var blocks = await _agent.RestoreAsync(cancellationToken);
+        var restoredTurns = new List<ConversationTurn>();
+        ConversationTurn? currentTurn = null;
+        foreach (var block in blocks)
+        {
+            if (block.Role == ChatRole.User)
+            {
+                currentTurn = new ConversationTurn();
+                restoredTurns.Add(currentTurn);
+                currentTurn.AddRequestBlock(block);
+            }
+            else if (block.Role == ChatRole.Tool)
+            {
+                if (currentTurn is null)
+                {
+                    currentTurn = new ConversationTurn();
+                    restoredTurns.Add(currentTurn);
+                }
+
+                currentTurn.AddRequestBlock(block);
+            }
+            else
+            {
+                if (currentTurn is null)
+                {
+                    currentTurn = new ConversationTurn();
+                    restoredTurns.Add(currentTurn);
+                }
+
+                currentTurn.AddResponseBlock(block);
+            }
+        }
+
+        _turns.Clear();
+        _turns.AddRange(restoredTurns);
+        _streamingCts?.Dispose();
+        _streamingCts = null;
+        _lastMessage = null;
+        Error = null;
+        Status = ConversationStatus.Idle;
+    }
+
+    /// <summary>
     /// Replays the last message after a failed turn.
     /// </summary>
     /// <param name="cancellationToken">A token that cancels the response.</param>

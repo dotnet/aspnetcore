@@ -48,6 +48,12 @@ app.MapDojoEndpoint(
     systemPrompt: ChatClientAgentFactory.AgenticGenerativeUISystemPrompt,
     configureStreamOptions: _ =>
         ChatClientAgentFactory.CreateAgenticGenerativeUIStreamOptions());
+app.MapDojoEndpoint(
+    "/shared_state",
+    serverTools: ChatClientAgentFactory.CreateSharedStateTools(
+        jsonOptions.Value.SerializerOptions),
+    systemPrompt: ChatClientAgentFactory.SharedStateSystemPrompt,
+    configureStreamOptions: _ => ChatClientAgentFactory.CreateSharedStateStreamOptions());
 
 await app.RunAsync();
 

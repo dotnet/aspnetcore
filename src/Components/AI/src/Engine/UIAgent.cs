@@ -117,11 +117,14 @@ public class UIAgent : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
+        var thread = _options.Thread;
         foreach (var message in messages)
         {
             ArgumentNullException.ThrowIfNull(message);
             _history.Add(message);
         }
+
+        thread?.AppendMessages(messages);
 
         var pipeline = new BlockMappingPipeline(_options, _logger);
 
@@ -149,12 +152,19 @@ public class UIAgent : IDisposable
         var assistantUpdates = new List<ChatResponseUpdate>();
         var updateIndex = 0;
         var chatOptions = BuildChatOptions();
+        if (thread is { IsStateful: true, ConversationId: not null })
+        {
+            chatOptions = chatOptions?.Clone() ?? new ChatOptions();
+            chatOptions.ConversationId = thread.ConversationId;
+        }
 
         await foreach (var update in _chatClient.GetStreamingResponseAsync(
             _history, chatOptions, cancellationToken).ConfigureAwait(false))
         {
             var contentTypes = string.Join(", ", update.Contents.Select(c => c.GetType().Name));
             UIAgentLog.ReceivedUpdate(_logger, updateIndex++, update.Role?.Value, contentTypes);
+
+            thread?.AppendUpdate(update);
 
             var processUpdate = ApplyStateMapper(update);
             if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
@@ -183,7 +193,110 @@ public class UIAgent : IDisposable
             _history.Add(msg);
         }
 
+        thread?.CompleteTurn();
         UIAgentLog.AddedToHistory(_logger, response.Messages.Count);
+    }
+
+    /// <summary>
+    /// Restores the committed conversation and typed state from the configured thread.
+    /// </summary>
+    /// <remarks>
+    /// Restoration replaces the current history and typed state only after all committed
+    /// updates have been replayed successfully.
+    /// </remarks>
+    /// <param name="cancellationToken">A token that cancels restoration.</param>
+    /// <returns>The restored content blocks in chronological order.</returns>
+    public async Task<IReadOnlyList<ContentBlock>> RestoreAsync(
+        CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        var previousHistory = _history.ToArray();
+        var restoredHistory = new List<ChatMessage>();
+        var updates = _options.Thread?.GetUpdates() ?? [];
+        var blocks = new List<ContentBlock>();
+        var pipeline = new BlockMappingPipeline(_options, _logger);
+        var assistantUpdates = new List<ChatResponseUpdate>();
+
+        BeginStateRestore();
+        var restoreCompleted = false;
+        try
+        {
+            foreach (var update in updates)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (IsRequestRole(update.Role))
+                {
+                    if (assistantUpdates.Count > 0)
+                    {
+                        AddResponseToHistory(assistantUpdates, restoredHistory);
+                        assistantUpdates.Clear();
+
+                        blocks.AddRange(pipeline.Finalize());
+                        pipeline = new BlockMappingPipeline(_options, _logger);
+                    }
+
+                    restoredHistory.Add(new ChatMessage(update.Role!.Value, [.. update.Contents]));
+                    await foreach (var block in pipeline.Process(update, cancellationToken).ConfigureAwait(false))
+                    {
+                        blocks.Add(block);
+                    }
+
+                    blocks.AddRange(pipeline.Finalize());
+                    pipeline = new BlockMappingPipeline(_options, _logger);
+                }
+                else
+                {
+                    var processUpdate = ApplyStateMapper(update);
+                    if (processUpdate.Contents.Count == 0 && update.Contents.Count > 0)
+                    {
+                        continue;
+                    }
+
+                    assistantUpdates.Add(processUpdate);
+                    await foreach (var block in pipeline.Process(processUpdate, cancellationToken).ConfigureAwait(false))
+                    {
+                        blocks.Add(block);
+                    }
+                }
+            }
+
+            if (assistantUpdates.Count > 0)
+            {
+                AddResponseToHistory(assistantUpdates, restoredHistory);
+            }
+
+            blocks.AddRange(pipeline.Finalize());
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _history.Clear();
+            _history.AddRange(restoredHistory);
+            CompleteStateRestore();
+            restoreCompleted = true;
+            return blocks;
+        }
+        finally
+        {
+            if (!restoreCompleted)
+            {
+                _history.Clear();
+                _history.AddRange(previousHistory);
+                CancelStateRestore();
+            }
+        }
+    }
+
+    internal virtual void BeginStateRestore()
+    {
+    }
+
+    internal virtual void CompleteStateRestore()
+    {
+    }
+
+    internal virtual void CancelStateRestore()
+    {
     }
 
     internal virtual ChatResponseUpdate ApplyStateMapper(ChatResponseUpdate update)
@@ -198,6 +311,20 @@ public class UIAgent : IDisposable
 
         return context.HasHandledContent ? context.GetFilteredUpdate() : update;
     }
+
+    private static void AddResponseToHistory(
+        List<ChatResponseUpdate> updates,
+        List<ChatMessage> history)
+    {
+        var response = updates.ToChatResponse();
+        foreach (var message in response.Messages)
+        {
+            history.Add(message);
+        }
+    }
+
+    private static bool IsRequestRole(ChatRole? role)
+        => role == ChatRole.User || role == ChatRole.Tool;
 
     private ChatOptions? BuildChatOptions()
     {
