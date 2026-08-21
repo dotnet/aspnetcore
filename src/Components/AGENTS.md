@@ -165,6 +165,126 @@ Before expanding validation across this full matrix, state the render modes and 
 
 6. **Clean up sample code** - After the selected permanent tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the selected tests now provide the permanent coverage. Use `git checkout -- src/Components/Samples src/Components/WebAssembly/Samples` and `git clean -df -- src/Components/Samples src/Components/WebAssembly/Samples` to remove the sample code.
 
+## Design invariants
+
+These are long-standing design rules for framework code in this area. Each one lists its real
+exceptions - respect those, because the exceptions are legitimate existing patterns, not
+violations to clean up.
+
+### Render modes
+
+- **Framework components must be render-mode agnostic** so they work when consumed from a
+  Razor Class Library. Framework components never use `@rendermode` to force a mode - it is a
+  choice for the app that consumes the component, not for the component itself.
+- **Exception:** a deliberately small set of render-mode-specific components ships in
+  `Microsoft.AspNetCore.Components.Endpoints` for static SSR - `CacheView`, `BasePath`,
+  `ImportMap`, and `ResourcePreloader`. Keep that set small; do not add to it without a strong
+  reason.
+- Public APIs should work in every render mode. The exception is APIs defined in a concrete
+  render-mode assembly (`Endpoints`, `Server`, `WebAssembly`, `WebView`), which are not
+  intended for class-library consumption. Anything meant to be consumed broadly belongs in an
+  agnostic assembly such as `Components`, `Web`, or `Forms`.
+
+### Accessing `HttpContext`
+
+- **Do not use `IHttpContextAccessor`** in framework components or framework services. It does
+  not exist in any render mode other than static SSR.
+- Components receive it as a cascading parameter instead - note the consuming attribute is
+  `[CascadingParameter]`:
+
+  ```csharp
+  [CascadingParameter] public HttpContext? HttpContext { get; set; }
+  ```
+
+  See `Endpoints/src/Assets/ImportMap.cs` and `Endpoints/src/CacheView/CacheView.cs`.
+- Services take `HttpContext` as a **method parameter**, never as a constructor dependency.
+  `EndpointAntiforgeryStateProvider` is the reference: it takes `IAntiforgery` in its
+  constructor and receives the context through `SetRequestContext(HttpContext)`, then falls
+  back to persisted state when there is no context.
+
+### Registering services across render modes
+
+New functionality must register the services it needs for **every** render mode it supports.
+A feature consumed by class libraries needs a render-mode-agnostic abstraction that each
+hosting environment implements. Antiforgery is the reference pattern:
+
+- `AntiforgeryStateProvider` - abstract, in `Web/src/Forms/`
+- `DefaultAntiforgeryStateProvider` - shared default, in `Shared/src/`
+- `EndpointAntiforgeryStateProvider` - SSR implementation, in `Endpoints/src/Forms/`
+- registered once per host: `Endpoints` (`RazorComponentsServiceCollectionExtensions`),
+  `Server` (`ComponentServiceCollectionExtensions`), and `WebAssembly`
+  (`WebAssemblyHostBuilder`), with `AddPersistentServiceRegistration` covering `InteractiveAuto`
+
+Form binding follows the same shape: the `IFormValueMapper` abstraction lives in
+`Web/src/Forms/Mapping/`, and `Endpoints` supplies `HttpContextFormValueMapper`. Copy this
+pattern rather than inventing a new one.
+
+### Rendering and the synchronization context
+
+- **Do not call `StateHasChanged()` where `ComponentBase` already re-renders for you.** Inside
+  `OnInitialized[Async]`, `OnParametersSet[Async]`, and event-callback handlers, a call before
+  the first `await` or after the last `await` is redundant, because `ComponentBase` renders
+  after those anyway. This is enforced by analyzer **`BL0012`**
+  (`Analyzers/src/StateHasChangedAnalyzer.cs`).
+- **That scope is narrow, and calls outside it are usually required.** `BL0012` deliberately
+  targets only those methods, so before flagging a call, check whether it is one of these
+  legitimate cases:
+  - `OnAfterRender[Async]`, which does **not** trigger an automatic re-render - see
+    `ComponentBase.IHandleAfterRender.OnAfterRenderAsync`, and `Web/src/Head/HeadOutlet.cs`
+    for a component that relies on this
+  - ordinary helper methods, such as those in `Web/src/Virtualization/Virtualize.cs`
+  - handlers for external events, such as `Web/src/Routing/NavLink.cs` reacting to
+    `LocationChanged`
+  - lambdas and local functions, which the analyzer explicitly skips because they have their
+    own execution timing - see `Web/src/Forms/ValidationMessage.cs`
+- **Do not call `InvokeAsync` to re-enter a synchronization context you are already on.**
+  Framework code enters the renderer's context at well-defined dispatch points and should not
+  leave it on its own.
+- **Exception:** marshalling an **external** callback back onto the renderer's context is
+  exactly what `InvokeAsync` is for. See `Authorization/src/CascadingAuthenticationState.razor`,
+  where `AuthenticationStateChanged` arrives off-context, and the QuickGrid components.
+- `Dispatcher.InvokeAsync` in hosting infrastructure (`CircuitHost`, `EndpointHtmlRenderer`,
+  `WebViewManager`, `RemoteRenderer`) *is* the well-defined dispatch point, not a violation.
+  `EventCallback.InvokeAsync` is an unrelated API for invoking a callback - it is not affected
+  by this rule.
+
+### Components and events
+
+- **Do not implement `IHandleEvent` in new components.** `ComponentBase` already implements it
+  and provides the automatic re-render after event handlers; implementing it yourself opts out
+  of that behavior. Tests that implement it directly are exercising that opt-out deliberately.
+
+### Trimming and AOT
+
+Trim and AOT safety is handled with **annotations**, not by banning reflection:
+`[DynamicallyAccessedMembers]`, `[RequiresUnreferencedCode]`, and `[RequiresDynamicCode]`.
+Annotate new reflection-based code rather than avoiding reflection outright. Do not propose a
+blanket no-reflection or source-generated-serialization-only rule - JS interop itself depends
+on annotated reflection. `JsonSerializerContext` is still the right tool where it fits, such as
+`Endpoints/src/Assets/ImportMapSerializerContext.cs`.
+
+### Dependencies
+
+**No new dependencies as a default.** Almost every shipping project in this area has zero
+`<PackageReference>` entries and uses `<Reference Include="..." />` for framework references
+instead. The few exceptions are inherent to what the project is - the analyzer needs Roslyn,
+and `Gateway` needs OpenTelemetry. Adding a package reference to a shipping Components project
+needs an explicit justification.
+
+### Coordinating async work in tests
+
+Prefer `TaskCompletionSource` to coordinate async work; it is the dominant pattern in this
+area. Avoid `Task.Delay` and `Thread.Sleep` as a way to wait for something to happen, since
+that is what makes tests flaky.
+
+**Legitimate exceptions - do not "fix" these:**
+
+- E2E/Selenium polling and retry loops, which must wait on a real browser
+- tests that assert on measured duration, such as the metrics tests
+- analyzer test fixtures, where `await Task.Delay(1)` is the *source text being analyzed*
+  rather than test coordination
+- deliberately simulating slow async work
+
 ## Build Tips
 
 ### Build and retry discipline
@@ -381,6 +501,10 @@ The Selenium E2E tests are located in `src/Components/test/E2ETest`.
 For telemetry or distributed-state behavior, assert the real consumer-visible output rather than only an internal component probe. Capture exported activities, metrics, or state; correlate the scenario with a unique test ID and expose a test endpoint when needed; and assert operation names, tags, links, and platform-specific metadata relevant to the contract.
 
 ### Running E2E Tests
+
+Playwright MCP is used for manual interactive validation of Components samples, not as this
+suite's E2E framework. Adding another Components E2E framework requires agreement from
+Components maintainers.
 
 This E2E suite uses Selenium. To build and run tests:
 
