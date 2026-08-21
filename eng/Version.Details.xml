@@ -338,21 +338,21 @@
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <!-- These versions are manually updated -->
-    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.13.0-3.24613.7" Label="Manual">
+    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="5.10.0-1.26357.6" Label="Manual">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>06f095f368c0ea9d54c80e313279574da9d96ea3</Sha>
+      <Sha>97ee762dcf4f7135ff591ebf24b6f1dab3fe0632</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.13.0-3.24613.7" Label="Manual">
+    <Dependency Name="Microsoft.CodeAnalysis.Features.ExternalAccess" Version="5.10.0-1.26357.6" Label="Manual">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
+      <Sha>97ee762dcf4f7135ff591ebf24b6f1dab3fe0632</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.13.0-3.24613.7" Label="Manual">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="5.10.0-1.26357.6" Label="Manual">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
+      <Sha>97ee762dcf4f7135ff591ebf24b6f1dab3fe0632</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0-3.24613.7" Label="Manual">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.10.0-1.26357.6" Label="Manual">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
+      <Sha>97ee762dcf4f7135ff591ebf24b6f1dab3fe0632</Sha>
     </Dependency>
     <!-- End of manually updated dependencies -->
     <Dependency Name="Microsoft.Bcl.Cryptography" Version="11.0.0-rc.1.26411.119">
