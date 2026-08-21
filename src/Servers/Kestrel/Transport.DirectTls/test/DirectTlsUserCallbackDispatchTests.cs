@@ -15,13 +15,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectTls.Tests;
 
 /// <summary>
-/// Covers the guarantee that user-supplied handshake callbacks - the server-certificate selector and the
-/// ClientHello listener - never run on a pump's epoll thread. Every test pins the transport to a single pump
+/// Covers the guarantee that user-supplied handshake callbacks - the server-certificate selector, the
+/// ClientHello listener and client-certificate validation - never run on a pump's epoll thread. Every test pins the transport to a single pump
 /// (<c>WorkerCount = 1</c>) so all connections are provably owned by the same event loop: if a callback were
 /// still invoked inline, one slow or throwing connection would stall or break every other connection here.
 /// </summary>
@@ -187,6 +188,69 @@ public class DirectTlsUserCallbackDispatchTests
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
+    public async Task BlockingClientCertificateValidation_DoesNotStallHandshakesOnTheSamePump()
+    {
+        // Client-certificate validation is the third suspension site, and the odd one out: it runs after the
+        // handshake already reported Complete, so the blocked connection is one the pump has not yet surfaced
+        // to Kestrel rather than one still negotiating. Parking it must not stop the pump from driving other
+        // connections to a served request.
+        var blockedOnce = 0;
+        string validationThreadName = null;
+        using var validationEntered = new SemaphoreSlim(0);
+        using var releaseValidation = new ManualResetEventSlim(false);
+
+        var endpoint = new DirectTlsEndpoint(IPAddress.Loopback, 0);
+        endpoint.Options.ServerCertificate = TestResources.GetTestCertificate();
+        endpoint.Options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+        endpoint.Options.ClientCertificateValidation = (certificate, chain, errors) =>
+        {
+            // Only the first connection blocks; everything after it validates immediately.
+            if (Interlocked.Exchange(ref blockedOnce, 1) == 0)
+            {
+                // Published before the release below, so the test thread observes it after the wait.
+                validationThreadName = Thread.CurrentThread.Name;
+                validationEntered.Release();
+                releaseValidation.Wait(Timeout);
+            }
+
+            return true;
+        };
+
+        try
+        {
+            using var host = await StartHostAsync(endpoint, options => options.WorkerCount = 1);
+            var port = host.GetPort();
+            var clientCertificate = TestResources.GetTestCertificate("eku.client.pfx");
+
+            // The TLS handshake can finish on the client before the server runs validation, so this connect may
+            // complete while the server side is still parked. Either way the request cannot be served until the
+            // callback returns, so the response is only read after the release below.
+            var blocked = ConnectAsync(port, clientCertificate);
+            Assert.True(await validationEntered.WaitAsync(Timeout));
+
+            // The pump owns both connections (WorkerCount = 1). If validation were still inline, this second
+            // handshake could not even start, let alone be served.
+            using var progressing = await ConnectAsync(port, clientCertificate).WaitAsync(ProgressTimeout);
+            Assert.Contains("200 OK", await SendRequestAsync(progressing));
+
+            releaseValidation.Set();
+
+            using var resumed = await blocked.WaitAsync(Timeout);
+            Assert.Contains("200 OK", await SendRequestAsync(resumed));
+
+            // Pump threads are named TlsEventPump-{id}; the callback must have run somewhere else.
+            Assert.DoesNotContain("TlsEventPump-", validationThreadName ?? string.Empty);
+
+            await host.StopAsync().WaitAsync(Timeout);
+        }
+        finally
+        {
+            releaseValidation.Set();
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
     public async Task ShutdownWhileCallbackIsParked_CompletesWithoutLeakingTheConnection()
     {
         var certificate = TestResources.GetTestCertificate();
@@ -239,7 +303,7 @@ public class DirectTlsUserCallbackDispatchTests
         return host;
     }
 
-    private static async Task<SslStream> ConnectAsync(int port)
+    private static async Task<SslStream> ConnectAsync(int port, X509Certificate2 clientCertificate = null)
     {
         var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         await socket.ConnectAsync(IPAddress.Loopback, port);
@@ -251,11 +315,18 @@ public class DirectTlsUserCallbackDispatchTests
 
         try
         {
-            await sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
+            var clientOptions = new SslClientAuthenticationOptions
             {
                 TargetHost = "localhost",
                 ApplicationProtocols = [SslApplicationProtocol.Http11],
-            });
+            };
+
+            if (clientCertificate is not null)
+            {
+                clientOptions.ClientCertificates = [clientCertificate];
+            }
+
+            await sslStream.AuthenticateAsClientAsync(clientOptions);
         }
         catch
         {

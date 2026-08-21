@@ -117,16 +117,19 @@ public class DirectTlsContextResolverFastPathTests
 
             var threadName = await resolverThreadName.Task.WaitAsync(Timeout);
 
-            // Observe the handshake so a failure after the resolver ran does not surface as an unobserved
-            // exception; the assertion under test is about the resolver's thread, not the handshake's outcome.
-            await handshake.ContinueWith(static _ => { }, TaskScheduler.Default);
+            // The resolver ran off the pump, but the handshake itself must still succeed: these tests use a
+            // real certificate and a permissive client callback, so a failure here means something broke.
+            await handshake.WaitAsync(Timeout);
 
             return threadName;
         }
         finally
         {
             await listener.DisposeAsync();
-            await drain.ContinueWith(static _ => { }, TaskScheduler.Default);
+
+            // DisposeAsync completes the accept channel, so the drain loop ends on its own. Awaiting it keeps
+            // the loop from outliving the test and surfaces any failure it hit.
+            await drain.WaitAsync(Timeout);
         }
     }
 }
