@@ -8,13 +8,13 @@
 ##endif*@
     <Found Context="routeData">
         @*#if (IndividualLocalAuth)
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
             <NotAuthorized>
                 <RedirectToLogin />
             </NotAuthorized>
         </AuthorizeRouteView>
         ##else
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
         ##endif*@
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
