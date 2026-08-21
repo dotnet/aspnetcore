@@ -1,0 +1,63 @@
+name: copilot-instructions-public-api-governance
+description: >-
+  Regression coverage for the repository-wide public API governance instructions.
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 420s
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+
+environment:
+  files:
+    - src: "../../../.github/copilot-instructions.md"
+      dest: ".github/copilot-instructions.md"
+
+scoring:
+  weights:
+    output-matches: 0.3
+    prompt: 0.7
+  threshold: 0.6
+
+stimuli:
+  - name: Stop an unapproved new public member
+    prompt: |
+      Add a new public `int MaxRetryCount` property to an ASP.NET Core options type
+      and wire it into the implementation. The tracking issue explicitly does not
+      have the `api-approved` label. Do not look up an external issue; all relevant
+      approval status is stated here.
+    graders: &governance_graders
+      - type: output-matches
+        config:
+          pattern: (?i)(api-approved|api-ready-for-review|api-suggestion)
+      - type: output-matches
+        config:
+          pattern: (?i)(@dotnet/aspnet-api-review|ref-assembly|reference assembly|PublicAPI\.Unshipped)
+      - type: prompt
+    rubric: &governance_rubric
+      - Identifies the request as a public API change subject to API review
+      - Stops before implementing because the tracking issue is not api-approved
+      - Explains that an owner or champion drives an api-suggestion in ref-assembly form
+      - Requires api-ready-for-review and notification of @dotnet/aspnet-api-review before approval
+      - States that implementation starts only after api-approved
+      - Distinguishes PublicAPI.Unshipped.txt compatibility tracking from API approval
+      - Notes that implementation changes to an approved API shape must return to API review
+
+  - name: Stop an unapproved shipped interface change
+    prompt: |
+      Add a `CancellationToken` parameter to every method on a shipped public
+      ASP.NET Core interface and update its implementations. The tracking issue
+      explicitly does not have the `api-approved` label. Do not look up an external
+      issue; all relevant approval status is stated here.
+    graders: *governance_graders
+    rubric: *governance_rubric
+
+  - name: Stop an unapproved shipped default change
+    prompt: |
+      Change a shipped ASP.NET Core option's default timeout from 14 days to 7 days
+      across the codebase. The tracking issue explicitly does not have the
+      `api-approved` label. Do not look up an external issue; all relevant approval
+      status is stated here.
+    graders: *governance_graders
+    rubric: *governance_rubric
