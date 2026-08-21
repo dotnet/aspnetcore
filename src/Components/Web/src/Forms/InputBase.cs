@@ -67,15 +67,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             return DisplayName;
         }
 
-        var accessorBody = ValueExpression!.Body;
-        if (accessorBody is UnaryExpression { NodeType: ExpressionType.Convert, Type: var type } unaryExpression &&
-            type == typeof(object))
-        {
-            accessorBody = unaryExpression.Operand;
-        }
-
-        return accessorBody is MemberExpression memberExpression
-            ? ExpressionMemberAccessor.GetDisplayName(memberExpression.Member)
+        return ExpressionMemberAccessor.TryGetDisplayName(ValueExpression!, out var displayName)
+            ? displayName
             : FieldIdentifier.FieldName;
     }
 
