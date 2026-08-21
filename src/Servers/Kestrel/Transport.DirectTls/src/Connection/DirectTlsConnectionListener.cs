@@ -51,7 +51,6 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     private readonly IHostApplicationLifetime _appLifetime;
 
     private int _fatalErrorReported;
-    private Exception? _fatalError;
 
     public EndPoint EndPoint { get; private set; }
 
@@ -155,8 +154,6 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
             return;
         }
 
-        // Publish the error before completing the channel so AcceptAsync observes it when it wakes.
-        _fatalError = error;
         _logger.LogCritical(error, "A DirectTls pump thread failed unrecoverably; stopping the application.");
 
         _readyConnections.Writer.TryComplete(error);
@@ -165,26 +162,16 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
 
     public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
     {
-        try
+        while (await _readyConnections.Reader.WaitToReadAsync(cancellationToken))
         {
-            // Wait for a connection that has completed handshake
-            var connection = await _readyConnections.Reader.ReadAsync(cancellationToken);
-            _connectionTracker.ReleaseHandshake();
-            return connection;
-        }
-        catch (ChannelClosedException)
-        {
-            if (_fatalError is not null)
+            if (_readyConnections.Reader.TryRead(out var connection))
             {
-                throw _fatalError;
+                _connectionTracker.ReleaseHandshake();
+                return connection;
             }
+        }
 
-            return null;
-        }
-        catch (OperationCanceledException)
-        {
-            return null;
-        }
+        return null;
     }
 
     public async ValueTask DisposeAsync()
@@ -207,14 +194,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
         // Drain any remaining connections from the channel
         while (_readyConnections.Reader.TryRead(out var connection))
         {
-            try
-            {
-                await connection.DisposeAsync();
-            }
-            catch
-            {
-                // Ignore errors during cleanup
-            }
+            await connection.DisposeAsync();
         }
 
         // This listener owns its pump pool; stop the pump threads and release their epoll fds. Bound the wait so
