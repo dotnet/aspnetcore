@@ -31,7 +31,7 @@ internal sealed class DirectTlsConnectionListener : IConnectionListener
     private readonly TlsEventPumpPool _pumpPool;
     private readonly Action<ConnectionContext, ReadOnlySequence<byte>>? _clientHelloCallback;
 
-    // Decides whether the listener will try to select a server certificate for incoming connections.
+    // Whether the endpoint supplied a ServerCertificateSelector, i.e. whether resolving the TLS context can run user code
     private readonly bool _serverCertificateSelectorConfigured;
 
     // Native OpenSSL server credentials (bootstrap + per-SNI contexts) owned by this listener. Disposed once,

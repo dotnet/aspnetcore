@@ -226,7 +226,7 @@ internal partial class TlsEventPump : IDisposable
         _connectionIoStateLogger = loggerFactory.CreateLogger<ConnectionIoState>();
         _directTlsConnectionLogger = loggerFactory.CreateLogger<DirectTlsConnection>();
 
-        // whether to suspend the handshake on the pump thread while resolving the TLS context (server certificate selection, SNI, etc.)
+        // Either of these makes context resolution run user code, so the handshake must leave the event loop before resolving.
         _contextResolverRunsUserCode = serverCertificateSelectorConfigured || clientHelloCallback is not null;
 
         // Add listen socket with EPOLLEXCLUSIVE - only one worker wakes per connection
