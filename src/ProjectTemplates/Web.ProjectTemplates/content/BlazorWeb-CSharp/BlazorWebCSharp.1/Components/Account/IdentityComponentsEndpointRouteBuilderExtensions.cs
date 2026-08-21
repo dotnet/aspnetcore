@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.Routing;
 
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {
-    private static readonly TimeSpan s_maximumAuthenticationExpiration = TimeSpan.FromMinutes(35);
+    // SignalR refreshes five minutes before this expiration, after Identity's default 30-minute
+    // security stamp validation interval has elapsed. Update this value if that interval is customized.
+    private static readonly TimeSpan s_maximumAuthenticationExpiration = TimeSpan.FromMinutes(40);
 
     public static void ConfigureIdentityAuthenticationRefresh(this ServerComponentsEndpointOptions options)
     {
@@ -33,45 +35,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 connectionOptions.MaximumAuthenticationExpiration = s_maximumAuthenticationExpiration;
             }
             connectionOptions.CloseOnAuthenticationExpiration = true;
-
-            var onAuthenticationRefresh = connectionOptions.OnAuthenticationRefresh;
-            connectionOptions.OnAuthenticationRefresh = async context =>
-            {
-                if (!await ValidateSecurityStampAsync(context.HttpContext.RequestServices, context.NewUser))
-                {
-                    return false;
-                }
-
-                return onAuthenticationRefresh is null || await onAuthenticationRefresh(context);
-            };
         };
-    }
-
-    private static async Task<bool> ValidateSecurityStampAsync(
-        IServiceProvider services,
-        ClaimsPrincipal principal)
-    {
-        if (principal.Identity?.IsAuthenticated != true)
-        {
-            return true;
-        }
-
-        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-        var user = await userManager.GetUserAsync(principal);
-        if (user is null)
-        {
-            return false;
-        }
-        else if (!userManager.SupportsUserSecurityStamp)
-        {
-            return true;
-        }
-        else
-        {
-            var principalStamp = principal.FindFirstValue(userManager.Options.ClaimsIdentity.SecurityStampClaimType);
-            var userStamp = await userManager.GetSecurityStampAsync(user);
-            return principalStamp == userStamp;
-        }
     }
 
     // These endpoints are required by the Identity Razor components defined in the /Components/Account/Pages directory of this project.

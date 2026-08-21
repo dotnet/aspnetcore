@@ -164,7 +164,7 @@ public partial class HttpConnectionDispatcherTests
             var options = new HttpConnectionDispatcherOptions
             {
                 EnableAuthenticationRefresh = true,
-                MaximumAuthenticationExpiration = TimeSpan.FromMinutes(35),
+                MaximumAuthenticationExpiration = TimeSpan.FromMinutes(40),
             };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
             var user = CreateAuthenticatedUserWithStableIdentity("user");
@@ -191,9 +191,9 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             var ttl = ReadJson(context.Response.Body).Value<int?>("tokenLifetimeSeconds");
             Assert.NotNull(ttl);
-            Assert.InRange(ttl.Value, (35 * 60) - 2, 35 * 60);
+            Assert.InRange(ttl.Value, (40 * 60) - 2, 40 * 60);
             Assert.Equal(
-                DateTimeOffset.UtcNow.AddMinutes(35),
+                DateTimeOffset.UtcNow.AddMinutes(40),
                 connection.AuthenticationExpiration,
                 TimeSpan.FromSeconds(2));
         }
@@ -790,8 +790,8 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Theory]
-    [InlineData(60, 35, 35)]
-    [InlineData(20, 35, 20)]
+    [InlineData(60, 40, 40)]
+    [InlineData(20, 40, 20)]
     public async Task NegotiateTokenLifetimeUsesEarlierTicketOrMaximumExpiration(
         int ticketExpirationMinutes,
         int maximumExpirationMinutes,
