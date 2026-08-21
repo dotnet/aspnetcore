@@ -19,6 +19,11 @@ public abstract class ActivityHandler<TBlock> : ContentBlockHandler<TBlock>
         {
             if (TryCreateBlock(context, state))
             {
+                if (state.Id.Length == 0)
+                {
+                    state.Id = context.Update.MessageId ?? Guid.NewGuid().ToString("N");
+                }
+
                 OnContentUpdated(state);
                 return BlockMappingResult<TBlock>.Emit(state, state);
             }

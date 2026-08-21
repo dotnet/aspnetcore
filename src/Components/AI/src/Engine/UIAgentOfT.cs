@@ -82,8 +82,15 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
         var context = new StateMapperContext(update);
         Options.StateMapper(context);
 
-        if (context.StateValue is TState typedState)
+        if (context.StateValue is not null)
         {
+            if (context.StateValue is not TState typedState)
+            {
+                throw new InvalidOperationException(
+                    $"The state mapper returned a value of type '{context.StateValue.GetType()}', " +
+                    $"but this agent requires state of type '{typeof(TState)}'.");
+            }
+
             State.Value = typedState;
         }
 
