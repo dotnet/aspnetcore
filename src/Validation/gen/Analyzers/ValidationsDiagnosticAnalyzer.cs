@@ -69,7 +69,7 @@ internal sealed class ValidationsDiagnosticAnalyzer : DiagnosticAnalyzer
     internal static readonly DiagnosticDescriptor ValidatableTypeIsOpenGeneric = new(
         "ASP0039",
         "[ValidatableType] is applied to an open generic type",
-        "The type '{0}' is marked with [ValidatableType] but declares type parameters that cannot be resolved statically. The generated validation code can only reference closed types, so its validation is silently skipped. Validation still applies to closed constructions of this type used as endpoint parameters.",
+        "The type '{0}' is marked with [ValidatableType] but declares type parameters that cannot be resolved statically. The generated validation code can only reference closed types, so it is skipped by the validation source generator. Validation still applies to closed constructions of this type used as endpoint parameters.",
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,

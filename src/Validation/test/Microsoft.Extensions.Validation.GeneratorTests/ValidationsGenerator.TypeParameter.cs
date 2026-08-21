@@ -165,7 +165,7 @@ public class Outer<T> where T : class
     // A generic registration helper is invisible to endpoint discovery (MapCommand is not a
     // known method name); the only discovered call site is the inner MapPost, where the
     // handler is still Func<Command<TRequest>, IResult> with TRequest open. Since #67821 the
-    // delegate's invoke method resolves, handing the parser the open Command<TRequest> — a
+    // delegate's invoke method resolves, handing the parser the open Command<TRequest>, a
     // named type that passes the accessibility check, unlike a bare TRequest. Without the
     // type-parameter guard the generator emits typeof(Command<TRequest>) into the resolver
     // and the generated code fails to compile (CS0246). With the guard the type is skipped:

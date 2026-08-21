@@ -82,7 +82,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // The generated resolver is non-generic: every typeof(...) it emits must name a
         // fully closed type. Skip any symbol whose type tree still contains a type
-        // parameter — emitting it would produce typeof(T) / typeof(Wrapper<T>), which
+        // parameter; emitting it would produce typeof(T) / typeof(Wrapper<T>), which
         // does not compile in the generated code. Closed constructions (Wrapper<string>)
         // contain no type parameters and register normally.
         if (ContainsTypeParameter(typeSymbol))
@@ -356,7 +356,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     /// Returns true if the given type symbol contains an unresolved type parameter
     /// anywhere in its type tree. This catches not only bare <c>T</c> but also
     /// constructed types like <c>List&lt;T&gt;</c>, <c>T[]</c>, <c>T?</c>, and
-    /// <c>Dictionary&lt;string, T&gt;</c> — all of which would produce invalid
+    /// <c>Dictionary&lt;string, T&gt;</c>, all of which would produce invalid
     /// <c>typeof(...)</c> expressions in the emitted code.
     /// </summary>
     internal static bool ContainsTypeParameter(ITypeSymbol type)
@@ -389,7 +389,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
             // Nested type inside a generic outer: Outer<T>.Inner. Inner has no type
             // arguments of its own, but its emitted FQN still carries the outer's
-            // parameter — typeof(global::Outer<T>.Inner) is not valid C# either.
+            // parameter; typeof(global::Outer<T>.Inner) is not valid C# either.
             if (namedType.ContainingType is not null)
             {
                 return ContainsTypeParameter(namedType.ContainingType);
