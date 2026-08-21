@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Net;
 using System.Net.WebSockets;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -31,7 +32,9 @@ public class WebSocketsTransportTests : FunctionalTestBase
 
         var httpOptions = new HttpConnectionOptions();
         httpOptions.Cookies.Add(new Cookie("Name", "Value", string.Empty, "fakeuri.org"));
-        var clientCertificate = new X509Certificate(Array.Empty<byte>());
+        using var rsa = RSA.Create();
+        var request = new CertificateRequest("CN=Test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var clientCertificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
         httpOptions.ClientCertificates.Add(clientCertificate);
         httpOptions.UseDefaultCredentials = false;
         httpOptions.Credentials = Mock.Of<ICredentials>();

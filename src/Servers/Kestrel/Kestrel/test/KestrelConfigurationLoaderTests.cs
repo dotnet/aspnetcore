@@ -272,7 +272,7 @@ public class KestrelConfigurationLoaderTests
         try
         {
             var serverOptions = CreateServerOptions();
-            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var certificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
             var path = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -313,7 +313,7 @@ public class KestrelConfigurationLoaderTests
         {
             var serverOptions = CreateServerOptions();
 
-            var devCert = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var devCert = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var devCertBytes = devCert.Export(X509ContentType.Pkcs12, "1234");
             var devCertPath = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(devCertPath));
@@ -404,7 +404,7 @@ public class KestrelConfigurationLoaderTests
         var testCertificate = TestResources.GetTestCertificate();
 
         var otherCertificatePath = TestResources.GetCertPath("aspnetdevcert.pfx");
-        var otherCertificate = new X509Certificate2(otherCertificatePath, "testPassword");
+        var otherCertificate = X509CertificateLoader.LoadPkcs12FromFile(otherCertificatePath, "testPassword");
 
         serverOptions.Configure(configRoot).Load();
         CheckListenOptions(testCertificate);
@@ -439,7 +439,7 @@ public class KestrelConfigurationLoaderTests
         try
         {
             var serverOptions = CreateServerOptions();
-            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var certificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
             var path = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -486,7 +486,7 @@ public class KestrelConfigurationLoaderTests
         try
         {
             var serverOptions = CreateServerOptions();
-            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var certificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
             var path = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -535,7 +535,7 @@ public class KestrelConfigurationLoaderTests
         try
         {
             var serverOptions = CreateServerOptions();
-            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var certificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
             var path = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -586,7 +586,7 @@ public class KestrelConfigurationLoaderTests
     public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsMissing()
     {
         var serverOptions = CreateServerOptions();
-        var certificate = new X509Certificate2(TestResources.GetCertPath("https-aspnet.crt"));
+        var certificate = X509CertificateLoader.LoadCertificateFromFile(TestResources.GetCertPath("https-aspnet.crt"));
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
@@ -610,7 +610,7 @@ public class KestrelConfigurationLoaderTests
     public void ConfigureEndpoint_ThrowsWhen_TheKeyDoesntMatchTheCertificateKey()
     {
         var serverOptions = CreateServerOptions();
-        var certificate = new X509Certificate2(TestResources.GetCertPath("https-aspnet.crt"));
+        var certificate = X509CertificateLoader.LoadCertificateFromFile(TestResources.GetCertPath("https-aspnet.crt"));
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
@@ -635,7 +635,7 @@ public class KestrelConfigurationLoaderTests
     public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsIncorrect()
     {
         var serverOptions = CreateServerOptions();
-        var certificate = new X509Certificate2(TestResources.GetCertPath("https-aspnet.crt"));
+        var certificate = X509CertificateLoader.LoadCertificateFromFile(TestResources.GetCertPath("https-aspnet.crt"));
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
@@ -660,7 +660,7 @@ public class KestrelConfigurationLoaderTests
     public void ConfigureEndpoint_ThrowsWhen_The_KeyIsPublic()
     {
         var serverOptions = CreateServerOptions();
-        var certificate = new X509Certificate2(TestResources.GetCertPath("https-aspnet.crt"));
+        var certificate = X509CertificateLoader.LoadCertificateFromFile(TestResources.GetCertPath("https-aspnet.crt"));
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
@@ -791,7 +791,7 @@ public class KestrelConfigurationLoaderTests
             var baseName = keyPassword == null ? "https-dsa" : "https-dsa";
             var keyName = keyPassword == null ? "https-dsa.key" : "https-dsa-protected.key";
 
-            certificate = new X509Certificate2(TestResources.GetCertPath("https-dsa.crt"));
+            certificate = X509CertificateLoader.LoadCertificateFromFile(TestResources.GetCertPath("https-dsa.crt"));
             certificateFilePath = TestResources.GetCertPath(baseName + extension);
             certificateKeyPath = TestResources.GetCertPath(keyName);
         }
@@ -977,7 +977,7 @@ public class KestrelConfigurationLoaderTests
         try
         {
             var serverOptions = CreateServerOptions();
-            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var certificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
             var path = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -1130,10 +1130,10 @@ public class KestrelConfigurationLoaderTests
 
             var certificatePassword = "1234";
 
-            var oldCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var oldCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var oldCertificateBytes = oldCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
 
-            var newCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+            var newCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
             var newCertificateBytes = newCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
 
             Directory.CreateDirectory(Path.GetDirectoryName(certificatePath));
@@ -1228,12 +1228,12 @@ public class KestrelConfigurationLoaderTests
 
             var certificatePassword = "1234";
 
-            var oldCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var oldCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var oldCertificateBytes = oldCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
 
             File.WriteAllBytes(oldCertPath, oldCertificateBytes);
 
-            var newCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+            var newCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
             var newCertificateBytes = newCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
 
             File.WriteAllBytes(newCertPath, newCertificateBytes);
