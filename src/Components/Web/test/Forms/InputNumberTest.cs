@@ -24,20 +24,20 @@ public class InputNumberTest
     }
 
     [Fact]
-    public async Task ValidationErrorUsesDisplayAttributeName()
+    public async Task ValidationErrorUsesExplicitDisplayName()
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<int, TestInputNumberComponent>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.SomeNumber,
+            ValueExpression = () => model.NumberWithDisplayAttribute,
             AdditionalAttributes = new Dictionary<string, object>
                 {
                     { "DisplayName", "Some number" }
                 }
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.SomeNumber);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.NumberWithDisplayAttribute);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act
