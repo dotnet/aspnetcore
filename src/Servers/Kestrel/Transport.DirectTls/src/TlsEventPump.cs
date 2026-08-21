@@ -927,23 +927,11 @@ internal partial class TlsEventPump : IDisposable
                 return;
             }
 
-            string? targetHostName;
-            try
-            {
-                targetHostName = conn.Session.TargetHostName;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "Reading the SNI host name failed for fd={Fd}", fd);
-                DropHandshake(fd, conn);
-                return;
-            }
-
             var contextCallback = new ResolveTlsContextCallback(
                 this,
                 fd,
                 conn.Connection,
-                targetHostName,
+                conn.Session.TargetHostName,
                 _contextResolver,
                 clientHelloBuffer is null ? null : _clientHelloCallback,
                 clientHelloBuffer,
