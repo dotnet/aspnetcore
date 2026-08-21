@@ -26,7 +26,7 @@ internal sealed class ScriptedChatClient : IChatClient
         {
             var functionResult = messageList[^1].Contents
                 .OfType<FunctionResultContent>()
-                .SingleOrDefault();
+                .FirstOrDefault();
             var response = functionResult switch
             {
                 { CallId: "backend-tool-weather-1" } =>
