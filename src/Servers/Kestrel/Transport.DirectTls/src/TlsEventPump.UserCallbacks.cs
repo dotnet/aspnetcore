@@ -238,20 +238,12 @@ internal partial class TlsEventPump
     /// <summary>
     /// Resumes one suspended handshake with the result of its user callback. Runs on the pump thread only.
     /// </summary>
-    /// <remarks>
-    /// A completion is only acted on when the handshaking entry for the fd still points at this exact work
-    /// item. Anything else - the connection was dropped (handshake timeout, listener shutdown, the peer went
-    /// away), or the fd number was recycled by a newer connection - means this result is stale, and it is
-    /// discarded. The resources of the dropped connection were already released exactly once by the teardown
-    /// path that removed it, so there is nothing to release here.
-    /// </remarks>
     private void ResumeSuspendedHandshake(HandshakeUserCallback callback)
     {
         int fd = callback.Fd;
         if (!_handshaking.TryGetValue(fd, out var conn) || !ReferenceEquals(conn.PendingUserCallback, callback))
         {
-            _logger.LogDebug("Pump {Id}: discarding a user callback result for fd={Fd}; the handshake is gone.", _id, fd);
-            return;
+            throw new UnreachableException($"Pump {_id}: a user callback completed for fd={fd}, but the handshake it was parked on is gone or is parked on a different callback.");
         }
 
         // Clear the suspension marker first, so this handshake can never be resumed twice.
