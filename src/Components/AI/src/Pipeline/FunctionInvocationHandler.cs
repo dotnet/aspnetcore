@@ -21,7 +21,7 @@ internal sealed class FunctionInvocationHandler : ContentBlockHandler<FunctionIn
         {
             foreach (var content in context.UnhandledContents)
             {
-                if (content is FunctionCallContent { InformationalOnly: false } call)
+                if (content is FunctionCallContent call)
                 {
                     context.MarkHandled(call);
                     state.Call = call;
