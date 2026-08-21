@@ -171,20 +171,47 @@ internal partial class TlsEventPump
     }
 
     // Consumes the eventfd counter so the level-triggered wakeup fd stops firing. Runs on the pump thread.
+    //
+    // The counter is not a message and carries no payload: an eventfd created without EFD_SEMAPHORE returns the
+    // accumulated sum of every write since the last read and resets it to zero, so N callbacks completing
+    // between two polls surface as a single readable event with value N. The value is deliberately not used to
+    // decide how much work to do - the completion queue is the source of truth, and this fd only says "look at
+    // it". PumpLoop drains that queue after every batch whether or not this read succeeded, so a failure here
+    // costs a diagnostic, never a parked handshake.
+    //
+    // Failing to consume the counter cannot spin the loop. EAGAIN means the counter is already zero, so the fd
+    // is no longer readable and epoll will not report it again. EINTR leaves the counter set, so the
+    // level-triggered registration re-reports EPOLLIN and the next iteration retries this read - one extra
+    // iteration rather than an inner retry loop on the pump thread. A closed fd leaves the epoll set entirely.
     private void DrainWakeup()
     {
         long value = 0;
-        long read = NativeTls.read(_wakeupFd, ref value, sizeof(long));
+        nint read = NativeTls.read(_wakeupFd, ref value, sizeof(long));
 
-        // The counter is not a message and carries no payload: an eventfd created without EFD_SEMAPHORE
-        // returns the accumulated sum of every write since the last read and resets it to zero, so N callbacks
-        // completing between two polls surface as a single readable event with value N. The value is
-        // deliberately not used to decide how much work to do - the completion queue is the source of truth,
-        // and this fd only says "look at it". epoll reported EPOLLIN and the pump thread is the only reader,
-        // so the counter cannot have been consumed in between: a short read or a zero counter would mean the
-        // fd is not the eventfd we registered.
-        Debug.Assert(read == sizeof(long), $"Reading the wakeup fd returned {read} bytes.");
-        Debug.Assert(value >= 1, $"The wakeup fd reported a counter of {value}.");
+        if (read == sizeof(long))
+        {
+            // epoll reported EPOLLIN and the pump thread is the only reader, so the counter cannot have been
+            // consumed in between; a zero counter would mean this is not the eventfd we registered.
+            Debug.Assert(value >= 1, $"The wakeup fd reported a counter of {value}.");
+            return;
+        }
+
+        if (read < 0)
+        {
+            int errno = Marshal.GetLastWin32Error();
+            if (errno is NativeTls.EAGAIN or NativeTls.EINTR)
+            {
+                return;
+            }
+
+            _logger.LogDebug("Pump {Id}: reading the wakeup fd failed: errno={Errno}", _id, errno);
+            return;
+        }
+
+        // An eventfd read is all-or-nothing (the kernel rejects a count below 8 bytes with EINVAL), so a
+        // partial read means this fd is not the eventfd we registered.
+        Debug.Assert(false, $"Reading the wakeup fd returned {read} bytes.");
+        _logger.LogDebug("Pump {Id}: reading the wakeup fd returned {Read} bytes.", _id, read);
     }
 
     // Resumes every handshake whose user callback has reported back. Runs on the pump thread only.
