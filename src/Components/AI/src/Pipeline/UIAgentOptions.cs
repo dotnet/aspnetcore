@@ -26,7 +26,7 @@ public class UIAgentOptions
     /// <summary>
     /// Gets or sets a callback that maps model updates into typed agent state.
     /// </summary>
-    public Func<StateMapperContext, bool>? StateMapper { get; set; }
+    public Action<StateMapperContext>? StateMapper { get; set; }
 
     /// <summary>
     /// Gets or sets the persistent conversation thread that receives completed turns.

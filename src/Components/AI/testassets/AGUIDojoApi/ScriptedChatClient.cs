@@ -28,7 +28,7 @@ internal sealed class ScriptedChatClient : IChatClient
         {
             var functionResult = messageList[^1].Contents
                 .OfType<FunctionResultContent>()
-                .SingleOrDefault();
+                .FirstOrDefault();
             if (functionResult is { CallId: "agentic-plan-create-1" })
             {
                 yield return CreatePlanStepUpdate(messageId: Guid.NewGuid().ToString("N"), stepIndex: 0);

@@ -53,11 +53,10 @@ public class StateMapperTests
             {
                 if (context.Update.RawRepresentation is not RecipeState state)
                 {
-                    return false;
+                    return;
                 }
 
                 context.SetState(state);
-                return true;
             };
         });
         var callbackCount = 0;
@@ -67,6 +66,71 @@ public class StateMapperTests
 
         Assert.Equal("Observable state", agent.State.Value.Title);
         Assert.Equal(1, callbackCount);
+    }
+
+    [Fact]
+    public void StateMapper_FilteredUpdatePreservesRawRepresentation()
+    {
+        var agent = CreateAgent(new DelegatingStreamingChatClient());
+        var rawRepresentation = new object();
+        var stateContent = new StateContent
+        {
+            StateValue = new RecipeState { Title = "Pasta" },
+        };
+        var update = new ChatResponseUpdate
+        {
+            RawRepresentation = rawRepresentation,
+            Contents = [stateContent, new TextContent("Enjoy this recipe!")],
+        };
+
+        var mappedUpdate = agent.ApplyStateMapper(update);
+
+        Assert.Same(rawRepresentation, mappedUpdate.RawRepresentation);
+        Assert.DoesNotContain(stateContent, mappedUpdate.Contents);
+    }
+
+    [Fact]
+    public void StateMapper_IncompatibleStateTypeThrows()
+    {
+        var agent = new UIAgent<RecipeState>(
+            new DelegatingStreamingChatClient(),
+            options => options.StateMapper = context => context.SetState(new object()));
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => agent.ApplyStateMapper(new ChatResponseUpdate()));
+
+        Assert.Contains(typeof(RecipeState).ToString(), exception.Message);
+    }
+
+    [Fact]
+    public async Task StateMapper_HandledContentIsFilteredFromHistory()
+    {
+        var client = new DelegatingStreamingChatClient();
+        List<ChatMessage>? secondRequest = null;
+        var callCount = 0;
+        client.SetHandler((messages, _, cancellationToken) =>
+        {
+            callCount++;
+            if (callCount == 2)
+            {
+                secondRequest = messages.ToList();
+            }
+
+            return callCount == 1
+                ? EmitMixed(cancellationToken)
+                : EmitRawState(cancellationToken);
+        });
+        var agent = CreateAgent(client);
+
+        await CollectBlocksAsync(agent);
+        await CollectBlocksAsync(agent);
+
+        Assert.NotNull(secondRequest);
+        var assistantMessage = Assert.Single(
+            secondRequest.Where(message => message.Role == ChatRole.Assistant));
+        Assert.Collection(
+            assistantMessage.Contents,
+            content => Assert.IsType<TextContent>(content));
     }
 
     private static UIAgent<RecipeState> CreateAgent(IChatClient client)
@@ -81,11 +145,9 @@ public class StateMapperTests
                     {
                         context.MarkHandled(stateContent);
                         context.SetState(stateContent.StateValue);
-                        return true;
+                        return;
                     }
                 }
-
-                return false;
             };
         });
     }

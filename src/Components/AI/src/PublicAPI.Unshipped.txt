@@ -196,8 +196,8 @@ Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>?
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Call.get -> Microsoft.Extensions.AI.FunctionCallContent?
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.HasResult.get -> bool
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InnerBlock.get -> Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock!
-Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InteractiveFunctionBlock(Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock! innerBlock) -> void
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InnerBlock.get -> Microsoft.AspNetCore.Components.AI.ContentBlock!
+Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.InteractiveFunctionBlock(Microsoft.AspNetCore.Components.AI.ContentBlock! innerBlock) -> void
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.Result.get -> Microsoft.Extensions.AI.FunctionResultContent?
 Microsoft.AspNetCore.Components.AI.InteractiveFunctionBlock.ToolName.get -> string?
 Microsoft.AspNetCore.Components.AI.LineBreakNode
@@ -330,7 +330,7 @@ Microsoft.AspNetCore.Components.AI.UIAgentOptions.AddBlockHandler<TState>(Micros
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.get -> Microsoft.Extensions.AI.ChatOptions?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.ChatOptions.set -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.RegisterUIAction(Microsoft.Extensions.AI.AIFunction! function) -> void
-Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.get -> System.Func<Microsoft.AspNetCore.Components.AI.StateMapperContext!, bool>?
+Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.get -> System.Action<Microsoft.AspNetCore.Components.AI.StateMapperContext!>?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.StateMapper.set -> void
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.Thread.get -> Microsoft.AspNetCore.Components.AI.IConversationThread?
 Microsoft.AspNetCore.Components.AI.UIAgentOptions.Thread.set -> void

@@ -93,7 +93,7 @@ public class BlockMappingContext
             MessageId = Update.MessageId,
             Contents = [content],
         };
-        var context = new BlockMappingContext(update);
+        var context = new BlockMappingContext(update, _handlers);
 
         foreach (var handler in _handlers)
         {
