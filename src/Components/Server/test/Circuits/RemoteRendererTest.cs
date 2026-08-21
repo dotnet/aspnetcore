@@ -633,6 +633,56 @@ public class RemoteRendererTest
         Assert.Equal(2, renderer._unacknowledgedRenderBatches.Count); // Initial render, dispose
     }
 
+    [Fact]
+    public async Task WebRootComponentManager_TryRemoveRootComponent_ReturnsFalse_IfSsrComponentIdIsInvalid()
+    {
+        var serviceProvider = CreateServiceProvider();
+        var renderer = GetRemoteRenderer(serviceProvider);
+        await AddWebRootComponentAsync(renderer, 0);
+
+        var result = await renderer.Dispatcher.InvokeAsync(() =>
+            renderer.GetOrCreateWebRootComponentManager().TryRemoveRootComponent(1));
+
+        Assert.False(result);
+        Assert.Single(renderer._unacknowledgedRenderBatches);
+    }
+
+    [Fact]
+    public async Task WebRootComponentManager_TryUpdateOrAddRootComponentAsync_AddsComponent_IfSsrComponentIdIsInvalid()
+    {
+        var serviceProvider = CreateServiceProvider();
+        var renderer = GetRemoteRenderer(serviceProvider);
+        var key = new ComponentMarkerKey { LocationHash = "1", FormattedComponentKey = null };
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            renderer.GetOrCreateWebRootComponentManager().TryUpdateOrAddRootComponentAsync(
+                1,
+                typeof(TestComponent),
+                key,
+                WebRootComponentParameters.Empty));
+
+        Assert.Single(renderer._unacknowledgedRenderBatches);
+    }
+
+    [Fact]
+    public async Task WebRootComponentManager_TryUpdateOrAddRootComponentAsync_UpdatesComponent_IfSsrComponentIdExists()
+    {
+        var serviceProvider = CreateServiceProvider();
+        var renderer = GetRemoteRenderer(serviceProvider);
+        await AddWebRootComponentAsync(renderer, 0, componentKey: "test-key");
+        var batchCountAfterAdd = renderer._unacknowledgedRenderBatches.Count;
+        var key = new ComponentMarkerKey { LocationHash = "0", FormattedComponentKey = "test-key" };
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            renderer.GetOrCreateWebRootComponentManager().TryUpdateOrAddRootComponentAsync(
+                0,
+                typeof(TestComponent),
+                key,
+                WebRootComponentParameters.Empty));
+
+        Assert.Equal(batchCountAfterAdd + 1, renderer._unacknowledgedRenderBatches.Count);
+    }
+
     private IServiceProvider CreateServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
