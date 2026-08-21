@@ -49,6 +49,12 @@ public partial class ToolBasedGenerativeUIScenarioTests : BrowserTest
     [TestMethod]
     public async Task GenerateHaiku_RendersWhileStreamingAndNavigatesCarousel()
     {
+        Assert.AreEqual(
+            "linear-gradient(135deg, #667eea, #764ba2)",
+            global::DojoClient.Components.Scenarios.ToolBasedGenerativeUI
+                .ToolBasedGenerativeUIScenario.GetSafeGradient(
+                    "linear-gradient(135deg, #134e5e, #71b280); background: url(https://example.com)"));
+
         var prompt = $"{HaikuPrompt} ({_runId})";
         var carousel = _page.Locator(".haiku-carousel");
 
