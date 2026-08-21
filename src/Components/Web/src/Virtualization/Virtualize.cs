@@ -1209,5 +1209,4 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             }
         }
     }
-
 }
