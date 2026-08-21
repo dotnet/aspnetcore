@@ -12,6 +12,9 @@ public class AgentState<T> where T : class, new()
     private readonly List<Action> _callbacks = new();
     private T _value;
     private T? _valueBeforePrediction;
+    private T? _valueBeforeRestore;
+    private T? _valueBeforePredictionBeforeRestore;
+    private bool _isRestoring;
 
     internal AgentState(T? initialValue = null)
     {
@@ -29,7 +32,10 @@ public class AgentState<T> where T : class, new()
             ArgumentNullException.ThrowIfNull(value);
             _valueBeforePrediction = null;
             _value = value;
-            NotifyChanged();
+            if (!_isRestoring)
+            {
+                NotifyChanged();
+            }
         }
     }
 
@@ -84,7 +90,60 @@ public class AgentState<T> where T : class, new()
         ArgumentNullException.ThrowIfNull(value);
         _valueBeforePrediction ??= _value;
         _value = value;
-        NotifyChanged();
+        if (!_isRestoring)
+        {
+            NotifyChanged();
+        }
+    }
+
+    internal void BeginRestore()
+    {
+        if (_isRestoring)
+        {
+            throw new InvalidOperationException("A state restore is already in progress.");
+        }
+
+        _valueBeforeRestore = _value;
+        _valueBeforePredictionBeforeRestore = _valueBeforePrediction;
+        _valueBeforePrediction = null;
+        _value = new T();
+        _isRestoring = true;
+    }
+
+    internal void CompleteRestore()
+    {
+        var valueBeforeRestore = _valueBeforeRestore;
+        var valueBeforePredictionBeforeRestore = _valueBeforePredictionBeforeRestore;
+        _valueBeforeRestore = null;
+        _valueBeforePredictionBeforeRestore = null;
+        _isRestoring = false;
+        var completed = false;
+        try
+        {
+            NotifyChanged();
+            completed = true;
+        }
+        finally
+        {
+            if (!completed)
+            {
+                _valueBeforeRestore = valueBeforeRestore;
+                _valueBeforePredictionBeforeRestore = valueBeforePredictionBeforeRestore;
+            }
+        }
+    }
+
+    internal void CancelRestore()
+    {
+        if (_valueBeforeRestore is not null)
+        {
+            _value = _valueBeforeRestore;
+            _valueBeforeRestore = null;
+        }
+
+        _valueBeforePrediction = _valueBeforePredictionBeforeRestore;
+        _valueBeforePredictionBeforeRestore = null;
+        _isRestoring = false;
     }
 
     private void NotifyChanged()

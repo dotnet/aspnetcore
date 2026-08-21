@@ -22,10 +22,10 @@ public class FunctionApprovalHandlerTests
         var firstApproval = Assert.IsType<FunctionApprovalBlock>(Assert.Single(first));
         var secondApproval = Assert.IsType<FunctionApprovalBlock>(Assert.Single(second));
         Assert.Equal("call-1", firstApproval.Id);
-        Assert.Equal("delete_file", firstApproval.InnerBlock.ToolName);
+        Assert.Equal("delete_file", firstApproval.ToolName);
         Assert.Equal(BlockLifecycleState.Inactive, firstApproval.LifecycleState);
         Assert.Equal("call-2", secondApproval.Id);
-        Assert.Equal("send_email", secondApproval.InnerBlock.ToolName);
+        Assert.Equal("send_email", secondApproval.ToolName);
     }
 
     [Fact]
@@ -40,8 +40,27 @@ public class FunctionApprovalHandlerTests
             CreateApprovalUpdate("message-1", "call-1", "custom_tool"));
 
         var approval = Assert.IsType<FunctionApprovalBlock>(Assert.Single(blocks));
-        Assert.IsType<CustomFunctionBlock>(approval.InnerBlock);
+        var customBlock = Assert.IsType<CustomFunctionBlock>(approval.InnerBlock);
+        Assert.IsType<FunctionInvocationContentBlock>(customBlock.InnerBlock);
         Assert.Equal("call-1", approval.Id);
+    }
+
+    [Fact]
+    public async Task Process_UIActionBlockIsNested()
+    {
+        var options = new UIAgentOptions();
+        options.RegisterUIAction(AIFunctionFactory.Create(
+            () => "done",
+            "client_tool",
+            "Runs in the client."));
+        var pipeline = new BlockMappingPipeline(options);
+
+        var blocks = await ProcessAsync(
+            pipeline,
+            CreateApprovalUpdate("message-1", "call-1", "client_tool"));
+
+        var approval = Assert.IsType<FunctionApprovalBlock>(Assert.Single(blocks));
+        Assert.IsType<UIActionBlock>(approval.InnerBlock);
     }
 
     private static ChatResponseUpdate CreateApprovalUpdate(
@@ -71,7 +90,10 @@ public class FunctionApprovalHandlerTests
         return blocks;
     }
 
-    private sealed class CustomFunctionBlock : FunctionInvocationContentBlock;
+    private sealed class CustomFunctionBlock : FunctionInvocationContentBlock
+    {
+        public ContentBlock? InnerBlock { get; set; }
+    }
 
     private sealed class CustomFunctionHandler :
         ContentBlockHandler<CustomFunctionBlock>
@@ -86,6 +108,8 @@ public class FunctionApprovalHandlerTests
                 {
                     context.MarkHandled(call);
                     state.Call = call;
+                    state.InnerBlock = context.CreateInnerBlock(
+                        new FunctionCallContent("inner-call", "inner-tool"));
                     return BlockMappingResult<CustomFunctionBlock>.Emit(state, state);
                 }
             }

@@ -29,7 +29,7 @@ internal sealed class ScriptedChatClient : IChatClient
         {
             var functionResult = messageList[^1].Contents
                 .OfType<FunctionResultContent>()
-                .SingleOrDefault();
+                .FirstOrDefault();
             var functionCall = functionResult is null
                 ? null
                 : messageList

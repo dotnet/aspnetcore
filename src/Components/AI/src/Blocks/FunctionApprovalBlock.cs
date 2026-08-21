@@ -23,7 +23,7 @@ public class FunctionApprovalBlock : InteractiveFunctionBlock, IInteractiveBlock
     private readonly object _responseLock = new();
 
     internal FunctionApprovalBlock(
-        FunctionInvocationContentBlock innerBlock,
+        ContentBlock innerBlock,
         ToolApprovalRequestContent request)
         : base(innerBlock)
     {

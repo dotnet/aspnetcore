@@ -152,11 +152,10 @@ public class PredictiveStateTests
             {
                 if (context.Update.RawRepresentation is not DocumentState state)
                 {
-                    return false;
+                    return;
                 }
 
                 context.SetPredictiveState(state);
-                return true;
             };
             if (confirm is not null)
             {

@@ -105,17 +105,14 @@
 
                 if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
                 {
-                    return false;
+                    return;
                 }
 
                 var state = snapshot.Snapshot.Deserialize<DocumentState>(_jsonOptions);
-                if (state is null)
+                if (state is not null)
                 {
-                    return false;
+                    context.SetPredictiveState(state);
                 }
-
-                context.SetPredictiveState(state);
-                return true;
             };
             options.RegisterUIAction(AIFunctionFactory.Create(
                 ConfirmChanges,

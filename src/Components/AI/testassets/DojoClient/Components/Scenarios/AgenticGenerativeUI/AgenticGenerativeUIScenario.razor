@@ -72,22 +72,19 @@
                 if (context.Update.RawRepresentation is StateDeltaEvent delta)
                 {
                     context.SetState(ApplyPlanDelta(_agent.State.Value, delta.Delta));
-                    return true;
+                    return;
                 }
 
                 if (context.Update.RawRepresentation is not StateSnapshotEvent snapshot)
                 {
-                    return false;
+                    return;
                 }
 
                 var state = snapshot.Snapshot.Deserialize<PlanState>(_jsonOptions);
-                if (state is null)
+                if (state is not null)
                 {
-                    return false;
+                    context.SetState(state);
                 }
-
-                context.SetState(state);
-                return true;
             };
         }, LoggerFactory);
         _stateChangedRegistration = _agent.State.OnChanged(
@@ -110,9 +107,11 @@
 
         foreach (var operation in delta.EnumerateArray())
         {
-            if (operation.GetProperty("op").GetString() != "replace")
+            var operationName = operation.GetProperty("op").GetString();
+            if (operationName is not "replace")
             {
-                continue;
+                throw new InvalidOperationException(
+                    $"The JSON Patch operation '{operationName}' is not supported.");
             }
 
             var pathSegments = operation.GetProperty("path").GetString()?

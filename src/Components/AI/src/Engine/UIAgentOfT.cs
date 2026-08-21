@@ -72,6 +72,12 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
     /// </summary>
     public AgentState<TState> State { get; }
 
+    internal override void BeginStateRestore() => State.BeginRestore();
+
+    internal override void CompleteStateRestore() => State.CompleteRestore();
+
+    internal override void CancelStateRestore() => State.CancelRestore();
+
     internal override ChatResponseUpdate ApplyStateMapper(ChatResponseUpdate update)
     {
         if (Options.StateMapper is null)
@@ -82,8 +88,15 @@ public class UIAgent<TState> : UIAgent where TState : class, new()
         var context = new StateMapperContext(update);
         Options.StateMapper(context);
 
-        if (context.StateValue is TState typedState)
+        if (context.StateValue is not null)
         {
+            if (context.StateValue is not TState typedState)
+            {
+                throw new InvalidOperationException(
+                    $"The state mapper returned a value of type '{context.StateValue.GetType()}', " +
+                    $"but this agent requires state of type '{typeof(TState)}'.");
+            }
+
             if (context.IsPredictiveState)
             {
                 State.SetPredictiveValue(typedState);
