@@ -64,7 +64,7 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
 
     public ValueTask<ViewportFillDirection?> AlignToItemAsync(int localIndex, CancellationToken cancellationToken = default)
     {
-        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.alignToItem", cancellationToken, _selfReference, localIndex);
+        return _jsRuntime.InvokeAsync<ViewportFillDirection?>($"{JsFunctionsPrefix}.alignToItem", cancellationToken, _selfReference, localIndex);
     }
 
     public ValueTask BeginProgrammaticScrollAsync()
