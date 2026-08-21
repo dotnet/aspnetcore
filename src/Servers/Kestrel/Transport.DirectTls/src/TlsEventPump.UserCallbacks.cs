@@ -311,15 +311,16 @@ internal partial class TlsEventPump
                 }
 
                 // Record the accepted result so the runtime promotes the leaf into its canonical remote-cert
-                // slot and clears its pending-validation state.
+                // slot and clears its pending-validation state. Throws only in incorrect state of session, so we must drop the handshake.
                 try
                 {
                     conn.Session.SetRemoteCertificateValidationResult(SslPolicyErrors.None);
                 }
-                catch (InvalidOperationException)
+                catch (Exception ex)
                 {
-                    // Validation was already resolved (e.g. a buffered PAL that surfaced
-                    // NeedsCertificateValidation before reaching Complete).
+                    _logger.LogDebug(ex, "Recording the client certificate verdict failed for fd={Fd}; dropping connection.", fd);
+                    DropHandshake(fd, conn);
+                    return;
                 }
 
                 // Surface the accepted certificate to Kestrel via ITlsConnectionFeature. This is the same
