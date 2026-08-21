@@ -1280,6 +1280,9 @@ internal partial class TlsEventPump : IDisposable
         buffer = null;
         length = 0;
 
+        // Tracked outside the try so the catch returns the array even when the throw happened between renting it
+        // and publishing it to buffer.
+        byte[]? rented = null;
         try
         {
             var helloLength = session.GetClientHelloLength();
@@ -1288,11 +1291,13 @@ internal partial class TlsEventPump : IDisposable
                 return true;
             }
 
-            var rented = ArrayPool<byte>.Shared.Rent(helloLength);
+            rented = ArrayPool<byte>.Shared.Rent(helloLength);
             if (!session.TryGetClientHelloBytes(rented.AsSpan(0, helloLength), out var written) || written <= 0)
             {
+                // The session reported a record but then could not hand it over, so the listener would silently
+                // miss a ClientHello it was configured to see. Treat it as a capture failure, not as "no bytes".
                 ArrayPool<byte>.Shared.Return(rented);
-                return true;
+                return false;
             }
 
             buffer = rented;
@@ -1301,13 +1306,13 @@ internal partial class TlsEventPump : IDisposable
         }
         catch
         {
-            if (buffer is not null)
+            if (rented is not null)
             {
-                ArrayPool<byte>.Shared.Return(buffer);
-                buffer = null;
-                length = 0;
+                ArrayPool<byte>.Shared.Return(rented);
             }
 
+            buffer = null;
+            length = 0;
             return false;
         }
     }
