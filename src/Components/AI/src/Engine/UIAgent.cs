@@ -274,6 +274,7 @@ public class UIAgent : IDisposable
             blocks.AddRange(pipeline.Finalize());
             cancellationToken.ThrowIfCancellationRequested();
 
+            RejectPendingPredictiveState();
             _history.Clear();
             _history.AddRange(restoredHistory);
             CompleteStateRestore();

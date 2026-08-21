@@ -55,7 +55,10 @@ public class AgentState<T> where T : class, new()
         }
 
         _valueBeforePrediction = null;
-        NotifyChanged();
+        if (!_isRestoring)
+        {
+            NotifyChanged();
+        }
     }
 
     /// <summary>
@@ -70,7 +73,10 @@ public class AgentState<T> where T : class, new()
 
         _valueBeforePrediction = null;
         _value = previousValue;
-        NotifyChanged();
+        if (!_isRestoring)
+        {
+            NotifyChanged();
+        }
     }
 
     /// <summary>

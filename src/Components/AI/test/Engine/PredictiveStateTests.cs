@@ -142,12 +142,30 @@ public class PredictiveStateTests
         Assert.Equal(ConversationStatus.Idle, context.Status);
     }
 
+    [Fact]
+    public async Task RestoreAsync_RejectsRestoredPredictiveState()
+    {
+        var thread = new InMemoryConversationThread("thread-1");
+        thread.AppendMessages([new ChatMessage(ChatRole.User, "Edit the document")]);
+        thread.AppendUpdate(CreateStateUpdate("Rejected draft"));
+        thread.CompleteTurn();
+        var client = new DelegatingStreamingChatClient();
+        using var agent = CreateAgent(client, thread: thread);
+
+        await agent.RestoreAsync();
+
+        Assert.Empty(agent.State.Value.Document);
+        Assert.False(agent.State.HasPendingPredictiveState);
+    }
+
     private static UIAgent<DocumentState> CreateAgent(
         IChatClient client,
-        Func<bool, string>? confirm = null)
+        Func<bool, string>? confirm = null,
+        IConversationThread? thread = null)
     {
         return new UIAgent<DocumentState>(client, options =>
         {
+            options.Thread = thread;
             options.StateMapper = context =>
             {
                 if (context.Update.RawRepresentation is not DocumentState state)

@@ -15,7 +15,9 @@ else
     <div class="document-editor__surface"
          role="textbox"
          aria-label="Document editor"
-         aria-readonly="true">
+         aria-readonly="true"
+         aria-multiline="true"
+         tabindex="0">
         <pre class="document-editor__diff">@((MarkupString)RenderDocument())</pre>
     </div>
 }

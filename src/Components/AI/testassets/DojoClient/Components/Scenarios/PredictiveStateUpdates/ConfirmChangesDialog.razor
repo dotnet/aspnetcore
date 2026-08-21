@@ -17,8 +17,10 @@ else
         <p class="confirm-changes__message">Do you want to accept the changes?</p>
         <div class="confirm-changes__actions">
             <button class="confirm-changes__btn confirm-changes__btn--reject"
+                    disabled="@_isResponding"
                     @onclick="RejectAsync">Reject</button>
             <button class="confirm-changes__btn confirm-changes__btn--accept"
+                    disabled="@_isResponding"
                     @onclick="AcceptAsync">Confirm</button>
         </div>
     </div>
@@ -29,6 +31,7 @@ else
     public UIActionBlock Block { get; set; } = default!;
 
     private bool _isResponded;
+    private bool _isResponding;
     private bool _wasAccepted;
 
     private Task AcceptAsync() => RespondAsync(accepted: true);
@@ -37,10 +40,23 @@ else
 
     private async Task RespondAsync(bool accepted)
     {
-        Block.Call.Arguments ??= new Dictionary<string, object?>();
-        Block.Call.Arguments["accepted"] = accepted;
-        await Block.InvokeAsync();
-        _wasAccepted = accepted;
-        _isResponded = true;
+        if (_isResponded || _isResponding)
+        {
+            return;
+        }
+
+        _isResponding = true;
+        try
+        {
+            Block.Call.Arguments ??= new Dictionary<string, object?>();
+            Block.Call.Arguments["accepted"] = accepted;
+            await Block.InvokeAsync();
+            _wasAccepted = accepted;
+            _isResponded = true;
+        }
+        finally
+        {
+            _isResponding = false;
+        }
     }
 }
