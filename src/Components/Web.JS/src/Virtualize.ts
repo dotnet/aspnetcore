@@ -656,7 +656,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return el.getBoundingClientRect().top - containerTop;
   }
 
-  function measureRenderedWindow(containerExtent?: number): Omit<AlignmentResult, 'fillDirection'> | null {
+  function measureRenderedWindow(containerExtent: number, scaleFactor: number): Omit<AlignmentResult, 'fillDirection'> | null {
     const beforeVersion = spacerBefore.getAttribute(renderedWindowVersionAttribute);
     const afterVersion = spacerAfter.getAttribute(renderedWindowVersionAttribute);
     if (beforeVersion === null || afterVersion === null || beforeVersion !== afterVersion) {
@@ -667,18 +667,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return null;
     }
 
-    const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
     rangeBetweenSpacers.setStartAfter(spacerBefore);
     rangeBetweenSpacers.setEndBefore(spacerAfter);
     const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
-    const containerSize = (containerExtent ?? scrollElement.getBoundingClientRect().height) / scaleFactor;
+    const containerSize = containerExtent / scaleFactor;
     return { spacerSeparation, containerSize, renderedWindowVersion };
   }
 
   function measureIntersectionTargets(targets: Element[]): IntersectionMeasurement[] {
     const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
     const viewport = getViewportBounds(scaleFactor);
-    const measurement = measureRenderedWindow(viewport.bottom - viewport.top);
+    const measurement = measureRenderedWindow(getEffectiveRootExtent(viewport, scaleFactor), scaleFactor);
     if (!measurement) {
       return [];
     }
@@ -731,7 +730,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     pendingAlignLocalIndex = null;
 
-    const measurement = measureRenderedWindow();
+    const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
+    const measurement = measureRenderedWindow(getEffectiveRootExtent(getViewportBounds(scaleFactor), scaleFactor), scaleFactor);
     if (!measurement) {
       return null;
     }
@@ -758,6 +758,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       viewportBottom = viewportTop + scrollContainer.clientHeight * scaleFactor;
     }
     return { top: viewportTop, bottom: viewportBottom };
+  }
+
+  function getEffectiveRootExtent(viewport: { top: number; bottom: number }, scaleFactor: number): number {
+    return viewport.bottom - viewport.top + (2 * rootMargin * scaleFactor);
   }
 
   function occupiesViewport(spacer: HTMLElement, viewport: { top: number; bottom: number }): boolean {
@@ -811,9 +815,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     const targets = Array.from(pendingCallbacks);
     pendingCallbacks.clear();
     const measurements = measureIntersectionTargets(targets);
-    if (measurements.length === 0) {
-      return;
-    }
     processIntersectionEntries(measurements);
   }
 

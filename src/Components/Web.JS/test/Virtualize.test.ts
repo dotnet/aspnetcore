@@ -56,6 +56,7 @@ describe('Virtualize intersection measurements', () => {
 
   afterEach(() => {
     Virtualize.dispose(dotNetHelper);
+    jest.useRealTimers();
     jest.restoreAllMocks();
   });
 
@@ -106,12 +107,12 @@ describe('Virtualize intersection measurements', () => {
       'OnSpacerBeforeVisible',
       50,
       500,
-      200,
+      300,
       2,
       2);
   });
 
-  test('uses viewport height when the document is the scroll root', () => {
+  test('uses effective viewport height when the document is the scroll root', () => {
     const spacerBefore = document.createElement('div');
     const item = document.createElement('div');
     const spacerAfter = document.createElement('div');
@@ -138,7 +139,73 @@ describe('Virtualize intersection measurements', () => {
       'OnSpacerBeforeVisible',
       50,
       600,
-      900,
+      1000,
+      2,
+      1);
+  });
+
+  test('uses effective viewport height when aligning with the document as the scroll root', () => {
+    const spacerBefore = document.createElement('div');
+    const item = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+    spacerBefore.style.overflowY = 'visible';
+    document.body.append(spacerBefore, item, spacerAfter);
+
+    setElementMetrics(spacerBefore, rect(-100, 100), 100);
+    setElementMetrics(item, rect(0, 50), 50);
+    setElementMetrics(spacerAfter, rect(1100, 100), 100);
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '1');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '1');
+    jest.spyOn(document.documentElement, 'getBoundingClientRect').mockReturnValue(rect(0, 31000));
+    jest.spyOn(document.documentElement, 'clientHeight', 'get').mockReturnValue(900);
+
+    Virtualize.init(dotNetHelper, spacerBefore, spacerAfter);
+
+    expect(Virtualize.alignToItem(dotNetHelper, 0)).toEqual({
+      fillDirection: 0,
+      spacerSeparation: 600,
+      containerSize: 1000,
+      renderedWindowVersion: 1,
+    });
+  });
+
+  test('clears alignment state when deferred targets no longer intersect', () => {
+    jest.useFakeTimers();
+    const spacerBefore = document.createElement('div');
+    const item = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+    spacerBefore.style.overflowY = 'visible';
+    document.body.append(spacerBefore, item, spacerAfter);
+
+    setElementMetrics(spacerBefore, rect(-10, 20), 20);
+    setElementMetrics(item, rect(10, 50), 50);
+    setElementMetrics(spacerAfter, rect(1000, 100), 100);
+    spacerBefore.setAttribute(renderedWindowVersionAttribute, '1');
+    spacerAfter.setAttribute(renderedWindowVersionAttribute, '1');
+    jest.spyOn(document.documentElement, 'clientHeight', 'get').mockReturnValue(300);
+
+    invokeMethodAsync.mockClear();
+    Virtualize.init(dotNetHelper, spacerBefore, spacerAfter, 0);
+    const entry = {
+      target: spacerBefore,
+      isIntersecting: true,
+    } as unknown as IntersectionObserverEntry;
+    intersectionCallback([entry], {} as IntersectionObserver);
+    invokeMethodAsync.mockClear();
+
+    Virtualize.beginProgrammaticScroll(dotNetHelper);
+    intersectionCallback([entry], {} as IntersectionObserver);
+    setElementMetrics(spacerBefore, rect(-200, 20), 20);
+    jest.advanceTimersByTime(50);
+
+    setElementMetrics(spacerBefore, rect(-10, 20), 20);
+    intersectionCallback([entry], {} as IntersectionObserver);
+
+    expect(invokeMethodAsync).toHaveBeenCalledWith(
+      'OnSpacerBeforeVisible',
+      0,
+      600,
+      400,
       2,
       1);
   });
