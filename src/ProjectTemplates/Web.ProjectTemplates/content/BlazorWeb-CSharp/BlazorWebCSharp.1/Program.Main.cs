@@ -104,11 +104,19 @@ public class Program
         app.MapStaticAssets();
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
+          #if (IndividualLocalAuth)
+            .AddInteractiveServerRenderMode(options => options.ConfigureIdentityAuthenticationRefresh())
+          #else
             .AddInteractiveServerRenderMode()
+          #endif
             .AddInteractiveWebAssemblyRenderMode()
         #elif (UseServer)
         app.MapRazorComponents<App>()
+          #if (IndividualLocalAuth)
+            .AddInteractiveServerRenderMode(options => options.ConfigureIdentityAuthenticationRefresh());
+          #else
             .AddInteractiveServerRenderMode();
+          #endif
         #elif (UseWebAssembly)
         app.MapRazorComponents<App>()
             .AddInteractiveWebAssemblyRenderMode()

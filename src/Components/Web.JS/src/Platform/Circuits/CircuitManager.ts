@@ -20,8 +20,6 @@ import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
 
-const authenticationRefreshIntervalInMilliseconds = 30 * 60 * 1000;
-
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
@@ -39,10 +37,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _dispatcher: DotNet.ICallDispatcher;
 
   private _connection?: HubConnection;
-
-  private _authenticationRefreshTimer?: ReturnType<typeof setTimeout>;
-
-  private _authenticationRefreshConnection?: HubConnection;
 
   private _interopMethodsForReconnection?: DotNet.DotNetObject;
 
@@ -146,10 +140,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const connectionBuilder = new HubConnectionBuilder()
       .withUrl('_blazor')
       .withHubProtocol(hubProtocol)
-      .withAuthenticationRefresh({
-        onAuthenticationRefreshed: context => this.scheduleAuthenticationRefresh(context.connection),
-        onAuthenticationRefreshFailed: context => this.scheduleAuthenticationRefresh(context.connection),
-      });
+      .withAuthenticationRefresh();
 
     this._options.configureSignalR(connectionBuilder);
 
@@ -216,7 +207,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
-      this.clearAuthenticationRefresh(connection);
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
       this.handleConnectionDown();
@@ -241,7 +231,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     try {
       await connection.start();
       this.handleConnectionUp();
-      this.scheduleAuthenticationRefresh(connection, true);
     } catch (ex: any) {
       this.unhandledError(ex as Error);
 
@@ -272,57 +261,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     return connection;
-  }
-
-  private scheduleAuthenticationRefresh(connection: HubConnection, replaceExistingConnection = false): void {
-    if (!replaceExistingConnection &&
-        this._authenticationRefreshConnection &&
-        this._authenticationRefreshConnection !== connection) {
-      return;
-    }
-
-    this.clearAuthenticationRefresh();
-
-    if (this._disposed || connection.state !== HubConnectionState.Connected) {
-      return;
-    }
-
-    this._authenticationRefreshConnection = connection;
-    this._authenticationRefreshTimer = setTimeout(() => {
-      this._authenticationRefreshTimer = undefined;
-      void this.refreshAuthentication(connection);
-    }, authenticationRefreshIntervalInMilliseconds);
-  }
-
-  private async refreshAuthentication(connection: HubConnection): Promise<void> {
-    if (this._authenticationRefreshConnection !== connection ||
-        connection.state !== HubConnectionState.Connected) {
-      return;
-    }
-
-    try {
-      await connection.refreshAuthentication();
-    } catch (error) {
-      this._logger.log(LogLevel.Debug, `Failed to refresh authentication: ${error}`);
-    } finally {
-      if (this._authenticationRefreshConnection === connection &&
-          this._authenticationRefreshTimer === undefined) {
-        this.scheduleAuthenticationRefresh(connection);
-      }
-    }
-  }
-
-  private clearAuthenticationRefresh(connection?: HubConnection): void {
-    if (connection && this._authenticationRefreshConnection !== connection) {
-      return;
-    }
-
-    if (this._authenticationRefreshTimer !== undefined) {
-      clearTimeout(this._authenticationRefreshTimer);
-      this._authenticationRefreshTimer = undefined;
-    }
-
-    this._authenticationRefreshConnection = undefined;
   }
 
   public async disconnect(): Promise<void> {
@@ -697,8 +635,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async disposeCore(): Promise<void> {
-    this.clearAuthenticationRefresh();
-
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
