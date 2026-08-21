@@ -4,9 +4,11 @@
 using System.ClientModel;
 using System.ComponentModel;
 using System.Text.Json;
+using AGUI.Abstractions;
 using AGUI.Server;
 using AGUIDojoApi.AgenticGenerativeUI;
 using AGUIDojoApi.BackendToolRendering;
+using AGUIDojoApi.PredictiveStateUpdates;
 using AGUIDojoApi.SharedState;
 using Microsoft.Extensions.AI;
 using OpenAI;
@@ -21,6 +23,10 @@ namespace AGUIDojoApi;
 // recorded client through a service override.
 internal static class ChatClientAgentFactory
 {
+    private const string PredictiveStateMediaType =
+        "application/vnd.aspnetcore.ai.predictive-state+json";
+    internal const string PredictiveStateUpdatesServiceKey = "predictive-state-updates-model";
+
     internal const string HumanInTheLoopSystemPrompt = """
         You are a planning assistant.
         When asked to create a plan, call generate_task_steps so the user can review the steps.
@@ -66,7 +72,31 @@ internal static class ChatClientAgentFactory
           NOT call the tool.
         """;
 
+    internal const string PredictiveStateUpdatesSystemPrompt = """
+        You are a document editor assistant. When asked to write or edit content:
+
+        IMPORTANT:
+        - Use the `write_document_local` tool with the full document text in Markdown format
+        - Format the document extensively so it's easy to read
+        - You can use all kinds of markdown (headings, lists, bold, etc.)
+        - However, do NOT use italic or strike-through formatting
+        - You MUST write the full document, even when changing only a few words
+        - When making edits to the document, try to make them minimal - do not change every word
+        - Keep stories SHORT!
+
+        After writing the document, briefly summarize the changes you made in at most two sentences.
+        """;
+
     internal static IChatClient CreateAgenticChat(IConfiguration configuration)
+        => CreateModelClient(configuration)
+            .AsBuilder()
+            .UseFunctionInvocation()
+            .Build();
+
+    internal static IChatClient CreatePredictiveStateUpdates(IConfiguration configuration)
+        => CreateModelClient(configuration);
+
+    private static IChatClient CreateModelClient(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
@@ -94,10 +124,7 @@ internal static class ChatClientAgentFactory
             modelClient = openAIClient.GetChatClient(modelName).AsIChatClient();
         }
 
-        return modelClient
-            .AsBuilder()
-            .UseFunctionInvocation()
-            .Build();
+        return modelClient;
     }
 
     internal static IList<AITool> CreateBackendToolRenderingTools(JsonSerializerOptions options)
@@ -164,6 +191,96 @@ internal static class ChatClientAgentFactory
         return options;
     }
 
+    internal static IList<AITool> CreatePredictiveStateUpdatesTools(
+        JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        return
+        [
+            AIFunctionFactory.Create(
+                WriteDocument,
+                name: "write_document_local",
+                description: "Write a document using Markdown formatting.",
+                options),
+        ];
+    }
+
+    internal static AGUIStreamOptions CreatePredictiveStateUpdatesStreamOptions(
+        JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        string? lastEmittedDocument = null;
+        var hasEmittedConfirmation = false;
+        var streamOptions = new AGUIStreamOptions();
+        streamOptions.MapContent(content => content is DataContent data &&
+            data.MediaType == PredictiveStateMediaType
+            ? [new StateSnapshotEvent
+            {
+                Snapshot = JsonSerializer.Deserialize<JsonElement>(data.Data.Span),
+            }]
+            : null);
+        streamOptions.MapCall("write_document_local", call =>
+        {
+            var document = call.Arguments?.TryGetValue("document", out var value) == true
+                ? value?.ToString()
+                : null;
+            if (document is null || document == lastEmittedDocument)
+            {
+                return [];
+            }
+
+            var events = new List<BaseEvent>();
+            var startIndex = lastEmittedDocument is not null &&
+                document.StartsWith(lastEmittedDocument, StringComparison.Ordinal)
+                    ? lastEmittedDocument.Length
+                    : 0;
+
+            const int chunkSize = 10;
+            for (var index = startIndex; index < document.Length; index += chunkSize)
+            {
+                var length = Math.Min(chunkSize, document.Length - index);
+                var state = new DocumentState { Document = document[..(index + length)] };
+                events.Add(new StateSnapshotEvent
+                {
+                    Snapshot = JsonSerializer.SerializeToElement(state, options),
+                });
+            }
+
+            events.Add(new ToolCallResultEvent
+            {
+                MessageId = Guid.NewGuid().ToString("N"),
+                ToolCallId = call.CallId,
+                Content = "Document written.",
+                Role = "tool",
+            });
+
+            if (!hasEmittedConfirmation)
+            {
+                hasEmittedConfirmation = true;
+                var confirmationCallId = Guid.NewGuid().ToString("N");
+                events.Add(new ToolCallStartEvent
+                {
+                    ToolCallId = confirmationCallId,
+                    ToolCallName = "confirm_changes",
+                    ParentMessageId = Guid.NewGuid().ToString("N"),
+                });
+                events.Add(new ToolCallArgsEvent
+                {
+                    ToolCallId = confirmationCallId,
+                    Delta = "{}",
+                });
+                events.Add(new ToolCallEndEvent { ToolCallId = confirmationCallId });
+            }
+
+            lastEmittedDocument = document;
+            return events;
+        });
+
+        return streamOptions;
+    }
+
     [Description("Get the weather for a given location.")]
     private static WeatherInfo GetWeather(
         [Description("The location to get the weather for.")] string location) => new()
@@ -181,4 +298,9 @@ internal static class ChatClientAgentFactory
         {
             Recipe = recipe,
         };
+
+    [Description("Write a document in Markdown format.")]
+    private static string WriteDocument(
+        [Description("The complete document content.")] string document)
+        => "Document written.";
 }

@@ -11,7 +11,9 @@ public class AgentState<T> where T : class, new()
 {
     private readonly List<Action> _callbacks = new();
     private T _value;
+    private T? _valueBeforePrediction;
     private T? _valueBeforeRestore;
+    private T? _valueBeforePredictionBeforeRestore;
     private bool _isRestoring;
 
     internal AgentState(T? initialValue = null)
@@ -28,11 +30,52 @@ public class AgentState<T> where T : class, new()
         set
         {
             ArgumentNullException.ThrowIfNull(value);
+            _valueBeforePrediction = null;
             _value = value;
             if (!_isRestoring)
             {
                 NotifyChanged();
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="Value"/> contains provisional predictive state.
+    /// </summary>
+    public bool HasPendingPredictiveState => _valueBeforePrediction is not null;
+
+    /// <summary>
+    /// Accepts the current predictive state as the committed value.
+    /// </summary>
+    public void AcceptPredictiveState()
+    {
+        if (_valueBeforePrediction is null)
+        {
+            return;
+        }
+
+        _valueBeforePrediction = null;
+        if (!_isRestoring)
+        {
+            NotifyChanged();
+        }
+    }
+
+    /// <summary>
+    /// Rejects the current predictive state and restores the value from before the prediction.
+    /// </summary>
+    public void RejectPredictiveState()
+    {
+        if (_valueBeforePrediction is not { } previousValue)
+        {
+            return;
+        }
+
+        _valueBeforePrediction = null;
+        _value = previousValue;
+        if (!_isRestoring)
+        {
+            NotifyChanged();
         }
     }
 
@@ -48,6 +91,17 @@ public class AgentState<T> where T : class, new()
         return new CallbackRegistration(_callbacks, callback);
     }
 
+    internal void SetPredictiveValue(T value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        _valueBeforePrediction ??= _value;
+        _value = value;
+        if (!_isRestoring)
+        {
+            NotifyChanged();
+        }
+    }
+
     internal void BeginRestore()
     {
         if (_isRestoring)
@@ -56,6 +110,8 @@ public class AgentState<T> where T : class, new()
         }
 
         _valueBeforeRestore = _value;
+        _valueBeforePredictionBeforeRestore = _valueBeforePrediction;
+        _valueBeforePrediction = null;
         _value = new T();
         _isRestoring = true;
     }
@@ -63,7 +119,9 @@ public class AgentState<T> where T : class, new()
     internal void CompleteRestore()
     {
         var valueBeforeRestore = _valueBeforeRestore;
+        var valueBeforePredictionBeforeRestore = _valueBeforePredictionBeforeRestore;
         _valueBeforeRestore = null;
+        _valueBeforePredictionBeforeRestore = null;
         _isRestoring = false;
         var completed = false;
         try
@@ -76,6 +134,7 @@ public class AgentState<T> where T : class, new()
             if (!completed)
             {
                 _valueBeforeRestore = valueBeforeRestore;
+                _valueBeforePredictionBeforeRestore = valueBeforePredictionBeforeRestore;
             }
         }
     }
@@ -88,6 +147,8 @@ public class AgentState<T> where T : class, new()
             _valueBeforeRestore = null;
         }
 
+        _valueBeforePrediction = _valueBeforePredictionBeforeRestore;
+        _valueBeforePredictionBeforeRestore = null;
         _isRestoring = false;
     }
 
