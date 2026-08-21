@@ -725,11 +725,140 @@ public class VirtualizeTest
             $"Expected request count <= 50 (MaxItemCount=20 + 2*OverscanCount=30), but got {lastRequest.Count}");
     }
 
+    [Fact]
+    public async Task AlignmentResult_StaleVersionIsIgnoredAndCurrentVersionIsAccepted()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f,
+            totalItems: 100,
+            initialItemIndex: 90);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        var currentVersion = virtualize._renderedWindowVersion;
+        var initialState = GetVirtualizeState(virtualize);
+        var measuredHeight = virtualize._lastRenderedItemCount * 40f;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAlignmentCompleted(new VirtualizeAlignmentResult
+            {
+                FillDirection = ViewportFillDirection.Before,
+                SpacerSeparation = measuredHeight,
+                ContainerSize = 500f,
+                RenderedWindowVersion = currentVersion - 1,
+            }));
+
+        Assert.Equal(initialState, GetVirtualizeState(virtualize));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAlignmentCompleted(new VirtualizeAlignmentResult
+            {
+                FillDirection = ViewportFillDirection.Before,
+                SpacerSeparation = measuredHeight,
+                ContainerSize = 500f,
+                RenderedWindowVersion = currentVersion,
+            }));
+
+        var currentState = GetVirtualizeState(virtualize);
+        Assert.True(
+            currentState.ItemsBefore != initialState.ItemsBefore
+            || currentState.VisibleItemCapacity != initialState.VisibleItemCapacity);
+    }
+
+    [Fact]
+    public async Task BeforeSpacerCallback_UsesVersionIdentityWhenRenderedItemCountsMatch()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 500);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                500f,
+                500f,
+                SpacerVisibilityReason.ViewportFill,
+                virtualize._renderedWindowVersion));
+
+        var oldVersion = virtualize._renderedWindowVersion;
+        var oldRenderedItemCount = virtualize._lastRenderedItemCount;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                5000f,
+                2000f,
+                500f,
+                SpacerVisibilityReason.ViewportFill,
+                oldVersion));
+
+        Assert.True(virtualize._renderedWindowVersion > oldVersion);
+        Assert.Equal(oldRenderedItemCount, virtualize._lastRenderedItemCount);
+        var currentState = GetVirtualizeState(virtualize);
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                100f,
+                1000f,
+                SpacerVisibilityReason.UserScroll,
+                oldVersion));
+
+        Assert.Equal(currentState, GetVirtualizeState(virtualize));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(
+                0f,
+                100f,
+                1000f,
+                SpacerVisibilityReason.UserScroll,
+                virtualize._renderedWindowVersion));
+
+        Assert.NotEqual(currentState, GetVirtualizeState(virtualize));
+    }
+
+    [Fact]
+    public async Task AfterSpacerCallback_StaleVersionIsIgnoredAndCurrentVersionIsAccepted()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 500);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        var currentVersion = virtualize._renderedWindowVersion;
+        var initialState = GetVirtualizeState(virtualize);
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                1000f,
+                1000f,
+                SpacerVisibilityReason.ViewportFill,
+                currentVersion - 1));
+
+        Assert.Equal(initialState, GetVirtualizeState(virtualize));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(
+                0f,
+                1000f,
+                1000f,
+                SpacerVisibilityReason.ViewportFill,
+                currentVersion));
+
+        Assert.NotEqual(initialState, GetVirtualizeState(virtualize));
+    }
+
+    private static VirtualizeState GetVirtualizeState(Virtualize<int> virtualize)
+        => new(
+            virtualize._itemsBefore,
+            virtualize._visibleItemCapacity,
+            virtualize._unusedItemCapacity,
+            virtualize._lastRenderedItemCount,
+            virtualize._measuredItemCount,
+            virtualize._totalMeasuredHeight,
+            virtualize._itemSize,
+            virtualize._renderedWindowVersion);
+
     private async Task<(Virtualize<int> virtualize, TestRenderer renderer)> CreateRenderedVirtualize(
         float itemSize,
         int totalItems,
         ItemsProviderDelegate<int> customProvider = null,
-        RenderFragment<int> childContent = null)
+        RenderFragment<int> childContent = null,
+        int initialItemIndex = 0)
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -740,7 +869,13 @@ public class VirtualizeTest
 
         var rootComponent = new VirtualizeTestHostcomponent
         {
-            InnerContent = BuildVirtualize(itemSize, provider, null, virtualize => renderedVirtualize = virtualize, childContent)
+            InnerContent = BuildVirtualize(
+                itemSize,
+                provider,
+                null,
+                virtualize => renderedVirtualize = virtualize,
+                childContent,
+                initialItemIndex)
         };
 
         var serviceProvider = new ServiceCollection()
@@ -767,7 +902,8 @@ public class VirtualizeTest
         ItemsProviderDelegate<TItem> itemsProvider,
         ICollection<TItem> items,
         Action<Virtualize<TItem>> captureRenderedVirtualize = null,
-        RenderFragment<TItem> childContent = null)
+        RenderFragment<TItem> childContent = null,
+        int initialItemIndex = 0)
         => builder =>
     {
         builder.OpenComponent<Virtualize<TItem>>(0);
@@ -778,6 +914,11 @@ public class VirtualizeTest
         if (childContent != null)
         {
             builder.AddComponentParameter(5, "ChildContent", childContent);
+        }
+
+        if (initialItemIndex != 0)
+        {
+            builder.AddComponentParameter(6, "InitialItemIndex", initialItemIndex);
         }
 
         if (captureRenderedVirtualize != null)
@@ -1381,6 +1522,15 @@ public class VirtualizeTest
         Assert.Equal("0", (string)heightAttributes[0].AttributeValue);
         Assert.True(double.TryParse((string)heightAttributes[1].AttributeValue, NumberStyles.Float, CultureInfo.InvariantCulture, out _));
 
+        var versionAttributes = referenceFrames
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute
+                     && f.AttributeName == "data-blazor-virtualize-rendered-window-version")
+            .ToList();
+
+        Assert.Equal(2, versionAttributes.Count);
+        Assert.All(versionAttributes, attribute =>
+            Assert.Equal(renderedVirtualize._renderedWindowVersion, Convert.ToInt64(attribute.AttributeValue, CultureInfo.InvariantCulture)));
+
         var inlineStyleAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute
                      && f.AttributeName == "style")
@@ -1390,4 +1540,14 @@ public class VirtualizeTest
         var hostStyle = Assert.Single(inlineStyleAttributes);
         Assert.Equal("overflow: auto; height: 800px;", (string)hostStyle.AttributeValue);
     }
+
+    private readonly record struct VirtualizeState(
+        int ItemsBefore,
+        int VisibleItemCapacity,
+        int UnusedItemCapacity,
+        int LastRenderedItemCount,
+        int MeasuredItemCount,
+        float TotalMeasuredHeight,
+        float ItemSize,
+        long RenderedWindowVersion);
 }

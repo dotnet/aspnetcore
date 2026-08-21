@@ -14,7 +14,7 @@
     </label>
 </div>
 
-<div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
+<div id="scroll-container" style="height: @(InitialContainerHeight)px; overflow-y: auto; border: 1px solid black;">
     @if (listLoaded)
     {
         @if (useItemsProvider)
@@ -24,7 +24,7 @@
                     <div class="item"
                          data-index="@item.Index"
                          data-anchor-mode="@((int)anchorMode)"
-                         style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
+                         style="@GetItemStyle(item)">
                         <div>Item @item.Index</div>
                     </div>
                 </ItemContent>
@@ -42,7 +42,7 @@
                 <div class="item"
                      data-index="@item.Index"
                      data-anchor-mode="@((int)anchorMode)"
-                     style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
+                     style="@GetItemStyle(item)">
                     <div>Item @item.Index</div>
                 </div>
             </Virtualize>
@@ -140,6 +140,24 @@
     [Parameter]
     public int InitialItemIndex { get; set; }
 
+    [Parameter]
+    public int InitialItemCount { get; set; } = 1000;
+
+    [Parameter]
+    public int InitialContainerHeight { get; set; } = 300;
+
+    [Parameter]
+    public int InitialOverscanCount { get; set; } = 15;
+
+    [Parameter]
+    public bool InitiallyUseItemsProvider { get; set; }
+
+    [Parameter]
+    public bool InitiallyUseVariableHeight { get; set; }
+
+    [Parameter]
+    public bool UseExactItemSize { get; set; }
+
     private static readonly IReadOnlyDictionary<string, object> _emptyComparerSplat =
         new Dictionary<string, object>();
 
@@ -157,10 +175,19 @@
     protected override void OnInitialized()
     {
         initialItemIndex = InitialItemIndex;
-        items = Enumerable.Range(0, 1000)
+        overscanCount = InitialOverscanCount;
+        useItemsProvider = InitiallyUseItemsProvider;
+        useVariableHeight = InitiallyUseVariableHeight;
+        items = Enumerable.Range(0, InitialItemCount)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
+        nextAppendIndex = InitialItemCount;
     }
+
+    private string GetItemStyle(DynamicItem item)
+        => UseExactItemSize
+            ? $"height: {item.Height}px;"
+            : $"border: 1px solid gray; padding: 5px; min-height: {item.Height}px;";
 
     private int GetHeight(int index)
     {
