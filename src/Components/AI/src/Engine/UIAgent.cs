@@ -103,22 +103,42 @@ public class UIAgent : IDisposable
         ChatMessage message,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(message);
 
-        _history.Add(message);
-
-        var pipeline = new BlockMappingPipeline(_options, _logger);
-
-        // Process user message through pipeline
-        var userUpdate = new ChatResponseUpdate
-        {
-            Role = message.Role,
-            Contents = [.. message.Contents]
-        };
-        await foreach (var block in pipeline.Process(userUpdate, cancellationToken).ConfigureAwait(false))
+        await foreach (var block in SendMessagesAsync([message], cancellationToken).ConfigureAwait(false))
         {
             yield return block;
         }
+    }
+
+    internal async IAsyncEnumerable<ContentBlock> SendMessagesAsync(
+        IReadOnlyList<ChatMessage> messages,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        foreach (var message in messages)
+        {
+            ArgumentNullException.ThrowIfNull(message);
+            _history.Add(message);
+        }
+
+        var pipeline = new BlockMappingPipeline(_options, _logger);
+
+        // Process user messages through pipeline
+        foreach (var message in messages)
+        {
+            var userUpdate = new ChatResponseUpdate
+            {
+                Role = message.Role,
+                Contents = [.. message.Contents]
+            };
+            await foreach (var block in pipeline.Process(userUpdate, cancellationToken).ConfigureAwait(false))
+            {
+                yield return block;
+            }
+        }
+
         foreach (var block in pipeline.Finalize())
         {
             yield return block;
