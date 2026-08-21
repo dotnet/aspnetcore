@@ -324,13 +324,7 @@ internal partial class TlsEventPump
                 return;
 
             default:
-                // Unreachable: every suspension point has a case above. Guard it anyway - the fd has just been
-                // re-armed, so falling out of the switch would leave the handshake registered but never
-                // advanced, stalling it until the timeout sweep instead of failing it here.
-                Debug.Assert(false, $"Unhandled handshake user callback type {callback.GetType()}.");
-                _logger.LogWarning("fd={Fd}: unhandled handshake user callback type; dropping.", fd);
-                DropHandshake(fd, conn);
-                return;
+                throw new UnreachableException($"Pump {_id}: unhandled handshake user callback type {callback.GetType()} for fd={fd}.");
         }
     }
 }
