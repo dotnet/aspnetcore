@@ -366,9 +366,20 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return null;
         }
 
+        var initialItemSize = _itemSize;
         var result = await _jsInterop.AlignToItemAsync(localIndex, token);
+        var fillDirection = ProcessAlignmentResult(result, out var visibleItemCapacity, out var unusedItemCapacity);
+        if (_initialIndex.Phase == InitialIndexPhase.Pending
+            && _itemSize != initialItemSize
+            && _initialIndex.TryBeginRemeasure(_itemSize))
+        {
+            StateHasChanged();
+            return null;
+        }
 
-        return ProcessAlignmentResult(result);
+        _visibleItemCapacity = visibleItemCapacity;
+        _unusedItemCapacity = unusedItemCapacity;
+        return fillDirection;
     }
 
     private int ClampToItemRange(int requested)
@@ -791,18 +802,41 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return;
         }
 
-        var fillDirection = ProcessAlignmentResult(result);
+        var initialItemSize = _itemSize;
+        var fillDirection = ProcessAlignmentResult(result, out var visibleItemCapacity, out var unusedItemCapacity);
+        if (_itemSize != initialItemSize && _initialIndex.TryBeginRemeasure(_itemSize))
+        {
+            StateHasChanged();
+            return;
+        }
+
+        _visibleItemCapacity = visibleItemCapacity;
+        _unusedItemCapacity = unusedItemCapacity;
         UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
     }
 
-    private ViewportFillDirection? ProcessAlignmentResult(VirtualizeAlignmentResult? result)
+    private ViewportFillDirection? ProcessAlignmentResult(
+        VirtualizeAlignmentResult? result,
+        out int visibleItemCapacity,
+        out int unusedItemCapacity)
     {
+        visibleItemCapacity = _visibleItemCapacity;
+        unusedItemCapacity = _unusedItemCapacity;
         if (result is null || result.RenderedWindowVersion != _renderedWindowVersion)
         {
             return null;
         }
 
-        UpdateItemSizeFromRenderedContent(0, result.SpacerSeparation, result.ContainerSize);
+        if (_initialIndex.Phase == InitialIndexPhase.Pending)
+        {
+            CalculateItemDistribution(
+                0,
+                result.SpacerSeparation,
+                result.ContainerSize,
+                out _,
+                out visibleItemCapacity,
+                out unusedItemCapacity);
+        }
 
         return result.FillDirection;
     }
@@ -1233,6 +1267,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private sealed class InitialIndexState
     {
         private float _alignItemSize;
+        private bool _hasRemeasured;
 
         public InitialIndexPhase Phase { get; private set; }
 
@@ -1242,6 +1277,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             Phase = InitialIndexPhase.Pending;
             _alignItemSize = itemSize;
+            _hasRemeasured = false;
+        }
+
+        public bool TryBeginRemeasure(float itemSize)
+        {
+            if (_hasRemeasured || itemSize == _alignItemSize)
+            {
+                return false;
+            }
+
+            _alignItemSize = itemSize;
+            _hasRemeasured = true;
+            return true;
         }
 
         public void Abort()

@@ -47,7 +47,7 @@ type AlignmentResult = {
 };
 
 type IntersectionMeasurement = Omit<AlignmentResult, 'fillDirection'> & {
-  entry: IntersectionObserverEntry;
+  target: Element;
   spacerSize: number;
 };
 
@@ -634,7 +634,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   subscribeToScroll();
 
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
-  let pendingCallbacks: Map<Element, IntersectionMeasurement> = new Map();
+  const pendingCallbacks: Set<Element> = new Set();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
   let pendingAlignLocalIndex: number | null = null;
 
@@ -675,18 +675,40 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return { spacerSeparation, containerSize, renderedWindowVersion };
   }
 
-  function measureIntersectionEntry(entry: IntersectionObserverEntry): IntersectionMeasurement | null {
-    const measurement = measureRenderedWindow(entry.rootBounds?.height);
+  function measureIntersectionTargets(targets: Element[]): IntersectionMeasurement[] {
+    const measurement = measureRenderedWindow();
     if (!measurement) {
-      return null;
+      return [];
     }
 
     const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
-    const isBefore = entry.target === spacerBefore;
-    const spacerSize = isBefore
-      ? (entry.intersectionRect.top - entry.boundingClientRect.top) / scaleFactor
-      : (entry.boundingClientRect.bottom - entry.intersectionRect.bottom) / scaleFactor;
-    return { entry, spacerSize, ...measurement };
+    const viewport = getViewportBounds(scaleFactor);
+    const margin = rootMargin * scaleFactor;
+    const intersectionTop = viewport.top - margin;
+    const intersectionBottom = viewport.bottom + margin;
+    const measurements: IntersectionMeasurement[] = [];
+
+    for (const target of targets) {
+      if (!target.isConnected || (target !== spacerBefore && target !== spacerAfter)) {
+        continue;
+      }
+
+      const targetRect = target.getBoundingClientRect();
+      const targetIntersectionTop = Math.max(targetRect.top, intersectionTop);
+      const targetIntersectionBottom = Math.min(targetRect.bottom, intersectionBottom);
+      const isZeroHeightIntersection = targetRect.height === 0 && targetIntersectionBottom === targetIntersectionTop;
+      if (targetIntersectionBottom < targetIntersectionTop
+        || (targetIntersectionBottom === targetIntersectionTop && !isZeroHeightIntersection)) {
+        continue;
+      }
+
+      const spacerSize = target === spacerBefore
+        ? (targetIntersectionTop - targetRect.top) / scaleFactor
+        : (targetRect.bottom - targetIntersectionBottom) / scaleFactor;
+      measurements.push({ target, spacerSize, ...measurement });
+    }
+
+    return measurements;
   }
 
   // Measures the target's viewport-relative top and aligns it to containerTop.
@@ -783,19 +805,20 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   };
 
   function flushPendingCallbacks(): void {
-    if (pendingCallbacks.size === 0) return;
-    const measurements = Array.from(pendingCallbacks.values());
+    if (pendingCallbacks.size === 0) {
+      return;
+    }
+    const targets = Array.from(pendingCallbacks);
     pendingCallbacks.clear();
+    const measurements = measureIntersectionTargets(targets);
+    if (measurements.length === 0) {
+      return;
+    }
     processIntersectionEntries(measurements);
   }
 
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
-    entries.forEach(entry => {
-      const measurement = measureIntersectionEntry(entry);
-      if (measurement) {
-        pendingCallbacks.set(entry.target, measurement);
-      }
-    });
+    entries.forEach(entry => pendingCallbacks.add(entry.target));
 
     if (!callbackTimeout) {
       flushPendingCallbacks();
@@ -913,32 +936,24 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       updateAnchorSnapshot();
     }
 
-    const bothSpacersIntersect = measurements.some(({ entry }) => entry.target === spacerBefore && entry.isIntersecting)
-      && measurements.some(({ entry }) => entry.target === spacerAfter && entry.isIntersecting);
+    const bothSpacersIntersect = measurements.some(({ target }) => target === spacerBefore)
+      && measurements.some(({ target }) => target === spacerAfter);
 
-    const intersectingMeasurements = measurements.filter(({ entry }) => {
-      if (bothSpacersIntersect && entry.target === spacerAfter) {
+    const intersectingMeasurements = measurements.filter(({ target }) => {
+      if (bothSpacersIntersect && target === spacerAfter) {
         // When both spacers are visible, report only the before spacer to avoid conflicting callbacks.
         return false;
       }
 
-      if (entry.isIntersecting) {
-        if (!isSelfScroll) {
-          // Convergence to the top/bottom edge should not fight with self scroll.
-          if (entry.target === spacerAfter) {
-            updateBottomConvergence(source === ScrollSource.UserScroll);
-          } else if (entry.target === spacerBefore) {
-            updateTopConvergence();
-          }
+      if (!isSelfScroll) {
+        // Convergence to the top/bottom edge should not fight with self scroll.
+        if (target === spacerAfter) {
+          updateBottomConvergence(source === ScrollSource.UserScroll);
+        } else if (target === spacerBefore) {
+          updateTopConvergence();
         }
-        return true;
       }
-      if (entry.target === spacerAfter && convergence.bottom && spacerAfter.offsetHeight > 0) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      } else if (entry.target === spacerBefore && convergence.top && spacerBefore.offsetHeight > 0) {
-        scrollElement.scrollTop = 0;
-      }
-      return false;
+      return true;
     });
 
     if (intersectingMeasurements.length === 0) {
@@ -949,14 +964,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     intersectingMeasurements.forEach((measurement): void => {
-      const { entry } = measurement;
       const reason = source === ScrollSource.UserScroll
         ? SpacerVisibilityReason.UserScroll
-        : (isSelfScroll && (entry.target === spacerBefore || source === ScrollSource.RestoreSnapshot))
+        : (isSelfScroll && (measurement.target === spacerBefore || source === ScrollSource.RestoreSnapshot))
           ? SpacerVisibilityReason.ProgrammaticScroll
           : SpacerVisibilityReason.ViewportFill;
 
-      const isBefore = entry.target === spacerBefore;
+      const isBefore = measurement.target === spacerBefore;
       const spacer = isBefore ? spacerBefore : spacerAfter;
 
       if (!isBefore && spacer.offsetHeight === 0) {
@@ -979,7 +993,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         measurement.spacerSeparation,
         measurement.containerSize,
         reason,
-        measurement.renderedWindowVersion);
+        measurement.renderedWindowVersion
+      );
     });
 
     if (source === ScrollSource.AlignToItem) {
