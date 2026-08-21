@@ -658,8 +658,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
     }
 
-    long IVirtualizeJsCallbacks.RenderedWindowVersion => _renderedWindowVersion;
-
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(
         float spacerSize,
         float spacerSeparation,
@@ -788,6 +786,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAlignmentCompleted(VirtualizeAlignmentResult result)
     {
+        if (_initialIndex.Phase != InitialIndexPhase.Pending)
+        {
+            return;
+        }
+
         var fillDirection = ProcessAlignmentResult(result);
         UpdateWindowFromViewport(fillDirection, _visibleItemCapacity, _unusedItemCapacity);
     }
