@@ -5627,6 +5627,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
         Browser.Exists(By.Id("toggle-height")).Click();
+        Browser.Contains("Switched to variable heights", () => Browser.Exists(By.Id("status")).Text);
         if (useProvider)
         {
             Browser.Exists(By.Id("toggle-provider")).Click();
@@ -5658,6 +5659,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
         Browser.Exists(By.Id("toggle-height")).Click();
+        Browser.Contains("Switched to variable heights", () => Browser.Exists(By.Id("status")).Text);
         if (useProvider)
         {
             Browser.Exists(By.Id("toggle-provider")).Click();
@@ -5689,6 +5691,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
         Browser.Exists(By.Id("toggle-height")).Click();
+        Browser.Contains("Switched to variable heights", () => Browser.Exists(By.Id("status")).Text);
         if (useProvider)
         {
             Browser.Exists(By.Id("toggle-provider")).Click();
@@ -5750,6 +5753,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         js.ExecuteScript("document.getElementById('scroll-container').style.height = '2000px';");
         Browser.Exists(By.Id("toggle-height")).Click();
+        Browser.Contains("Switched to variable heights", () => Browser.Exists(By.Id("status")).Text);
         if (useProvider)
         {
             Browser.Exists(By.Id("toggle-provider")).Click();
