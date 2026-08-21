@@ -32,6 +32,15 @@ internal partial class TlsEventPump
     // still be running user code that reaches this pump's resources.
     private int _outstandingUserCallbacks;
 
+    // Number of abandoned-connection disposals that have been started but have not finished.
+    // DirectTlsConnection.DisposeAsync resumes the connection's send/receive loops asynchronously, so that work
+    // outlives this pump's event loop while still reaching the memory pool and the OpenSSL contexts - which the
+    // listener frees as soon as _exitSignal completes. Gating the signal on this as well is what keeps that from
+    // becoming a use-after-free. Counted separately from _outstandingUserCallbacks because these never write to
+    // the wakeup fd, so the argument above does not apply to them, and because it makes plain which kind of
+    // off-pump work is holding shutdown open.
+    private int _outstandingConnectionDisposals;
+
     // Handshakes that were parked on a user callback when the pump loop exited. Their teardown is deferred to
     // the drained-shutdown path so the session (and the certificate handed to the validation callback) is not
     // disposed underneath live user code. Only ever touched by the thread that exits the loop and then by the
@@ -90,15 +99,17 @@ internal partial class TlsEventPump
         _handshakesAwaitingCallback.Clear();
     }
 
-    // Finishes the pump's teardown once BOTH the event loop has exited and every user callback it dispatched to
-    // the thread pool has reported back: closes the fds it owns and completes the exit signal. Called by the
-    // pump thread when the loop ends and by each callback completion, so whichever happens last does the work.
-    // Deferring the close until the callbacks have drained is what makes CompleteUserCallback's wakeup write safe:
-    // the wakeup fd cannot have been closed (and its number recycled by an unrelated fd) while a callback is
-    // still in flight.
+    // Finishes the pump's teardown once the event loop has exited AND every piece of off-pump work it started -
+    // dispatched user callbacks and abandoned-connection disposals - has reported back: closes the fds it owns
+    // and completes the exit signal. Called by the pump thread when the loop ends and by each piece of off-pump
+    // work as it finishes, so whichever happens last does the work. Deferring the close until the callbacks have
+    // drained is what makes CompleteUserCallback's wakeup write safe: the wakeup fd cannot have been closed (and
+    // its number recycled by an unrelated fd) while a callback is still in flight.
     private void CompletePumpShutdownIfDrained()
     {
-        if (!_loopExited || Volatile.Read(ref _outstandingUserCallbacks) != 0)
+        if (!_loopExited
+            || Volatile.Read(ref _outstandingUserCallbacks) != 0
+            || Volatile.Read(ref _outstandingConnectionDisposals) != 0)
         {
             return;
         }

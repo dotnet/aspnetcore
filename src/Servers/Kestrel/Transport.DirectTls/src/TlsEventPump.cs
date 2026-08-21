@@ -1161,16 +1161,35 @@ internal partial class TlsEventPump : IDisposable
         connection.AbortBeforeStart();
     }
 
-    // Fire-and-forget teardown for a connection
-    private async Task DisposeAbandonedConnectionAsync(DirectTlsConnection connection)
+    // Disposes the abandoned connection itself. internal virtual so tests can hold the disposal open and observe
+    // that shutdown waits for it, without needing a live TLS session behind the connection.
+    internal virtual ValueTask DisposeConnectionAsync(DirectTlsConnection connection) => connection.DisposeAsync();
+
+    // Disposes a connection that finished its handshake just as the listener stopped accepting. It never reached
+    // the ready channel, so nothing else will ever dispose it - and DisposeAsync is not quick: it awaits the
+    // send/receive loops (which hold pooled buffers) and then sends close_notify through the TLS session, so the
+    // work keeps touching the memory pool and the OpenSSL contexts after this method has yielded to its caller.
+    // The listener frees both as soon as this pump reports that it has exited, so the disposal has to be part of
+    // that report. The count is taken in the synchronous part of the method, which runs before the first await:
+    // keeping it here rather than at the call site means a future caller cannot start a disposal without it
+    // being counted. The returned task is deliberately not retained; the counter is what shutdown waits on.
+    // internal so tests can drive this path without completing a real handshake.
+    internal async Task DisposeAbandonedConnectionAsync(DirectTlsConnection connection)
     {
+        Interlocked.Increment(ref _outstandingConnectionDisposals);
+
         try
         {
-            await connection.DisposeAsync().ConfigureAwait(false);
+            await DisposeConnectionAsync(connection).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Disposing a connection abandoned during shutdown threw.");
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _outstandingConnectionDisposals);
+            CompletePumpShutdownIfDrained();
         }
     }
 
