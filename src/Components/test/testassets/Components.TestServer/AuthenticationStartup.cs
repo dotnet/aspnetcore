@@ -63,7 +63,7 @@ public class AuthenticationStartupBase
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub(options =>
                 {
-                    options.MaximumAuthenticationExpiration = TimeSpan.FromMinutes(30);
+                    options.MaximumAuthenticationExpiration = TimeSpan.FromMinutes(35);
                     options.CloseOnAuthenticationExpiration = true;
                 })
                     .AddEndpointFilter(async (context, next) =>

@@ -164,7 +164,7 @@ public partial class HttpConnectionDispatcherTests
             var options = new HttpConnectionDispatcherOptions
             {
                 EnableAuthenticationRefresh = true,
-                MaximumAuthenticationExpiration = TimeSpan.FromMinutes(30),
+                MaximumAuthenticationExpiration = TimeSpan.FromMinutes(35),
             };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
             var user = CreateAuthenticatedUserWithStableIdentity("user");
@@ -191,9 +191,9 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             var ttl = ReadJson(context.Response.Body).Value<int?>("tokenLifetimeSeconds");
             Assert.NotNull(ttl);
-            Assert.InRange(ttl.Value, (30 * 60) - 2, 30 * 60);
+            Assert.InRange(ttl.Value, (35 * 60) - 2, 35 * 60);
             Assert.Equal(
-                DateTimeOffset.UtcNow.AddMinutes(30),
+                DateTimeOffset.UtcNow.AddMinutes(35),
                 connection.AuthenticationExpiration,
                 TimeSpan.FromSeconds(2));
         }
