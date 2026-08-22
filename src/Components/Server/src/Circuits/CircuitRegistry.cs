@@ -108,6 +108,12 @@ internal partial class CircuitRegistry
             }
         }
 
+        if (!circuitHost.Client.Connected &&
+            string.Equals(circuitHost.Client.ConnectionId, connectionId, StringComparison.Ordinal))
+        {
+            circuitHost.JSRuntime.MarkDisconnected();
+        }
+
         return circuitHandlerTask;
     }
 
@@ -214,6 +220,11 @@ internal partial class CircuitRegistry
 
         try
         {
+            if (previouslyConnected)
+            {
+                circuitHost.JSRuntime.MarkDisconnected();
+            }
+
             await circuitHandlerTask;
             Log.ReconnectionSucceeded(_logger, circuitHost.CircuitId);
             return circuitHost;
@@ -251,6 +262,7 @@ internal partial class CircuitRegistry
             DisconnectedCircuits.Remove(circuitId.Secret);
             ConnectedCircuits.TryAdd(circuitId, disconnectedEntry.CircuitHost);
 
+            disconnectedEntry.CircuitHost.JSRuntime.MarkDisconnected();
             disconnectedEntry.CircuitHost.Client.Transfer(clientProxy, connectionId);
             return (disconnectedEntry.CircuitHost, false);
         }

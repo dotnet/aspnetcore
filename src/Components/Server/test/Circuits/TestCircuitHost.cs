@@ -32,6 +32,7 @@ internal class TestCircuitHost : CircuitHost
     {
         clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
         var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        jsRuntime.Initialize(clientProxy);
         var navigationManager = new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>());
         var componentsActivitySource = new ComponentsActivitySource();
         var circuitActivitySource = new CircuitActivitySource();
