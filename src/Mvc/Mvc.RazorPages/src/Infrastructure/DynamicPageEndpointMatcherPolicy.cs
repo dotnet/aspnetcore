@@ -166,9 +166,15 @@ internal sealed class DynamicPageEndpointMatcherPolicy : MatcherPolicy, IEndpoin
                 {
                     // We're working with a runtime-compiled page and have to Load it.
                     var compiled = actionDescriptor!.CompiledPageDescriptor ??
-                        await _loader.LoadAsync(actionDescriptor, endpoint.Metadata);
+                        await _loader.LoadAsync(actionDescriptor, EndpointMetadataCollection.Empty);
                     loadedEndpoints[j] = compiled.Endpoint!;
                 }
+
+                // Merge the original dynamic endpoint's metadata into the resolved endpoint so that
+                // metadata configured on the fallback/dynamic route (e.g. authorization) is preserved.
+                // The original metadata is inserted at lower precedence than the page's own metadata.
+                // This is applied consistently for both compiled and runtime-compiled pages.
+                loadedEndpoints[j] = DynamicEndpointMetadataMerger.MergeMetadata(loadedEndpoints[j], endpoint.Metadata);
             }
 
             // Expand the list of endpoints
