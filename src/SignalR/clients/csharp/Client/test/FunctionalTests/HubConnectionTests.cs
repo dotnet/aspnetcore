@@ -2361,46 +2361,79 @@ public partial class HubConnectionTests : FunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50180")]
     public async Task LongPollingUsesHttp2ByDefault()
     {
-        await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
-        {
-            o.ConfigureEndpointDefaults(o2 =>
-            {
-                o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
-                o2.UseHttps();
-            });
-            o.ConfigureHttpsDefaults(httpsOptions =>
-            {
-                httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
-            });
-        }))
-        {
-            var hubConnection = new HubConnectionBuilder()
-                .WithLoggerFactory(LoggerFactory)
-                .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, o => o.HttpMessageHandlerFactory = h =>
-                {
-                    ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-                    return h;
-                })
-                .Build();
-            try
-            {
-                await hubConnection.StartAsync().DefaultTimeout();
-                var httpProtocol = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetHttpProtocol)).DefaultTimeout();
+        var logsSeen = false;
+        var logsTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                Assert.Equal("HTTP/2", httpProtocol);
-            }
-            catch (Exception ex)
+        Action<WriteContext> handler = null;
+        handler = context =>
+        {
+            if (logsSeen)
             {
-                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                throw;
+                return;
             }
-            finally
+
+            var message = context.Message;
+            if ((message.Contains("Request starting HTTP/2 POST") && message.Contains("/negotiate?")) ||
+                (message.Contains("Request starting HTTP/2 POST") && message.Contains("?id=")) ||
+                (message.Contains("Request finished HTTP/2 GET") && message.Contains("?id=")) ||
+                (message.Contains("Request finished HTTP/2 DELETE") && message.Contains("?id=")))
             {
-                await hubConnection.DisposeAsync().DefaultTimeout();
+                logsSeen = true;
+                logsTcs.TrySetResult();
             }
+        };
+
+        TestSink.MessageLogged += handler;
+
+        try
+        {
+            await using (var server = await StartServer<Startup>(configureKestrelServerOptions: o =>
+            {
+                o.ConfigureEndpointDefaults(o2 =>
+                {
+                    o2.Protocols = Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                    o2.UseHttps();
+                });
+                o.ConfigureHttpsDefaults(httpsOptions =>
+                {
+                    httpsOptions.ServerCertificate = TestCertificateHelper.GetTestCert();
+                });
+            }))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, o => o.HttpMessageHandlerFactory = h =>
+                    {
+                        ((HttpClientHandler)h).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+                        return h;
+                    })
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+                    var httpProtocol = await hubConnection.InvokeAsync<string>(nameof(TestHub.GetHttpProtocol)).DefaultTimeout();
+
+                    Assert.Equal("HTTP/2", httpProtocol);
+
+                    // Wait for HTTP/2 logs to flush before server disposal
+                    await logsTcs.Task.DefaultTimeout();
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+        finally
+        {
+            TestSink.MessageLogged -= handler;
         }
 
         // negotiate is HTTP2
