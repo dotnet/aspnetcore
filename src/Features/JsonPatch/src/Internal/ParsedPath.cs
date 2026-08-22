@@ -41,6 +41,11 @@ public readonly struct ParsedPath
 
     private static string[] ParsePath(string path)
     {
+        if (path.Length == 0)
+        {
+            return Array.Empty<string>();
+        }
+
         var strings = new List<string>();
         var sb = new StringBuilder(path.Length);
 
@@ -52,6 +57,10 @@ public readonly struct ParsedPath
                 {
                     strings.Add(sb.ToString());
                     sb.Length = 0;
+                }
+                else if (i != 0)
+                {
+                    throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
                 }
             }
             else if (path[i] == '~')
@@ -84,6 +93,10 @@ public readonly struct ParsedPath
         if (sb.Length > 0)
         {
             strings.Add(sb.ToString());
+        }
+        else
+        {
+            throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
         }
 
         return strings.ToArray();
