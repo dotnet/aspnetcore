@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -42,15 +44,24 @@ internal static class HostingTelemetryHelpers
         KeyValuePair.Create(HttpMethods.Trace, HttpMethods.Trace)
     ], StringComparer.OrdinalIgnoreCase);
 
-    // Boxed port values for HTTP and HTTPS.
+    // Boxed values for the ports most likely to be seen in the Host header.
     private static readonly object HttpPort = 80;
     private static readonly object HttpsPort = 443;
+    private static readonly object Port8080 = 8080;
+    private static readonly object Port5000 = 5000;
+    private static readonly object Port5001 = 5001;
+
+    // Single-value cache for any other (e.g. dynamically-assigned) port. The server's listening
+    // port is effectively constant for the lifetime of the process, so this avoids boxing on the
+    // common path. The Host header is client-controlled, so the cache is intentionally limited to
+    // a single entry; a miss simply boxes the value again.
+    private static object? _lastBoxedPort;
 
     public static bool TryGetServerPort(HostString host, string scheme, [NotNullWhen(true)] out object? port)
     {
-        if (host.Port.HasValue)
+        if (host.Port is { } portValue)
         {
-            port = host.Port.Value;
+            port = GetBoxedPort(portValue);
             return true;
         }
 
@@ -69,6 +80,38 @@ internal static class HostingTelemetryHelpers
         // Unknown scheme, no default port.
         port = null;
         return false;
+    }
+
+    private static object GetBoxedPort(int port)
+    {
+        // Reuse pre-boxed instances for the most common ports to avoid allocating.
+        var common = port switch
+        {
+            80 => HttpPort,
+            443 => HttpsPort,
+            8080 => Port8080,
+            5000 => Port5000,
+            5001 => Port5001,
+            _ => null,
+        };
+
+        if (common is not null)
+        {
+            return common;
+        }
+
+        // Otherwise reuse the most-recently boxed port. Reference reads/writes are atomic and a
+        // race only results in an occasional extra allocation, so no locking is required.
+        var last = _lastBoxedPort;
+        if (last is not null && (int)last == port)
+        {
+            return last;
+        }
+
+        object boxed = port;
+        _lastBoxedPort = boxed;
+
+        return boxed;
     }
 
     public static object GetBoxedStatusCode(int statusCode)
@@ -140,11 +183,24 @@ internal static class HostingTelemetryHelpers
     /// </summary>
     public static bool IsErrorStatusCode(int statusCode) => statusCode >= 500 && statusCode <= 599;
 
+    // Cache of activity display names keyed on the route string instance (from endpoint metadata),
+    // then on the normalized method prefix. A ConditionalWeakTable is used so cached entries are
+    // released once the endpoint (and therefore its route string) is no longer referenced. The method
+    // is normalized to a small fixed set, so the number of entries per route is bounded. This avoids
+    // building the "{method} {route}" string on every request.
+    private static readonly ConditionalWeakTable<string, ConcurrentDictionary<string, string>> DisplayNameCache = new();
+
     public static string GetActivityDisplayName(string originalHttpMethod, string? httpRoute = null)
     {
         var normalizedHttpMethod = GetNormalizedHttpMethod(originalHttpMethod);
         var namePrefix = normalizedHttpMethod == OtherHttpMethod ? "HTTP" : normalizedHttpMethod;
 
-        return string.IsNullOrEmpty(httpRoute) ? namePrefix : $"{namePrefix} {httpRoute}";
+        if (string.IsNullOrEmpty(httpRoute))
+        {
+            return namePrefix;
+        }
+
+        var namesByMethod = DisplayNameCache.GetOrCreateValue(httpRoute);
+        return namesByMethod.GetOrAdd(namePrefix, static (method, route) => $"{method} {route}", httpRoute);
     }
 }
