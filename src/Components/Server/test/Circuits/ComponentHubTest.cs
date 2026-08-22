@@ -339,16 +339,24 @@ public class ComponentHubTest
     [Fact]
     public async Task OnConnectedAsyncReplacesSignalRUserRefreshPolicy()
     {
-        var userRefreshFeature = new Mock<IConnectionUserRefreshFeature>();
+        var userRefreshFeature = new Mock<IConnectionAuthenticationRefreshFeature>();
         userRefreshFeature.SetupAllProperties();
-        userRefreshFeature.Object.OnUserRefreshing = static _ => false;
+        userRefreshFeature.Object.OnAuthenticationRefresh = static _ => Task.FromResult(false);
         var (_, hub) = InitializeComponentHub(userRefreshFeature: userRefreshFeature.Object);
 
         await hub.OnConnectedAsync();
 
-        var callback = userRefreshFeature.Object.OnUserRefreshing;
+        var callback = userRefreshFeature.Object.OnAuthenticationRefresh;
         Assert.NotNull(callback);
-        Assert.True(callback(new ClaimsPrincipal()));
+        var context = new AuthenticationRefreshContext
+        {
+            HttpContext = new DefaultHttpContext(),
+            ConnectionId = "123",
+            PreviousUser = new ClaimsPrincipal(),
+            NewUser = new ClaimsPrincipal(),
+            NewExpiration = null,
+        };
+        Assert.True(await callback(context));
     }
 
     [Fact]
@@ -389,7 +397,7 @@ public class ComponentHubTest
         ICircuitPersistenceProvider provider = null,
         ICircuitFactory circuitFactory = null,
         ClaimsPrincipal user = null,
-        IConnectionUserRefreshFeature userRefreshFeature = null)
+        IConnectionAuthenticationRefreshFeature userRefreshFeature = null)
     {
         deserializer ??= new TestServerComponentDeserializer();
         var ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
