@@ -740,14 +740,15 @@ function Test-ReviewArtifacts
     else
     {
         $orchestrator = $orchestratorMatches[0].Groups[1].Value.Trim()
-        if ($orchestrator -notmatch '(?i)^gpt(?:-|$)')
+        $expectedOrchestrator = (Get-ReviewerModelPolicy).orchestrator.model
+        if ($orchestrator -ne $expectedOrchestrator)
         {
-            $errors.Add("final review orchestrator must be GPT-family: $orchestrator")
+            $errors.Add("final review orchestrator must match the pinned policy model '$expectedOrchestrator': $orchestrator")
         }
     }
 
     $labels = [ordered]@{
-        'Review goal' = @('defect-adjudication', 'solution-selection')
+        'Review goal' = @('defect-adjudication', 'solution-selection', 'issue-resolution')
         'Panel provenance' = @('policy-pinned')
         'Comparable run' = @('no')
         'Candidate runtime identity' = @('unverified')
@@ -771,7 +772,7 @@ function Test-ReviewArtifacts
         'Diagnostic mutation disposition' = @('diagnostic-only', 'rejected', 'not-applicable')
         'Selection status' = @('not-requested', 'unadjudicated', 'compared', 'preferred')
         'Alternative closure' = @('not-required', 'open', 'structural', 'empirical')
-        'Implementation verdict' = @('keep current fix', 'revise', 'replace')
+        'Implementation verdict' = @('keep current fix', 'revise', 'replace', 'adopt candidate', 'no change', 'no viable candidate', 'blocked')
         'Behavioral evidence' = @('empirical', 'structural', 'missing')
         'Merge readiness' = @('ready', 'recommendation only', 'blocked on evidence', 'blocked on product oracle', 'blocked on implementation')
         'Implementation confidence' = @('high', 'medium', 'low')
@@ -847,6 +848,77 @@ function Test-ReviewArtifacts
         if ($values['Review goal'] -eq 'solution-selection' -and $values['Selection status'] -eq 'not-requested')
         {
             $errors.Add('solution-selection review goal cannot use not-requested selection status')
+        }
+        if ($values['Review goal'] -eq 'issue-resolution' -and $values['Selection status'] -eq 'not-requested')
+        {
+            $errors.Add('issue-resolution review goal cannot use not-requested selection status')
+        }
+        if (
+            $values['Review goal'] -eq 'issue-resolution' -and
+            $values['Implementation verdict'] -notin @('adopt candidate', 'no change', 'no viable candidate', 'blocked')
+        )
+        {
+            $errors.Add("issue-resolution review goal requires an issue-resolution implementation verdict: $($values['Implementation verdict'])")
+        }
+        if ($values['Implementation verdict'] -eq 'adopt candidate')
+        {
+            if ($values['Review goal'] -ne 'issue-resolution')
+            {
+                $errors.Add('adopt candidate verdict requires the issue-resolution review goal')
+            }
+            if ($values['Candidate proof'] -notin @('targeted-proven', 'production-proven'))
+            {
+                $errors.Add('adopt candidate verdict requires a proven candidate')
+            }
+            if ($values['Selection status'] -ne 'preferred')
+            {
+                $errors.Add('adopt candidate verdict requires preferred implementation selection')
+            }
+            $proposedFixPath = Join-Path $Root 'final/proposed-fix.diff'
+            if (
+                -not (Test-Path -LiteralPath $proposedFixPath -PathType Leaf) -or
+                [string]::IsNullOrWhiteSpace((Get-Content -LiteralPath $proposedFixPath -Raw))
+            )
+            {
+                $errors.Add('adopt candidate verdict requires nonempty artifact: final/proposed-fix.diff')
+            }
+        }
+        if ($values['Implementation verdict'] -eq 'no change')
+        {
+            if ($values['Review goal'] -ne 'issue-resolution')
+            {
+                $errors.Add('no change verdict requires the issue-resolution review goal')
+            }
+            if ($values['Frozen-head result'] -ne 'pass')
+            {
+                $errors.Add('no change verdict requires a passing frozen-head result')
+            }
+        }
+        if ($values['Implementation verdict'] -eq 'no viable candidate')
+        {
+            if ($values['Review goal'] -ne 'issue-resolution')
+            {
+                $errors.Add('no viable candidate verdict requires the issue-resolution review goal')
+            }
+            if ($values['Frozen-head result'] -notin @('behavioral-fail', 'structural-defect'))
+            {
+                $errors.Add('no viable candidate verdict requires a proven frozen-head defect')
+            }
+            if ($values['Candidate proof'] -notin @('rejected', 'none'))
+            {
+                $errors.Add('no viable candidate verdict requires rejected or absent candidate proof')
+            }
+        }
+        if ($values['Implementation verdict'] -eq 'blocked')
+        {
+            if ($values['Review goal'] -ne 'issue-resolution')
+            {
+                $errors.Add('blocked verdict requires the issue-resolution review goal')
+            }
+            if ($values['Merge readiness'] -notin @('blocked on evidence', 'blocked on product oracle', 'blocked on implementation'))
+            {
+                $errors.Add('blocked verdict requires blocked merge readiness')
+            }
         }
         if ($values['Selection status'] -eq 'not-requested' -and $values['Alternative closure'] -ne 'not-required')
         {

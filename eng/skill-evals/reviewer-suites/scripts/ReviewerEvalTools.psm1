@@ -8,8 +8,11 @@ $script:ReviewerEvals = @(
     (Join-Path $script:RepoRoot 'eng/skill-evals/fix-challenge/regression.vally.yaml')
     (Join-Path $script:RepoRoot 'eng/skill-evals/fix-challenge/model-guardrail.vally.yaml')
 )
-$script:TryFixEvals = @(
-    (Join-Path $script:RepoRoot 'eng/skill-evals/try-fix/regression.vally.yaml')
+$script:CandidateEvals = @(
+    (Join-Path $script:RepoRoot 'eng/skill-evals/fix-candidate/regression.vally.yaml')
+)
+$script:IssueEvals = @(
+    (Join-Path $script:RepoRoot 'eng/skill-evals/fix-issue/regression.vally.yaml')
 )
 $script:VallyPackage = '@microsoft/vally-cli@0.13.0'
 $script:ModelGuardrailMechanism = 'orchestrator-model-guardrail'
@@ -34,11 +37,13 @@ $script:EvalGovernanceTags = @(
 )
 $script:SanitizedSourcePaths = @(
     'eng/skill-evals/fix-challenge'
-    'eng/skill-evals/try-fix'
+    'eng/skill-evals/fix-candidate'
+    'eng/skill-evals/fix-issue'
 )
 $script:CommonSourcePaths = @(
     '.github/instructions'
     'eng/common/AGENTS.md'
+    'eng/fix-workflows/candidate'
     '.editorconfig'
     '.gitignore'
     '.globalconfig'
@@ -49,7 +54,8 @@ $script:CommonSourcePaths = @(
 $script:VallyOutputs = [ordered]@{
     'fix-challenge' = Join-Path $script:RepoRoot 'eng/skill-evals/fix-challenge/regression.vally.yaml'
     'fix-challenge-model-guardrail' = Join-Path $script:RepoRoot 'eng/skill-evals/fix-challenge/model-guardrail.vally.yaml'
-    'try-fix' = Join-Path $script:RepoRoot 'eng/skill-evals/try-fix/regression.vally.yaml'
+    'fix-candidate' = Join-Path $script:RepoRoot 'eng/skill-evals/fix-candidate/regression.vally.yaml'
+    'fix-issue' = Join-Path $script:RepoRoot 'eng/skill-evals/fix-issue/regression.vally.yaml'
 }
 $script:StagedSkillFiles = [ordered]@{
     'fix-challenge' = @(
@@ -62,11 +68,8 @@ $script:StagedSkillFiles = [ordered]@{
         'scripts/Validate-ReviewArtifacts.ps1'
         'scripts/ReviewArtifactTools.psm1'
     )
-    'try-fix' = @(
+    'fix-issue' = @(
         'SKILL.md'
-        'references/candidate-protocol.md'
-        'references/empirical-protocol.md'
-        'references/output-contract.md'
     )
 }
 
@@ -78,7 +81,8 @@ function Get-ReviewerEvalConfiguration
     return @{
         RepoRoot = $script:RepoRoot
         ReviewerEvals = $script:ReviewerEvals
-        TryFixEvals = $script:TryFixEvals
+        CandidateEvals = $script:CandidateEvals
+        IssueEvals = $script:IssueEvals
         VallyPackage = $script:VallyPackage
         ModelGuardrailMechanism = $script:ModelGuardrailMechanism
         ModelPolicyPath = $script:ModelPolicyPath

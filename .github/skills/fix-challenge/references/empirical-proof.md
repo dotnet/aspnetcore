@@ -50,8 +50,9 @@ the parent review worktree. Preserve all artifacts before cleanup; if cleanup is
 unsafe, leave the worktree and report it.
 
 Pass the candidate-independent assertion contract, allowed perturbations,
-product oracle, impact map, and smallest targeted command to
-`try-fix` in `empirical` mode. Run empirical agents sequentially.
+product oracle, impact map, and smallest targeted command to one independent
+agent using `eng/fix-workflows/candidate/empirical-protocol.md`. Run empirical
+agents sequentially.
 
 ## Proof ladder
 

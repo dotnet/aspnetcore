@@ -1,6 +1,6 @@
 # Evaluation anti-overfit policy
 
-This policy applies to both `fix-challenge` and `try-fix`. It
+This policy applies to `fix-challenge`, `fix-issue`, and `fix-candidate`. It
 protects their evaluation sets from optimizing for a small, recognizable
 collection of prompts.
 
@@ -43,12 +43,12 @@ generalization.
 
 The model policy in
 [`model-policy.v1.json`](../../../.github/skills/fix-challenge/references/model-policy.v1.json)
-was selected from 30 valid
-outputs: six models each reviewed five frozen cases at source commit
-`f5835dcaf831ea87c9a2a89f28a4bd2448b34923`. The cases exercise corrected-head
-abstention, compatibility, lifecycle/provenance, test falsification, and input
-provenance. Six earlier compatibility attempts were excluded because their
-frozen-input hashes did not match.
+and this selection summary were first published at public commit
+`cc3e5c604d82b1d6edbce59474200f686abea155`. The policy was selected from 30
+valid outputs: six models each reviewed five frozen cases. The cases exercise
+corrected-head abstention, compatibility, lifecycle/provenance, test
+falsification, and input provenance. Six earlier compatibility attempts were
+excluded because their frozen-input hashes did not match.
 
 The one-trial-per-model evidence supports a provisional, not permanent, matrix.
 It selected `gpt-5.6-luna` and `claude-opus-5` for bounded review; Luna, Opus,
@@ -117,20 +117,16 @@ Before accepting eval changes, run:
 
 ```powershell
 pwsh eng/skill-evals/reviewer-suites/scripts/Validate-Evals.ps1 `
-  -Path 'eng/skill-evals/fix-challenge/regression.vally.yaml,eng/skill-evals/fix-challenge/model-guardrail.vally.yaml,eng/skill-evals/try-fix/regression.vally.yaml'
+  -Path 'eng/skill-evals/fix-challenge/regression.vally.yaml,eng/skill-evals/fix-challenge/model-guardrail.vally.yaml,eng/skill-evals/fix-candidate/regression.vally.yaml,eng/skill-evals/fix-issue/regression.vally.yaml'
 pwsh eng/skill-evals/reviewer-suites/scripts/Stage-ReviewerSkills.ps1 `
   /tmp/aspnetcore-review-skills
 ```
 
-The public ASP.NET Core repository carries only the portable reviewer runtime,
-canonical eval specifications, fixtures, and deterministic local validation.
-Private hosted-workflow controllers, their provenance validators, and their
-workflow-specific test suites are intentionally not mirrored here. Validate
-those deployment boundaries in their owning private repository; do not import
-them to make the public skill tests pass. Publishing or maintaining these public
-skills does not require rerunning model or judge calls.
+The ASP.NET Core repository carries the portable reviewer runtime, canonical
+eval specifications, fixtures, and deterministic local validation. Publishing
+or maintaining these skills does not require rerunning model or judge calls.
 
-The three specs under `eng/skill-evals/` are the only source of truth for
+The four specs under `eng/skill-evals/` are the only source of truth for
 prompts, rubrics, fixtures, models, and governance metadata. There is no
 generated manifest or synchronization step. `Validate-Evals.ps1` performs the
 cross-stimulus anti-overfit checks that Vally's schema lint does not cover.
@@ -139,14 +135,14 @@ These named reviewer specs are specialized capability and regression suites.
 The repository runner auto-discovers only `eval.vally.yaml`; invoke these suites
 explicitly with `-Eval` through the repository runner or with Vally's
 `--eval-spec`/`-e` option. They may use the reviewer-specific staging helper
-below because `fix-challenge` executes together with its sibling `try-fix`.
+below because the discoverable workflows consume the shared candidate contract.
 
 Official and comparison runs use `@microsoft/vally-cli@0.13.0`. Invoke that
 exact package rather than an unversioned global `vally`; otherwise local results
 can silently depend on an older schema or grading implementation. Record the
 resolved version with the retained results. The repository-wide eval directory
 does not currently pin a Vally package version, so update this pin deliberately
-only after strict-linting all three canonical specs. ASP.NET
+only after strict-linting all four canonical specs. ASP.NET
 Core's `.npmrc` points at an authenticated Azure DevOps feed, while Vally 0.13
 is not available from public npm. Authenticate that feed or select an approved
 Microsoft mirror before running `npx`; the following mirror was used for the
@@ -162,7 +158,10 @@ npx --yes --package @microsoft/vally-cli@0.13.0 vally lint \
   --eval-spec eng/skill-evals/fix-challenge/model-guardrail.vally.yaml \
   --strict
 npx --yes --package @microsoft/vally-cli@0.13.0 vally lint \
-  --eval-spec eng/skill-evals/try-fix/regression.vally.yaml \
+  --eval-spec eng/skill-evals/fix-candidate/regression.vally.yaml \
+  --strict
+npx --yes --package @microsoft/vally-cli@0.13.0 vally lint \
+  --eval-spec eng/skill-evals/fix-issue/regression.vally.yaml \
   --strict
 ```
 
@@ -206,8 +205,9 @@ copied, canonical eval specs are deleted before the initial commit, and ignored
 outputs are removed using the copied root `.gitignore`, and the origin has a
 disabled push URL. This keeps snapshots small, prevents answer-key discovery,
 and avoids sharing host Git metadata.
-`Stage-ReviewerSkills.ps1` copies only the runtime files required by the
-reviewer and its sibling try-fix into a directory outside the checkout.
+`Stage-ReviewerSkills.ps1` copies only the runtime files required by the two
+discoverable workflow skills into a directory outside the checkout. The shared
+candidate contract is copied into each eval workspace at its repository path.
 
 Run official suites from a committed revision with no unrelated changes in the
 declared source paths. The snapshot copies working-tree files, so an uncommitted
@@ -239,7 +239,7 @@ Run the GPT suites and the Claude guardrail separately when using direct Vally:
 
 ```bash
 set -o pipefail
-mkdir -p /tmp/fix-challenge-main /tmp/fix-challenge-guardrail /tmp/try-fix
+mkdir -p /tmp/fix-challenge-main /tmp/fix-challenge-guardrail /tmp/fix-candidate /tmp/fix-issue
 
 npx --yes --package @microsoft/vally-cli@0.13.0 vally eval \
   -e eng/skill-evals/fix-challenge/regression.vally.yaml \
@@ -260,19 +260,28 @@ npx --yes --package @microsoft/vally-cli@0.13.0 vally eval \
   2>/tmp/fix-challenge-guardrail/run.log |
   tee /tmp/fix-challenge-guardrail/results.jsonl
 npx --yes --package @microsoft/vally-cli@0.13.0 vally eval \
-  -e eng/skill-evals/try-fix/regression.vally.yaml \
+  -e eng/skill-evals/fix-candidate/regression.vally.yaml \
   --skill-dir /tmp/aspnetcore-review-skills \
   --runs 5 --workers 1 --timeout 1200s \
   --model gpt-5.6-sol --judge-model claude-opus-5 \
-  --workspace /tmp/try-fix/workspaces \
-  --output jsonl --output-dir /tmp/try-fix/artifacts \
-  2>/tmp/try-fix/run.log |
-  tee /tmp/try-fix/results.jsonl
+  --workspace /tmp/fix-candidate/workspaces \
+  --output jsonl --output-dir /tmp/fix-candidate/artifacts \
+  2>/tmp/fix-candidate/run.log |
+  tee /tmp/fix-candidate/results.jsonl
+npx --yes --package @microsoft/vally-cli@0.13.0 vally eval \
+  -e eng/skill-evals/fix-issue/regression.vally.yaml \
+  --skill-dir /tmp/aspnetcore-review-skills \
+  --runs 5 --workers 1 --timeout 1200s \
+  --model gpt-5.6-sol --judge-model claude-opus-5 \
+  --workspace /tmp/fix-issue/workspaces \
+  --output jsonl --output-dir /tmp/fix-issue/artifacts \
+  2>/tmp/fix-issue/run.log |
+  tee /tmp/fix-issue/results.jsonl
 ```
 
 Vally supplies the score-producing prompt grader, repeated trials, and
 pass@k/pass^k reporting. Run
-`eng/skill-evals/reviewer-suites/scripts/Aggregate-EvalScores.ps1` with the three
+`eng/skill-evals/reviewer-suites/scripts/Aggregate-EvalScores.ps1` with the four
 canonical Vally specs and one or more
 `-VallyResults <skill-name>=<results.jsonl>` arguments to additionally report
 raw, family-macro, provenance-macro, and train-to-held-out transfer results.
@@ -280,8 +289,8 @@ The reviewer aggregation needs both its GPT and Claude result files:
 
 ```powershell
 pwsh eng/skill-evals/reviewer-suites/scripts/Aggregate-EvalScores.ps1 `
-  -EvalPath 'eng/skill-evals/fix-challenge/regression.vally.yaml,eng/skill-evals/fix-challenge/model-guardrail.vally.yaml,eng/skill-evals/try-fix/regression.vally.yaml' `
-  -VallyResults 'fix-challenge=/tmp/fix-challenge-main/results.jsonl,fix-challenge=/tmp/fix-challenge-guardrail/results.jsonl,try-fix=/tmp/try-fix/results.jsonl'
+  -EvalPath 'eng/skill-evals/fix-challenge/regression.vally.yaml,eng/skill-evals/fix-challenge/model-guardrail.vally.yaml,eng/skill-evals/fix-candidate/regression.vally.yaml,eng/skill-evals/fix-issue/regression.vally.yaml' `
+  -VallyResults 'fix-challenge=/tmp/fix-challenge-main/results.jsonl,fix-challenge=/tmp/fix-challenge-guardrail/results.jsonl,fix-candidate=/tmp/fix-candidate/results.jsonl,fix-issue=/tmp/fix-issue/results.jsonl'
 ```
 
 The `-Scores <path>` input remains available for importing results from

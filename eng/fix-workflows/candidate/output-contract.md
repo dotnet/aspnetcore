@@ -1,15 +1,15 @@
-# Try-fix output contract
+# Candidate output contract
 
 Read this reference only when writing the candidate artifact.
 
 ```markdown
-## Try-Fix Candidate
+## Fix Workflow Candidate
 
-**Mode:** candidate-review / empirical
+**Mode:** candidate-review / candidate-propose / empirical
 **Candidate role:** proof-vehicle / production-contender
 **Approach:** <short name>
 **Root-cause hypothesis:** <mechanism>
-**Different from current fix:** <mechanism-level difference>
+**Different from current fix:** <mechanism-level difference or not-applicable - no existing fix>
 **Files:** <paths>
 **Result:** Pass / Fail / Blocked / Proposed
 **Product oracle:** documented / author-confirmed / test-encoded / inferred / unknown
@@ -81,7 +81,10 @@ candidate-review use Not run.>
 <why the strongest attack is fundamental, bounded-refinement, or unresolved>
 
 ### Recommendation
-Keep current fix / prefer this candidate / combine specific parts / keep preference open for equal comparison
+<In candidate-review: keep current fix / prefer this candidate / combine
+specific parts / keep preference open for equal comparison. In
+candidate-propose: prefer this candidate / keep preference open for equal
+comparison / no viable candidate.>
 ```
 
 Use `needs-refinement` when the literal production contender failed and the
@@ -89,5 +92,6 @@ proposed bounded refinement has not run. In candidate-review mode, do not write
 `prefer this candidate` for that state; write
 `keep preference open for equal comparison` instead.
 
-Write the complete response to `artifact_path` without overwriting another
-candidate. Return the path to the orchestrator.
+Return the complete response to the orchestrator. The orchestrator saves it
+unchanged to the invocation envelope's unique `response_path`; a correction uses
+a new path and never overwrites the initial response.

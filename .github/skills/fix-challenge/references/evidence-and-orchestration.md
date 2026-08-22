@@ -173,13 +173,18 @@ merge blocker is material even when the diff is small.
 
 ## Candidate prompts
 
-Resolve the sibling `try-fix/SKILL.md` from the active skill root and
-record both hashes. Never mix project and installed copies.
+Resolve the repository-root files declared by
+`eng/fix-workflows/candidate/README.md` and record every path and SHA-256. Never
+mix repository, installed, or private copies.
 
-For the bounded path launch two different model families in `candidate-review`
-mode. Ask one to find the narrowest concrete counterexample and one to challenge
-whether the change is over-engineered or under-tested. Withhold their outputs
-from each other.
+Build one byte-identical neutral packet from the frozen evidence, oracle, impact
+map, and current fix. Put candidate ID, configured model, role focus, nonce, and
+unique response path in the invocation envelope rather than changing the packet.
+
+For the bounded path launch the policy's two configured independent agents in
+`candidate-review` mode. Ask one to find the narrowest concrete counterexample
+and one to challenge whether the change is over-engineered or under-tested.
+Withhold their outputs from each other.
 
 For the full path launch four distinct models, parallel because candidate review
 is read-only:
@@ -191,8 +196,15 @@ is read-only:
 | C | Repository-pattern alternative |
 | D | Test falsification and unnecessary surface |
 
-Record substitutions and tool failures. The model selected by the candidate task
-or agent definition is its configured identity. Do not infer a substitution from
+Use the host's stock task/subagent primitive; do not invoke a nested CLI or add a
+custom mount, sandbox, or transport layer. If the host cannot launch the
+configured independent agent, stop with `blocked on orchestration` rather than
+running the candidate in the orchestrator context.
+
+Record substitutions and tool failures. Separate agent contexts, withheld peer
+outputs, and unique artifact paths provide procedural independence, not a
+security boundary. The model selected by the candidate task or agent definition
+is its configured identity. Do not infer a substitution from
 `COPILOT_MODEL` or another environment variable inherited from the orchestrator;
 only an explicit task/engine failure or retained request telemetry establishes a
 different runtime model. Every prompt requires:
@@ -223,8 +235,11 @@ available observable differs if execution occurs once versus more than once.
 Do not demand counted instrumentation when the contract permits repetition and
 no material duplicate side effect is plausible.
 
-Save raw responses unchanged. Validate them against the try-fix output contract;
-allow one correction turn for missing fields, not for changing the conclusion.
+Save every raw response unchanged under a unique immutable path, including the
+initial response and any correction. Validate them against
+`eng/fix-workflows/candidate/output-contract.md`; allow one correction turn for
+missing fields, not for changing the conclusion. Never overwrite the initial
+response with the correction.
 
 ## Adversarial narrowing
 

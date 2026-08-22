@@ -117,7 +117,7 @@
     "hosted_run_comparable_without_authoritative_telemetry": false
   },
   "selection_evidence": {
-    "source_commit": "f5835dcaf831ea87c9a2a89f28a4bd2448b34923",
+    "source_commit": "cc3e5c604d82b1d6edbce59474200f686abea155",
     "protocol_version": "fix-challenge-model-bakeoff/v1",
     "cases": [
       "corrected-head-abstention",

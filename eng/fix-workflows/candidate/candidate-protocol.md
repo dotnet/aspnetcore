@@ -1,10 +1,12 @@
-# Candidate-review protocol
+# Candidate protocol
 
-Read this reference only in `candidate-review` mode.
+Read this reference in `candidate-review` or `candidate-propose` mode.
 
-Start from the frozen evidence manifest. Inspect target code, surrounding files,
+Start from the frozen neutral packet. Inspect target code, surrounding files,
 callers, mapped tests, and relevant instructions before reading the current fix
-in detail. Narrow lookups must record the path and claim they verify.
+in detail. In `candidate-propose`, there is no current fix; do not inspect later
+commits, a known solution PR, answer keys, peer outputs, or selection results.
+Narrow lookups must record the path and claim they verify.
 
 State:
 
@@ -12,7 +14,8 @@ State:
 - one mechanism-level root-cause hypothesis;
 - the producer path and smallest distinguishing assertion;
 - mapped unchanged tests and uncovered producer branches;
-- why the candidate differs from current and prior approaches;
+- why the candidate differs from current and prior approaches, or
+  `not-applicable - no existing fix` in `candidate-propose`;
 - net implementation surface relative to the pre-change base;
 - mapped public/internal callers relevant to compatibility;
 - whether the strongest concrete attack is fundamental or admits a bounded
@@ -68,5 +71,5 @@ matrix. Set the recommendation to `keep preference open for equal comparison`
 until the same final-observable assertion runs for both; an intermediate
 descriptor alone cannot prefer a candidate.
 
-Return `Proposed`, never `Pass`, because candidate review does not execute the
+Return `Proposed`, never `Pass`, because candidate analysis does not execute the
 behavior.

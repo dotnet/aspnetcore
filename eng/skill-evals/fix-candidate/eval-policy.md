@@ -1,19 +1,21 @@
-# Try-fix Vally evaluation policy
+# Fix-candidate Vally evaluation policy
 
 This suite follows the shared
 [`fix-challenge` evaluation anti-overfit policy](../fix-challenge/eval-policy.md).
 
-`try-fix` is an independently executable Vally 0.13.0 capability
+`fix-candidate` is a Vally 0.13.0 capability
 suite. Its canonical cases live in
-`eng/skill-evals/try-fix/regression.vally.yaml`.
+`eng/skill-evals/fix-candidate/regression.vally.yaml`. The suite exercises the
+non-discoverable contract through explicit prompts rather than exposing it as a
+skill.
 
-Before accepting try-fix changes:
+Before accepting candidate-contract changes:
 
 ```powershell
 pwsh eng/skill-evals/reviewer-suites/scripts/Validate-Evals.ps1 `
-  -Path eng/skill-evals/try-fix/regression.vally.yaml
+  -Path eng/skill-evals/fix-candidate/regression.vally.yaml
 pwsh eng/skill-evals/reviewer-suites/scripts/Test-ReviewerEvalTools.ps1 `
-  -Suite TryFix
+  -Suite Candidate
 ```
 
 Then strict-lint and run the pinned suite:
@@ -21,17 +23,17 @@ Then strict-lint and run the pinned suite:
 ```bash
 export npm_config_registry=https://packagefeedproxy.microsoft.io/npm/
 npx --yes --package @microsoft/vally-cli@0.13.0 vally lint \
-  --eval-spec eng/skill-evals/try-fix/regression.vally.yaml \
+  --eval-spec eng/skill-evals/fix-candidate/regression.vally.yaml \
   --strict
 npx --yes --package @microsoft/vally-cli@0.13.0 vally eval \
-  -e eng/skill-evals/try-fix/regression.vally.yaml \
+  -e eng/skill-evals/fix-candidate/regression.vally.yaml \
   --skill-dir /tmp/aspnetcore-review-skills \
   --runs 5 --workers 1 --timeout 1200s \
   --model gpt-5.6-sol --judge-model claude-opus-5 \
-  --workspace /tmp/try-fix/workspaces \
-  --output jsonl --output-dir /tmp/try-fix/artifacts \
-  2>/tmp/try-fix/run.log |
-  tee /tmp/try-fix/results.jsonl
+  --workspace /tmp/fix-candidate/workspaces \
+  --output jsonl --output-dir /tmp/fix-candidate/artifacts \
+  2>/tmp/fix-candidate/run.log |
+  tee /tmp/fix-candidate/results.jsonl
 ```
 
 The suite independently enforces source snapshots, neutral fixture aliases,

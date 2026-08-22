@@ -46,6 +46,13 @@ Every final review declares a review goal and implementation-selection status.
 that comparison. A later comparison that changes the recommendation requires a
 fresh final review and validator run.
 
+`issue-resolution` is used only by `fix-issue` and always declares a selection
+status. `adopt candidate` requires preferred selection, a proven candidate, and
+a nonempty `final/proposed-fix.diff`. `no change` means the approved assertion
+passed on frozen head. `no viable candidate` means a defect was established but
+no candidate reached the required proof. `blocked` means oracle, evidence,
+environment, or orchestration prevented a decision.
+
 When required, write `final/implementation-selection.md` with this shape:
 
 ```markdown
@@ -153,9 +160,12 @@ Write `final/review.md`:
 ```markdown
 # Multi-Model Review
 
-**Orchestrator:** <GPT model>
+**Orchestrator:** gpt-5.6-sol
 **Path:** bounded / full
-**Review goal:** defect-adjudication / solution-selection
+**Review goal:** defect-adjudication / solution-selection / issue-resolution
+**Panel provenance:** policy-pinned
+**Comparable run:** no
+**Candidate runtime identity:** unverified
 
 ## Current fix
 <summary>
@@ -207,7 +217,7 @@ selection status is compared or preferred>
 **Diagnostic mutation disposition:** diagnostic-only / rejected / not-applicable
 
 ## Final recommendation
-**Implementation verdict:** KEEP CURRENT FIX / REVISE / REPLACE
+**Implementation verdict:** KEEP CURRENT FIX / REVISE / REPLACE / ADOPT CANDIDATE / NO CHANGE / NO VIABLE CANDIDATE / BLOCKED
 **Behavioral evidence:** empirical / structural / missing
 **Merge readiness:** ready / recommendation only / blocked on evidence / blocked on product oracle / blocked on implementation
 **Implementation confidence:** high / medium / low

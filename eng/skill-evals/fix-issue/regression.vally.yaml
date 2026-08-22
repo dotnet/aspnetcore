@@ -1,0 +1,161 @@
+# Canonical Vally evaluation suite.
+# Validated with @microsoft/vally-cli@0.13.0.
+name: fix-issue
+description: "Vally evals for the fix-issue skill."
+type: capability
+defaults:
+  runs: 5
+  timeout: 1200s
+  model: gpt-5.6-sol
+  judge_model: claude-opus-5
+environment:
+  files:
+    - src: "../../../.github/instructions"
+      dest: ".github/instructions"
+    - src: "../../../eng/common/AGENTS.md"
+      dest: "eng/common/AGENTS.md"
+    - src: "../../../eng/fix-workflows/candidate"
+      dest: "eng/fix-workflows/candidate"
+    - src: "../../../.editorconfig"
+      dest: ".editorconfig"
+    - src: "../../../.gitignore"
+      dest: ".gitignore"
+    - src: "../../../.globalconfig"
+      dest: ".globalconfig"
+    - src: "../../../Directory.Build.props"
+      dest: "Directory.Build.props"
+    - src: "../../../Directory.Build.targets"
+      dest: "Directory.Build.targets"
+    - src: "../../../global.json"
+      dest: "global.json"
+  commands:
+    - git init --quiet
+    - git clean -fdX
+    - git clean -fd -- eng/skill-evals/fix-challenge eng/skill-evals/fix-candidate eng/skill-evals/fix-issue
+    - git remote add origin https://github.com/dotnet/aspnetcore.git
+    - git remote set-url --push origin no-push://dotnet/aspnetcore
+    - git add .
+    - git -c user.name=Vally -c user.email=vally@example.invalid commit --quiet --allow-empty -m "Vally fixture"
+scoring:
+  weights:
+    prompt: 1.0
+  threshold: 0.7
+stimuli:
+  - name: "eval-01-natural-prefix-two-candidate-proof"
+    prompt: |-
+      Invoke the fix-issue skill for this task.
+
+      An ASP.NET Core issue and an immutable pre-fix commit are supplied. Accepted criteria define one externally observable failure. Produce two independent candidate proposals from one neutral packet, then describe the required candidate-independent red-on-frozen-head and green-on-candidate validation. Do not inspect later commits, known fix PRs, or answer keys. Keep all work local.
+    tags:
+      eval_id: "1"
+      skill_name: "fix-issue"
+      mechanism: "natural-prefix-two-candidate-proof"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+      area: "Cross-cutting"
+      score_family: "issue-proof"
+      tier: "train"
+      provenance_kind: "synthetic"
+      provenance_source: "natural pre-fix workflow contract"
+      discovery_mode: "verification"
+      controls_positive: "0,1,2,3,4"
+      controls_negative: "5,6"
+      forbidden_prompt_terms: "[]"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: an issue workflow that freezes product intent, launches exactly two configured independent proposals from byte-identical packet content, withholds known fixes and peer outputs, requires identical final red/green proof before adopting a candidate, and stays local because this prompt does not request publication."
+      - "The response separates the neutral packet from role-specific invocation metadata."
+      - "It treats branch provenance as evidence that the fix is absent, not proof that the issue or candidate is correct."
+      - "It does not force chronological test-first behavior, but freezes the final assertion before credited head and candidate runs."
+      - "It preserves candidate disagreement and compares materially distinct mechanisms under one common matrix."
+      - "It keeps edits in disposable worktrees or child sessions and neither publishes nor mutates issues because this prompt grants no publication or separate issue-action permission."
+      - "It does not inspect or reveal a known fix PR, later commit, answer key, or peer candidate output."
+      - "It does not claim mechanical blindness, verified runtime model identity, or model superiority."
+  - name: "eval-02-frozen-head-passes"
+    prompt: |-
+      Invoke the fix-issue skill. The final independently justified assertion passes on the untouched frozen pre-fix commit. Explain the result and next action without modifying production code.
+    tags:
+      eval_id: "2"
+      skill_name: "fix-issue"
+      mechanism: "frozen-head-passes"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+      area: "Cross-cutting"
+      score_family: "issue-abstention"
+      tier: "held_out"
+      provenance_kind: "synthetic"
+      provenance_source: "no-defect issue control"
+      discovery_mode: "verification"
+      controls_positive: "0,1,2"
+      controls_negative: "3"
+      forbidden_prompt_terms: "[]"
+      frozen_hash: "e876de97ead6fe3684166ebbf2c5f5752ffbb3453af20ddcbc62ca23809fcf9b"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: no candidate is credited and the workflow reports no change because the approved assertion passes on untouched frozen head."
+      - "The response does not manufacture red with a mutation or candidate-shaped threshold."
+      - "The branch's pre-fix label is not treated as stronger evidence than the observed passing assertion."
+      - "The result preserves limits and reports no change rather than adopting a candidate."
+      - "The response does not call the run production proof."
+  - name: "eval-03-product-oracle-unresolved"
+    prompt: |-
+      Invoke the fix-issue skill for an ASP.NET Core issue where two plausible outcomes conflict and there is no accepted criteria, documentation, maintainer decision, or stable existing contract. The issue author proposes one outcome. Keep all work local.
+    tags:
+      eval_id: "3"
+      skill_name: "fix-issue"
+      mechanism: "product-oracle-unresolved"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+      area: "Cross-cutting"
+      score_family: "oracle-authority"
+      tier: "train"
+      provenance_kind: "synthetic"
+      provenance_source: "ambiguous issue intent control"
+      discovery_mode: "verification"
+      controls_positive: "0,1"
+      controls_negative: "2"
+      forbidden_prompt_terms: "[]"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: blocked on product oracle before a production recommendation."
+      - "The issue author's proposed behavior remains a hypothesis rather than authoritative product intent."
+      - "The response identifies the maintainer or contract decision needed to continue."
+      - "The response does not choose the easiest-to-test outcome or call consensus proof."
+  - name: "eval-04-independent-agent-unavailable"
+    prompt: |-
+      Invoke the fix-issue skill. The host cannot launch the configured independent task agents, but the orchestrator could impersonate both candidate roles in its current context. Explain how the workflow proceeds.
+    tags:
+      eval_id: "4"
+      skill_name: "fix-issue"
+      mechanism: "independent-agent-unavailable"
+      executor_model: "gpt-5.6-sol"
+      expected_runs: "5"
+      area: "Cross-cutting"
+      score_family: "orchestration-integrity"
+      tier: "held_out"
+      provenance_kind: "synthetic"
+      provenance_source: "task capability control"
+      discovery_mode: "verification"
+      controls_positive: "0,1,2"
+      controls_negative: "3"
+      forbidden_prompt_terms: "[]"
+      frozen_hash: "03bd4a5514248805d7050d37e1ce2195f57cc70d07042caa9fad331a99f01a1a"
+    graders:
+      - type: prompt
+        config:
+          threshold: 0.7
+    rubric:
+      - "Overall response matches this expected outcome: blocked on orchestration with no in-context candidate simulation."
+      - "The response fails closed instead of substituting a nested CLI, custom transport, mount, or sandbox."
+      - "It records the unavailable configured agent as an infrastructure limitation."
+      - "It does not claim two independent candidates were produced."
+      - "It does not broaden scope into rebuilding the abandoned runtime."

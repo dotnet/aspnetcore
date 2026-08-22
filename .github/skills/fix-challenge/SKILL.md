@@ -1,8 +1,8 @@
 ---
 name: fix-challenge
 description: >-
-  Multi-model adversarial review specifically for a dotnet/aspnetcore PR, issue
-  fix, or local diff. Use whenever work in the ASP.NET Core repository needs a
+  Multi-model adversarial review specifically for a dotnet/aspnetcore PR,
+  existing fix, or local diff. Use whenever work in the ASP.NET Core repository needs a
   deep review, competing fixes, multi-model validation, adversarial consensus,
   or a decision about whether a local fix is the best approach. Routes bounded
   low-risk changes through a fast evidence-backed review and escalates
@@ -11,7 +11,7 @@ description: >-
   empirical proof. Produces one local-only recommendation. Do not use in
   dotnet/maui or any repository other than dotnet/aspnetcore. Never posts or
   pushes.
-compatibility: Requires a dotnet/aspnetcore checkout, PowerShell, and the sibling try-fix skill
+compatibility: Requires an in-repository dotnet/aspnetcore checkout, PowerShell, and independent task/subagent support
 ---
 
 # ASP.NET Core fix challenge and verification
@@ -29,9 +29,10 @@ not rest on consensus, CI, or source intuition alone.
    with its exact orchestrator model and configuration. Do not replace it with a
    newer model by inference. If the current session does not match, stop and
    request the configured orchestrator.
-3. Resolve the candidate only from
-   `<skill-root>/../try-fix/SKILL.md`. Record paths and hashes for both
-   skills; stop rather than mix project and installed copies.
+3. Resolve the repository root using the same trusted metadata as the repository
+   guard. Read every file listed by `eng/fix-workflows/candidate/README.md` from
+   that checkout and record its path and SHA-256 in `evidence/manifest.md`.
+   Stop rather than substitute an installed or private candidate implementation.
 
 The versioned model policy is the source of truth for candidate IDs, roles,
 models, invocation modes, reasoning effort, context tier, and voting status.
@@ -119,9 +120,13 @@ Follow the candidate protocol in `evidence-and-orchestration.md`.
 - **Full:** launch the policy's exact four voting candidates and its declared
   non-voting shadow in parallel.
 
-Each invocation uses `try-fix` in `candidate-review` mode, receives
-the same evidence/oracle/impact map, owns one candidate, and writes a unique raw
-artifact. Withhold candidate outputs from one another.
+Each invocation uses a stock independent task/subagent in `candidate-review`
+mode. Give every candidate the byte-identical frozen neutral packet, the shared
+candidate contract, and a role-specific invocation envelope from the model
+policy. Save each response unchanged to a unique raw artifact and withhold
+candidate outputs from one another. If the host cannot launch the configured
+independent agent, stop with `blocked on orchestration`; do not simulate
+independence in the orchestrator context.
 Every role retains the shared correctness, strongest-counterexample,
 false-passing-test, compatibility/lifecycle, smaller-mechanism, and
 VERIFIED/CONTRADICTED/UNSUPPORTED contract. Role focus is additional emphasis,

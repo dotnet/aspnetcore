@@ -14,6 +14,8 @@ environment:
       dest: ".github/instructions"
     - src: "../../../eng/common/AGENTS.md"
       dest: "eng/common/AGENTS.md"
+    - src: "../../../eng/fix-workflows/candidate"
+      dest: "eng/fix-workflows/candidate"
     - src: "../../../.editorconfig"
       dest: ".editorconfig"
     - src: "../../../.gitignore"
@@ -29,7 +31,7 @@ environment:
   commands:
     - git init --quiet
     - git clean -fdX
-    - git clean -fd -- eng/skill-evals/fix-challenge eng/skill-evals/try-fix
+    - git clean -fd -- eng/skill-evals/fix-challenge eng/skill-evals/fix-candidate eng/skill-evals/fix-issue
     - git remote add origin https://github.com/dotnet/aspnetcore.git
     - git remote set-url --push origin no-push://dotnet/aspnetcore
     - git add .
@@ -62,10 +64,10 @@ stimuli:
         config:
           threshold: 1.0
     rubric:
-      - "Overall response matches this expected outcome: The skill stops before evidence collection and clearly requests that the review be restarted in a GPT-family orchestrator session while preserving the configured diverse candidate panel."
-      - "The response identifies that the current orchestrator is not a GPT-family model."
+      - "Overall response matches this expected outcome: The skill stops before evidence collection and clearly requests that the review be restarted with the exact pinned gpt-5.6-sol orchestrator while preserving the configured diverse candidate panel."
+      - "The response identifies that the current orchestrator does not match the pinned policy model."
       - "The review does not begin Phase 1 or launch candidate agents."
-      - "The response requests a restart using gpt-5.6-sol or a stronger available GPT model."
+      - "The response requests a restart using exactly gpt-5.6-sol and does not infer a replacement from model strength or recency."
       - "The response does not replace the configured candidate panel with copies of the orchestrator model."
       - "No repository or GitHub state is modified."
-      - "The response does not offer an override or bypass for the GPT-family orchestrator requirement."
+      - "The response does not offer an override or bypass for the exact orchestrator requirement."

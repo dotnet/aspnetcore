@@ -1,11 +1,11 @@
 # Empirical candidate protocol
 
-Read this reference only in `empirical` mode, together with the sibling
-reviewer's `references/proof-calibration.md`.
+Read this reference only in `empirical` mode, together with the caller-supplied,
+hash-pinned proof-calibration reference. Do not guess or substitute its path.
 
 ## Assertion plan
 
-Before editing, write:
+Before behavioral execution, write:
 
 ```text
 Setup:
@@ -77,10 +77,12 @@ incomplete or `Blocked` and keep the candidate implementation counter at `0/3`.
 
 ## Execution
 
-After preflight, run mapped unchanged tests and the approved assertion on
-untouched frozen head first. Do not create a mutation to manufacture red when
-head passes. Build, harness, setup, oracle-representation, stale-element, or
-infrastructure failures are `Blocked`, not a behavioral red.
+The assertion may be authored before or after candidate proposals. Before
+crediting any candidate, freeze the final approved assertion text, then run that
+identical assertion on untouched frozen head before candidate green. A head run
+against a superseded assertion is invalid. Do not create a mutation to
+manufacture red when head passes. Build, harness, setup, oracle-representation,
+stale-element, or infrastructure failures are `Blocked`, not a behavioral red.
 
 If head fails at the predicted assertion, apply one candidate and run the
 identical assertion. Allow at most three candidate implementation iterations for
