@@ -24,6 +24,54 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
 
     public bool IsTestMock => false;
 
+    private static X509Certificate2 LoadCertificates(
+        string path,
+        string? password,
+        X509Certificate2Collection fullChain)
+    {
+        var count = fullChain.Count;
+        var loadFlags = OperatingSystem.IsWindows() ?
+            X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet;
+
+        fullChain.Import(path, password, loadFlags);
+        var reloadTarget = false;
+
+        for (var i = count; i < fullChain.Count; i++)
+        {
+            var cur = fullChain[i];
+            if (cur.HasPrivateKey)
+            {
+                if (!reloadTarget)
+                {
+                    // This is the target certificate, reload it with
+                    // non-ephemeral keys using the single-cert loader.
+                    reloadTarget = true;
+                    fullChain.RemoveAt(i);
+                    i--;
+                }
+                else
+                {
+                    // The private key for this certificate doesn't matter,
+                    // replace it with a public-key-only version.
+                    fullChain[i] = new X509Certificate2(cur.RawDataMemory.Span);
+                    cur.Dispose();
+                }
+            }
+        }
+
+        // If we want the target reloaded, or we want the "this PFX was empty" exception
+        if (reloadTarget || fullChain.Count == count)
+        {
+            return new X509Certificate2(path, password);
+        }
+
+        // There were no certificates with private keys, so just use the first certificate
+        // and let SslStream try to find a private key later.
+        var target = fullChain[count];
+        fullChain.RemoveAt(count);
+        return target;
+    }
+
     public (X509Certificate2?, X509Certificate2Collection?) LoadCertificate(CertificateConfig? certInfo, string endpointName)
     {
         if (certInfo is null)
@@ -72,7 +120,9 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                 throw new InvalidOperationException(CoreStrings.InvalidPemKey);
             }
 
-            return (new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password), fullChain);
+            //return (new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password), fullChain);
+            var certWithKey = LoadCertificates(certificatePath, certInfo.Password, fullChain);
+            return (certWithKey, fullChain);
         }
         else if (certInfo.IsStoreCert)
         {
