@@ -164,7 +164,6 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         public void GetFileInfo_DoesNotMatch_IncompletePrefixSegments()
         {
             // Arrange
-            var expectedResult = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var provider = new StaticWebAssetsFileProvider(
                 "_cont",
                 Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location));
