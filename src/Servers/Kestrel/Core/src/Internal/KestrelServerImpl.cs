@@ -147,22 +147,14 @@ internal sealed class KestrelServerImpl : IServer
 
                 if (!hasTls)
                 {
-                    // Http/1 without TLS, no-op HTTP/2 and 3.
+                    // Http/1 without TLS, no-op HTTP/3.
                     if (hasHttp1)
                     {
-                        if (options.ProtocolsSetExplicitly)
+                        if (options.ProtocolsSetExplicitly && hasHttp3)
                         {
-                            if (hasHttp2)
-                            {
-                                Trace.Http2DisabledWithHttp1AndNoTls(options.EndPoint);
-                            }
-                            if (hasHttp3)
-                            {
-                                Trace.Http3DisabledWithHttp1AndNoTls(options.EndPoint);
-                            }
+                            Trace.Http3DisabledWithHttp1AndNoTls(options.EndPoint);
                         }
 
-                        hasHttp2 = false;
                         hasHttp3 = false;
                     }
                     // Http/3 requires TLS. Note we only let it fall back to HTTP/1, not HTTP/2
@@ -177,6 +169,8 @@ internal sealed class KestrelServerImpl : IServer
                 {
                     throw new InvalidOperationException("Unable to bind an HTTP/3 endpoint. This could be because QUIC has not been configured using UseQuic, or the platform doesn't support QUIC or HTTP/3.");
                 }
+
+                var effectiveProtocols = hasHttp3 ? options.Protocols : options.Protocols & ~HttpProtocols.Http3;
 
                 // Disable adding alt-svc header if endpoint has configured not to or there is no
                 // multiplexed transport factory, which happens if QUIC isn't supported.
@@ -194,7 +188,12 @@ internal sealed class KestrelServerImpl : IServer
                         throw new InvalidOperationException($"Cannot start HTTP/1.x or HTTP/2 server if no {nameof(IConnectionListenerFactory)} is registered.");
                     }
 
-                    options.UseHttpServer(ServiceContext, application, options.Protocols, addAltSvcHeader);
+                    if (!hasTls && hasHttp1 && hasHttp2 && !Options.DisableHttp2PriorKnowledge)
+                    {
+                        options.UseHttp2PriorKnowledge(ServiceContext, effectiveProtocols);
+                    }
+
+                    options.UseHttpServer(ServiceContext, application, effectiveProtocols, addAltSvcHeader);
                     var connectionDelegate = options.Build();
 
                     // Add the connection limit middleware
@@ -213,7 +212,7 @@ internal sealed class KestrelServerImpl : IServer
                     }
                     else
                     {
-                        options.UseHttp3Server(ServiceContext, application, options.Protocols, addAltSvcHeader);
+                        options.UseHttp3Server(ServiceContext, application, effectiveProtocols, addAltSvcHeader);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         // Add the connection limit middleware

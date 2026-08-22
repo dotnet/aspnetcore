@@ -176,21 +176,47 @@ public class KeepAliveTimeoutTests : LoggedTest
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
-    [Fact]
-    private async Task ConnectionTimesOutWhenOpenedButNoRequestSent()
+    [Theory]
+    [InlineData(HttpProtocols.Http1)]
+    [InlineData(HttpProtocols.Http1AndHttp2)]
+    private async Task ConnectionTimesOutWhenOpenedButNoRequestSent(HttpProtocols protocols)
     {
         var testMeterFactory = new TestMeterFactory();
         using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
         var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
-        await using (var server = CreateServer(testContext))
+        await using (var server = CreateServer(testContext, protocols: protocols))
         {
             using (var connection = server.CreateConnection())
             {
                 await connection.TransportConnection.WaitForReadTask;
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
+                testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.ConnectionManager.OnHeartbeat();
+
+                await connection.WaitForConnectionClose();
+            }
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, m.Tags));
+    }
+
+    [Fact]
+    private async Task ConnectionTimesOutDuringPartialHttp2Preface()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using (var server = CreateServer(testContext, protocols: HttpProtocols.Http1AndHttp2))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.TransportConnection.WaitForReadTask;
+                await connection.SendAll("PRI");
+
                 testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
@@ -244,7 +270,11 @@ public class KeepAliveTimeoutTests : LoggedTest
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
-    private TestServer CreateServer(TestServiceContext context, CancellationToken longRunningCt = default, CancellationToken upgradeCt = default)
+    private TestServer CreateServer(
+        TestServiceContext context,
+        CancellationToken longRunningCt = default,
+        CancellationToken upgradeCt = default,
+        HttpProtocols protocols = HttpProtocols.Http1)
     {
         // Ensure request headers timeout is started as soon as the tests send requests.
         context.Scheduler = PipeScheduler.Inline;
@@ -252,7 +282,10 @@ public class KeepAliveTimeoutTests : LoggedTest
         context.ServerOptions.Limits.KeepAliveTimeout = _keepAliveTimeout;
         context.ServerOptions.Limits.MinRequestBodyDataRate = null;
 
-        return new TestServer(httpContext => App(httpContext, longRunningCt, upgradeCt), context);
+        return new TestServer(
+            httpContext => App(httpContext, longRunningCt, upgradeCt),
+            context,
+            listenOptions => listenOptions.Protocols = protocols);
     }
 
     private async Task App(HttpContext httpContext, CancellationToken longRunningCt, CancellationToken upgradeCt)

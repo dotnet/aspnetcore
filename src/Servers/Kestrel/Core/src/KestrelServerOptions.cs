@@ -26,15 +26,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 public class KestrelServerOptions
 {
     internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+    internal const string DisableHttp2PriorKnowledgeSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp2PriorKnowledge";
     private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
     internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
     private static readonly bool _finOnError;
     private static readonly bool _disableCertificateFileWatching;
+    private static readonly bool _disableHttp2PriorKnowledge;
 
     static KestrelServerOptions()
     {
         AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
         AppContext.TryGetSwitch(CertificateFileWatchingSwitch, out _disableCertificateFileWatching);
+        AppContext.TryGetSwitch(DisableHttp2PriorKnowledgeSwitchKey, out _disableHttp2PriorKnowledge);
     }
 
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
@@ -42,6 +45,8 @@ public class KestrelServerOptions
 
     // Opt-out flag for back compat. Remove in 9.0 (or make public).
     internal bool FinOnError { get; set; } = _finOnError;
+
+    internal bool DisableHttp2PriorKnowledge { get; set; } = _disableHttp2PriorKnowledge;
 
     private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 

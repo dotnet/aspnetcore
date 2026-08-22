@@ -4742,6 +4742,40 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task AltSvc_CleartextHttp1And2And3Endpoint_NoAltSvcInResponseHeaders()
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+        testContext.ServerOptions.DisableHttp2PriorKnowledge = true;
+        await using var server = new TestServer(
+            httpContext => Task.CompletedTask,
+            testContext,
+            options =>
+            {
+                options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                {
+                    Protocols = HttpProtocols.Http1AndHttp2AndHttp3
+                });
+            },
+            services =>
+            {
+                services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
+            });
+        using var connection = server.CreateConnection();
+
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
+        await connection.Receive(
+            "HTTP/1.1 200 OK",
+            "Content-Length: 0",
+            $"Date: {server.Context.DateHeaderValue}",
+            "",
+            "");
+    }
+
+    [Fact]
     public async Task AltSvc_Http1And2And3EndpointConfigured_NoMultiplexedFactory_NoAltSvcInResponseHeaders()
     {
         await using (var server = new TestServer(

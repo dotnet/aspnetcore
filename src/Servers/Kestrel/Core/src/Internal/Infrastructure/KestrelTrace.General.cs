@@ -54,11 +54,6 @@ internal sealed partial class KestrelTrace : ILogger
         GeneralLog.InvalidResponseHeaderRemoved(_generalLogger);
     }
 
-    public void Http2DisabledWithHttp1AndNoTls(EndPoint endPoint)
-    {
-        GeneralLog.Http2DisabledWithHttp1AndNoTls(_generalLogger, endPoint);
-    }
-
     public void Http3DisabledWithHttp1AndNoTls(EndPoint endPoint)
     {
         GeneralLog.Http3DisabledWithHttp1AndNoTls(_generalLogger, endPoint);
@@ -103,10 +98,11 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(41, LogLevel.Warning, "One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'.", EventName = "InvalidResponseHeaderRemoved")]
         public static partial void InvalidResponseHeaderRemoved(ILogger logger);
 
-        [LoggerMessage(64, LogLevel.Warning, "HTTP/2 is not enabled for {Endpoint}. The endpoint is configured to use HTTP/1.1 and HTTP/2, but TLS is not enabled. HTTP/2 requires TLS application protocol negotiation. Connections to this endpoint will use HTTP/1.1.", EventName = "Http2DisabledWithHttp1AndNoTls")]
-        public static partial void Http2DisabledWithHttp1AndNoTls(ILogger logger, EndPoint endPoint);
+        // Event ID 64 (Http2DisabledWithHttp1AndNoTls) is reserved for back compatibility. The retired message was:
+        // "HTTP/2 is not enabled for {Endpoint}. The endpoint is configured to use HTTP/1.1 and HTTP/2, but TLS is not enabled.
+        // HTTP/2 requires TLS application protocol negotiation. Connections to this endpoint will use HTTP/1.1."
 
-        [LoggerMessage(65, LogLevel.Warning, "HTTP/3 is not enabled for {Endpoint}. HTTP/3 requires TLS. Connections to this endpoint will use HTTP/1.1.", EventName = "Http3DisabledWithHttp1AndNoTls")]
+        [LoggerMessage(65, LogLevel.Warning, "HTTP/3 is not enabled for {Endpoint}. HTTP/3 requires TLS. Connections to this endpoint will use another configured HTTP protocol.", EventName = "Http3DisabledWithHttp1AndNoTls")]
         public static partial void Http3DisabledWithHttp1AndNoTls(ILogger logger, EndPoint endPoint);
 
         [LoggerMessage(66, LogLevel.Debug, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": The request was aborted by the client.", EventName = "RequestAborted")]
