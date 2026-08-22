@@ -86,4 +86,14 @@ public class AntiforgeryOptions
     /// Specifies whether to suppress load of antiforgery token from request body.
     /// </summary>
     public bool SuppressReadingTokenFromFormBody { get; set; }
+
+    /// <summary>
+    /// Specifies whether responses that carry an antiforgery token may be stored in the browser's
+    /// back/forward cache. Defaults to <c>false</c>, in which case the antiforgery system sets the
+    /// response's <c>Cache-Control</c> header to <c>no-cache, no-store</c>, which browsers treat as
+    /// opting the response out of the back/forward cache. When set to <c>true</c> the header is set to
+    /// <c>no-cache, private</c> instead, which keeps the response out of shared caches while allowing
+    /// the browser to restore it from the back/forward cache.
+    /// </summary>
+    public bool AllowBackForwardCache { get; set; }
 }
