@@ -27,6 +27,9 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
+        builder.Services.AddKeyedSingleton<IComponentRenderMode>(
+            "Microsoft.AspNetCore.Components.ActivityState.WebAssembly",
+            RenderMode.InteractiveWebAssembly);
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
         builder.Services.TryAddScoped<LazyAssemblyLoader>();
 
